@@ -1,0 +1,7 @@
+*.pro.user
+build*
+*.o
+**/.qmake.stash
+Makefile
+.directory
+**/*.dylib
