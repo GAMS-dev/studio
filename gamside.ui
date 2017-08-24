@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>23</width>
-    <height>83</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,13 +29,113 @@
    <property name="contextMenuPolicy">
     <enum>Qt::NoContextMenu</enum>
    </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4,3">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item>
+       <widget class="QTreeWidget" name="projectExplorer">
+        <property name="uniformRowHeights">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>Projects</string>
+         </property>
+        </column>
+        <item>
+         <property name="text">
+          <string>GamsSampleProject</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>main.gms</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>main.gdx</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>someotherfile.txt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>hello.jpg</string>
+          </property>
+         </item>
+        </item>
+        <item>
+         <property name="text">
+          <string>GamsSecondProject</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>more</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>moremore</string>
+          </property>
+         </item>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <property name="tabsClosable">
+         <bool>true</bool>
+        </property>
+        <property name="movable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Tab 1</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QTextEdit" name="mainEditor">
+            <property name="autoFillBackground">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Tab 2</string>
+         </attribute>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="mainOutput">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>23</width>
+     <width>1024</width>
      <height>25</height>
     </rect>
    </property>
