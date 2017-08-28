@@ -24,6 +24,18 @@
     <enum>Qt::NoContextMenu</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <layout class="QGridLayout" name="mainLayout">
       <property name="topMargin">
@@ -32,13 +44,35 @@
       <property name="horizontalSpacing">
        <number>6</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QTextEdit" name="textEditor">
-        <property name="font">
-         <font>
-          <family>Source Code Pro</family>
-         </font>
+      <item row="0" column="1">
+       <widget class="QTabWidget" name="mainTab">
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
         </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <widget class="QWidget" name="tab1">
+         <attribute name="title">
+          <string>Tab 1</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QTextEdit" name="textEdit_2">
+            <property name="font">
+             <font>
+              <family>Source Code Pro</family>
+             </font>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab2">
+         <attribute name="title">
+          <string>Tab 2</string>
+         </attribute>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -84,12 +118,18 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionProject_Explorer"/>
+    <addaction name="actionLog_Output"/>
+    <addaction name="actionBottom_Panel"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
     <addaction name="actionOnline_Help"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -100,6 +140,12 @@
   <widget class="QToolBar" name="mainToolBar">
    <property name="enabled">
     <bool>true</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Toolbar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonFollowStyle</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -117,8 +163,11 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QDockWidget" name="dockLeft">
+  <widget class="QDockWidget" name="dockProjectExplorer">
    <property name="accessibleName">
+    <string>Project Explorer</string>
+   </property>
+   <property name="windowTitle">
     <string>Project Explorer</string>
    </property>
    <attribute name="dockWidgetArea">
@@ -154,7 +203,10 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockRight">
+  <widget class="QDockWidget" name="dockOutput">
+   <property name="windowTitle">
+    <string>Log Output</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
@@ -188,6 +240,15 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockBottom">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Bottom Panel</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -201,6 +262,9 @@
   <action name="actionExit_Application">
    <property name="text">
     <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="actionOnline_Help">
@@ -224,6 +288,52 @@
   <action name="actionand_a_seperator">
    <property name="text">
     <string>and a seperator</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionLog_Output">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log Output</string>
+   </property>
+  </action>
+  <action name="actionBottom_Panel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bottom Panel</string>
+   </property>
+  </action>
+  <action name="actionProject_Explorer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project Explorer</string>
    </property>
   </action>
  </widget>

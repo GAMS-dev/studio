@@ -20,6 +20,16 @@ private slots:
 
     void on_actionOnline_Help_triggered();
 
+    void on_actionAbout_triggered();
+
+    void on_actionAbout_Qt_triggered();
+
+    void on_actionProject_Explorer_triggered(bool checked);
+
+    void on_actionLog_Output_triggered(bool checked);
+
+    void on_actionBottom_Panel_triggered(bool checked);
+
 private:
     Ui::GAMSIDE *ui;
 };
