@@ -20,109 +20,24 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <property name="minimumSize">
-    <size>
-     <width>800</width>
-     <height>600</height>
-    </size>
-   </property>
    <property name="contextMenuPolicy">
     <enum>Qt::NoContextMenu</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4,3">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
+     <layout class="QGridLayout" name="mainLayout">
+      <property name="topMargin">
+       <number>13</number>
       </property>
-      <item>
-       <widget class="QTreeWidget" name="projectExplorer">
-        <property name="uniformRowHeights">
-         <bool>true</bool>
-        </property>
-        <column>
-         <property name="text">
-          <string>Projects</string>
-         </property>
-        </column>
-        <item>
-         <property name="text">
-          <string>GamsSampleProject</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>main.gms</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>main.gdx</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>someotherfile.txt</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>hello.jpg</string>
-          </property>
-         </item>
-        </item>
-        <item>
-         <property name="text">
-          <string>GamsSecondProject</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>more</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>moremore</string>
-          </property>
-         </item>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTabWidget" name="tabWidget">
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <property name="tabsClosable">
-         <bool>true</bool>
-        </property>
-        <property name="movable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="tab">
-         <attribute name="title">
-          <string>Tab 1</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QTextEdit" name="mainEditor">
-            <property name="autoFillBackground">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="tab_2">
-         <attribute name="title">
-          <string>Tab 2</string>
-         </attribute>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTextEdit" name="mainOutput">
-        <property name="readOnly">
-         <bool>true</bool>
+      <property name="horizontalSpacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QTextEdit" name="textEditor">
+        <property name="font">
+         <font>
+          <family>Source Code Pro</family>
+         </font>
         </property>
        </widget>
       </item>
@@ -202,6 +117,82 @@
     <bool>false</bool>
    </property>
   </widget>
+  <widget class="QDockWidget" name="dockLeft">
+   <property name="accessibleName">
+    <string>Project Explorer</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <property name="autoFillBackground">
+     <bool>true</bool>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QTreeView" name="treeView">
+       <property name="uniformRowHeights">
+        <bool>true</bool>
+       </property>
+       <property name="animated">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockRight">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QTextEdit" name="textEdit">
+       <property name="font">
+        <font>
+         <family>Source Code Pro</family>
+        </font>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockBottom">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4"/>
+  </widget>
   <action name="actionFile">
    <property name="text">
     <string>File</string>
@@ -209,10 +200,7 @@
   </action>
   <action name="actionExit_Application">
    <property name="text">
-    <string>Exit Application</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Q</string>
+    <string>Quit</string>
    </property>
   </action>
   <action name="actionOnline_Help">
