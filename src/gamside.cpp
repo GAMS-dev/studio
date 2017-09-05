@@ -148,10 +148,7 @@ void GAMSIDE::on_actionProject_Explorer_triggered(bool checked)
 
 void GAMSIDE::on_actionLog_Output_triggered(bool checked)
 {
-    if(checked)
-        ui->dockOutput->show();
-    else
-        ui->dockOutput->hide();
+
 }
 
 void GAMSIDE::on_actionBottom_Panel_triggered(bool checked)

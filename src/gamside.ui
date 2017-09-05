@@ -91,7 +91,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -187,7 +187,7 @@
     <string>Project Explorer</string>
    </property>
    <property name="windowTitle">
-    <string>Project Explorer</string>
+    <string>Explorer</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -222,42 +222,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockOutput">
-   <property name="windowTitle">
-    <string>Log Output</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_3">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QTextEdit" name="textEdit">
-       <property name="font">
-        <font>
-         <family>Source Code Pro</family>
-        </font>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="dockBottom">
    <property name="enabled">
     <bool>true</bool>
@@ -266,7 +230,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Bottom Panel</string>
+    <string>Output</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
