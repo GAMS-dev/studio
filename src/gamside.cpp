@@ -15,6 +15,41 @@ GAMSIDE::~GAMSIDE()
     delete ui;
 }
 
+void GAMSIDE::on_actionNew_triggered()
+{
+    QMessageBox::information(this, "New...", "t.b.d.");
+}
+
+void GAMSIDE::on_actionOpen_triggered()
+{
+    QMessageBox::information(this, "Open...", "t.b.d.");
+}
+
+void GAMSIDE::on_actionSave_triggered()
+{
+    QMessageBox::information(this, "Save", "t.b.d.");
+}
+
+void GAMSIDE::on_actionSave_As_triggered()
+{
+    QMessageBox::information(this, "Save As...", "t.b.d.");
+}
+
+void GAMSIDE::on_actionSave_All_triggered()
+{
+    QMessageBox::information(this, "Save All", "t.b.d.");
+}
+
+void GAMSIDE::on_actionClose_triggered()
+{
+    QMessageBox::information(this, "Close", "t.b.d.");
+}
+
+void GAMSIDE::on_actionClose_All_triggered()
+{
+    QMessageBox::information(this, "Close All", "t.b.d.");
+}
+
 void GAMSIDE::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
