@@ -3,12 +3,16 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <iostream>
+#include <QTime>
+#include <QDebug>
 #include <QFileDialog>
 
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
-    ui->dockBottom->hide();
+//    ui->dockBottom->hide();
+    connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
 }
 
 GAMSIDE::~GAMSIDE()
@@ -66,6 +70,54 @@ void GAMSIDE::on_actionClose_All_triggered()
     QMessageBox::information(this, "Close All", "t.b.d.");
 }
 
+void GAMSIDE::clearProc(int exitCode)
+{
+    Q_UNUSED(exitCode);
+    if (mProc) {
+        qDebug() << "clear process";
+        mProc->deleteLater();
+        mProc = nullptr;
+    }
+}
+
+void GAMSIDE::addLine(QProcess::ProcessChannel channel, QString text)
+{
+    ui->processWindow->setTextColor(channel ? Qt::red : Qt::black);
+    emit processOutput(text);
+}
+
+void GAMSIDE::readyStdOut()
+{
+    mOutputMutex.lock();
+    mProc->setReadChannel(QProcess::StandardOutput);
+    bool avail = mProc->bytesAvailable();
+    mOutputMutex.unlock();
+
+    while (avail) {
+        mOutputMutex.lock();
+        mProc->setReadChannel(QProcess::StandardOutput);
+        addLine(QProcess::StandardOutput, mProc->readLine());
+        avail = mProc->bytesAvailable();
+        mOutputMutex.unlock();
+    }
+}
+
+void GAMSIDE::readyStdErr()
+{
+    mOutputMutex.lock();
+    mProc->setReadChannel(QProcess::StandardError);
+    bool avail = mProc->bytesAvailable();
+    mOutputMutex.unlock();
+
+    while (avail) {
+        mOutputMutex.lock();
+        mProc->setReadChannel(QProcess::StandardError);
+        addLine(QProcess::StandardError, mProc->readLine());
+        avail = mProc->bytesAvailable();
+        mOutputMutex.unlock();
+    }
+}
+
 void GAMSIDE::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
@@ -109,3 +161,35 @@ void GAMSIDE::on_actionBottom_Panel_triggered(bool checked)
     else
         ui->dockBottom->hide();
 }
+
+void GAMSIDE::on_actionSim_Process_triggered()
+{
+    qDebug() << "starting process";
+    mProc = new QProcess(this);
+    mProc->start("../../spawner/spawner.exe");
+    connect(mProc, &QProcess::readyReadStandardOutput, this, &GAMSIDE::readyStdOut);
+    connect(mProc, &QProcess::readyReadStandardError, this, &GAMSIDE::readyStdErr);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &GAMSIDE::clearProc);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

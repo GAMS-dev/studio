@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ide
 TEMPLATE = app
+DESTDIR = bin
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -32,3 +33,6 @@ HEADERS += \
 
 FORMS += \
         gamside.ui
+
+RESOURCES += \
+    icons/icons.qrc

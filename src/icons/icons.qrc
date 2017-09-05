@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>gams.svg</file>
+        <file>gams-w.svg</file>
+    </qresource>
+</RCC>
