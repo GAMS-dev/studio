@@ -23,7 +23,7 @@ signals:
 
 private slots:
     void clearProc(int exitCode);
-    void addLine(QProcess::ProcessChannel key, QString text);
+    void addLine(QProcess::ProcessChannel channel, QString text);
     void readyStdOut();
     void readyStdErr();
 
