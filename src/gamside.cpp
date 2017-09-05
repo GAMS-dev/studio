@@ -3,6 +3,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <QFileDialog>
 
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
@@ -13,6 +14,56 @@ GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 GAMSIDE::~GAMSIDE()
 {
     delete ui;
+}
+
+void GAMSIDE::on_actionNew_triggered()
+{
+    QMessageBox::information(this, "New...", "t.b.d.");
+}
+
+void GAMSIDE::on_actionOpen_triggered()
+{
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open file",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
+}
+
+void GAMSIDE::on_actionSave_triggered()
+{
+    auto fileName = QFileDialog::getSaveFileName(this,
+                                                 "Save file as...",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
+}
+
+void GAMSIDE::on_actionSave_As_triggered()
+{
+    auto fileName = QFileDialog::getSaveFileName(this,
+                                                 "Save file as...",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
+}
+
+void GAMSIDE::on_actionSave_All_triggered()
+{
+    QMessageBox::information(this, "Save All", "t.b.d.");
+}
+
+void GAMSIDE::on_actionClose_triggered()
+{
+    QMessageBox::information(this, "Close", "t.b.d.");
+}
+
+void GAMSIDE::on_actionClose_All_triggered()
+{
+    QMessageBox::information(this, "Close All", "t.b.d.");
 }
 
 void GAMSIDE::on_actionExit_Application_triggered()
