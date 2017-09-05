@@ -125,7 +125,7 @@ void GAMSIDE::on_actionExit_Application_triggered()
 
 void GAMSIDE::on_actionOnline_Help_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs/welcome.html", QUrl::TolerantMode));
+    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
 void GAMSIDE::on_actionAbout_triggered()
