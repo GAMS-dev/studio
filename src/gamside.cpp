@@ -3,6 +3,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <QFileDialog>
 
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
@@ -22,17 +23,32 @@ void GAMSIDE::on_actionNew_triggered()
 
 void GAMSIDE::on_actionOpen_triggered()
 {
-    QMessageBox::information(this, "Open...", "t.b.d.");
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open file",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
 }
 
 void GAMSIDE::on_actionSave_triggered()
 {
-    QMessageBox::information(this, "Save", "t.b.d.");
+    auto fileName = QFileDialog::getSaveFileName(this,
+                                                 "Save file as...",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
 }
 
 void GAMSIDE::on_actionSave_As_triggered()
 {
-    QMessageBox::information(this, "Save As...", "t.b.d.");
+    auto fileName = QFileDialog::getSaveFileName(this,
+                                                 "Save file as...",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
 }
 
 void GAMSIDE::on_actionSave_All_triggered()
