@@ -48,6 +48,8 @@ private slots:
 
     void on_actionShow_Welcome_Page_triggered();
 
+    void on_actionNew_Tab_triggered();
+
 private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;

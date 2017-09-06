@@ -27,7 +27,7 @@ GAMSIDE::~GAMSIDE()
 void GAMSIDE::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
-    ui->mainTab->addTab(new Editor(), QString("unnamed"));
+    ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
 void GAMSIDE::on_actionNew_triggered()
@@ -72,12 +72,14 @@ void GAMSIDE::on_actionSave_All_triggered()
 
 void GAMSIDE::on_actionClose_triggered()
 {
-    QMessageBox::information(this, "Close", "t.b.d.");
+    ui->mainTab->removeTab(ui->mainTab->currentIndex());
 }
 
 void GAMSIDE::on_actionClose_All_triggered()
 {
-    QMessageBox::information(this, "Close All", "t.b.d.");
+    for(int i = ui->mainTab->count(); i > 0; i--) {
+        ui->mainTab->removeTab(0);
+    }
 }
 
 void GAMSIDE::clearProc(int exitCode)
@@ -187,4 +189,9 @@ void GAMSIDE::on_mainTab_tabCloseRequested(int index)
 void GAMSIDE::on_actionShow_Welcome_Page_triggered()
 {
     ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
+}
+
+void GAMSIDE::on_actionNew_Tab_triggered()
+{
+    ui->mainTab->addTab(new Editor(), QString("new"));
 }
