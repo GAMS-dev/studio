@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QDebug>
 #include <QFileDialog>
+#include "codeeditor.h"
 
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
@@ -23,6 +24,9 @@ GAMSIDE::~GAMSIDE()
 void GAMSIDE::on_actionNew_triggered()
 {
     QMessageBox::information(this, "New...", "t.b.d.");
+    ide::CodeEditor* edit = new ide::CodeEditor(this);
+    edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->mainTab->addTab(edit, "new");
 }
 
 void GAMSIDE::on_actionOpen_triggered()

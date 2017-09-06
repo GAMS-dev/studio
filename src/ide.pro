@@ -26,10 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        gamside.cpp
+        gamside.cpp \
+    filecontext.cpp \
+    codeeditor.cpp
 
 HEADERS += \
-        gamside.h
+        gamside.h \
+    filecontext.h \
+    codeeditor.h
 
 FORMS += \
         gamside.ui

@@ -5,6 +5,7 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QMutex>
+#include "filecontext.h"
 
 namespace Ui {
 class GAMSIDE;
@@ -48,6 +49,7 @@ private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
+    QHash<QWidget, ide::FileContext> mOpenFiles;
     QMutex mOutputMutex;
 
 };
