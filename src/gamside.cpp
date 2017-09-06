@@ -14,7 +14,7 @@
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
-//    ui->dockBottom->hide();
+
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
 }
@@ -26,7 +26,6 @@ GAMSIDE::~GAMSIDE()
 
 void GAMSIDE::initTabs()
 {
-
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     ui->mainTab->addTab(new Editor(), QString("unnamed"));
 }
@@ -180,24 +179,12 @@ void GAMSIDE::on_actionSim_Process_triggered()
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &GAMSIDE::clearProc);
 }
 
+void GAMSIDE::on_mainTab_tabCloseRequested(int index)
+{
+    ui->mainTab->removeTab(index);
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void GAMSIDE::on_actionShow_Welcome_Page_triggered()
+{
+    ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
+}

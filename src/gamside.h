@@ -44,6 +44,10 @@ private slots:
     void on_actionBottom_Panel_triggered(bool checked);
     void on_actionSim_Process_triggered();
 
+    void on_mainTab_tabCloseRequested(int index);
+
+    void on_actionShow_Welcome_Page_triggered();
+
 private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
