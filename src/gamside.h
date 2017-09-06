@@ -50,6 +50,7 @@ private:
     QHash<QTextStream, QColor> mStreams;
     QMutex mOutputMutex;
 
+    void initTabs();
 };
 
 #endif // GAMSIDE_H

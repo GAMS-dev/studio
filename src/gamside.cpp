@@ -1,5 +1,8 @@
 #include "gamside.h"
 #include "ui_gamside.h"
+#include "welcomepage.h"
+#include "editor.h"
+
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
@@ -13,11 +16,19 @@ GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
     ui->setupUi(this);
 //    ui->dockBottom->hide();
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
+    initTabs();
 }
 
 GAMSIDE::~GAMSIDE()
 {
     delete ui;
+}
+
+void GAMSIDE::initTabs()
+{
+
+    ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
+    ui->mainTab->addTab(new Editor(), QString("unnamed"));
 }
 
 void GAMSIDE::on_actionNew_triggered()
