@@ -49,7 +49,7 @@ private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
-    QHash<QWidget, ide::FileContext> mOpenFiles;
+    QHash<QWidget*, ide::FileContext> mOpenFiles;
     QMutex mOutputMutex;
 
 };

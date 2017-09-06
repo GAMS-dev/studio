@@ -24,19 +24,23 @@ GAMSIDE::~GAMSIDE()
 void GAMSIDE::on_actionNew_triggered()
 {
     QMessageBox::information(this, "New...", "t.b.d.");
-    ide::CodeEditor* edit = new ide::CodeEditor(this);
-    edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    ui->mainTab->addTab(edit, "new");
+    ide::FileContext fc("");
+    mOpenFiles.insert(fc.createEditor(ui->mainTab), fc);
 }
 
 void GAMSIDE::on_actionOpen_triggered()
 {
-    auto fileName = QFileDialog::getOpenFileName(this,
-                                                 "Open file",
-                                                 ".",
-                                                 tr("GAMS code (*.gms *.inc );;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*)"));
+    ide::FileContext fc(
+                QFileDialog::getOpenFileName(this,
+                                             "Open file",
+                                             ".",
+                                             tr("GAMS code (*.gms *.inc );;"
+                                                "Text files (*.txt);;"
+                                                "All files (*)")));
+    if (!fc.isEmpty()) {
+        fc.createEditor(ui->mainTab);
+        fc.load();
+    }
 }
 
 void GAMSIDE::on_actionSave_triggered()
