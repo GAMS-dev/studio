@@ -28,12 +28,14 @@ SOURCES += \
         main.cpp \
         gamside.cpp \
     filecontext.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    filerepository.cpp
 
 HEADERS += \
         gamside.h \
     filecontext.h \
-    codeeditor.h
+    codeeditor.h \
+    filerepository.h
 
 FORMS += \
         gamside.ui

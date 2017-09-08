@@ -2,11 +2,11 @@
 #include <QTextStream>
 #include <QDebug>
 
+namespace gams {
 namespace ide {
 
-FileContext::FileContext(QString fileName)
+FileContext::FileContext(int id, QString fileName): mId(id), mFileInfo(QFileInfo(fileName))
 {
-    mFileInfo = QFileInfo(fileName);
     QString suffix = mFileInfo.suffix();
     QString pattern = ".gms";
     if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftGms;
@@ -22,42 +22,57 @@ FileContext::FileContext(QString fileName)
     if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftLxi;
 }
 
-bool FileContext::isEmpty()
+QString FileContext::codec() const
 {
-    return mFileInfo.fileName().isEmpty();
+    return mCodec;
 }
 
-CodeEditor*FileContext::createEditor(QTabWidget* tabWidget)
+void FileContext::setCodec(const QString& codec)
 {
-    if (!tabWidget) {
-        throw std::exception("error: missing tabWidget to create CodeEditor");
+    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
+    mCodec = codec;
+}
+
+void FileContext::textChanged()
+{
+    qDebug() << "Text changed";
+    if (mCrudState != CrudState::eUpdate) {
+        mCrudState = CrudState::eUpdate;
+        emit nameChanged(mId, name());
+        emit pushName(name());
+        qDebug() << "FIRST Text changed";
     }
-    mTextEdit = new ide::CodeEditor(tabWidget);
-    mTextEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    mTabIndex = tabWidget->addTab(mTextEdit, mFileInfo.baseName());
-    tabWidget->setTabToolTip(mTabIndex, mFileInfo.filePath());
-    tabWidget->setCurrentIndex(mTabIndex);
-    return mTextEdit;
+}
+int FileContext::id()
+{
+    return mId;
 }
 
-bool FileContext::exist()
+QString FileContext::name()
 {
-    return !mFileInfo.fileName().isEmpty() && mFileInfo.exists();
+    return mFileInfo.baseName() + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
 
-bool FileContext::load()
+const QFileInfo &FileContext::fileInfo()
 {
-    QFile file(mFileInfo.filePath());
+    return mFileInfo;
+}
 
-    if (file.exists()) {
-        file.open(QFile::ReadOnly | QFile::Text);
-        QTextStream stream(&file);
-        mTextEdit->setPlainText(stream.readAll());
-        file.close();
-        return true;
+void FileContext::rename(QString newFilePath)
+{
+    QString oldName = name();
+    QString oldFilePath = mFileInfo.filePath();
+    if (mFileInfo.filePath().isEmpty()) {
+        mFileInfo.setFile(newFilePath);
+    } else {
+        // TODO(JM) this has to be handled carefully (name-change, file-rename, allow also move file?)
+        qDebug() << "renaming of already assigned file not implemented";
     }
-    qDebug() << "file not opened";
-    return false;
+    if (oldFilePath != mFileInfo.filePath())
+        emit fileInfoChanged(mId, mFileInfo.filePath());
+    if (oldName != name())
+        emit nameChanged(mId, name());
 }
 
 } // namespace ide
+} // namespace gams

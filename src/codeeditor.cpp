@@ -51,9 +51,8 @@
 #include <QtWidgets>
 #include "codeeditor.h"
 
+namespace gams {
 namespace ide {
-
-
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -161,4 +160,6 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         ++blockNumber;
     }
 }
+
 } // namespace ide
+} // namespace gams

@@ -5,19 +5,23 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QMutex>
-#include "filecontext.h"
+#include "filerepository.h"
 
 namespace Ui {
 class GAMSIDE;
 }
 
+using namespace gams::ide;
+
 class GAMSIDE : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit GAMSIDE(QWidget *parent = 0);
     ~GAMSIDE();
+    void createEdit(QTabWidget* tabWidget, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void ensureCodecMenue(QString codecName);
 
 signals:
     void processOutput(QString text);
@@ -27,6 +31,7 @@ private slots:
     void addLine(QProcess::ProcessChannel channel, QString text);
     void readyStdOut();
     void readyStdErr();
+    void codecChanged(QAction *action);
 
 private slots:
     void on_actionNew_triggered();
@@ -49,9 +54,9 @@ private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
-    QHash<QWidget*, ide::FileContext> mOpenFiles;
+    FileRepository mFileRepo;
     QMutex mOutputMutex;
-
+    QActionGroup *mCodecGroup;
 };
 
 #endif // GAMSIDE_H

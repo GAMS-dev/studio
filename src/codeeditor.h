@@ -59,7 +59,7 @@ class QResizeEvent;
 class QSize;
 class QWidget;
 
-
+namespace gams {
 namespace ide {
 
 class LineNumberArea;
@@ -109,5 +109,6 @@ private:
 
 
 } // namespace ide
+} // namespace gams
 
 #endif // CODEEDITOR_H

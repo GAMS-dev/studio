@@ -124,7 +124,14 @@
      <addaction name="separator"/>
      <addaction name="actionand_a_seperator"/>
     </widget>
+    <widget class="QMenu" name="menuEncoding">
+     <property name="title">
+      <string>Encoding</string>
+     </property>
+     <addaction name="actionSystem_2"/>
+    </widget>
     <addaction name="menuText_Operations"/>
+    <addaction name="menuEncoding"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -441,6 +448,19 @@
   <action name="actionClose_All_Except">
    <property name="text">
     <string>Close All Except &quot;&quot;</string>
+   </property>
+  </action>
+  <action name="actionSystem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>System</string>
+   </property>
+  </action>
+  <action name="actionSystem_2">
+   <property name="text">
+    <string>System</string>
    </property>
   </action>
  </widget>
