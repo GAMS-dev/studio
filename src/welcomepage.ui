@@ -50,7 +50,7 @@
         </spacer>
        </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="label_newproject">
          <property name="text">
           <string>New Project...</string>
          </property>
@@ -70,7 +70,7 @@
         </spacer>
        </item>
        <item row="1" column="1">
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="label_openproject">
          <property name="text">
           <string>Open Project...</string>
          </property>
@@ -90,7 +90,7 @@
         </spacer>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="label_sessionmanager">
          <property name="text">
           <string>Session manager</string>
          </property>
@@ -420,7 +420,7 @@
         </spacer>
        </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="label_10">
+        <widget class="QLabel" name="label_documentation">
          <property name="text">
           <string>Documentation</string>
          </property>
@@ -440,7 +440,7 @@
         </spacer>
        </item>
        <item row="1" column="1">
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="label_gamsworld">
          <property name="text">
           <string>GAMS World Forum</string>
          </property>
@@ -460,7 +460,7 @@
         </spacer>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="label_gamsyoutube">
          <property name="text">
           <string>GAMS on Youtube</string>
          </property>
@@ -480,7 +480,7 @@
         </spacer>
        </item>
        <item row="3" column="1">
-        <widget class="QLabel" name="label_12">
+        <widget class="QLabel" name="label_stackoverflow">
          <property name="text">
           <string>Stackoverflow</string>
          </property>
