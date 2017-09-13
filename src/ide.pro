@@ -29,13 +29,19 @@ SOURCES += \
         gamside.cpp \
     filecontext.cpp \
     codeeditor.cpp \
-    filerepository.cpp
+    filerepository.cpp \
+    tabwidget.cpp \
+    treeentry.cpp \
+    treemodel.cpp
 
 HEADERS += \
         gamside.h \
     filecontext.h \
     codeeditor.h \
-    filerepository.h
+    filerepository.h \
+    tabwidget.h \
+    treeentry.h \
+    treemodel.h
 
 FORMS += \
         gamside.ui

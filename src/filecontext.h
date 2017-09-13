@@ -39,8 +39,8 @@ class FileContext : public QObject
     Q_OBJECT
 public:
     int id();
-    QString name();
-    const QFileInfo& fileInfo();
+    QString name() const;
+    const QFileInfo& fileInfo() const;
     void rename(QString newFilePath);
 
     QString codec() const;
@@ -48,7 +48,8 @@ public:
 
 signals:
     void fileInfoChanged(int id, QString newFilePath);
-    void nameChanged(int id, QString newName);
+    void nameChangedById(int id, QString newName);
+    void nameChangedByIdStr(const QString &identString, const QString &newName);
     void pushName(const QString &newName);
 
 public slots:

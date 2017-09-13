@@ -4,6 +4,7 @@
 #include <QtGui>
 #include <QtWidgets>
 #include "codeeditor.h"
+#include "tabwidget.h"
 
 using namespace gams::ide;
 
@@ -11,6 +12,9 @@ GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
 //    ui->dockBottom->hide();
+    ui->treeView->setModel(&mProjectModel);
+    ui->treeView->setRootIndex(mProjectModel.rootModelIndex());
+    ui->treeView->setHeaderHidden(true);
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &GAMSIDE::codecChanged);
@@ -22,12 +26,12 @@ GAMSIDE::~GAMSIDE()
     delete ui;
 }
 
-void GAMSIDE::createEdit(QTabWidget* tabWidget, QString codecName)
+void GAMSIDE::createEdit(TabWidget* tabWidget, QString codecName)
 {
     createEdit(tabWidget, -1, codecName);
 }
 
-void GAMSIDE::createEdit(QTabWidget *tabWidget, int id, QString codecName)
+void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
 {
     QStringList codecNames;
     if (!codecName.isEmpty()) {
@@ -41,7 +45,7 @@ void GAMSIDE::createEdit(QTabWidget *tabWidget, int id, QString codecName)
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->fileInfo().baseName());
+        int tabIndex = tabWidget->addTab(codeEdit, fc->fileInfo().baseName(), id);
         tabWidget->setTabToolTip(tabIndex, fc->fileInfo().filePath());
         tabWidget->setCurrentIndex(tabIndex);
         QFile file(fc->fileInfo().filePath());
@@ -75,8 +79,19 @@ void GAMSIDE::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             }
         }
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::pushName, codeEdit, &CodeEditor::setWindowTitle);
+        connect(fc, &FileContext::nameChangedById, ui->mainTab, &TabWidget::tabNameChanged);
+        connect(fc, &FileContext::nameChangedByIdStr, &mProjectModel, &TreeModel::entryNameChanged);
     }
+}
+
+void GAMSIDE::createTreeEntry(const FileContext* fc)
+{
+    QModelIndex idx = mProjectModel.find(fc->fileInfo().path(), mProjectModel.rootModelIndex());
+    if (!idx.isValid()) {
+        idx = mProjectModel.addEntry(fc->fileInfo().path(), fc->fileInfo().path(), true);
+    }
+    mProjectModel.addEntry(fc->name(), fc->fileInfo().filePath(), true, idx);
+    if (idx.isValid()) ui->treeView->expand(idx);
 }
 
 void GAMSIDE::ensureCodecMenue(QString codecName)
@@ -111,6 +126,7 @@ void GAMSIDE::on_actionOpen_triggered()
                                              tr("GAMS code (*.gms *.inc );;"
                                                 "Text files (*.txt);;"
                                                 "All files (*)")));
+    createTreeEntry(fc);
     createEdit(ui->mainTab, fc->id());
 }
 

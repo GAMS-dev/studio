@@ -12,7 +12,7 @@ FileRepository::FileRepository(QObject *parent) : QObject(parent)
 FileContext* FileRepository::addContext(QString filepath)
 {
     FileContext *fc = new FileContext(mId++, filepath);
-    connect(fc, &FileContext::nameChanged, this, &FileRepository::onNameChanged);
+    connect(fc, &FileContext::nameChangedById, this, &FileRepository::onNameChanged);
     mFileData.insert(mId-1, fc);
     emit contextCreated(mId-1);
     return context(mId-1);
@@ -52,6 +52,8 @@ void FileRepository::onFileInfoChanged(QString newFilePath)
 
 void FileRepository::onNameChanged(int id, QString newName)
 {
+    qDebug() << "Name changed: " << newName;
+
     // TODO(JM) implement the short Name (with asterix when edited)
 }
 

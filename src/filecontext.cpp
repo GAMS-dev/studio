@@ -38,22 +38,24 @@ void FileContext::textChanged()
     qDebug() << "Text changed";
     if (mCrudState != CrudState::eUpdate) {
         mCrudState = CrudState::eUpdate;
-        emit nameChanged(mId, name());
+        emit nameChangedById(mId, name());
+        emit nameChangedByIdStr(mFileInfo.filePath(), name());
         emit pushName(name());
         qDebug() << "FIRST Text changed";
     }
 }
+
 int FileContext::id()
 {
     return mId;
 }
 
-QString FileContext::name()
+QString FileContext::name() const
 {
     return mFileInfo.baseName() + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
 
-const QFileInfo &FileContext::fileInfo()
+const QFileInfo &FileContext::fileInfo() const
 {
     return mFileInfo;
 }
@@ -70,8 +72,10 @@ void FileContext::rename(QString newFilePath)
     }
     if (oldFilePath != mFileInfo.filePath())
         emit fileInfoChanged(mId, mFileInfo.filePath());
-    if (oldName != name())
-        emit nameChanged(mId, name());
+    if (oldName != name()) {
+        emit nameChangedById(mId, name());
+        emit nameChangedByIdStr(mFileInfo.filePath(), name());
+    }
 }
 
 } // namespace ide
