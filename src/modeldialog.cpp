@@ -58,7 +58,7 @@ bool ModelDialog::populateTable(QTableWidget *tw, QString glbFile)
         QTableWidgetItem* item = new QTableWidgetItem(splitList.at(1).trimmed());
         tw->setHorizontalHeaderItem(i, item);
     }
-    int initSortCol = in.readLine().split("=").at(0).trimmed().toInt()-1;
+    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
 
     // read models
     while(!in.atEnd()) {

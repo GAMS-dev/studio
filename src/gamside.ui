@@ -410,7 +410,7 @@
   </action>
   <action name="actionGAMS_Library">
    <property name="text">
-    <string>GAMS Library</string>
+    <string>GAMS Library Explorer</string>
    </property>
   </action>
  </widget>
