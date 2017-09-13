@@ -15,6 +15,9 @@ public:
     explicit WelcomePage(QWidget *parent = 0);
     ~WelcomePage();
 
+private slots:
+    void labelLinkActivated(const QString &link);
+
 private:
     Ui::WelcomePage *ui;
 };

@@ -422,7 +422,7 @@
        <item row="0" column="1">
         <widget class="QLabel" name="label_documentation">
          <property name="text">
-          <string>Documentation</string>
+          <string>&lt;a href=&quot;https://www.gams.com/latest/docs/&quot;&gt;Documantation&lt;/a&gt;</string>
          </property>
         </widget>
        </item>
@@ -442,7 +442,7 @@
        <item row="1" column="1">
         <widget class="QLabel" name="label_gamsworld">
          <property name="text">
-          <string>GAMS World Forum</string>
+          <string>&lt;a href=&quot;http://gamsworld.org/&quot;&gt;GAMS World&lt;/a&gt;</string>
          </property>
         </widget>
        </item>
@@ -462,7 +462,7 @@
        <item row="2" column="1">
         <widget class="QLabel" name="label_gamsyoutube">
          <property name="text">
-          <string>GAMS on Youtube</string>
+          <string>&lt;a href=&quot;https://www.youtube.com/user/GAMSLessons&quot;&gt;GAMS on YouTube&lt;/a&gt;</string>
          </property>
         </widget>
        </item>
@@ -482,7 +482,7 @@
        <item row="3" column="1">
         <widget class="QLabel" name="label_stackoverflow">
          <property name="text">
-          <string>Stackoverflow</string>
+          <string>&lt;a href=&quot;https://stackoverflow.com/questions/tagged/gams-math&quot;&gt;GAMS on StackOverflow&lt;/a&gt;</string>
          </property>
         </widget>
        </item>
