@@ -26,13 +26,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        gamside.cpp
+        gamside.cpp \
+    modeldialog.cpp
 
 HEADERS += \
-        gamside.h
+        gamside.h \
+    modeldialog.h
 
 FORMS += \
-        gamside.ui
+        gamside.ui \
+    modeldialog.ui
 
 RESOURCES += \
     icons/icons.qrc

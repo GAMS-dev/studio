@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QFileDialog>
 
+#include "modeldialog.h"
+
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
@@ -190,3 +192,9 @@ void GAMSIDE::on_actionSim_Process_triggered()
 
 
 
+
+void GAMSIDE::on_actionGAMS_Library_triggered()
+{
+    ModelDialog dialog;
+    dialog.exec();
+}

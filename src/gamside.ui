@@ -91,7 +91,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -139,6 +139,7 @@
     <addaction name="actionProject_Explorer"/>
     <addaction name="actionLog_Output"/>
     <addaction name="actionBottom_Panel"/>
+    <addaction name="actionGAMS_Library"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -405,6 +406,11 @@
   <action name="actionClose_All_Except">
    <property name="text">
     <string>Close All Except &quot;&quot;</string>
+   </property>
+  </action>
+  <action name="actionGAMS_Library">
+   <property name="text">
+    <string>GAMS Library</string>
    </property>
   </action>
  </widget>

@@ -44,6 +44,8 @@ private slots:
     void on_actionBottom_Panel_triggered(bool checked);
     void on_actionSim_Process_triggered();
 
+    void on_actionGAMS_Library_triggered();
+
 private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
