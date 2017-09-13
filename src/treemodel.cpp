@@ -5,16 +5,7 @@ namespace ide {
 
 TreeModel::TreeModel(QObject* parent)
     : QAbstractItemModel(parent), mRoot(new TreeEntry(nullptr, "Root", false))
-{
-
-    // Testdata
-    TreeEntry* block = new TreeEntry(mRoot, "Block-1", "/first/block/data/", true);
-//    new TreeEntry(block, "Entry-1", true);
-//    new TreeEntry(block, "Entry-2", true);
-//    new TreeEntry(block, "Entry-3", true);
-//    block = new TreeEntry(mRoot, "Block-2", true);
-//    new TreeEntry(block, "Entry-1", true);
-}
+{}
 
 TreeModel::~TreeModel()
 {
