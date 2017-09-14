@@ -85,7 +85,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -135,8 +135,8 @@
     <addaction name="actionProject_Explorer"/>
     <addaction name="actionBottom_Panel"/>
     <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
+    <addaction name="actionGAMS_Library"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -420,6 +420,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
+    </property>
+  </action>
+  <action name="actionGAMS_Library">
+   <property name="text">
+    <string>GAMS Library Explorer</string>
    </property>
   </action>
  </widget>
