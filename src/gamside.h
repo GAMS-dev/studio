@@ -63,6 +63,13 @@ private slots:
     void on_actionBottom_Panel_triggered(bool checked);
     void on_actionSim_Process_triggered();
 
+
+    void on_mainTab_tabCloseRequested(int index);
+
+    void on_actionShow_Welcome_Page_triggered();
+
+    void on_actionNew_Tab_triggered();
+
     void on_actionGAMS_Library_triggered();
 
 private:
@@ -71,6 +78,7 @@ private:
     QHash<QTextStream, QColor> mStreams;
     QMutex mOutputMutex;
 
+    void initTabs();
 };
 
 #endif // GAMSIDE_H

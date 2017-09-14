@@ -19,6 +19,9 @@
  */
 #include "gamside.h"
 #include "ui_gamside.h"
+#include "welcomepage.h"
+#include "editor.h"
+
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
@@ -32,13 +35,20 @@
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
-//    ui->dockBottom->hide();
+
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
+    initTabs();
 }
 
 GAMSIDE::~GAMSIDE()
 {
     delete ui;
+}
+
+void GAMSIDE::initTabs()
+{
+    ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
+    ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
 void GAMSIDE::on_actionNew_triggered()
@@ -83,12 +93,14 @@ void GAMSIDE::on_actionSave_All_triggered()
 
 void GAMSIDE::on_actionClose_triggered()
 {
-    QMessageBox::information(this, "Close", "t.b.d.");
+    ui->mainTab->removeTab(ui->mainTab->currentIndex());
 }
 
 void GAMSIDE::on_actionClose_All_triggered()
 {
-    QMessageBox::information(this, "Close All", "t.b.d.");
+    for(int i = ui->mainTab->count(); i > 0; i--) {
+        ui->mainTab->removeTab(0);
+    }
 }
 
 void GAMSIDE::clearProc(int exitCode)
@@ -146,7 +158,7 @@ void GAMSIDE::on_actionExit_Application_triggered()
 
 void GAMSIDE::on_actionOnline_Help_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs/welcome.html", QUrl::TolerantMode));
+    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
 void GAMSIDE::on_actionAbout_triggered()
@@ -190,27 +202,20 @@ void GAMSIDE::on_actionSim_Process_triggered()
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &GAMSIDE::clearProc);
 }
 
+void GAMSIDE::on_mainTab_tabCloseRequested(int index)
+{
+    ui->mainTab->removeTab(index);
+}
 
+void GAMSIDE::on_actionShow_Welcome_Page_triggered()
+{
+    ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void GAMSIDE::on_actionNew_Tab_triggered()
+{
+    ui->mainTab->addTab(new Editor(), QString("new"));
+}
 
 void GAMSIDE::on_actionGAMS_Library_triggered()
 {
