@@ -65,7 +65,7 @@ QModelIndex FileRepository::parent(const QModelIndex& child) const
     int row = eParent->children().indexOf(eChild);
     if (row < 0) {
         qDebug() << "could not find child in parent";
-        throw std::exception("could not find child in parent");
+        throw std::runtime_error("could not find child in parent");
     }
     return createIndex(row, child.column(), eParent);
 }

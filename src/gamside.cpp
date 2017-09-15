@@ -76,7 +76,7 @@ void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
         codecNames << codecName;
     } else {
         // Most error-prone codecs first and non-unicode last to prevent early false-success
-        codecNames << "Utf-8" << "Shift-JIS" << "GB2312" << "System" << "Windows-1250" << "Latin-1";
+        codecNames << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
     }
 
     FileContext *fc = mFileRepo.fileContext(id);
