@@ -17,9 +17,13 @@ public:
     int addTab(QWidget *page, const QIcon &icon, const QString &label, int fileId = -1);
 
 signals:
+    void fileActivated(int fileId);
 
 public slots:
     void tabNameChanged(int fileId, QString newName);
+
+private slots:
+    void onTabChanged(int index);
 
 private:
     QHash<int, int> mFileId2TabIndex;

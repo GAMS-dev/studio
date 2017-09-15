@@ -4,7 +4,9 @@ namespace gams {
 namespace ide {
 
 TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent)
-{}
+{
+    connect(this, &TabWidget::currentChanged, this, &TabWidget::onTabChanged);
+}
 
 TabWidget::~TabWidget()
 {}
@@ -35,6 +37,16 @@ void TabWidget::tabNameChanged(int fileId, QString newName)
     if (index < 0)
         throw std::exception("error: TabWidget::tabNameChanged fileId not registered");
     setTabText(index, newName);
+}
+
+void TabWidget::onTabChanged(int index)
+{
+    for (int fileId: mFileId2TabIndex.keys()) {
+        if (mFileId2TabIndex.value(fileId) == index) {
+            emit fileActivated(fileId);
+            break;
+        }
+    }
 }
 
 } // namespace ide

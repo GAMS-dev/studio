@@ -137,8 +137,8 @@ void GAMSIDE::on_actionOpen_triggered()
 
 void GAMSIDE::on_actionSave_triggered()
 {
-
-//    auto fileName =
+    // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
+    // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
 }
 
 void GAMSIDE::on_actionSave_As_triggered()
