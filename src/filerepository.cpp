@@ -163,7 +163,7 @@ QModelIndex FileRepository::find(const QString &filePath, QModelIndex parent)
 
 void FileRepository::nodeNameChanged(int id, const QString& newName)
 {
-    // TODO(JM) FIXME need to retrieve QModelIndex for ctx
+    Q_UNUSED(newName);
     FileSystemContext* nd = context(id);
     if (!nd) return;
 

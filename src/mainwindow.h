@@ -38,8 +38,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(gams::ide::TabWidget* tabWidget, QString codecName = QString());
-    void createEdit(gams::ide::TabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void createEdit(TabWidget* tabWidget, QString codecName = QString());
+    void createEdit(TabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenue(QString codecName);
 
 

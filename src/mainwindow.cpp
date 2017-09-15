@@ -50,6 +50,7 @@ MainWindow::~MainWindow()
 void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
+    // TODO(JM) implement new-file logic
     ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 

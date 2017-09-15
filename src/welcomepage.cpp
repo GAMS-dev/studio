@@ -4,6 +4,9 @@
 #include <QUrl>
 #include <QDebug>
 
+namespace gams {
+namespace ide {
+
 WelcomePage::WelcomePage(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WelcomePage)
@@ -24,4 +27,7 @@ void WelcomePage::labelLinkActivated(const QString &link)
 {
     qDebug() << "click";
     QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
+}
+
+}
 }

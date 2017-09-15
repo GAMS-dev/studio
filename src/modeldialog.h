@@ -3,6 +3,9 @@
 
 #include "ui_modeldialog.h"
 
+namespace gams {
+namespace ide {
+
 class ModelDialog : public QDialog
 {
     Q_OBJECT
@@ -19,5 +22,8 @@ private:
 
     QList<QPair<QTableWidget*, QString>> libraryList;
 };
+
+}
+}
 
 #endif // MODELDIALOG_H

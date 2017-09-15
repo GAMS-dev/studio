@@ -7,6 +7,9 @@ namespace Ui {
 class WelcomePage;
 }
 
+namespace gams {
+namespace ide {
+
 class WelcomePage : public QWidget
 {
     Q_OBJECT
@@ -21,5 +24,8 @@ private slots:
 private:
     Ui::WelcomePage *ui;
 };
+
+}
+}
 
 #endif // WELCOMEPAGE_H

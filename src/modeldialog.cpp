@@ -8,6 +8,9 @@
 #include <QPair>
 #include <QStandardPaths>
 
+namespace gams {
+namespace ide {
+
 ModelDialog::ModelDialog(QWidget *parent) :
     QDialog(parent)
 {
@@ -105,4 +108,7 @@ void ModelDialog::on_lineEdit_textChanged(const QString &arg1)
                 tw->showRow(rowPtr->row());
         }
     }
+}
+
+}
 }
