@@ -34,7 +34,14 @@ public:
     void setCodec(const QString& codec);
     const QString name();
     CrudState crudState() const;
-    void saved();
+    void setLocation(const QString &location); // equals save_as...
+    bool active();
+
+    void save();
+    void load(QString codecName = QString());
+    void setDocument(QTextDocument *doc);
+    QTextDocument* document();
+
 
 public slots:
     void textChanged();
@@ -45,8 +52,10 @@ protected:
     FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
 
 private:
-    CrudState mCrudState;
+    CrudState mCrudState = CrudState::eCreate;
     QString mCodec = "UTF-8";
+    QTextDocument* mDocument = nullptr;
+    static const QStringList mDefaulsCodecs;
 
 };
 

@@ -62,14 +62,6 @@ void MainWindow::createEdit(TabWidget* tabWidget, QString codecName)
 
 void MainWindow::createEdit(TabWidget *tabWidget, int id, QString codecName)
 {
-    QStringList codecNames;
-    if (!codecName.isEmpty()) {
-        codecNames << codecName;
-    } else {
-        // Most error-prone codecs first and non-unicode last to prevent early false-success
-        codecNames << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
-    }
-
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
@@ -77,36 +69,9 @@ void MainWindow::createEdit(TabWidget *tabWidget, int id, QString codecName)
         int tabIndex = tabWidget->addTab(codeEdit, fc->name(), id);
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
-        QFile file(fc->location());
-        if (!file.fileName().isEmpty() && file.exists()) {
-            if (file.open(QFile::ReadOnly | QFile::Text)) {
-                const QByteArray data(file.readAll());
-                QString text;
-                QString nameOfUsedCodec;
-                for (QString tcName: codecNames) {
-                    QTextCodec::ConverterState state;
-                    QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
-                    if (codec) {
-                        nameOfUsedCodec = tcName;
-                        text = codec->toUnicode(data.constData(), data.size(), &state);
-                        if (state.invalidChars == 0) {
-                            qDebug() << "opened with codec " << nameOfUsedCodec;
-                            break;
-                        }
-                        qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
-                    } else {
-                        qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
-                        nameOfUsedCodec = QString();
-                    }
-                }
-                if (!nameOfUsedCodec.isEmpty()) {
-                    codeEdit->setPlainText(text);
-                    fc->setCodec(nameOfUsedCodec);
-                    ensureCodecMenue(nameOfUsedCodec);
-                }
-                file.close();
-            }
-        }
+        fc->setDocument(codeEdit->document());
+        fc->load(codecName);
+        ensureCodecMenue(fc->codec());
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
         connect(fc, &FileContext::nameChanged, ui->mainTab, &TabWidget::tabNameChanged);
     }
@@ -172,17 +137,8 @@ void MainWindow::on_actionSave_triggered()
     if (!fc) return;
     if (fc->location().isEmpty()) {
         on_actionSave_As_triggered();
-    } else {
-        if (fc->crudState() == CrudState::eUpdate) {
-            QFile outfile;
-            outfile.setFileName(fc->location());
-            outfile.open(QIODevice::WriteOnly | QIODevice::Text);
-            QTextStream out(&outfile);
-            out << mLastActivatedEditor->toPlainText();
-            out.flush();
-            outfile.close();
-            fc->saved();
-        }
+    } else if (fc->crudState() == CrudState::eUpdate) {
+        fc->save();
     }
 }
 
@@ -194,6 +150,10 @@ void MainWindow::on_actionSave_As_triggered()
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
+    FileContext* fc = mFileRepo.fileContext(mLastActivatedFile);
+    if (!fc) return;
+    fc->setLocation(fileName);
+    fc->save();
 }
 
 void MainWindow::on_actionSave_All_triggered()

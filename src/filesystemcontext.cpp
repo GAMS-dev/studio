@@ -4,7 +4,7 @@ namespace gams {
 namespace ide {
 
 FileSystemContext::FileSystemContext(FileSystemContext* parent, int id, QString name, QString location, bool isGist)
-    : QObject(parent), mId(id), mName(name), mPath(location), mIsGist(isGist)
+    : QObject(parent), mId(id), mName(name), mLocation(location), mIsGist(isGist)
 {
     if (parent) {
         int sort = parent->peekIndex(name, true);
@@ -14,7 +14,7 @@ FileSystemContext::FileSystemContext(FileSystemContext* parent, int id, QString 
     }
 }
 
-bool FileSystemContext::active() const
+bool FileSystemContext::active()
 {
     return mActive;
 }
@@ -70,12 +70,25 @@ const QString FileSystemContext::name()
 
 void FileSystemContext::setName(const QString& name)
 {
-    mName = name;
+    if (mName != name) {
+        mName = name;
+        emit nameChanged(mId, mName);
+    }
+
 }
 
 const QString& FileSystemContext::location() const
 {
-    return mPath;
+    return mLocation;
+}
+
+void FileSystemContext::setLocation(const QString& location)
+{
+    if (!location.isEmpty()) {
+        mLocation = location;
+        QFileInfo fi(location);
+        setName(fi.fileName());
+    }
 }
 
 

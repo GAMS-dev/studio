@@ -4,9 +4,13 @@
 namespace gams {
 namespace ide {
 
+const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
+                                                              << "System" << "Windows-1250" << "Latin-1";
+
 FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist)
     : FileSystemContext(parent, id, name, location, isGist)
 {
+    mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
     mActive = true;
 }
 
@@ -15,12 +19,87 @@ CrudState FileContext::crudState() const
     return mCrudState;
 }
 
-void FileContext::saved()
+void FileContext::save()
 {
     if (mCrudState != CrudState::eRead) {
+        if (location().isEmpty())
+            throw QException();
+        QFile file(location());
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            throw QException();
+        QTextStream out(&file);
+        out.setCodec(mCodec.toLatin1().data());
+        qDebug() << "Saving with Codec set to: "<< mCodec;
+        out << mDocument->toPlainText();
+        out.flush();
+        file.close();
         mCrudState = CrudState::eRead;
         emit nameChanged(mId, name());
     }
+}
+
+void FileContext::load(QString codecName)
+{
+    if (!document())
+        throw QException();
+
+    QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
+    QFile file(location());
+    if (!file.fileName().isEmpty() && file.exists()) {
+        if (file.open(QFile::ReadOnly | QFile::Text)) {
+            const QByteArray data(file.readAll());
+            QString text;
+            QString nameOfUsedCodec;
+            for (QString tcName: codecNames) {
+                QTextCodec::ConverterState state;
+                QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
+                if (codec) {
+                    nameOfUsedCodec = tcName;
+                    text = codec->toUnicode(data.constData(), data.size(), &state);
+                    if (state.invalidChars == 0) {
+                        qDebug() << "opened with codec " << nameOfUsedCodec;
+                        break;
+                    }
+                    qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
+                } else {
+                    qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
+                    nameOfUsedCodec = QString();
+                }
+            }
+            if (!nameOfUsedCodec.isEmpty()) {
+                mDocument->setPlainText(text);
+                mCodec = nameOfUsedCodec;
+            }
+            file.close();
+        }
+    }
+}
+
+void FileContext::setLocation(const QString& location)
+{
+    if (location.isEmpty())
+        throw QException();  // context is already bound to a file
+    // TODO(JM) adapt parent group
+    FileSystemContext::setLocation(location);
+    mCrudState = CrudState::eCreate;
+    save();
+}
+
+void FileContext::setDocument(QTextDocument* doc)
+{
+    if (mDocument)
+        throw QException();
+    mDocument = doc;
+}
+
+QTextDocument*FileContext::document()
+{
+    return mDocument;
+}
+
+bool FileContext::active()
+{
+    return mDocument;
 }
 
 QString FileContext::codec() const
