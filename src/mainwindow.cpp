@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
+    connect(ui->mainTab, &TabWidget::fileActivated, this, &MainWindow::fileActivated);
     ensureCodecMenue("System");
 }
 
@@ -167,6 +168,22 @@ void MainWindow::on_actionSave_triggered()
 {
     // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
     // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
+    FileContext* fc = mFileRepo.fileContext(mLastActivatedFile);
+    if (!fc) return;
+    if (fc->location().isEmpty()) {
+        on_actionSave_As_triggered();
+    } else {
+        if (fc->crudState() == CrudState::eUpdate) {
+            QFile outfile;
+            outfile.setFileName(fc->location());
+            outfile.open(QIODevice::WriteOnly | QIODevice::Text);
+            QTextStream out(&outfile);
+            out << mLastActivatedEditor->toPlainText();
+            out.flush();
+            outfile.close();
+            fc->saved();
+        }
+    }
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -247,6 +264,14 @@ void MainWindow::readyStdErr()
 void MainWindow::codecChanged(QAction *action)
 {
     qDebug() << "Codec action triggered: " << action->text();
+}
+
+void MainWindow::fileActivated(int fileId, CodeEditor* edit)
+{
+    if (edit) {
+        mLastActivatedFile = fileId;
+        mLastActivatedEditor = edit;
+    }
 }
 
 void MainWindow::on_actionExit_Application_triggered()

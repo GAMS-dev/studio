@@ -33,9 +33,12 @@ public:
     QString codec() const;
     void setCodec(const QString& codec);
     const QString name();
+    CrudState crudState() const;
+    void saved();
 
 public slots:
     void textChanged();
+//    void storageChanged();
 
 protected:
     friend class FileRepository;

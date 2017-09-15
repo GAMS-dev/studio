@@ -1,5 +1,5 @@
 #include "tabwidget.h"
-
+#include "codeeditor.h"
 
 namespace gams {
 namespace ide {
@@ -42,9 +42,11 @@ void TabWidget::tabNameChanged(int fileId, QString newName)
 
 void TabWidget::onTabChanged(int index)
 {
+    CodeEditor *edit = qobject_cast<CodeEditor*>(widget(index));
+    if (!edit) return;
     for (int fileId: mFileId2TabIndex.keys()) {
         if (mFileId2TabIndex.value(fileId) == index) {
-            emit fileActivated(fileId);
+            emit fileActivated(fileId, edit);
             break;
         }
     }

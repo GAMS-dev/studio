@@ -2,6 +2,7 @@
 #define TABWIDGET_H
 
 #include <QtWidgets>
+#include "codeeditor.h"
 
 namespace gams {
 namespace ide {
@@ -17,7 +18,7 @@ public:
     int addTab(QWidget *page, const QIcon &icon, const QString &label, int fileId = -1);
 
 signals:
-    void fileActivated(int fileId);
+    void fileActivated(int fileId, CodeEditor* edit);
 
 public slots:
     void tabNameChanged(int fileId, QString newName);

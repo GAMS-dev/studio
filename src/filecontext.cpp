@@ -10,6 +10,19 @@ FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString
     mActive = true;
 }
 
+CrudState FileContext::crudState() const
+{
+    return mCrudState;
+}
+
+void FileContext::saved()
+{
+    if (mCrudState != CrudState::eRead) {
+        mCrudState = CrudState::eRead;
+        emit nameChanged(mId, name());
+    }
+}
+
 QString FileContext::codec() const
 {
     return mCodec;
@@ -28,11 +41,9 @@ const QString FileContext::name()
 
 void FileContext::textChanged()
 {
-    qDebug() << "Text changed";
     if (mCrudState != CrudState::eUpdate) {
         mCrudState = CrudState::eUpdate;
         emit nameChanged(mId, name());
-        qDebug() << "FIRST Text changed";
     }
 }
 

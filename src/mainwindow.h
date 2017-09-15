@@ -23,7 +23,7 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "tabwidget.h"
-#include "filerepository.h"
+#include "codeeditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -52,6 +52,7 @@ private slots:
     void readyStdOut();
     void readyStdErr();
     void codecChanged(QAction *action);
+    void fileActivated(int fileId, CodeEditor* edit);
 
 private slots:
     void on_actionNew_triggered();
@@ -75,13 +76,17 @@ private slots:
     void on_actionGAMS_Library_triggered();
 
 private:
+    void initTabs();
+
+private:
     Ui::MainWindow *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
-    void initTabs();
+    int mLastActivatedFile = -1;
+    CodeEditor* mLastActivatedEditor = nullptr;
 };
 
 }
