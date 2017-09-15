@@ -19,25 +19,14 @@
  */
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QtCore>
-#include <QtGui>
-#include <QtWidgets>
 #include "codeeditor.h"
 #include "tabwidget.h"
 #include "welcomepage.h"
 #include "editor.h"
-
-#include <QDesktopServices>
-#include <QUrl>
-#include <QMessageBox>
-#include <iostream>
-#include <QTime>
-#include <QDebug>
-#include <QFileDialog>
-
 #include "modeldialog.h"
 
-using namespace gams::ide;
+namespace gams {
+namespace ide {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -330,3 +319,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
     ModelDialog dialog;
     dialog.exec();
 }
+
+}
+}
+

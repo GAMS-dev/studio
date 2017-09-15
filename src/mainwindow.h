@@ -20,10 +20,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QTextStream>
-#include <QProcess>
-#include <QMutex>
+#include <QtWidgets>
 #include "filerepository.h"
 #include "tabwidget.h"
 #include "filerepository.h"
@@ -32,7 +29,8 @@ namespace Ui {
 class MainWindow;
 }
 
-using namespace gams::ide;
+namespace gams {
+namespace ide {
 
 class MainWindow : public QMainWindow
 {
@@ -85,5 +83,8 @@ private:
     QActionGroup *mCodecGroup;
     void initTabs();
 };
+
+}
+}
 
 #endif // MAINWINDOW_H
