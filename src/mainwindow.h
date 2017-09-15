@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSIDE_H
-#define GAMSIDE_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QTextStream>
@@ -29,17 +29,17 @@
 #include "filerepository.h"
 
 namespace Ui {
-class GAMSIDE;
+class MainWindow;
 }
 
 using namespace gams::ide;
 
-class GAMSIDE : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit GAMSIDE(QWidget *parent = 0);
-    ~GAMSIDE();
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
     void createEdit(gams::ide::TabWidget* tabWidget, QString codecName = QString());
     void createEdit(gams::ide::TabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenue(QString codecName);
@@ -77,7 +77,7 @@ private slots:
     void on_actionGAMS_Library_triggered();
 
 private:
-    Ui::GAMSIDE *ui;
+    Ui::MainWindow *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
@@ -86,4 +86,4 @@ private:
     void initTabs();
 };
 
-#endif // GAMSIDE_H
+#endif // MAINWINDOW_H

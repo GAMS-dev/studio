@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamside.h"
-#include "ui_gamside.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 #include <QtCore>
 #include <QtGui>
 #include <QtWidgets>
@@ -39,37 +39,37 @@
 
 using namespace gams::ide;
 
-GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
     ui->treeView->setHeaderHidden(true);
-    connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
+    connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
     mCodecGroup = new QActionGroup(this);
-    connect(mCodecGroup, &QActionGroup::triggered, this, &GAMSIDE::codecChanged);
+    connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     ensureCodecMenue("System");
 }
 
-GAMSIDE::~GAMSIDE()
+MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-void GAMSIDE::initTabs()
+void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
-void GAMSIDE::createEdit(TabWidget* tabWidget, QString codecName)
+void MainWindow::createEdit(TabWidget* tabWidget, QString codecName)
 {
     createEdit(tabWidget, -1, codecName);
 }
 
-void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
+void MainWindow::createEdit(TabWidget *tabWidget, int id, QString codecName)
 {
     QStringList codecNames;
     if (!codecName.isEmpty()) {
@@ -121,7 +121,7 @@ void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
     }
 }
 
-void GAMSIDE::ensureCodecMenue(QString codecName)
+void MainWindow::ensureCodecMenue(QString codecName)
 {
     bool actionFound = false;
     for (QAction *act: ui->menuEncoding->actions()) {
@@ -138,13 +138,13 @@ void GAMSIDE::ensureCodecMenue(QString codecName)
     }
 }
 
-void GAMSIDE::on_actionNew_triggered()
+void MainWindow::on_actionNew_triggered()
 {
     QMessageBox::information(this, "New...", "t.b.d.");
 
 }
 
-void GAMSIDE::on_actionOpen_triggered()
+void MainWindow::on_actionOpen_triggered()
 {
     QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
@@ -173,13 +173,13 @@ void GAMSIDE::on_actionOpen_triggered()
     }
 }
 
-void GAMSIDE::on_actionSave_triggered()
+void MainWindow::on_actionSave_triggered()
 {
     // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
     // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
 }
 
-void GAMSIDE::on_actionSave_As_triggered()
+void MainWindow::on_actionSave_As_triggered()
 {
     auto fileName = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
@@ -189,24 +189,24 @@ void GAMSIDE::on_actionSave_As_triggered()
                                                  "All files (*)"));
 }
 
-void GAMSIDE::on_actionSave_All_triggered()
+void MainWindow::on_actionSave_All_triggered()
 {
     QMessageBox::information(this, "Save All", "t.b.d.");
 }
 
-void GAMSIDE::on_actionClose_triggered()
+void MainWindow::on_actionClose_triggered()
 {
     ui->mainTab->removeTab(ui->mainTab->currentIndex());
 }
 
-void GAMSIDE::on_actionClose_All_triggered()
+void MainWindow::on_actionClose_All_triggered()
 {
     for(int i = ui->mainTab->count(); i > 0; i--) {
         ui->mainTab->removeTab(0);
     }
 }
 
-void GAMSIDE::clearProc(int exitCode)
+void MainWindow::clearProc(int exitCode)
 {
     Q_UNUSED(exitCode);
     if (mProc) {
@@ -216,13 +216,13 @@ void GAMSIDE::clearProc(int exitCode)
     }
 }
 
-void GAMSIDE::addLine(QProcess::ProcessChannel channel, QString text)
+void MainWindow::addLine(QProcess::ProcessChannel channel, QString text)
 {
     ui->processWindow->setTextColor(channel ? Qt::red : Qt::black);
     emit processOutput(text);
 }
 
-void GAMSIDE::readyStdOut()
+void MainWindow::readyStdOut()
 {
     mOutputMutex.lock();
     mProc->setReadChannel(QProcess::StandardOutput);
@@ -238,7 +238,7 @@ void GAMSIDE::readyStdOut()
     }
 }
 
-void GAMSIDE::readyStdErr()
+void MainWindow::readyStdErr()
 {
     mOutputMutex.lock();
     mProc->setReadChannel(QProcess::StandardError);
@@ -254,32 +254,32 @@ void GAMSIDE::readyStdErr()
     }
 }
 
-void GAMSIDE::codecChanged(QAction *action)
+void MainWindow::codecChanged(QAction *action)
 {
     qDebug() << "Codec action triggered: " << action->text();
 }
 
-void GAMSIDE::on_actionExit_Application_triggered()
+void MainWindow::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
 }
 
-void GAMSIDE::on_actionOnline_Help_triggered()
+void MainWindow::on_actionOnline_Help_triggered()
 {
     QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
-void GAMSIDE::on_actionAbout_triggered()
+void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, "About GAMSIDE", "Gams Studio v0.0.1 alpha");
 }
 
-void GAMSIDE::on_actionAbout_Qt_triggered()
+void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, "About Qt");
 }
 
-void GAMSIDE::on_actionProject_Explorer_triggered(bool checked)
+void MainWindow::on_actionProject_Explorer_triggered(bool checked)
 {
     if(checked)
         ui->dockProjectExplorer->show();
@@ -287,12 +287,12 @@ void GAMSIDE::on_actionProject_Explorer_triggered(bool checked)
         ui->dockProjectExplorer->hide();
 }
 
-void GAMSIDE::on_actionLog_Output_triggered(bool checked)
+void MainWindow::on_actionLog_Output_triggered(bool checked)
 {
 
 }
 
-void GAMSIDE::on_actionBottom_Panel_triggered(bool checked)
+void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 {
     if(checked)
         ui->dockBottom->show();
@@ -300,32 +300,32 @@ void GAMSIDE::on_actionBottom_Panel_triggered(bool checked)
         ui->dockBottom->hide();
 }
 
-void GAMSIDE::on_actionSim_Process_triggered()
+void MainWindow::on_actionSim_Process_triggered()
 {
     qDebug() << "starting process";
     mProc = new QProcess(this);
     mProc->start("../../spawner/spawner.exe");
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &GAMSIDE::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &GAMSIDE::readyStdErr);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &GAMSIDE::clearProc);
+    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 }
 
-void GAMSIDE::on_mainTab_tabCloseRequested(int index)
+void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     ui->mainTab->removeTab(index);
 }
 
-void GAMSIDE::on_actionShow_Welcome_Page_triggered()
+void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
 }
 
-void GAMSIDE::on_actionNew_Tab_triggered()
+void MainWindow::on_actionNew_Tab_triggered()
 {
     ui->mainTab->addTab(new Editor(), QString("new"));
 }
 
-void GAMSIDE::on_actionGAMS_Library_triggered()
+void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog;
     dialog.exec();
