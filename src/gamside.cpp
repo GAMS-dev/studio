@@ -19,6 +19,11 @@
  */
 #include "gamside.h"
 #include "ui_gamside.h"
+#include <QtCore>
+#include <QtGui>
+#include <QtWidgets>
+#include "codeeditor.h"
+#include "tabwidget.h"
 #include "welcomepage.h"
 #include "editor.h"
 
@@ -32,12 +37,20 @@
 
 #include "modeldialog.h"
 
+using namespace gams::ide;
+
 GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
 
+    ui->treeView->setModel(&mFileRepo);
+    ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    ui->treeView->setHeaderHidden(true);
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
+    mCodecGroup = new QActionGroup(this);
+    connect(mCodecGroup, &QActionGroup::triggered, this, &GAMSIDE::codecChanged);
+    ensureCodecMenue("System");
 }
 
 GAMSIDE::~GAMSIDE()
@@ -51,29 +64,119 @@ void GAMSIDE::initTabs()
     ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
+void GAMSIDE::createEdit(TabWidget* tabWidget, QString codecName)
+{
+    createEdit(tabWidget, -1, codecName);
+}
+
+void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
+{
+    QStringList codecNames;
+    if (!codecName.isEmpty()) {
+        codecNames << codecName;
+    } else {
+        // Most error-prone codecs first and non-unicode last to prevent early false-success
+        codecNames << "Utf-8" << "Shift-JIS" << "GB2312" << "System" << "Windows-1250" << "Latin-1";
+    }
+
+    FileContext *fc = mFileRepo.fileContext(id);
+    if (fc) {
+        CodeEditor *codeEdit = new CodeEditor(this);
+        codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        int tabIndex = tabWidget->addTab(codeEdit, fc->name(), id);
+        tabWidget->setTabToolTip(tabIndex, fc->location());
+        tabWidget->setCurrentIndex(tabIndex);
+        QFile file(fc->location());
+        if (!file.fileName().isEmpty() && file.exists()) {
+            if (file.open(QFile::ReadOnly | QFile::Text)) {
+                const QByteArray data(file.readAll());
+                QString text;
+                QString nameOfUsedCodec;
+                for (QString tcName: codecNames) {
+                    QTextCodec::ConverterState state;
+                    QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
+                    if (codec) {
+                        nameOfUsedCodec = tcName;
+                        text = codec->toUnicode(data.constData(), data.size(), &state);
+                        if (state.invalidChars == 0) {
+                            qDebug() << "opened with codec " << nameOfUsedCodec;
+                            break;
+                        }
+                        qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
+                    } else {
+                        qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
+                        nameOfUsedCodec = QString();
+                    }
+                }
+                if (!nameOfUsedCodec.isEmpty()) {
+                    codeEdit->setPlainText(text);
+                    fc->setCodec(nameOfUsedCodec);
+                    ensureCodecMenue(nameOfUsedCodec);
+                }
+                file.close();
+            }
+        }
+        connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
+        connect(fc, &FileContext::nameChanged, ui->mainTab, &TabWidget::tabNameChanged);
+    }
+}
+
+void GAMSIDE::ensureCodecMenue(QString codecName)
+{
+    bool actionFound = false;
+    for (QAction *act: ui->menuEncoding->actions()) {
+        if (act->text().compare(codecName, Qt::CaseInsensitive) == 0)
+            actionFound = true;
+    }
+    if (!actionFound) {
+        QAction *action = new QAction(codecName, ui->menuEncoding);
+        action->setCheckable(true);
+        action->setChecked(true);
+        action->setActionGroup(mCodecGroup);
+//        mCodecGroup->addAction(codecName);
+        ui->menuEncoding->addActions(mCodecGroup->actions());
+    }
+}
+
 void GAMSIDE::on_actionNew_triggered()
 {
     QMessageBox::information(this, "New...", "t.b.d.");
+
 }
 
 void GAMSIDE::on_actionOpen_triggered()
 {
-    auto fileName = QFileDialog::getOpenFileName(this,
+    QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
                                                  ".",
                                                  tr("GAMS code (*.gms *.inc );;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*)"));
+                                                    "Text files (*.txt);;"
+                                                    "All files (*)"));
+    if (!fName.isEmpty()) {
+        QFileInfo fInfo(fName);
+        // TODO(JM) extend for each possible type
+        qDebug() << "Type: " << fInfo.suffix();
+        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
+
+        if (fType == FileType::ftGms) {
+            // Create node for GIST directory and load all files of known filetypes
+            QString dir = fInfo.path();
+            QModelIndex groupMI = mFileRepo.find(dir, mFileRepo.rootTreeModelIndex());
+            if (!groupMI.isValid()) {
+                groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
+            }
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.filePath(), true, groupMI);
+            FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
+            createEdit(ui->mainTab, fc->id());
+            ui->treeView->expand(groupMI);
+        }
+    }
 }
 
 void GAMSIDE::on_actionSave_triggered()
 {
-    auto fileName = QFileDialog::getSaveFileName(this,
-                                                 "Save file as...",
-                                                 ".",
-                                                 tr("GAMS code (*.gms *.inc );;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*)"));
+    // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
+    // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
 }
 
 void GAMSIDE::on_actionSave_As_triggered()
@@ -149,6 +252,11 @@ void GAMSIDE::readyStdErr()
         avail = mProc->bytesAvailable();
         mOutputMutex.unlock();
     }
+}
+
+void GAMSIDE::codecChanged(QAction *action)
+{
+    qDebug() << "Codec action triggered: " << action->text();
 }
 
 void GAMSIDE::on_actionExit_Application_triggered()

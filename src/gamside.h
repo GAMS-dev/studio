@@ -24,18 +24,26 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QMutex>
+#include "filerepository.h"
+#include "tabwidget.h"
+#include "filerepository.h"
 
 namespace Ui {
 class GAMSIDE;
 }
 
+using namespace gams::ide;
+
 class GAMSIDE : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit GAMSIDE(QWidget *parent = 0);
     ~GAMSIDE();
+    void createEdit(gams::ide::TabWidget* tabWidget, QString codecName = QString());
+    void createEdit(gams::ide::TabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void ensureCodecMenue(QString codecName);
+
 
 signals:
     void processOutput(QString text);
@@ -45,6 +53,7 @@ private slots:
     void addLine(QProcess::ProcessChannel channel, QString text);
     void readyStdOut();
     void readyStdErr();
+    void codecChanged(QAction *action);
 
 private slots:
     void on_actionNew_triggered();
@@ -62,22 +71,18 @@ private slots:
     void on_actionLog_Output_triggered(bool checked);
     void on_actionBottom_Panel_triggered(bool checked);
     void on_actionSim_Process_triggered();
-
-
     void on_mainTab_tabCloseRequested(int index);
-
     void on_actionShow_Welcome_Page_triggered();
-
     void on_actionNew_Tab_triggered();
-
     void on_actionGAMS_Library_triggered();
 
 private:
     Ui::GAMSIDE *ui;
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
+    FileRepository mFileRepo;
     QMutex mOutputMutex;
-
+    QActionGroup *mCodecGroup;
     void initTabs();
 };
 
