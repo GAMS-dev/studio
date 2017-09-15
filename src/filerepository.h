@@ -1,44 +1,48 @@
 #ifndef FILEREPOSITORY_H
 #define FILEREPOSITORY_H
 
-#include <QtCore>
+#include <QtWidgets>
+#include "filegroupcontext.h"
 #include "filecontext.h"
 
 namespace gams {
 namespace ide {
 
-class FileRepository : public QObject
+class FileRepository : public QAbstractItemModel
 {
     Q_OBJECT
 public:
     explicit FileRepository(QObject *parent = nullptr);
-    FileContext* addContext(QString filepath = QString());
-    FileContext* context(int id);
+    ~FileRepository();
 
-signals:
-    void contextCreated(int id);
-    void contextRead(int id);
-    void contextUpdated(int id, UpdateScope updateScope);
-    void contextDeleted(int id);
+    FileContext* fileContext(int id, FileSystemContext* startNode = nullptr);
+    FileSystemContext* context(int id, FileSystemContext* startNode = nullptr);
+    virtual QModelIndex index(FileSystemContext* entry);
+
+    QModelIndex index(int row, int column, const QModelIndex &parent) const;
+    QModelIndex parent(const QModelIndex &child) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
+    QModelIndex addGroup(QString name, QString location, bool isGist, QModelIndex parentIndex = QModelIndex());
+    QModelIndex addFile(QString name, QString location, bool isGist, QModelIndex parentIndex = QModelIndex());
+    QModelIndex rootTreeModelIndex();
+    QModelIndex rootModelIndex();
+    QModelIndex find(const QString& filePath, QModelIndex parent);
 
 public slots:
-
-private slots:
-    void fsFileChanged(const QString &path);
-    void fsDirChanged(const QString &path);
-
-    void onContextRead(int id);
-    void onFileInfoChanged(QString newFilePath);
-    void onNameChanged(int id, QString newName);
-    void onContextUpdated(int id);
-    void onContextDeleted(int id);
+    void nodeNameChanged(int id, const QString &newName);
 
 private:
-    typedef QHash<int, FileContext*> FileData;
+    FileSystemContext* node(const QModelIndex& index) const;
+    FileGroupContext* group(const QModelIndex& index) const;
+    void changeName(QModelIndex index, QString newName);
 
-    QFileSystemWatcher mFsWatcher;
-    FileData mFileData;
-    int mId = 0;
+private:
+    int mNextId;
+    FileGroupContext* mRoot;
+    FileGroupContext* mTreeRoot;
 };
 
 } // namespace ide

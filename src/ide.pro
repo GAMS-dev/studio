@@ -27,21 +27,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         gamside.cpp \
-    filecontext.cpp \
     codeeditor.cpp \
-    filerepository.cpp \
     tabwidget.cpp \
-    treeentry.cpp \
-    treemodel.cpp
+    filesystemcontext.cpp \
+    filecontext.cpp \
+    filerepository.cpp \
+    filegroupcontext.cpp
 
 HEADERS += \
         gamside.h \
-    filecontext.h \
     codeeditor.h \
-    filerepository.h \
     tabwidget.h \
-    treeentry.h \
-    treemodel.h
+    filesystemcontext.h \
+    filecontext.h \
+    filerepository.h \
+    filegroupcontext.h
 
 FORMS += \
         gamside.ui

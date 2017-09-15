@@ -12,8 +12,8 @@ GAMSIDE::GAMSIDE(QWidget *parent) : QMainWindow(parent), ui(new Ui::GAMSIDE)
 {
     ui->setupUi(this);
 //    ui->dockBottom->hide();
-    ui->treeView->setModel(&mProjectModel);
-    ui->treeView->setRootIndex(mProjectModel.rootModelIndex());
+    ui->treeView->setModel(&mFileRepo);
+    ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
     ui->treeView->setHeaderHidden(true);
     connect(this, &GAMSIDE::processOutput, ui->processWindow, &QTextEdit::append);
     mCodecGroup = new QActionGroup(this);
@@ -41,14 +41,14 @@ void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
         codecNames << "Utf-8" << "Shift-JIS" << "GB2312" << "System" << "Windows-1250" << "Latin-1";
     }
 
-    FileContext *fc = mFileRepo.context(id);
+    FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->fileInfo().baseName(), id);
-        tabWidget->setTabToolTip(tabIndex, fc->fileInfo().filePath());
+        int tabIndex = tabWidget->addTab(codeEdit, fc->name(), id);
+        tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
-        QFile file(fc->fileInfo().filePath());
+        QFile file(fc->location());
         if (!file.fileName().isEmpty() && file.exists()) {
             if (file.open(QFile::ReadOnly | QFile::Text)) {
                 const QByteArray data(file.readAll());
@@ -79,19 +79,8 @@ void GAMSIDE::createEdit(TabWidget *tabWidget, int id, QString codecName)
             }
         }
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::nameChangedById, ui->mainTab, &TabWidget::tabNameChanged);
-        connect(fc, &FileContext::nameChangedByIdStr, &mProjectModel, &TreeModel::entryNameChanged);
+        connect(fc, &FileContext::nameChanged, ui->mainTab, &TabWidget::tabNameChanged);
     }
-}
-
-void GAMSIDE::createTreeEntry(const FileContext* fc)
-{
-    QModelIndex idx = mProjectModel.find(fc->fileInfo().path(), mProjectModel.rootModelIndex());
-    if (!idx.isValid()) {
-        idx = mProjectModel.addEntry(fc->fileInfo().path(), fc->fileInfo().path(), true);
-    }
-    mProjectModel.addEntry(fc->name(), fc->fileInfo().filePath(), true, idx);
-    if (idx.isValid()) ui->treeView->expand(idx);
 }
 
 void GAMSIDE::ensureCodecMenue(QString codecName)
@@ -119,15 +108,31 @@ void GAMSIDE::on_actionNew_triggered()
 
 void GAMSIDE::on_actionOpen_triggered()
 {
-    FileContext *fc = mFileRepo.addContext(
-                QFileDialog::getOpenFileName(this,
-                                             "Open file",
-                                             ".",
-                                             tr("GAMS code (*.gms *.inc );;"
-                                                "Text files (*.txt);;"
-                                                "All files (*)")));
-    createTreeEntry(fc);
-    createEdit(ui->mainTab, fc->id());
+    QString fName = QFileDialog::getOpenFileName(this,
+                                                 "Open file",
+                                                 ".",
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                    "Text files (*.txt);;"
+                                                    "All files (*)"));
+    if (!fName.isEmpty()) {
+        QFileInfo fInfo(fName);
+        // TODO(JM) extend for each possible type
+        qDebug() << "Type: " << fInfo.suffix();
+        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
+
+        if (fType == FileType::ftGms) {
+            // Create node for GIST directory and load all files of known filetypes
+            QString dir = fInfo.path();
+            QModelIndex groupMI = mFileRepo.find(dir, mFileRepo.rootTreeModelIndex());
+            if (!groupMI.isValid()) {
+                groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
+            }
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.filePath(), true, groupMI);
+            FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
+            createEdit(ui->mainTab, fc->id());
+            ui->treeView->expand(groupMI);
+        }
+    }
 }
 
 void GAMSIDE::on_actionSave_triggered()

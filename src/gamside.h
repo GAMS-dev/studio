@@ -7,7 +7,7 @@
 #include <QMutex>
 #include "filerepository.h"
 #include "tabwidget.h"
-#include "treemodel.h"
+#include "filerepository.h"
 
 namespace Ui {
 class GAMSIDE;
@@ -23,8 +23,8 @@ public:
     ~GAMSIDE();
     void createEdit(gams::ide::TabWidget* tabWidget, QString codecName = QString());
     void createEdit(gams::ide::TabWidget* tabWidget, int id = -1, QString codecName = QString());
-    void createTreeEntry(const FileContext* fc);
     void ensureCodecMenue(QString codecName);
+
 
 signals:
     void processOutput(QString text);
@@ -60,7 +60,7 @@ private:
     FileRepository mFileRepo;
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
-    TreeModel mProjectModel;
+//    TreeModel mFileRepo;
 };
 
 #endif // GAMSIDE_H

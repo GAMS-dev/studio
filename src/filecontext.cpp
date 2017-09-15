@@ -1,25 +1,13 @@
 #include "filecontext.h"
-#include <QTextStream>
-#include <QDebug>
+#include "filegroupcontext.h"
 
 namespace gams {
 namespace ide {
 
-FileContext::FileContext(int id, QString fileName): mId(id), mFileInfo(QFileInfo(fileName))
+FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist)
+    : FileSystemContext(parent, id, name, location, isGist)
 {
-    QString suffix = mFileInfo.suffix();
-    QString pattern = ".gms";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftGms;
-    pattern = ".txt.text";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftTxt;
-    pattern = ".inc";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftInc;
-    pattern = ".log";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftLog;
-    pattern = ".lst";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftLst;
-    pattern = ".lxi";
-    if (pattern.indexOf(suffix, Qt::CaseInsensitive)>=0) mFileType = FileType::ftLxi;
+    mActive = true;
 }
 
 QString FileContext::codec() const
@@ -33,48 +21,18 @@ void FileContext::setCodec(const QString& codec)
     mCodec = codec;
 }
 
+const QString FileContext::name()
+{
+    return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
+}
+
 void FileContext::textChanged()
 {
     qDebug() << "Text changed";
     if (mCrudState != CrudState::eUpdate) {
         mCrudState = CrudState::eUpdate;
-        emit nameChangedById(mId, name());
-        emit nameChangedByIdStr(mFileInfo.filePath(), name());
-        emit pushName(name());
+        emit nameChanged(mId, name());
         qDebug() << "FIRST Text changed";
-    }
-}
-
-int FileContext::id()
-{
-    return mId;
-}
-
-QString FileContext::name() const
-{
-    return mFileInfo.baseName() + (mCrudState==CrudState::eUpdate ? "*" : "");
-}
-
-const QFileInfo &FileContext::fileInfo() const
-{
-    return mFileInfo;
-}
-
-void FileContext::rename(QString newFilePath)
-{
-    QString oldName = name();
-    QString oldFilePath = mFileInfo.filePath();
-    if (mFileInfo.filePath().isEmpty()) {
-        mFileInfo.setFile(newFilePath);
-    } else {
-        // TODO(JM) this has to be handled carefully (name-change, file-rename, allow also move file?)
-        qDebug() << "renaming of already assigned file not implemented";
-    }
-    if (oldFilePath != mFileInfo.filePath())
-        emit fileInfoChanged(mId, mFileInfo.filePath());
-    if (oldName != name()) {
-        emit nameChangedById(mId, name());
-        emit nameChangedByIdStr(mFileInfo.filePath(), name());
     }
 }
 
