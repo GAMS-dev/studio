@@ -12,7 +12,7 @@ pipeline {
                  windows: {
                      node('windows') {
                          checkout scm
-                         bat 'cd src && qmake ide.pro && make -j3 V=1'
+                         bat 'qmake src\ide.pro && make -j3'
                      }
                  }
              }
