@@ -18,6 +18,7 @@ pipeline {
                  macos: {
                      node('macos') {
                          checkout scm
+                         sh 'qmake src/ide.pro && make -j3'
                      }
                  }
              }
