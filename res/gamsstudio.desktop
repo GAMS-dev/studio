@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.1.0
+Type=Application
+Name=GAMS Studio
+Comment=
+TryExec=ide
+Exec=ide %F
+Icon=icons/gams
+MimeType=image/x-foo;
