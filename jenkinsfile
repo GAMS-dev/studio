@@ -6,13 +6,13 @@ pipeline {
                  parallel linux: {
                      node('master') {
                          checkout scm
-                         sh 'qmake src/ide.pro && make'
+                         sh 'qmake src/ide.pro && make -j3'
                      }
                  },
                  windows: {
                      node('windows') {
                          checkout scm
-                         bat 'cd src && qmake ide.pro && make'
+                         bat 'cd src && qmake ide.pro && make -j3 V=1'
                      }
                  }
              }
