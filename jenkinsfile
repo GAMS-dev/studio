@@ -6,7 +6,7 @@ pipeline {
                  parallel linux: {
                      node('master') {
                          checkout scm
-                         sh qmake src/ide.pro
+                         sh 'qmake src/ide.pro'
                      }
                  },
                  windows: {
