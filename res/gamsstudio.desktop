@@ -5,5 +5,5 @@ Name=GAMS Studio
 Comment=
 TryExec=ide
 Exec=ide %F
-Icon=icons/gams
+Icon=gams
 MimeType=image/x-foo;
