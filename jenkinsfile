@@ -2,9 +2,15 @@ pipeline {
      agent none 
      stages {
          stage('Build') {
-             agent any
-             steps {
-                 checkout scm
+             parallel linux: {
+                 node('master') {
+                     checkout scm
+                 }
+             },
+             windows: {
+                 node('windows') {
+                     checkout scm
+                 }
              }
          }
      }
