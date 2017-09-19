@@ -1,36 +1,36 @@
 pipeline {
-     agent any
+    agent any
 
-     options {
-         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
-     }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
+    }
 
-     triggers {
-         cron('0 23 * * *')
-     }
+    triggers {
+        cron('0 23 * * *')
+    }
 
-     stages {
-         stage('Build') {
-             steps {
-                 parallel linux: {
-                     node('master') {
-                         checkout scm
-                         sh 'qmake src/ide.pro && make -j3'
-                     }
-                 },
-                 windows: {
-                     node('windows') {
-                         checkout scm
-                         //bat 'qmake src/ide.pro && make -j3'
-                     }
-                 },
-                 macos: {
-                     node('macos') {
-                         checkout scm
-                         sh 'qmake src/ide.pro && make -j3'
-                     }
-                 }
-             }
-         }
-     }
+    stages {
+        stage('Build') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        checkout scm
+                        sh 'qmake src/ide.pro && make -j3'
+                    }
+                },
+                windows: {
+                    node('windows') {
+                        checkout scm
+                        bat 'qmake src/ide.pro && make -j3'
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        checkout scm
+                        sh 'qmake src/ide.pro && make -j3'
+                    }
+                }
+            }
+        }
+    }
 }
