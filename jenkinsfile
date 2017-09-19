@@ -89,5 +89,30 @@ pipeline {
                 }
             }
         }
+        stage('Deploy') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            echo 'TODO Deploy linux'
+                        '''
+                    }
+                },
+                windows: {
+                    node('windows') {
+                        bat '''
+                            echo 'TODO Deploy windows'
+                        '''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            echo 'TODO Deploy macos'
+                        '''
+                    }
+                }
+            }
+        }
     }
 }
