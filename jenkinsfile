@@ -40,17 +40,17 @@ pipeline {
         stage('Pack') {
             parallel linux: {
                 node('master') {
-                    echo 'TODO Pack on linux'
+                    sh 'echo TODO Pack on linux'
                 }
             },
             windows: {
                 node('windows') {
-                    echo 'TODO Pack on windows'
+                    bat 'echo TODO Pack on windows'
                 }
             },
             macos: {
                 node('macos') {
-                    echo 'TODO Pack on macos'
+                    sh 'echo TODO Pack on macos'
                 }
             }
         }
