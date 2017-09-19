@@ -20,13 +20,13 @@ pipeline {
                 },
                 windows: {
                     node('windows') {
-                        deleteDir()
+                        //deleteDir()
                         checkout scm
-                        bat '''
-                            cd src
-                            qmake ide.pro
-                            make -d
-                        '''
+                        //bat '''
+                        //    cd src
+                        //    qmake ide.pro
+                        //    make -d
+                        //'''
                     }
                 },
                 macos: {
@@ -34,6 +34,23 @@ pipeline {
                         checkout scm
                         sh 'qmake src/ide.pro && make -j3'
                     }
+                }
+            }
+        }
+        stage('Pack') {
+            parallel linux: {
+                node('master') {
+                    echo 'TODO Pack on linux'
+                }
+            },
+            windows: {
+                node('windows') {
+                    echo 'TODO Pack on windows'
+                }
+            },
+            macos: {
+                node('macos') {
+                    echo 'TODO Pack on macos'
                 }
             }
         }
