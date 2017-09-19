@@ -38,25 +38,27 @@ pipeline {
             }
         }
         stage('Pack') {
-            parallel linux: {
-                node('master') {
-                    sh '''
-                        echo 'TODO Pack on linux'
-                    '''
-                }
-            },
-            windows: {
-                node('windows') {
-                    bat '''
-                        echo 'TODO Pack on windows'
-                    '''
-                }
-            },
-            macos: {
-                node('macos') {
-                    sh '''
-                        echo 'TODO Pack on macos'
-                    '''
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            echo 'TODO Pack on linux'
+                        '''
+                    }
+                },
+                windows: {
+                    node('windows') {
+                        bat '''
+                            echo 'TODO Pack on windows'
+                        '''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            echo 'TODO Pack on macos'
+                        '''
+                    }
                 }
             }
         }
