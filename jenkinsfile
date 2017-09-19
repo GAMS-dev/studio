@@ -1,11 +1,6 @@
 pipeline {
      agent any
 
-     environment {
-         PATH= "/opt/Qt/5.9/bin/:$PATH"
-         //LD_LIBRARY_PATH=/opt/Qt/5.9/lib
-     }
- 
      stages {
          stage('Build') {
              steps {
