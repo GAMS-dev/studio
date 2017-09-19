@@ -47,7 +47,8 @@ HEADERS += \
         welcomepage.h \
         editor.h \
         modeldialog.h \
-    mainwindow.h
+    mainwindow.h \
+    exception.h
 
 FORMS += \
         welcomepage.ui \

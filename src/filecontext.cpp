@@ -11,7 +11,6 @@ FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString
     : FileSystemContext(parent, id, name, location, isGist)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
-    mActive = true;
 }
 
 CrudState FileContext::crudState() const
@@ -82,7 +81,20 @@ void FileContext::setLocation(const QString& location)
     // TODO(JM) adapt parent group
     FileSystemContext::setLocation(location);
     mCrudState = CrudState::eCreate;
-    save();
+}
+
+void FileContext::setFlag(ContextFlag flag)
+{
+    if (flag == FileSystemContext::fcGroup)
+        throw QException();
+    FileSystemContext::setFlag(flag);
+}
+
+void FileContext::unsetFlag(ContextFlag flag)
+{
+    if (flag == FileSystemContext::fcGroup)
+        throw QException();
+    FileSystemContext::unsetFlag(flag);
 }
 
 void FileContext::setDocument(QTextDocument* doc)
@@ -90,14 +102,14 @@ void FileContext::setDocument(QTextDocument* doc)
     if (mDocument)
         throw QException();
     mDocument = doc;
+    // don't overwrite ContextState::eMissing
+    if (mDocument)
+        setFlag(FileSystemContext::fcActive);
+    else
+        unsetFlag(FileSystemContext::fcActive);
 }
 
 QTextDocument*FileContext::document()
-{
-    return mDocument;
-}
-
-bool FileContext::active()
 {
     return mDocument;
 }

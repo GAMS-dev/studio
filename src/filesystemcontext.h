@@ -6,10 +6,23 @@
 namespace gams {
 namespace ide {
 
+class FileGroupContext;
+
 class FileSystemContext : public QObject
 {
     Q_OBJECT
 public:
+    enum ContextFlag {
+        fcNone = 0x0,
+        fcGroup = 0x1,
+        fcActive = 0x2,
+        fcFileMod = 0x4,
+        fcEditMod = 0x8,
+        fcMissing = 0x10,
+    };
+    typedef QFlags<ContextFlag> ContextFlags;
+
+
     virtual ~FileSystemContext();
 
     int id() const;
@@ -19,26 +32,30 @@ public:
     void setName(const QString& name);
     const QString& location() const;
     virtual void setLocation(const QString& location);
-    virtual bool active();
+
+    const ContextFlags &flags();
+    virtual void setFlag(ContextFlag flag);
+    virtual void unsetFlag(ContextFlag flag);
 
     bool matches(const QString& name, bool isGist) const;
-    FileSystemContext* child(int index) const;
-    FileSystemContext* parentEntry() const;
-    int peekIndex(QString name, bool skipLast = false);
+    FileGroupContext* parentEntry() const;
+    void setParentEntry(FileGroupContext *parent);
+    virtual FileSystemContext* childEntry(int index);
+    virtual int childCount();
 
 signals:
     void nameChanged(int id, QString newName);
 
 protected:
-    FileSystemContext(FileSystemContext* parent, int id, QString name, QString location, bool isGist);
+    FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist);
 
 protected:
     int mId;
-    FileSystemContext* mParent;
+    FileGroupContext* mParent;
     QString mName;
     QString mLocation;
     bool mIsGist;
-    bool mActive = false;
+    ContextFlags mFlags;
 
 };
 

@@ -1,27 +1,21 @@
 #include "filesystemcontext.h"
+#include "filegroupcontext.h"
 
 namespace gams {
 namespace ide {
 
-FileSystemContext::FileSystemContext(FileSystemContext* parent, int id, QString name, QString location, bool isGist)
-    : QObject(parent), mId(id), mName(name), mLocation(location), mIsGist(isGist)
+FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
+    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mIsGist(isGist)
 {
-    if (parent) {
-        int sort = parent->peekIndex(name, true);
-        QObjectList *childrn = const_cast<QObjectList*>(&parent->children());
-        if (childrn->count() > 1)
-            childrn->move(childrn->count()-1, sort);
-    }
-}
-
-bool FileSystemContext::active()
-{
-    return mActive;
+    setParentEntry(parent);
+    mFlags = 0;
 }
 
 FileSystemContext::~FileSystemContext()
 {
-    // QObject should delete the entry in the parents children for us
+    if (parentEntry()) {
+        parentEntry()->removeChild(this);
+    }
 }
 
 int FileSystemContext::id() const
@@ -34,28 +28,31 @@ bool FileSystemContext::matches(const QString &name, bool isGist) const
     return isGist == mIsGist && mName.compare(name, Qt::CaseInsensitive) == 0;
 }
 
-FileSystemContext* FileSystemContext::child(int index) const
+FileGroupContext* FileSystemContext::parentEntry() const
 {
-    if (index < 0 || index >= children().count())
-        return nullptr;
-    return qobject_cast<FileSystemContext*>(children().at(index));
+    return mParent;
 }
 
-FileSystemContext* FileSystemContext::parentEntry() const
+void FileSystemContext::setParentEntry(FileGroupContext* parent)
 {
-    return qobject_cast<FileSystemContext*>(parent());
-}
-
-int FileSystemContext::peekIndex(QString name, bool skipLast)
-{
-    int res = 0;
-    // TODO(JM) need to skip the new appended entry
-    int size = skipLast ? children().count()-1 : children().count();
-    for (int i = 0; i < size; ++i) {
-        if (child(i)->name().compare(name, Qt::CaseInsensitive) <= 0)
-            res = i+1;
+    if (parent != mParent) {
+        if (mParent) mParent->removeChild(this);
+        mParent = parent;
+        if (mParent) {
+            mParent->insertChild(this);
+        }
     }
-    return res;
+}
+
+FileSystemContext* FileSystemContext::childEntry(int index)
+{
+    Q_UNUSED(index);
+    return nullptr;
+}
+
+int FileSystemContext::childCount()
+{
+    return 0;
 }
 
 bool FileSystemContext::isGist() const
@@ -89,6 +86,21 @@ void FileSystemContext::setLocation(const QString& location)
         QFileInfo fi(location);
         setName(fi.fileName());
     }
+}
+
+const FileSystemContext::ContextFlags& FileSystemContext::flags()
+{
+    return mFlags;
+}
+
+void FileSystemContext::setFlag(ContextFlag flag)
+{
+    mFlags |= flag;
+}
+
+void FileSystemContext::unsetFlag(ContextFlag flag)
+{
+    mFlags &= ~flag;
 }
 
 

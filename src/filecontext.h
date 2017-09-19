@@ -32,16 +32,17 @@ class FileContext : public FileSystemContext
 public:
     QString codec() const;
     void setCodec(const QString& codec);
-    const QString name();
+    virtual const QString name();
     CrudState crudState() const;
     void setLocation(const QString &location); // equals save_as...
-    bool active();
+
+    virtual void setFlag(ContextFlag flag);
+    virtual void unsetFlag(ContextFlag flag);
 
     void save();
     void load(QString codecName = QString());
     void setDocument(QTextDocument *doc);
     QTextDocument* document();
-
 
 public slots:
     void textChanged();

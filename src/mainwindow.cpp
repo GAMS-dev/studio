@@ -104,7 +104,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
-                                                 ".",
+                                                 mRecent.path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
@@ -117,11 +117,11 @@ void MainWindow::on_actionOpen_triggered()
         if (fType == FileType::ftGms) {
             // Create node for GIST directory and load all files of known filetypes
             QString dir = fInfo.path();
-            QModelIndex groupMI = mFileRepo.find(dir, mFileRepo.rootTreeModelIndex());
+            QModelIndex groupMI = mFileRepo.findPath(dir, mFileRepo.rootTreeModelIndex());
             if (!groupMI.isValid()) {
                 groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
             }
-            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.filePath(), true, groupMI);
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), true, groupMI);
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
@@ -133,7 +133,7 @@ void MainWindow::on_actionSave_triggered()
 {
     // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
     // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
-    FileContext* fc = mFileRepo.fileContext(mLastActivatedFile);
+    FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
     if (!fc) return;
     if (fc->location().isEmpty()) {
         on_actionSave_As_triggered();
@@ -146,14 +146,17 @@ void MainWindow::on_actionSave_As_triggered()
 {
     auto fileName = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
-                                                 ".",
+                                                 mRecent.path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
-    FileContext* fc = mFileRepo.fileContext(mLastActivatedFile);
-    if (!fc) return;
-    fc->setLocation(fileName);
-    fc->save();
+    if (!fileName.isEmpty()) {
+        mRecent.path = QFileInfo(fileName).path();
+        FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
+        if (!fc) return;
+        fc->setLocation(fileName);
+        fc->save();
+    }
 }
 
 void MainWindow::on_actionSave_All_triggered()
@@ -229,8 +232,8 @@ void MainWindow::codecChanged(QAction *action)
 void MainWindow::fileActivated(int fileId, CodeEditor* edit)
 {
     if (edit) {
-        mLastActivatedFile = fileId;
-        mLastActivatedEditor = edit;
+        mRecent.editFileId = fileId;
+        mRecent.editor = edit;
     }
 }
 

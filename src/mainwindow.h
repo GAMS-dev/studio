@@ -32,6 +32,12 @@ class MainWindow;
 namespace gams {
 namespace ide {
 
+struct RecentData {
+    int editFileId = -1;
+    CodeEditor* editor = nullptr;
+    QString path = ".";
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -85,8 +91,7 @@ private:
     FileRepository mFileRepo;
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
-    int mLastActivatedFile = -1;
-    CodeEditor* mLastActivatedEditor = nullptr;
+    RecentData mRecent;
 };
 
 }
