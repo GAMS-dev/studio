@@ -83,7 +83,7 @@ pipeline {
                         sh '''
                             cd bin
                             macdeployqt ide.app -dmg -always-overwrite
-                            archiveArtifacts artifacts: '**/*.dmg'
+                            archiveArtifacts artifacts: '**/*.dmg', fingerprint: true
                         '''
                     }
                 }
