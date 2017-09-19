@@ -20,10 +20,13 @@ pipeline {
                 },
                 windows: {
                     node('windows') {
+                        deleteDir()
                         checkout scm
-                        bat 'cd src'
-                        bat 'qmake ide.pro'
-                        bat 'make -d'
+                        bat '''
+                            cd src
+                            qmake ide.pro
+                            make -d
+                        '''
                     }
                 },
                 macos: {
