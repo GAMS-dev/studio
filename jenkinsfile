@@ -81,7 +81,8 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            echo 'TODO Pack on macos'
+                            cd bin
+                            macdeployqt ide.app -dmg -always-overwrite
                         '''
                     }
                 }
