@@ -37,6 +37,31 @@ pipeline {
                 }
             }
         }
+        stage('Test') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            echo 'TODO Test on linux'
+                        '''
+                    }
+                },
+                windows: {
+                    node('windows') {
+                        bat '''
+                            echo 'TODO Test on windows'
+                        '''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            echo 'TODO Test on macos'
+                        '''
+                    }
+                }
+            }
+        }
         stage('Pack') {
             steps {
                 parallel linux: {
