@@ -21,7 +21,8 @@ pipeline {
                 windows: {
                     node('windows') {
                         checkout scm
-                        bat 'qmake src/ide.pro && make -j3'
+                        bat 'qmake src/ide.pro'
+                        bat 'make -d'
                     }
                 },
                 macos: {
