@@ -30,19 +30,6 @@ pipeline {
                         """
                     }
                 },
-                windowsX64: {
-                    node('windows') {
-                        checkout scm
-                        bat """
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
-                            call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
-                            cd src
-                            qmake ide.pro "CONFIG+=release"
-                            nmake qmake_all
-                        """
-                    }
-                },
                 macos: {
                     node('macos') {
                         checkout scm
@@ -93,6 +80,7 @@ pipeline {
                             cd bin
                             windeployqt --release --compiler-runtime ide.exe
                             7z a -r ide-x86.zip *
+                            archiveArtifacts artifacts: 'ide-x86.zip', fingerprint: true
                         """
                     }
                 },
