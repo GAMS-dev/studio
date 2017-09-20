@@ -23,6 +23,7 @@ pipeline {
                         checkout scm
                         bat '''
                             call "C:\\Qt\\5.9.1\\mingw53_32\\bin\\qtenv2.bat"
+                            cd src
                             qmake ide.pro
                             make
                         '''
