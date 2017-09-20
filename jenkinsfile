@@ -67,9 +67,20 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
+
+                        sh wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"                        
                         sh '''
-                            echo 'TODO Pack on linux'
+                            git archive develop --format=zip -o gams-ide-develop.zip 
+                            git archive develop | gzip > gams-ide-develop.tar.gz
+                            
+                            # collect files
+                            cp bin/ide appdir/usr/bin/
+                            cp res/gamsstudio.desktop appdir/
+                            cp src/icons/* appdir/
+                            
+                            linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
+                        archiveArtifacts artifacts: 'gams-ide-develop.*, GAMS_Studio*', fingerprint: true
                     }
                 },
                 windowsX86: {
