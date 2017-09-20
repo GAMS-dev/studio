@@ -21,8 +21,10 @@ pipeline {
                 windowsX86: {
                     node('windows') {
                         checkout scm
+                        def buildDir = pwd()
                         bat '''
-                            set PATH="C:\\Qt\\5.9.1\\mingw53_32\\bin";"C:/Qt/Tools/mingw530_32/bin";%PATH%
+                            call "C:\\Qt\\5.9.1\\mingw53_32\\bin\\qtenv2.bat"
+                            cd %buildDir%
                             cd src
                             qmake ide.pro
                             make
@@ -32,13 +34,14 @@ pipeline {
                 windowsX64: {
                     node('windows') {
                         checkout scm
-                        bat '''
+                        /*bat '''
                             echo 'Setting up environment for Qt usage...'
                             cd src
                             set PATH="C:\\Qt\\5.9.1\\msvc2015_64\\bin";%PATH%
                             call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
                             //qmake ide.pro "CONFIG+=release" && nmake qmake_all
                         '''
+                        */
                     }
                 },
                 macos: {
