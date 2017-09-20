@@ -23,7 +23,7 @@ pipeline {
                         checkout scm
                         bat '''
                             echo 'Setting up environment for Qt usage...'
-                            set PATH="C:\Qt\5.9.1\msvc2015_64\bin";%PATH%
+                            set PATH="C:\\Qt\\5.9.1\\msvc2015_64\\bin";%PATH%
                             "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
                             cd src
                             qmake ide.pro
