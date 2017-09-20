@@ -18,7 +18,7 @@ pipeline {
                         sh 'qmake src/ide.pro && make -j3'
                     }
                 },
-                windows-x86: {
+                windowsX86: {
                     node('windows') {
                         checkout scm
                         bat '''
@@ -28,7 +28,7 @@ pipeline {
                         '''
                     }
                 },
-                windows-x64: {
+                windowsX64: {
                     node('windows') {
                         checkout scm
                         bat '''
