@@ -85,11 +85,15 @@ pipeline {
                         '''
                     }
                 },
-                windows: {
+                windowsX86: {
                     node('windows') {
-                        bat '''
-                            echo 'TODO Pack on windows'
-                        '''
+                        bat """
+                            echo 'Setting up environment for Qt usage...'
+                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
+                            cd bin
+                            windeployqt --release --compiler-runtime ide.exe
+                            7z a -r ide-x86.zip *
+                        """
                     }
                 },
                 macos: {
