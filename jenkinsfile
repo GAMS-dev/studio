@@ -34,14 +34,13 @@ pipeline {
                 windowsX64: {
                     node('windows') {
                         checkout scm
-                        /*bat '''
-                            echo 'Setting up environment for Qt usage...'
-                            cd src
-                            set PATH="C:\\Qt\\5.9.1\\msvc2015_64\\bin";%PATH%
-                            call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
-                            //qmake ide.pro "CONFIG+=release" && nmake qmake_all
-                        '''
-                        */
+                        ///bat '''
+                        //    echo 'Setting up environment for Qt usage...'
+                        //    cd src
+                        //    set PATH="C:\\Qt\\5.9.1\\msvc2015_64\\bin";%PATH%
+                        //    call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
+                        //    qmake ide.pro "CONFIG+=release" && nmake qmake_all
+                        //'''
                     }
                 },
                 macos: {
