@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
@@ -21,11 +21,11 @@ pipeline {
                 windowsX86: {
                     node('windows') {
                         checkout scm
-                        def buildDir = pwd()
+                        cd src
+                        set WORK_DIR = pwd()
                         bat '''
                             call "C:\\Qt\\5.9.1\\mingw53_32\\bin\\qtenv2.bat"
-                            cd %buildDir%
-                            cd src
+                            cd ${buildDir}
                             qmake ide.pro
                             make
                         '''
