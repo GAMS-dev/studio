@@ -80,8 +80,8 @@ pipeline {
                             cd bin
                             windeployqt --release --compiler-runtime ide.exe
                             7z a -r ide-x86.zip *
-                            archiveArtifacts artifacts: 'ide-x86.zip', fingerprint: true
                         """
+                        archiveArtifacts artifacts: 'ide-x86.zip', fingerprint: true
                     }
                 },
                 macos: {
