@@ -1,10 +1,6 @@
 pipeline {
     agent any
     
-    environment {
-        WORK_DIR = pwd()
-    }
-    
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
@@ -25,14 +21,10 @@ pipeline {
                 windowsX86: {
                     node('windows') {
                         checkout scm
-                        bat '''
-                            echo ${env.WORK_DIR}
-                            call "C:\\Qt\\5.9.1\\mingw53_32\\bin\\qtenv2.bat"
-                            cd ${WORK_DIR}
-                            cd src
-                            qmake ide.pro
-                            make
-                        '''
+                        bat """
+                            echo 'Setting up environment for Qt usage...'
+                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
+                        """
                     }
                 },
                 windowsX64: {
