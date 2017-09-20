@@ -25,8 +25,7 @@ pipeline {
                             echo 'Setting up environment for Qt usage...'
                             cd src
                             set PATH="C:\\Qt\\5.9.1\\msvc2015_64\\bin";%PATH%
-                            "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
-                            set > C:\\jenkins\\workspace\\win-build-job-env.properties
+                            call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
                             qmake ide.pro "CONFIG+=release" && nmake qmake_all
                         '''
                     }
