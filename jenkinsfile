@@ -23,8 +23,9 @@ pipeline {
                         checkout scm
                         bat '''
                             set WORK_DIR = %CD%
+                            echo "%WORK_DIR%"
                             call "C:\\Qt\\5.9.1\\mingw53_32\\bin\\qtenv2.bat"
-                            cd %WORK_DIR%
+                            cd "%WORK_DIR%"
                             cd src
                             qmake ide.pro
                             make
