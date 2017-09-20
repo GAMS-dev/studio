@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    environment {
+        WORK_DIR = ""
+    }
+    
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
