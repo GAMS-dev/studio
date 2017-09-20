@@ -68,7 +68,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
 
-                        sh wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"                        
+                        sh 'wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"'
                         sh '''
                             git archive develop --format=zip -o gams-ide-develop.zip 
                             git archive develop | gzip > gams-ide-develop.tar.gz
