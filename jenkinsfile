@@ -125,7 +125,10 @@ pipeline {
                         bat '''
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
+                            cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
+                            del *.zip
+                            7z a -r ide-x86.zip *
                         '''
                         archiveArtifacts artifacts: '**/ide-x64.zip', fingerprint: true
                     }
