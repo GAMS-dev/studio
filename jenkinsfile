@@ -34,10 +34,7 @@ pipeline {
                     node('windowsX64') {
                         checkout scm
                         bat '''
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
-                            call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat" amd64
-                            set > C:\\jenkins\\x64\\workspace\\build.properties
+                            set
                         '''
                     }
                 },
