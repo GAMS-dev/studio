@@ -105,6 +105,7 @@ pipeline {
                             cp res/gamsstudio.desktop appdir/
                             cp src/icons/* appdir/
                             
+                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
                         //archiveArtifacts artifacts: 'gams-ide-develop.*, GAMS_Studio*', fingerprint: true
