@@ -56,14 +56,14 @@ pipeline {
                         '''
                     }
                 },
-                windows: {
+                windowsX86: {
                     node('windowsX86') {
                         bat '''
                             echo 'TODO Test on windowsX86'
                         '''
                     }
                 },
-                windows: {
+                windowsX64: {
                     node('windowsX64') {
                         bat '''
                             echo 'TODO Test on windowsX64'
@@ -140,14 +140,14 @@ pipeline {
                         '''
                     }
                 },
-                windows: {
+                windowsX86: {
                     node('windowsX86') {
                         bat '''
                             echo 'TODO Deploy windowsX86'
                         '''
                     }
                 },
-                windows: {
+                windowsX64: {
                     node('windowsX86') {
                         bat '''
                             echo 'TODO Deploy windowsx64'
