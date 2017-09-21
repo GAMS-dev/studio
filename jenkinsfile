@@ -36,8 +36,8 @@ pipeline {
                         bat 'set'
                         bat '''
                             cd src
-                            qmake ide.pro "CONFIG+=release"
-                            nmake qmake_all
+                            REM qmake ide.pro "CONFIG+=release"
+                            REM nmake qmake_all
                         '''
                     }
                 },
