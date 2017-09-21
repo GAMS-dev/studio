@@ -15,6 +15,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         checkout scm
+                        PATH=/opt/Qt/5.9.1/:$PATH
                         sh 'qmake src/ide.pro && make -j3'
                     }
                 },
@@ -105,7 +106,7 @@ pipeline {
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
-                        archiveArtifacts artifacts: 'gams-ide-develop.*, GAMS_Studio*', fingerprint: true
+                        archiveArtifacts artifacts: GAMS_Studio*', fingerprint: true
                     }
                 },
                 windowsX86: {
