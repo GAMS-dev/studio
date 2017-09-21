@@ -61,6 +61,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+    connect(this, &CodeEditor::updateBlockSelection, this, &CodeEditor::onUpdateBlockSelection, Qt::QueuedConnection);
+    connect(this, &CodeEditor::updateBlockEdit, this, &CodeEditor::onUpdateBlockEdit, Qt::QueuedConnection);
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
@@ -102,6 +104,61 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
+void CodeEditor::onUpdateBlockSelection()
+{
+    if (mBlockLastCursor != textCursor()) {
+        mBlockLastCursor = textCursor();
+
+        int cols = textCursor().columnNumber()-mBlockStartCursor.columnNumber();
+        QTextCursor::MoveOperation colMove = (cols > 0) ? QTextCursor::Right : QTextCursor::Left;
+        int rows = textCursor().blockNumber()-mBlockStartCursor.blockNumber();
+        QTextCursor::MoveOperation rowMove = (rows > 0) ? QTextCursor::Down : QTextCursor::Up;
+
+        QList<QTextEdit::ExtraSelection> sel = QList<QTextEdit::ExtraSelection>();
+
+        QTextCursor cursor = mBlockStartCursor;
+        for (int r = 0; r <= qAbs(rows); ++r) {
+            QTextEdit::ExtraSelection es;
+            es.format.setBackground(Qt::cyan);
+            es.cursor = cursor;
+
+            if (cols) {
+                es.cursor.movePosition(colMove, QTextCursor::KeepAnchor, qAbs(cols));
+            }
+            int dist = es.cursor.anchor() - es.cursor.position();
+            mCurrentCol = es.cursor.columnNumber() + (dist>0 ? 0 : dist);
+            sel << es;
+            cursor.movePosition(rowMove);
+        }
+        setExtraSelections(sel);
+        qDebug() << "Now we got " << sel.size() << " extraSelections";
+    }
+}
+
+void CodeEditor::onUpdateBlockEdit()
+{
+    qDebug() << "Enter onUpdateBlockEdit()   /extraSelections: " << extraSelections().size();
+    if (extraSelections().count() < 2)
+        return;
+    qDebug() << "Process onUpdateBlockEdit()";
+    // Get the inserted Text
+    QTextCursor cursor = textCursor();
+    int diff = cursor.columnNumber() - mCurrentCol;
+    cursor.setPosition(cursor.position()-diff);
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    QString text = cursor.selectedText();
+    qDebug() << "Found inserted Text: " << text << " ... " << diff;
+    cursor = textCursor();
+    // TODO(JM) repeat selection-remove and insertion
+    for (QTextEdit::ExtraSelection sel: extraSelections()) {
+        if (sel.cursor == cursor) continue;
+        sel.cursor.removeSelectedText();
+        sel.cursor.insertText(text);
+        setTextCursor(sel.cursor);
+    }
+    setTextCursor(cursor);
+    mCurrentCol = cursor.columnNumber();
+}
 
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
@@ -110,6 +167,87 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void CodeEditor::keyPressEvent(QKeyEvent* e)
+{
+    QSet<int> moveKeys;
+    QKeyEvent ev(*e);
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
+             << Qt::Key_PageUp << Qt::Key_PageDown;
+    // TODO(JM) get definition from ide key-config
+    if (!mBlockStartKey && e->modifiers() & Qt::AltModifier && e->modifiers() & Qt::ShiftModifier) {
+        mBlockStartKey = e->key();
+        mBlockStartCursor = textCursor();
+        mBlockLastCursor = mBlockStartCursor;
+        qDebug() << "blockEdit START";
+    }
+    if (!mBlockStartKey) {
+        if (moveKeys.contains(ev.key())) {
+            setExtraSelections(QList<QTextEdit::ExtraSelection>());
+            qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
+            mBlockStartCursor = QTextCursor();
+        } else if (extraSelections().size() > 1) {
+            if (mBlockStartCursor.blockNumber() > mBlockLastCursor.blockNumber()) {
+                setTextCursor(extraSelections().first().cursor);
+            } else {
+                setTextCursor(extraSelections().last().cursor);
+            }
+            emit updateBlockEdit();
+        }
+    }
+    if (mBlockStartKey) {
+        ev.setModifiers(0);
+        emit updateBlockSelection();
+    }
+    QPlainTextEdit::keyPressEvent(&ev);
+}
+
+void CodeEditor::keyReleaseEvent(QKeyEvent* e)
+{
+    QPlainTextEdit::keyReleaseEvent(e);
+    if (mBlockStartKey && e->key() == mBlockStartKey) {
+        mBlockStartKey = 0;
+        mBlockLastCursor = QTextCursor();
+        mBlockStartCursor = QTextCursor();
+        qDebug() << "blockEdit END";
+    }
+}
+
+void CodeEditor::mouseMoveEvent(QMouseEvent* e)
+{
+    QPlainTextEdit::mouseMoveEvent(e);
+    if (mBlockStartKey)
+        emit updateBlockSelection();
+    else if (!mBlockStartCursor.isNull()) {
+        setExtraSelections(QList<QTextEdit::ExtraSelection>());
+        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
+        mBlockStartCursor = QTextCursor();
+    }
+}
+
+void CodeEditor::mousePressEvent(QMouseEvent* e)
+{
+    QPlainTextEdit::mousePressEvent(e);
+    if (mBlockStartKey)
+        emit updateBlockSelection();
+    else if (!mBlockStartCursor.isNull()) {
+        setExtraSelections(QList<QTextEdit::ExtraSelection>());
+        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
+        mBlockStartCursor = QTextCursor();
+    }
+}
+
+void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
+{
+    QPlainTextEdit::mouseReleaseEvent(e);
+    if (mBlockStartKey)
+        emit updateBlockSelection();
+    else if (!mBlockStartCursor.isNull()) {
+        setExtraSelections(QList<QTextEdit::ExtraSelection>());
+        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
+        mBlockStartCursor = QTextCursor();
+    }
 }
 
 
@@ -130,7 +268,7 @@ void CodeEditor::highlightCurrentLine()
         extraSelections.append(selection);
     }
 
-    setExtraSelections(extraSelections);
+//    setExtraSelections(extraSelections);
 }
 
 
@@ -138,18 +276,30 @@ void CodeEditor::highlightCurrentLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(lineNumberArea);
-    painter.fillRect(event->rect(), Qt::lightGray);
+    painter.fillRect(event->rect(), QColor(245,245,245));
 
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
     int bottom = top + (int) blockBoundingRect(block).height();
+    int markFrom = (mBlockStartCursor.isNull() ? textCursor() : mBlockStartCursor).blockNumber();
+    int markTo = (mBlockLastCursor.isNull() ? textCursor() : mBlockLastCursor).blockNumber();
+    if (markFrom > markTo) qSwap(markFrom, markTo);
 
+    QRect markRect(event->rect().left(), top, event->rect().width(), (int) blockBoundingRect(block).height()+1);
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
+            bool mark = blockNumber >= markFrom && blockNumber <= markTo;
+            if (mark) {
+                markRect.moveTop(top);
+                painter.fillRect(markRect, QColor(225,255,235));
+            }
             QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
+            QFont f = painter.font();
+            f.setBold(mark);
+            painter.setFont(f);
+            painter.setPen(mark ? Qt::black : Qt::gray);
             painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
         }

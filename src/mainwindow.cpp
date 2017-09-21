@@ -20,10 +20,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
-#include "tabwidget.h"
 #include "welcomepage.h"
 #include "editor.h"
 #include "modeldialog.h"
+#include "exception.h"
+#include "treeitemdelegate.h"
 
 namespace gams {
 namespace ide {
@@ -35,11 +36,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
     ui->treeView->setHeaderHidden(true);
+    ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
-    connect(ui->mainTab, &TabWidget::fileActivated, this, &MainWindow::fileActivated);
+    connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     ensureCodecMenue("System");
 }
 
@@ -55,25 +58,27 @@ void MainWindow::initTabs()
     ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
-void MainWindow::createEdit(TabWidget* tabWidget, QString codecName)
+void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 {
     createEdit(tabWidget, -1, codecName);
 }
 
-void MainWindow::createEdit(TabWidget *tabWidget, int id, QString codecName)
+void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
+        mEditors.insert(codeEdit, fc->id());
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->name(), id);
+        int tabIndex = tabWidget->addTab(codeEdit, fc->name());
+        qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
         fc->setDocument(codeEdit->document());
         fc->load(codecName);
         ensureCodecMenue(fc->codec());
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::nameChanged, ui->mainTab, &TabWidget::tabNameChanged);
+        connect(fc, &FileContext::nameChanged, this, &MainWindow::fileNameChanged);
     }
 }
 
@@ -114,7 +119,7 @@ void MainWindow::on_actionOpen_triggered()
         qDebug() << "Type: " << fInfo.suffix();
         FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
-        if (fType == FileType::ftGms) {
+        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
             QString dir = fInfo.path();
             QModelIndex groupMI = mFileRepo.findPath(dir, mFileRepo.rootTreeModelIndex());
@@ -125,6 +130,10 @@ void MainWindow::on_actionOpen_triggered()
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
+        }
+        if (fType == FileType::ftGpr) {
+            // TODO(JM) Read project and create all nodes for associated files
+
         }
     }
 }
@@ -229,11 +238,37 @@ void MainWindow::codecChanged(QAction *action)
     qDebug() << "Codec action triggered: " << action->text();
 }
 
-void MainWindow::fileActivated(int fileId, CodeEditor* edit)
+void MainWindow::activeTabChanged(int index)
 {
+    QWidget *edit = nullptr;
+    if (index >= 0)
+        edit = ui->mainTab->widget(index);
     if (edit) {
-        mRecent.editFileId = fileId;
-        mRecent.editor = edit;
+        int fileId = mEditors.value(edit, -1);
+        if (fileId >= 0) {
+            mRecent.editFileId = fileId;
+            mRecent.editor = edit;
+        }
+    }
+}
+
+void MainWindow::fileNameChanged(int fileId, QString newName)
+{
+    QWidgetList editors = mEditors.keys(fileId);
+    for (QWidget *edit: editors) {
+        int index = ui->mainTab->indexOf(edit);
+        if (index >= 0)
+            ui->mainTab->setTabText(index, newName);
+    }
+}
+
+void MainWindow::fileClosed(int fileId)
+{
+    QWidgetList editors = mEditors.keys(fileId);
+    for (QWidget *edit: editors) {
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        edit->deleteLater();
+        mEditors.remove(edit);
     }
 }
 
@@ -290,7 +325,31 @@ void MainWindow::on_actionSim_Process_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    ui->mainTab->removeTab(index);
+    QMessageBox msgBox;
+    int ret = QMessageBox::Discard;
+    int fileId = mEditors.value(ui->mainTab->widget(index), -1);
+    if (mEditors.keys(fileId).size() == 1) {
+        FileContext *fc = mFileRepo.fileContext(fileId);
+        if (fc && fc->crudState() == CrudState::eUpdate) {
+            // only ask, if this is the last editor of this file
+            msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
+            msgBox.setInformativeText("Do you want to save your changes?");
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Save);
+            ret = msgBox.exec();
+        }
+    }
+    if (ret == QMessageBox::Save) {
+        FileContext *fc = mFileRepo.fileContext(fileId);
+        if (!fc)
+            throw FATAL() << "Could not find file context to closed editor";
+        fc->save();
+    }
+    if (ret != QMessageBox::Cancel) {
+        int id = mEditors.value(ui->mainTab->widget(index));
+        // TODO(JM) close the file after last tab-remove
+        mFileRepo.close(id);
+    }
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -307,6 +366,19 @@ void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog;
     dialog.exec();
+}
+
+void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
+{
+    FileContext *fc = static_cast<FileContext*>(index.internalPointer());
+    if (fc) {
+        QWidget* edit = mEditors.key(fc->id(), nullptr);
+        if (edit) {
+            ui->mainTab->setCurrentWidget(edit);
+        } else {
+            createEdit(ui->mainTab, fc->id());
+        }
+    }
 }
 
 }

@@ -11,12 +11,12 @@ class FileGroupContext : public FileSystemContext
     Q_OBJECT
 public:
     ~FileGroupContext();
-    virtual void setFlag(ContextFlag flag);
-    virtual void unsetFlag(ContextFlag flag);
+    void setFlag(ContextFlag flag, bool value = true);
+    void unsetFlag(ContextFlag flag);
 
-    virtual int childCount();
+    int childCount();
     int indexOf(FileSystemContext *child);
-    virtual FileSystemContext* childEntry(int index);
+    FileSystemContext* childEntry(int index);
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -33,6 +33,7 @@ protected:
     void insertChild(FileSystemContext *child);
     void insertChild(int pos, FileSystemContext *child);
     void removeChild(FileSystemContext *child);
+    void checkFlags();
 
 private:
     QList<FileSystemContext*> mChildList;

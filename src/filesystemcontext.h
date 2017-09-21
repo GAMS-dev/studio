@@ -13,12 +13,12 @@ class FileSystemContext : public QObject
     Q_OBJECT
 public:
     enum ContextFlag {
-        fcNone = 0x0,
-        fcGroup = 0x1,
-        fcActive = 0x2,
-        fcFileMod = 0x4,
-        fcEditMod = 0x8,
-        fcMissing = 0x10,
+        cfNone = 0x0,
+        cfGroup = 0x1,
+        cfActive = 0x2,
+        cfFileMod = 0x4,
+        cfEditMod = 0x8,
+        cfMissing = 0x10,
     };
     typedef QFlags<ContextFlag> ContextFlags;
 
@@ -33,9 +33,10 @@ public:
     const QString& location() const;
     virtual void setLocation(const QString& location);
 
-    const ContextFlags &flags();
-    virtual void setFlag(ContextFlag flag);
+    const ContextFlags &flags() const;
+    virtual void setFlag(ContextFlag flag, bool value = true);
     virtual void unsetFlag(ContextFlag flag);
+    virtual bool testFlag(ContextFlag flag);
 
     bool matches(const QString& name, bool isGist) const;
     FileGroupContext* parentEntry() const;
@@ -48,6 +49,7 @@ signals:
 
 protected:
     FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist);
+    virtual void checkFlags();
 
 protected:
     int mId;

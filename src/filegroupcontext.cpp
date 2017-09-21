@@ -10,16 +10,16 @@ FileGroupContext::~FileGroupContext()
     mChildList.clear();
 }
 
-void FileGroupContext::setFlag(ContextFlag flag)
+void FileGroupContext::setFlag(ContextFlag flag, bool value)
 {
-    if (flag == FileSystemContext::fcEditMod || flag == FileSystemContext::fcFileMod)
+    if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
         throw QException();
-    FileSystemContext::setFlag(flag);
+    FileSystemContext::setFlag(flag, value);
 }
 
 void FileGroupContext::unsetFlag(ContextFlag flag)
 {
-    if (flag == FileSystemContext::fcEditMod || flag == FileSystemContext::fcFileMod)
+    if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
         throw QException();
     FileSystemContext::unsetFlag(flag);
 }
@@ -60,11 +60,26 @@ void FileGroupContext::insertChild(int pos, FileSystemContext* child)
     if (child == this)
         throw FATAL() << "can't add a element to itself";
     mChildList.insert(pos, child);
+    if (child->flags() & cfActive) {
+        setFlag(cfActive);
+    }
 }
 
 void FileGroupContext::removeChild(FileSystemContext* child)
 {
     mChildList.removeOne(child);
+}
+
+void FileGroupContext::checkFlags()
+{
+    bool active = false;
+    for (FileSystemContext *fc: mChildList) {
+        if (fc->testFlag(cfActive)) {
+            active = true;
+            break;
+        }
+    }
+    setFlag(cfActive, active);
 }
 
 int FileGroupContext::childCount()
@@ -95,7 +110,7 @@ void FileGroupContext::directoryChanged(const QString& path)
 FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
     : FileSystemContext(parent, id, name, location, isGist)
 {
-    mFlags = FileSystemContext::fcGroup;
+    mFlags = FileSystemContext::cfGroup;
 }
 
 } // namespace ide

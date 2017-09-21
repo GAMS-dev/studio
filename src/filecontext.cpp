@@ -1,5 +1,6 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
+#include "exception.h"
 
 namespace gams {
 namespace ide {
@@ -11,6 +12,12 @@ FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString
     : FileSystemContext(parent, id, name, location, isGist)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
+}
+
+void FileContext::setCrudState(CrudState state)
+{
+    mCrudState = state;
+    emit crudChanged(state);
 }
 
 CrudState FileContext::crudState() const
@@ -32,8 +39,7 @@ void FileContext::save()
         out << mDocument->toPlainText();
         out.flush();
         file.close();
-        mCrudState = CrudState::eRead;
-        emit nameChanged(mId, name());
+        setCrudState(CrudState::eRead);
     }
 }
 
@@ -80,33 +86,33 @@ void FileContext::setLocation(const QString& location)
         throw QException();  // context is already bound to a file
     // TODO(JM) adapt parent group
     FileSystemContext::setLocation(location);
-    mCrudState = CrudState::eCreate;
+    setCrudState(CrudState::eCreate);
 }
 
 void FileContext::setFlag(ContextFlag flag)
 {
-    if (flag == FileSystemContext::fcGroup)
+    if (flag == FileSystemContext::cfGroup)
         throw QException();
     FileSystemContext::setFlag(flag);
 }
 
 void FileContext::unsetFlag(ContextFlag flag)
 {
-    if (flag == FileSystemContext::fcGroup)
+    if (flag == FileSystemContext::cfGroup)
         throw QException();
     FileSystemContext::unsetFlag(flag);
 }
 
 void FileContext::setDocument(QTextDocument* doc)
 {
-    if (mDocument)
-        throw QException();
+    if (mDocument && doc)
+        throw FATAL() << "document of cannot be replaced";
     mDocument = doc;
     // don't overwrite ContextState::eMissing
     if (mDocument)
-        setFlag(FileSystemContext::fcActive);
+        setFlag(FileSystemContext::cfActive);
     else
-        unsetFlag(FileSystemContext::fcActive);
+        unsetFlag(FileSystemContext::cfActive);
 }
 
 QTextDocument*FileContext::document()
@@ -133,7 +139,7 @@ const QString FileContext::name()
 void FileContext::textChanged()
 {
     if (mCrudState != CrudState::eUpdate) {
-        mCrudState = CrudState::eUpdate;
+        setCrudState(CrudState::eUpdate);
         emit nameChanged(mId, name());
     }
 }

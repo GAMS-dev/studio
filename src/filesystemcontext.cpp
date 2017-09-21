@@ -9,6 +9,11 @@ FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString n
 {
     setParentEntry(parent);
     mFlags = 0;
+
+}
+
+void FileSystemContext::checkFlags()
+{
 }
 
 FileSystemContext::~FileSystemContext()
@@ -71,7 +76,6 @@ void FileSystemContext::setName(const QString& name)
         mName = name;
         emit nameChanged(mId, mName);
     }
-
 }
 
 const QString& FileSystemContext::location() const
@@ -88,19 +92,32 @@ void FileSystemContext::setLocation(const QString& location)
     }
 }
 
-const FileSystemContext::ContextFlags& FileSystemContext::flags()
+const FileSystemContext::ContextFlags& FileSystemContext::flags() const
 {
     return mFlags;
 }
 
-void FileSystemContext::setFlag(ContextFlag flag)
+void FileSystemContext::setFlag(ContextFlag flag, bool value)
 {
-    mFlags |= flag;
+    if (!value) {
+        unsetFlag(flag);
+    } else if (!mFlags.testFlag(flag)) {
+        mFlags.setFlag(flag);
+        if (parentEntry()) parentEntry()->checkFlags();
+    }
 }
 
 void FileSystemContext::unsetFlag(ContextFlag flag)
 {
-    mFlags &= ~flag;
+    if (mFlags.testFlag(flag)) {
+        mFlags &= ~flag;
+        if (parentEntry()) parentEntry()->checkFlags();
+    }
+}
+
+bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
+{
+    return mFlags.testFlag(flag);
 }
 
 

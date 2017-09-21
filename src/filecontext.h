@@ -8,6 +8,7 @@ namespace ide {
 
 // TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
 enum class FileType {
+    ftGpr,
     ftGms,
     ftTxt,
     ftInc,
@@ -44,6 +45,9 @@ public:
     void setDocument(QTextDocument *doc);
     QTextDocument* document();
 
+signals:
+    void crudChanged(CrudState state);
+
 public slots:
     void textChanged();
 //    void storageChanged();
@@ -51,6 +55,7 @@ public slots:
 protected:
     friend class FileRepository;
     FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
+    void setCrudState(CrudState state);
 
 private:
     CrudState mCrudState = CrudState::eCreate;

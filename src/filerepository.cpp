@@ -16,30 +16,30 @@ FileRepository::~FileRepository()
     delete mRoot;
 }
 
-FileSystemContext* FileRepository::context(int id, FileSystemContext* startNode)
+FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
 {
     if (!startNode)
         throw FATAL() << "missing startNode";
-    if (startNode->id() == id)
+    if (startNode->id() == fileId)
         return startNode;
     for (int i = 0; i < startNode->childCount(); ++i) {
         FileSystemContext* iChild = startNode->childEntry(i);
         if (!iChild)
             throw FATAL() << "child must not be null";
-        FileSystemContext* entry = context(id, iChild);
+        FileSystemContext* entry = context(fileId, iChild);
         if (entry) return entry;
     }
     return nullptr;
 }
 
-FileContext* FileRepository::fileContext(int id, FileSystemContext* startNode)
+FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileContext*>(context(id, (startNode ? startNode : mRoot)));
+    return static_cast<FileContext*>(context(fileId, (startNode ? startNode : mRoot)));
 }
 
-FileGroupContext*FileRepository::groupContext(int id, FileSystemContext* startNode)
+FileGroupContext*FileRepository::groupContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileGroupContext*>(context(id, (startNode ? startNode : mRoot)));
+    return static_cast<FileGroupContext*>(context(fileId, (startNode ? startNode : mRoot)));
 }
 
 QModelIndex FileRepository::index(FileSystemContext *entry)
@@ -100,7 +100,7 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         break;
 
     case Qt::FontRole:
-        if (node(index)->flags().testFlag(FileSystemContext::fcActive)) {
+        if (node(index)->flags().testFlag(FileSystemContext::cfActive)) {
             QFont f;
             f.setBold(true);
             return f;
@@ -109,10 +109,10 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
 
     case Qt::ForegroundRole: {
         FileSystemContext::ContextFlags flags = node(index)->flags();
-        if (flags.testFlag(FileSystemContext::fcMissing))
+        if (flags.testFlag(FileSystemContext::cfMissing))
             return QColor(Qt::red);
-        if (flags.testFlag(FileSystemContext::fcActive)) {
-            return flags.testFlag(FileSystemContext::fcGroup) ? QColor(Qt::black)
+        if (flags.testFlag(FileSystemContext::cfActive)) {
+            return flags.testFlag(FileSystemContext::cfGroup) ? QColor(Qt::black)
                                                               : QColor(Qt::blue);
         }
         break;
@@ -225,10 +225,19 @@ QModelIndex FileRepository::findPath(const QString &filePath, QModelIndex parent
     return QModelIndex();
 }
 
-void FileRepository::nodeNameChanged(int id, const QString& newName)
+void FileRepository::close(int fileId)
+{
+    FileContext *fc = fileContext(fileId);
+    fc->setDocument(nullptr);
+    QModelIndex fci = index(fc);
+    dataChanged(fci, fci);
+    emit fileClosed(fileId);
+}
+
+void FileRepository::nodeNameChanged(int fileId, const QString& newName)
 {
     Q_UNUSED(newName);
-    FileSystemContext* nd = context(id);
+    FileSystemContext* nd = context(fileId, mRoot);
     if (!nd) return;
 
     QModelIndex ndIndex = index(nd);
@@ -237,9 +246,9 @@ void FileRepository::nodeNameChanged(int id, const QString& newName)
 
 typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
-void FileRepository::updatePathNode(int id, QDir dir)
+void FileRepository::updatePathNode(int fileId, QDir dir)
 {
-    FileGroupContext *gc = groupContext(id, mRoot);
+    FileGroupContext *gc = groupContext(fileId, mRoot);
     if (!gc)
         throw QException();
     if (dir.exists()) {
@@ -265,12 +274,12 @@ void FileRepository::updatePathNode(int id, QDir dir)
         // check for vanished files and directories
         for (IndexedFSContext childIndex: vanishedEntries) {
             FileSystemContext* entry = childIndex.second;
-            if (entry->flags().testFlag(FileSystemContext::fcGroup)) {
+            if (entry->flags().testFlag(FileSystemContext::cfGroup)) {
                 updatePathNode(entry->id(), entry->location());
             }
-            if (entry->flags().testFlag(FileSystemContext::fcActive)) {
+            if (entry->flags().testFlag(FileSystemContext::cfActive)) {
                 // mark active files as missing (directories recursively)
-                entry->setFlag(FileSystemContext::fcMissing);
+                entry->setFlag(FileSystemContext::cfMissing);
             } else {
                 // inactive files can be removed (directories recursively)
                 entry->setParent(nullptr);

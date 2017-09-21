@@ -15,9 +15,9 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
-    FileSystemContext* context(int id, FileSystemContext* startNode = nullptr);
-    FileContext* fileContext(int id, FileSystemContext* startNode = nullptr);
-    FileGroupContext* groupContext(int id, FileSystemContext* startNode = nullptr);
+    FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+    FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
+    FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
     QModelIndex index(FileSystemContext* entry);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
@@ -31,10 +31,14 @@ public:
     QModelIndex rootTreeModelIndex();
     QModelIndex rootModelIndex();
     QModelIndex findPath(const QString& filePath, QModelIndex parent);
+    void close(int fileId);
+
+signals:
+    void fileClosed(int fileId);
 
 public slots:
-    void nodeNameChanged(int id, const QString &newName);
-    void updatePathNode(int id, QDir dir);
+    void nodeNameChanged(int fileId, const QString &newName);
+    void updatePathNode(int fileId, QDir dir);
 
 private:
     FileSystemContext* node(const QModelIndex& index) const;

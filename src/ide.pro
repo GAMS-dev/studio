@@ -35,7 +35,8 @@ SOURCES += \
         welcomepage.cpp \
         editor.cpp \
         modeldialog.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    treeitemdelegate.cpp
 
 HEADERS += \
         codeeditor.h \
@@ -48,7 +49,8 @@ HEADERS += \
         editor.h \
         modeldialog.h \
     mainwindow.h \
-    exception.h
+    exception.h \
+    treeitemdelegate.h
 
 FORMS += \
         welcomepage.ui \
