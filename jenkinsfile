@@ -163,7 +163,7 @@ pipeline {
                     }
                 },
                 windowsX64: {
-                    node('windowsX86') {
+                    node('windowsX64') {
                         bat '''
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
