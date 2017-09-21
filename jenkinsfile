@@ -98,11 +98,11 @@ pipeline {
                             #git archive develop | gzip > gams-ide-develop.tar.gz
                             
                             # collect files
-                            #cp bin/ide appdir/usr/bin/
-                            #cp res/gamsstudio.desktop appdir/
-                            #cp src/icons/* appdir/
+                            cp bin/ide appdir/usr/bin/
+                            cp res/gamsstudio.desktop appdir/
+                            cp src/icons/* appdir/
                             
-                            #linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
+                            linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
                         //archiveArtifacts artifacts: 'gams-ide-develop.*, GAMS_Studio*', fingerprint: true
                     }
