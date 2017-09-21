@@ -44,7 +44,7 @@ pipeline {
                             set
                             cd %WORKSPACE%\\src
                             qmake ide.pro "CONFIG+=release"
-                            REM nmake qmake_all
+                            nmake qmake_all
                         '''
                     }
                 },
