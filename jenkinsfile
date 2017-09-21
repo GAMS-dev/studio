@@ -42,7 +42,8 @@ pipeline {
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC"
                             call vcvarsall.bat amd64
                             set
-                            
+                            cd ${WORKSPACE}
+                            cd src
                             REM qmake ide.pro "CONFIG+=release"
                             REM nmake qmake_all
                         '''
