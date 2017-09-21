@@ -97,6 +97,9 @@ pipeline {
                             #git archive develop --format=zip -o gams-ide-develop.zip 
                             #git archive develop | gzip > gams-ide-develop.tar.gz
                             
+                            # create folder structure
+                            mkdir -p appdir/usr/bin
+
                             # collect files
                             cp bin/ide appdir/usr/bin/
                             cp res/gamsstudio.desktop appdir/
