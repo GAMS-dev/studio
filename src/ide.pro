@@ -27,7 +27,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     codeeditor.cpp \
-    tabwidget.cpp \
     filesystemcontext.cpp \
     filecontext.cpp \
     filerepository.cpp \
@@ -40,7 +39,6 @@ SOURCES += \
 
 HEADERS += \
         codeeditor.h \
-        tabwidget.h \
         filesystemcontext.h \
         filecontext.h \
         filerepository.h \
