@@ -128,7 +128,7 @@ pipeline {
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
                             del *.zip
-                            7z a -r ide-x86.zip *
+                            7z a -r ide-x64.zip *
                         '''
                         archiveArtifacts artifacts: '**/ide-x64.zip', fingerprint: true
                     }
