@@ -19,7 +19,7 @@ pipeline {
                     }
                 },
                 windowsX86: {
-                    node('windows') {
+                    node('windowsX86') {
                         checkout scm
                         bat '''
                             echo 'Setting up environment for Qt usage...'
@@ -31,7 +31,7 @@ pipeline {
                     }
                 },
                 windowsX64: {
-                    node('windows') {
+                    node('windowsX64') {
                         checkout scm
                         bat '''
                             echo 'Setting up environment for Qt usage...'
@@ -57,9 +57,16 @@ pipeline {
                     }
                 },
                 windows: {
-                    node('windows') {
+                    node('windowsX86') {
                         bat '''
-                            echo 'TODO Test on windows'
+                            echo 'TODO Test on windowsX86'
+                        '''
+                    }
+                },
+                windows: {
+                    node('windowsX64') {
+                        bat '''
+                            echo 'TODO Test on windowsX64'
                         '''
                     }
                 },
@@ -92,7 +99,7 @@ pipeline {
                     }
                 },
                 windowsX86: {
-                    node('windows') {
+                    node('windowsx86') {
                         bat '''
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
@@ -105,7 +112,7 @@ pipeline {
                     }
                 },
                 windowsX64: {
-                    node('windows') {
+                    node('windowsX64') {
                         bat '''
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
@@ -134,9 +141,16 @@ pipeline {
                     }
                 },
                 windows: {
-                    node('windows') {
+                    node('windowsX86') {
                         bat '''
-                            echo 'TODO Deploy windows'
+                            echo 'TODO Deploy windowsX86'
+                        '''
+                    }
+                },
+                windows: {
+                    node('windowsX86') {
+                        bat '''
+                            echo 'TODO Deploy windowsx64'
                         '''
                     }
                 },
