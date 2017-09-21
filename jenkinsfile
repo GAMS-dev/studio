@@ -34,7 +34,9 @@ pipeline {
                     node('windowsX64') {
                         checkout scm
                         bat '''
-                            set
+                            cd src
+                            qmake ide.pro "CONFIG+=release"
+                            nmake qmake_all
                         '''
                     }
                 },
