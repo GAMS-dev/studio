@@ -15,8 +15,10 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         checkout scm
-                        PATH=/opt/Qt/5.9.1/:$PATH
-                        sh 'qmake src/ide.pro && make -j3'
+                        sh '''
+                            export PATH=/opt/Qt/5.9.1/:$PATH
+                            qmake src/ide.pro && make -j3
+                        '''
                     }
                 },
                 windowsX86: {
