@@ -178,7 +178,6 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-'
                         //    echo 'Setting up environment for scp usage...'
                         //    ssh-agent sh
                         //    ssh-add .ssh/nightbuild
