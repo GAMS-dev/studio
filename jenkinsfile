@@ -153,6 +153,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
+                            . /etc/profile
                             scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
