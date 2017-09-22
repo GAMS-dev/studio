@@ -174,7 +174,10 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            echo 'TODO Deploy macos'
+                            echo 'Setting up environment for scp usage...'
+                            ssh-agent sh
+                            ssh-add .ssh/nightbuild
+                            scp src/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 }
