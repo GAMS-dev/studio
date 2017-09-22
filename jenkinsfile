@@ -153,7 +153,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            eval 'keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild'
+                            keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
                             scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
