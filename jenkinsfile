@@ -107,6 +107,7 @@ pipeline {
                             echo "ROGOS DEBUG INFO"
                             echo $PATH
 
+                            export PATH=/opt/Qt/5.9.1/bin:$PATH
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
