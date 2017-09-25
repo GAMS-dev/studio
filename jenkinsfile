@@ -178,6 +178,7 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
+                        sh "ls -al ${workspace}/src/bin"
                         sh "scp ${workspace}/src/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                     }
                 }
