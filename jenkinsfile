@@ -184,7 +184,7 @@ pipeline {
                         sh "ls -al ${workspace}/bin"
                         sh "ls -al ${workspace}/src"
                         sh "ls -al ${workspace}/src/bin"
-                        sh 'scp bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide'
+                        sh "scp ${workspace}/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                     }
                 }
             }
