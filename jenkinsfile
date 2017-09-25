@@ -103,10 +103,10 @@ pipeline {
                             # collect files
 #                            cp bin/ide appdir/usr/bin/
                             cp res/gamsstudio.desktop bin/
-#                            cp src/icons/* appdir/
+                            cp src/icons/* bin/
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                           ./linuxdeployqt-continuous-x86_64.AppImage bin/ -appimage -bundle-non-qt-libs
+                           ./linuxdeployqt-continuous-x86_64.AppImage bin/ide -appimage -bundle-non-qt-libs
                         '''
                         archiveArtifacts artifacts: 'GAMS_Studio*', fingerprint: true
                     }
