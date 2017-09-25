@@ -154,7 +154,7 @@ pipeline {
                     node('master') {
                         sh '''
                             #keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
-                            #scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
