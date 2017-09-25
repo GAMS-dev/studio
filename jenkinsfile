@@ -16,7 +16,7 @@ pipeline {
                     node('master') {
                         checkout scm
                         sh '''
-                            echo $PATH
+                            export PATH=/opt/Qt/5.9.1/:$PATH
                             qmake src/ide.pro && make -j3
                         '''
                     }
