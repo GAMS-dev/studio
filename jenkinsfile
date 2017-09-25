@@ -153,6 +153,14 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
+		            echo "rogos debug infos:"
+                            pwd
+                            ls -l
+                            echo "------------"
+                            ls -l src/
+                            echo "------------"
+                            ls -l src/bin
+
                             #keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
                             scp -v -o "BatchMode yes" src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
