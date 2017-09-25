@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "filerepository.h"
-#include "tabwidget.h"
 #include "codeeditor.h"
 
 namespace Ui {
