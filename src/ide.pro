@@ -39,7 +39,6 @@ SOURCES += \
 
 HEADERS += \
     codeeditor.h \
-    tabwidget.h \
     filesystemcontext.h \
     filecontext.h \
     filerepository.h \
