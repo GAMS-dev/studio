@@ -153,8 +153,8 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
-                            scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            #keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
+                            #scp src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
@@ -178,11 +178,7 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-                        //    echo 'Setting up environment for scp usage...'
-                        //    ssh-agent sh
-                        //    ssh-add .ssh/nightbuild
-                        //    scp src/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide
-                        //'''
+                        sh 'scp src/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide'
                     }
                 }
             }
