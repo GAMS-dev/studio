@@ -25,37 +25,38 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
+    main.cpp \
     codeeditor.cpp \
     filesystemcontext.cpp \
     filecontext.cpp \
     filerepository.cpp \
     filegroupcontext.cpp \
-        welcomepage.cpp \
-        editor.cpp \
-        modeldialog.cpp \
+    welcomepage.cpp \
+    editor.cpp \
+    modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp
 
 HEADERS += \
-        codeeditor.h \
-        filesystemcontext.h \
-        filecontext.h \
-        filerepository.h \
-        filegroupcontext.h \
-        welcomepage.h \
-        editor.h \
-        modeldialog.h \
+    codeeditor.h \
+    tabwidget.h \
+    filesystemcontext.h \
+    filecontext.h \
+    filerepository.h \
+    filegroupcontext.h \
+    welcomepage.h \
+    editor.h \
+    modeldialog.h \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h
 
 FORMS += \
-        welcomepage.ui \
-        editor.ui \
-        modeldialog.ui \
+    welcomepage.ui \
+    editor.ui \
+    modeldialog.ui \
     mainwindow.ui
 
 
 RESOURCES += \
-        icons/icons.qrc
+    icons/icons.qrc
