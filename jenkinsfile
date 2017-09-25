@@ -101,14 +101,12 @@ pipeline {
                             mkdir -p appdir/usr/bin
 
                             # collect files
-                            cp bin/ide appdir/usr/bin/
-                            cp res/gamsstudio.desktop appdir/
-                            cp src/icons/* appdir/
-                            echo "ROGOS DEBUG INFO"
-                            echo $PATH
+#                            cp bin/ide appdir/usr/bin/
+                            cp res/gamsstudio.desktop bin/
+#                            cp src/icons/* appdir/
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                           ./linuxdeployqt-continuous-x86_64.AppImage appdir/ -appimage -bundle-non-qt-libs
+                           ./linuxdeployqt-continuous-x86_64.AppImage bin/ -appimage -bundle-non-qt-libs
                         '''
                         archiveArtifacts artifacts: 'GAMS_Studio*', fingerprint: true
                     }
