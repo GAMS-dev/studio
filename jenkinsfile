@@ -181,9 +181,6 @@ pipeline {
                     node('macos') {
                         //unstash 'mac-dmg'
                         sh "ls -al ${workspace}"
-                        sh "ls -al ${workspace}/bin"
-                        sh "ls -al ${workspace}/src"
-                        sh "ls -al ${workspace}/src/bin"
                         sh "scp ${workspace}/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                     }
                 }
