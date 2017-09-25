@@ -15,7 +15,10 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         checkout scm
-                        sh 'qmake src/ide.pro && make -j3'
+                        sh '''
+                            echo $PATH
+                            qmake src/ide.pro && make -j3'
+                        '''
                     }
                 },
                 windowsX86: {
