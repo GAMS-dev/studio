@@ -104,7 +104,9 @@ pipeline {
                             cp bin/ide appdir/usr/bin/
                             cp res/gamsstudio.desktop appdir/
                             cp src/icons/* appdir/
-                            
+                            echo "ROGOS DEBUG INFO"
+                            echo $PATH
+ 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                         '''
