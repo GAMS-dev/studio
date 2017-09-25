@@ -17,7 +17,7 @@ pipeline {
                         checkout scm
                         sh '''
                             echo $PATH
-                            qmake src/ide.pro && make -j3'
+                            qmake src/ide.pro && make -j3
                         '''
                     }
                 },
