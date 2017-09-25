@@ -15,10 +15,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         checkout scm
-                        sh '''
-                            export PATH=/opt/Qt/5.9.1/bin:$PATH
-                            qmake src/ide.pro && make -j3
-                        '''
+                        sh 'qmake src/ide.pro && make -j3'
                     }
                 },
                 windowsX86: {
@@ -107,7 +104,6 @@ pipeline {
                             echo "ROGOS DEBUG INFO"
                             echo $PATH
 
-                            export PATH=/opt/Qt/5.9.1/bin:$PATH
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -bundle-non-qt-libs
