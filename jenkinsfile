@@ -143,7 +143,7 @@ pipeline {
                             cd bin
                             macdeployqt ide.app -dmg -always-overwrite
                         '''
-                        stash includes: '**/*.dmg', name: 'mac-dmg'
+                        //stash includes: '**/*.dmg', name: 'mac-dmg'
                         archiveArtifacts artifacts: '**/*.dmg', fingerprint: true
                     }
                 }
@@ -179,12 +179,12 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-                        unstash 'mac-dmg'
+                        //unstash 'mac-dmg'
                         sh "ls -al ${workspace}"
                         sh "ls -al ${workspace}/bin"
                         sh "ls -al ${workspace}/src"
                         sh "ls -al ${workspace}/src/bin"
-                        sh "scp ${workspace}/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide"
+                        sh 'scp bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide'
                     }
                 }
             }
