@@ -154,8 +154,7 @@ pipeline {
                     node('master') {
                         sh '''
                             #keychain --eval --agents ssh /var/lib/jenkins/.ssh/nightbuild
-                            echo $USER
-                            scp -v src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            scp -v -o "BatchMode yes" src/bin/GAMS_Studio-x86_64.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
