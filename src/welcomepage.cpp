@@ -44,7 +44,6 @@ WelcomePage::~WelcomePage()
 
 void WelcomePage::labelLinkActivated(const QString &link)
 {
-    qDebug() << "click";
     QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
 }
 

@@ -164,7 +164,7 @@ pipeline {
                             } else {
                                sh 'echo "neither master nor develop"'
                             }
-                        }                        
+                        }
                     }
                 },
                 windowsX86: {
@@ -201,7 +201,7 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-                    script {
+                        script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide'
                             } else {
