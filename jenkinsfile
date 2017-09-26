@@ -37,7 +37,7 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        step([$class: 'WsCleanup'])
+                        step([$class: 'WsCleanup'])
                         checkout scm
                         bat 'set'
                         bat '''
