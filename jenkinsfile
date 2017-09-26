@@ -159,11 +159,19 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh """
-                            #!/bin/sh
-                            if [ "${env.BRANCH_NAME}" =~ "^master|develop" ]; then
-                                scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
-                            else 
-                                echo "${env.BRANCH_NAME}"
+                            regex=false
+                            input="${env.BRANCH_NAME}"
+
+                            if [ $input = master ]; then
+                                regex=true
+                            fi
+                            if [ $input = develop ]; then
+                                regex=true
+                            fi
+
+                            if [ $regex = true ]; then
+                                echo "copy"
+                            # scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                             fi
                         """
                     }
