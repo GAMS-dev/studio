@@ -166,7 +166,7 @@ pipeline {
                         bat '''
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            pscp src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            pscp -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
@@ -175,7 +175,7 @@ pipeline {
                         bat '''
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            pscp src\\bin\\ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            pscp -batch src\\bin\\ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
