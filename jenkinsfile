@@ -185,11 +185,18 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat '''
+                        bat """
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                        rem pscp -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -batch src\\bin\\ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
-                        '''
+                            set res=F
+                            if "${env.BRANCH_NAME}"=="develop" set res=T
+                            if "${env.BRANCH_NAME}"=="master" set res=T
+                            if "%res%"=="T" (
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            ) else (
+                                echo '${env.BRANCH_NAME}'
+                            )
+                        """
                     }
                 },
                 macos: {
