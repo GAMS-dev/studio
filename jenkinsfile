@@ -1,0 +1,216 @@
+pipeline {
+    agent any
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
+    }
+
+    triggers {
+        cron('0 23 * * *')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh '''
+                            export PATH=/opt/Qt/5.9.1/:$PATH
+                            qmake src/ide.pro && make -j3
+                        '''
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            echo 'Setting up environment for Qt usage...'
+                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
+                            cd src
+                            qmake ide.pro
+                            make
+                        '''
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat 'set'
+                        bat '''
+                            @echo off
+                            echo Setting up environment for Qt usage...
+                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
+                            echo Setting up environment for VS2014 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC"
+                            call vcvarsall.bat amd64
+                            set
+                            cd %WORKSPACE%\\src
+                            qmake ide.pro "CONFIG+=release"
+                            nmake
+                        '''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh 'qmake src/ide.pro && make -j3'
+                    }
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            echo 'TODO Test on linux'
+                        '''
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat '''
+                            echo 'TODO Test on windowsX86'
+                        '''
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat '''
+                            echo 'TODO Test on windowsX64'
+                        '''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            echo 'TODO Test on macos'
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Pack') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh 'wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"'
+                        sh '''
+                            # create folder structure
+                            mkdir -p appdir/usr/bin
+
+                            # collect files
+                            cp bin/ide appdir/usr/bin/
+                            cp res/gamsstudio.desktop appdir/
+                            cp src/icons/* appdir/
+                            
+                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
+                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
+                        '''
+                        sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-GAMS_Studio-x86_64.AppImage"
+                        archiveArtifacts artifacts: '*GAMS_Studio*', fingerprint: true
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat """
+                            echo 'Setting up environment for Qt usage...'
+                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
+                            cd src\\bin
+                            windeployqt --release --compiler-runtime --force ide.exe
+                            del *.zip
+                            7z a -r ${env.BRANCH_NAME}-ide-x86.zip *
+                        """
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat """
+                            echo 'Setting up environment for Qt usage...'
+                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
+                            cd src\\bin
+                            windeployqt --release --compiler-runtime --force ide.exe
+                            del *.zip
+                            7z a -r "${env.BRANCH_NAME}-ide-x64.zip" *
+                        """
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            cd bin
+                            macdeployqt ide.app -dmg -always-overwrite
+                        '''
+                        sh "mv bin/ide.dmg ${env.BRANCH_NAME}-ide.dmg"
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh """
+                            if [[ '${env.BRANCH_NAME}' =~ '^master|develop' ]]; then
+                                scp -o "BatchMode yes" GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            else 
+                                echo ${env.BRANCH_NAME}
+                            fi
+                        """
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat """
+                            echo 'Setting up environment for putty usage...'
+                            set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
+                            set res=F
+                            if "${env.BRANCH_NAME}"=="develop" set res=T
+                            if "${env.BRANCH_NAME}"=="master" set res=T
+                            if "%res%"=="T" (
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            ) else (
+                                echo '${env.BRANCH_NAME}'
+                            )
+                        """
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat """
+                            echo 'Setting up environment for putty usage...'
+                            set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
+                            set res=F
+                            if "${env.BRANCH_NAME}"=="develop" set res=T
+                            if "${env.BRANCH_NAME}"=="master" set res=T
+                            if "%res%"=="T" (
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            ) else (
+                                echo '${env.BRANCH_NAME}'
+                            )
+                        """
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh """
+                            if [[ '${env.BRANCH_NAME}' =~ '^master|develop' ]]; then
+                                scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide
+                            else
+                                echo ${env.BRANCH_NAME}
+                            fi
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
