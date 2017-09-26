@@ -166,8 +166,7 @@ pipeline {
                         bat '''
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            plink -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d distrib@buildmeister.gams.com
-                            pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
@@ -176,8 +175,7 @@ pipeline {
                         bat '''
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            plink -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d distrib@buildmeister.gams.com
-                            pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -batch src\\bin\\ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                            pscp -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -batch src\\bin\\ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 },
