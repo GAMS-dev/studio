@@ -349,7 +349,7 @@
   <action name="actionSim_Process">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
-     <normaloff>:/img/gams-w.svg</normaloff>:/img/gams-w.svg</iconset>
+     <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
    </property>
    <property name="text">
     <string>Sim Process</string>

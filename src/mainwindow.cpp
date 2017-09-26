@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    mFileRepo.setFileFilter(QStringList() << "*.gms" << "*.inc" << "*.txt" << "*.log" << "*.lst");
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);

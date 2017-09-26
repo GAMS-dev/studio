@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/img">
-        <file>gams.svg</file>
-        <file>gams-w.svg</file>
+        <file alias="gams">gams.svg</file>
+        <file alias="gams-w">gams-w.svg</file>
+        <file alias="folder">folder.svg</file>
+        <file alias="folder-open">folder-open.svg</file>
     </qresource>
 </RCC>
