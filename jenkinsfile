@@ -163,7 +163,7 @@ pipeline {
                             if [ "${env.BRANCH_NAME}" =~ "^master|develop" ]; then
                                 scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                             else 
-                                echo ${env.BRANCH_NAME}
+                                echo "${env.BRANCH_NAME}"
                             fi
                         """
                     }
@@ -179,7 +179,7 @@ pipeline {
                             if "%res%"=="T" (
                                 pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                             ) else (
-                                echo '${env.BRANCH_NAME}'
+                                echo "${env.BRANCH_NAME}"
                             )
                         """
                     }
@@ -195,7 +195,7 @@ pipeline {
                             if "%res%"=="T" (
                                 pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                             ) else (
-                                echo '${env.BRANCH_NAME}'
+                                echo "${env.BRANCH_NAME}"
                             )
                         """
                     }
@@ -206,7 +206,7 @@ pipeline {
                             if [ '${env.BRANCH_NAME}' =~ '^master|develop' ] then
                                 scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide
                             else
-                                echo ${env.BRANCH_NAME}
+                                echo "${env.BRANCH_NAME}"
                             fi
                         """
                     }
