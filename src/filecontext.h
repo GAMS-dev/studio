@@ -55,6 +55,7 @@ public:
     virtual const QString name();
     CrudState crudState() const;
     void setLocation(const QString &location); // equals save_as...
+    QIcon icon();
 
     virtual void setFlag(ContextFlag flag);
     virtual void unsetFlag(ContextFlag flag);
@@ -80,6 +81,7 @@ private:
     CrudState mCrudState = CrudState::eCreate;
     QString mCodec = "UTF-8";
     QTextDocument* mDocument = nullptr;
+    QFileSystemWatcher *mWatcher = nullptr;
     static const QStringList mDefaulsCodecs;
 
 };

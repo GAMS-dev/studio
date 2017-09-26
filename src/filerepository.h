@@ -51,12 +51,14 @@ public:
     QModelIndex rootModelIndex();
     QModelIndex findPath(const QString& filePath, QModelIndex parent);
     void close(int fileId);
+    void setFileFilter(QStringList filter);
 
 signals:
     void fileClosed(int fileId);
 
 public slots:
     void nodeNameChanged(int fileId, const QString &newName);
+    void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
 
 private:
@@ -69,6 +71,7 @@ private:
     int mNextId;
     FileGroupContext* mRoot;
     FileGroupContext* mTreeRoot;
+    QStringList mSuffixFilter;
 };
 
 } // namespace ide

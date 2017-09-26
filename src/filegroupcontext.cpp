@@ -40,19 +40,19 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
         throw QException();
-    FileSystemContext::unsetFlag(flag);
+    FileSystemContext::setFlag(flag, false);
 }
 
-int FileGroupContext::peekIndex(const QString& name, bool *exactMatch)
+int FileGroupContext::peekIndex(const QString& name, bool *hit)
 {
-    if (exactMatch)
-        *exactMatch = false;
+    if (hit)
+        *hit = false;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *child = childEntry(i);
         int comp = name.compare(child->name(), Qt::CaseInsensitive);
         if (comp >= 0) {
-            if (comp == 0 && exactMatch)
-                *exactMatch = true;
+            if (comp == 0 && hit)
+                *hit = true;
             return i;
         }
     }
@@ -114,6 +114,11 @@ int FileGroupContext::indexOf(FileSystemContext* child)
 FileSystemContext*FileGroupContext::childEntry(int index)
 {
     return mChildList.at(index);
+}
+
+QIcon FileGroupContext::icon()
+{
+    return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
 }
 
 void FileGroupContext::directoryChanged(const QString& path)

@@ -36,6 +36,7 @@ public:
     int childCount();
     int indexOf(FileSystemContext *child);
     FileSystemContext* childEntry(int index);
+    QIcon icon();
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -48,7 +49,7 @@ protected:
     friend class FileSystemContext;
 
     FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
-    int peekIndex(const QString &name, bool* exactMatch = nullptr);
+    int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void insertChild(int pos, FileSystemContext *child);
     void removeChild(FileSystemContext *child);

@@ -51,6 +51,7 @@ public:
     void setName(const QString& name);
     const QString& location() const;
     virtual void setLocation(const QString& location);
+    virtual QIcon icon();
 
     const ContextFlags &flags() const;
     virtual void setFlag(ContextFlag flag, bool value = true);
@@ -65,6 +66,7 @@ public:
 
 signals:
     void nameChanged(int id, QString newName);
+    void changed(int fileId);
 
 protected:
     FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist);

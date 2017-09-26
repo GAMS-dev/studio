@@ -108,6 +108,14 @@ void FileContext::setLocation(const QString& location)
     setCrudState(CrudState::eCreate);
 }
 
+QIcon FileContext::icon()
+{
+    QFileInfo fi(mLocation);
+    if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
+        return QIcon(":/img/gams-w");
+    return FileSystemContext::icon();
+}
+
 void FileContext::setFlag(ContextFlag flag)
 {
     if (flag == FileSystemContext::cfGroup)

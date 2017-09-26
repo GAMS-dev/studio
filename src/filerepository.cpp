@@ -137,6 +137,10 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         break;
     }
 
+    case Qt::DecorationRole:
+        return node(index)->icon();
+        break;
+
     case Qt::ToolTipRole:
         return node(index)->location();
         break;
@@ -155,9 +159,9 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     if (!par)
         throw FATAL() << "Can't get parent object";
 
-    bool exact;
-    int offset = par->peekIndex(name, &exact);
-    if (exact) {
+    bool hit;
+    int offset = par->peekIndex(name, &hit);
+    if (hit) {
         FileSystemContext *fc = par->childEntry(offset);
         if (fc->location().compare(location, Qt::CaseInsensitive) == 0) {
             return index(offset, 0, parentIndex);
@@ -174,9 +178,9 @@ QModelIndex FileRepository::addGroup(QString name, QString location, bool isGist
     if (!par)
         throw FATAL() << "Can't get parent object";
 
-    bool exact;
-    int offset = par->peekIndex(name, &exact);
-    if (exact) {
+    bool hit;
+    int offset = par->peekIndex(name, &hit);
+    if (hit) {
         FileSystemContext *fc = par->childEntry(offset);
         fc->setLocation(location);
         qDebug() << "found dir " << name << " for " << location << " at pos=" << offset;
@@ -193,6 +197,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, bool isGist
     }
     endInsertRows();
     connect(fgContext, &FileGroupContext::nameChanged, this, &FileRepository::nodeNameChanged);
+    connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
     updatePathNode(fgContext->id(), fgContext->location());
     return index(offset, 0, parentIndex);
@@ -206,11 +211,12 @@ QModelIndex FileRepository::addFile(QString name, QString location, bool isGist,
     if (!par)
         throw FATAL() << "Can't get parent object";
 
-    bool exact;
-    int offset = par->peekIndex(name, &exact);
-    if (exact) {
+    bool hit;
+    int offset = par->peekIndex(name, &hit);
+    if (hit) {
         FileSystemContext *fc = par->childEntry(offset);
         fc->setLocation(location);
+        fc->setFlag(FileSystemContext::cfMissing, !QFile(location).exists());
         qDebug() << "found file " << name << " for " << location << " at pos=" << offset;
         return index(offset, 0, parentIndex);
     }
@@ -218,6 +224,7 @@ QModelIndex FileRepository::addFile(QString name, QString location, bool isGist,
     FileContext* fContext = new FileContext(group(parentIndex), mNextId++, name, location, isGist);
     endInsertRows();
     connect(fContext, &FileContext::nameChanged, this, &FileRepository::nodeNameChanged);
+    connect(fContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     return index(offset, 0, parentIndex);
 }
@@ -253,6 +260,11 @@ void FileRepository::close(int fileId)
     emit fileClosed(fileId);
 }
 
+void FileRepository::setFileFilter(QStringList filter)
+{
+    mSuffixFilter = filter;
+}
+
 void FileRepository::nodeNameChanged(int fileId, const QString& newName)
 {
     Q_UNUSED(newName);
@@ -263,27 +275,37 @@ void FileRepository::nodeNameChanged(int fileId, const QString& newName)
     dataChanged(ndIndex, ndIndex);
 }
 
+void FileRepository::nodeChanged(int fileId)
+{
+    FileSystemContext* nd = context(fileId, mRoot);
+    if (!nd) return;
+    QModelIndex ndIndex = index(nd);
+    dataChanged(ndIndex, ndIndex);
+}
+
 typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
 void FileRepository::updatePathNode(int fileId, QDir dir)
 {
-    FileGroupContext *gc = groupContext(fileId, mRoot);
-    if (!gc)
+    FileGroupContext *parGroup = groupContext(fileId, mRoot);
+    if (!parGroup)
         throw QException();
     if (dir.exists()) {
         QDir::Filters dirFilter = QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot;
-        QStringList fileList = dir.entryList(dirFilter, QDir::DirsLast);
+        QStringList fileList = dir.entryList(mSuffixFilter, dirFilter, QDir::DirsLast);
         qSort(fileList);
         // remove known entries from fileList and remember vanished entries
         QList<IndexedFSContext> vanishedEntries;
-        for (int i = 0; i < gc->childCount(); ++i) {
-            FileSystemContext *entry = gc->childEntry(i);
+        for (int i = 0; i < parGroup->childCount(); ++i) {
+            FileSystemContext *entry = parGroup->childEntry(i);
             QRegExp rx(entry->location());
             int pos = fileList.indexOf(rx);
             if (pos >= 0) {
                 fileList.removeAt(pos);
                 if (qobject_cast<FileGroupContext*>(entry)) {
                     updatePathNode(entry->id(), entry->location());
+                } else {
+                    entry->unsetFlag(FileSystemContext::cfMissing);
                 }
             } else {
                 // prepare indicees in reverse order (highest index first)
@@ -299,6 +321,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
             if (entry->flags().testFlag(FileSystemContext::cfActive)) {
                 // mark active files as missing (directories recursively)
                 entry->setFlag(FileSystemContext::cfMissing);
+                qDebug() << "Missing file: " << entry->name();
             } else {
                 // inactive files can be removed (directories recursively)
                 entry->setParent(nullptr);
@@ -309,11 +332,11 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         for (QString fsEntry: fileList) {
             QFileInfo fi(dir, fsEntry);
             if (fi.isDir()) {
-                QModelIndex grInd = addGroup(fsEntry, fi.canonicalFilePath(), false, index(gc));
+                QModelIndex grInd = addGroup(fsEntry, fi.canonicalFilePath(), false, index(parGroup));
                 FileGroupContext *fg = group(grInd);
                 updatePathNode(fg->id(), fg->location());
             } else {
-                addFile(fsEntry, fi.canonicalFilePath(), false, index(gc));
+                addFile(fsEntry, fi.canonicalFilePath(), false, index(parGroup));
             }
         }
     }

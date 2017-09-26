@@ -94,6 +94,7 @@ void FileSystemContext::setName(const QString& name)
     if (mName != name) {
         mName = name;
         emit nameChanged(mId, mName);
+        emit changed(mId);
     }
 }
 
@@ -111,6 +112,11 @@ void FileSystemContext::setLocation(const QString& location)
     }
 }
 
+QIcon FileSystemContext::icon()
+{
+    return QIcon();
+}
+
 const FileSystemContext::ContextFlags& FileSystemContext::flags() const
 {
     return mFlags;
@@ -118,20 +124,16 @@ const FileSystemContext::ContextFlags& FileSystemContext::flags() const
 
 void FileSystemContext::setFlag(ContextFlag flag, bool value)
 {
-    if (!value) {
-        unsetFlag(flag);
-    } else if (!mFlags.testFlag(flag)) {
-        mFlags.setFlag(flag);
-        if (parentEntry()) parentEntry()->checkFlags();
-    }
+    bool current = testFlag(flag);
+    if (current == value) return;
+    mFlags.setFlag(flag, value);
+    if (parentEntry()) parentEntry()->checkFlags();
+    emit changed(mId);
 }
 
 void FileSystemContext::unsetFlag(ContextFlag flag)
 {
-    if (mFlags.testFlag(flag)) {
-        mFlags &= ~flag;
-        if (parentEntry()) parentEntry()->checkFlags();
-    }
+    setFlag(flag, false);
 }
 
 bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
