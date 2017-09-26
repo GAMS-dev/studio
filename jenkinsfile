@@ -178,12 +178,12 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            ls -l .
-                            echo "----"
-                            ls -l bin/
-                            echo "----"
-                            ls -l src/
-                            sh "scp **/*.dmg distrib@buildmeister.gams.com:./builds-page/ide"
+                           # ls -l .
+                           # echo "----"
+                           ls -l bin/
+                           # echo "----"
+                           # ls -l src/
+                            sh "scp bin/*.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                         '''
                     }
                 }
