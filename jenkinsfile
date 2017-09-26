@@ -158,9 +158,14 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        sh '''
-                        #    scp -o "BatchMode yes" GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
-                        '''
+                        sh """
+                            re = '^master|develop'
+                            if [[${env.BRANCH_NAME} =~ $re]]; then
+                                scp -o "BatchMode yes" GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            else 
+                                echo ${env.BRANCH_NAME}
+                            fi;
+                        """
                     }
                 },
                 windowsX86: {
