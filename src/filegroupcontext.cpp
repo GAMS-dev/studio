@@ -124,11 +124,15 @@ QIcon FileGroupContext::icon()
 void FileGroupContext::directoryChanged(const QString& path)
 {
     QDir dir(path);
-    if (!dir.exists()) {
-
-    } else {
+    if (dir.exists()) {
         emit contentChanged(mId, dir);
+        return;
     }
+    if (testFlag(cfActive)) {
+        setFlag(cfMissing);
+        return;
+    }
+    deleteLater();
 }
 
 FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)

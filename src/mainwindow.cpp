@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     mFileRepo.setFileFilter(QStringList() << "*.gms" << "*.inc" << "*.txt" << "*.log" << "*.lst");
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
+    ui->treeView->setIconSize(QSize(15,15));
+    ui->mainToolBar->setIconSize(QSize(21,21));
     connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
     mCodecGroup = new QActionGroup(this);
