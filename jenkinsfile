@@ -178,7 +178,7 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            sh "scp ${workspace}/bin/ide.dmg distrib@buildmeister.gams.com:./builds-page/ide"
+                            sh "scp **/*.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                         '''
                     }
                 }
