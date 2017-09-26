@@ -14,6 +14,7 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
+                        step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
                             export PATH=/opt/Qt/5.9.1/:$PATH
@@ -23,6 +24,7 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
+                        step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
                             echo 'Setting up environment for Qt usage...'
@@ -35,6 +37,7 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
+                        step([$class: 'WsCleanup'])
                         checkout scm
                         bat 'set'
                         bat '''
@@ -53,6 +56,7 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
+                        step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake src/ide.pro && make -j3'
                     }
