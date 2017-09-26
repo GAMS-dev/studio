@@ -160,7 +160,7 @@ pipeline {
                     node('master') {
                         sh """
                             regex=false
-                            input=${env.BRANCH_NAME}
+                            input=master
 
                             if [ $input = master ]; then
                                 regex=true
