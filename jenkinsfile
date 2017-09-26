@@ -172,7 +172,7 @@ pipeline {
 
                             if [ $regex = true ]; then
                                 echo "copy"
-                            # scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
+                            
                             fi
                         """
                     }
