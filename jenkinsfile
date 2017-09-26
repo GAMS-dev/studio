@@ -148,8 +148,8 @@ pipeline {
                             cd bin
                             macdeployqt ide.app -dmg -always-overwrite
                         '''
-                        sh "mv ide.dmg ${env.BRANCH_NAME}-ide.dmg"
-                        archiveArtifacts artifacts: '**/*.dmg', fingerprint: true
+                        sh "mv bin/ide.dmg ${env.BRANCH_NAME}-ide.dmg"
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
             }
@@ -184,7 +184,7 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                        #    scp bin/*.dmg distrib@buildmeister.gams.com:./builds-page/ide
+                        #    scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide
                         '''
                     }
                 }
