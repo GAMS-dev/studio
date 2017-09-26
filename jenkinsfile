@@ -118,27 +118,27 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat '''
+                        bat """
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
                             del *.zip
-                        '''
-                        bat "7z a -r ${env.BRANCH_NAME}-ide-x86.zip *"
+                            7z a -r ${env.BRANCH_NAME}-ide-x86.zip *
+                        """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat '''
+                        bat """
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
                             del *.zip
                             7z a -r "${env.BRANCH_NAME}-ide-x64.zip" *
-                        '''
+                        """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
@@ -147,8 +147,8 @@ pipeline {
                         sh '''
                             cd bin
                             macdeployqt ide.app -dmg -always-overwrite
-                            mv ide.dmg "${env.BRANCH_NAME}-ide.dmg"
                         '''
+                        sh "mv ide.dmg ${env.BRANCH_NAME}-ide.dmg"
                         archiveArtifacts artifacts: '**/*.dmg', fingerprint: true
                     }
                 }
