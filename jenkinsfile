@@ -158,23 +158,11 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        sh """
-                            #!/bin/sh
-                            regex=false
-                            input=master
-
-                            if [ $input = master ]; then
-                                regex=true
-                            fi
-                            if [ $input = develop ]; then
-                                regex=true
-                            fi
-
-                            if [ $regex = true ]; then
-                                echo "copy"
-                            
-                            fi
-                        """
+                        script {
+                            if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
+                               sh 'scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
+                            }
+                        }                        
                     }
                 },
                 windowsX86: {
