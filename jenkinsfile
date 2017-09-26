@@ -159,6 +159,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh """
+                            #!/bin/sh
                             regex=false
                             input=master
 
