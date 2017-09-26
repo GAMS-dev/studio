@@ -178,7 +178,11 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            tree -f -P "*.dmg"
+                            ls -l .
+                            echo "----"
+                            ls -l bin/
+                            echo "----"
+                            ls -l src/
                             sh "scp **/*.dmg distrib@buildmeister.gams.com:./builds-page/ide"
                         '''
                     }
