@@ -111,8 +111,9 @@ pipeline {
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
+                            mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-GAMS_Studio-x86_64.AppImage
                         '''
-                        archiveArtifacts artifacts: 'GAMS_Studio*', fingerprint: true
+                        archiveArtifacts artifacts: '*GAMS_Studio*', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -123,9 +124,9 @@ pipeline {
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
                             del *.zip
-                            7z a -r ide-x86.zip *
+                            7z a -r ${env.BRANCH_NAME}-ide-x86.zip *
                         '''
-                        archiveArtifacts artifacts: '**/ide-x86.zip', fingerprint: true
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
                 windowsX64: {
@@ -136,9 +137,9 @@ pipeline {
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force ide.exe
                             del *.zip
-                            7z a -r ide-x64.zip *
+                            7z a -r ${env.BRANCH_NAME}-ide-x64.zip *
                         '''
-                        archiveArtifacts artifacts: '**/ide-x64.zip', fingerprint: true
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
                 macos: {
@@ -146,6 +147,7 @@ pipeline {
                         sh '''
                             cd bin
                             macdeployqt ide.app -dmg -always-overwrite
+                            mv ide.dmg ${env.BRANCH_NAME}-ide.dmg
                         '''
                         archiveArtifacts artifacts: '**/*.dmg', fingerprint: true
                     }
@@ -156,7 +158,6 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        sh "echo ${env.BRANCH_NAME}"
                         sh '''
                         #    scp -o "BatchMode yes" GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide
                         '''
