@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "filerepository.h"
-#include "tabwidget.h"
 #include "codeeditor.h"
 
 namespace Ui {
@@ -32,14 +31,20 @@ class MainWindow;
 namespace gams {
 namespace ide {
 
+struct RecentData {
+    int editFileId = -1;
+    QWidget* editor = nullptr;
+    QString path = ".";
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(TabWidget* tabWidget, QString codecName = QString());
-    void createEdit(TabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenue(QString codecName);
 
 
@@ -52,7 +57,9 @@ private slots:
     void readyStdOut();
     void readyStdErr();
     void codecChanged(QAction *action);
-    void fileActivated(int fileId, CodeEditor* edit);
+    void activeTabChanged(int index);
+    void fileNameChanged(int fileId, QString newName);
+    void fileClosed(int fileId);
 
 private slots:
     void on_actionNew_triggered();
@@ -70,10 +77,11 @@ private slots:
     void on_actionLog_Output_triggered(bool checked);
     void on_actionBottom_Panel_triggered(bool checked);
     void on_actionSim_Process_triggered();
-    void on_mainTab_tabCloseRequested(int index);
     void on_actionShow_Welcome_Page_triggered();
-    void on_actionNew_Tab_triggered();
     void on_actionGAMS_Library_triggered();
+    void on_actionNew_Tab_triggered();
+    void on_mainTab_tabCloseRequested(int index);
+    void on_treeView_doubleClicked(const QModelIndex &index);
 
 private:
     void initTabs();
@@ -83,10 +91,10 @@ private:
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
+    QHash<QWidget*, int> mEditors; // TODO(JM) enable multiple editors on one file
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
-    int mLastActivatedFile = -1;
-    CodeEditor* mLastActivatedEditor = nullptr;
+    RecentData mRecent;
 };
 
 }

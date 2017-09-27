@@ -27,6 +27,7 @@ namespace ide {
 
 // TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
 enum class FileType {
+    ftGpr,
     ftGms,
     ftTxt,
     ftInc,
@@ -51,9 +52,21 @@ class FileContext : public FileSystemContext
 public:
     QString codec() const;
     void setCodec(const QString& codec);
-    const QString name();
+    virtual const QString name();
     CrudState crudState() const;
-    void saved();
+    void setLocation(const QString &location); // equals save_as...
+    QIcon icon();
+
+    virtual void setFlag(ContextFlag flag);
+    virtual void unsetFlag(ContextFlag flag);
+
+    void save();
+    void load(QString codecName = QString());
+    void setDocument(QTextDocument *doc);
+    QTextDocument* document();
+
+signals:
+    void crudChanged(CrudState state);
 
 public slots:
     void textChanged();
@@ -62,10 +75,14 @@ public slots:
 protected:
     friend class FileRepository;
     FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
+    void setCrudState(CrudState state);
 
 private:
-    CrudState mCrudState;
+    CrudState mCrudState = CrudState::eCreate;
     QString mCodec = "UTF-8";
+    QTextDocument* mDocument = nullptr;
+    QFileSystemWatcher *mWatcher = nullptr;
+    static const QStringList mDefaulsCodecs;
 
 };
 

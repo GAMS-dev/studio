@@ -34,9 +34,10 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
-    FileContext* fileContext(int id, FileSystemContext* startNode = nullptr);
-    FileSystemContext* context(int id, FileSystemContext* startNode = nullptr);
-    virtual QModelIndex index(FileSystemContext* entry);
+    FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+    FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
+    FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+    QModelIndex index(FileSystemContext* entry);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
     QModelIndex parent(const QModelIndex &child) const;
@@ -48,20 +49,29 @@ public:
     QModelIndex addFile(QString name, QString location, bool isGist, QModelIndex parentIndex = QModelIndex());
     QModelIndex rootTreeModelIndex();
     QModelIndex rootModelIndex();
-    QModelIndex find(const QString& filePath, QModelIndex parent);
+    QModelIndex findPath(const QString& filePath, QModelIndex parent);
+    void close(int fileId);
+    void setFileFilter(QStringList filter);
+
+signals:
+    void fileClosed(int fileId);
 
 public slots:
-    void nodeNameChanged(int id, const QString &newName);
+    void nodeNameChanged(int fileId, const QString &newName);
+    void nodeChanged(int fileId);
+    void updatePathNode(int fileId, QDir dir);
 
 private:
     FileSystemContext* node(const QModelIndex& index) const;
     FileGroupContext* group(const QModelIndex& index) const;
     void changeName(QModelIndex index, QString newName);
+    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
 private:
     int mNextId;
     FileGroupContext* mRoot;
     FileGroupContext* mTreeRoot;
+    QStringList mSuffixFilter;
 };
 
 } // namespace ide

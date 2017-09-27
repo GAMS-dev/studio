@@ -20,10 +20,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
-#include "tabwidget.h"
 #include "welcomepage.h"
 #include "editor.h"
 #include "modeldialog.h"
+#include "exception.h"
+#include "treeitemdelegate.h"
 
 namespace gams {
 namespace ide {
@@ -34,12 +35,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    mFileRepo.setFileFilter(QStringList() << "*.gms" << "*.inc" << "*.txt" << "*.log" << "*.lst");
     ui->treeView->setHeaderHidden(true);
+    ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
+    ui->treeView->setIconSize(QSize(15,15));
+    ui->mainToolBar->setIconSize(QSize(21,21));
     connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
-    connect(ui->mainTab, &TabWidget::fileActivated, this, &MainWindow::fileActivated);
+    connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     ensureCodecMenue("System");
 }
 
@@ -55,60 +61,27 @@ void MainWindow::initTabs()
     ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
-void MainWindow::createEdit(TabWidget* tabWidget, QString codecName)
+void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 {
     createEdit(tabWidget, -1, codecName);
 }
 
-void MainWindow::createEdit(TabWidget *tabWidget, int id, QString codecName)
+void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
-    QStringList codecNames;
-    if (!codecName.isEmpty()) {
-        codecNames << codecName;
-    } else {
-        // Most error-prone codecs first and non-unicode last to prevent early false-success
-        codecNames << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
-    }
-
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
+        mEditors.insert(codeEdit, fc->id());
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->name(), id);
+        int tabIndex = tabWidget->addTab(codeEdit, fc->name());
+        qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
-        QFile file(fc->location());
-        if (!file.fileName().isEmpty() && file.exists()) {
-            if (file.open(QFile::ReadOnly | QFile::Text)) {
-                const QByteArray data(file.readAll());
-                QString text;
-                QString nameOfUsedCodec;
-                for (QString tcName: codecNames) {
-                    QTextCodec::ConverterState state;
-                    QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
-                    if (codec) {
-                        nameOfUsedCodec = tcName;
-                        text = codec->toUnicode(data.constData(), data.size(), &state);
-                        if (state.invalidChars == 0) {
-                            qDebug() << "opened with codec " << nameOfUsedCodec;
-                            break;
-                        }
-                        qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
-                    } else {
-                        qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
-                        nameOfUsedCodec = QString();
-                    }
-                }
-                if (!nameOfUsedCodec.isEmpty()) {
-                    codeEdit->setPlainText(text);
-                    fc->setCodec(nameOfUsedCodec);
-                    ensureCodecMenue(nameOfUsedCodec);
-                }
-                file.close();
-            }
-        }
+        fc->setDocument(codeEdit->document());
+        fc->load(codecName);
+        ensureCodecMenue(fc->codec());
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::nameChanged, ui->mainTab, &TabWidget::tabNameChanged);
+        connect(fc, &FileContext::nameChanged, this, &MainWindow::fileNameChanged);
     }
 }
 
@@ -139,7 +112,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
-                                                 ".",
+                                                 mRecent.path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
@@ -149,17 +122,21 @@ void MainWindow::on_actionOpen_triggered()
         qDebug() << "Type: " << fInfo.suffix();
         FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
-        if (fType == FileType::ftGms) {
+        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
             QString dir = fInfo.path();
-            QModelIndex groupMI = mFileRepo.find(dir, mFileRepo.rootTreeModelIndex());
+            QModelIndex groupMI = mFileRepo.findPath(dir, mFileRepo.rootTreeModelIndex());
             if (!groupMI.isValid()) {
                 groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
             }
-            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.filePath(), true, groupMI);
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), true, groupMI);
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
+        }
+        if (fType == FileType::ftGpr) {
+            // TODO(JM) Read project and create all nodes for associated files
+
         }
     }
 }
@@ -168,21 +145,12 @@ void MainWindow::on_actionSave_triggered()
 {
     // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
     // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
-    FileContext* fc = mFileRepo.fileContext(mLastActivatedFile);
+    FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
     if (!fc) return;
     if (fc->location().isEmpty()) {
         on_actionSave_As_triggered();
-    } else {
-        if (fc->crudState() == CrudState::eUpdate) {
-            QFile outfile;
-            outfile.setFileName(fc->location());
-            outfile.open(QIODevice::WriteOnly | QIODevice::Text);
-            QTextStream out(&outfile);
-            out << mLastActivatedEditor->toPlainText();
-            out.flush();
-            outfile.close();
-            fc->saved();
-        }
+    } else if (fc->crudState() == CrudState::eUpdate) {
+        fc->save();
     }
 }
 
@@ -190,10 +158,17 @@ void MainWindow::on_actionSave_As_triggered()
 {
     auto fileName = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
-                                                 ".",
+                                                 mRecent.path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
+    if (!fileName.isEmpty()) {
+        mRecent.path = QFileInfo(fileName).path();
+        FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
+        if (!fc) return;
+        fc->setLocation(fileName);
+        fc->save();
+    }
 }
 
 void MainWindow::on_actionSave_All_triggered()
@@ -266,11 +241,37 @@ void MainWindow::codecChanged(QAction *action)
     qDebug() << "Codec action triggered: " << action->text();
 }
 
-void MainWindow::fileActivated(int fileId, CodeEditor* edit)
+void MainWindow::activeTabChanged(int index)
 {
+    QWidget *edit = nullptr;
+    if (index >= 0)
+        edit = ui->mainTab->widget(index);
     if (edit) {
-        mLastActivatedFile = fileId;
-        mLastActivatedEditor = edit;
+        int fileId = mEditors.value(edit, -1);
+        if (fileId >= 0) {
+            mRecent.editFileId = fileId;
+            mRecent.editor = edit;
+        }
+    }
+}
+
+void MainWindow::fileNameChanged(int fileId, QString newName)
+{
+    QWidgetList editors = mEditors.keys(fileId);
+    for (QWidget *edit: editors) {
+        int index = ui->mainTab->indexOf(edit);
+        if (index >= 0)
+            ui->mainTab->setTabText(index, newName);
+    }
+}
+
+void MainWindow::fileClosed(int fileId)
+{
+    QWidgetList editors = mEditors.keys(fileId);
+    for (QWidget *edit: editors) {
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        edit->deleteLater();
+        mEditors.remove(edit);
     }
 }
 
@@ -327,7 +328,31 @@ void MainWindow::on_actionSim_Process_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    ui->mainTab->removeTab(index);
+    QMessageBox msgBox;
+    int ret = QMessageBox::Discard;
+    int fileId = mEditors.value(ui->mainTab->widget(index), -1);
+    if (mEditors.keys(fileId).size() == 1) {
+        FileContext *fc = mFileRepo.fileContext(fileId);
+        if (fc && fc->crudState() == CrudState::eUpdate) {
+            // only ask, if this is the last editor of this file
+            msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
+            msgBox.setInformativeText("Do you want to save your changes?");
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Save);
+            ret = msgBox.exec();
+        }
+    }
+    if (ret == QMessageBox::Save) {
+        FileContext *fc = mFileRepo.fileContext(fileId);
+        if (!fc)
+            throw FATAL() << "Could not find file context to closed editor";
+        fc->save();
+    }
+    if (ret != QMessageBox::Cancel) {
+        int id = mEditors.value(ui->mainTab->widget(index));
+        // TODO(JM) close the file after last tab-remove
+        mFileRepo.close(id);
+    }
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -344,6 +369,19 @@ void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog;
     dialog.exec();
+}
+
+void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
+{
+    FileContext *fc = static_cast<FileContext*>(index.internalPointer());
+    if (fc) {
+        QWidget* edit = mEditors.key(fc->id(), nullptr);
+        if (edit) {
+            ui->mainTab->setCurrentWidget(edit);
+        } else {
+            createEdit(ui->mainTab, fc->id());
+        }
+    }
 }
 
 }

@@ -20,8 +20,7 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
-#include <QPlainTextEdit>
-#include <QObject>
+#include <QtWidgets>
 
 class QPaintEvent;
 class QResizeEvent;
@@ -45,14 +44,30 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+
+signals:
+    void updateBlockSelection();
+    void updateBlockEdit();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
+    void onUpdateBlockSelection();
+    void onUpdateBlockEdit();
 
 private:
     QWidget *lineNumberArea;
+    int mBlockStartKey = 0;
+    int mCurrentCol;
+    QTextCursor mBlockStartCursor;
+    QTextCursor mBlockLastCursor;
+    QRect mBlockCursorRect;
 };
 
 
