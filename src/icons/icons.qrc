@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/img">
+        <file alias="folder">folder.svg</file>
+        <file alias="folder-open">folder-open.svg</file>
+        <file alias="gams">gams.svg</file>
+        <file alias="gams-w">gams-w.svg</file>
+        <file alias="play">play.svg</file>
+        <file alias="pause">pause.svg</file>
+        <file alias="stop">stop.svg</file>
+    </qresource>
+</RCC>
