@@ -49,7 +49,7 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
         *hit = false;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *child = childEntry(i);
-        int comp = name.compare(child->name(), Qt::CaseInsensitive);
+        int comp = name.compare(child->caption(), Qt::CaseInsensitive);
         if (comp >= 0) {
             if (comp == 0 && hit)
                 *hit = true;
@@ -63,9 +63,9 @@ void FileGroupContext::insertChild(FileSystemContext* child)
 {
     if (!child) return;
     int pos = 0;
-    QString name = child->name();
+    QString name = child->caption();
     for (int i = 0; i < childCount(); ++i) {
-        int comp = name.compare(childEntry(i)->name(), Qt::CaseInsensitive);
+        int comp = name.compare(childEntry(i)->caption(), Qt::CaseInsensitive);
         if (comp > 0) {
             pos = i;
             break;

@@ -52,7 +52,7 @@ class FileContext : public FileSystemContext
 public:
     QString codec() const;
     void setCodec(const QString& codec);
-    virtual const QString name();
+    virtual const QString caption();
     CrudState crudState() const;
     void setLocation(const QString &location); // equals save_as...
     QIcon icon();

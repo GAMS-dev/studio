@@ -58,7 +58,7 @@ private slots:
     void readyStdErr();
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
-    void fileNameChanged(int fileId, QString newName);
+    void fileChanged(int fileId);
     void fileClosed(int fileId);
 
 private slots:

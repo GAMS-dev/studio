@@ -84,6 +84,11 @@ bool FileSystemContext::isGist() const
     return mIsGist;
 }
 
+const QString FileSystemContext::caption()
+{
+    return mName;
+}
+
 const QString FileSystemContext::name()
 {
     return mName;
@@ -93,7 +98,6 @@ void FileSystemContext::setName(const QString& name)
 {
     if (mName != name) {
         mName = name;
-        emit nameChanged(mId, mName);
         emit changed(mId);
     }
 }

@@ -115,7 +115,7 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
     switch (role) {
 
     case Qt::DisplayRole:
-        return node(index)->name();
+        return node(index)->caption();
         break;
 
     case Qt::FontRole:
@@ -196,7 +196,6 @@ QModelIndex FileRepository::addGroup(QString name, QString location, bool isGist
         watcher->addPath(location);
     }
     endInsertRows();
-    connect(fgContext, &FileGroupContext::nameChanged, this, &FileRepository::nodeNameChanged);
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
     updatePathNode(fgContext->id(), fgContext->location());
@@ -223,7 +222,6 @@ QModelIndex FileRepository::addFile(QString name, QString location, bool isGist,
     beginInsertRows(parentIndex, offset, offset);
     FileContext* fContext = new FileContext(group(parentIndex), mNextId++, name, location, isGist);
     endInsertRows();
-    connect(fContext, &FileContext::nameChanged, this, &FileRepository::nodeNameChanged);
     connect(fContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     return index(offset, 0, parentIndex);
@@ -263,16 +261,6 @@ void FileRepository::close(int fileId)
 void FileRepository::setFileFilter(QStringList filter)
 {
     mSuffixFilter = filter;
-}
-
-void FileRepository::nodeNameChanged(int fileId, const QString& newName)
-{
-    Q_UNUSED(newName);
-    FileSystemContext* nd = context(fileId, mRoot);
-    if (!nd) return;
-
-    QModelIndex ndIndex = index(nd);
-    dataChanged(ndIndex, ndIndex);
 }
 
 void FileRepository::nodeChanged(int fileId)

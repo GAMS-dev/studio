@@ -57,7 +57,6 @@ signals:
     void fileClosed(int fileId);
 
 public slots:
-    void nodeNameChanged(int fileId, const QString &newName);
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
 

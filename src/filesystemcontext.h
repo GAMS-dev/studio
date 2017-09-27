@@ -47,6 +47,7 @@ public:
     int id() const;
     bool isGist() const;
 
+    virtual const QString caption();
     virtual const QString name();
     void setName(const QString& name);
     const QString& location() const;
@@ -65,7 +66,6 @@ public:
     virtual int childCount();
 
 signals:
-    void nameChanged(int id, QString newName);
     void changed(int fileId);
 
 protected:

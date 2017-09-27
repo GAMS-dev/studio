@@ -73,7 +73,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         CodeEditor *codeEdit = new CodeEditor(this);
         mEditors.insert(codeEdit, fc->id());
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->name());
+        int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
         qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
@@ -81,7 +81,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         fc->load(codecName);
         ensureCodecMenue(fc->codec());
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::nameChanged, this, &MainWindow::fileNameChanged);
+        connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
 }
 
@@ -255,13 +255,15 @@ void MainWindow::activeTabChanged(int index)
     }
 }
 
-void MainWindow::fileNameChanged(int fileId, QString newName)
+void MainWindow::fileChanged(int fileId)
 {
     QWidgetList editors = mEditors.keys(fileId);
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
-        if (index >= 0)
-            ui->mainTab->setTabText(index, newName);
+        if (index >= 0) {
+            FileContext *fc = mFileRepo.fileContext(fileId);
+            if (fc) ui->mainTab->setTabText(index, fc->caption());
+        }
     }
 }
 

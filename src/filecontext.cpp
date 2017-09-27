@@ -138,8 +138,10 @@ void FileContext::setDocument(QTextDocument* doc)
     // don't overwrite ContextState::eMissing
     if (mDocument)
         setFlag(FileSystemContext::cfActive);
-    else
+    else {
         unsetFlag(FileSystemContext::cfActive);
+        setCrudState(CrudState::eRead);
+    }
 }
 
 QTextDocument*FileContext::document()
@@ -158,7 +160,7 @@ void FileContext::setCodec(const QString& codec)
     mCodec = codec;
 }
 
-const QString FileContext::name()
+const QString FileContext::caption()
 {
     return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
@@ -167,7 +169,7 @@ void FileContext::textChanged()
 {
     if (mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
-        emit nameChanged(mId, name());
+        emit changed(mId);
     }
 }
 
