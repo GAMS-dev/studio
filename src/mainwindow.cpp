@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -289,7 +289,7 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox::about(this, "About GAMSIDE", "Gams Studio v0.0.1 alpha");
+    QMessageBox::about(this, "About GAMS Studio", "Gams Studio v0.0.1 alpha");
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
