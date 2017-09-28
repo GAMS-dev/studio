@@ -112,7 +112,7 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs
                         '''
                         script {
-                            if ((env.BRANCH_NAME != 'master') {
+                            if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x86_64.AppImage"
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
