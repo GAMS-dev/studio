@@ -38,6 +38,9 @@ public:
     FileSystemContext* childEntry(int index);
     QIcon icon();
 
+    bool isWatched();
+    QFileSystemWatcher *watchIt();
+
 signals:
     void contentChanged(int id, QDir fileInfo);
 
@@ -48,15 +51,15 @@ protected:
     friend class FileRepository;
     friend class FileSystemContext;
 
-    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
+    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
-    void insertChild(int pos, FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
 
 private:
     QList<FileSystemContext*> mChildList;
+    QFileSystemWatcher *mFsWatcher = nullptr;
 };
 
 } // namespace ide

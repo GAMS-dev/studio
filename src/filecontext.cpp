@@ -27,8 +27,8 @@ namespace ide {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist)
-    : FileSystemContext(parent, id, name, location, isGist)
+FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
+    : FileSystemContext(parent, id, name, location)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }

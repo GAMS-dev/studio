@@ -74,7 +74,7 @@ public slots:
 
 protected:
     friend class FileRepository;
-    FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
+    FileContext(FileGroupContext *parent, int id, QString name, QString location);
     void setCrudState(CrudState state);
 
 private:

@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
-    mFileRepo.setFileFilter(QStringList() << "*.gms" << "*.inc" << "*.txt" << "*.log" << "*.lst");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
+    connect(ui->treeView, &QTreeView::expanded, &mFileRepo, &FileRepository::nodeExpanded);
     ensureCodecMenue("System");
 }
 
@@ -124,12 +125,9 @@ void MainWindow::on_actionOpen_triggered()
 
         if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
-            QString dir = fInfo.path();
-            QModelIndex groupMI = mFileRepo.findPath(dir, mFileRepo.rootTreeModelIndex());
-            if (!groupMI.isValid()) {
-                groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
-            }
-            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), true, groupMI);
+            QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
+
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
@@ -320,12 +318,13 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 
 void MainWindow::on_actionSim_Process_triggered()
 {
-    qDebug() << "starting process";
-    mProc = new QProcess(this);
-    mProc->start("../../spawner/spawner.exe");
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
+//    qDebug() << "starting process";
+//    mProc = new QProcess(this);
+//    mProc->start("../../spawner/spawner.exe");
+//    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+//    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
