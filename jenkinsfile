@@ -17,7 +17,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
-                            export PATH=/opt/Qt/5.9.1/:$PATH
+                            export PATH=/opt/Qt/5.9.2-release/:$PATH
                             qmake src/ide.pro && make -j3
                         '''
                     }
