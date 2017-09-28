@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = ide
+TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 
@@ -23,8 +23,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-win32: RC_FILE += ide.rc
-macx: ICON = ide.icns
+win32: RC_FILE += studio.rc
+macx: ICON = studio.icns
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
 
@@ -66,4 +66,4 @@ RESOURCES += \
     icons/icons.qrc
 
 DISTFILES += \
-    ../res/ide.rc
+    ../res/studio.rc
