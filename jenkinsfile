@@ -162,7 +162,7 @@ pipeline {
                             macdeployqt studio.app -dmg -always-overwrite
                         '''
                         script {
-                            if ((env.BRANCH_NAME != 'master') {
+                            if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
                             } else {
                                 sh "mv bin/studio.dmg studio.dmg"
