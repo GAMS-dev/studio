@@ -1,7 +1,7 @@
 #include <windows.h>
 #include "version.h"
 
-#define GAMSICON "ide.ico"
+#define GAMSICON "studio.ico"
 
 IDI_ICON1  ICON DISCARDABLE GAMSICON
 VS_VERSION_INFO VERSIONINFO
