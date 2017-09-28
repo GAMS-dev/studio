@@ -17,8 +17,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
-                            export PATH=/opt/Qt/5.9.1/:$PATH
-                            qmake src/ide.pro && make -j3
+                            qmake src/studio.pro && make -j3
                         '''
                     }
                 },
@@ -30,7 +29,7 @@ pipeline {
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
-                            qmake ide.pro
+                            qmake studio.pro
                             make
                         '''
                     }
@@ -49,7 +48,7 @@ pipeline {
                             call vcvarsall.bat amd64
                             set
                             cd %WORKSPACE%\\src
-                            qmake ide.pro "CONFIG+=release"
+                            qmake studio.pro "CONFIG+=release"
                             nmake
                         '''
                     }
@@ -58,7 +57,7 @@ pipeline {
                     node('macos') {
                         step([$class: 'WsCleanup'])
                         checkout scm
-                        sh 'qmake src/ide.pro && make -j3'
+                        sh 'qmake src/studio.pro && make -j3'
                     }
                 }
             }
@@ -105,12 +104,12 @@ pipeline {
                             mkdir -p appdir/usr/bin
 
                             # collect files
-                            cp bin/ide appdir/usr/bin/
+                            cp bin/studio appdir/usr/bin/
                             cp res/gamsstudio.desktop appdir/
                             cp src/icons/* appdir/
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/ide -appimage -bundle-non-qt-libs
+                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs
                         '''
                         sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-GAMS_Studio-x86_64.AppImage"
                         archiveArtifacts artifacts: '*GAMS_Studio*', fingerprint: true
@@ -122,9 +121,9 @@ pipeline {
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
-                            windeployqt --release --compiler-runtime --force ide.exe
+                            windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            7z a -r ${env.BRANCH_NAME}-ide-x86.zip *
+                            7z a -r ${env.BRANCH_NAME}-studio-x86.zip *
                         """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
@@ -135,9 +134,9 @@ pipeline {
                             echo 'Setting up environment for Qt usage...'
                             set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
-                            windeployqt --release --compiler-runtime --force ide.exe
+                            windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            7z a -r "${env.BRANCH_NAME}-ide-x64.zip" *
+                            7z a -r "${env.BRANCH_NAME}-studio-x64.zip" *
                         """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
@@ -146,9 +145,9 @@ pipeline {
                     node('macos') {
                         sh '''
                             cd bin
-                            macdeployqt ide.app -dmg -always-overwrite
+                            macdeployqt studio.app -dmg -always-overwrite
                         '''
-                        sh "mv bin/ide.dmg ${env.BRANCH_NAME}-ide.dmg"
+                        sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
@@ -162,7 +161,7 @@ pipeline {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp -o "BatchMode yes" *GAMS*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
                             } else {
-                               sh 'echo "neither master nor develop"'
+                                echo "${env.BRANCH_NAME}"
                             }
                         }
                     }
@@ -176,7 +175,7 @@ pipeline {
                             if "${env.BRANCH_NAME}"=="develop" set res=T
                             if "${env.BRANCH_NAME}"=="master" set res=T
                             if "%res%"=="T" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-ide-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                             ) else (
                                 echo "${env.BRANCH_NAME}"
                             )
@@ -192,7 +191,7 @@ pipeline {
                             if "${env.BRANCH_NAME}"=="develop" set res=T
                             if "${env.BRANCH_NAME}"=="master" set res=T
                             if "%res%"=="T" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-ide-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
                             ) else (
                                 echo "${env.BRANCH_NAME}"
                             )
@@ -205,7 +204,7 @@ pipeline {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide'
                             } else {
-                               sh 'echo "neither master nor develop"'
+                                echo "${env.BRANCH_NAME}"
                             }
                         }
                     }

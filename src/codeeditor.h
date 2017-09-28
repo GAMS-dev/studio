@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -28,7 +28,7 @@ class QSize;
 class QWidget;
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class LineNumberArea;
 
@@ -92,7 +92,7 @@ private:
 };
 
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // CODEEDITOR_H

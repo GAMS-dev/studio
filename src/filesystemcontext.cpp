@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -21,7 +21,7 @@
 #include "filegroupcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location)
     : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location)
@@ -134,5 +134,5 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
 }
 
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -24,7 +24,7 @@
 #include <QDebug>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 WelcomePage::WelcomePage(QWidget *parent) :
     QWidget(parent),

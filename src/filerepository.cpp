@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -21,7 +21,7 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 FileRepository::FileRepository(QObject* parent)
     : QAbstractItemModel(parent), mNextId(0)
@@ -386,5 +386,5 @@ void FileRepository::changeName(QModelIndex index, QString newName)
     dataChanged(index, index);
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

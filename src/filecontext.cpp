@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -22,7 +22,7 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
@@ -174,5 +174,5 @@ void FileContext::textChanged()
     }
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
