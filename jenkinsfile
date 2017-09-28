@@ -111,8 +111,14 @@ pipeline {
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs
                         '''
-                        sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-GAMS_Studio-x86_64.AppImage"
-                        archiveArtifacts artifacts: '*GAMS_Studio*', fingerprint: true
+                        script {
+                            if ((env.BRANCH_NAME != 'master') {
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x86_64.AppImage"
+                            } else {
+                                sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
+                            }
+                        }
+                        archiveArtifacts artifacts: '*studio*', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -123,7 +129,11 @@ pipeline {
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            7z a -r ${env.BRANCH_NAME}-studio-x86.zip *
+                            if "${env.BRANCH_NAME}"!="master" (
+                                7z a -r ${env.BRANCH_NAME}-studio-x86.zip *
+                            ) else (
+                                7z a -r studio-x86.zip *
+                            )
                         """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
@@ -136,7 +146,11 @@ pipeline {
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            7z a -r "${env.BRANCH_NAME}-studio-x64.zip" *
+                            if "${env.BRANCH_NAME}"!="master" (
+                                7z a -r ${env.BRANCH_NAME}-studio-x64.zip *
+                            ) else (
+                                7z a -r studio-x86.zip *
+                            )
                         """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
@@ -147,7 +161,13 @@ pipeline {
                             cd bin
                             macdeployqt studio.app -dmg -always-overwrite
                         '''
-                        sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                        script {
+                            if ((env.BRANCH_NAME != 'master') {
+                                sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                            } else {
+                                sh "mv bin/studio.dmg studio.dmg"
+                            }
+                        }
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
