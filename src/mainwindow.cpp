@@ -27,7 +27,7 @@
 #include "treeitemdelegate.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -307,7 +307,7 @@ void MainWindow::on_actionProject_Explorer_triggered(bool checked)
 
 void MainWindow::on_actionLog_Output_triggered(bool checked)
 {
-
+    Q_UNUSED(checked)
 }
 
 void MainWindow::on_actionBottom_Panel_triggered(bool checked)

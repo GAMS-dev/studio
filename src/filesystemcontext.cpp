@@ -21,7 +21,7 @@
 #include "filegroupcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
     : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mIsGist(isGist)
@@ -146,5 +146,5 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
 }
 
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

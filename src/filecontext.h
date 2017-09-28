@@ -23,7 +23,7 @@
 #include "filesystemcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 // TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
 enum class FileType {
@@ -86,7 +86,7 @@ private:
 
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILECONTEXT_H

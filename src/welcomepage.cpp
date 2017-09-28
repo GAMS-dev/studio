@@ -24,7 +24,7 @@
 #include <QDebug>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 WelcomePage::WelcomePage(QWidget *parent) :
     QWidget(parent),

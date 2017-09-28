@@ -4,7 +4,7 @@
 #include <QtWidgets>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class TreeItemDelegate : public QStyledItemDelegate
 {
@@ -14,7 +14,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // TREEITEMDELEGATE_H

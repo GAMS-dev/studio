@@ -29,7 +29,7 @@ class MainWindow;
 }
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 struct RecentData {
     int editFileId = -1;

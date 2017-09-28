@@ -22,7 +22,7 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
@@ -173,5 +173,5 @@ void FileContext::textChanged()
     }
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

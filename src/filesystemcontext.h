@@ -23,7 +23,7 @@
 #include <QtGui>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class FileGroupContext;
 
@@ -82,7 +82,7 @@ protected:
 
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILESYSTEMCONTEXT_H

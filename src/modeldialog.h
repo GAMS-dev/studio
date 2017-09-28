@@ -23,7 +23,7 @@
 #include "ui_modeldialog.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class ModelDialog : public QDialog
 {

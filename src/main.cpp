@@ -23,7 +23,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    gams::ide::MainWindow w;
+    gams::studio::MainWindow w;
     w.show();
 
     return a.exec();

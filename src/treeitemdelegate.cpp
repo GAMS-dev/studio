@@ -1,7 +1,7 @@
 #include "treeitemdelegate.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {}
@@ -13,5 +13,5 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     QStyledItemDelegate::paint(painter, opt, index);
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

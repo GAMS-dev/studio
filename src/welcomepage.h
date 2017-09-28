@@ -27,7 +27,7 @@ class WelcomePage;
 }
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class WelcomePage : public QWidget
 {

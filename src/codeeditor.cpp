@@ -21,7 +21,7 @@
 #include "codeeditor.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -280,5 +280,5 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     }
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

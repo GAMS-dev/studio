@@ -28,7 +28,7 @@
 #include <QStandardPaths>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 ModelDialog::ModelDialog(QWidget *parent) :
     QDialog(parent)

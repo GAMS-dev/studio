@@ -21,7 +21,7 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
@@ -141,5 +141,5 @@ FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString nam
     mFlags = FileSystemContext::cfGroup;
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

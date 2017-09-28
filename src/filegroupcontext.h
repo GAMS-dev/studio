@@ -23,7 +23,7 @@
 #include "filesystemcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class FileGroupContext : public FileSystemContext
 {
@@ -59,7 +59,7 @@ private:
     QList<FileSystemContext*> mChildList;
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILEGROUPCONTEXT_H

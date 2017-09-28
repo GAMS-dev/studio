@@ -21,7 +21,7 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 FileRepository::FileRepository(QObject* parent)
     : QAbstractItemModel(parent), mNextId(0)
@@ -346,5 +346,5 @@ void FileRepository::changeName(QModelIndex index, QString newName)
     dataChanged(index, index);
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

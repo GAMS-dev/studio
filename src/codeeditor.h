@@ -28,7 +28,7 @@ class QSize;
 class QWidget;
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class LineNumberArea;
 
@@ -92,7 +92,7 @@ private:
 };
 
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // CODEEDITOR_H

@@ -25,7 +25,7 @@
 #include "filecontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class FileRepository : public QAbstractItemModel
 {
@@ -73,7 +73,7 @@ private:
     QStringList mSuffixFilter;
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILEREPOSITORY_H

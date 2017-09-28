@@ -4,7 +4,7 @@
 #include <QtCore>
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class Exception : public QException
 {
@@ -37,20 +37,20 @@ public:
     FatalException *clone() const { return new FatalException(*this); }
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 
 #ifdef QT_DEBUG
 #  ifdef __GNUC__
-#    define EXCEPT() gams::ide::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::ide::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
 #  else
-#    define EXCEPT() gams::ide::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::ide::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
 #  endif
 #else
-#  define FATAL() gams::ide::Exception()
+#  define FATAL() gams::studio::Exception()
 #endif
 
 #endif // EXCEPTION_H
