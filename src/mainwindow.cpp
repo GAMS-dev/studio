@@ -331,6 +331,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     QMessageBox msgBox;
     int ret = QMessageBox::Discard;
     int fileId = mEditors.value(ui->mainTab->widget(index), -1);
+    if (fileId < 0)
+        return;
     if (mEditors.keys(fileId).size() == 1) {
         FileContext *fc = mFileRepo.fileContext(fileId);
         if (fc && fc->crudState() == CrudState::eUpdate) {
