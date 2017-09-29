@@ -55,7 +55,6 @@ HEADERS += \
 
 FORMS += \
     welcomepage.ui \
-    editor.ui \
     modeldialog.ui \
     mainwindow.ui
 
