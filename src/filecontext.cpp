@@ -95,6 +95,7 @@ void FileContext::load(QString codecName)
                 mCodec = nameOfUsedCodec;
             }
             file.close();
+            setCrudState(CrudState::eRead);
         }
     }
 }

@@ -85,7 +85,6 @@ private slots:
 protected:
     void closeEvent(QCloseEvent *event);
 
-
 private:
     void initTabs();
 

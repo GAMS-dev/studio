@@ -57,7 +57,6 @@ MainWindow::~MainWindow()
 void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
-    // TODO(JM) implement new-file logic
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -359,8 +358,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
     if (ret != QMessageBox::Cancel) {
         int id = mEditors.value(ui->mainTab->widget(index));
-        // TODO(JM) close the file after last tab-remove
-        mFileRepo.close(id);
+        if (mEditors.keys().size() <= 2)
+            mFileRepo.close(id);
     }
 }
 
@@ -395,6 +394,37 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    QSet<int> openIds;
+    QString lastName;
+    for (QWidget *wid: mEditors.keys()) {
+        CodeEditor *ed = qobject_cast<CodeEditor*>(wid);
+        if (!ed) continue;
+        int id = mEditors.value(ed);
+        FileContext *fc = mFileRepo.fileContext(id);
+        CrudState cs = fc->crudState();
+        if (cs == CrudState::eUpdate || cs == CrudState::eCreate) {
+            qDebug() << "CRUD-state: " << (int)cs;
+            openIds << id;
+            lastName = fc->location();
+        }
+    }
+    if (openIds.size() > 0) {
+        int ret = QMessageBox::Discard;
+        QMessageBox msgBox;
+        QString filesText = openIds.size()==1 ? lastName+" has been modified."
+                                              : QString::number(openIds.size())+" have been modified";
+        msgBox.setText(filesText);
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        ret = msgBox.exec();
+        if (ret == QMessageBox::Save) {
+            // TODO(JM) iterate over all files to save.
+        }
+        if (ret == QMessageBox::Cancel) {
+            event->setAccepted(false);
+        }
+    }
 
 }
 
