@@ -34,6 +34,13 @@ void FileGroupContext::setFlag(ContextFlag flag, bool value)
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
         throw QException();
     FileSystemContext::setFlag(flag, value);
+
+    // distribute missing flag to child entries
+    if (flag == FileSystemContext::cfMissing && flag) {
+        for (FileSystemContext *fc: mChildList) {
+            fc->setFlag(flag);
+        }
+    }
 }
 
 void FileGroupContext::unsetFlag(ContextFlag flag)
@@ -45,14 +52,14 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
 
 int FileGroupContext::peekIndex(const QString& name, bool *hit)
 {
-    if (hit)
-        *hit = false;
+    if (hit) *hit = false;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *child = childEntry(i);
-        int comp = name.compare(child->caption(), Qt::CaseInsensitive);
-        if (comp >= 0) {
-            if (comp == 0 && hit)
-                *hit = true;
+        QString other = child->name();
+        int comp = name.compare(other, Qt::CaseInsensitive);
+        if (comp < 0) return i;
+        if (comp == 0) {
+            if (hit) *hit = true;
             return i;
         }
     }
@@ -62,25 +69,12 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
 void FileGroupContext::insertChild(FileSystemContext* child)
 {
     if (!child) return;
-    int pos = 0;
-    QString name = child->caption();
-    for (int i = 0; i < childCount(); ++i) {
-        int comp = name.compare(childEntry(i)->caption(), Qt::CaseInsensitive);
-        if (comp > 0) {
-            pos = i;
-            break;
-        }
-    }
-    insertChild(pos, child);
-}
-
-void FileGroupContext::insertChild(int pos, FileSystemContext* child)
-{
-    if (child == this)
-        throw FATAL() << "can't add a element to itself";
-    mChildList.insert(pos, child);
-    if (child->flags() & cfActive) {
-        setFlag(cfActive);
+    bool hit;
+    int pos = peekIndex(child->name(), &hit);
+    if (!hit) {
+        mChildList.insert(pos, child);
+        if (child->testFlag(cfActive))
+            setFlag(cfActive);
     }
 }
 
@@ -121,6 +115,21 @@ QIcon FileGroupContext::icon()
     return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
 }
 
+bool FileGroupContext::isWatched()
+{
+    return mFsWatcher;
+}
+
+QFileSystemWatcher*FileGroupContext::watchIt()
+{
+    if (!mFsWatcher) {
+        mFsWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
+        mFsWatcher->addPath(location());
+        qDebug() << "added watcher for" << location();
+    }
+    return mFsWatcher;
+}
+
 void FileGroupContext::directoryChanged(const QString& path)
 {
     QDir dir(path);
@@ -135,8 +144,8 @@ void FileGroupContext::directoryChanged(const QString& path)
     deleteLater();
 }
 
-FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
-    : FileSystemContext(parent, id, name, location, isGist)
+FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location)
+    : FileSystemContext(parent, id, name, location)
 {
     mFlags = FileSystemContext::cfGroup;
 }

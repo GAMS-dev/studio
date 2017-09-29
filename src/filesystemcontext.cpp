@@ -23,8 +23,8 @@
 namespace gams {
 namespace studio {
 
-FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
-    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mIsGist(isGist)
+FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location)
+    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location)
 {
     setParentEntry(parent);
     mFlags = 0;
@@ -47,11 +47,6 @@ int FileSystemContext::id() const
     return mId;
 }
 
-bool FileSystemContext::matches(const QString &name, bool isGist) const
-{
-    return isGist == mIsGist && mName.compare(name, Qt::CaseInsensitive) == 0;
-}
-
 FileGroupContext* FileSystemContext::parentEntry() const
 {
     return mParent;
@@ -62,9 +57,7 @@ void FileSystemContext::setParentEntry(FileGroupContext* parent)
     if (parent != mParent) {
         if (mParent) mParent->removeChild(this);
         mParent = parent;
-        if (mParent) {
-            mParent->insertChild(this);
-        }
+        if (mParent) mParent->insertChild(this);
     }
 }
 
@@ -77,11 +70,6 @@ FileSystemContext* FileSystemContext::childEntry(int index)
 int FileSystemContext::childCount()
 {
     return 0;
-}
-
-bool FileSystemContext::isGist() const
-{
-    return mIsGist;
 }
 
 const QString FileSystemContext::caption()

@@ -27,8 +27,8 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist)
-    : FileSystemContext(parent, id, name, location, isGist)
+FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
+    : FileSystemContext(parent, id, name, location)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }
@@ -65,7 +65,7 @@ void FileContext::save()
 void FileContext::load(QString codecName)
 {
     if (!document())
-        throw QException();
+        FATAL() << "There is no document assigned to the file " << location();
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
@@ -102,8 +102,9 @@ void FileContext::load(QString codecName)
 void FileContext::setLocation(const QString& location)
 {
     if (location.isEmpty())
-        throw QException();  // context is already bound to a file
+        FATAL() << "File can't be set to an empty location";
     // TODO(JM) adapt parent group
+    // TODO (JM): handling if the file already exists
     FileSystemContext::setLocation(location);
     setCrudState(CrudState::eCreate);
 }
@@ -133,7 +134,7 @@ void FileContext::unsetFlag(ContextFlag flag)
 void FileContext::setDocument(QTextDocument* doc)
 {
     if (mDocument && doc)
-        throw FATAL() << "document of cannot be replaced";
+        throw FATAL() << "document of " << location() << " cannot be replaced";
     mDocument = doc;
     // don't overwrite ContextState::eMissing
     if (mDocument)
