@@ -122,7 +122,6 @@ void MainWindow::on_actionOpen_triggered()
 
         if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
-            // TODO(JM) For GIST: ensure group by name() NOT by location()
             QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
 
             QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
@@ -412,7 +411,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
         QString filesText = openIds.size()==1 ? lastName+" has been modified."
-                                              : QString::number(openIds.size())+" have been modified";
+                                              : QString::number(openIds.size())+" files have been modified";
         msgBox.setText(filesText);
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);

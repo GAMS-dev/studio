@@ -138,9 +138,10 @@ void FileContext::setDocument(QTextDocument* doc)
         throw FATAL() << "document of " << location() << " cannot be replaced";
     mDocument = doc;
     // don't overwrite ContextState::eMissing
-    if (mDocument)
+    if (mDocument) {
         setFlag(FileSystemContext::cfActive);
-    else {
+        connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+    } else {
         unsetFlag(FileSystemContext::cfActive);
         setCrudState(CrudState::eRead);
     }
@@ -171,6 +172,19 @@ void FileContext::textChanged()
 {
     if (mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
+        emit changed(mId);
+    }
+}
+
+void FileContext::modificationChanged(bool modiState)
+{
+    // TODO(JM) check what todo on CrudState::eDelete
+    if (modiState && mCrudState != CrudState::eUpdate) {
+        setCrudState(CrudState::eUpdate);
+        emit changed(mId);
+    }
+    if (!modiState && mCrudState == CrudState::eUpdate) {
+        setCrudState(CrudState::eRead);
         emit changed(mId);
     }
 }

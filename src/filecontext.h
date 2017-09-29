@@ -108,6 +108,7 @@ public slots:
     /// Slot to handle a change of the assigned Document
     /// TODO (JM) bind to signal QTextDocument::modificationChanged instead
     void textChanged();
+    void modificationChanged(bool modiState);
 
 protected:
     friend class FileRepository;

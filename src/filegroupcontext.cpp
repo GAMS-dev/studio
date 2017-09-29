@@ -25,7 +25,7 @@ namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    // TODO(JM)  delete the entry in the parents childList
+    setParentEntry(nullptr);
     mChildList.clear();
 }
 
