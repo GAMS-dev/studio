@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -23,7 +23,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    gams::ide::MainWindow w;
+    gams::studio::MainWindow w;
     w.show();
 
     return a.exec();

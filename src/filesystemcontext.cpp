@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -21,10 +21,10 @@
 #include "filegroupcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
-FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, bool isGist)
-    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mIsGist(isGist)
+FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location)
+    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location)
 {
     setParentEntry(parent);
     mFlags = 0;
@@ -47,11 +47,6 @@ int FileSystemContext::id() const
     return mId;
 }
 
-bool FileSystemContext::matches(const QString &name, bool isGist) const
-{
-    return isGist == mIsGist && mName.compare(name, Qt::CaseInsensitive) == 0;
-}
-
 FileGroupContext* FileSystemContext::parentEntry() const
 {
     return mParent;
@@ -62,9 +57,7 @@ void FileSystemContext::setParentEntry(FileGroupContext* parent)
     if (parent != mParent) {
         if (mParent) mParent->removeChild(this);
         mParent = parent;
-        if (mParent) {
-            mParent->insertChild(this);
-        }
+        if (mParent) mParent->insertChild(this);
     }
 }
 
@@ -79,9 +72,9 @@ int FileSystemContext::childCount()
     return 0;
 }
 
-bool FileSystemContext::isGist() const
+const QString FileSystemContext::caption()
 {
-    return mIsGist;
+    return mName;
 }
 
 const QString FileSystemContext::name()
@@ -93,7 +86,6 @@ void FileSystemContext::setName(const QString& name)
 {
     if (mName != name) {
         mName = name;
-        emit nameChanged(mId, mName);
         emit changed(mId);
     }
 }
@@ -142,5 +134,5 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
 }
 
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

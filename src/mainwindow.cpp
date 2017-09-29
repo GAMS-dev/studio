@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -21,13 +21,12 @@
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
 #include "welcomepage.h"
-#include "editor.h"
 #include "modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -35,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
-    mFileRepo.setFileFilter(QStringList() << "*.gms" << "*.inc" << "*.txt" << "*.log" << "*.lst");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
@@ -46,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
+    connect(ui->treeView, &QTreeView::expanded, &mFileRepo, &FileRepository::nodeExpanded);
     ensureCodecMenue("System");
 }
 
@@ -58,7 +58,6 @@ void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     // TODO(JM) implement new-file logic
-    ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -73,7 +72,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         CodeEditor *codeEdit = new CodeEditor(this);
         mEditors.insert(codeEdit, fc->id());
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        int tabIndex = tabWidget->addTab(codeEdit, fc->name());
+        int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
         qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
@@ -81,7 +80,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         fc->load(codecName);
         ensureCodecMenue(fc->codec());
         connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
-        connect(fc, &FileContext::nameChanged, this, &MainWindow::fileNameChanged);
+        connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
 }
 
@@ -124,12 +123,9 @@ void MainWindow::on_actionOpen_triggered()
 
         if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
-            QString dir = fInfo.path();
-            QModelIndex groupMI = mFileRepo.findPath(dir, mFileRepo.rootTreeModelIndex());
-            if (!groupMI.isValid()) {
-                groupMI = mFileRepo.addGroup(dir, dir, true, mFileRepo.rootTreeModelIndex());
-            }
-            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), true, groupMI);
+            QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
+
+            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
@@ -255,13 +251,15 @@ void MainWindow::activeTabChanged(int index)
     }
 }
 
-void MainWindow::fileNameChanged(int fileId, QString newName)
+void MainWindow::fileChanged(int fileId)
 {
     QWidgetList editors = mEditors.keys(fileId);
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
-        if (index >= 0)
-            ui->mainTab->setTabText(index, newName);
+        if (index >= 0) {
+            FileContext *fc = mFileRepo.fileContext(fileId);
+            if (fc) ui->mainTab->setTabText(index, fc->caption());
+        }
     }
 }
 
@@ -287,7 +285,7 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox::about(this, "About GAMSIDE", "Gams Studio v0.0.1 alpha");
+    QMessageBox::about(this, "About GAMS Studio", "Gams Studio v0.0.1 alpha");
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -305,7 +303,7 @@ void MainWindow::on_actionProject_Explorer_triggered(bool checked)
 
 void MainWindow::on_actionLog_Output_triggered(bool checked)
 {
-
+    Q_UNUSED(checked)
 }
 
 void MainWindow::on_actionBottom_Panel_triggered(bool checked)
@@ -318,12 +316,13 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 
 void MainWindow::on_actionSim_Process_triggered()
 {
-    qDebug() << "starting process";
-    mProc = new QProcess(this);
-    mProc->start("../../spawner/spawner.exe");
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
+//    qDebug() << "starting process";
+//    mProc = new QProcess(this);
+//    mProc->start("../../spawner/spawner.exe");
+//    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+//    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -362,7 +361,7 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::on_actionNew_Tab_triggered()
 {
-    ui->mainTab->addTab(new Editor(), QString("new"));
+    ui->mainTab->addTab(new CodeEditor(), QString("new"));
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()

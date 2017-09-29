@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -25,7 +25,7 @@
 #include "filecontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class FileRepository : public QAbstractItemModel
 {
@@ -45,25 +45,29 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-    QModelIndex addGroup(QString name, QString location, bool isGist, QModelIndex parentIndex = QModelIndex());
-    QModelIndex addFile(QString name, QString location, bool isGist, QModelIndex parentIndex = QModelIndex());
+    QModelIndex addGroup(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    void removeNode(FileSystemContext *node);
     QModelIndex rootTreeModelIndex();
     QModelIndex rootModelIndex();
-    QModelIndex findPath(const QString& filePath, QModelIndex parent);
+    QModelIndex ensureGroup(const QString& filePath);
     void close(int fileId);
-    void setFileFilter(QStringList filter);
+    void setSuffixFilter(QStringList filter);
+    void dump(FileSystemContext* fc, int lv = 0);
+
+    FileSystemContext* node(const QModelIndex& index) const;
+    FileSystemContext* file(const QModelIndex& index) const;
+    FileGroupContext* group(const QModelIndex& index) const;
 
 signals:
     void fileClosed(int fileId);
 
 public slots:
-    void nodeNameChanged(int fileId, const QString &newName);
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
+    void nodeExpanded(const QModelIndex& index);
 
 private:
-    FileSystemContext* node(const QModelIndex& index) const;
-    FileGroupContext* group(const QModelIndex& index) const;
     void changeName(QModelIndex index, QString newName);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
@@ -74,7 +78,7 @@ private:
     QStringList mSuffixFilter;
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILEREPOSITORY_H

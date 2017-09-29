@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -23,7 +23,7 @@
 #include "filesystemcontext.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 class FileGroupContext : public FileSystemContext
 {
@@ -38,6 +38,9 @@ public:
     FileSystemContext* childEntry(int index);
     QIcon icon();
 
+    bool isWatched();
+    QFileSystemWatcher *watchIt();
+
 signals:
     void contentChanged(int id, QDir fileInfo);
 
@@ -48,18 +51,18 @@ protected:
     friend class FileRepository;
     friend class FileSystemContext;
 
-    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist);
+    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
-    void insertChild(int pos, FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
 
 private:
     QList<FileSystemContext*> mChildList;
+    QFileSystemWatcher *mFsWatcher = nullptr;
 };
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
 
 #endif // FILEGROUPCONTEXT_H

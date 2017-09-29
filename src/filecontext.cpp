@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -22,13 +22,13 @@
 #include "exception.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location, bool isGist)
-    : FileSystemContext(parent, id, name, location, isGist)
+FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
+    : FileSystemContext(parent, id, name, location)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }
@@ -65,7 +65,7 @@ void FileContext::save()
 void FileContext::load(QString codecName)
 {
     if (!document())
-        throw QException();
+        FATAL() << "There is no document assigned to the file " << location();
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
@@ -102,8 +102,9 @@ void FileContext::load(QString codecName)
 void FileContext::setLocation(const QString& location)
 {
     if (location.isEmpty())
-        throw QException();  // context is already bound to a file
+        FATAL() << "File can't be set to an empty location";
     // TODO(JM) adapt parent group
+    // TODO (JM): handling if the file already exists
     FileSystemContext::setLocation(location);
     setCrudState(CrudState::eCreate);
 }
@@ -113,7 +114,7 @@ QIcon FileContext::icon()
     QFileInfo fi(mLocation);
     if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
         return QIcon(":/img/gams-w");
-    return FileSystemContext::icon();
+    return QIcon(":/img/file-alt");
 }
 
 void FileContext::setFlag(ContextFlag flag)
@@ -133,13 +134,15 @@ void FileContext::unsetFlag(ContextFlag flag)
 void FileContext::setDocument(QTextDocument* doc)
 {
     if (mDocument && doc)
-        throw FATAL() << "document of cannot be replaced";
+        throw FATAL() << "document of " << location() << " cannot be replaced";
     mDocument = doc;
     // don't overwrite ContextState::eMissing
     if (mDocument)
         setFlag(FileSystemContext::cfActive);
-    else
+    else {
         unsetFlag(FileSystemContext::cfActive);
+        setCrudState(CrudState::eRead);
+    }
 }
 
 QTextDocument*FileContext::document()
@@ -158,7 +161,7 @@ void FileContext::setCodec(const QString& codec)
     mCodec = codec;
 }
 
-const QString FileContext::name()
+const QString FileContext::caption()
 {
     return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
@@ -167,9 +170,9 @@ void FileContext::textChanged()
 {
     if (mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
-        emit nameChanged(mId, name());
+        emit changed(mId);
     }
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams

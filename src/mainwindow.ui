@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>GAMSIDE</string>
+   <string>GAMS Studio</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -85,7 +85,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -1,5 +1,5 @@
 /*
- * This file is part of the GAMS IDE project.
+ * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -21,7 +21,7 @@
 #include "codeeditor.h"
 
 namespace gams {
-namespace ide {
+namespace studio {
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -144,7 +144,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     QKeyEvent ev(*e);
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
-    // TODO(JM) get definition from ide key-config
+    // TODO(JM) get definition from studio key-config
     if (!mBlockStartKey && e->modifiers() & Qt::AltModifier && e->modifiers() & Qt::ShiftModifier) {
         mBlockStartKey = e->key();
         mBlockStartCursor = textCursor();
@@ -280,5 +280,5 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     }
 }
 
-} // namespace ide
+} // namespace studio
 } // namespace gams
