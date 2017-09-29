@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
     ui->mainToolBar->setIconSize(QSize(21,21));
+    ui->processWindow->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
