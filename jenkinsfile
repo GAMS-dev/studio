@@ -149,7 +149,7 @@ pipeline {
                             if not "${env.BRANCH_NAME}"=="master" (
                                 7z a -r ${env.BRANCH_NAME}-studio-x64.zip *
                             ) else (
-                                7z a -r studio-x86.zip *
+                                7z a -r studio-x64.zip *
                             )
                         """
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
