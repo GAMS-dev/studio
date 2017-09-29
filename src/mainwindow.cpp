@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
+    connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
@@ -273,6 +273,14 @@ void MainWindow::fileClosed(int fileId)
     }
 }
 
+void MainWindow::appendOutput(QString text)
+{
+    QTextEdit *outWin = ui->processWindow;
+    outWin->moveCursor(QTextCursor::End);
+    outWin->insertPlainText(text);
+    outWin->moveCursor(QTextCursor::End);
+}
+
 void MainWindow::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
@@ -316,13 +324,16 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 
 void MainWindow::on_actionSim_Process_triggered()
 {
-    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
-//    qDebug() << "starting process";
-//    mProc = new QProcess(this);
-//    mProc->start("../../spawner/spawner.exe");
-//    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-//    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+    QString gamsPath = "/home/rogo/gams/gams24.9_linux_x64_64_sfx/gams";
+    QString exampleFile = "/home/rogo/workspace/gamsfiles/trnsport.gms";
+
+//    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
+    qDebug() << "starting process";
+    mProc = new QProcess(this);
+    mProc->start(gamsPath + " " + exampleFile);
+    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)

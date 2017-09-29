@@ -60,6 +60,7 @@ private slots:
     void activeTabChanged(int index);
     void fileChanged(int fileId);
     void fileClosed(int fileId);
+    void appendOutput(QString text);
 
 private slots:
     void on_actionNew_triggered();
