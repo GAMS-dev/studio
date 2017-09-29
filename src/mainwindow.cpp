@@ -123,14 +123,16 @@ void MainWindow::on_actionOpen_triggered()
 
         if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
+            // TODO(JM) For GIST: ensure group by name() NOT by location()
             QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
 
             QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
             FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
+            mRecent.path = fInfo.path();
         }
-        if (fType == FileType::ftGpr) {
+        if (fType == FileType::ftGsp) {
             // TODO(JM) Read project and create all nodes for associated files
 
         }
@@ -152,9 +154,14 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSave_As_triggered()
 {
+    QString path = mRecent.path;
+    if (mRecent.editFileId >= 0) {
+        FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
+        if (fc) path = QFileInfo(fc->location()).path();
+    }
     auto fileName = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
-                                                 mRecent.path,
+                                                 path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
@@ -327,15 +334,16 @@ void MainWindow::on_actionSim_Process_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QMessageBox msgBox;
-    int ret = QMessageBox::Discard;
     int fileId = mEditors.value(ui->mainTab->widget(index), -1);
     if (fileId < 0)
         return;
+
+    int ret = QMessageBox::Discard;
     if (mEditors.keys(fileId).size() == 1) {
         FileContext *fc = mFileRepo.fileContext(fileId);
         if (fc && fc->crudState() == CrudState::eUpdate) {
             // only ask, if this is the last editor of this file
+            QMessageBox msgBox;
             msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
             msgBox.setInformativeText("Do you want to save your changes?");
             msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
@@ -383,6 +391,11 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
             createEdit(ui->mainTab, fc->id());
         }
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+
 }
 
 }

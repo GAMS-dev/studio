@@ -68,7 +68,6 @@ public slots:
     void nodeExpanded(const QModelIndex& index);
 
 private:
-    void changeName(QModelIndex index, QString newName);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
 private:

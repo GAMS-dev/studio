@@ -47,11 +47,28 @@ public:
 
     int id() const;
 
+    /// The caption of this file, which is its extended display name.
+    /// \return The caption of this node.
     virtual const QString caption();
+
+    /// The raw name of this node.
+    /// \return The raw name of this node.
     virtual const QString name();
+
+    /// Sets the raw name of this node.
+    /// \param name The raw name of this node.
     void setName(const QString& name);
+
+    /// The location of the node. This is a directory or file with full path.
+    /// \param location The new location
     const QString& location() const;
+
+    /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
+    /// \param location The new location
     virtual void setLocation(const QString& location);
+
+    /// The icon for this file type.
+    /// \return The icon for this file type.
     virtual QIcon icon();
 
     const ContextFlags &flags() const;

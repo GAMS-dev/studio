@@ -255,12 +255,14 @@ QModelIndex FileRepository::ensureGroup(const QString &filePath)
         FileSystemContext* group = mTreeRoot->childEntry(i);
         if (!group)
             FATAL() << "invalid element at index " << i << " in TreeRoot";
-        // group exists? -> return index
-        if (di == QFileInfo(group->location()))
-            return createIndex(i, 0, group);
         if (fi.baseName() == group->name()) {
-            extendedCaption = true;
-            group->setFlag(FileSystemContext::cfExtendCaption);
+            // (name,location)-group exists? -> return index
+            if (di == QFileInfo(group->location()))
+                return createIndex(i, 0, group);
+            else {
+                extendedCaption = true;
+                group->setFlag(FileSystemContext::cfExtendCaption);
+            }
         }
     }
     QModelIndex newGroupMi = addGroup(fi.baseName(), fi.path(), rootTreeModelIndex());
@@ -378,12 +380,6 @@ FileSystemContext*FileRepository::file(const QModelIndex& index) const
 FileGroupContext*FileRepository::group(const QModelIndex& index) const
 {
     return static_cast<FileGroupContext*>(index.internalPointer());
-}
-
-void FileRepository::changeName(QModelIndex index, QString newName)
-{
-    node(index)->setName(newName);
-    dataChanged(index, index);
 }
 
 } // namespace studio

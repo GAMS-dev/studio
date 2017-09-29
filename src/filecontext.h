@@ -27,13 +27,13 @@ namespace studio {
 
 // TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
 enum class FileType {
-    ftGpr,
-    ftGms,
-    ftTxt,
-    ftInc,
-    ftLog,
-    ftLst,
-    ftLxi,
+    ftGsp,      ///< GAMS Studio Project file
+    ftGms,      ///< GAMS source file
+    ftInc,      ///< GAMS include file
+    ftTxt,      ///< Plain text file
+    ftLog,      ///< LOG output file
+    ftLst,      ///< GAMS result file
+    ftLxi,      ///< GAMS result file index
 };
 
 enum class CrudState {

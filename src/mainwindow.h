@@ -47,7 +47,6 @@ public:
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenue(QString codecName);
 
-
 signals:
     void processOutput(QString text);
 
@@ -82,6 +81,10 @@ private slots:
     void on_actionNew_Tab_triggered();
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
 
 private:
     void initTabs();

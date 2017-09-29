@@ -98,8 +98,8 @@ const QString& FileSystemContext::location() const
 void FileSystemContext::setLocation(const QString& location)
 {
     if (!location.isEmpty()) {
-        mLocation = location;
         QFileInfo fi(location);
+        mLocation = fi.canonicalFilePath();
         setName(fi.fileName());
     }
 }
