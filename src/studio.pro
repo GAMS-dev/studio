@@ -36,7 +36,6 @@ SOURCES += \
     filerepository.cpp \
     filegroupcontext.cpp \
     welcomepage.cpp \
-    editor.cpp \
     modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp
@@ -48,7 +47,6 @@ HEADERS += \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    editor.h \
     modeldialog.h \
     mainwindow.h \
     exception.h \

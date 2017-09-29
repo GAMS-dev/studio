@@ -21,7 +21,6 @@
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
 #include "welcomepage.h"
-#include "editor.h"
 #include "modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
@@ -59,7 +58,6 @@ void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     // TODO(JM) implement new-file logic
-    ui->mainTab->addTab(new Editor(), QString("$filename"));
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -363,7 +361,7 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::on_actionNew_Tab_triggered()
 {
-    ui->mainTab->addTab(new Editor(), QString("new"));
+    ui->mainTab->addTab(new CodeEditor(), QString("new"));
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()

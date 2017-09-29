@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/img">
+        <file alias="file-alt">file-alt.svg</file>
         <file alias="folder">folder.svg</file>
         <file alias="folder-open">folder-open.svg</file>
         <file alias="gams">gams.svg</file>
