@@ -388,10 +388,13 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_actionRunWithGams_triggered()
 {
+    // TODO: get gams path dynamically
     QString gamsPath = "/home/rogo/gams/gams24.9_linux_x64_64_sfx/gams";
 
+    // TODO: add option to clear output view before running next job
     int fileId = mEditors.value(mRecent.editor);
-    QString filePath = mFileRepo.fileContext(fileId)->location();
+    FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
+    QString filePath = fgc->runableGms();
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
