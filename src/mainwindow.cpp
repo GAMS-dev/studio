@@ -325,16 +325,7 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 
 void MainWindow::on_actionSim_Process_triggered()
 {
-    QString gamsPath = "/home/rogo/gams/gams24.9_linux_x64_64_sfx/gams";
-    QString exampleFile = "/home/rogo/workspace/gamsfiles/trnsport.gms";
-
-//    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
-    qDebug() << "starting process";
-    mProc = new QProcess(this);
-    mProc->start(gamsPath + " " + exampleFile);
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -395,6 +386,23 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
     }
 }
 
+void MainWindow::on_actionRunWithGams_triggered()
+{
+    QString gamsPath = "/home/rogo/gams/gams24.9_linux_x64_64_sfx/gams";
+
+    int fileId = mEditors.value(mRecent.editor);
+    QString filePath = mFileRepo.fileContext(fileId)->location();
+
+    qDebug() << "starting process";
+    mProc = new QProcess(this);
+    mProc->start(gamsPath + " " + filePath);
+    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+}
+
 }
 }
+
+
 

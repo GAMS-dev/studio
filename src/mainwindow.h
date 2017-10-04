@@ -84,6 +84,8 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
 
+    void on_actionRunWithGams_triggered();
+
 private:
     void initTabs();
 
