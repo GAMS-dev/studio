@@ -95,6 +95,12 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
+QString FileGroupContext::runableGms()
+{
+    // TODO(JM) for projects the project file has to be parsed for the main runableGms
+    return mLocation + "/" + mRunInfo;
+}
+
 int FileGroupContext::childCount()
 {
     return mChildList.count();
@@ -144,10 +150,11 @@ void FileGroupContext::directoryChanged(const QString& path)
     deleteLater();
 }
 
-FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location)
+FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, QString runInfo)
     : FileSystemContext(parent, id, name, location)
 {
     mFlags = FileSystemContext::cfGroup;
+    mRunInfo = runInfo;
 }
 
 } // namespace studio

@@ -51,15 +51,17 @@ protected:
     friend class FileRepository;
     friend class FileSystemContext;
 
-    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location);
+    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
+    QString runableGms();
 
 private:
     QList<FileSystemContext*> mChildList;
     QFileSystemWatcher *mFsWatcher = nullptr;
+    QString mRunInfo;
 };
 
 } // namespace studio
