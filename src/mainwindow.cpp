@@ -398,6 +398,10 @@ void MainWindow::on_actionRunWithGams_triggered()
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
+
+    QFileInfo qfi(filePath);
+    mProc->setWorkingDirectory(qfi.path());
+
     mProc->start(gamsPath + " " + filePath);
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
