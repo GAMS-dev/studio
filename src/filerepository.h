@@ -27,6 +27,11 @@
 namespace gams {
 namespace studio {
 
+///
+/// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
+/// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
+/// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
+///
 class FileRepository : public QAbstractItemModel
 {
     Q_OBJECT
@@ -45,7 +50,14 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-    QModelIndex addGroup(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    /// Adds a group node to the file repository. This will watch the location for changes.
+    /// \param name The name of the project (or gist).
+    /// \param location The location of the directory.
+    /// \param projectFile The file name w/o path of the project OR gms-start-file
+    /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
+    /// \return Model index to the new FileGroupContext.
+    QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+
     QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
     void removeNode(FileSystemContext *node);
     QModelIndex rootTreeModelIndex();
