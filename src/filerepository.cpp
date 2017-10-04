@@ -38,13 +38,13 @@ FileRepository::~FileRepository()
 FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
 {
     if (!startNode)
-        throw FATAL() << "missing startNode";
+        FATAL() << "missing startNode";
     if (startNode->id() == fileId)
         return startNode;
     for (int i = 0; i < startNode->childCount(); ++i) {
         FileSystemContext* iChild = startNode->childEntry(i);
         if (!iChild)
-            throw FATAL() << "child must not be null";
+            FATAL() << "child must not be null";
         FileSystemContext* entry = context(fileId, iChild);
         if (entry) return entry;
     }
@@ -97,7 +97,7 @@ QModelIndex FileRepository::parent(const QModelIndex& child) const
         return createIndex(0, child.column(), eParent);
     int row = eParent->indexOf(eChild);
     if (row < 0)
-        throw FATAL() << "could not find child in parent";
+        FATAL() << "could not find child in parent";
     return createIndex(row, child.column(), eParent);
 }
 
@@ -162,7 +162,7 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
         parentIndex = rootModelIndex();
     FileGroupContext *par = group(parentIndex);
     if (!par)
-        throw FATAL() << "Can't get parent object";
+        FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
@@ -181,7 +181,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
         parentIndex = rootTreeModelIndex();
     FileGroupContext *par = group(parentIndex);
     if (!par)
-        throw FATAL() << "Can't get parent object";
+        FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
@@ -196,6 +196,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
     FileGroupContext* fgContext = new FileGroupContext(group(parentIndex), mNextId++, name, location, runInfo);
     endInsertRows();
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
+    connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
 //    updatePathNode(fgContext->id(), fgContext->location());
     return index(offset, 0, parentIndex);
@@ -207,7 +208,7 @@ QModelIndex FileRepository::addFile(QString name, QString location, QModelIndex 
         parentIndex = rootModelIndex();
     FileGroupContext *par = group(parentIndex);
     if (!par)
-        throw FATAL() << "Can't get parent object";
+        FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
@@ -285,7 +286,7 @@ void FileRepository::setSuffixFilter(QStringList filter)
 {
     for (QString suff: filter) {
         if (!suff.startsWith("."))
-            FATAL() << "invalid suffix " << suff << ". A suffix must start with a dot.";
+            EXCEPT() << "invalid suffix " << suff << ". A suffix must start with a dot.";
     }
     mSuffixFilter = filter;
 }
@@ -315,6 +316,7 @@ typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
 void FileRepository::updatePathNode(int fileId, QDir dir)
 {
+    qDebug() << "updatePathNode: " << dir;
     FileGroupContext *parGroup = groupContext(fileId, mRoot);
     if (!parGroup)
         throw QException();
@@ -354,16 +356,6 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         for (QFileInfo fi: fiList) {
             addFile(fi.fileName(), fi.canonicalFilePath(), index(parGroup));
         }
-    }
-}
-
-void FileRepository::nodeExpanded(const QModelIndex& index)
-{
-    FileGroupContext *gc = group(index);
-    if (!gc->isWatched()) {
-        QFileSystemWatcher *watcher = gc->watchIt();
-        connect(gc, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
-        connect(watcher, &QFileSystemWatcher::directoryChanged, gc, &FileGroupContext::directoryChanged);
     }
 }
 

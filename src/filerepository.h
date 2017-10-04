@@ -77,7 +77,6 @@ signals:
 public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
-    void nodeExpanded(const QModelIndex& index);
 
 private:
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);

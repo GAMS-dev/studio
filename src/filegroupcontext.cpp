@@ -50,6 +50,12 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
     FileSystemContext::setFlag(flag, false);
 }
 
+void FileGroupContext::setLocation(const QString& location)
+{
+    Q_UNUSED(location);
+    EXCEPT() << "The location of a FileGroupContext can't be changed.";
+}
+
 int FileGroupContext::peekIndex(const QString& name, bool *hit)
 {
     if (hit) *hit = false;
@@ -123,17 +129,24 @@ QIcon FileGroupContext::icon()
 
 bool FileGroupContext::isWatched()
 {
-    return mFsWatcher;
+    return mDirWatcher;
 }
 
-QFileSystemWatcher*FileGroupContext::watchIt()
+void FileGroupContext::setWatched(bool watch)
 {
-    if (!mFsWatcher) {
-        mFsWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-        mFsWatcher->addPath(location());
-        qDebug() << "added watcher for" << location();
+    if (!watch) {
+        if (mDirWatcher) {
+            mDirWatcher->deleteLater();
+            mDirWatcher = nullptr;
+        }
+        return;
     }
-    return mFsWatcher;
+    if (!mDirWatcher) {
+        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
+        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
+    }
+    mDirWatcher->addPath(location());
+    qDebug() << "added watcher for" << location();
 }
 
 void FileGroupContext::directoryChanged(const QString& path)

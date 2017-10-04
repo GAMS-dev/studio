@@ -62,14 +62,15 @@ public:
 
 #ifdef QT_DEBUG
 #  ifdef __GNUC__
-#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() throw gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
 #  else
-#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() throw gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
 #  endif
 #else
-#  define FATAL() gams::studio::Exception()
+#  define EXCEPT() throw gams::studio::Exception()
+#  define FATAL() throw gams::studio::FatalException()
 #endif
 
 #endif // EXCEPTION_H

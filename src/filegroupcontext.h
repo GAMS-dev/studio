@@ -33,13 +33,15 @@ public:
     void setFlag(ContextFlag flag, bool value = true);
     void unsetFlag(ContextFlag flag);
 
+    void setLocation(const QString &location);
+
     int childCount();
     int indexOf(FileSystemContext *child);
     FileSystemContext* childEntry(int index);
     QIcon icon();
 
     bool isWatched();
-    QFileSystemWatcher *watchIt();
+    void setWatched(bool watch = true);
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -60,7 +62,7 @@ protected:
 
 private:
     QList<FileSystemContext*> mChildList;
-    QFileSystemWatcher *mFsWatcher = nullptr;
+    QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
 };
 

@@ -45,7 +45,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
-    connect(ui->treeView, &QTreeView::expanded, &mFileRepo, &FileRepository::nodeExpanded);
     ensureCodecMenue("System");
 }
 
@@ -78,7 +77,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         fc->setDocument(codeEdit->document());
         fc->load(codecName);
         ensureCodecMenue(fc->codec());
-        connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
+//        connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
         connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
 }
@@ -352,7 +351,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret == QMessageBox::Save) {
         FileContext *fc = mFileRepo.fileContext(fileId);
         if (!fc)
-            throw FATAL() << "Could not find file context to closed editor";
+            FATAL() << "Could not find file context to closed editor";
         fc->save();
     }
     if (ret != QMessageBox::Cancel) {

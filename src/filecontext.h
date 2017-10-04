@@ -106,9 +106,9 @@ signals:
 
 public slots:
     /// Slot to handle a change of the assigned Document
-    /// TODO (JM) bind to signal QTextDocument::modificationChanged instead
-    void textChanged();
     void modificationChanged(bool modiState);
+
+    void persistentFileChanged(QString filepath);
 
 protected:
     friend class FileRepository;
@@ -117,6 +117,7 @@ protected:
 
 private:
     CrudState mCrudState = CrudState::eCreate;
+    QDateTime mModified;
     QString mCodec = "UTF-8";
     QTextDocument* mDocument = nullptr;
     QFileSystemWatcher *mWatcher = nullptr;

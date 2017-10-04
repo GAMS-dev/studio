@@ -65,7 +65,7 @@ void FileContext::save()
 void FileContext::load(QString codecName)
 {
     if (!document())
-        FATAL() << "There is no document assigned to the file " << location();
+        EXCEPT() << "There is no document assigned to the file " << location();
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
@@ -95,15 +95,20 @@ void FileContext::load(QString codecName)
                 mCodec = nameOfUsedCodec;
             }
             file.close();
-            setCrudState(CrudState::eRead);
+            mDocument->setModified(false);
         }
     }
+    if (!mWatcher) {
+        mWatcher = new QFileSystemWatcher(this);
+        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::persistentFileChanged);
+    }
+    mWatcher->addPath(location());
 }
 
 void FileContext::setLocation(const QString& location)
 {
     if (location.isEmpty())
-        FATAL() << "File can't be set to an empty location";
+        EXCEPT() << "File can't be set to an empty location.";
     // TODO(JM) adapt parent group
     // TODO (JM): handling if the file already exists
     FileSystemContext::setLocation(location);
@@ -135,7 +140,7 @@ void FileContext::unsetFlag(ContextFlag flag)
 void FileContext::setDocument(QTextDocument* doc)
 {
     if (mDocument && doc)
-        throw FATAL() << "document of " << location() << " cannot be replaced";
+        EXCEPT() << "document of " << location() << " cannot be replaced";
     mDocument = doc;
     // don't overwrite ContextState::eMissing
     if (mDocument) {
@@ -168,16 +173,9 @@ const QString FileContext::caption()
     return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
 
-void FileContext::textChanged()
-{
-    if (mCrudState != CrudState::eUpdate) {
-        setCrudState(CrudState::eUpdate);
-        emit changed(mId);
-    }
-}
-
 void FileContext::modificationChanged(bool modiState)
 {
+    qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
     // TODO(JM) check what todo on CrudState::eDelete
     if (modiState && mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
@@ -187,6 +185,18 @@ void FileContext::modificationChanged(bool modiState)
         setCrudState(CrudState::eRead);
         emit changed(mId);
     }
+}
+
+void FileContext::persistentFileChanged(QString filepath)
+{
+    QFileInfo fi(filepath);
+    if (!fi.exists()) {
+        // TODO(JM) file gone
+    }
+    if (fi.lastModified() != mModified) {
+        // TODO(JM) file changed externally
+    }
+    qDebug() << fi.fileName() << " // modified: " << fi.lastModified();
 }
 
 } // namespace studio
