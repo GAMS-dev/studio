@@ -165,12 +165,12 @@ pipeline {
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                                sh "mv bin/studio.zip ${env.BRANCH_NAME}-studio.zip"
                             } else {
                                 sh "mv bin/studio.dmg studio.dmg"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
-                        archiveArtifacts artifacts: '*.zip', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
                     }
                 }
             }
