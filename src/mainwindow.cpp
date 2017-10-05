@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
+    connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
+    connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     ensureCodecMenue("System");
 }
 
@@ -264,6 +266,61 @@ void MainWindow::fileChanged(int fileId)
             FileContext *fc = mFileRepo.fileContext(fileId);
             if (fc) ui->mainTab->setTabText(index, fc->caption());
         }
+    }
+}
+
+void MainWindow::fileChangedExtern(int fileId)
+{
+    FileContext *fc = mFileRepo.fileContext(fileId);
+
+    // file has not been loaded: nothing to do
+    if (!fc->document()) return;
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("File modified");
+
+    // TODO(JM) Handle other file-types
+
+    // file is loaded but unchanged: ASK, if it should be reloaded
+    if (fc->crudState() == CrudState::eRead) {
+        msgBox.setText(fc->location()+" has been modified externally.");
+        msgBox.setInformativeText("Reload?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    }
+
+    // file has been changed in the editor: ASK, if intern or extern version should be kept.
+    if (fc->crudState() == CrudState::eUpdate) {
+        msgBox.setText(fc->location() + " has been modified concurrently.");
+        msgBox.setInformativeText("Do you want to"
+                                  "\n- <b>Discard</b> your changes and reload the file"
+                                  "\n- <b>Ignore</b> the external changes and keep your changes");
+        msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
+    }
+
+    msgBox.setDefaultButton(QMessageBox::NoButton);
+    int ret = msgBox.exec();
+    if (ret == QMessageBox::Yes || ret == QMessageBox::Discard) {
+        fc->load(fc->codec());
+    }
+}
+
+void MainWindow::fileDeletedExtern(int fileId)
+{
+    FileContext *fc = mFileRepo.fileContext(fileId);
+    // file has not been loaded: nothing to do
+    if (!fc->document()) return;
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("File vanished");
+
+    // file is loaded: ASK, if it should be closed
+    msgBox.setText(fc->location()+" doesn't exist any more.");
+    msgBox.setInformativeText("Keep file in editor?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::NoButton);
+    int ret = msgBox.exec();
+    if (ret == QMessageBox::No) {
+        fileClosed(fileId);
     }
 }
 

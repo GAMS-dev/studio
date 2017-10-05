@@ -223,6 +223,8 @@ QModelIndex FileRepository::addFile(QString name, QString location, QModelIndex 
     FileContext* fContext = new FileContext(group(parentIndex), mNextId++, name, location);
     endInsertRows();
     connect(fContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
+    connect(fContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
+    connect(fContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     return index(offset, 0, parentIndex);
 }
@@ -279,7 +281,7 @@ void FileRepository::close(int fileId)
     fc->setDocument(nullptr);
     QModelIndex fci = index(fc);
     dataChanged(fci, fci);
-    emit fileClosed(fileId);
+    emit fileClosed(fileId, QPrivateSignal());
 }
 
 void FileRepository::setSuffixFilter(QStringList filter)
@@ -356,6 +358,31 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         for (QFileInfo fi: fiList) {
             addFile(fi.fileName(), fi.canonicalFilePath(), index(parGroup));
         }
+    }
+}
+
+void FileRepository::onFileChangedExtern(int fileId)
+{
+    if (!mChangedIds.contains(fileId)) mChangedIds << fileId;
+    QTimer::singleShot(100, this, &FileRepository::processExternFileEvents);
+}
+
+void FileRepository::onFileDeletedExtern(int fileId)
+{
+    if (!mDeletedIds.contains(fileId)) mDeletedIds << fileId;
+    QTimer::singleShot(100, this, &FileRepository::processExternFileEvents);
+}
+
+void FileRepository::processExternFileEvents()
+{
+    while (!mDeletedIds.isEmpty()) {
+        int fileId = mDeletedIds.takeFirst();
+        if (mChangedIds.contains(fileId)) mChangedIds.removeAll(fileId);
+        emit fileDeletedExtern(fileId);
+    }
+    while (!mChangedIds.isEmpty()) {
+        int fileId = mChangedIds.takeFirst();
+        emit fileChangedExtern(fileId);
     }
 }
 

@@ -27,6 +27,9 @@
 namespace gams {
 namespace studio {
 
+
+typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
+
 ///
 /// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
@@ -72,11 +75,18 @@ public:
     FileGroupContext* group(const QModelIndex& index) const;
 
 signals:
-    void fileClosed(int fileId);
+    void fileClosed(int fileId, QPrivateSignal);
+    void fileChangedExtern(int fileId);
+    void fileDeletedExtern(int fileId);
 
 public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
+
+private slots:
+    void onFileChangedExtern(int fileId);
+    void onFileDeletedExtern(int fileId);
+    void processExternFileEvents();
 
 private:
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
@@ -86,6 +96,8 @@ private:
     FileGroupContext* mRoot;
     FileGroupContext* mTreeRoot;
     QStringList mSuffixFilter;
+    QList<int> mChangedIds;
+    QList<int> mDeletedIds;
 };
 
 } // namespace studio

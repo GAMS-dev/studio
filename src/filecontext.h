@@ -43,6 +43,35 @@ enum class CrudState {
     eDelete
 };
 
+///
+/// The FileMetrics class stores current metrics of a file
+///
+class FileMetrics
+{
+    bool mExists;
+    qint64 mSize;
+    QDateTime mCreated;
+    QDateTime mModified;
+public:
+    enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
+    FileMetrics(): mExists(false), mSize(0) {
+    }
+    FileMetrics(QFileInfo fileInfo) {
+        mExists = fileInfo.exists();
+        mSize = mExists ? fileInfo.size() : 0;
+        mCreated = mExists ? fileInfo.created() : QDateTime();
+        mModified = mExists ? fileInfo.lastModified() : QDateTime();
+    }
+    ChangeKind check(QFileInfo fileInfo) {
+        if (mModified.isNull()) return ckSkip;
+        if (!fileInfo.exists()) {
+            // TODO(JM) #106: find a file in the path fitting created, modified and size values
+            return ckNotFound;
+        }
+        if (fileInfo.lastModified() != mModified) return ckModified;
+        return ckUnchanged;
+    }
+};
 
 class FileGroupContext;
 
@@ -100,15 +129,20 @@ public:
     QTextDocument* document();
 
 signals:
-    /// signal is emitted if the current CRUD-state has changed.
-    /// \param state The new CRUD-state
-    void crudChanged(CrudState state);
+    /// Signal is emitted when the file has been modified externally.
+    /// \param fileId The file identifier
+    void modifiedExtern(int fileId);
+
+    /// Signal is emitted when the file has been deleted (or renamed) externally.
+    /// \param fileId The file identifier
+    void deletedExtern(int fileId);
 
 public slots:
     /// Slot to handle a change of the assigned Document
     void modificationChanged(bool modiState);
 
-    void persistentFileChanged(QString filepath);
+protected slots:
+    void onFileChangedExtern(QString filepath);
 
 protected:
     friend class FileRepository;
@@ -117,12 +151,11 @@ protected:
 
 private:
     CrudState mCrudState = CrudState::eCreate;
-    QDateTime mModified;
+    FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     QTextDocument* mDocument = nullptr;
     QFileSystemWatcher *mWatcher = nullptr;
     static const QStringList mDefaulsCodecs;
-
 };
 
 } // namespace studio

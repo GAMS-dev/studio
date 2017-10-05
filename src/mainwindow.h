@@ -58,7 +58,10 @@ private slots:
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
+    void fileChangedExtern(int fileId);
+    void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
+
 
 private slots:
     void on_actionNew_triggered();
