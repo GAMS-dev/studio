@@ -33,28 +33,14 @@ GAMSInfo::GAMSInfo()
 }
 
 QString GAMSInfo::systemDir() {
-//    QFile file("gamscore.txt");
-//    if (file.open(QIODevice::ReadOnly)) {
-//        auto path = file.readLine();
-//        auto dir = QDir(path);
-//        if (dir.exists())
-//            return path;
-//    }
-
-
-    //QMessageBox::information(nullptr, "Path", path);
 #ifdef __linux__ // Linux AppImage
-    auto path = QDir::currentPath().append("/..");
-    QMessageBox::information(nullptr, "Path", path);
-    return path;
+    return QDir::currentPath().append("/..");
 #elif __APPLE__ // Apple MacOS dmg
     auto path = QDir::currentPath().append("/../../..");
     QMessageBox::information(nullptr, "Path", path);
     return path;
 #else // Windows
-    auto path = QDir::currentPath().append("/..");
-    QMessageBox::information(nullptr, "Path", path);
-    return path;
+    return QDir::currentPath().append("/..");
 #endif
     //return "";//QStandardPaths::findExecutable("gams");
 }
