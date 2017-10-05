@@ -160,12 +160,12 @@ pipeline {
                         sh '''
                             cd bin
                             macdeployqt studio.app -dmg -always-overwrite
-                            zip -r studio.zip studio.app
+                            zip -r mac-studio.zip studio.app
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
-                                sh "mv bin/studio.zip ${env.BRANCH_NAME}-studio.zip"
+                                sh "mv bin/mac-studio.zip ${env.BRANCH_NAME}-studio.zip"
                             } else {
                                 sh "mv bin/studio.dmg studio.dmg"
                             }
