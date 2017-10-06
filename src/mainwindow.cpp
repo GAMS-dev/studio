@@ -397,22 +397,52 @@ void MainWindow::on_actionRunWithGams_triggered()
         // nothing to run
         return;
     }
-    FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
-    QString filePath = fgc->runableGms();
 
     ui->actionRunWithGams->setEnabled(false);
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
-    QFileInfo qfi(filePath);
-    mProc->setWorkingDirectory(qfi.path());
+    FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
+    QString gmsFilePath = fgc->runableGms();
+    QFileInfo gmsFileInfo(gmsFilePath);
+    mProc->setWorkingDirectory(gmsFileInfo.path());
+    mProc->start(gamsPath + " " + gmsFilePath);
 
-    mProc->start(gamsPath + " " + filePath);
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 
+    // find .lst file
+    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst";
+    QFileInfo lstFileInfo(lstFileName);
+    if(!lstFileInfo.exists()) return; // ERROR: did gams even run?
+
+    QModelIndex qmi = mFileRepo.findEntry(lstFileName, lstFileInfo.absoluteFilePath(), mFileRepo.index(fgc));
+
+    // already opened, put tab to foreground
+    FileContext *fc = static_cast<FileContext*>(qmi.internalPointer());
+
+    bool tabAlreadyOpen = false;
+    QList<int> openTabs = mEditors.values();
+    for (int tabId : openTabs) {
+        if(mFileRepo.fileContext(tabId)->name().compare(lstFileName) == 0) {
+            tabAlreadyOpen = true;
+        }
+    }
+
+    if (tabAlreadyOpen) {
+        // put to foreground
+        QWidget* edit = mEditors.key(fc->id(), nullptr);
+        ui->mainTab->setCurrentWidget(edit);
+    } else {
+        // not yet opened by user, open file in new tab
+        QModelIndex groupMI = mFileRepo.ensureGroup(lstFileName);
+        QModelIndex fileMI = mFileRepo.addFile(lstFileName, lstFileInfo.canonicalFilePath(), groupMI);
+
+        FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
+        createEdit(ui->mainTab, fc->id());
+    }
     ui->actionRunWithGams->setEnabled(true);
 }
 
