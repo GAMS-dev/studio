@@ -406,6 +406,7 @@ void MainWindow::on_actionRunWithGams_triggered()
     FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
+    QString basePath = gmsFileInfo.absolutePath();
 
     mProc->setWorkingDirectory(gmsFileInfo.path());
     mProc->start(gamsPath + " " + gmsFilePath);
@@ -416,8 +417,12 @@ void MainWindow::on_actionRunWithGams_triggered()
 
     // find .lst file
     QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
-    QFileInfo lstFileInfo(lstFileName);
-    if(!lstFileInfo.exists()) return; // ERROR: did gams even run?
+    QFileInfo lstFileInfo(basePath + "/" + lstFileName);
+    if(!lstFileInfo.exists()) {
+        qDebug() << lstFileInfo.absoluteFilePath() << " not found. aborting.";
+        ui->actionRunWithGams->setEnabled(true);
+        return; // ERROR: did gams even run?
+    }
 
     openOrShow(lstFileInfo.absoluteFilePath(), fgc);
     ui->actionRunWithGams->setEnabled(true);
