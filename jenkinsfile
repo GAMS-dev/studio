@@ -165,7 +165,7 @@ pipeline {
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
-                                sh "mv bin/mac-studio.zip ${env.BRANCH_NAME}-studio.zip"
+                                sh "mv bin/mac-studio.zip ${env.BRANCH_NAME}-mac-studio.zip"
                             } else {
                                 sh "mv bin/studio.dmg studio.dmg"
                             }
