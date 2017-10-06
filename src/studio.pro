@@ -41,7 +41,8 @@ SOURCES += \
     treeitemdelegate.cpp \
     glbparser.cpp \
     libraryitem.cpp \
-    library.cpp
+    library.cpp \
+    librarymodel.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -57,7 +58,8 @@ HEADERS += \
     version.h \
     glbparser.h \
     libraryitem.h \
-    library.h
+    library.h \
+    librarymodel.h
 
 FORMS += \
     welcomepage.ui \

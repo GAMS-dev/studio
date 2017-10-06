@@ -54,8 +54,8 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
 
     // read models
     QList<LibraryItem> libraryItems;
-    QString description;
     QString line;
+    QString description;
     while(!in.atEnd()) {
         line = in.readLine();
         if(line.startsWith("*$*$*$"))
