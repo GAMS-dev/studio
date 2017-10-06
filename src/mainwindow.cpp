@@ -419,14 +419,12 @@ void MainWindow::on_actionRunWithGams_triggered()
     if(!lstFileInfo.exists()) return; // ERROR: did gams even run?
 
     QModelIndex qmi = mFileRepo.findEntry(lstFileName, lstFileInfo.absoluteFilePath(), mFileRepo.index(fgc));
-
-    // already opened, put tab to foreground
     FileContext *fc = static_cast<FileContext*>(qmi.internalPointer());
 
     bool tabAlreadyOpen = false;
     QList<int> openTabs = mEditors.values();
     for (int tabId : openTabs) {
-        if(mFileRepo.fileContext(tabId)->name().compare(lstFileName) == 0) {
+        if(mFileRepo.fileContext(tabId)->location().compare(lstFileInfo.absoluteFilePath()) == 0) {
             tabAlreadyOpen = true;
         }
     }
