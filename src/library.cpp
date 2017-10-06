@@ -1,0 +1,56 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "library.h"
+
+namespace gams {
+namespace studio {
+
+Library::Library(QString name, int version, int nrColumns, QStringList columns, QList<int> colOrder):
+    mName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mColOrder(colOrder)
+{
+}
+
+int Library::version() const
+{
+    return mVersion;
+}
+
+QString Library::name() const
+{
+    return mName;
+}
+
+int Library::nrColumns() const
+{
+    return mNrColumns;
+}
+
+QStringList Library::columns() const
+{
+    return mColumns;
+}
+
+QList<int> Library::colOrder() const
+{
+    return mColOrder;
+}
+
+} // namespace studio
+} // namespace gams

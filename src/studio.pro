@@ -38,7 +38,10 @@ SOURCES += \
     welcomepage.cpp \
     modeldialog.cpp \
     mainwindow.cpp \
-    treeitemdelegate.cpp
+    treeitemdelegate.cpp \
+    glbparser.cpp \
+    libraryitem.cpp \
+    library.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -51,7 +54,10 @@ HEADERS += \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \
-    version.h
+    version.h \
+    glbparser.h \
+    libraryitem.h \
+    library.h
 
 FORMS += \
     welcomepage.ui \

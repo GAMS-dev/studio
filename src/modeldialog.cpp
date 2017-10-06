@@ -26,6 +26,8 @@
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include "glbparser.h"
+#include "libraryitem.h"
 
 namespace gams {
 namespace studio {
@@ -38,6 +40,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
     //TODO(CW): This is a temporary logic for determine a GAMS system directory.
     //          This needs to be replaced by a common and central way of determining the GAMS system directory
     QDir gamsSysDir = QFileInfo(QStandardPaths::findExecutable("gams")).absoluteDir();
+    gamsSysDir = QFileInfo("C:\\gams\\win64\\25.0\\").absoluteDir();
 
     libraryList.append(QPair<QTableWidget*, QString>(ui.twModelLibrary, gamsSysDir.filePath("gamslib_ml/gamslib.glb")));
     libraryList.append(QPair<QTableWidget*, QString>(ui.twTestLibrary,  gamsSysDir.filePath("testlib_ml/testlib.glb")));
@@ -57,49 +60,24 @@ ModelDialog::ModelDialog(QWidget *parent) :
 
 bool ModelDialog::populateTable(QTableWidget *tw, QString glbFile)
 {
-    QFile file(glbFile);
-    if(!file.open(QIODevice::ReadOnly))
-        return false;
+    QList<LibraryItem> libraryItems = GlbParser::parseFile(glbFile);
+    tw->setColumnCount(libraryItems.first().library()->nrColumns());
 
-    QTextStream in(&file);
-
-    in.readLine();
-    in.readLine();
-
-    // read column header
-    int nrColumns = in.readLine().split("=")[1].trimmed().toInt();
-    QList<int> colMap;
-    for(int i=0; i<nrColumns; i++)
-        colMap.append(-1);
-    QStringList splitList;
-    tw->setColumnCount(nrColumns);
-    for(int i=0; i<nrColumns; i++)
+    for(int i=0; i<libraryItems.first().library()->nrColumns(); i++)
     {
-        splitList = in.readLine().split("=");
-        colMap.replace(splitList.at(0).trimmed().toInt()-1, i);
-        QTableWidgetItem* item = new QTableWidgetItem(splitList.at(1).trimmed());
+        QTableWidgetItem* item = new QTableWidgetItem(libraryItems.first().library()->columns().at(i));
         tw->setHorizontalHeaderItem(i, item);
     }
-    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
 
-    // read models
-    while(!in.atEnd()) {
-        if(in.readLine().startsWith("*$*$*$"))
+    for(LibraryItem item : libraryItems)
+    {
+        tw->insertRow(tw->rowCount());
+        for(int i=0; i<item.library()->nrColumns(); i++)
         {
-            if(in.readLine().length() == 0) // we have reached the end of the file
-                file.close();
-            else // read new model
-            {
-                tw->insertRow(tw->rowCount());
-                for(int i=0; i<nrColumns; i++)
-                    tw->setItem(tw->rowCount()-1,colMap.at(i), new QTableWidgetItem(in.readLine().split("=")[1].trimmed()));
-            }
-        }
-        else
-        {
-            // TODO(CW): read describtion
+            tw->setItem(tw->rowCount()-1, i, new QTableWidgetItem(item.values().at(item.library()->colOrder().at(i))));
         }
     }
+
     return true;
 }
 
