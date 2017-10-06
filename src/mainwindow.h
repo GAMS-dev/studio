@@ -60,6 +60,7 @@ private slots:
     void activeTabChanged(int index);
     void fileChanged(int fileId);
     void fileClosed(int fileId);
+    void appendOutput(QString text);
 
 private slots:
     void on_actionNew_triggered();
@@ -83,8 +84,11 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
 
+    void on_actionRunWithGams_triggered();
+
 private:
     void initTabs();
+    void openOrShow(QString filePath, FileGroupContext *parent);
 
 private:
     Ui::MainWindow *ui;
@@ -95,6 +99,7 @@ private:
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
+
 };
 
 }
