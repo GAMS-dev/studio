@@ -44,6 +44,7 @@ QString GAMSInfo::systemDir() {
     return QDir::currentPath().append("/..");
 #endif
 #else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
+    QMessageBox::information(nullptr, "Path", QStandardPaths::findExecutable("gams"));
     return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
 #endif
 }
