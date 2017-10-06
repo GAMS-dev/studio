@@ -39,8 +39,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
 
     //TODO(CW): This is a temporary logic for determine a GAMS system directory.
     //          This needs to be replaced by a common and central way of determining the GAMS system directory
-    QDir gamsSysDir = QFileInfo(GAMSInfo::systemDir()).absoluteDir();
-
+    QDir gamsSysDir(GAMSInfo::systemDir());
     libraryList.append(QPair<QTableWidget*, QString>(ui.twModelLibrary, gamsSysDir.filePath("gamslib_ml/gamslib.glb")));
     libraryList.append(QPair<QTableWidget*, QString>(ui.twTestLibrary,  gamsSysDir.filePath("testlib_ml/testlib.glb")));
     libraryList.append(QPair<QTableWidget*, QString>(ui.twAPILibrary,   gamsSysDir.filePath("apilib_ml/apilib.glb")));

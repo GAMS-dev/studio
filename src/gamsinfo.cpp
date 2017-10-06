@@ -33,22 +33,18 @@ GAMSInfo::GAMSInfo()
 }
 
 QString GAMSInfo::systemDir() {
-    QFile file("gamscore.txt");
-    if (file.open(QIODevice::ReadOnly)) {
-        auto path = file.readLine();
-        auto dir = QDir(path);
-        if (dir.exists())
-            return path;
-    }
-
+#if defined(DISTRIB_BUILD) // For the GAMS distribution build
 #ifdef __linux__ // Linux AppImage
     return QDir::currentPath().append("/..");
 #elif __APPLE__ // Apple MacOS dmg
-    auto path = QDir::currentPath().append("/../../..");
+    auto path = QDir::currentPath();
     QMessageBox::information(nullptr, "Path", path);
     return path;
 #else // Windows
     return QDir::currentPath().append("/..");
+#endif
+#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
+    return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
 #endif
 }
 
