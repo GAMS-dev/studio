@@ -88,6 +88,7 @@ private slots:
 
 private:
     void initTabs();
+    void openOrShow(QString filePath, FileGroupContext *parent);
 
 private:
     Ui::MainWindow *ui;
@@ -98,6 +99,7 @@ private:
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
+
 };
 
 }
