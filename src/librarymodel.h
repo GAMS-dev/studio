@@ -13,7 +13,7 @@ class LibraryModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit LibraryModel(QObject *parent = 0, QList<LibraryItem> data);
+    explicit LibraryModel(QList<LibraryItem> data, QObject *parent = 0);
 
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -21,7 +21,6 @@ public:
     // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 private:

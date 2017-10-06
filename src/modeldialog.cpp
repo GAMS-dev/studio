@@ -28,6 +28,7 @@
 #include <QStandardPaths>
 #include "glbparser.h"
 #include "libraryitem.h"
+#include "librarymodel.h"
 
 namespace gams {
 namespace studio {
@@ -42,46 +43,28 @@ ModelDialog::ModelDialog(QWidget *parent) :
     QDir gamsSysDir = QFileInfo(QStandardPaths::findExecutable("gams")).absoluteDir();
     gamsSysDir = QFileInfo("C:\\gams\\win64\\25.0\\").absoluteDir();
 
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twModelLibrary, gamsSysDir.filePath("gamslib_ml/gamslib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twTestLibrary,  gamsSysDir.filePath("testlib_ml/testlib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twAPILibrary,   gamsSysDir.filePath("apilib_ml/apilib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twDataLibrary,  gamsSysDir.filePath("datalib_ml/datalib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twEMPLibrary,   gamsSysDir.filePath("emplib_ml/emplib.glb")));
+    QStringList glbFiles;
+    glbFiles << gamsSysDir.filePath("gamslib_ml/gamslib.glb")
+             << gamsSysDir.filePath("testlib_ml/testlib.glb")
+             << gamsSysDir.filePath("apilib_ml/apilib.glb")
+             << gamsSysDir.filePath("datalib_ml/datalib.glb")
+             << gamsSysDir.filePath("emplib_ml/emplib.glb")
+             << gamsSysDir.filePath("finlib_ml/finlib.glb")
+             << gamsSysDir.filePath("noalib_ml/noalib.glb");
 
-    QStringList errList;
-    for(auto item : libraryList)
+
+    QList<LibraryItem> items;
+    QTableView* tableView;
+    for(auto item : glbFiles)
     {
-        if(!populateTable(item.first, item.second))
-            errList.append(item.second);
+        items = GlbParser::parseFile(gamsSysDir.filePath(item));
+        tableView = new QTableView();
+        tableView->setModel(new LibraryModel(items, tableView));
+        ui.tabWidget->addTab(tableView, items.at(0).library()->name());
     }
-    if(!errList.empty())
-        QMessageBox::critical(this, "Error", "Error loading files. One or more libraries might not be available:\n" + errList.join("\n"));
 }
 
-bool ModelDialog::populateTable(QTableWidget *tw, QString glbFile)
-{
-    QList<LibraryItem> libraryItems = GlbParser::parseFile(glbFile);
-    tw->setColumnCount(libraryItems.first().library()->nrColumns());
-
-    for(int i=0; i<libraryItems.first().library()->nrColumns(); i++)
-    {
-        QTableWidgetItem* item = new QTableWidgetItem(libraryItems.first().library()->columns().at(i));
-        tw->setHorizontalHeaderItem(i, item);
-    }
-
-    for(LibraryItem item : libraryItems)
-    {
-        tw->insertRow(tw->rowCount());
-        for(int i=0; i<item.library()->nrColumns(); i++)
-        {
-            tw->setItem(tw->rowCount()-1, i, new QTableWidgetItem(item.values().at(item.library()->colOrder().at(i))));
-        }
-    }
-
-    return true;
-}
-
-
+/*
 void ModelDialog::on_lineEdit_textChanged(const QString &arg1)
 {
     if(arg1.length() == 0)
@@ -106,6 +89,7 @@ void ModelDialog::on_lineEdit_textChanged(const QString &arg1)
         }
     }
 }
+*/
 
 }
 }

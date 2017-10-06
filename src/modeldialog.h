@@ -32,14 +32,8 @@ class ModelDialog : public QDialog
 public:
     explicit ModelDialog(QWidget *parent = 0);
 
-private slots:
-    void on_lineEdit_textChanged(const QString &arg1);
-
 private:
     Ui::ModelDialog ui;
-    bool populateTable(QTableWidget *tw, QString glbFile);
-
-    QList<QPair<QTableWidget*, QString>> libraryList;
 };
 
 }
