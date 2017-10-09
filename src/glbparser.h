@@ -28,8 +28,9 @@ namespace studio {
 class GlbParser
 {
 public:
-    GlbParser();
     static QList<LibraryItem> parseFile(QString glbFile);
+private:
+    GlbParser();
 };
 
 } // namespace studio
