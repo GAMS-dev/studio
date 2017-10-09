@@ -37,5 +37,12 @@ QStringList LibraryItem::values() const
     return mValues;
 }
 
+QString LibraryItem::name() const
+{
+    int idx = mLibrary->columns().indexOf("Name");
+    return mValues.at(idx);
+}
+
+
 } // namespace sutdio
 } // namespace gams

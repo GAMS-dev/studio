@@ -36,6 +36,8 @@ public:
     std::shared_ptr<Library> library() const;
     QStringList values() const;
 
+    QString name() const;
+
 private:
     std::shared_ptr<Library> mLibrary;
     QString mDescription;

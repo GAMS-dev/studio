@@ -61,6 +61,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
         tableView = new QTableView();
         tableView->horizontalHeader()->setStretchLastSection(true);
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableView->setSelectionMode(QAbstractItemView::SingleSelection);
         tableView->verticalHeader()->hide();
         tableView->setSortingEnabled(true);
 
