@@ -24,6 +24,7 @@
 #include "modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
+#include "gamsinfo.h"
 
 namespace gams {
 namespace studio {
@@ -39,7 +40,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    connect(this, &MainWindow::processOutput, ui->processWindow, &QTextEdit::append);
+    ui->processWindow->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
@@ -334,6 +336,14 @@ void MainWindow::fileClosed(int fileId)
     }
 }
 
+void MainWindow::appendOutput(QString text)
+{
+    QTextEdit *outWin = ui->processWindow;
+    outWin->moveCursor(QTextCursor::End);
+    outWin->insertPlainText(text);
+    outWin->moveCursor(QTextCursor::End);
+}
+
 void MainWindow::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
@@ -346,7 +356,14 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox::about(this, "About GAMS Studio", "Gams Studio v0.0.1 alpha");
+    auto systemDir = GAMSInfo::systemDir();
+    QProcess process(this);
+    process.start(systemDir + "/gams ? lo=3");
+    QString info;
+    if (process.waitForFinished()) {
+        info = process.readAllStandardOutput();;
+    }
+    QMessageBox::about(this, "About GAMS Studio", info);
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -378,12 +395,6 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 void MainWindow::on_actionSim_Process_triggered()
 {
     mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
-//    qDebug() << "starting process";
-//    mProc = new QProcess(this);
-//    mProc->start("../../spawner/spawner.exe");
-//    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-//    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -481,8 +492,76 @@ void MainWindow::closeEvent(QCloseEvent* event)
         }
     }
 
+void MainWindow::on_actionRunWithGams_triggered()
+{
+    QString gamsPath = GAMSInfo::systemDir() + "/gams";
+    // TODO: add option to clear output view before running next job
+    int fileId = mEditors.value(mRecent.editor);
+    if(fileId == 0) {
+        // nothing to run
+        return;
+    }
+
+    ui->actionRunWithGams->setEnabled(false);
+
+    qDebug() << "starting process";
+    mProc = new QProcess(this);
+
+    FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
+    QString gmsFilePath = fgc->runableGms();
+    QFileInfo gmsFileInfo(gmsFilePath);
+    QString basePath = gmsFileInfo.absolutePath();
+
+    mProc->setWorkingDirectory(gmsFileInfo.path());
+    mProc->start(gamsPath + " " + gmsFilePath);
+
+    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
+    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+
+    // find .lst file
+    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
+    QFileInfo lstFileInfo(basePath + "/" + lstFileName);
+    if(!lstFileInfo.exists()) {
+        qDebug() << lstFileInfo.absoluteFilePath() << " not found. aborting.";
+        ui->actionRunWithGams->setEnabled(true);
+        return; // ERROR: did gams even run?
+    }
+
+    openOrShow(lstFileInfo.absoluteFilePath(), fgc);
+    ui->actionRunWithGams->setEnabled(true);
+}
+
+void MainWindow::openOrShow(QString filePath, FileGroupContext *parent) {
+    QFileInfo fileInfo(filePath);
+    QModelIndex qmi = mFileRepo.findEntry(fileInfo.fileName(), fileInfo.filePath(), mFileRepo.index(parent));
+    FileContext *fc = static_cast<FileContext*>(qmi.internalPointer());
+
+    bool tabAlreadyOpen = false;
+    QList<int> openTabs = mEditors.values();
+    for (int tabId : openTabs) {
+        if(mFileRepo.fileContext(tabId)->location().compare(fileInfo.absoluteFilePath()) == 0) {
+            tabAlreadyOpen = true;
+        }
+    }
+
+    if (tabAlreadyOpen) {
+        // put to foreground
+        QWidget* edit = mEditors.key(fc->id(), nullptr);
+        ui->mainTab->setCurrentWidget(edit);
+    } else {
+        // not yet opened by user, open file in new tab
+        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.fileName());
+        QModelIndex fileMI = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
+
+        FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
+        createEdit(ui->mainTab, fc->id());
+    }
+}
 }
 
 }
 }
+
+
 

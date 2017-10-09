@@ -37,8 +37,6 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     highlightCurrentLine();
 }
 
-
-
 int CodeEditor::lineNumberAreaWidth()
 {
     int digits = 1;
@@ -53,14 +51,10 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
-
-
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
-
-
 
 void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
@@ -128,7 +122,6 @@ void CodeEditor::onUpdateBlockEdit()
     setTextCursor(cursor);
     mCurrentCol = cursor.columnNumber();
 }
-
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
@@ -219,8 +212,6 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
-
-
 void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
@@ -250,13 +241,13 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
-    int bottom = top + (int) blockBoundingRect(block).height();
+    int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + static_cast<int>(blockBoundingRect(block).height());
     int markFrom = (mBlockStartCursor.isNull() ? textCursor() : mBlockStartCursor).blockNumber();
     int markTo = (mBlockLastCursor.isNull() ? textCursor() : mBlockLastCursor).blockNumber();
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
-    QRect markRect(event->rect().left(), top, event->rect().width(), (int) blockBoundingRect(block).height()+1);
+    QRect markRect(event->rect().left(), top, event->rect().width(), static_cast<int>(blockBoundingRect(block).height())+1);
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             bool mark = blockNumber >= markFrom && blockNumber <= markTo;
@@ -275,7 +266,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
         block = block.next();
         top = bottom;
-        bottom = top + (int) blockBoundingRect(block).height();
+        bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
 }

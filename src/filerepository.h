@@ -69,6 +69,7 @@ public:
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
+    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
     FileSystemContext* node(const QModelIndex& index) const;
     FileSystemContext* file(const QModelIndex& index) const;
@@ -89,7 +90,6 @@ private slots:
     void processExternFileEvents();
 
 private:
-    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
 private:
     int mNextId;

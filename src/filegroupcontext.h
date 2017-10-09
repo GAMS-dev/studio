@@ -27,6 +27,7 @@ namespace studio {
 
 class FileGroupContext : public FileSystemContext
 {
+    friend class MainWindow;
     Q_OBJECT
 public:
     ~FileGroupContext();

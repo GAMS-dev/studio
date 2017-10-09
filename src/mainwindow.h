@@ -61,6 +61,7 @@ private slots:
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
+    void appendOutput(QString text);
 
 
 private slots:
@@ -85,11 +86,14 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
 
+    void on_actionRunWithGams_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
 private:
     void initTabs();
+    void openOrShow(QString filePath, FileGroupContext *parent);
 
 private:
     Ui::MainWindow *ui;
@@ -100,6 +104,7 @@ private:
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
+
 };
 
 }
