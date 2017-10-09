@@ -62,25 +62,18 @@ ModelDialog::ModelDialog(QWidget *parent) :
         items = GlbParser::parseFile(gamsSysDir.filePath(item));
         tableView = new QTableView();
         proxyModel = new QSortFilterProxyModel(this);
+        proxyModel->setFilterKeyColumn(-1);
         proxyModel->setSourceModel(new LibraryModel(items, this));
-        mProxyModels.append(proxyModel);
+
+        connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+        proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
         tableView->setModel(proxyModel);
         ui.tabWidget->addTab(tableView, items.at(0).library()->name());
     }
 }
 
-
 }
 }
 
-void gams::studio::ModelDialog::on_lineEdit_textChanged(const QString &arg1)
-{
 
-    for(auto proxy : mProxyModels)
-    {
-
-        proxy->setFilterRegExp(QRegExp(arg1, Qt::CaseInsensitive,
-                                       QRegExp::FixedString));
-        proxy->setFilterKeyColumn(-1);
-    }
-}
