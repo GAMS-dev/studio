@@ -35,6 +35,17 @@ FileRepository::~FileRepository()
     delete mRoot;
 }
 
+void FileRepository::setDefaultActions(QList<QAction*> directActions)
+{
+    while (!mFileActions.isEmpty()) {
+        FileActionContext* fac = mFileActions.takeFirst();
+        fac->deleteLater();
+    }
+    for (QAction *act: directActions) {
+        mFileActions.append(new FileActionContext(mTreeRoot, mNextId++, act));
+    }
+}
+
 FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
 {
     if (!startNode)
@@ -53,12 +64,12 @@ FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startN
 
 FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    return qobject_cast<FileContext*>(context(fileId, (startNode ? startNode : mRoot)));
 }
 
 FileGroupContext*FileRepository::groupContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileGroupContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    return qobject_cast<FileGroupContext*>(context(fileId, (startNode ? startNode : mRoot)));
 }
 
 QModelIndex FileRepository::index(FileSystemContext *entry)
@@ -126,6 +137,11 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         if (node(index)->flags().testFlag(FileSystemContext::cfActive)) {
             QFont f;
             f.setBold(true);
+            return f;
+        }
+        if (node(index)->flags().testFlag(FileSystemContext::cfVirtual)) {
+            QFont f;
+            f.setItalic(true);
             return f;
         }
         break;
@@ -358,6 +374,14 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
     }
 }
 
+void FileRepository::nodeClicked(QModelIndex index)
+{
+    FileActionContext* act = action(index);
+    if (act) {
+        emit act->trigger();
+    }
+}
+
 void FileRepository::onFileChangedExtern(int fileId)
 {
     if (!mChangedIds.contains(fileId)) mChangedIds << fileId;
@@ -388,14 +412,19 @@ FileSystemContext*FileRepository::node(const QModelIndex& index) const
     return static_cast<FileSystemContext*>(index.internalPointer());
 }
 
-FileSystemContext*FileRepository::file(const QModelIndex& index) const
+FileContext*FileRepository::file(const QModelIndex& index) const
 {
-    return static_cast<FileContext*>(index.internalPointer());
+    return qobject_cast<FileContext*>(node(index));
 }
 
 FileGroupContext*FileRepository::group(const QModelIndex& index) const
 {
     return static_cast<FileGroupContext*>(index.internalPointer());
+}
+
+FileActionContext*FileRepository::action(const QModelIndex& index) const
+{
+    return qobject_cast<FileActionContext*>(node(index));
 }
 
 } // namespace studio

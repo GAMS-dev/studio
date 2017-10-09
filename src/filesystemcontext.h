@@ -39,6 +39,7 @@ public:
         cfEditMod       = 0x08,
         cfMissing       = 0x10,
         cfExtendCaption = 0x20,
+        cfVirtual       = 0x40,
     };
     typedef QFlags<ContextFlag> ContextFlags;
 

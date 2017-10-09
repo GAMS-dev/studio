@@ -21,8 +21,9 @@
 #define FILEREPOSITORY_H
 
 #include <QtWidgets>
-#include "filegroupcontext.h"
+#include "fileactioncontext.h"
 #include "filecontext.h"
+#include "filegroupcontext.h"
 
 namespace gams {
 namespace studio {
@@ -42,6 +43,7 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
+    void setDefaultActions(QList<QAction*> directActions);
     FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
     FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
     FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
@@ -62,6 +64,7 @@ public:
     QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
 
     QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+
     void removeNode(FileSystemContext *node);
     QModelIndex rootTreeModelIndex();
     QModelIndex rootModelIndex();
@@ -72,8 +75,9 @@ public:
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
     FileSystemContext* node(const QModelIndex& index) const;
-    FileSystemContext* file(const QModelIndex& index) const;
+    FileContext* file(const QModelIndex& index) const;
     FileGroupContext* group(const QModelIndex& index) const;
+    FileActionContext* action(const QModelIndex& index) const;
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
@@ -83,6 +87,7 @@ signals:
 public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
+    void nodeClicked(QModelIndex index);
 
 private slots:
     void onFileChangedExtern(int fileId);
@@ -98,6 +103,7 @@ private:
     QStringList mSuffixFilter;
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
+    QList<FileActionContext*> mFileActions;
 };
 
 } // namespace studio

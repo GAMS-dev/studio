@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->treeView->setModel(&mFileRepo);
     ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
+    mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
     ui->treeView->setIconSize(QSize(15,15));
@@ -49,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
+    connect(ui->treeView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenue("System");
 }
 
@@ -128,7 +130,7 @@ void MainWindow::on_actionOpen_triggered()
             QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
 
             QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-            FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
+            FileContext *fc = mFileRepo.file(fileMI);
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
             mRecent.path = fInfo.path();
@@ -447,7 +449,8 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
 {
-    FileContext *fc = static_cast<FileContext*>(index.internalPointer());
+    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
+    FileContext *fc = qobject_cast<FileContext*>(fsc);
     if (fc) {
         QWidget* edit = mEditors.key(fc->id(), nullptr);
         if (edit) {
