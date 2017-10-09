@@ -491,6 +491,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->setAccepted(false);
         }
     }
+}
 
 void MainWindow::on_actionRunWithGams_triggered()
 {
@@ -557,7 +558,6 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent) {
         FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
         createEdit(ui->mainTab, fc->id());
     }
-}
 }
 
 }

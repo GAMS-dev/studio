@@ -27,7 +27,6 @@ namespace studio {
 
 class FileGroupContext : public FileSystemContext
 {
-    friend class MainWindow;
     Q_OBJECT
 public:
     ~FileGroupContext();
@@ -43,6 +42,7 @@ public:
 
     bool isWatched();
     void setWatched(bool watch = true);
+    QString runableGms();
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -59,7 +59,6 @@ protected:
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
-    QString runableGms();
 
 private:
     QList<FileSystemContext*> mChildList;
