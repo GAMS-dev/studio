@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "modeldialog.h"
+#include "gamsinfo.h"
+
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
@@ -39,10 +41,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
 {
     ui.setupUi(this);
 
-    //TODO(CW): This is a temporary logic for determine a GAMS system directory.
-    //          This needs to be replaced by a common and central way of determining the GAMS system directory
-    QDir gamsSysDir = QFileInfo(QStandardPaths::findExecutable("gams")).absoluteDir();
-    //gamsSysDir = QFileInfo("C:\\gams\\win64\\25.0\\").absoluteDir();
+    QDir gamsSysDir(GAMSInfo::systemDir());
 
     QStringList glbFiles;
     glbFiles << gamsSysDir.filePath("gamslib_ml/gamslib.glb")
@@ -52,7 +51,6 @@ ModelDialog::ModelDialog(QWidget *parent) :
              << gamsSysDir.filePath("emplib_ml/emplib.glb")
              << gamsSysDir.filePath("finlib_ml/finlib.glb")
              << gamsSysDir.filePath("noalib_ml/noalib.glb");
-
 
     QList<LibraryItem> items;
     QTableView* tableView;

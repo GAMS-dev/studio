@@ -26,8 +26,8 @@ namespace studio {
 FileRepository::FileRepository(QObject* parent)
     : QAbstractItemModel(parent), mNextId(0)
 {
-    mRoot = new FileGroupContext(nullptr, mNextId++, "Root", "");
-    mTreeRoot = new FileGroupContext(mRoot, mNextId++, "TreeRoot", "");
+    mRoot = new FileGroupContext(nullptr, mNextId++, "Root", "", "");
+    mTreeRoot = new FileGroupContext(mRoot, mNextId++, "TreeRoot", "", "");
 }
 
 FileRepository::~FileRepository()
@@ -121,7 +121,6 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
 
     case Qt::DisplayRole:
         return node(index)->caption();
-        break;
 
     case Qt::FontRole:
         if (node(index)->flags().testFlag(FileSystemContext::cfActive)) {
@@ -144,11 +143,9 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
 
     case Qt::DecorationRole:
         return node(index)->icon();
-        break;
 
     case Qt::ToolTipRole:
         return node(index)->location();
-        break;
 
     default:
         break;
@@ -175,10 +172,10 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
-QModelIndex FileRepository::addGroup(QString name, QString location, QModelIndex parentIndex)
+QModelIndex FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
-        parentIndex = rootModelIndex();
+        parentIndex = rootTreeModelIndex();
     FileGroupContext *par = group(parentIndex);
     if (!par)
         throw FATAL() << "Can't get parent object";
@@ -193,7 +190,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QModelIndex
     }
 
     beginInsertRows(parentIndex, offset, offset);
-    FileGroupContext* fgContext = new FileGroupContext(group(parentIndex), mNextId++, name, location);
+    FileGroupContext* fgContext = new FileGroupContext(group(parentIndex), mNextId++, name, location, runInfo);
     endInsertRows();
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
@@ -263,7 +260,7 @@ QModelIndex FileRepository::ensureGroup(const QString &filePath)
             group->setFlag(FileSystemContext::cfExtendCaption);
         }
     }
-    QModelIndex newGroupMi = addGroup(fi.baseName(), fi.path(), rootTreeModelIndex());
+    QModelIndex newGroupMi = addGroup(fi.baseName(), fi.path(), fi.fileName(), rootTreeModelIndex());
     if (extendedCaption)
         group(newGroupMi)->setFlag(FileSystemContext::cfExtendCaption);
     updatePathNode(group(newGroupMi)->id(), fi.path());

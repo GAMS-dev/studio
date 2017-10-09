@@ -42,7 +42,8 @@ SOURCES += \
     glbparser.cpp \
     libraryitem.cpp \
     library.cpp \
-    librarymodel.cpp
+    librarymodel.cpp \
+    gamsinfo.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -59,7 +60,8 @@ HEADERS += \
     glbparser.h \
     libraryitem.h \
     library.h \
-    librarymodel.h
+    librarymodel.h \
+    gamsinfo.h
 
 FORMS += \
     welcomepage.ui \

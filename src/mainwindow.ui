@@ -181,6 +181,7 @@
    </attribute>
    <addaction name="separator"/>
    <addaction name="actionSim_Process"/>
+   <addaction name="actionRunWithGams"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
@@ -256,8 +257,17 @@
      </property>
      <item>
       <widget class="QTextEdit" name="processWindow">
+       <property name="undoRedoEnabled">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
+       </property>
+       <property name="acceptRichText">
+        <bool>false</bool>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
      </item>
@@ -445,6 +455,21 @@
   <action name="actionGAMS_Library">
    <property name="text">
     <string>GAMS Library Explorer</string>
+   </property>
+  </action>
+  <action name="actionRunWithGams">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/img/play</normaloff>:/img/play</iconset>
+   </property>
+   <property name="text">
+    <string>RunWithGams</string>
+   </property>
+   <property name="toolTip">
+    <string>Runs currently selected file with GAMS</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

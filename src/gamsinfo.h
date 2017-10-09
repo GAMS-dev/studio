@@ -17,20 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "treeitemdelegate.h"
+#ifndef GAMSINFO_H
+#define GAMSINFO_H
+
+#include <QString>
 
 namespace gams {
 namespace studio {
 
-TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
-{}
-
-void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+class GAMSInfo
 {
-    QStyleOptionViewItem opt(option);
-    opt.textElideMode = Qt::ElideMiddle;
-    QStyledItemDelegate::paint(painter, opt, index);
+public:
+    static QString systemDir();
+
+private:
+    GAMSInfo();
+};
+
+}
 }
 
-} // namespace studio
-} // namespace gams
+#endif // GAMSINFO_H
