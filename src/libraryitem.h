@@ -17,27 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef LIBRARYITEM_H
+#define LIBRARYITEM_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
+#include <memory>
+#include <QString>
+#include <QStringList>
+#include "library.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class LibraryItem
 {
-    Q_OBJECT
-
 public:
-    explicit ModelDialog(QWidget *parent = 0);
+    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QStringList files);
+
+    std::shared_ptr<Library> library() const;
+    QStringList values() const;
 
 private:
-    Ui::ModelDialog ui;
+    std::shared_ptr<Library> mLibrary;
+    QString mDescription;
+    QStringList mFiles;
+    QStringList mValues;
+
 };
 
-}
-}
+} // namespace sutdio
+} // namespace gams
 
-#endif // MODELDIALOG_H
+#endif // LIBRARYITEM_H
