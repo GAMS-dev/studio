@@ -39,6 +39,10 @@ SOURCES += \
     modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp \
+    glbparser.cpp \
+    libraryitem.cpp \
+    library.cpp \
+    librarymodel.cpp \
     gamsinfo.cpp \
     fileactioncontext.cpp
 
@@ -54,6 +58,10 @@ HEADERS += \
     exception.h \
     treeitemdelegate.h \
     version.h \
+    glbparser.h \
+    libraryitem.h \
+    library.h \
+    librarymodel.h \
     gamsinfo.h \
     fileactioncontext.h
 

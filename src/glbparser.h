@@ -17,27 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef GLBPARSER_H
+#define GLBPARSER_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
+#include "libraryitem.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class GlbParser
 {
-    Q_OBJECT
-
 public:
-    explicit ModelDialog(QWidget *parent = 0);
-
+    static QList<LibraryItem> parseFile(QString glbFile);
 private:
-    Ui::ModelDialog ui;
+    GlbParser();
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // MODELDIALOG_H
+#endif // GLBPARSER_H

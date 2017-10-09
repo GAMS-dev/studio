@@ -33,20 +33,27 @@ class FileSystemContext : public QObject
 public:
     enum ContextFlag {
         cfNone          = 0x00,
-        cfGroup         = 0x01,
-        cfActive        = 0x02,
-        cfFileMod       = 0x04,
-        cfEditMod       = 0x08,
-        cfMissing       = 0x10,
-        cfExtendCaption = 0x20,
-        cfVirtual       = 0x40,
+        cfActive        = 0x01,
+        cfFileMod       = 0x02,
+        cfEditMod       = 0x04,
+        cfMissing       = 0x08,
+        cfExtendCaption = 0x10,
+        cfVirtual       = 0x20,
     };
-    typedef QFlags<ContextFlag> ContextFlags;
 
+    enum ContextType {
+        File,
+        FileAction,
+        FileGroup,
+        FileSystem
+    };
+
+    typedef QFlags<ContextFlag> ContextFlags;
 
     virtual ~FileSystemContext();
 
     int id() const;
+    int type() const;
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -87,6 +94,7 @@ signals:
 
 protected:
     FileSystemContext(FileGroupContext* parent, int id, QString name, QString location);
+    FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
 protected:
@@ -96,6 +104,8 @@ protected:
     QString mLocation;
     ContextFlags mFlags;
 
+private:
+    ContextType mType;
 };
 
 } // namespace studio

@@ -64,12 +64,19 @@ FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startN
 
 FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
 {
-    return qobject_cast<FileContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    auto c = context(fileId, (startNode ? startNode : mRoot));
+    if (c->type() == FileSystemContext::File)
+        return static_cast<FileContext*>(c);
+    return nullptr;
 }
 
-FileGroupContext*FileRepository::groupContext(int fileId, FileSystemContext* startNode)
+FileGroupContext* FileRepository::groupContext(int fileId, FileSystemContext* startNode)
 {
-    return qobject_cast<FileGroupContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    auto c = context(fileId, startNode ? startNode : mRoot);
+    if (c->type() == FileSystemContext::FileGroup) {
+        return static_cast<FileGroupContext*>(c);
+    }
+    return c->parentEntry();
 }
 
 QModelIndex FileRepository::index(FileSystemContext *entry)
@@ -151,8 +158,8 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         if (flags.testFlag(FileSystemContext::cfMissing))
             return QColor(Qt::red);
         if (flags.testFlag(FileSystemContext::cfActive)) {
-            return flags.testFlag(FileSystemContext::cfGroup) ? QColor(Qt::black)
-                                                              : QColor(Qt::blue);
+            return node(index)->type() == FileSystemContext::FileGroup ? QColor(Qt::black)
+                                                                       : QColor(Qt::blue);
         }
         break;
     }
@@ -414,17 +421,26 @@ FileSystemContext*FileRepository::node(const QModelIndex& index) const
 
 FileContext*FileRepository::file(const QModelIndex& index) const
 {
-    return qobject_cast<FileContext*>(node(index));
+    FileSystemContext *fsc = node(index);
+    if (fsc->type() != FileSystemContext::File)
+        return nullptr;
+    return static_cast<FileContext*>(fsc);
 }
 
 FileGroupContext*FileRepository::group(const QModelIndex& index) const
 {
-    return static_cast<FileGroupContext*>(index.internalPointer());
+    FileSystemContext *fsc = node(index);
+    if (fsc->type() != FileSystemContext::FileGroup)
+        return nullptr;
+    return static_cast<FileGroupContext*>(fsc);
 }
 
 FileActionContext*FileRepository::action(const QModelIndex& index) const
 {
-    return qobject_cast<FileActionContext*>(node(index));
+    FileSystemContext *fsc = node(index);
+    if (fsc->type() != FileSystemContext::FileAction)
+        return nullptr;
+    return static_cast<FileActionContext*>(fsc);
 }
 
 } // namespace studio

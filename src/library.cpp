@@ -17,27 +17,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
-
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
+#include "library.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+Library::Library(QString name, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder):
+    mName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mtoolTips(toolTips), mColOrder(colOrder)
 {
-    Q_OBJECT
-
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-
-private:
-    Ui::ModelDialog ui;
-};
-
-}
 }
 
-#endif // MODELDIALOG_H
+int Library::version() const
+{
+    return mVersion;
+}
+
+QString Library::name() const
+{
+    return mName;
+}
+
+int Library::nrColumns() const
+{
+    return mNrColumns;
+}
+
+QStringList Library::columns() const
+{
+    return mColumns;
+}
+
+QList<int> Library::colOrder() const
+{
+    return mColOrder;
+}
+QStringList Library::toolTips() const
+{
+    return mtoolTips;
+}
+
+} // namespace studio
+} // namespace gams

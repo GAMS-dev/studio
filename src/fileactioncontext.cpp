@@ -6,7 +6,7 @@ namespace gams {
 namespace studio {
 
 FileActionContext::FileActionContext(FileGroupContext* parent, int id, QAction *action)
-    : FileSystemContext(parent, id, action->text(), action->toolTip()), mAction(action)
+    : FileSystemContext(parent, id, action->text(), action->toolTip(), FileSystemContext::FileAction), mAction(action)
 {
     mFlags = cfVirtual;
 }
