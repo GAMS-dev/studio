@@ -121,7 +121,6 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
 
     case Qt::DisplayRole:
         return node(index)->caption();
-        break;
 
     case Qt::FontRole:
         if (node(index)->flags().testFlag(FileSystemContext::cfActive)) {
@@ -144,11 +143,9 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
 
     case Qt::DecorationRole:
         return node(index)->icon();
-        break;
 
     case Qt::ToolTipRole:
         return node(index)->location();
-        break;
 
     default:
         break;

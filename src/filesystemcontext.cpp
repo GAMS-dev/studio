@@ -133,6 +133,5 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
     return mFlags.testFlag(flag);
 }
 
-
 } // namespace studio
 } // namespace gams
