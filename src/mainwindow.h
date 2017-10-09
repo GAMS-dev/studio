@@ -47,7 +47,6 @@ public:
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenue(QString codecName);
 
-
 signals:
     void processOutput(QString text);
 
@@ -63,6 +62,7 @@ private slots:
     void appendOutput(QString text);
 
 private slots:
+    // File
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
@@ -71,21 +71,22 @@ private slots:
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionExit_Application_triggered();
+    // Edit
+    void on_actionNew_Tab_triggered();
+    // GAMS
+    void on_actionRun_triggered();
+    // About
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
+    // View
     void on_actionProject_Explorer_triggered(bool checked);
-    void on_actionLog_Output_triggered(bool checked);
     void on_actionBottom_Panel_triggered(bool checked);
-    void on_actionSim_Process_triggered();
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
-    void on_actionNew_Tab_triggered();
+    // AOB
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
-
-    // GAMS
-    void on_actionRun_triggered();
 
 private:
     void initTabs();

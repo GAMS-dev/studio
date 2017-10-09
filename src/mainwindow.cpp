@@ -318,22 +318,12 @@ void MainWindow::on_actionProject_Explorer_triggered(bool checked)
         ui->dockProjectExplorer->hide();
 }
 
-void MainWindow::on_actionLog_Output_triggered(bool checked)
-{
-    Q_UNUSED(checked)
-}
-
 void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 {
     if(checked)
         ui->dockBottom->show();
     else
         ui->dockBottom->hide();
-}
-
-void MainWindow::on_actionSim_Process_triggered()
-{
-    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
