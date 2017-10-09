@@ -26,6 +26,7 @@
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include <QSortFilterProxyModel>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
@@ -55,41 +56,31 @@ ModelDialog::ModelDialog(QWidget *parent) :
 
     QList<LibraryItem> items;
     QTableView* tableView;
+    QSortFilterProxyModel* proxyModel;
     for(auto item : glbFiles)
     {
         items = GlbParser::parseFile(gamsSysDir.filePath(item));
         tableView = new QTableView();
-        tableView->setModel(new LibraryModel(items, tableView));
+        proxyModel = new QSortFilterProxyModel(this);
+        proxyModel->setSourceModel(new LibraryModel(items, this));
+        mProxyModels.append(proxyModel);
+        tableView->setModel(proxyModel);
         ui.tabWidget->addTab(tableView, items.at(0).library()->name());
     }
 }
 
-/*
-void ModelDialog::on_lineEdit_textChanged(const QString &arg1)
-{
-    if(arg1.length() == 0)
-    {
-        for(auto item : libraryList)
-        {
-            QTableWidget* tw = item.first;
-            for(int j=0; j<tw->rowCount(); j++)
-                tw->showRow(j);
-        }
-    }
-    else
-    {
-        for(auto item : libraryList)
-        {
-            QTableWidget* tw = item.first;
-            for(int j=0; j<tw->rowCount(); j++)
-                tw->hideRow(j);
-            QList<QTableWidgetItem *> filteredItems = tw->findItems(arg1,Qt::MatchContains);
-            for(auto rowPtr : filteredItems)
-                tw->showRow(rowPtr->row());
-        }
-    }
-}
-*/
 
 }
+}
+
+void gams::studio::ModelDialog::on_lineEdit_textChanged(const QString &arg1)
+{
+
+    for(auto proxy : mProxyModels)
+    {
+
+        proxy->setFilterRegExp(QRegExp(arg1, Qt::CaseInsensitive,
+                                       QRegExp::FixedString));
+        proxy->setFilterKeyColumn(-1);
+    }
 }
