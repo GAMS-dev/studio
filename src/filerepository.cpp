@@ -135,8 +135,8 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         if (flags.testFlag(FileSystemContext::cfMissing))
             return QColor(Qt::red);
         if (flags.testFlag(FileSystemContext::cfActive)) {
-            return flags.testFlag(FileSystemContext::cfGroup) ? QColor(Qt::black)
-                                                              : QColor(Qt::blue);
+            return node(index)->type() == FileSystemContext::FileGroup ? QColor(Qt::black)
+                                                                       : QColor(Qt::blue);
         }
         break;
     }

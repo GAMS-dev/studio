@@ -151,9 +151,8 @@ void FileGroupContext::directoryChanged(const QString& path)
 }
 
 FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, QString runInfo)
-    : FileSystemContext(parent, id, name, location)
+    : FileSystemContext(parent, id, name, location, FileSystemContext::FileGroup)
 {
-    mFlags = FileSystemContext::cfGroup;
     mRunInfo = runInfo;
 }
 

@@ -43,14 +43,12 @@ enum class CrudState {
     eDelete
 };
 
-
 class FileGroupContext;
 
 class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
-
     /// The name of the current codec for this file.
     /// \return The name of the codec.
     QString codec() const;

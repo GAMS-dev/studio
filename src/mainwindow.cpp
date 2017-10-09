@@ -409,7 +409,11 @@ void MainWindow::on_actionRunWithGams_triggered()
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
+    FileGroupContext *fgc2 = mFileRepo.groupContext(fileId);
+    qDebug() << (fgc2 ? "true" : "false");
+    qDebug() << "fgc2: " << fgc2->name();
     FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
+    qDebug() << "fgc: " << fgc->name();
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
