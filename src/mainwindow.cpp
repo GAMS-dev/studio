@@ -73,7 +73,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
         mEditors.insert(codeEdit, fc->id());
-        codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
         int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
         qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
