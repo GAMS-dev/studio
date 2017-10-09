@@ -399,11 +399,6 @@ void MainWindow::on_actionRunWithGams_triggered()
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
     // TODO: add option to clear output view before running next job
     int fileId = mEditors.value(mRecent.editor);
-//    if(fileId == 0) {
-//        // nothing to run
-//        return;
-//    }
-
     ui->actionRunWithGams->setEnabled(false);
 
     qDebug() << "starting process";
