@@ -53,12 +53,19 @@ FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startN
 
 FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    auto c = context(fileId, (startNode ? startNode : mRoot));
+    if (c->type() == FileSystemContext::File)
+        return static_cast<FileContext*>(c);
+    return nullptr;
 }
 
-FileGroupContext*FileRepository::groupContext(int fileId, FileSystemContext* startNode)
+FileGroupContext* FileRepository::groupContext(int fileId, FileSystemContext* startNode)
 {
-    return static_cast<FileGroupContext*>(context(fileId, (startNode ? startNode : mRoot)));
+    auto c = context(fileId, startNode ? startNode : mRoot);
+    if (c->type() == FileSystemContext::FileGroup) {
+        return static_cast<FileGroupContext*>(c);
+    }
+    return c->parentEntry();
 }
 
 QModelIndex FileRepository::index(FileSystemContext *entry)

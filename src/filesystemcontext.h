@@ -85,6 +85,8 @@ protected:
     QString mName;
     QString mLocation;
     ContextFlags mFlags;
+
+private:
     ContextType mType;
 };
 

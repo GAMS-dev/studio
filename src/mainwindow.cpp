@@ -399,21 +399,19 @@ void MainWindow::on_actionRunWithGams_triggered()
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
     // TODO: add option to clear output view before running next job
     int fileId = mEditors.value(mRecent.editor);
-    if(fileId == 0) {
-        // nothing to run
-        return;
-    }
+//    if(fileId == 0) {
+//        // nothing to run
+//        return;
+//    }
 
     ui->actionRunWithGams->setEnabled(false);
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
-    FileGroupContext *fgc2 = mFileRepo.groupContext(fileId);
-    qDebug() << (fgc2 ? "true" : "false");
-    qDebug() << "fgc2: " << fgc2->name();
-    FileGroupContext *fgc = (FileGroupContext*)mFileRepo.fileContext(fileId)->parent();
-    qDebug() << "fgc: " << fgc->name();
+    FileGroupContext *fgc = mFileRepo.groupContext(fileId);
+    if (!fgc)
+        return;
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
