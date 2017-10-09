@@ -43,14 +43,20 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QList<int> colOrder;
     QStringList splitList;
     QStringList columns;
+    QStringList toolTips;
     for(int i=0; i<nrColumns; i++)
     {
-        splitList = in.readLine().split("=");
+        splitList = in.readLine().split("|");
+        if(2 == splitList.size()) //we have a tool tip
+            toolTips.append(splitList.at(1).trimmed());
+        else
+            toolTips.append("");
+        splitList = splitList.at(0).split("=");
         colOrder.append(splitList.at(0).trimmed().toInt()-1);
         columns.append(splitList.at(1).trimmed());
     }
     //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
-    std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, colOrder);
+    std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder);
 
     // read models
     QList<LibraryItem> libraryItems;

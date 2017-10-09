@@ -17,6 +17,11 @@ QVariant LibraryModel::headerData(int section, Qt::Orientation orientation, int 
         if (orientation == Qt::Horizontal)
             return mData.at(0).library()->columns().at(section);
     }
+    else if (role == Qt::ToolTipRole)
+    {
+        if (orientation == Qt::Horizontal)
+            return mData.at(0).library()->toolTips().at(section);
+    }
     return QVariant();
 }
 

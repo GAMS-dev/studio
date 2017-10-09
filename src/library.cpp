@@ -22,8 +22,8 @@
 namespace gams {
 namespace studio {
 
-Library::Library(QString name, int version, int nrColumns, QStringList columns, QList<int> colOrder):
-    mName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mColOrder(colOrder)
+Library::Library(QString name, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder):
+    mName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mtoolTips(toolTips), mColOrder(colOrder)
 {
 }
 
@@ -50,6 +50,10 @@ QStringList Library::columns() const
 QList<int> Library::colOrder() const
 {
     return mColOrder;
+}
+QStringList Library::toolTips() const
+{
+    return mtoolTips;
 }
 
 } // namespace studio
