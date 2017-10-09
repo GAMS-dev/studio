@@ -59,6 +59,11 @@ ModelDialog::ModelDialog(QWidget *parent) :
     {
         items = GlbParser::parseFile(gamsSysDir.filePath(item));
         tableView = new QTableView();
+        tableView->horizontalHeader()->setStretchLastSection(true);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableView->verticalHeader()->hide();
+        tableView->setSortingEnabled(true);
+
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setFilterKeyColumn(-1);
         proxyModel->setSourceModel(new LibraryModel(items, this));

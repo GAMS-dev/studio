@@ -51,6 +51,7 @@ QList<int> Library::colOrder() const
 {
     return mColOrder;
 }
+
 QStringList Library::toolTips() const
 {
     return mtoolTips;
