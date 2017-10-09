@@ -394,12 +394,12 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
     }
 }
 
-void MainWindow::on_actionRunWithGams_triggered()
+void MainWindow::on_actionRun_triggered()
 {
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
     // TODO: add option to clear output view before running next job
     int fileId = mEditors.value(mRecent.editor);
-    ui->actionRunWithGams->setEnabled(false);
+    ui->actionRun->setEnabled(false);
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
@@ -423,12 +423,12 @@ void MainWindow::on_actionRunWithGams_triggered()
     QFileInfo lstFileInfo(basePath + "/" + lstFileName);
     if(!lstFileInfo.exists()) {
         qDebug() << lstFileInfo.absoluteFilePath() << " not found. aborting.";
-        ui->actionRunWithGams->setEnabled(true);
+        ui->actionRun->setEnabled(true);
         return; // ERROR: did gams even run?
     }
 
     openOrShow(lstFileInfo.absoluteFilePath(), fgc);
-    ui->actionRunWithGams->setEnabled(true);
+    ui->actionRun->setEnabled(true);
 }
 
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent) {

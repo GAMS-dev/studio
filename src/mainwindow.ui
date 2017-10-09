@@ -154,8 +154,15 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menu_GAMs">
+    <property name="title">
+     <string>GAMS</string>
+    </property>
+    <addaction name="actionRun"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menu_GAMs"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
@@ -179,9 +186,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionRun"/>
    <addaction name="separator"/>
-   <addaction name="actionSim_Process"/>
-   <addaction name="actionRunWithGams"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
@@ -457,19 +463,16 @@
     <string>GAMS Library Explorer</string>
    </property>
   </action>
-  <action name="actionRunWithGams">
+  <action name="actionRun">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/img/play</normaloff>:/img/play</iconset>
    </property>
    <property name="text">
-    <string>RunWithGams</string>
-   </property>
-   <property name="toolTip">
-    <string>Runs currently selected file with GAMS</string>
+    <string>Run</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+R</string>
+    <string>F9</string>
    </property>
   </action>
  </widget>
