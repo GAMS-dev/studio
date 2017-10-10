@@ -17,41 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBRARY_H
-#define LIBRARY_H
-
-#include <QString>
-#include <QStringList>
-#include <QList>
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-class Library
+Exception::Exception()
 {
-public:
-    Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder);
+    mStream = new QTextStream(&mBuffer);
+}
 
-    int version() const;
-    QString name() const;
-    int nrColumns() const;
-    QStringList columns() const;
-    QList<int> colOrder() const;
-    QStringList toolTips() const;
-    QString execName() const;
-    void setName(const QString &name);
+Exception::Exception(const Exception &exception)
+    : mBuffer(exception.mBuffer),
+      mStream(new QTextStream(&mBuffer))
+{
 
-private:
-    QString mName;
-    QString mExecName;
-    int mVersion;
-    int mNrColumns;
-    QStringList mColumns;
-    QStringList mtoolTips;
-    QList<int> mColOrder;
-};
+}
 
-} // namespace studio
-} // namespace gams
+Exception::~Exception()
+{
+    qDebug() << mBuffer;
+    delete mStream;
+}
 
-#endif // LIBRARY_H
+FatalException* FatalException::clone() const
+{
+    return new FatalException(*this);
+}
+
+}
+}

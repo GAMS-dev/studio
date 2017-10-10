@@ -28,12 +28,9 @@ namespace studio {
 class Exception : public QException
 {
 public:
-    Exception() { mStream = new QTextStream(&mBuffer); }
-
-    ~Exception() throw() {
-        qDebug() << mBuffer;
-        delete mStream;
-    }
+    Exception();
+    Exception(const Exception &exception);
+    ~Exception();
 
     void raise() const { throw *this; }
     Exception *clone() const { return new Exception(*this); }
@@ -53,7 +50,7 @@ class FatalException : public Exception
 public:
     FatalException() {}
     void raise() const { throw *this; }
-    FatalException *clone() const { return new FatalException(*this); }
+    FatalException *clone() const;
 };
 
 } // namespace studio
@@ -62,14 +59,15 @@ public:
 
 #ifdef QT_DEBUG
 #  ifdef __GNUC__
-#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() throw gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
 #  else
-#    define EXCEPT() gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define FATAL() throw gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
 #  endif
 #else
-#  define FATAL() gams::studio::Exception()
+#  define EXCEPT() throw gams::studio::Exception()
+#  define FATAL() throw gams::studio::FatalException()
 #endif
 
 #endif // EXCEPTION_H

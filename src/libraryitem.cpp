@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 
 LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QStringList files):
-    mLibrary(library), mValues(values), mDescription(description), mFiles(files)
+    mLibrary(library), mDescription(description), mFiles(files), mValues(values)
 {
 }
 
