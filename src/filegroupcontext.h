@@ -37,6 +37,7 @@ public:
     int childCount();
     int indexOf(FileSystemContext *child);
     FileSystemContext* childEntry(int index);
+    FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
     bool isWatched();

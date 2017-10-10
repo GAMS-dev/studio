@@ -82,6 +82,7 @@ public:
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
+    FileSystemContext* findFile(QString filePath);
 
     FileSystemContext* node(const QModelIndex& index) const;
     FileSystemContext* file(const QModelIndex& index) const;

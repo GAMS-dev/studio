@@ -179,6 +179,12 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
+FileSystemContext* FileRepository::findFile(QString filePath)
+{
+    FileSystemContext* fsc = mTreeRoot->findFile(filePath);
+    return fsc;
+}
+
 QModelIndex FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())

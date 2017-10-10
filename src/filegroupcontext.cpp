@@ -50,6 +50,23 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
     FileSystemContext::setFlag(flag, false);
 }
 
+FileSystemContext* FileGroupContext::findFile(QString filePath)
+{
+    for (int i = 0; i < childCount(); i++) {
+        FileSystemContext *child = childEntry(i);
+        qDebug() << child->name();
+        if(child->childCount() > 0) {
+            qDebug() << "has children " << child->childCount();
+            FileSystemContext *element = child->childEntry(i)->findFile(filePath);
+            if(element != nullptr) {
+                qDebug() << "found element " << element->name();
+                return element;
+            }
+        }
+    }
+    return nullptr;
+}
+
 int FileGroupContext::peekIndex(const QString& name, bool *hit)
 {
     if (hit) *hit = false;
