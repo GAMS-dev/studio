@@ -28,7 +28,7 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
                                                               << "System" << "Windows-1250" << "Latin-1";
 
 FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
-    : FileSystemContext(parent, id, name, location)
+    : FileSystemContext(parent, id, name, location, FileSystemContext::File)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }
@@ -115,20 +115,6 @@ QIcon FileContext::icon()
     if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
         return QIcon(":/img/gams-w");
     return QIcon(":/img/file-alt");
-}
-
-void FileContext::setFlag(ContextFlag flag)
-{
-    if (flag == FileSystemContext::cfGroup)
-        throw QException();
-    FileSystemContext::setFlag(flag);
-}
-
-void FileContext::unsetFlag(ContextFlag flag)
-{
-    if (flag == FileSystemContext::cfGroup)
-        throw QException();
-    FileSystemContext::unsetFlag(flag);
 }
 
 void FileContext::setDocument(QTextDocument* doc)

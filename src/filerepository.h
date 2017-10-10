@@ -39,9 +39,24 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
+    /// \brief Get the <c>FileSystemContext</c> rellated to a file Id.
+    /// \param fileId The file Id related to a <c>FileSystemContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileContext</c> related to a file Id.
+    /// \param fileId The file Id related to a <c>FileContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileGroupContext</c> related to a file Id.
+    /// \param fileId The file Id related to a <c>FileGroupContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
     FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+
     QModelIndex index(FileSystemContext* entry);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;

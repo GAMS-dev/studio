@@ -39,8 +39,12 @@ SOURCES += \
     modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp \
-    gamsinfo.cpp \
     exception.cpp
+    glbparser.cpp \
+    libraryitem.cpp \
+    library.cpp \
+    librarymodel.cpp \
+    gamsinfo.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -54,6 +58,10 @@ HEADERS += \
     exception.h \
     treeitemdelegate.h \
     version.h \
+    glbparser.h \
+    libraryitem.h \
+    library.h \
+    librarymodel.h \
     gamsinfo.h
 
 FORMS += \

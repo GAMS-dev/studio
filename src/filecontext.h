@@ -43,14 +43,12 @@ enum class CrudState {
     eDelete
 };
 
-
 class FileGroupContext;
 
 class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
-
     /// The name of the current codec for this file.
     /// \return The name of the codec.
     QString codec() const;
@@ -74,14 +72,6 @@ public:
     /// The icon for this file type.
     /// \return The icon for this file type.
     QIcon icon();
-
-    /// Sets a flag to the current file-context.
-    /// \param flag The ContextFlag
-    virtual void setFlag(ContextFlag flag);
-
-    /// Unsets a flag in the current file-context.
-    /// \param flag The ContextFlag
-    virtual void unsetFlag(ContextFlag flag);
 
     /// Saves the file, if it is changed.
     void save();
