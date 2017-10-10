@@ -40,7 +40,7 @@ QStringList LibraryItem::values() const
 QString LibraryItem::name() const
 {
     int idx = mLibrary->columns().indexOf("Name");
-    return mValues.at(idx);
+    return mValues.at(mLibrary->colOrder().at(idx));
 }
 
 

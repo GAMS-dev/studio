@@ -22,6 +22,7 @@
 
 #include "ui_modeldialog.h"
 #include <QSortFilterProxyModel>
+#include "libraryitem.h"
 
 namespace gams {
 namespace studio {
@@ -32,12 +33,15 @@ class ModelDialog : public QDialog
 
 public:
     explicit ModelDialog(QWidget *parent = 0);
+    LibraryItem *selectedLibraryItem() const;
 
 public slots:
     void changeHeader();
+    void returnItem(const QModelIndex &index);
 
 private:
     Ui::ModelDialog ui;
+    LibraryItem* mSelectedLibraryItem;
 };
 
 }

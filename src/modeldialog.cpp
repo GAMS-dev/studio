@@ -65,11 +65,15 @@ ModelDialog::ModelDialog(QWidget *parent) :
         tableView->verticalHeader()->hide();
         tableView->setSortingEnabled(true);
 
+        connect(tableView, &QTableView::doubleClicked, this, &ModelDialog::returnItem);
+
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setFilterKeyColumn(-1);
         proxyModel->setSourceModel(new LibraryModel(items, this));
 
         connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+
+
 
         proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
@@ -90,6 +94,19 @@ void ModelDialog::changeHeader()
         ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
     }
 }
+
+void ModelDialog::returnItem(const QModelIndex &index)
+{
+    QModelIndex orgIndex = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
+    mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
+    this->accept();
+}
+
+LibraryItem *ModelDialog::selectedLibraryItem() const
+{
+    return mSelectedLibraryItem;
+}
+
 
 }
 }
