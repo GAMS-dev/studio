@@ -106,14 +106,6 @@ public:
     /// \return The icon for this file type.
     QIcon icon();
 
-    /// Sets a flag to the current file-context.
-    /// \param flag The ContextFlag
-    virtual void setFlag(ContextFlag flag);
-
-    /// Unsets a flag in the current file-context.
-    /// \param flag The ContextFlag
-    virtual void unsetFlag(ContextFlag flag);
-
     /// Saves the file, if it is changed.
     void save();
 

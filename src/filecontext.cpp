@@ -133,16 +133,6 @@ QIcon FileContext::icon()
     return QIcon(":/img/file-alt");
 }
 
-void FileContext::setFlag(ContextFlag flag)
-{
-    FileSystemContext::setFlag(flag);
-}
-
-void FileContext::unsetFlag(ContextFlag flag)
-{
-    FileSystemContext::unsetFlag(flag);
-}
-
 void FileContext::addEditor(QPlainTextEdit* edit)
 {
     if (!edit || mEditors.contains(edit))

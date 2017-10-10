@@ -40,8 +40,8 @@ public:
     QStringList toolTips() const;
 
 private:
-    int mVersion;
     QString mName;
+    int mVersion;
     int mNrColumns;
     QStringList mColumns;
     QStringList mtoolTips;

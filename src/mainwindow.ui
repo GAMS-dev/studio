@@ -71,7 +71,7 @@
          <bool>true</bool>
         </property>
         <property name="tabBarAutoHide">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -109,31 +109,13 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <widget class="QMenu" name="menuText_Operations">
-     <property name="title">
-      <string>Text Operations</string>
-     </property>
-     <addaction name="actionSome"/>
-     <addaction name="actionSub_Items"/>
-     <addaction name="separator"/>
-     <addaction name="actionand_a_seperator"/>
-    </widget>
     <widget class="QMenu" name="menuEncoding">
      <property name="title">
       <string>Encoding</string>
      </property>
      <addaction name="actionSystem_2"/>
     </widget>
-    <addaction name="menuText_Operations"/>
     <addaction name="menuEncoding"/>
-    <addaction name="separator"/>
-    <addaction name="actionNew_Tab"/>
-   </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>Tools</string>
-    </property>
-    <addaction name="actionSim_Process"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -154,9 +136,15 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menu_GAMs">
+    <property name="title">
+     <string>GAMS</string>
+    </property>
+    <addaction name="actionRun"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuTools"/>
+   <addaction name="menu_GAMs"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -179,9 +167,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionRun"/>
    <addaction name="separator"/>
-   <addaction name="actionSim_Process"/>
-   <addaction name="actionRunWithGams"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
@@ -295,21 +282,6 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="actionSome">
-   <property name="text">
-    <string>Some</string>
-   </property>
-  </action>
-  <action name="actionSub_Items">
-   <property name="text">
-    <string>Sub Items</string>
-   </property>
-  </action>
-  <action name="actionand_a_seperator">
-   <property name="text">
-    <string>and a seperator</string>
-   </property>
-  </action>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
@@ -318,17 +290,6 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
-   </property>
-  </action>
-  <action name="actionLog_Output">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Log Output</string>
    </property>
   </action>
   <action name="actionBottom_Panel">
@@ -354,18 +315,6 @@
    </property>
    <property name="text">
     <string>Project Explorer</string>
-   </property>
-  </action>
-  <action name="actionSim_Process">
-   <property name="icon">
-    <iconset resource="icons/icons.qrc">
-     <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
-   </property>
-   <property name="text">
-    <string>Sim Process</string>
-   </property>
-   <property name="toolTip">
-    <string>Simulate Process</string>
    </property>
   </action>
   <action name="actionNew">
@@ -426,14 +375,6 @@
     <string>Close All Except &quot;&quot;</string>
    </property>
   </action>
-  <action name="actionSystem">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>System</string>
-   </property>
-  </action>
   <action name="actionSystem_2">
    <property name="text">
     <string>System</string>
@@ -444,32 +385,21 @@
     <string>Show Welcome Page</string>
    </property>
   </action>
-  <action name="actionNew_Tab">
-   <property name="text">
-    <string>New Tab</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
-   </property>
-  </action>
   <action name="actionGAMS_Library">
    <property name="text">
     <string>GAMS Library Explorer</string>
    </property>
   </action>
-  <action name="actionRunWithGams">
+  <action name="actionRun">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/img/play</normaloff>:/img/play</iconset>
    </property>
    <property name="text">
-    <string>RunWithGams</string>
-   </property>
-   <property name="toolTip">
-    <string>Runs currently selected file with GAMS</string>
+    <string>Run</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+R</string>
+    <string>F9</string>
    </property>
   </action>
  </widget>

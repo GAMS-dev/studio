@@ -74,7 +74,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
-        codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
         fc->addEditor(codeEdit);
         int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -382,22 +381,12 @@ void MainWindow::on_actionProject_Explorer_triggered(bool checked)
         ui->dockProjectExplorer->hide();
 }
 
-void MainWindow::on_actionLog_Output_triggered(bool checked)
-{
-    Q_UNUSED(checked)
-}
-
 void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 {
     if(checked)
         ui->dockBottom->show();
     else
         ui->dockBottom->hide();
-}
-
-void MainWindow::on_actionSim_Process_triggered()
-{
-    mFileRepo.dump(static_cast<FileSystemContext*>(mFileRepo.rootModelIndex().internalPointer()));
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -430,11 +419,6 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
-}
-
-void MainWindow::on_actionNew_Tab_triggered()
-{
-    ui->mainTab->addTab(new CodeEditor(), QString("new"));
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -485,7 +469,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 }
 
-void MainWindow::on_actionRunWithGams_triggered()
+void MainWindow::on_actionRun_triggered()
 {
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
     // TODO: add option to clear output view before running next job
@@ -516,12 +500,12 @@ void MainWindow::on_actionRunWithGams_triggered()
     QFileInfo lstFileInfo(basePath + "/" + lstFileName);
     if(!lstFileInfo.exists()) {
         qDebug() << lstFileInfo.absoluteFilePath() << " not found. aborting.";
-        ui->actionRunWithGams->setEnabled(true);
+        ui->actionRun->setEnabled(true);
         return; // ERROR: did gams even run?
     }
 
     openOrShow(lstFileInfo.absoluteFilePath(), fgc);
-    ui->actionRunWithGams->setEnabled(true);
+    ui->actionRun->setEnabled(true);
 }
 
 void MainWindow::openOrShow(FileContext* fileContext)

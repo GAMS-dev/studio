@@ -28,12 +28,9 @@ namespace studio {
 class Exception : public QException
 {
 public:
-    Exception() { mStream = new QTextStream(&mBuffer); }
-
-    ~Exception() throw() {
-        qDebug() << mBuffer;
-        delete mStream;
-    }
+    Exception();
+    Exception(const Exception &exception);
+    ~Exception();
 
     void raise() const { throw *this; }
     Exception *clone() const { return new Exception(*this); }
@@ -53,7 +50,7 @@ class FatalException : public Exception
 public:
     FatalException() {}
     void raise() const { throw *this; }
-    FatalException *clone() const { return new FatalException(*this); }
+    FatalException *clone() const;
 };
 
 } // namespace studio

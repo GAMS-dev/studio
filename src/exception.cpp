@@ -17,25 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libraryitem.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QStringList files):
-    mLibrary(library), mDescription(description), mFiles(files), mValues(values)
+Exception::Exception()
 {
+    mStream = new QTextStream(&mBuffer);
 }
 
-std::shared_ptr<Library> LibraryItem::library() const
+Exception::Exception(const Exception &exception)
+    : mBuffer(exception.mBuffer),
+      mStream(new QTextStream(&mBuffer))
 {
-    return mLibrary;
+
 }
 
-QStringList LibraryItem::values() const
+Exception::~Exception()
 {
-    return mValues;
+    qDebug() << mBuffer;
+    delete mStream;
 }
 
-} // namespace sutdio
-} // namespace gams
+FatalException* FatalException::clone() const
+{
+    return new FatalException(*this);
+}
+
+}
+}
