@@ -424,7 +424,14 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog;
-    dialog.exec();
+
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        QMessageBox msgBox;
+        LibraryItem *item = dialog.selectedLibraryItem();
+        msgBox.setText("Model '" + item->name() + "' from library '" + item->library()->name() + "' selected.");
+        msgBox.exec();
+    }
 }
 
 void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)

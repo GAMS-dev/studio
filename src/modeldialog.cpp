@@ -42,34 +42,89 @@ ModelDialog::ModelDialog(QWidget *parent) :
     ui.setupUi(this);
 
     QDir gamsSysDir(GAMSInfo::systemDir());
-
-    QStringList glbFiles;
-    glbFiles << gamsSysDir.filePath("gamslib_ml/gamslib.glb")
-             << gamsSysDir.filePath("testlib_ml/testlib.glb")
-             << gamsSysDir.filePath("apilib_ml/apilib.glb")
-             << gamsSysDir.filePath("datalib_ml/datalib.glb")
-             << gamsSysDir.filePath("emplib_ml/emplib.glb")
-             << gamsSysDir.filePath("finlib_ml/finlib.glb")
-             << gamsSysDir.filePath("noalib_ml/noalib.glb");
-
     QList<LibraryItem> items;
-    QTableView* tableView;
-    QSortFilterProxyModel* proxyModel;
-    for(auto item : glbFiles)
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
+    items.at(0).library()->setName("Model Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("testlib_ml/testlib.glb"));
+    items.at(0).library()->setName("Test Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("apilib_ml/apilib.glb"));
+    items.at(0).library()->setName("API Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("datalib_ml/datalib.glb"));
+    items.at(0).library()->setName("Data Utilities Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("emplib_ml/emplib.glb"));
+    items.at(0).library()->setName("EMP Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("finlib_ml/finlib.glb"));
+    items.at(0).library()->setName("Fin Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
+    items.at(0).library()->setName("NOA Library");
+    addLibrary(items);
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+}
+
+//TODO(CW): updating the header and displaying the number of models in a library works for now but this solution is not optimal
+void ModelDialog::changeHeader()
+{
+    for(int i=0; i<ui.tabWidget->count(); i++)
     {
-        items = GlbParser::parseFile(gamsSysDir.filePath(item));
-        tableView = new QTableView();
-        proxyModel = new QSortFilterProxyModel(this);
-        proxyModel->setFilterKeyColumn(-1);
-        proxyModel->setSourceModel(new LibraryModel(items, this));
-
-        connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
-        proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-
-        tableView->setModel(proxyModel);
-        ui.tabWidget->addTab(tableView, items.at(0).library()->name());
+        QTableView *tv = static_cast<QTableView*>(ui.tabWidget->widget(i));
+        int rowCount = tv->model()->rowCount();
+        QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
+        ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
     }
 }
+
+void ModelDialog::returnItem(const QModelIndex &index)
+{
+    QModelIndex orgIndex = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
+    mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
+    this->accept();
+}
+
+void ModelDialog::addLibrary(QList<LibraryItem> items)
+{
+    QTableView* tableView;
+    QSortFilterProxyModel* proxyModel;
+    tableView = new QTableView();
+    tableView->horizontalHeader()->setStretchLastSection(true);
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView->verticalHeader()->hide();
+    tableView->setSortingEnabled(true);
+    tableView->horizontalHeader()->setHighlightSections(false);
+
+    connect(tableView, &QTableView::doubleClicked, this, &ModelDialog::returnItem);
+
+    proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setFilterKeyColumn(-1);
+    proxyModel->setSourceModel(new LibraryModel(items, this));
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+
+    proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    tableView->setModel(proxyModel);
+    ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+}
+
+LibraryItem *ModelDialog::selectedLibraryItem() const
+{
+    return mSelectedLibraryItem;
+}
+
 
 }
 }

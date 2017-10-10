@@ -37,5 +37,17 @@ QStringList LibraryItem::values() const
     return mValues;
 }
 
-} // namespace sutdio
+QString LibraryItem::name() const
+{
+    int idx = mLibrary->columns().indexOf("Name");
+    return mValues.at(mLibrary->colOrder().at(idx));
+}
+
+QStringList LibraryItem::files() const
+{
+    return mFiles;
+}
+
+
+} // namespace studio
 } // namespace gams
