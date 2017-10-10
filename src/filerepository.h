@@ -44,11 +44,17 @@ public:
     ~FileRepository();
 
     void setDefaultActions(QList<QAction*> directActions);
-    /// \brief Get the <c>FileSystemContext</c> rellated to a file Id.
+
+    /// \brief Get the <c>FileSystemContext</c> related to a file Id.
     /// \param fileId The file Id related to a <c>FileSystemContext</c>.
     /// \param startNode The node where the search starts.
     /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
+    /// \return The associated <c>FileSystemContext</c>.
+    FileSystemContext* context(const QModelIndex& index) const;
 
     /// \brief Get the <c>FileContext</c> related to a file Id.
     /// \param fileId The file Id related to a <c>FileContext</c>.
@@ -56,11 +62,33 @@ public:
     /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
 
+    /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileContext</c>.
+    /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
+    FileContext* fileContext(const QModelIndex& index) const;
+
+    /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
+    /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
+    /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
+    FileContext* fileContext(QPlainTextEdit* edit);
+
     /// \brief Get the <c>FileGroupContext</c> related to a file Id.
     /// \param fileId The file Id related to a <c>FileGroupContext</c>.
     /// \param startNode The node where the search starts.
     /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
     FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
+    /// \return The associated <c>FileGroupContext</c>, otherwise <c>nullptr</c>.
+    FileGroupContext* groupContext(const QModelIndex& index) const;
+
+    /// \brief Get the <c>FileActionContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileActionContext</c>.
+    /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
+    FileActionContext* actionContext(const QModelIndex& index) const;
+
+    QList<QPlainTextEdit*> editors(int fileId);
 
     QModelIndex index(FileSystemContext* entry);
 
@@ -88,11 +116,6 @@ public:
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-
-    FileSystemContext* node(const QModelIndex& index) const;
-    FileContext* file(const QModelIndex& index) const;
-    FileGroupContext* group(const QModelIndex& index) const;
-    FileActionContext* action(const QModelIndex& index) const;
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);

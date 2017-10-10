@@ -45,7 +45,7 @@ CrudState FileContext::crudState() const
 
 void FileContext::save()
 {
-    if (mCrudState != CrudState::eRead) {
+    if (document() && mCrudState != CrudState::eRead) {
         if (location().isEmpty())
             EXCEPT() << "Can't save without file name";
         QFile file(location());
@@ -55,11 +55,12 @@ void FileContext::save()
         QTextStream out(&file);
         out.setCodec(mCodec.toLatin1().data());
         qDebug() << "Saving with Codec set to: "<< mCodec;
-        out << mDocument->toPlainText();
+        out << document()->toPlainText();
         out.flush();
         file.close();
-        setCrudState(CrudState::eRead);
         mMetrics = FileMetrics(QFileInfo(file));
+        document()->setModified(false);
+        setCrudState(CrudState::eRead);
     }
 }
 
@@ -94,11 +95,11 @@ void FileContext::load(QString codecName)
             }
         }
         if (!nameOfUsedCodec.isEmpty()) {
-            mDocument->setPlainText(text);
+            document()->setPlainText(text);
             mCodec = nameOfUsedCodec;
         }
         file.close();
-        mDocument->setModified(false);
+        document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
     }
     if (!mWatcher) {
@@ -107,6 +108,11 @@ void FileContext::load(QString codecName)
         qDebug() << "Watching " << location();
         mWatcher->addPath(location());
     }
+}
+
+const QList<QPlainTextEdit*> FileContext::editors() const
+{
+    return mEditors;
 }
 
 void FileContext::setLocation(const QString& location)
@@ -137,24 +143,56 @@ void FileContext::unsetFlag(ContextFlag flag)
     FileSystemContext::unsetFlag(flag);
 }
 
-void FileContext::setDocument(QTextDocument* doc)
+void FileContext::addEditor(QPlainTextEdit* edit)
 {
-    if (mDocument && doc)
-        EXCEPT() << "document of " << location() << " cannot be replaced";
-    mDocument = doc;
-    // don't overwrite ContextState::eMissing
-    if (mDocument) {
-        setFlag(FileSystemContext::cfActive);
-        connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+    if (!edit || mEditors.contains(edit))
+        return;
+    mEditors.append(edit);
+    if (mEditors.size() == 1) {
+        document()->setParent(this);
+        connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
     } else {
-        unsetFlag(FileSystemContext::cfActive);
-        setCrudState(CrudState::eRead);
+        edit->setDocument(mEditors.first()->document());
     }
+    setFlag(FileSystemContext::cfActive);
+}
+
+void FileContext::removeEditor(QPlainTextEdit* edit)
+{
+    int i = mEditors.indexOf(edit);
+    if (i < 0)
+        return;
+    mEditors.removeAt(i);
+    if (mEditors.isEmpty()) {
+        // After removing last editor: paste document-parency back to editor
+        edit->document()->setParent(edit);
+        unsetFlag(FileSystemContext::cfActive);
+        mCrudState = CrudState::eRead;
+    }
+}
+
+void FileContext::removeAllEditors()
+{
+    while (!mEditors.isEmpty()) {
+        removeEditor(mEditors.first());
+    }
+}
+
+bool FileContext::hasEditor(QPlainTextEdit* edit)
+{
+    return mEditors.contains(edit);
 }
 
 QTextDocument*FileContext::document()
 {
-    return mDocument;
+    if (mEditors.isEmpty())
+        return nullptr;
+    return mEditors.first()->document();
+}
+
+FileContext::~FileContext()
+{
+    removeAllEditors();
 }
 
 QString FileContext::codec() const
@@ -175,15 +213,16 @@ const QString FileContext::caption()
 
 void FileContext::modificationChanged(bool modiState)
 {
-    qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
     // TODO(JM) check what todo on CrudState::eDelete
     if (modiState && mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
         emit changed(mId);
+        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
     }
     if (!modiState && mCrudState == CrudState::eUpdate) {
         setCrudState(CrudState::eRead);
         emit changed(mId);
+        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
     }
 }
 
@@ -196,7 +235,7 @@ void FileContext::onFileChangedExtern(QString filepath)
     if (changeKind == FileMetrics::ckUnchanged) return;
     if (!fi.exists()) {
         // file has been renamed or deleted
-        if (mDocument) mDocument->setModified();
+        if (document()) document()->setModified();
         emit deletedExtern(mId);
     }
     if (changeKind == FileMetrics::ckModified) {

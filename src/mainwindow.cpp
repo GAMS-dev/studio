@@ -74,16 +74,13 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         CodeEditor *codeEdit = new CodeEditor(this);
-        mEditors.insert(codeEdit, fc->id());
         codeEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        fc->addEditor(codeEdit);
         int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
-        qDebug() << "codeedit-parent-parentWidget == tabedit? " << (codeEdit->parentWidget()->parentWidget() == tabWidget ? "true" : "false");
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
-        fc->setDocument(codeEdit->document());
         fc->load(codecName);
         ensureCodecMenue(fc->codec());
-//        connect(codeEdit, &CodeEditor::textChanged, fc, &FileContext::textChanged);
         connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
 }
@@ -130,7 +127,7 @@ void MainWindow::on_actionOpen_triggered()
             QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
 
             QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-            FileContext *fc = mFileRepo.file(fileMI);
+            FileContext *fc = mFileRepo.fileContext(fileMI);
             createEdit(ui->mainTab, fc->id());
             ui->treeView->expand(groupMI);
             mRecent.path = fInfo.path();
@@ -249,11 +246,11 @@ void MainWindow::codecChanged(QAction *action)
 
 void MainWindow::activeTabChanged(int index)
 {
-    QWidget *edit = nullptr;
-    if (index >= 0)
-        edit = ui->mainTab->widget(index);
+    QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
+    QPlainTextEdit* edit = static_cast<QPlainTextEdit*>(editWidget);
     if (edit) {
-        int fileId = mEditors.value(edit, -1);
+        FileContext* fc = mFileRepo.fileContext(edit);
+        int fileId = (fc ? fc->id() : -1);
         if (fileId >= 0) {
             mRecent.editFileId = fileId;
             mRecent.editor = edit;
@@ -263,7 +260,7 @@ void MainWindow::activeTabChanged(int index)
 
 void MainWindow::fileChanged(int fileId)
 {
-    QWidgetList editors = mEditors.keys(fileId);
+    QList<QPlainTextEdit*> editors = mFileRepo.editors(fileId);
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
@@ -330,11 +327,14 @@ void MainWindow::fileDeletedExtern(int fileId)
 
 void MainWindow::fileClosed(int fileId)
 {
-    QWidgetList editors = mEditors.keys(fileId);
-    for (QWidget *edit: editors) {
+    FileContext* fc = mFileRepo.fileContext(fileId);
+    if (!fc)
+        FATAL() << "FileId " << fileId << " is not of class FileContext.";
+    while (!fc->editors().isEmpty()) {
+        QPlainTextEdit *edit = fc->editors().first();
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        fc->removeEditor(edit);
         edit->deleteLater();
-        mEditors.remove(edit);
     }
 }
 
@@ -401,33 +401,28 @@ void MainWindow::on_actionSim_Process_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    int fileId = mEditors.value(ui->mainTab->widget(index), -1);
-    if (fileId < 0)
-        return;
+    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
+    FileContext*fc = mFileRepo.fileContext(edit);
+    if (!fc) return;
 
     int ret = QMessageBox::Discard;
-    if (mEditors.keys(fileId).size() == 1) {
-        FileContext *fc = mFileRepo.fileContext(fileId);
-        if (fc && fc->crudState() == CrudState::eUpdate) {
-            // only ask, if this is the last editor of this file
-            QMessageBox msgBox;
-            msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
-            msgBox.setInformativeText("Do you want to save your changes?");
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Save);
-            ret = msgBox.exec();
-        }
+    if (fc->editors().size() == 1 && fc->crudState() == CrudState::eUpdate) {
+        // only ask, if this is the last editor of this file
+        QMessageBox msgBox;
+        msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        ret = msgBox.exec();
     }
-    if (ret == QMessageBox::Save) {
-        FileContext *fc = mFileRepo.fileContext(fileId);
-        if (!fc)
-            FATAL() << "Could not find file context to closed editor";
-        fc->save();
-    }
+    if (ret == QMessageBox::Save) fc->save();
     if (ret != QMessageBox::Cancel) {
-        int id = mEditors.value(ui->mainTab->widget(index));
-        if (mEditors.keys().size() <= 2)
-            mFileRepo.close(id);
+        if (fc->editors().size() == 1) {
+            mFileRepo.close(fc->id());
+        } else {
+            fc->removeEditor(edit);
+            ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        }
     }
 }
 
@@ -450,9 +445,9 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
 {
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    FileContext *fc = qobject_cast<FileContext*>(fsc);
-    if (fc) {
-        QWidget* edit = mEditors.key(fc->id(), nullptr);
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        QPlainTextEdit* edit = fc->editors().empty() ? nullptr : fc->editors().first();
         if (edit) {
             ui->mainTab->setCurrentWidget(edit);
         } else {
@@ -465,15 +460,13 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     QSet<int> openIds;
     QString lastName;
-    for (QWidget *wid: mEditors.keys()) {
-        CodeEditor *ed = qobject_cast<CodeEditor*>(wid);
+    for (QPlainTextEdit *ed: mFileRepo.editors(mFileRepo.groupContext(mFileRepo.rootTreeModelIndex())->id())) {
+        FileContext *fc = mFileRepo.fileContext(ed);
         if (!ed) continue;
-        int id = mEditors.value(ed);
-        FileContext *fc = mFileRepo.fileContext(id);
         CrudState cs = fc->crudState();
         if (cs == CrudState::eUpdate || cs == CrudState::eCreate) {
             qDebug() << "CRUD-state: " << (int)cs;
-            openIds << id;
+            openIds << fc->id();
             lastName = fc->location();
         }
     }
@@ -500,20 +493,17 @@ void MainWindow::on_actionRunWithGams_triggered()
 {
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
     // TODO: add option to clear output view before running next job
-    int fileId = mEditors.value(mRecent.editor);
-//    if(fileId == 0) {
-//        // nothing to run
-//        return;
-//    }
+
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    if (!fgc)
+        return;
 
     ui->actionRunWithGams->setEnabled(false);
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
-    FileGroupContext *fgc = mFileRepo.groupContext(fileId);
-    if (!fgc)
-        return;
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
@@ -538,31 +528,31 @@ void MainWindow::on_actionRunWithGams_triggered()
     ui->actionRunWithGams->setEnabled(true);
 }
 
-void MainWindow::openOrShow(QString filePath, FileGroupContext *parent) {
-    QFileInfo fileInfo(filePath);
-    QModelIndex qmi = mFileRepo.findEntry(fileInfo.fileName(), fileInfo.filePath(), mFileRepo.index(parent));
-    FileContext *fc = static_cast<FileContext*>(qmi.internalPointer());
-
-    bool tabAlreadyOpen = false;
-    QList<int> openTabs = mEditors.values();
-    for (int tabId : openTabs) {
-        if(mFileRepo.fileContext(tabId)->location().compare(fileInfo.absoluteFilePath()) == 0) {
-            tabAlreadyOpen = true;
-        }
-    }
-
-    if (tabAlreadyOpen) {
-        // put to foreground
-        QWidget* edit = mEditors.key(fc->id(), nullptr);
+void MainWindow::openOrShow(FileContext* fileContext)
+{
+    if (!fileContext) return;
+    QPlainTextEdit* edit = fileContext->editors().empty() ? nullptr : fileContext->editors().first();
+    if (edit) {
         ui->mainTab->setCurrentWidget(edit);
     } else {
+        createEdit(ui->mainTab, fileContext->id());
+    }
+}
+
+void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
+{
+    QFileInfo fileInfo(filePath);
+    QModelIndex qmi = mFileRepo.findEntry(fileInfo.fileName(), fileInfo.filePath(), mFileRepo.index(parent));
+    if (!qmi.isValid()) {
         // not yet opened by user, open file in new tab
         QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.fileName());
-        QModelIndex fileMI = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
-
-        FileContext *fc = static_cast<FileContext*>(fileMI.internalPointer());
-        createEdit(ui->mainTab, fc->id());
+        qmi = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
     }
+    FileSystemContext *fsc = static_cast<FileSystemContext*>(qmi.internalPointer());
+    if (fsc->type() != FileSystemContext::File) {
+        EXCEPT() << "invalid pointer found: FileContext expected.";
+    }
+    openOrShow(static_cast<FileContext*>(fsc));
 }
 
 }
