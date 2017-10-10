@@ -39,6 +39,7 @@ public:
     QList<int> colOrder() const;
     QStringList toolTips() const;
     QString execName() const;
+    void setName(const QString &name);
 
 private:
     int mVersion;

@@ -42,6 +42,7 @@ public slots:
 private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
+    void addLibrary(QList<LibraryItem> items);
 };
 
 }

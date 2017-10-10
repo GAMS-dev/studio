@@ -62,5 +62,10 @@ QString Library::execName() const
     return mExecName;
 }
 
+void Library::setName(const QString &name)
+{
+    mName = name;
+}
+
 } // namespace studio
 } // namespace gams
