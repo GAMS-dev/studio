@@ -43,6 +43,11 @@ QString LibraryItem::name() const
     return mValues.at(mLibrary->colOrder().at(idx));
 }
 
+QStringList LibraryItem::files() const
+{
+    return mFiles;
+}
+
 
 } // namespace studio
 } // namespace gams
