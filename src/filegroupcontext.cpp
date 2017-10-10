@@ -25,7 +25,7 @@ namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    // TODO(JM)  delete the entry in the parents childList
+    setParentEntry(nullptr);
     mChildList.clear();
 }
 
@@ -56,15 +56,23 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
         FileSystemContext *child = childEntry(i);
         qDebug() << child->name();
         if(child->childCount() > 0) {
-            qDebug() << "has children " << child->childCount();
-            FileSystemContext *element = child->childEntry(i)->findFile(filePath);
-            if(element != nullptr) {
-                qDebug() << "found element " << element->name();
-                return element;
+            qDebug() << "has children " << child->childCount();\
+            for(int j = 0; j < child->childCount(); j++) {
+                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
+                if(element != nullptr) {
+                    qDebug() << "found element " << element->name();
+                    return element;
+                }
             }
         }
     }
     return nullptr;
+}
+
+void FileGroupContext::setLocation(const QString& location)
+{
+    Q_UNUSED(location);
+    EXCEPT() << "The location of a FileGroupContext can't be changed.";
 }
 
 int FileGroupContext::peekIndex(const QString& name, bool *hit)
@@ -140,17 +148,24 @@ QIcon FileGroupContext::icon()
 
 bool FileGroupContext::isWatched()
 {
-    return mFsWatcher;
+    return mDirWatcher;
 }
 
-QFileSystemWatcher*FileGroupContext::watchIt()
+void FileGroupContext::setWatched(bool watch)
 {
-    if (!mFsWatcher) {
-        mFsWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-        mFsWatcher->addPath(location());
-        qDebug() << "added watcher for" << location();
+    if (!watch) {
+        if (mDirWatcher) {
+            mDirWatcher->deleteLater();
+            mDirWatcher = nullptr;
+        }
+        return;
     }
-    return mFsWatcher;
+    if (!mDirWatcher) {
+        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
+        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
+    }
+    mDirWatcher->addPath(location());
+    qDebug() << "added watcher for" << location();
 }
 
 void FileGroupContext::directoryChanged(const QString& path)

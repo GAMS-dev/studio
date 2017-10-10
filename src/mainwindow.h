@@ -33,7 +33,7 @@ namespace studio {
 
 struct RecentData {
     int editFileId = -1;
-    QWidget* editor = nullptr;
+    QPlainTextEdit* editor = nullptr;
     QString path = ".";
 };
 
@@ -58,8 +58,11 @@ private slots:
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
+    void fileChangedExtern(int fileId);
+    void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QString text);
+
 
 private slots:
     // File
@@ -88,8 +91,12 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
     void initTabs();
+    void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent);
 
 private:
@@ -97,7 +104,6 @@ private:
     QProcess *mProc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
-    QHash<QWidget*, int> mEditors; // TODO(JM) enable multiple editors on one file
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
