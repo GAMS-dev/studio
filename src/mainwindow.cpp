@@ -169,6 +169,7 @@ void MainWindow::on_actionSave_As_triggered()
         mRecent.path = QFileInfo(fileName).path();
         FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
         if (!fc) return;
+        // TODO(JM) renaming should create a new node (and maybe a new group)
         fc->setLocation(fileName);
         fc->save();
     }
@@ -447,12 +448,7 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
         FileContext *fc = static_cast<FileContext*>(fsc);
-        QPlainTextEdit* edit = fc->editors().empty() ? nullptr : fc->editors().first();
-        if (edit) {
-            ui->mainTab->setCurrentWidget(edit);
-        } else {
-            createEdit(ui->mainTab, fc->id());
-        }
+        openOrShow(fc);
     }
 }
 
