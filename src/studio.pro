@@ -39,7 +39,8 @@ SOURCES += \
     modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp \
-    gamsinfo.cpp
+    gamsinfo.cpp \
+    exception.cpp
 
 HEADERS += \
     codeeditor.h \
