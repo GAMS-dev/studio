@@ -44,7 +44,8 @@ SOURCES += \
     libraryitem.cpp \
     library.cpp \
     librarymodel.cpp \
-    gamsinfo.cpp
+    gamsinfo.cpp \
+    fileactioncontext.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -62,7 +63,8 @@ HEADERS += \
     libraryitem.h \
     library.h \
     librarymodel.h \
-    gamsinfo.h
+    gamsinfo.h \
+    fileactioncontext.h
 
 FORMS += \
     welcomepage.ui \
