@@ -39,6 +39,7 @@ SOURCES += \
     modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp \
+    exception.cpp
     glbparser.cpp \
     libraryitem.cpp \
     library.cpp \
