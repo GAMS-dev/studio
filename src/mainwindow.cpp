@@ -360,11 +360,6 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
 }
 
-void MainWindow::on_actionNew_Tab_triggered()
-{
-    ui->mainTab->addTab(new CodeEditor(), QString("new"));
-}
-
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog;

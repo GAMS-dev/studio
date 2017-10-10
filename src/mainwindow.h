@@ -72,7 +72,7 @@ private slots:
     void on_actionClose_All_triggered();
     void on_actionExit_Application_triggered();
     // Edit
-    void on_actionNew_Tab_triggered();
+
     // GAMS
     void on_actionRun_triggered();
     // About

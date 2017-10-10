@@ -116,8 +116,6 @@
      <addaction name="actionSystem_2"/>
     </widget>
     <addaction name="menuEncoding"/>
-    <addaction name="separator"/>
-    <addaction name="actionNew_Tab"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -385,14 +383,6 @@
   <action name="actionShow_Welcome_Page">
    <property name="text">
     <string>Show Welcome Page</string>
-   </property>
-  </action>
-  <action name="actionNew_Tab">
-   <property name="text">
-    <string>New Tab</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="actionGAMS_Library">
