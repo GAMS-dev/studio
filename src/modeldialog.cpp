@@ -70,10 +70,24 @@ ModelDialog::ModelDialog(QWidget *parent) :
         proxyModel->setSourceModel(new LibraryModel(items, this));
 
         connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+
         proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
         tableView->setModel(proxyModel);
-        ui.tabWidget->addTab(tableView, items.at(0).library()->name());
+        ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+    }
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+}
+
+//TODO(CW): updating the header and displaying the number of models in a library works for now but this solution is not optimal
+void ModelDialog::changeHeader()
+{
+    for(int i=0; i<ui.tabWidget->count(); i++)
+    {
+        QTableView *tv = static_cast<QTableView*>(ui.tabWidget->widget(i));
+        int rowCount = tv->model()->rowCount();
+        QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
+        ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
     }
 }
 

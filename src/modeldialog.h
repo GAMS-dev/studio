@@ -33,6 +33,9 @@ class ModelDialog : public QDialog
 public:
     explicit ModelDialog(QWidget *parent = 0);
 
+public slots:
+    void changeHeader();
+
 private:
     Ui::ModelDialog ui;
 };
