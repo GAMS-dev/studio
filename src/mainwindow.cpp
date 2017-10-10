@@ -479,7 +479,7 @@ void MainWindow::on_actionRun_triggered()
     if (!fgc)
         return;
 
-    ui->actionRunWithGams->setEnabled(false);
+    ui->actionRun->setEnabled(false);
 
     qDebug() << "starting process";
     mProc = new QProcess(this);
