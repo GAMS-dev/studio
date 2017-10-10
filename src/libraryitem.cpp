@@ -44,5 +44,5 @@ QString LibraryItem::name() const
 }
 
 
-} // namespace sutdio
+} // namespace studio
 } // namespace gams
