@@ -85,6 +85,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
                     longDescription += line + "\n";
                     line = in.readLine();
                 }
+                longDescription = longDescription.trimmed();
                 libraryItems.append(LibraryItem(library, values, description, longDescription, files));
             }
         }

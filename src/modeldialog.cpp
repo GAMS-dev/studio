@@ -99,7 +99,10 @@ void ModelDialog::updateSelectedLibraryItem()
         index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
         mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
         ui.pbLoad->setEnabled(true);
-        ui.pbDescription->setEnabled(true);
+        if(mSelectedLibraryItem->longDescription().isEmpty()) //enable button only if a long description is available
+            ui.pbDescription->setEnabled(false);
+        else
+            ui.pbDescription->setEnabled(true);
     }
     else
     {
@@ -143,7 +146,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
 
     connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
 
-    tableView->horizontalHeader()->setResizeContentsPrecision(10); //use only ten rows for faster calculation
+    tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
     tableView->resizeColumnsToContents();
 }
 
