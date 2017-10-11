@@ -400,7 +400,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
     FileContext*fc = mFileRepo.fileContext(edit);
-    if (!fc) return;
+    if (!fc) {
+        ui->mainTab->removeTab(index);
+        return;
+    }
 
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->crudState() == CrudState::eUpdate) {
