@@ -50,6 +50,25 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
     FileSystemContext::setFlag(flag, false);
 }
 
+FileSystemContext* FileGroupContext::findFile(QString filePath)
+{
+    for (int i = 0; i < childCount(); i++) {
+        FileSystemContext *child = childEntry(i);
+        qDebug() << child->name();
+        if(child->childCount() > 0) {
+            qDebug() << "has children " << child->childCount();\
+            for(int j = 0; j < child->childCount(); j++) {
+                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
+                if(element != nullptr) {
+                    qDebug() << "found element " << element->name();
+                    return element;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 void FileGroupContext::setLocation(const QString& location)
 {
     Q_UNUSED(location);

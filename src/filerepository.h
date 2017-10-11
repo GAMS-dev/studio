@@ -116,6 +116,7 @@ public:
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
+    FileSystemContext* findFile(QString filePath);
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);

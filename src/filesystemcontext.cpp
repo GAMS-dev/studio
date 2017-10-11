@@ -142,5 +142,13 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
     return mFlags.testFlag(flag);
 }
 
+FileSystemContext* FileSystemContext::findFile(QString filePath)
+{
+    if(location() == filePath)
+        return this;
+    else
+        return nullptr;
+}
+
 } // namespace studio
 } // namespace gams

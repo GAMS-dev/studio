@@ -89,6 +89,7 @@ public:
     virtual FileSystemContext* childEntry(int index);
     virtual int childCount();
 
+    FileSystemContext *findFile(QString filePath);
 signals:
     void changed(int fileId);
 

@@ -117,19 +117,26 @@ void MainWindow::on_actionOpen_triggered()
                                                     "All files (*)"));
     if (!fName.isEmpty()) {
         QFileInfo fInfo(fName);
+
+
         // TODO(JM) extend for each possible type
         qDebug() << "Type: " << fInfo.suffix();
         FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
         if (fType == FileType::ftGms || fType == FileType::ftTxt) {
             // Create node for GIST directory and load all files of known filetypes
-            QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
+            FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
+            if(hit == nullptr) {
+                QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
 
-            QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-            FileContext *fc = mFileRepo.fileContext(fileMI);
-            createEdit(ui->mainTab, fc->id());
-            ui->treeView->expand(groupMI);
-            mRecent.path = fInfo.path();
+                QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
+                FileContext *fc = mFileRepo.fileContext(fileMI);
+                createEdit(ui->mainTab, fc->id());
+                ui->treeView->expand(groupMI);
+                mRecent.path = fInfo.path();
+            } else {
+                openOrShow(fInfo.filePath(), (FileGroupContext*)mFileRepo.findFile(fInfo.absolutePath() + "/" + fInfo.baseName()));
+            }
         }
         if (fType == FileType::ftGsp) {
             // TODO(JM) Read project and create all nodes for associated files
