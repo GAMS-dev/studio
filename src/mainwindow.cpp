@@ -443,8 +443,20 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
-        msgBox.setText("Model '" + item->name() + "' from library '" + item->library()->name() + "' selected.");
-        msgBox.exec();
+
+        mProc = new QProcess(this);
+
+        QString libExec = QDir(GAMSInfo::systemDir()).filePath(item->library()->execName());
+
+        //TODO(CW): is this the correct working directory? We need a descent working directory
+        mProc->setWorkingDirectory(".");
+        mProc->start(libExec + " " + item->name());
+
+        connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+        mProc->waitForFinished();
+
+        FileContext *fc = addContext(".", item->name() + ".gms"); //TODO(CW): not sure if it is always name.gms, have a look at the file list
+        openOrShow(fc);
     }
 }
 
