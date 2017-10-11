@@ -455,7 +455,9 @@ void MainWindow::on_actionGAMS_Library_triggered()
         connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
         mProc->waitForFinished();
 
-        FileContext *fc = addContext(".", item->name() + ".gms"); //TODO(CW): not sure if it is always name.gms, have a look at the file list
+        //TODO(CW): check if the creation of fileName is correct
+        QString fileName = item->files().at(0).split(".").at(0) + ".gms";
+        FileContext *fc = addContext(".", fileName);
         openOrShow(fc);
     }
 }
