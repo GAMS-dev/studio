@@ -63,6 +63,7 @@ MainWindow::~MainWindow()
 void MainWindow::initTabs()
 {
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
+    hasWelcomePage = true;
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -172,13 +173,25 @@ void MainWindow::on_actionSave_All_triggered()
 
 void MainWindow::on_actionClose_triggered()
 {
-    ui->mainTab->removeTab(ui->mainTab->currentIndex());
+    on_mainTab_tabCloseRequested(ui->mainTab->currentIndex());
 }
 
 void MainWindow::on_actionClose_All_triggered()
 {
     for(int i = ui->mainTab->count(); i > 0; i--) {
-        ui->mainTab->removeTab(0);
+        on_mainTab_tabCloseRequested(0);
+    }
+}
+
+void MainWindow::on_actionClose_All_Except_triggered()
+{
+    int except = ui->mainTab->currentIndex();
+    qDebug() << "current index " << except;
+    for(int i = ui->mainTab->count(); i >= 0; i--) {
+        if(i != except) {
+            qDebug() << "removing tab " << i;
+            on_mainTab_tabCloseRequested(i);
+        }
     }
 }
 
@@ -383,9 +396,11 @@ void MainWindow::on_actionBottom_Panel_triggered(bool checked)
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
-    FileContext*fc = mFileRepo.fileContext(edit);
+    FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
         ui->mainTab->removeTab(index);
+        // assuming we are closing a welcome page here
+        hasWelcomePage = false;
         return;
     }
 
@@ -412,7 +427,12 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
+    if(!hasWelcomePage) {
+        ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
+        hasWelcomePage = true;
+    } else {
+        // TODO: jump to welcome page
+    }
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -571,6 +591,3 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
 }
 }
-
-
-
