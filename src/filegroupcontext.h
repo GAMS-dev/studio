@@ -28,6 +28,7 @@ namespace studio {
 class FileGroupContext : public FileSystemContext
 {
     Q_OBJECT
+
 public:
     ~FileGroupContext();
     void setFlag(ContextFlag flag, bool value = true);

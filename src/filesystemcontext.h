@@ -28,10 +28,12 @@ namespace studio {
 class FileGroupContext;
 
 class FileSystemContext : public QObject
-{
+{ // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
+    // TODO(AF) Rename this to AbstractFileContext?
     Q_OBJECT
+
 public:
-    enum ContextFlag {
+    enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
         cfNone          = 0x00,
         cfActive        = 0x01,
         cfFileMod       = 0x02,
@@ -43,7 +45,7 @@ public:
 
     enum ContextType {
         File,
-        FileAction,
+        FileAction, // TODO(AF) still required?
         FileGroup,
         FileSystem
     };
@@ -53,6 +55,9 @@ public:
     virtual ~FileSystemContext();
 
     int id() const;
+
+    /// \brief File context type.
+    /// \return Returns the file context type as <c>int</c>.
     int type() const;
 
     /// The caption of this file, which is its extended display name.

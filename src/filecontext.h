@@ -37,7 +37,7 @@ enum class FileType {
     ftLxi,      ///< GAMS result file index
 };
 
-enum class CrudState {
+enum class CrudState { // TODO(AF) move this to the abstract level?
     eCreate,
     eRead,
     eUpdate,
