@@ -418,7 +418,7 @@ void FileRepository::processExternFileEvents()
         emit fileChangedExtern(fileId);
     }
 }
-
+  
 FileSystemContext*FileRepository::context(const QModelIndex& index) const
 {
     return static_cast<FileSystemContext*>(index.internalPointer());
