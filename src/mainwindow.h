@@ -108,6 +108,7 @@ private:
     QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
+    bool hasWelcomePage = false;
 
 };
 
