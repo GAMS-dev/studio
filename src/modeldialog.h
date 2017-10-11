@@ -38,6 +38,7 @@ public:
 public slots:
     void changeHeader();
     void updateSelectedLibraryItem();
+    void clearSelections();
 
 private:
     Ui::ModelDialog ui;

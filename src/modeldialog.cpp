@@ -73,6 +73,8 @@ ModelDialog::ModelDialog(QWidget *parent) :
     addLibrary(items);
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
+    connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
 }
 
 //TODO(CW): updating the header and displaying the number of models in a library works for now but this solution is not optimal
@@ -107,6 +109,12 @@ void ModelDialog::updateSelectedLibraryItem()
     }
 }
 
+void ModelDialog::clearSelections()
+{
+    for(int i=0; i<ui.tabWidget->count(); i++)
+        static_cast<QTableView*>(ui.tabWidget->widget(i))->clearSelection();
+}
+
 void ModelDialog::addLibrary(QList<LibraryItem> items)
 {
     QTableView* tableView;
@@ -128,11 +136,10 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
-    connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
-    connect(tableView, &QTableView::doubleClicked, this, &ModelDialog::accept);
-    connect(ui.pbLoad, &QPushButton::clicked, this, &ModelDialog::accept);
-    connect(ui.pbCancel, &QPushButton::clicked, this, &ModelDialog::reject);
+    connect(tableView  , &QTableView::doubleClicked, this, &ModelDialog::accept);
+    connect(ui.pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
+    connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
     connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
 }
