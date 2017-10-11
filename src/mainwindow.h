@@ -73,6 +73,7 @@ private slots:
     void on_actionSave_All_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
+    void on_actionClose_All_Except_triggered();
     void on_actionExit_Application_triggered();
     // Edit
 
@@ -90,6 +91,7 @@ private slots:
     // AOB
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
+
 
 protected:
     void closeEvent(QCloseEvent *event);
