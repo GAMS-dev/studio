@@ -528,6 +528,8 @@ void MainWindow::on_actionRun_triggered()
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 
+    //TODO(CW): we need to wait for GAMS to terminate before we open the .lst file
+
     // find .lst file
     QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
     QFileInfo lstFileInfo(basePath + "/" + lstFileName);
