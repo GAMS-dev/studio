@@ -45,7 +45,7 @@ public:
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
-    void ensureCodecMenue(QString codecName);
+    void ensureCodecMenu(QString codecName);
 
 signals:
     void processOutput(QString text);
@@ -98,6 +98,7 @@ private:
     void initTabs();
     void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent);
+    FileContext* addContext(const QString &path, const QString &fileName);
 
 private:
     Ui::MainWindow *ui;

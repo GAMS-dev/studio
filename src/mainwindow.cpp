@@ -25,6 +25,7 @@
 #include "exception.h"
 #include "treeitemdelegate.h"
 #include "gamsinfo.h"
+#include "newdialog.h"
 
 namespace gams {
 namespace studio {
@@ -51,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(ui->treeView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
-    ensureCodecMenue("System");
+    ensureCodecMenu("System");
 }
 
 MainWindow::~MainWindow()
@@ -79,12 +80,12 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
         fc->load(codecName);
-        ensureCodecMenue(fc->codec());
+        ensureCodecMenu(fc->codec());
         connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
 }
 
-void MainWindow::ensureCodecMenue(QString codecName)
+void MainWindow::ensureCodecMenu(QString codecName)
 {
     bool actionFound = false;
     for (QAction *act: ui->menuEncoding->actions()) {
@@ -103,8 +104,18 @@ void MainWindow::ensureCodecMenue(QString codecName)
 
 void MainWindow::on_actionNew_triggered()
 {
-    QMessageBox::information(this, "New...", "t.b.d.");
+    NewDialog dialog(this);
+    dialog.exec();
+    auto fileName = dialog.fileName();
+    auto location = dialog.location();
 
+    QFile file(QDir(location).filePath(fileName));
+    if (file.open(QIODevice::WriteOnly))
+        file.close();
+
+    if (FileContext *fc = addContext(location, fileName)) {
+        fc->save();
+    }
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -115,34 +126,7 @@ void MainWindow::on_actionOpen_triggered()
                                                  tr("GAMS code (*.gms *.inc );;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
-    if (!fName.isEmpty()) {
-        QFileInfo fInfo(fName);
-
-
-        // TODO(JM) extend for each possible type
-        qDebug() << "Type: " << fInfo.suffix();
-        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
-
-        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
-            // Create node for GIST directory and load all files of known filetypes
-            FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
-            if(hit == nullptr) {
-                QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
-
-                QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-                FileContext *fc = mFileRepo.fileContext(fileMI);
-                createEdit(ui->mainTab, fc->id());
-                ui->treeView->expand(groupMI);
-                mRecent.path = fInfo.path();
-            } else {
-                openOrShow(fInfo.filePath(), (FileGroupContext*)mFileRepo.findFile(fInfo.absolutePath() + "/" + fInfo.baseName()));
-            }
-        }
-        if (fType == FileType::ftGsp) {
-            // TODO(JM) Read project and create all nodes for associated files
-
-        }
-    }
+    addContext("", fName);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -550,6 +534,39 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
     openOrShow(static_cast<FileContext*>(fsc));
+}
+
+FileContext* MainWindow::addContext(const QString &path, const QString &fileName)
+{
+    FileContext *fc = nullptr;
+    if (!fileName.isEmpty()) {
+        QFileInfo fInfo(path, fileName);
+        // TODO(JM) extend for each possible type
+        qDebug() << "Type: " << fInfo.suffix();
+        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
+
+        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
+            // Create node for GIST directory and load all files of known filetypes
+            FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
+            if(hit == nullptr) {
+                QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
+
+                QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
+                FileContext *fc = mFileRepo.fileContext(fileMI);
+                createEdit(ui->mainTab, fc->id());
+                ui->treeView->expand(groupMI);
+                mRecent.path = fInfo.path();
+            } else {
+                auto groupContext = static_cast<FileGroupContext*>(mFileRepo.findFile(fInfo.absolutePath() +
+                                                                                      "/" + fInfo.baseName()));
+                openOrShow(fInfo.filePath(), groupContext);
+            }
+        }
+        if (fType == FileType::ftGsp) {
+            // TODO(JM) Read project and create all nodes for associated files
+        }
+    }
+    return fc;
 }
 
 }

@@ -45,7 +45,8 @@ SOURCES += \
     library.cpp \
     librarymodel.cpp \
     gamsinfo.cpp \
-    fileactioncontext.cpp
+    fileactioncontext.cpp \
+    newdialog.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -64,12 +65,14 @@ HEADERS += \
     library.h \
     librarymodel.h \
     gamsinfo.h \
-    fileactioncontext.h
+    fileactioncontext.h \
+    newdialog.h
 
 FORMS += \
     welcomepage.ui \
     modeldialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    newdialog.ui
 
 
 RESOURCES += \
