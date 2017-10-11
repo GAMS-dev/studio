@@ -142,6 +142,9 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
     connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+
+    tableView->horizontalHeader()->setResizeContentsPrecision(10); //use only ten rows for faster calculation
+    tableView->resizeColumnsToContents();
 }
 
 LibraryItem *ModelDialog::selectedLibraryItem() const
