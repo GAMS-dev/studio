@@ -63,8 +63,8 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QList<LibraryItem> libraryItems;
     QString line;
     QString description;
+    line = in.readLine();
     while(!in.atEnd()) {
-        line = in.readLine();
         if(line.startsWith("*$*$*$"))
         {
             line = in.readLine();
@@ -74,14 +74,23 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
             {
                 QStringList files = line.split("=")[1].trimmed().split(",");
                 QStringList values;
+                QString longDescription;
                 for(int i=0; i<nrColumns; i++)
                     values.append(in.readLine().split("=")[1].trimmed());
-                libraryItems.append(LibraryItem(library, values, description, files));
+
+
+                line = in.readLine();
+                while(!line.startsWith("*$*$*$") && !in.atEnd() )
+                {
+                    longDescription += line + "\n";
+                    line = in.readLine();
+                }
+                libraryItems.append(LibraryItem(library, values, description, longDescription, files));
             }
         }
         else
         {
-            //TODO: add description
+            line = in.readLine();
         }
     }
     return libraryItems;

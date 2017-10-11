@@ -31,16 +31,18 @@ namespace studio {
 class LibraryItem
 {
 public:
-    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QStringList files);
+    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files);
 
     std::shared_ptr<Library> library() const;
     QStringList values() const;
     QString name() const;
     QStringList files() const;
+    QString longDescription() const;
 
 private:
     std::shared_ptr<Library> mLibrary;
     QString mDescription;
+    QString mLongDescription;
     QStringList mFiles;
     QStringList mValues;
 

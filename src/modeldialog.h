@@ -40,6 +40,9 @@ public slots:
     void updateSelectedLibraryItem();
     void clearSelections();
 
+private slots:
+    void on_pbDescription_clicked();
+
 private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;

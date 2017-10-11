@@ -44,9 +44,9 @@ QVariant LibraryModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role == Qt::DisplayRole)
+    else if (role == Qt::DisplayRole)
         return mData.at(index.row()).values().at(mData.at(index.row()).library()->colOrder().at(index.column()));
-    if (role == Qt::UserRole)
+    else if (role == Qt::UserRole)
         //return ; //TODO
         return qVariantFromValue(index.internalPointer());
     return QVariant();

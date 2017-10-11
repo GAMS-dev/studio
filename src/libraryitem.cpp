@@ -22,8 +22,8 @@
 namespace gams {
 namespace studio {
 
-LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QStringList files):
-    mLibrary(library), mDescription(description), mFiles(files), mValues(values)
+LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files):
+    mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values)
 {
 }
 
@@ -46,6 +46,11 @@ QString LibraryItem::name() const
 QStringList LibraryItem::files() const
 {
     return mFiles;
+}
+
+QString LibraryItem::longDescription() const
+{
+    return mLongDescription;
 }
 
 
