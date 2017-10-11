@@ -37,7 +37,7 @@ public:
 
 public slots:
     void changeHeader();
-    void returnItem(const QModelIndex &index);
+    void updateSelectedLibraryItem();
 
 private:
     Ui::ModelDialog ui;

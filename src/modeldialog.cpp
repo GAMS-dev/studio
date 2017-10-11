@@ -87,11 +87,24 @@ void ModelDialog::changeHeader()
     }
 }
 
-void ModelDialog::returnItem(const QModelIndex &index)
+void ModelDialog::updateSelectedLibraryItem()
 {
-    QModelIndex orgIndex = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
-    mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
-    this->accept();
+    int idx = ui.tabWidget->currentIndex();
+    QModelIndexList modelIndexList = static_cast<QTableView*>(ui.tabWidget->widget(idx))->selectionModel()->selectedIndexes();
+    if(modelIndexList.size()>0)
+    {
+        QModelIndex index = modelIndexList.at(0);
+        index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
+        mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
+        ui.pbLoad->setEnabled(true);
+        ui.pbDescription->setEnabled(true);
+    }
+    else
+    {
+        mSelectedLibraryItem = nullptr;
+        ui.pbLoad->setEnabled(false);
+        ui.pbDescription->setEnabled(false);
+    }
 }
 
 void ModelDialog::addLibrary(QList<LibraryItem> items)
@@ -106,18 +119,22 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     tableView->setSortingEnabled(true);
     tableView->horizontalHeader()->setHighlightSections(false);
 
-    connect(tableView, &QTableView::doubleClicked, this, &ModelDialog::returnItem);
-
     proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setFilterKeyColumn(-1);
     proxyModel->setSourceModel(new LibraryModel(items, this));
-
-    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
-
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     tableView->setModel(proxyModel);
     ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+
+    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
+    connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::updateSelectedLibraryItem);
+
+    connect(tableView, &QTableView::doubleClicked, this, &ModelDialog::accept);
+    connect(ui.pbLoad, &QPushButton::clicked, this, &ModelDialog::accept);
+    connect(ui.pbCancel, &QPushButton::clicked, this, &ModelDialog::reject);
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
 }
 
 LibraryItem *ModelDialog::selectedLibraryItem() const
@@ -125,8 +142,8 @@ LibraryItem *ModelDialog::selectedLibraryItem() const
     return mSelectedLibraryItem;
 }
 
+}
+}
 
-}
-}
 
 

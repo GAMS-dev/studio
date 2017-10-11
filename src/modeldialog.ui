@@ -61,6 +61,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pbLoad">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Load</string>
        </property>
@@ -75,6 +78,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pbDescription">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Description</string>
        </property>
