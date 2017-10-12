@@ -375,7 +375,7 @@
   </action>
   <action name="actionClose_All_Except">
    <property name="text">
-    <string>Close All Except &quot;&quot;</string>
+    <string>Close All Except Visible</string>
    </property>
   </action>
   <action name="actionSystem_2">
