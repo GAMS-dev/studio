@@ -37,7 +37,7 @@ enum class FileType {
     ftLxi,      ///< GAMS result file index
 };
 
-enum class CrudState {
+enum class CrudState { // TODO(AF) move this to the abstract level?
     eCreate,
     eRead,
     eUpdate,
@@ -80,7 +80,7 @@ class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
-    ~FileContext();
+    virtual ~FileContext();
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.

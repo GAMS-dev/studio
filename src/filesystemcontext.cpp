@@ -41,8 +41,8 @@ void FileSystemContext::checkFlags()
 
 FileSystemContext::~FileSystemContext()
 {
-    if (parentEntry()) {
-        parentEntry()->removeChild(this);
+    if (mParent) {
+        mParent->removeChild(this);
     }
 }
 
@@ -128,7 +128,8 @@ void FileSystemContext::setFlag(ContextFlag flag, bool value)
     bool current = testFlag(flag);
     if (current == value) return;
     mFlags.setFlag(flag, value);
-    if (parentEntry()) parentEntry()->checkFlags();
+    if (mParent)
+        mParent->checkFlags();
     emit changed(mId);
 }
 

@@ -163,9 +163,14 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
 
 void FileContext::removeAllEditors()
 {
-    while (!mEditors.isEmpty()) {
-        removeEditor(mEditors.first());
+    auto editors = mEditors;
+    for (auto editor : editors) {
+        removeEditor(editor);
     }
+    mEditors = editors;
+//    while (!mEditors.isEmpty()) {
+//        removeEditor(mEditors.first());
+//    }
 }
 
 bool FileContext::hasEditor(QPlainTextEdit* edit)
