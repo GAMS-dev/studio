@@ -446,8 +446,7 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    ModelDialog dialog;
-
+    ModelDialog dialog(this);
     if(dialog.exec() == QDialog::Accepted)
     {
         QMessageBox msgBox;

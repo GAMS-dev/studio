@@ -125,7 +125,6 @@
     <addaction name="actionBottom_Panel"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
-    <addaction name="actionGAMS_Library"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -141,6 +140,8 @@
      <string>GAMS</string>
     </property>
     <addaction name="actionRun"/>
+    <addaction name="separator"/>
+    <addaction name="actionGAMS_Library"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -169,6 +170,7 @@
    </attribute>
    <addaction name="actionRun"/>
    <addaction name="separator"/>
+   <addaction name="actionGAMS_Library"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
@@ -303,7 +305,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Bottom Panel</string>
+    <string>Output</string>
    </property>
   </action>
   <action name="actionProject_Explorer">
@@ -314,7 +316,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Project Explorer</string>
+    <string>Explorer</string>
    </property>
   </action>
   <action name="actionNew">
