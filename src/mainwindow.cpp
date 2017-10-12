@@ -536,12 +536,14 @@ void MainWindow::on_actionRun_triggered()
 
     mProc->setWorkingDirectory(gmsFileInfo.path());
     QStringList args(QDir::toNativeSeparators(gmsFilePath)); //TODO(CW): call toNativeSeparators here or in runableGms?
+    args.append("lo=3"); //TODO(CW): we need this at least on wnidows in order to write explicitly to stdout. As soon as we allow user input for options, this needs to be adjusted
     mProc->start(gamsPath, args);
 
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::postGamsRun);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
 
 }
 
