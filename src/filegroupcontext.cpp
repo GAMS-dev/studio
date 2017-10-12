@@ -120,7 +120,9 @@ void FileGroupContext::checkFlags()
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mLocation + "/" + mRunInfo;
+    qDebug() << "runableGms:";
+    qDebug() << QDir(mLocation).filePath(mRunInfo);
+    return QDir(mLocation).filePath(mRunInfo);
 }
 
 int FileGroupContext::childCount()

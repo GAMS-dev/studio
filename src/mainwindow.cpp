@@ -458,7 +458,8 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
         //TODO(CW): is this the correct working directory? We need a descent working directory
         libProc.setWorkingDirectory(".");
-        libProc.start(libExec + " " + item->name());
+        QStringList args(item->name());
+        libProc.start(libExec, args);
         libProc.waitForFinished();
 
         //TODO(CW): check if the creation of fileName is correct
@@ -526,7 +527,7 @@ void MainWindow::on_actionRun_triggered()
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
-    QString gmsFilePath = fgc->runableGms();
+    QString gmsFilePath = QDir::toNativeSeparators(fgc->runableGms()); //TODO(CW): call toNativeSeparators here or in runableGms?
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
@@ -534,7 +535,8 @@ void MainWindow::on_actionRun_triggered()
     mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
 
     mProc->setWorkingDirectory(gmsFileInfo.path());
-    mProc->start(gamsPath + " " + gmsFilePath);
+    QStringList args(gmsFilePath);
+    mProc->start(gamsPath, args);
 
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
