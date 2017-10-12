@@ -161,7 +161,7 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.setWindowTitle("Description for '" + mSelectedLibraryItem->name() + "' from " + mSelectedLibraryItem->library()->name());
     msgBox.setText(mSelectedLibraryItem->name());
     msgBox.setInformativeText(mSelectedLibraryItem->longDescription());
-    int ret = msgBox.exec();
+    msgBox.exec();
 }
 
 }
