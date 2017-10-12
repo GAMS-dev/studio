@@ -452,16 +452,14 @@ void MainWindow::on_actionGAMS_Library_triggered()
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
 
-        mProc = new QProcess(this);
+        QProcess libProc(this);
 
         QString libExec = QDir(GAMSInfo::systemDir()).filePath(item->library()->execName());
 
         //TODO(CW): is this the correct working directory? We need a descent working directory
-        mProc->setWorkingDirectory(".");
-        mProc->start(libExec + " " + item->name());
-
-        connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
-        mProc->waitForFinished();
+        libProc.setWorkingDirectory(".");
+        libProc.start(libExec + " " + item->name());
+        libProc.waitForFinished();
 
         //TODO(CW): check if the creation of fileName is correct
         QString fileName = item->files().at(0).split(".").at(0) + ".gms";
