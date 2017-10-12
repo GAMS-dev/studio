@@ -23,6 +23,7 @@
 #include "ui_modeldialog.h"
 #include <QSortFilterProxyModel>
 #include "libraryitem.h"
+#include <QTableView>
 
 namespace gams {
 namespace studio {

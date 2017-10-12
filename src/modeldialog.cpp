@@ -23,12 +23,10 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
-#include <QTableWidget>
 #include <QTextStream>
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
-#include <QSortFilterProxyModel>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
