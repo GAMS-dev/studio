@@ -80,7 +80,7 @@ class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
-    ~FileContext();
+    virtual ~FileContext();
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
