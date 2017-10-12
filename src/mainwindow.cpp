@@ -350,6 +350,15 @@ void MainWindow::appendOutput(QString text)
     outWin->moveCursor(QTextCursor::End);
 }
 
+void MainWindow::postGamsRun()
+{
+    if(mProcLstFileInfo.exists())
+        openOrShow(mProcLstFileInfo.absoluteFilePath(), mProcFgc);
+    else
+        qDebug() << mProcLstFileInfo.absoluteFilePath() << " not found. aborting.";
+    ui->actionRun->setEnabled(true);
+}
+
 void MainWindow::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
@@ -511,6 +520,7 @@ void MainWindow::on_actionRun_triggered()
 
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    mProcFgc = fgc;
     if (!fgc)
         return;
 
@@ -523,26 +533,17 @@ void MainWindow::on_actionRun_triggered()
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
+    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
+    mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
+
     mProc->setWorkingDirectory(gmsFileInfo.path());
     mProc->start(gamsPath + " " + gmsFilePath);
 
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
     connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
+    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::postGamsRun);
 
-    //TODO(CW): we need to wait for GAMS to terminate before we open the .lst file
-
-    // find .lst file
-    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
-    QFileInfo lstFileInfo(basePath + "/" + lstFileName);
-    if(!lstFileInfo.exists()) {
-        qDebug() << lstFileInfo.absoluteFilePath() << " not found. aborting.";
-        ui->actionRun->setEnabled(true);
-        return; // ERROR: did gams even run?
-    }
-
-    openOrShow(lstFileInfo.absoluteFilePath(), fgc);
-    ui->actionRun->setEnabled(true);
 }
 
 void MainWindow::openOrShow(FileContext* fileContext)

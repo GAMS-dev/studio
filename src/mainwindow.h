@@ -62,6 +62,7 @@ private slots:
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QString text);
+    void postGamsRun();
 
 
 private slots:
@@ -92,7 +93,6 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_treeView_doubleClicked(const QModelIndex &index);
 
-
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -104,7 +104,10 @@ private:
 
 private:
     Ui::MainWindow *ui;
+    //TODO(CW): This needs refactoring in order to remove global variables and encapsulate the process and all its required information
     QProcess *mProc = nullptr;
+    QFileInfo mProcLstFileInfo;
+    FileGroupContext* mProcFgc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
     QMutex mOutputMutex;
