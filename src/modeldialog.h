@@ -49,6 +49,9 @@ private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
     void addLibrary(QList<LibraryItem> items);
+
+    QList<QTableView*> tableViewList;
+    QList<QSortFilterProxyModel*> proxyModelList;
 };
 
 }

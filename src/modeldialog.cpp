@@ -72,7 +72,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
 
-    //connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
@@ -83,7 +83,7 @@ void ModelDialog::changeHeader()
 {
     for(int i=0; i<ui.tabWidget->count(); i++)
     {
-        QTableView *tv = static_cast<QTableView*>(ui.tabWidget->widget(i));
+        QTableView *tv = tableViewList.at(i);
         int rowCount = tv->model()->rowCount();
         QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
         ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
@@ -93,7 +93,7 @@ void ModelDialog::changeHeader()
 void ModelDialog::updateSelectedLibraryItem()
 {
     int idx = ui.tabWidget->currentIndex();
-    QModelIndexList modelIndexList = static_cast<QTableView*>(ui.tabWidget->widget(idx))->selectionModel()->selectedIndexes();
+    QModelIndexList modelIndexList = tableViewList.at(idx)->selectionModel()->selectedIndexes();
     if(modelIndexList.size()>0)
     {
         QModelIndex index = modelIndexList.at(0);
@@ -115,14 +115,15 @@ void ModelDialog::updateSelectedLibraryItem()
 
 void ModelDialog::clearSelections()
 {
-    for(int i=0; i<ui.tabWidget->count(); i++)
-        static_cast<QTableView*>(ui.tabWidget->widget(i))->clearSelection();
+    for(auto tv : tableViewList)
+        tv->clearSelection();
 }
 
 void ModelDialog::addLibrary(QList<LibraryItem> items)
 {
     QTableView* tableView;
     QSortFilterProxyModel* proxyModel;
+
     tableView = new QTableView();
     tableView->horizontalHeader()->setStretchLastSection(true);
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -136,8 +137,8 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     proxyModel->setSourceModel(new LibraryModel(items, this));
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    connect(proxyModel, &QSortFilterProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
-    connect(proxyModel, &QSortFilterProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
+    tableViewList.append(tableView);
+    proxyModelList.append(proxyModel);
 
     tableView->setModel(proxyModel);
     ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
@@ -170,24 +171,24 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
+    disconnect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     if(checked)
     {
-        for(int idx=0; idx<ui.tabWidget->count(); idx++)
+        for(auto proxy : proxyModelList)
         {
-            QSortFilterProxyModel* proxy = static_cast<QSortFilterProxyModel*>(static_cast<QTableView*>(ui.tabWidget->widget(idx))->model());
             disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
             connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
         }
     }
     else
     {
-        for(int idx=0; idx<ui.tabWidget->count(); idx++)
+        for(auto proxy : proxyModelList)
         {
-            QSortFilterProxyModel* proxy = static_cast<QSortFilterProxyModel*>(static_cast<QTableView*>(ui.tabWidget->widget(idx))->model());
             disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
             connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
         }
     }
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     emit ui.lineEdit->textChanged(ui.lineEdit->text());
 }
 
