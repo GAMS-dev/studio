@@ -26,6 +26,13 @@
      <item>
       <widget class="QLineEdit" name="lineEdit"/>
      </item>
+     <item>
+      <widget class="QCheckBox" name="cbRegEx">
+       <property name="text">
+        <string>Regular expression</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

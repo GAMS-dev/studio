@@ -72,7 +72,8 @@ ModelDialog::ModelDialog(QWidget *parent) :
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    //connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
 }
@@ -135,6 +136,9 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     proxyModel->setSourceModel(new LibraryModel(items, this));
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
+    connect(proxyModel, &QSortFilterProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
+    connect(proxyModel, &QSortFilterProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
+
     tableView->setModel(proxyModel);
     ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
 
@@ -164,8 +168,33 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.exec();
 }
 
+void ModelDialog::on_cbRegEx_toggled(bool checked)
+{
+    if(checked)
+    {
+        for(int idx=0; idx<ui.tabWidget->count(); idx++)
+        {
+            QSortFilterProxyModel* proxy = static_cast<QSortFilterProxyModel*>(static_cast<QTableView*>(ui.tabWidget->widget(idx))->model());
+            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+            connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
+        }
+    }
+    else
+    {
+        for(int idx=0; idx<ui.tabWidget->count(); idx++)
+        {
+            QSortFilterProxyModel* proxy = static_cast<QSortFilterProxyModel*>(static_cast<QTableView*>(ui.tabWidget->widget(idx))->model());
+            disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
+            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+        }
+    }
+    emit ui.lineEdit->textChanged(ui.lineEdit->text());
+}
+
 }
 }
+
+
 
 
 

@@ -43,6 +43,8 @@ public slots:
 private slots:
     void on_pbDescription_clicked();
 
+    void on_cbRegEx_toggled(bool checked);
+
 private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
