@@ -527,7 +527,7 @@ void MainWindow::on_actionRun_triggered()
     qDebug() << "starting process";
     mProc = new QProcess(this);
 
-    QString gmsFilePath = QDir::toNativeSeparators(fgc->runableGms()); //TODO(CW): call toNativeSeparators here or in runableGms?
+    QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
@@ -535,7 +535,7 @@ void MainWindow::on_actionRun_triggered()
     mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
 
     mProc->setWorkingDirectory(gmsFileInfo.path());
-    QStringList args(gmsFilePath);
+    QStringList args(QDir::toNativeSeparators(gmsFilePath)); //TODO(CW): call toNativeSeparators here or in runableGms?
     mProc->start(gamsPath, args);
 
     connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
