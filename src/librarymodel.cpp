@@ -47,14 +47,15 @@ QVariant LibraryModel::data(const QModelIndex &index, int role) const
     else if (role == Qt::DisplayRole)
         return mData.at(index.row()).values().at(mData.at(index.row()).library()->colOrder().at(index.column()));
     else if (role == Qt::UserRole)
-        //return ; //TODO
         return qVariantFromValue(index.internalPointer());
     return QVariant();
 }
 
 QModelIndex LibraryModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return QAbstractTableModel::createIndex(row, column, (void *)&mData.at(row));
+    if (hasIndex(row, column, parent))
+        return QAbstractTableModel::createIndex(row, column, (void *)&mData.at(row));
+    return QModelIndex();
 }
 
 } // namespace studio
