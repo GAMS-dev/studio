@@ -64,7 +64,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
     addLibrary(items);
 
     items = GlbParser::parseFile(gamsSysDir.filePath("finlib_ml/finlib.glb"));
-    items.at(0).library()->setName("Fin Library");
+    items.at(0).library()->setName("FIN Library");
     addLibrary(items);
 
     items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
