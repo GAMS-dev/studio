@@ -17,45 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef LIBRARY_H
+#define LIBRARY_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include <QString>
+#include <QStringList>
+#include <QList>
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class Library
 {
-    Q_OBJECT
-
 public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+    Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder);
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
-
-private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
+    int version() const;
+    QString name() const;
+    int nrColumns() const;
+    QStringList columns() const;
+    QList<int> colOrder() const;
+    QStringList toolTips() const;
+    QString execName() const;
+    void setName(const QString &name);
 
 private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
+    QString mName;
+    QString mExecName;
+    int mVersion;
+    int mNrColumns;
+    QStringList mColumns;
+    QStringList mtoolTips;
+    QList<int> mColOrder;
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // MODELDIALOG_H
+#endif // LIBRARY_H

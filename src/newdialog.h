@@ -17,45 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef NEWDIALOG_H
+#define NEWDIALOG_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include "ui_newdialog.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class NewDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+    explicit NewDialog(QWidget *parent = 0);
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
+    QString fileName() const;
+    QString location() const;
 
 private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
+    void directory();
 
 private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
+    Ui::NewDialog ui;
 };
 
 }
 }
 
-#endif // MODELDIALOG_H
+#endif // NEWDIALOG_H

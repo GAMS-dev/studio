@@ -17,45 +17,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
-
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
 #include "libraryitem.h"
-#include <QTableView>
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files):
+    mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values)
 {
-    Q_OBJECT
-
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
-
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
-
-private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
-
-private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-};
-
-}
 }
 
-#endif // MODELDIALOG_H
+std::shared_ptr<Library> LibraryItem::library() const
+{
+    return mLibrary;
+}
+
+QStringList LibraryItem::values() const
+{
+    return mValues;
+}
+
+QString LibraryItem::name() const
+{
+    int idx = mLibrary->columns().indexOf("Name");
+    return mValues.at(mLibrary->colOrder().at(idx));
+}
+
+QStringList LibraryItem::files() const
+{
+    return mFiles;
+}
+
+QString LibraryItem::longDescription() const
+{
+    return mLongDescription;
+}
+
+
+} // namespace studio
+} // namespace gams

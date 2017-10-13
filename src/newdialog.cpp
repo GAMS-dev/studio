@@ -17,45 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#include "newdialog.h"
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include <QFileDialog>
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+NewDialog::NewDialog(QWidget *parent) :
+    QDialog(parent)
 {
-    Q_OBJECT
+    ui.setupUi(this);
 
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+    connect(ui.toolButton, &QToolButton::pressed, this, &NewDialog::directory);
+}
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
+QString NewDialog::fileName() const
+{
+    return ui.nameEdit->text();
+}
 
-private slots:
-    void on_pbDescription_clicked();
+QString NewDialog::location() const
+{
+    return ui.locationEdit->text();
+}
 
-    void on_cbRegEx_toggled(bool checked);
-
-private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-};
+void NewDialog::directory()
+{
+    auto dir = QFileDialog::getExistingDirectory(this, "Choose a directory", ".");
+    ui.locationEdit->setText(dir);
+}
 
 }
 }
-
-#endif // MODELDIALOG_H

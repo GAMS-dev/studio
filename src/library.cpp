@@ -17,45 +17,55 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
-
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include "library.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+Library::Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder):
+    mName(name), mExecName(execName), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mtoolTips(toolTips), mColOrder(colOrder)
 {
-    Q_OBJECT
-
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
-
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
-
-private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
-
-private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-};
-
-}
 }
 
-#endif // MODELDIALOG_H
+int Library::version() const
+{
+    return mVersion;
+}
+
+QString Library::name() const
+{
+    return mName;
+}
+
+int Library::nrColumns() const
+{
+    return mNrColumns;
+}
+
+QStringList Library::columns() const
+{
+    return mColumns;
+}
+
+QList<int> Library::colOrder() const
+{
+    return mColOrder;
+}
+
+QStringList Library::toolTips() const
+{
+    return mtoolTips;
+}
+
+QString Library::execName() const
+{
+    return mExecName;
+}
+
+void Library::setName(const QString &name)
+{
+    mName = name;
+}
+
+} // namespace studio
+} // namespace gams

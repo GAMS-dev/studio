@@ -17,45 +17,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef LIBRARYITEM_H
+#define LIBRARYITEM_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include <memory>
+#include <QString>
+#include <QStringList>
+#include "library.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class LibraryItem
 {
-    Q_OBJECT
-
 public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files);
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
-
-private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
+    std::shared_ptr<Library> library() const;
+    QStringList values() const;
+    QString name() const;
+    QStringList files() const;
+    QString longDescription() const;
 
 private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
+    std::shared_ptr<Library> mLibrary;
+    QString mDescription;
+    QString mLongDescription;
+    QStringList mFiles;
+    QStringList mValues;
 
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
 };
 
-}
-}
+} // namespace sutdio
+} // namespace gams
 
-#endif // MODELDIALOG_H
+#endif // LIBRARYITEM_H

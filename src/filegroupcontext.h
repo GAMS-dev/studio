@@ -28,18 +28,23 @@ namespace studio {
 class FileGroupContext : public FileSystemContext
 {
     Q_OBJECT
+
 public:
-    ~FileGroupContext();
+    virtual ~FileGroupContext();
     void setFlag(ContextFlag flag, bool value = true);
     void unsetFlag(ContextFlag flag);
+
+    void setLocation(const QString &location);
 
     int childCount();
     int indexOf(FileSystemContext *child);
     FileSystemContext* childEntry(int index);
+    FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
     bool isWatched();
-    QFileSystemWatcher *watchIt();
+    void setWatched(bool watch = true);
+    QString runableGms();
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -51,7 +56,7 @@ protected:
     friend class FileRepository;
     friend class FileSystemContext;
 
-    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location);
+    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
@@ -59,7 +64,8 @@ protected:
 
 private:
     QList<FileSystemContext*> mChildList;
-    QFileSystemWatcher *mFsWatcher = nullptr;
+    QFileSystemWatcher *mDirWatcher = nullptr;
+    QString mRunInfo;
 };
 
 } // namespace studio

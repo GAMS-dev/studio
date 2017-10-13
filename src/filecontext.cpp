@@ -28,7 +28,7 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
                                                               << "System" << "Windows-1250" << "Latin-1";
 
 FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
-    : FileSystemContext(parent, id, name, location)
+    : FileSystemContext(parent, id, name, location, FileSystemContext::File)
 {
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }
@@ -36,7 +36,6 @@ FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString
 void FileContext::setCrudState(CrudState state)
 {
     mCrudState = state;
-    emit crudChanged(state);
 }
 
 CrudState FileContext::crudState() const
@@ -46,18 +45,21 @@ CrudState FileContext::crudState() const
 
 void FileContext::save()
 {
-    if (mCrudState != CrudState::eRead) {
+    if (document() && mCrudState != CrudState::eRead) {
         if (location().isEmpty())
-            throw QException();
+            EXCEPT() << "Can't save without file name";
         QFile file(location());
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-            throw QException();
+            EXCEPT() << "Can't open the file";
+        mMetrics = FileMetrics();
         QTextStream out(&file);
         out.setCodec(mCodec.toLatin1().data());
         qDebug() << "Saving with Codec set to: "<< mCodec;
-        out << mDocument->toPlainText();
+        out << document()->toPlainText();
         out.flush();
         file.close();
+        mMetrics = FileMetrics(QFileInfo(file));
+        document()->setModified(false);
         setCrudState(CrudState::eRead);
     }
 }
@@ -65,44 +67,58 @@ void FileContext::save()
 void FileContext::load(QString codecName)
 {
     if (!document())
-        FATAL() << "There is no document assigned to the file " << location();
+        EXCEPT() << "There is no document assigned to the file " << location();
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
-        if (file.open(QFile::ReadOnly | QFile::Text)) {
-            const QByteArray data(file.readAll());
-            QString text;
-            QString nameOfUsedCodec;
-            for (QString tcName: codecNames) {
-                QTextCodec::ConverterState state;
-                QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
-                if (codec) {
-                    nameOfUsedCodec = tcName;
-                    text = codec->toUnicode(data.constData(), data.size(), &state);
-                    if (state.invalidChars == 0) {
-                        qDebug() << "opened with codec " << nameOfUsedCodec;
-                        break;
-                    }
-                    qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
-                } else {
-                    qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
-                    nameOfUsedCodec = QString();
+        if (!file.open(QFile::ReadOnly | QFile::Text))
+            EXCEPT() << "Error opening file " << location();
+        mMetrics = FileMetrics();
+        const QByteArray data(file.readAll());
+        QString text;
+        QString nameOfUsedCodec;
+        for (QString tcName: codecNames) {
+            QTextCodec::ConverterState state;
+            QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
+            if (codec) {
+                nameOfUsedCodec = tcName;
+                text = codec->toUnicode(data.constData(), data.size(), &state);
+                if (state.invalidChars == 0) {
+                    qDebug() << "opened with codec " << nameOfUsedCodec;
+                    break;
                 }
+                qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
+            } else {
+                qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
+                nameOfUsedCodec = QString();
             }
-            if (!nameOfUsedCodec.isEmpty()) {
-                mDocument->setPlainText(text);
-                mCodec = nameOfUsedCodec;
-            }
-            file.close();
         }
+        if (!nameOfUsedCodec.isEmpty()) {
+            document()->setPlainText(text);
+            mCodec = nameOfUsedCodec;
+        }
+        file.close();
+        document()->setModified(false);
+        mMetrics = FileMetrics(QFileInfo(file));
     }
+    if (!mWatcher) {
+        mWatcher = new QFileSystemWatcher(this);
+        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
+        qDebug() << "Watching " << location();
+        mWatcher->addPath(location());
+    }
+}
+
+const QList<QPlainTextEdit*> FileContext::editors() const
+{
+    return mEditors;
 }
 
 void FileContext::setLocation(const QString& location)
 {
     if (location.isEmpty())
-        FATAL() << "File can't be set to an empty location";
+        EXCEPT() << "File can't be set to an empty location.";
     // TODO(JM) adapt parent group
     // TODO (JM): handling if the file already exists
     FileSystemContext::setLocation(location);
@@ -117,37 +133,61 @@ QIcon FileContext::icon()
     return QIcon(":/img/file-alt");
 }
 
-void FileContext::setFlag(ContextFlag flag)
+void FileContext::addEditor(QPlainTextEdit* edit)
 {
-    if (flag == FileSystemContext::cfGroup)
-        throw QException();
-    FileSystemContext::setFlag(flag);
-}
-
-void FileContext::unsetFlag(ContextFlag flag)
-{
-    if (flag == FileSystemContext::cfGroup)
-        throw QException();
-    FileSystemContext::unsetFlag(flag);
-}
-
-void FileContext::setDocument(QTextDocument* doc)
-{
-    if (mDocument && doc)
-        throw FATAL() << "document of " << location() << " cannot be replaced";
-    mDocument = doc;
-    // don't overwrite ContextState::eMissing
-    if (mDocument)
-        setFlag(FileSystemContext::cfActive);
-    else {
-        unsetFlag(FileSystemContext::cfActive);
-        setCrudState(CrudState::eRead);
+    if (!edit || mEditors.contains(edit))
+        return;
+    mEditors.append(edit);
+    if (mEditors.size() == 1) {
+        document()->setParent(this);
+        connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+    } else {
+        edit->setDocument(mEditors.first()->document());
     }
+    setFlag(FileSystemContext::cfActive);
+}
+
+void FileContext::removeEditor(QPlainTextEdit* edit)
+{
+    int i = mEditors.indexOf(edit);
+    if (i < 0)
+        return;
+    mEditors.removeAt(i);
+    if (mEditors.isEmpty()) {
+        // After removing last editor: paste document-parency back to editor
+        edit->document()->setParent(edit);
+        unsetFlag(FileSystemContext::cfActive);
+        mCrudState = CrudState::eRead;
+    }
+}
+
+void FileContext::removeAllEditors()
+{
+    auto editors = mEditors;
+    for (auto editor : editors) {
+        removeEditor(editor);
+    }
+    mEditors = editors;
+//    while (!mEditors.isEmpty()) {
+//        removeEditor(mEditors.first());
+//    }
+}
+
+bool FileContext::hasEditor(QPlainTextEdit* edit)
+{
+    return mEditors.contains(edit);
 }
 
 QTextDocument*FileContext::document()
 {
-    return mDocument;
+    if (mEditors.isEmpty())
+        return nullptr;
+    return mEditors.first()->document();
+}
+
+FileContext::~FileContext()
+{
+    removeAllEditors();
 }
 
 QString FileContext::codec() const
@@ -166,11 +206,36 @@ const QString FileContext::caption()
     return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
 }
 
-void FileContext::textChanged()
+void FileContext::modificationChanged(bool modiState)
 {
-    if (mCrudState != CrudState::eUpdate) {
+    // TODO(JM) check what todo on CrudState::eDelete
+    if (modiState && mCrudState != CrudState::eUpdate) {
         setCrudState(CrudState::eUpdate);
         emit changed(mId);
+        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
+    }
+    if (!modiState && mCrudState == CrudState::eUpdate) {
+        setCrudState(CrudState::eRead);
+        emit changed(mId);
+        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
+    }
+}
+
+void FileContext::onFileChangedExtern(QString filepath)
+{
+    qDebug() << "changed: " << filepath;
+    QFileInfo fi(filepath);
+    FileMetrics::ChangeKind changeKind = mMetrics.check(fi);
+    if (changeKind == FileMetrics::ckSkip) return;
+    if (changeKind == FileMetrics::ckUnchanged) return;
+    if (!fi.exists()) {
+        // file has been renamed or deleted
+        if (document()) document()->setModified();
+        emit deletedExtern(mId);
+    }
+    if (changeKind == FileMetrics::ckModified) {
+        // file changed externally
+        emit modifiedExtern(mId);
     }
 }
 

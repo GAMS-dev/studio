@@ -21,28 +21,58 @@
 #define FILECONTEXT_H
 
 #include "filesystemcontext.h"
+#include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
 // TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
 enum class FileType {
-    ftGpr,
-    ftGms,
-    ftTxt,
-    ftInc,
-    ftLog,
-    ftLst,
-    ftLxi,
+    ftGsp,      ///< GAMS Studio Project file
+    ftGms,      ///< GAMS source file
+    ftInc,      ///< GAMS include file
+    ftTxt,      ///< Plain text file
+    ftLog,      ///< LOG output file
+    ftLst,      ///< GAMS result file
+    ftLxi,      ///< GAMS result file index
 };
 
-enum class CrudState {
+enum class CrudState { // TODO(AF) move this to the abstract level?
     eCreate,
     eRead,
     eUpdate,
     eDelete
 };
 
+///
+/// The FileMetrics class stores current metrics of a file
+///
+class FileMetrics
+{
+    bool mExists;
+    qint64 mSize;
+    QDateTime mCreated;
+    QDateTime mModified;
+public:
+    enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
+    FileMetrics(): mExists(false), mSize(0) {
+    }
+    FileMetrics(QFileInfo fileInfo) {
+        mExists = fileInfo.exists();
+        mSize = mExists ? fileInfo.size() : 0;
+        mCreated = mExists ? fileInfo.created() : QDateTime();
+        mModified = mExists ? fileInfo.lastModified() : QDateTime();
+    }
+    ChangeKind check(QFileInfo fileInfo) {
+        if (mModified.isNull()) return ckSkip;
+        if (!fileInfo.exists()) {
+            // TODO(JM) #106: find a file in the path fitting created, modified and size values
+            return ckNotFound;
+        }
+        if (fileInfo.lastModified() != mModified) return ckModified;
+        return ckUnchanged;
+    }
+};
 
 class FileGroupContext;
 
@@ -50,6 +80,7 @@ class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
+    virtual ~FileContext();
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
@@ -75,14 +106,6 @@ public:
     /// \return The icon for this file type.
     QIcon icon();
 
-    /// Sets a flag to the current file-context.
-    /// \param flag The ContextFlag
-    virtual void setFlag(ContextFlag flag);
-
-    /// Unsets a flag in the current file-context.
-    /// \param flag The ContextFlag
-    virtual void unsetFlag(ContextFlag flag);
-
     /// Saves the file, if it is changed.
     void save();
 
@@ -90,24 +113,47 @@ public:
     /// \param codecName The text-codec to use.
     void load(QString codecName = QString());
 
-    /// Assigns a QTextDocument to this file used in the editor. The document can only be assigned once.
-    /// If the file already has a document, it can be used to assign it to a second editor.
-    /// \param doc The new QTextDocument
-    void setDocument(QTextDocument *doc);
+    /// Gets the list of assigned editors.
+    /// \return The list of assigned editors.
+    const QList<QPlainTextEdit*> editors() const;
+
+    /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
+    /// <c>QTextDocument</c>.
+    /// \param edit The additional <c>CodeEditor</c>
+    void addEditor(QPlainTextEdit *edit);
+
+    /// Removes an <c>CodeEditor</c> from the list.
+    /// \param edit The <c>CodeEditor</c> to be removed.
+    void removeEditor(QPlainTextEdit *edit);
+
+    /// Removes all <c>CodeEditor</c>s from the list.
+    /// \param edit The <c>CodeEditor</c> to be removed.
+    void removeAllEditors();
+
+    /// Tests, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
+    /// \param edit The <c>QPlainTextEdit</c> to be find.
+    /// \return TRUE, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
+    bool hasEditor(QPlainTextEdit* edit);
 
     /// The current QTextDocument assigned to this file.
     /// \return The current QTextDocument
     QTextDocument* document();
 
 signals:
-    /// signal is emitted if the current CRUD-state has changed.
-    /// \param state The new CRUD-state
-    void crudChanged(CrudState state);
+    /// Signal is emitted when the file has been modified externally.
+    /// \param fileId The file identifier
+    void modifiedExtern(int fileId);
+
+    /// Signal is emitted when the file has been deleted (or renamed) externally.
+    /// \param fileId The file identifier
+    void deletedExtern(int fileId);
 
 public slots:
     /// Slot to handle a change of the assigned Document
-    /// TODO (JM) bind to signal QTextDocument::modificationChanged instead
-    void textChanged();
+    void modificationChanged(bool modiState);
+
+protected slots:
+    void onFileChangedExtern(QString filepath);
 
 protected:
     friend class FileRepository;
@@ -116,11 +162,13 @@ protected:
 
 private:
     CrudState mCrudState = CrudState::eCreate;
+    FileMetrics mMetrics;
     QString mCodec = "UTF-8";
-    QTextDocument* mDocument = nullptr;
+
+    // TODO(JM) When an edit gets focus: move editor to the top
+    QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     static const QStringList mDefaulsCodecs;
-
 };
 
 } // namespace studio

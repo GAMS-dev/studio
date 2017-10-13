@@ -38,7 +38,15 @@ SOURCES += \
     welcomepage.cpp \
     modeldialog.cpp \
     mainwindow.cpp \
-    treeitemdelegate.cpp
+    treeitemdelegate.cpp \
+    exception.cpp \
+    glbparser.cpp \
+    libraryitem.cpp \
+    library.cpp \
+    librarymodel.cpp \
+    gamsinfo.cpp \
+    fileactioncontext.cpp \
+    newdialog.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -51,13 +59,20 @@ HEADERS += \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \
-    version.h
+    version.h \
+    glbparser.h \
+    libraryitem.h \
+    library.h \
+    librarymodel.h \
+    gamsinfo.h \
+    fileactioncontext.h \
+    newdialog.h
 
 FORMS += \
     welcomepage.ui \
-    editor.ui \
     modeldialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    newdialog.ui
 
 
 RESOURCES += \

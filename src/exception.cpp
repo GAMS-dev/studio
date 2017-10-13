@@ -17,45 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
-
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+Exception::Exception()
 {
-    Q_OBJECT
+    mStream = new QTextStream(&mBuffer);
+}
 
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+Exception::Exception(const Exception &exception)
+    : mBuffer(exception.mBuffer),
+      mStream(new QTextStream(&mBuffer))
+{
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
+}
 
-private slots:
-    void on_pbDescription_clicked();
+Exception::~Exception()
+{
+    qDebug() << mBuffer;
+    delete mStream;
+}
 
-    void on_cbRegEx_toggled(bool checked);
-
-private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-};
+FatalException* FatalException::clone() const
+{
+    return new FatalException(*this);
+}
 
 }
 }
-
-#endif // MODELDIALOG_H

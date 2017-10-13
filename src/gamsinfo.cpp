@@ -17,45 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#include "gamsinfo.h"
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include <QDir>
+#include <QFile>
+#include <QStandardPaths>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+GAMSInfo::GAMSInfo()
 {
-    Q_OBJECT
 
-public:
-    explicit ModelDialog(QWidget *parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+}
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
-
-private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
-
-private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-};
+QString GAMSInfo::systemDir() {
+#if defined(DISTRIB_BUILD) // For the GAMS distribution build
+#ifdef __linux__ // Linux AppImage
+    return QDir::currentPath().append("/..");
+#elif __APPLE__ // Apple MacOS dmg
+    auto path = QDir::currentPath();
+    QMessageBox::information(nullptr, "Path", path);
+    return path;
+#else // Windows
+    return QDir::currentPath().append("/..");
+#endif
+#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
+    return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+#endif
+}
 
 }
 }
-
-#endif // MODELDIALOG_H

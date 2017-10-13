@@ -25,7 +25,7 @@ namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    // TODO(JM)  delete the entry in the parents childList
+    setParentEntry(nullptr);
     mChildList.clear();
 }
 
@@ -48,6 +48,28 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
         throw QException();
     FileSystemContext::setFlag(flag, false);
+}
+
+FileSystemContext* FileGroupContext::findFile(QString filePath)
+{
+    for (int i = 0; i < childCount(); i++) {
+        FileSystemContext *child = childEntry(i);
+        if(child->childCount() > 0) {
+            for(int j = 0; j < child->childCount(); j++) {
+                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
+                if(element != nullptr) {
+                    return element;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+void FileGroupContext::setLocation(const QString& location)
+{
+    Q_UNUSED(location);
+    EXCEPT() << "The location of a FileGroupContext can't be changed.";
 }
 
 int FileGroupContext::peekIndex(const QString& name, bool *hit)
@@ -95,6 +117,14 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
+QString FileGroupContext::runableGms()
+{
+    // TODO(JM) for projects the project file has to be parsed for the main runableGms
+    qDebug() << "runableGms:";
+    qDebug() << QDir(mLocation).filePath(mRunInfo);
+    return QDir(mLocation).filePath(mRunInfo);
+}
+
 int FileGroupContext::childCount()
 {
     return mChildList.count();
@@ -117,17 +147,24 @@ QIcon FileGroupContext::icon()
 
 bool FileGroupContext::isWatched()
 {
-    return mFsWatcher;
+    return mDirWatcher;
 }
 
-QFileSystemWatcher*FileGroupContext::watchIt()
+void FileGroupContext::setWatched(bool watch)
 {
-    if (!mFsWatcher) {
-        mFsWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-        mFsWatcher->addPath(location());
-        qDebug() << "added watcher for" << location();
+    if (!watch) {
+        if (mDirWatcher) {
+            mDirWatcher->deleteLater();
+            mDirWatcher = nullptr;
+        }
+        return;
     }
-    return mFsWatcher;
+    if (!mDirWatcher) {
+        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
+        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
+    }
+    mDirWatcher->addPath(location());
+    qDebug() << "added watcher for" << location();
 }
 
 void FileGroupContext::directoryChanged(const QString& path)
@@ -144,10 +181,10 @@ void FileGroupContext::directoryChanged(const QString& path)
     deleteLater();
 }
 
-FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location)
-    : FileSystemContext(parent, id, name, location)
+FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, QString runInfo)
+    : FileSystemContext(parent, id, name, location, FileSystemContext::FileGroup)
 {
-    mFlags = FileSystemContext::cfGroup;
+    mRunInfo = runInfo;
 }
 
 } // namespace studio

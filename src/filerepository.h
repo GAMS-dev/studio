@@ -21,12 +21,21 @@
 #define FILEREPOSITORY_H
 
 #include <QtWidgets>
-#include "filegroupcontext.h"
+#include "fileactioncontext.h"
 #include "filecontext.h"
+#include "filegroupcontext.h"
 
 namespace gams {
 namespace studio {
 
+
+typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
+
+///
+/// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
+/// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
+/// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
+///
 class FileRepository : public QAbstractItemModel
 {
     Q_OBJECT
@@ -34,9 +43,53 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
+    void setDefaultActions(QList<QAction*> directActions);
+
+    /// \brief Get the <c>FileSystemContext</c> related to a file Id.
+    /// \param fileId The file Id related to a <c>FileSystemContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
+    /// \return The associated <c>FileSystemContext</c>.
+    FileSystemContext* context(const QModelIndex& index) const;
+
+    /// \brief Get the <c>FileContext</c> related to a file Id.
+    /// \param fileId The file Id related to a <c>FileContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
     FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileContext</c>.
+    /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
+    FileContext* fileContext(const QModelIndex& index) const;
+
+    /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
+    /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
+    /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
+    FileContext* fileContext(QPlainTextEdit* edit);
+
+    /// \brief Get the <c>FileGroupContext</c> related to a file Id.
+    /// \param fileId The file Id related to a <c>FileGroupContext</c>.
+    /// \param startNode The node where the search starts.
+    /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
     FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+
+    /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
+    /// \return The associated <c>FileGroupContext</c>, otherwise <c>nullptr</c>.
+    FileGroupContext* groupContext(const QModelIndex& index) const;
+
+    /// \brief Get the <c>FileActionContext</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>FileActionContext</c>.
+    /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
+    FileActionContext* actionContext(const QModelIndex& index) const;
+
+    QList<QPlainTextEdit*> editors(int fileId);
+
     QModelIndex index(FileSystemContext* entry);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
@@ -45,8 +98,16 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-    QModelIndex addGroup(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    /// Adds a group node to the file repository. This will watch the location for changes.
+    /// \param name The name of the project (or gist).
+    /// \param location The location of the directory.
+    /// \param projectFile The file name w/o path of the project OR gms-start-file
+    /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
+    /// \return Model index to the new FileGroupContext.
+    QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+
     QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+
     void removeNode(FileSystemContext *node);
     QModelIndex rootTreeModelIndex();
     QModelIndex rootModelIndex();
@@ -54,28 +115,34 @@ public:
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
-
-    FileSystemContext* node(const QModelIndex& index) const;
-    FileSystemContext* file(const QModelIndex& index) const;
-    FileGroupContext* group(const QModelIndex& index) const;
+    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
+    FileSystemContext* findFile(QString filePath);
 
 signals:
-    void fileClosed(int fileId);
+    void fileClosed(int fileId, QPrivateSignal);
+    void fileChangedExtern(int fileId);
+    void fileDeletedExtern(int fileId);
 
 public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
-    void nodeExpanded(const QModelIndex& index);
+    void nodeClicked(QModelIndex index);
+
+private slots:
+    void onFileChangedExtern(int fileId);
+    void onFileDeletedExtern(int fileId);
+    void processExternFileEvents();
 
 private:
-    void changeName(QModelIndex index, QString newName);
-    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
 
 private:
     int mNextId;
     FileGroupContext* mRoot;
     FileGroupContext* mTreeRoot;
     QStringList mSuffixFilter;
+    QList<int> mChangedIds;
+    QList<int> mDeletedIds;
+    QList<FileActionContext*> mFileActions;
 };
 
 } // namespace studio

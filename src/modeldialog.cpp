@@ -18,14 +18,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "modeldialog.h"
+#include "gamsinfo.h"
+
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
-#include <QTableWidget>
 #include <QTextStream>
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include "glbparser.h"
+#include "libraryitem.h"
+#include "librarymodel.h"
 
 namespace gams {
 namespace studio {
@@ -35,99 +39,161 @@ ModelDialog::ModelDialog(QWidget *parent) :
 {
     ui.setupUi(this);
 
-    //TODO(CW): This is a temporary logic for determine a GAMS system directory.
-    //          This needs to be replaced by a common and central way of determining the GAMS system directory
-    QDir gamsSysDir = QFileInfo(QStandardPaths::findExecutable("gams")).absoluteDir();
+    QDir gamsSysDir(GAMSInfo::systemDir());
+    QList<LibraryItem> items;
 
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twModelLibrary, gamsSysDir.filePath("gamslib_ml/gamslib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twTestLibrary,  gamsSysDir.filePath("testlib_ml/testlib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twAPILibrary,   gamsSysDir.filePath("apilib_ml/apilib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twDataLibrary,  gamsSysDir.filePath("datalib_ml/datalib.glb")));
-    libraryList.append(QPair<QTableWidget*, QString>(ui.twEMPLibrary,   gamsSysDir.filePath("emplib_ml/emplib.glb")));
+    items = GlbParser::parseFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
+    items.at(0).library()->setName("Model Library");
+    addLibrary(items);
 
-    QStringList errList;
-    for(auto item : libraryList)
-    {
-        if(!populateTable(item.first, item.second))
-            errList.append(item.second);
-    }
-    if(!errList.empty())
-        QMessageBox::critical(this, "Error", "Error loading files. One or more libraries might not be available:\n" + errList.join("\n"));
+    items = GlbParser::parseFile(gamsSysDir.filePath("testlib_ml/testlib.glb"));
+    items.at(0).library()->setName("Test Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("apilib_ml/apilib.glb"));
+    items.at(0).library()->setName("API Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("datalib_ml/datalib.glb"));
+    items.at(0).library()->setName("Data Utilities Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("emplib_ml/emplib.glb"));
+    items.at(0).library()->setName("EMP Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("finlib_ml/finlib.glb"));
+    items.at(0).library()->setName("Fin Library");
+    addLibrary(items);
+
+    items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
+    items.at(0).library()->setName("NOA Library");
+    addLibrary(items);
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
+    connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
 }
 
-bool ModelDialog::populateTable(QTableWidget *tw, QString glbFile)
+//TODO(CW): updating the header and displaying the number of models in a library works for now but this solution is not optimal
+void ModelDialog::changeHeader()
 {
-    QFile file(glbFile);
-    if(!file.open(QIODevice::ReadOnly))
-        return false;
-
-    QTextStream in(&file);
-
-    in.readLine();
-    in.readLine();
-
-    // read column header
-    int nrColumns = in.readLine().split("=")[1].trimmed().toInt();
-    QList<int> colMap;
-    for(int i=0; i<nrColumns; i++)
-        colMap.append(-1);
-    QStringList splitList;
-    tw->setColumnCount(nrColumns);
-    for(int i=0; i<nrColumns; i++)
+    for(int i=0; i<ui.tabWidget->count(); i++)
     {
-        splitList = in.readLine().split("=");
-        colMap.replace(splitList.at(0).trimmed().toInt()-1, i);
-        QTableWidgetItem* item = new QTableWidgetItem(splitList.at(1).trimmed());
-        tw->setHorizontalHeaderItem(i, item);
+        QTableView *tv = tableViewList.at(i);
+        int rowCount = tv->model()->rowCount();
+        QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
+        ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
     }
-    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
+}
 
-    // read models
-    while(!in.atEnd()) {
-        if(in.readLine().startsWith("*$*$*$"))
-        {
-            if(in.readLine().length() == 0) // we have reached the end of the file
-                file.close();
-            else // read new model
-            {
-                tw->insertRow(tw->rowCount());
-                for(int i=0; i<nrColumns; i++)
-                    tw->setItem(tw->rowCount()-1,colMap.at(i), new QTableWidgetItem(in.readLine().split("=")[1].trimmed()));
-            }
-        }
+void ModelDialog::updateSelectedLibraryItem()
+{
+    int idx = ui.tabWidget->currentIndex();
+    QModelIndexList modelIndexList = tableViewList.at(idx)->selectionModel()->selectedIndexes();
+    if(modelIndexList.size()>0)
+    {
+        QModelIndex index = modelIndexList.at(0);
+        index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
+        mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
+        ui.pbLoad->setEnabled(true);
+        if(mSelectedLibraryItem->longDescription().isEmpty()) //enable button only if a long description is available
+            ui.pbDescription->setEnabled(false);
         else
-        {
-            // TODO(CW): read describtion
-        }
+            ui.pbDescription->setEnabled(true);
     }
-    return true;
+    else
+    {
+        mSelectedLibraryItem = nullptr;
+        ui.pbLoad->setEnabled(false);
+        ui.pbDescription->setEnabled(false);
+    }
 }
 
-
-void ModelDialog::on_lineEdit_textChanged(const QString &arg1)
+void ModelDialog::clearSelections()
 {
-    if(arg1.length() == 0)
+    for(auto tv : tableViewList)
+        tv->clearSelection();
+}
+
+void ModelDialog::addLibrary(QList<LibraryItem> items)
+{
+    QTableView* tableView;
+    QSortFilterProxyModel* proxyModel;
+
+    tableView = new QTableView();
+    tableView->horizontalHeader()->setStretchLastSection(true);
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView->verticalHeader()->hide();
+    tableView->setSortingEnabled(true);
+    tableView->horizontalHeader()->setHighlightSections(false);
+
+    proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setFilterKeyColumn(-1);
+    proxyModel->setSourceModel(new LibraryModel(items, this));
+    proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    tableViewList.append(tableView);
+    proxyModelList.append(proxyModel);
+
+    tableView->setModel(proxyModel);
+    ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+
+    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
+
+    connect(tableView  , &QTableView::doubleClicked, this, &ModelDialog::accept);
+    connect(ui.pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
+    connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
+
+    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+
+    tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
+    tableView->resizeColumnsToContents();
+}
+
+LibraryItem *ModelDialog::selectedLibraryItem() const
+{
+    return mSelectedLibraryItem;
+}
+
+void ModelDialog::on_pbDescription_clicked()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Description for '" + mSelectedLibraryItem->name() + "' from " + mSelectedLibraryItem->library()->name());
+    msgBox.setText(mSelectedLibraryItem->name());
+    msgBox.setInformativeText(mSelectedLibraryItem->longDescription());
+    msgBox.exec();
+}
+
+void ModelDialog::on_cbRegEx_toggled(bool checked)
+{
+    disconnect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    if(checked)
     {
-        for(auto item : libraryList)
+        for(auto proxy : proxyModelList)
         {
-            QTableWidget* tw = item.first;
-            for(int j=0; j<tw->rowCount(); j++)
-                tw->showRow(j);
+            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+            connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
         }
     }
     else
     {
-        for(auto item : libraryList)
+        for(auto proxy : proxyModelList)
         {
-            QTableWidget* tw = item.first;
-            for(int j=0; j<tw->rowCount(); j++)
-                tw->hideRow(j);
-            QList<QTableWidgetItem *> filteredItems = tw->findItems(arg1,Qt::MatchContains);
-            for(auto rowPtr : filteredItems)
-                tw->showRow(rowPtr->row());
+            disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
+            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
         }
     }
+    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    emit ui.lineEdit->textChanged(ui.lineEdit->text());
 }
 
 }
 }
+
+
+
+
+

@@ -24,11 +24,15 @@ namespace gams {
 namespace studio {
 
 FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location)
-    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location)
+    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
 {
     setParentEntry(parent);
-    mFlags = 0;
+}
 
+FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, ContextType type)
+    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
+{
+    setParentEntry(parent);
 }
 
 void FileSystemContext::checkFlags()
@@ -37,14 +41,19 @@ void FileSystemContext::checkFlags()
 
 FileSystemContext::~FileSystemContext()
 {
-    if (parentEntry()) {
-        parentEntry()->removeChild(this);
+    if (mParent) {
+        mParent->removeChild(this);
     }
 }
 
 int FileSystemContext::id() const
 {
     return mId;
+}
+
+int FileSystemContext::type() const
+{
+    return mType;
 }
 
 FileGroupContext* FileSystemContext::parentEntry() const
@@ -98,8 +107,8 @@ const QString& FileSystemContext::location() const
 void FileSystemContext::setLocation(const QString& location)
 {
     if (!location.isEmpty()) {
-        mLocation = location;
         QFileInfo fi(location);
+        mLocation = fi.canonicalFilePath();
         setName(fi.fileName());
     }
 }
@@ -119,7 +128,8 @@ void FileSystemContext::setFlag(ContextFlag flag, bool value)
     bool current = testFlag(flag);
     if (current == value) return;
     mFlags.setFlag(flag, value);
-    if (parentEntry()) parentEntry()->checkFlags();
+    if (mParent)
+        mParent->checkFlags();
     emit changed(mId);
 }
 
@@ -133,6 +143,13 @@ bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
     return mFlags.testFlag(flag);
 }
 
+FileSystemContext* FileSystemContext::findFile(QString filePath)
+{
+    if(location() == filePath)
+        return this;
+    else
+        return nullptr;
+}
 
 } // namespace studio
 } // namespace gams
