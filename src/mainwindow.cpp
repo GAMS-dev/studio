@@ -439,9 +439,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     if(!hasWelcomePage) {
         ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
         hasWelcomePage = true;
-    } else {
-        // TODO: jump to welcome page
     }
+    ui->mainTab->setCurrentIndex(0);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
