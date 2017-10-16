@@ -137,6 +137,10 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
     if (!index.isValid()) return QVariant();
     switch (role) {
 
+    case Qt::BackgroundColorRole:
+        if (mCurrent && fileContext(index) == mCurrent) {
+            return QColor("#4466BBFF");
+        }
     case Qt::DisplayRole:
         return context(index)->caption();
 
@@ -158,8 +162,8 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         if (flags.testFlag(FileSystemContext::cfMissing))
             return QColor(Qt::red);
         if (flags.testFlag(FileSystemContext::cfActive)) {
-            return context(index)->type() == FileSystemContext::FileGroup ? QColor(Qt::black)
-                                                                       : QColor(Qt::blue);
+            return (mCurrent && fileContext(index) == mCurrent) ? QColor(Qt::blue)
+                                                                : QColor(Qt::black);
         }
         break;
     }
@@ -394,6 +398,18 @@ void FileRepository::nodeClicked(QModelIndex index)
     }
 }
 
+void FileRepository::editorActivated(QPlainTextEdit* edit)
+{
+    FileContext *fc = fileContext(edit);
+    if (fc && fc != mCurrent) {
+        QModelIndex mi = index(mCurrent);
+        mCurrent = fc;
+        dataChanged(mi, mi);    // invalidate old
+        mi = index(mCurrent);
+        dataChanged(mi, mi);    // invalidate new
+    }
+}
+
 void FileRepository::onFileChangedExtern(int fileId)
 {
     if (!mChangedIds.contains(fileId)) mChangedIds << fileId;
@@ -418,7 +434,7 @@ void FileRepository::processExternFileEvents()
         emit fileChangedExtern(fileId);
     }
 }
-  
+
 FileSystemContext*FileRepository::context(const QModelIndex& index) const
 {
     return static_cast<FileSystemContext*>(index.internalPointer());

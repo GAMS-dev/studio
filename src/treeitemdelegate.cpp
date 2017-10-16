@@ -28,6 +28,7 @@ TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent
 void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QStyleOptionViewItem opt(option);
+    opt.state.setFlag(QStyle::State_Selected, false);
     opt.textElideMode = Qt::ElideMiddle;
     QStyledItemDelegate::paint(painter, opt, index);
 }

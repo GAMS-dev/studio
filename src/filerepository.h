@@ -117,6 +117,7 @@ public:
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
     FileSystemContext* findFile(QString filePath);
+    void editorActivated(QPlainTextEdit* edit);
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
@@ -143,6 +144,7 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
+    FileSystemContext* mCurrent;
 };
 
 } // namespace studio

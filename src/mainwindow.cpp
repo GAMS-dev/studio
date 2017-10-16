@@ -618,5 +618,12 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     return fc;
 }
 
+void MainWindow::on_mainTab_currentChanged(int index)
+{
+    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
+    if (edit) mFileRepo.editorActivated(edit);
+}
+
 }
 }
+
