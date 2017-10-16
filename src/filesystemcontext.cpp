@@ -42,7 +42,9 @@ void FileSystemContext::checkFlags()
 FileSystemContext::~FileSystemContext()
 {
     if (mParent) {
-        mParent->removeChild(this);
+        FileGroupContext* fg = mParent;
+        mParent = nullptr;
+        if (fg) fg->removeChild(this);
     }
 }
 

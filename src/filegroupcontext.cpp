@@ -26,7 +26,10 @@ namespace studio {
 FileGroupContext::~FileGroupContext()
 {
     setParentEntry(nullptr);
-    mChildList.clear();
+    while (mChildList.size()) {
+        FileSystemContext* fsc = mChildList.takeFirst();
+        delete fsc;
+    }
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
