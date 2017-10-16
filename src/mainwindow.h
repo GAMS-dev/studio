@@ -95,6 +95,8 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_projectView_doubleClicked(const QModelIndex &index);
 
+    void on_actionGDX_Viewer_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 

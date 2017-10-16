@@ -78,7 +78,8 @@ SOURCES += \
     librarymodel.cpp \
     gamsinfo.cpp \
     fileactioncontext.cpp \
-    newdialog.cpp
+    newdialog.cpp \
+    gdxviewer/gdxviewer.cpp
 
 HEADERS += \
     $$GAMS_DISTRIB_API/gclgms.h \
@@ -100,13 +101,15 @@ HEADERS += \
     librarymodel.h \
     gamsinfo.h \
     fileactioncontext.h \
-    newdialog.h
+    newdialog.h \
+    gdxviewer/gdxviewer.h
 
 FORMS += \
     welcomepage.ui \
     modeldialog.ui \
     mainwindow.ui \
-    newdialog.ui
+    newdialog.ui \
+    gdxviewer/gdxviewer.ui
 
 
 RESOURCES += \

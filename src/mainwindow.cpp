@@ -26,6 +26,7 @@
 #include "treeitemdelegate.h"
 #include "gamsinfo.h"
 #include "newdialog.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
@@ -618,5 +619,15 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     return fc;
 }
 
+void MainWindow::on_actionGDX_Viewer_triggered()
+{
+    gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer();
+    int idx = ui->mainTab->addTab(gdxViewer, "GDX Viewer");
+    ui->mainTab->setCurrentIndex(idx);
+
+}
+
 }
 }
+
+
