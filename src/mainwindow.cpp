@@ -34,15 +34,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    ui->treeView->setModel(&mFileRepo);
-    ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    ui->projectView->setModel(&mFileRepo);
+    ui->projectView->setRootIndex(mFileRepo.rootTreeModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
-    ui->treeView->setHeaderHidden(true);
-    ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
-    ui->treeView->setIconSize(QSize(15,15));
+    ui->projectView->setHeaderHidden(true);
+    ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
+    ui->projectView->setIconSize(QSize(15,15));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->processWindow->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->outputView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
@@ -51,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
-    connect(ui->treeView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
+    connect(ui->dockOutputView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
+    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
+    connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
 }
 
@@ -101,6 +103,16 @@ void MainWindow::ensureCodecMenu(QString codecName)
 //        mCodecGroup->addAction(codecName);
         ui->menuEncoding->addActions(mCodecGroup->actions());
     }
+}
+
+void MainWindow::setOutputViewVisibility(bool visibility)
+{
+    ui->actionOutput_View->setChecked(visibility);
+}
+
+void MainWindow::setProjectViewVisibility(bool visibility)
+{
+    ui->actionProject_View->setChecked(visibility);
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -207,7 +219,7 @@ void MainWindow::clearProc(int exitCode)
 
 void MainWindow::addLine(QProcess::ProcessChannel channel, QString text)
 {
-    ui->processWindow->setTextColor(channel ? Qt::red : Qt::black);
+    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
     emit processOutput(text);
 }
 
@@ -344,7 +356,7 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
-    QTextEdit *outWin = ui->processWindow;
+    QTextEdit *outWin = ui->outputView;
     outWin->moveCursor(QTextCursor::End);
     outWin->insertPlainText(text);
     outWin->moveCursor(QTextCursor::End);
@@ -386,20 +398,20 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this, "About Qt");
 }
 
-void MainWindow::on_actionProject_Explorer_triggered(bool checked)
+void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     if(checked)
-        ui->dockProjectExplorer->show();
+        ui->dockOutputView->show();
     else
-        ui->dockProjectExplorer->hide();
+        ui->dockOutputView->hide();
 }
 
-void MainWindow::on_actionBottom_Panel_triggered(bool checked)
+void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     if(checked)
-        ui->dockBottom->show();
+        ui->dockProjectView->show();
     else
-        ui->dockBottom->hide();
+        ui->dockProjectView->hide();
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -439,9 +451,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     if(!hasWelcomePage) {
         ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
         hasWelcomePage = true;
-    } else {
-        // TODO: jump to welcome page
     }
+    ui->mainTab->setCurrentIndex(0);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -469,7 +480,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
     }
 }
 
-void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
 {
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
@@ -592,7 +603,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
                 QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
                 FileContext *fc = mFileRepo.fileContext(fileMI);
                 createEdit(ui->mainTab, fc->id());
-                ui->treeView->expand(groupMI);
+                ui->projectView->expand(groupMI);
                 mRecent.path = fInfo.path();
             } else {
                 auto groupContext = static_cast<FileGroupContext*>(mFileRepo.findFile(fInfo.absolutePath() +

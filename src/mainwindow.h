@@ -63,7 +63,9 @@ private slots:
     void fileClosed(int fileId);
     void appendOutput(QString text);
     void postGamsRun();
-
+    // View
+    void setOutputViewVisibility(bool visibility);
+    void setProjectViewVisibility(bool visibility);
 
 private slots:
     // File
@@ -85,13 +87,13 @@ private slots:
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
     // View
-    void on_actionProject_Explorer_triggered(bool checked);
-    void on_actionBottom_Panel_triggered(bool checked);
+    void on_actionOutput_View_triggered(bool checked);
+    void on_actionProject_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // AOB
     void on_mainTab_tabCloseRequested(int index);
-    void on_treeView_doubleClicked(const QModelIndex &index);
+    void on_projectView_doubleClicked(const QModelIndex &index);
 
 protected:
     void closeEvent(QCloseEvent *event);

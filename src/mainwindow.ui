@@ -125,8 +125,8 @@
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionProject_Explorer"/>
-    <addaction name="actionBottom_Panel"/>
+    <addaction name="actionProject_View"/>
+    <addaction name="actionOutput_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
    </widget>
@@ -181,7 +181,7 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QDockWidget" name="dockProjectExplorer">
+  <widget class="QDockWidget" name="dockProjectView">
    <property name="accessibleName">
     <string>Project Explorer</string>
    </property>
@@ -209,7 +209,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeView" name="treeView">
+      <widget class="QTreeView" name="projectView">
        <property name="uniformRowHeights">
         <bool>true</bool>
        </property>
@@ -221,7 +221,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockBottom">
+  <widget class="QDockWidget" name="dockOutputView">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -249,7 +249,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="processWindow">
+      <widget class="QTextEdit" name="outputView">
        <property name="undoRedoEnabled">
         <bool>false</bool>
        </property>
@@ -298,7 +298,7 @@
     <string>About Qt</string>
    </property>
   </action>
-  <action name="actionBottom_Panel">
+  <action name="actionOutput_View">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -312,7 +312,7 @@
     <string>Output</string>
    </property>
   </action>
-  <action name="actionProject_Explorer">
+  <action name="actionProject_View">
    <property name="checkable">
     <bool>true</bool>
    </property>
