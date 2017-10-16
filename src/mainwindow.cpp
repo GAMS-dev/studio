@@ -64,6 +64,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initTabs()
 {
+    QPalette pal = ui->projectView->palette();
+    pal.setColor(QPalette::Highlight, Qt::transparent);
+    ui->projectView->setPalette(pal);
+
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     hasWelcomePage = true;
 }
