@@ -206,6 +206,31 @@ FileSystemContext* FileRepository::findFile(QString filePath)
     return fsc;
 }
 
+QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
+{
+    if (!fileGroup)
+        fileGroup = mTreeRoot;
+    QList<FileContext*> res;
+    for (int i = 0; i < fileGroup->childCount(); ++i) {
+        if (fileGroup->childEntry(i)->type() == FileSystemContext::FileGroup) {
+            FileGroupContext *fgc = static_cast<FileGroupContext*>(fileGroup->childEntry(i));
+            QList<FileContext*> sub = openFiles(fgc);
+            for (FileContext *fc : sub) {
+                if (!res.contains(fc)) {
+                    res << fc;
+                }
+            }
+        }
+        if (fileGroup->childEntry(i)->type() == FileSystemContext::File) {
+            FileContext *fc = static_cast<FileContext*>(fileGroup->childEntry(i));
+            if (fc->crudState() == CrudState::eUpdate) {
+                res << fc;
+            }
+        }
+    }
+    return res;
+}
+
 QModelIndex FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())

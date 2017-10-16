@@ -187,7 +187,17 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    QMessageBox::information(this, "Save All", "t.b.d.");
+    int i = 0;
+    for (FileContext* fc: mFileRepo.openFiles()) {
+        fc->save();
+        i++;
+    }
+    if (i==1) {
+        // TODO(JM)  File saved
+    }
+    if (i>1) {
+        // TODO(JM)  n Files saved
+    }
 }
 
 void MainWindow::on_actionClose_triggered()
