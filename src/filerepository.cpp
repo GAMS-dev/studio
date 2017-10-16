@@ -256,7 +256,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
 //    updatePathNode(fgContext->id(), fgContext->location());
     updateActions();
-    return index(offset, 0, parentIndex);
+    return index(fgContext);
 }
 
 QModelIndex FileRepository::addFile(QString name, QString location, QModelIndex parentIndex)
