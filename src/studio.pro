@@ -12,13 +12,9 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 
-unix:GAMS_DISTRIB = $$(HOME)/gams/gams24.9_linux_x64_64_sfx
-unix:GAMS_DISTRIB_API = $$(HOME)/gams/gams24.9_linux_x64_64_sfx/apifiles/C/api
-win32:GAMS_DISTRIB = C:/GAMS/win64/24.9
-win32:GAMS_DISTRIB_API = $$GAMS_DISTRIB/apifiles/C/api
-
+GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {
-    equals($$(GAMS_CORE_PATH)x, x) {
+    equals(GAMS_CORE_TMP, "") {
         macx {
             GAMSINC = GAMS_DISTRIB=/Applications/GAMS24.9/sysdir \
                       GAMS_DISTRIB_API=\$$GAMS_DISTRIB/apifiles/C/api
