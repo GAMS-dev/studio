@@ -76,7 +76,7 @@ FORMS += \
 
 
 RESOURCES += \
-    icons/icons.qrc
+    ../icons/icons.qrc
 
 DISTFILES += \
-    ../res/studio.rc
+    studio.rc
