@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=GAMS Studio
+TryExec=studio
+Exec=studio %F
+Icon=gams
