@@ -506,10 +506,16 @@ void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
     }
 }
 
+void MainWindow::on_projectView_clicked(const QModelIndex& index)
+{
+    on_projectView_doubleClicked(index);
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     QSet<int> openIds;
     QString lastName;
+    // TODO(JM) use new function FileRepository::openFiles()
     for (QPlainTextEdit *ed: mFileRepo.editors(mFileRepo.groupContext(mFileRepo.rootTreeModelIndex())->id())) {
         FileContext *fc = mFileRepo.fileContext(ed);
         if (!ed) continue;
