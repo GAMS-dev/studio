@@ -118,7 +118,7 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
