@@ -87,6 +87,9 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
         tabWidget->setTabToolTip(tabIndex, fc->location());
         tabWidget->setCurrentIndex(tabIndex);
         fc->load(codecName);
+        QTextCursor tc = codeEdit->textCursor();
+        tc.movePosition(QTextCursor::Start);
+        codeEdit->setTextCursor(tc);
         ensureCodecMenu(fc->codec());
         connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
     }
@@ -526,6 +529,15 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 }
 
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+        on_projectView_doubleClicked(ui->projectView->currentIndex());
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
 void MainWindow::on_actionRun_triggered()
 {
     QString gamsPath = GAMSInfo::systemDir() + "/gams";
@@ -571,6 +583,9 @@ void MainWindow::openOrShow(FileContext* fileContext)
     } else {
         createEdit(ui->mainTab, fileContext->id());
     }
+    qDebug() << "openOrShow();";
+    if (ui->mainTab->currentWidget())
+        ui->mainTab->currentWidget()->setFocus();
 }
 
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
@@ -607,6 +622,8 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
                 QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
                 FileContext *fc = mFileRepo.fileContext(fileMI);
                 createEdit(ui->mainTab, fc->id());
+                if (ui->mainTab->currentWidget())
+                    ui->mainTab->currentWidget()->setFocus();
                 ui->projectView->expand(groupMI);
                 mRecent.path = fInfo.path();
             } else {
