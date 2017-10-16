@@ -135,6 +135,7 @@ private slots:
     void processExternFileEvents();
 
 private:
+    void updateActions();
 
 private:
     int mNextId;

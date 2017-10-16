@@ -42,8 +42,9 @@ void FileRepository::setDefaultActions(QList<QAction*> directActions)
         fac->deleteLater();
     }
     for (QAction *act: directActions) {
-        mFileActions.append(new FileActionContext(mTreeRoot, mNextId++, act));
+        mFileActions.append(new FileActionContext(nullptr, mNextId++, act));
     }
+    updateActions();
 }
 
 FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
@@ -229,6 +230,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
 //    updatePathNode(fgContext->id(), fgContext->location());
+    updateActions();
     return index(offset, 0, parentIndex);
 }
 
@@ -256,6 +258,7 @@ QModelIndex FileRepository::addFile(QString name, QString location, QModelIndex 
     connect(fContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
+    updateActions();
     return index(offset, 0, parentIndex);
 }
 
@@ -432,6 +435,38 @@ void FileRepository::processExternFileEvents()
     while (!mChangedIds.isEmpty()) {
         int fileId = mChangedIds.takeFirst();
         emit fileChangedExtern(fileId);
+    }
+}
+
+void FileRepository::updateActions()
+{
+    if (mFileActions.isEmpty())
+        return;
+    bool actionsVisibleOld = mFileActions.first()->parentEntry();
+    bool actionsVisibleNew = true;
+    for (int i = 0; i < mTreeRoot->childCount(); i++) {
+        if (mTreeRoot->childEntry(i)->type() != FileSystemContext::FileAction) {
+            actionsVisibleNew = false;
+        }
+    }
+    if (actionsVisibleNew != actionsVisibleOld) {
+        QModelIndex treeRootMI = index(mTreeRoot);
+        if (actionsVisibleNew) {
+            beginInsertRows(treeRootMI, 0, 1);
+            for (FileActionContext *fac: mFileActions) {
+                fac->setParentEntry(mTreeRoot);
+            }
+            endInsertRows();
+        } else {
+            for (int i = mTreeRoot->childCount()-1; i >= 0; --i) {
+                FileSystemContext *fsc = mTreeRoot->childEntry(i);
+                if (fsc->type() == FileSystemContext::FileAction) {
+                    beginRemoveRows(treeRootMI, i, i);
+                    fsc->setParentEntry(nullptr);
+                    endRemoveRows();
+                }
+            }
+        }
     }
 }
 
