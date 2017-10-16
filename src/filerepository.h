@@ -144,7 +144,7 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
-    FileSystemContext* mCurrent;
+    FileSystemContext* mCurrent = nullptr;
 };
 
 } // namespace studio

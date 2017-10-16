@@ -404,9 +404,9 @@ void FileRepository::editorActivated(QPlainTextEdit* edit)
     if (fc && fc != mCurrent) {
         QModelIndex mi = index(mCurrent);
         mCurrent = fc;
-        dataChanged(mi, mi);    // invalidate old
+        if (mi.isValid()) dataChanged(mi, mi);    // invalidate old
         mi = index(mCurrent);
-        dataChanged(mi, mi);    // invalidate new
+        if (mi.isValid()) dataChanged(mi, mi);    // invalidate new
     }
 }
 

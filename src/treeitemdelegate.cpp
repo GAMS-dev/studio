@@ -30,6 +30,7 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     QStyleOptionViewItem opt(option);
     opt.state.setFlag(QStyle::State_Selected, false);
     opt.textElideMode = Qt::ElideMiddle;
+    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
     QStyledItemDelegate::paint(painter, opt, index);
 }
 
