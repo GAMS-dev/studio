@@ -36,17 +36,18 @@ SOURCES += \
     filerepository.cpp \
     filegroupcontext.cpp \
     welcomepage.cpp \
-    modeldialog.cpp \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    glbparser.cpp \
-    libraryitem.cpp \
-    library.cpp \
-    librarymodel.cpp \
     gamsinfo.cpp \
     fileactioncontext.cpp \
-    newdialog.cpp
+    newdialog.cpp \
+    modeldialog/modeldialog.cpp \
+    modeldialog/glbparser.cpp   \
+    modeldialog/libraryitem.cpp \
+    modeldialog/library.cpp     \
+    modeldialog/librarymodel.cpp
+
 
 HEADERS += \
     codeeditor.h \
@@ -55,25 +56,24 @@ HEADERS += \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    modeldialog.h \
+    gamsinfo.h \
+    fileactioncontext.h \
+    newdialog.h \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \
     version.h \
-    glbparser.h \
-    libraryitem.h \
-    library.h \
-    librarymodel.h \
-    gamsinfo.h \
-    fileactioncontext.h \
-    newdialog.h
+    modeldialog/modeldialog.h   \
+    modeldialog/glbparser.h     \
+    modeldialog/libraryitem.h   \
+    modeldialog/library.h       \
+    modeldialog/librarymodel.h
 
 FORMS += \
-    welcomepage.ui \
-    modeldialog.ui \
-    mainwindow.ui \
-    newdialog.ui
-
+    welcomepage.ui  \
+    mainwindow.ui   \
+    newdialog.ui    \
+    modeldialog/modeldialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

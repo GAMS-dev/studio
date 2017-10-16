@@ -21,7 +21,7 @@
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
 #include "welcomepage.h"
-#include "modeldialog.h"
+#include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
 #include "gamsinfo.h"
