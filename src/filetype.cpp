@@ -84,5 +84,15 @@ FileType& FileType::from(FileType::Kind kind)
     return *mNone;
 }
 
+void FileType::clear()
+{
+    while (!mList.isEmpty()) {
+        FileType* ft = mList.takeFirst();
+        delete ft;
+    }
+    delete mNone;
+    mNone = nullptr;
+}
+
 } // namespace studio
 } // namespace gams

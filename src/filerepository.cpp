@@ -32,6 +32,7 @@ FileRepository::FileRepository(QObject* parent)
 
 FileRepository::~FileRepository()
 {
+    FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
     delete mRoot;
 }
 

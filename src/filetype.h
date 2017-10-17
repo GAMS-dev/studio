@@ -28,8 +28,6 @@ public:
     const bool autoReload() const;
     const Kind dependant() const;
 
-    // TODO(JM) continue restructure: *check Kind  *remove const
-
     bool operator ==(const FileType& fileType) const;
     bool operator !=(const FileType& fileType) const;
     bool operator ==(const FileType::Kind& kind) const;
@@ -40,6 +38,9 @@ public:
     static FileType& from(Kind kind);
 
 private:
+    friend class FileRepository;
+
+    static void clear();
     FileType(Kind kind, QString suffix, QString description, bool autoReload, const Kind dependant = None);
 
     const Kind mKind;
