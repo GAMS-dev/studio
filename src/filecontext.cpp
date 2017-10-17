@@ -30,6 +30,7 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
     : FileSystemContext(parent, id, name, location, FileSystemContext::File)
 {
+    mMetrics = FileMetrics(QFileInfo(location));
     mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
 }
 
@@ -122,13 +123,13 @@ void FileContext::setLocation(const QString& location)
     // TODO(JM) adapt parent group
     // TODO (JM): handling if the file already exists
     FileSystemContext::setLocation(location);
+    mMetrics = FileMetrics(QFileInfo(location));
     setCrudState(CrudState::eCreate);
 }
 
 QIcon FileContext::icon()
 {
-    QFileInfo fi(mLocation);
-    if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
+    if (mMetrics.fileType() == FileType::Gms)
         return QIcon(":/img/gams-w");
     return QIcon(":/img/file-alt");
 }

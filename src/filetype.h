@@ -23,6 +23,7 @@ public:
     };
 
 public:
+    Kind kind() const;
     QStringList suffix() const;
     QString description() const;
     const bool autoReload() const;
@@ -36,6 +37,7 @@ public:
     static const QList<FileType*> list();
     static FileType& from(QString suffix);
     static FileType& from(Kind kind);
+
 
 private:
     friend class FileRepository;

@@ -254,6 +254,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
     endInsertRows();
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+    fgContext->setWatched();
     qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
 //    updatePathNode(fgContext->id(), fgContext->location());
     updateActions();

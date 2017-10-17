@@ -12,6 +12,11 @@ FileType::FileType(Kind kind, QString suffix, QString description, bool autoRelo
     , mAutoReload(autoReload), mDependant(dependant)
 {}
 
+FileType::Kind FileType::kind() const
+{
+    return mKind;
+}
+
 
 const FileType::Kind FileType::dependant() const
 {

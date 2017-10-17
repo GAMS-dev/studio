@@ -106,6 +106,7 @@ private:
     void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent);
     FileContext* addContext(const QString &path, const QString &fileName);
+    void openContext(const QModelIndex& index);
 
 private:
     Ui::MainWindow *ui;

@@ -172,6 +172,7 @@ void FileGroupContext::setWatched(bool watch)
 
 void FileGroupContext::directoryChanged(const QString& path)
 {
+    qDebug() << "Dir changed";
     QDir dir(path);
     if (dir.exists()) {
         emit contentChanged(mId, dir);

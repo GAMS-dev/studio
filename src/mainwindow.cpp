@@ -80,18 +80,29 @@ void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
+    qDebug() << " opening editor";
     if (fc) {
-        CodeEditor *codeEdit = new CodeEditor(this);
-        fc->addEditor(codeEdit);
-        int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
-        tabWidget->setTabToolTip(tabIndex, fc->location());
-        tabWidget->setCurrentIndex(tabIndex);
-        fc->load(codecName);
-        QTextCursor tc = codeEdit->textCursor();
-        tc.movePosition(QTextCursor::Start);
-        codeEdit->setTextCursor(tc);
-        ensureCodecMenu(fc->codec());
-        connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+        qDebug() << " --- valid";
+        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+            qDebug() << "     --- real";
+            CodeEditor *codeEdit = new CodeEditor(this);
+            fc->addEditor(codeEdit);
+            int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            tabWidget->setTabToolTip(tabIndex, fc->location());
+            tabWidget->setCurrentIndex(tabIndex);
+            fc->load(codecName);
+            QTextCursor tc = codeEdit->textCursor();
+            tc.movePosition(QTextCursor::Start);
+            codeEdit->setTextCursor(tc);
+            ensureCodecMenu(fc->codec());
+            if (fc->metrics().fileType() == FileType::Gms) {
+                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+            } else {
+                codeEdit->setReadOnly(true);
+                codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            }
+        }
+        // TODO(JM) other kinds
     }
 }
 
@@ -506,16 +517,12 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
 {
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShow(fc);
-    }
+    openContext(index);
 }
 
 void MainWindow::on_projectView_clicked(const QModelIndex& index)
 {
-    on_projectView_doubleClicked(index);
+    openContext(index);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -555,7 +562,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-        on_projectView_doubleClicked(ui->projectView->currentIndex());
+        openContext(ui->projectView->currentIndex());
     } else {
         QMainWindow::keyPressEvent(event);
     }
@@ -606,7 +613,6 @@ void MainWindow::openOrShow(FileContext* fileContext)
     } else {
         createEdit(ui->mainTab, fileContext->id());
     }
-    qDebug() << "openOrShow();";
     if (ui->mainTab->currentWidget())
         ui->mainTab->currentWidget()->setFocus();
 }
@@ -661,6 +667,15 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
         }
     }
     return fc;
+}
+
+void MainWindow::openContext(const QModelIndex& index)
+{
+    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        openOrShow(fc);
+    }
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)

@@ -12,7 +12,7 @@ FileMetrics::FileMetrics(const FileMetrics& other)
     , mModified(other.mModified), mType(other.mType)
 { }
 
-FileMetrics&FileMetrics::operator=(const FileMetrics& other)
+FileMetrics& FileMetrics::operator=(const FileMetrics& other)
 {
     mExists = other.mExists;
     mSize = other.mSize;
@@ -22,7 +22,7 @@ FileMetrics&FileMetrics::operator=(const FileMetrics& other)
     return *this;
 }
 
-const FileType&FileMetrics::fileType() const
+const FileType& FileMetrics::fileType() const
 {
     return *mType;
 }
