@@ -26,6 +26,7 @@
 #include "treeitemdelegate.h"
 #include "gamsinfo.h"
 #include "newdialog.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
@@ -400,14 +401,8 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    auto systemDir = GAMSInfo::systemDir();
-    QProcess process(this);
-    process.start(systemDir + "/gams ? lo=3");
-    QString info;
-    if (process.waitForFinished()) {
-        info = process.readAllStandardOutput();;
-    }
-    QMessageBox::about(this, "About GAMS Studio", info);
+    auto about = GAMSProcess::aboutGAMS();
+    QMessageBox::about(this, "About GAMS Studio", about);
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()

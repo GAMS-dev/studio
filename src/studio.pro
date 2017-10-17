@@ -46,7 +46,8 @@ SOURCES += \
     modeldialog/glbparser.cpp   \
     modeldialog/libraryitem.cpp \
     modeldialog/library.cpp     \
-    modeldialog/librarymodel.cpp
+    modeldialog/librarymodel.cpp \
+    gamsprocess.cpp
 
 
 HEADERS += \
@@ -67,7 +68,8 @@ HEADERS += \
     modeldialog/glbparser.h     \
     modeldialog/libraryitem.h   \
     modeldialog/library.h       \
-    modeldialog/librarymodel.h
+    modeldialog/librarymodel.h \
+    gamsprocess.h
 
 FORMS += \
     welcomepage.ui  \
