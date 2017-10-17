@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
 #include "ui_gdxviewer.h"
+#include "gdxcc.h"
 
 namespace gams {
 namespace studio {
@@ -12,7 +13,7 @@ class GdxViewer : public QFrame
     Q_OBJECT
 
 public:
-    explicit GdxViewer(QWidget *parent = 0);
+    explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
 
 private:
     Ui::GdxViewer ui;

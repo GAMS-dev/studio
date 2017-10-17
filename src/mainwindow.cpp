@@ -621,7 +621,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
 void MainWindow::on_actionGDX_Viewer_triggered()
 {
-    gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer();
+    gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer("", GAMSInfo::systemDir());
     int idx = ui->mainTab->addTab(gdxViewer, "GDX Viewer");
     ui->mainTab->setCurrentIndex(idx);
 

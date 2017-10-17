@@ -82,8 +82,6 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp
 
 HEADERS += \
-    $$GAMS_DISTRIB_API/gclgms.h \
-    $$GAMS_DISTRIB_API/gdxcc.h \
     codeeditor.h \
     filesystemcontext.h \
     filecontext.h \
@@ -103,6 +101,9 @@ HEADERS += \
     fileactioncontext.h \
     newdialog.h \
     gdxviewer/gdxviewer.h
+
+INCLUDEPATH += \
+    $$GAMS_DISTRIB_API
 
 FORMS += \
     welcomepage.ui \

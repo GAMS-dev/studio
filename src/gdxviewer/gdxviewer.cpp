@@ -4,7 +4,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QWidget *parent) :
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
     QFrame(parent)
 {
     ui.setupUi(this);
