@@ -105,7 +105,7 @@ pipeline {
 
                             # collect files
                             cp bin/studio appdir/usr/bin/
-                            #cp gamsstudio.desktop appdir/
+                            cp gamsstudio.desktop appdir/
                             cp icons/* appdir/
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
