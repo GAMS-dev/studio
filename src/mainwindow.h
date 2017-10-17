@@ -31,6 +31,8 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
+class GAMSProcess;
+
 struct RecentData {
     int editFileId = -1;
     QPlainTextEdit* editor = nullptr;
@@ -52,9 +54,7 @@ signals:
 
 private slots:
     void clearProc(int exitCode);
-    void addLine(QProcess::ProcessChannel channel, QString text);
-    void readyStdOut();
-    void readyStdErr();
+    void addProcessData(QProcess::ProcessChannel channel, QString text);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
@@ -110,7 +110,8 @@ private:
 private:
     Ui::MainWindow *ui;
     //TODO(CW): This needs refactoring in order to remove global variables and encapsulate the process and all its required information
-    QProcess *mProc = nullptr;
+    GAMSProcess *mProcess = nullptr;
+    //QProcess *mProc = nullptr;
     QFileInfo mProcLstFileInfo;
     FileGroupContext* mProcFgc = nullptr;
     QHash<QTextStream, QColor> mStreams;

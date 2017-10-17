@@ -1,15 +1,21 @@
 #include "gamsprocess.h"
 #include "gamsinfo.h"
 
+#include <QDebug>
+#include <QDir>
+
 namespace gams {
 namespace studio {
 
 const QString GAMSProcess::App = "gams";
 
-GAMSProcess::GAMSProcess()
-    : mSystemDir(GAMSInfo::systemDir())
+GAMSProcess::GAMSProcess(QObject *parent)
+    : QObject(parent),
+      mSystemDir(GAMSInfo::systemDir())
 {
-
+    connect(&mProcess, &QProcess::readyReadStandardOutput, this, &GAMSProcess::readStdOut);
+    connect(&mProcess, &QProcess::readyReadStandardError, this, &GAMSProcess::readStdErr);
+    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QString GAMSProcess::app()
@@ -48,10 +54,20 @@ QString GAMSProcess::workingDir() const
     return mWorkingDir;
 }
 
-void GAMSProcess::run()
+void GAMSProcess::setInputFile(const QString &file)
 {
+    mGmsFile = file;
+}
+
+void GAMSProcess::execute()
+{
+    qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
-    QStringList args("lo=3");
+    auto gms = QDir::toNativeSeparators(mGmsFile);
+    //TODO(CW)
+    // we need this at least on wnidows in order to write explicitly to stdout.
+    // As soon as we allow user input for options, this needs to be adjusted
+    QStringList args({gms, "lo=3"});
     mProcess.start(nativeAppPath(), args);
 }
 
@@ -65,6 +81,37 @@ QString GAMSProcess::aboutGAMS()
         about = process.readAllStandardOutput();
     }
     return about;
+}
+
+void GAMSProcess::completed(int exitCode)
+{
+    emit finished(exitCode);
+}
+
+void GAMSProcess::readStdOut()
+{
+    readStdChannel(QProcess::StandardOutput);
+}
+
+void GAMSProcess::readStdErr()
+{
+    readStdChannel(QProcess::StandardError);
+}
+
+void GAMSProcess::readStdChannel(QProcess::ProcessChannel channel)
+{
+    mOutputMutex.lock();
+    mProcess.setReadChannel(channel);
+    bool avail = mProcess.bytesAvailable();
+    mOutputMutex.unlock();
+
+    while (avail) {
+        mOutputMutex.lock();
+        mProcess.setReadChannel(channel);
+        emit newStdChannelData(channel, mProcess.readLine());
+        avail = mProcess.bytesAvailable();
+        mOutputMutex.unlock();
+    }
 }
 
 } // namespace studio

@@ -1,16 +1,20 @@
 #ifndef GAMSPROCESS_H
 #define GAMSPROCESS_H
 
-#include <QDir>
+#include <QObject>
 #include <QProcess>
+#include <QMutex>
 
 namespace gams {
 namespace studio {
 
 class GAMSProcess
+        : public QObject
 {
+    Q_OBJECT
+
 public:
-    GAMSProcess();
+    GAMSProcess(QObject *parent = Q_NULLPTR);
 
     QString app();
     QString nativeAppPath();
@@ -22,14 +26,28 @@ public:
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
 
-    void run();
+    void setInputFile(const QString &file);
+
+    void execute();
     static QString aboutGAMS();
+
+public slots:
+    void completed(int exitCode);
+    void readStdOut();
+    void readStdErr();
+    void readStdChannel(QProcess::ProcessChannel channel);
+
+signals:
+    void finished(int exitCode);
+    void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
 
 private:
     static const QString App;
     QString mSystemDir;
     QString mWorkingDir;
+    QString mGmsFile;
     QProcess mProcess;
+    QMutex mOutputMutex;
 };
 
 } // namespace studio
