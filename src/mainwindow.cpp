@@ -310,30 +310,37 @@ void MainWindow::fileChangedExtern(int fileId)
     // file has not been loaded: nothing to do
     if (!fc->document()) return;
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File modified");
+    int choice;
 
     // TODO(JM) Handle other file-types
+    if (fc->metrics().fileType().autoReload()) {
+        choice = QMessageBox::Yes;
 
-    // file is loaded but unchanged: ASK, if it should be reloaded
-    if (fc->crudState() == CrudState::eRead) {
-        msgBox.setText(fc->location()+" has been modified externally.");
-        msgBox.setInformativeText("Reload?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    } else {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File modified");
+
+        // file is loaded but unchanged: ASK, if it should be reloaded
+        if (fc->crudState() == CrudState::eRead) {
+            msgBox.setText(fc->location()+" has been modified externally.");
+            msgBox.setInformativeText("Reload?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        }
+
+        // file has been changed in the editor: ASK, if intern or extern version should be kept.
+        if (fc->crudState() == CrudState::eUpdate) {
+            msgBox.setText(fc->location() + " has been modified concurrently.");
+            msgBox.setInformativeText("Do you want to"
+                                      "\n- <b>Discard</b> your changes and reload the file"
+                                      "\n- <b>Ignore</b> the external changes and keep your changes");
+            msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
+        }
+
+        msgBox.setDefaultButton(QMessageBox::NoButton);
+        choice = msgBox.exec();
     }
 
-    // file has been changed in the editor: ASK, if intern or extern version should be kept.
-    if (fc->crudState() == CrudState::eUpdate) {
-        msgBox.setText(fc->location() + " has been modified concurrently.");
-        msgBox.setInformativeText("Do you want to"
-                                  "\n- <b>Discard</b> your changes and reload the file"
-                                  "\n- <b>Ignore</b> the external changes and keep your changes");
-        msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
-    }
-
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-    if (ret == QMessageBox::Yes || ret == QMessageBox::Discard) {
+    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
         fc->load(fc->codec());
     }
 }
@@ -625,11 +632,12 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
-        // TODO(JM) extend for each possible type
-        qDebug() << "Type: " << fInfo.suffix();
-        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
-        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
+        // TODO(JM) extend for each possible type
+
+        FileType fType = FileType::from(fInfo.suffix());
+
+        if (fType == FileType::Gms) {
             // Create node for GIST directory and load all files of known filetypes
             FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
             if(hit == nullptr) {
@@ -648,7 +656,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
                 openOrShow(fInfo.filePath(), groupContext);
             }
         }
-        if (fType == FileType::ftGsp) {
+        if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         }
     }

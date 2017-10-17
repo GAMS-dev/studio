@@ -185,6 +185,11 @@ QTextDocument*FileContext::document()
     return mEditors.first()->document();
 }
 
+const FileMetrics& FileContext::metrics()
+{
+    return mMetrics;
+}
+
 FileContext::~FileContext()
 {
     removeAllEditors();

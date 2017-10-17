@@ -24,6 +24,7 @@
 #include "fileactioncontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
+#include "filetype.h"
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,15 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
+    QModelIndex index(int row, int column, const QModelIndex &parent) const;
+    QModelIndex parent(const QModelIndex &child) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
+    /// Defines actions for the <c>FileRepository</c>. For each action a <c>FileActionContext</c>-node is generated
+    /// that is shown only, if there are no other nodes in the tree.
+    /// \param directActions A list of actions to be triggered directly.
     void setDefaultActions(QList<QAction*> directActions);
 
     /// \brief Get the <c>FileSystemContext</c> related to a file Id.
@@ -92,12 +102,6 @@ public:
 
     QModelIndex index(FileSystemContext* entry);
 
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    QModelIndex parent(const QModelIndex &child) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
     /// \param location The location of the directory.
@@ -106,6 +110,11 @@ public:
     /// \return Model index to the new FileGroupContext.
     QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
 
+    /// Adds a file node to the file repository.
+    /// \param name The filename without path.
+    /// \param location The filename with full path.
+    /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
+    /// \return a <c>QModelIndex</c> to the new node.
     QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
 
     void removeNode(FileSystemContext *node);

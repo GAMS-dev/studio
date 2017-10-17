@@ -35,65 +35,6 @@ FileRepository::~FileRepository()
     delete mRoot;
 }
 
-void FileRepository::setDefaultActions(QList<QAction*> directActions)
-{
-    while (!mFileActions.isEmpty()) {
-        FileActionContext* fac = mFileActions.takeFirst();
-        fac->deleteLater();
-    }
-    for (QAction *act: directActions) {
-        mFileActions.append(new FileActionContext(nullptr, mNextId++, act));
-    }
-    updateActions();
-}
-
-FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
-{
-    if (!startNode)
-        FATAL() << "missing startNode";
-    if (startNode->id() == fileId)
-        return startNode;
-    for (int i = 0; i < startNode->childCount(); ++i) {
-        FileSystemContext* iChild = startNode->childEntry(i);
-        if (!iChild)
-            FATAL() << "child must not be null";
-        FileSystemContext* entry = context(fileId, iChild);
-        if (entry) return entry;
-    }
-    return nullptr;
-}
-
-FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
-{
-    auto c = context(fileId, (startNode ? startNode : mRoot));
-    if (c->type() == FileSystemContext::File)
-        return static_cast<FileContext*>(c);
-    return nullptr;
-}
-
-FileGroupContext* FileRepository::groupContext(int fileId, FileSystemContext* startNode)
-{
-    auto c = context(fileId, startNode ? startNode : mRoot);
-    if (c->type() == FileSystemContext::FileGroup) {
-        return static_cast<FileGroupContext*>(c);
-    }
-    return c->parentEntry();
-}
-
-QModelIndex FileRepository::index(FileSystemContext *entry)
-{
-     if (!entry)
-         return QModelIndex();
-     if (!entry->parent())
-         return createIndex(0, 0, entry);
-     for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
-         if (entry->parentEntry()->childEntry(i) == entry) {
-             return createIndex(i, 0, entry);
-         }
-     }
-     return QModelIndex();
-}
-
 QModelIndex FileRepository::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -179,6 +120,65 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         break;
     }
     return QVariant();
+}
+
+void FileRepository::setDefaultActions(QList<QAction*> directActions)
+{
+    while (!mFileActions.isEmpty()) {
+        FileActionContext* fac = mFileActions.takeFirst();
+        fac->deleteLater();
+    }
+    for (QAction *act: directActions) {
+        mFileActions.append(new FileActionContext(nullptr, mNextId++, act));
+    }
+    updateActions();
+}
+
+FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
+{
+    if (!startNode)
+        FATAL() << "missing startNode";
+    if (startNode->id() == fileId)
+        return startNode;
+    for (int i = 0; i < startNode->childCount(); ++i) {
+        FileSystemContext* iChild = startNode->childEntry(i);
+        if (!iChild)
+            FATAL() << "child must not be null";
+        FileSystemContext* entry = context(fileId, iChild);
+        if (entry) return entry;
+    }
+    return nullptr;
+}
+
+FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
+{
+    auto c = context(fileId, (startNode ? startNode : mRoot));
+    if (c->type() == FileSystemContext::File)
+        return static_cast<FileContext*>(c);
+    return nullptr;
+}
+
+FileGroupContext* FileRepository::groupContext(int fileId, FileSystemContext* startNode)
+{
+    auto c = context(fileId, startNode ? startNode : mRoot);
+    if (c->type() == FileSystemContext::FileGroup) {
+        return static_cast<FileGroupContext*>(c);
+    }
+    return c->parentEntry();
+}
+
+QModelIndex FileRepository::index(FileSystemContext *entry)
+{
+     if (!entry)
+         return QModelIndex();
+     if (!entry->parent())
+         return createIndex(0, 0, entry);
+     for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
+         if (entry->parentEntry()->childEntry(i) == entry) {
+             return createIndex(i, 0, entry);
+         }
+     }
+     return QModelIndex();
 }
 
 QModelIndex FileRepository::findEntry(QString name, QString location, QModelIndex parentIndex)

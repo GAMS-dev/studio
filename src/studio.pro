@@ -46,7 +46,9 @@ SOURCES += \
     modeldialog/glbparser.cpp   \
     modeldialog/libraryitem.cpp \
     modeldialog/library.cpp     \
-    modeldialog/librarymodel.cpp
+    modeldialog/librarymodel.cpp \
+    filetype.cpp \
+    filemetrics.cpp
 
 
 HEADERS += \
@@ -67,7 +69,9 @@ HEADERS += \
     modeldialog/glbparser.h     \
     modeldialog/libraryitem.h   \
     modeldialog/library.h       \
-    modeldialog/librarymodel.h
+    modeldialog/librarymodel.h \
+    filetype.h \
+    filemetrics.h
 
 FORMS += \
     welcomepage.ui  \
