@@ -3,6 +3,7 @@
 
 #include "ui_gdxviewer.h"
 #include "gdxcc.h"
+#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {
@@ -17,6 +18,10 @@ public:
 
 private:
     Ui::GdxViewer ui;
+    gdxHandle_t mGdx = nullptr;
+    void reportIoError(int errNr, QString message);
+    QList<GDXSymbol> mGdxSymbols;
+    QList<GDXSymbol> loadGDXSymbol();
 };
 
 

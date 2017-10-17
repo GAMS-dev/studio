@@ -79,7 +79,8 @@ SOURCES += \
     gamsinfo.cpp \
     fileactioncontext.cpp \
     newdialog.cpp \
-    gdxviewer/gdxviewer.cpp
+    gdxviewer/gdxviewer.cpp \
+    gdxviewer/gdxsymbol.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -100,7 +101,8 @@ HEADERS += \
     gamsinfo.h \
     fileactioncontext.h \
     newdialog.h \
-    gdxviewer/gdxviewer.h
+    gdxviewer/gdxviewer.h \
+    gdxviewer/gdxsymbol.h
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API
