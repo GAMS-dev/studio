@@ -27,11 +27,14 @@
 #include "gamsinfo.h"
 #include "newdialog.h"
 #include "gamsprocess.h"
+#include "gamslibprocess.h"
 
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -353,6 +356,16 @@ void MainWindow::postGamsRun()
     ui->actionRun->setEnabled(true);
 }
 
+void MainWindow::postGamsLibRun()
+{// TODO(AF) Are there models without a GMS file? How to handle them?";
+    openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    if (mLibProcess) {
+        qDebug() << "clear process";
+        mLibProcess->deleteLater();
+        mLibProcess = nullptr;
+    }
+}
+
 void MainWindow::on_actionExit_Application_triggered()
 {
     QCoreApplication::quit();
@@ -438,21 +451,16 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
+        QFileInfo fileInfo(item->files().first());
 
-        QProcess libProc(this);
-
-        QString libExec = QDir(GAMSInfo::systemDir()).filePath(item->library()->execName());
-
-        //TODO(CW): is this the correct working directory? We need a descent working directory
-        libProc.setWorkingDirectory(".");
-        QStringList args(item->name());
-        libProc.start(libExec, args);
-        libProc.waitForFinished();
-
-        //TODO(CW): check if the creation of fileName is correct
-        QString fileName = item->files().at(0).split(".").at(0) + ".gms";
-        FileContext *fc = addContext(".", fileName);
-        openOrShow(fc);
+        mLibProcess = new GAMSLibProcess(this);
+        mLibProcess->setApp(item->library()->execName());
+        mLibProcess->setModelName(item->name());
+        mLibProcess->setInputFile(fileInfo.completeBaseName() + ".gms");
+        mLibProcess->setTargetDir("."); //TODO(CW): is this the correct working directory? We need a descent working directory
+        mLibProcess->execute();
+        connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+        connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
     }
 }
 

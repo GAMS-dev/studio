@@ -32,6 +32,7 @@ namespace gams {
 namespace studio {
 
 class GAMSProcess;
+class GAMSLibProcess;
 
 struct RecentData {
     int editFileId = -1;
@@ -62,6 +63,7 @@ private slots:
     void fileClosed(int fileId);
     void appendOutput(QString text);
     void postGamsRun();
+    void postGamsLibRun();
     // View
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -109,6 +111,7 @@ private:
 private:
     Ui::MainWindow *ui;
     GAMSProcess *mProcess = nullptr;
+    GAMSLibProcess *mLibProcess = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;

@@ -11,12 +11,8 @@ namespace studio {
 const QString GAMSProcess::App = "gams";
 
 GAMSProcess::GAMSProcess(QObject *parent)
-    : QObject(parent),
-      mSystemDir(GAMSInfo::systemDir())
+    : AbstractProcess(parent)
 {
-    connect(&mProcess, &QProcess::readyReadStandardOutput, this, &GAMSProcess::readStdOut);
-    connect(&mProcess, &QProcess::readyReadStandardError, this, &GAMSProcess::readStdErr);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QString GAMSProcess::app()
@@ -26,23 +22,7 @@ QString GAMSProcess::app()
 
 QString GAMSProcess::nativeAppPath()
 {
-    return GAMSProcess::nativeAppPath(mSystemDir, App);
-}
-
-QString GAMSProcess::nativeAppPath(const QString &dir, const QString &app)
-{
-    auto appPath = QDir(dir).filePath(app);
-    return QDir::toNativeSeparators(appPath);
-}
-
-void GAMSProcess::setSystemDir(const QString &systemDir)
-{
-    mSystemDir = systemDir;
-}
-
-QString GAMSProcess::systemDir() const
-{
-    return mSystemDir;
+    return AbstractProcess::nativeAppPath(mSystemDir, App);
 }
 
 void GAMSProcess::setWorkingDir(const QString &workingDir)
@@ -53,16 +33,6 @@ void GAMSProcess::setWorkingDir(const QString &workingDir)
 QString GAMSProcess::workingDir() const
 {
     return mWorkingDir;
-}
-
-void GAMSProcess::setInputFile(const QString &file)
-{
-    mInputFile = file;
-}
-
-QString GAMSProcess::inputFile() const
-{
-    return mInputFile;
 }
 
 void GAMSProcess::setContext(FileGroupContext *context)
@@ -91,43 +61,12 @@ QString GAMSProcess::aboutGAMS()
 {
     QProcess process;
     QStringList args({"?", "lo=3"});
-    process.start(nativeAppPath(GAMSInfo::systemDir(), App), args);
+    process.start(AbstractProcess::nativeAppPath(GAMSInfo::systemDir(), App), args);
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();
     }
     return about;
-}
-
-void GAMSProcess::completed(int exitCode)
-{
-    emit finished(exitCode);
-}
-
-void GAMSProcess::readStdOut()
-{
-    readStdChannel(QProcess::StandardOutput);
-}
-
-void GAMSProcess::readStdErr()
-{
-    readStdChannel(QProcess::StandardError);
-}
-
-void GAMSProcess::readStdChannel(QProcess::ProcessChannel channel)
-{
-    mOutputMutex.lock();
-    mProcess.setReadChannel(channel);
-    bool avail = mProcess.bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProcess.setReadChannel(channel);
-        emit newStdChannelData(channel, mProcess.readLine());
-        avail = mProcess.bytesAvailable();
-        mOutputMutex.unlock();
-    }
 }
 
 } // namespace studio
