@@ -585,8 +585,9 @@ void MainWindow::dropEvent(QDropEvent* e)
             pathList << url.toLocalFile();
         }
         for (QString fName: pathList) {
+            QFileInfo fi(fName);
             if (QFileInfo(fName).isFile()) {
-                openOrShow(fName, nullptr);
+                openOrShow(fi.canonicalFilePath(), nullptr);
             }
         }
     }
@@ -647,7 +648,7 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
     FileSystemContext *fsc = mFileRepo.findFile(filePath, parent);
     if (!fsc) {
         // not yet opened by user, open file in new tab
-        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.fileName());
+        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
         QModelIndex fileMI = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
         FileContext *fc = mFileRepo.fileContext(fileMI);
         fsc = fc;
