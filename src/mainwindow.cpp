@@ -343,7 +343,11 @@ void MainWindow::appendOutput(QString text)
 
 void MainWindow::postGamsRun()
 {
-    QFileInfo fileInfo(mProcess->inputFile());
+    qDebug() << "MainWindow::postGamsRun()";
+    qDebug() << "InputFile: " << mProcess->inputFile();
+    auto test = QDir(mProcess->workingDir()).filePath(mProcess->inputFile());
+    qDebug() << "Test: " << test;
+    QFileInfo fileInfo(test);//(mProcess->inputFile());
     if(fileInfo.exists()) // TODO: add .log and others)
         openOrShow(fileInfo.completeBaseName() + ".lst", mProcess->context());
     else
@@ -457,7 +461,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
         mLibProcess->setApp(item->library()->execName());
         mLibProcess->setModelName(item->name());
         mLibProcess->setInputFile(fileInfo.completeBaseName() + ".gms");
-        mLibProcess->setTargetDir("."); //TODO(CW): is this the correct working directory? We need a descent working directory
+        mLibProcess->setTargetDir(GAMSInfo::defaultWorkingDir());
         mLibProcess->execute();
         connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
         connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);

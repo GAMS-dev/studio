@@ -29,6 +29,7 @@ class GAMSInfo
 {
 public:
     static QString systemDir();
+    static QString defaultWorkingDir();
 
 private:
     GAMSInfo();

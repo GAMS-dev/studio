@@ -48,5 +48,17 @@ QString GAMSInfo::systemDir() {
 #endif
 }
 
+QString GAMSInfo::defaultWorkingDir()
+{
+    const QString currentDir = ".";
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (dir.isEmpty())
+        return currentDir;
+    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio" + "/gist");
+    if (workingDir.mkpath(workingDir.path()))
+        return QDir::toNativeSeparators(workingDir.path());
+    return currentDir;
+}
+
 }
 }
