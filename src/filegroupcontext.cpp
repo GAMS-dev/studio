@@ -96,11 +96,10 @@ void FileGroupContext::insertChild(FileSystemContext* child)
     if (!child) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
-    if (!hit) {
-        mChildList.insert(pos, child);
-        if (child->testFlag(cfActive))
-            setFlag(cfActive);
-    }
+    if (hit) pos++;
+    mChildList.insert(pos, child);
+    if (child->testFlag(cfActive))
+        setFlag(cfActive);
 }
 
 void FileGroupContext::removeChild(FileSystemContext* child)

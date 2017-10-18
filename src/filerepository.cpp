@@ -244,13 +244,7 @@ QModelIndex FileRepository::addGroup(QString name, QString location, QString run
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
-    if (hit) {
-        FileSystemContext *fc = par->childEntry(offset);
-        fc->setLocation(location);
-        qDebug() << "found dir " << name << " for " << location << " at pos=" << offset;
-        return index(offset, 0, parentIndex);
-    }
-
+    if (hit) offset++;
     beginInsertRows(parentIndex, offset, offset);
     FileGroupContext* fgContext = new FileGroupContext(groupContext(parentIndex), mNextId++, name, location, runInfo);
     endInsertRows();
