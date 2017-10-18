@@ -315,12 +315,12 @@ QModelIndex FileRepository::ensureGroup(const QString &filePath)
 {
     bool extendedCaption = false;
     QFileInfo fi(filePath);
-    QFileInfo di(fi.path());
+    QFileInfo di(fi.canonicalPath());
     for (int i = 0; i < mTreeRoot->childCount(); ++i) {
         FileSystemContext* group = mTreeRoot->childEntry(i);
         if (!group)
             FATAL() << "invalid element at index " << i << " in TreeRoot";
-        if (fi.baseName() == group->name()) {
+        if (fi.completeBaseName() == group->name()) {
             // (name,location)-group exists? -> return index
             if (di == QFileInfo(group->location()))
                 return createIndex(i, 0, group);
@@ -330,7 +330,7 @@ QModelIndex FileRepository::ensureGroup(const QString &filePath)
             }
         }
     }
-    QModelIndex newGroupMi = addGroup(fi.baseName(), fi.path(), fi.fileName(), rootTreeModelIndex());
+    QModelIndex newGroupMi = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), rootTreeModelIndex());
     if (extendedCaption)
         groupContext(newGroupMi)->setFlag(FileSystemContext::cfExtendCaption);
     updatePathNode(groupContext(newGroupMi)->id(), fi.path());
