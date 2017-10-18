@@ -357,7 +357,7 @@ void MainWindow::postGamsRun()
 }
 
 void MainWindow::postGamsLibRun()
-{// TODO(AF) Are there models without a GMS file? How to handle them?";
+{// TODO(AF) Are there models without a GMS file? How to handle them?"
     openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
     if (mLibProcess) {
         qDebug() << "clear process";
