@@ -208,7 +208,7 @@ FileSystemContext* FileRepository::findFile(QString filePath, FileGroupContext* 
     return fsc;
 }
 
-QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
+QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
     // TODO(JM) rename this to modifiedFiles()
     if (!fileGroup)
@@ -217,7 +217,7 @@ QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
     for (int i = 0; i < fileGroup->childCount(); ++i) {
         if (fileGroup->childEntry(i)->type() == FileSystemContext::FileGroup) {
             FileGroupContext *fgc = static_cast<FileGroupContext*>(fileGroup->childEntry(i));
-            QList<FileContext*> sub = openFiles(fgc);
+            QList<FileContext*> sub = modifiedFiles(fgc);
             for (FileContext *fc : sub) {
                 if (!res.contains(fc)) {
                     res << fc;
@@ -232,6 +232,15 @@ QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
         }
     }
     return res;
+}
+
+int FileRepository::saveAll()
+{
+    QList<FileContext*> files = modifiedFiles();
+    for (FileContext* fc: files) {
+        fc->save();
+    }
+    return files.size();
 }
 
 QModelIndex FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)

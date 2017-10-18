@@ -81,11 +81,8 @@ void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
-    qDebug() << " opening editor";
     if (fc) {
-        qDebug() << " --- valid";
         if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
-            qDebug() << "     --- real";
             CodeEditor *codeEdit = new CodeEditor(this);
             fc->addEditor(codeEdit);
             int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -163,8 +160,6 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
-    // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
     FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
     if (!fc) return;
     if (fc->location().isEmpty()) {
@@ -199,17 +194,8 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    int i = 0;
-    for (FileContext* fc: mFileRepo.openFiles()) {
-        fc->save();
-        i++;
-    }
-    if (i==1) {
-        // TODO(JM)  File saved
-    }
-    if (i>1) {
-        // TODO(JM)  n Files saved
-    }
+    int i = mFileRepo.saveAll();
+    qDebug() << i << (i==1 ? " file" : " files") << " saved.";
 }
 
 void MainWindow::on_actionClose_triggered()
@@ -530,7 +516,7 @@ void MainWindow::on_projectView_clicked(const QModelIndex& index)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    QList<FileContext*> oFiles = mFileRepo.openFiles();
+    QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
     if (oFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
