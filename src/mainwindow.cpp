@@ -24,13 +24,17 @@
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 #include "newdialog.h"
+#include "gamsprocess.h"
+#include "gamslibprocess.h"
 
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setAcceptDrops(true);
@@ -222,52 +226,10 @@ void MainWindow::on_actionClose_All_Except_triggered()
     }
 }
 
-void MainWindow::clearProc(int exitCode)
-{
-    Q_UNUSED(exitCode);
-    if (mProc) {
-        qDebug() << "clear process";
-        mProc->deleteLater();
-        mProc = nullptr;
-    }
-}
-
-void MainWindow::addLine(QProcess::ProcessChannel channel, QString text)
+void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
     emit processOutput(text);
-}
-
-void MainWindow::readyStdOut()
-{
-    mOutputMutex.lock();
-    mProc->setReadChannel(QProcess::StandardOutput);
-    bool avail = mProc->bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProc->setReadChannel(QProcess::StandardOutput);
-        addLine(QProcess::StandardOutput, mProc->readLine());
-        avail = mProc->bytesAvailable();
-        mOutputMutex.unlock();
-    }
-}
-
-void MainWindow::readyStdErr()
-{
-    mOutputMutex.lock();
-    mProc->setReadChannel(QProcess::StandardError);
-    bool avail = mProc->bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProc->setReadChannel(QProcess::StandardError);
-        addLine(QProcess::StandardError, mProc->readLine());
-        avail = mProc->bytesAvailable();
-        mOutputMutex.unlock();
-    }
 }
 
 void MainWindow::codecChanged(QAction *action)
@@ -386,11 +348,25 @@ void MainWindow::appendOutput(QString text)
 
 void MainWindow::postGamsRun()
 {
-    if(mProcLstFileInfo.exists())
-        openOrShow(mProcLstFileInfo.absoluteFilePath(), mProcFgc);
+    QFileInfo fileInfo(mProcess->inputFile());
+    if(fileInfo.exists()) // TODO: add .log and others)
+        openOrShow(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst", mProcess->context());
     else
-        qDebug() << mProcLstFileInfo.absoluteFilePath() << " not found. aborting.";
+        qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
+    if (mProcess) {
+        mProcess->deleteLater();
+        mProcess = nullptr;
+    }
     ui->actionRun->setEnabled(true);
+}
+
+void MainWindow::postGamsLibRun()
+{// TODO(AF) Are there models without a GMS file? How to handle them?"
+    openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    if (mLibProcess) {
+        mLibProcess->deleteLater();
+        mLibProcess = nullptr;
+    }
 }
 
 void MainWindow::on_actionExit_Application_triggered()
@@ -405,14 +381,8 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    auto systemDir = GAMSInfo::systemDir();
-    QProcess process(this);
-    process.start(systemDir + "/gams ? lo=3");
-    QString info;
-    if (process.waitForFinished()) {
-        info = process.readAllStandardOutput();;
-    }
-    QMessageBox::about(this, "About GAMS Studio", info);
+    auto about = GAMSProcess::aboutGAMS();
+    QMessageBox::about(this, "About GAMS Studio", about);
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -486,21 +456,16 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
+        QFileInfo fileInfo(item->files().first());
 
-        QProcess libProc(this);
-
-        QString libExec = QDir(GAMSInfo::systemDir()).filePath(item->library()->execName());
-
-        //TODO(CW): is this the correct working directory? We need a descent working directory
-        libProc.setWorkingDirectory(".");
-        QStringList args(item->name());
-        libProc.start(libExec, args);
-        libProc.waitForFinished();
-
-        //TODO(CW): check if the creation of fileName is correct
-        QString fileName = item->files().at(0).split(".").at(0) + ".gms";
-        FileContext *fc = addContext(".", fileName);
-        openOrShow(fc);
+        mLibProcess = new GAMSLibProcess(this);
+        mLibProcess->setApp(item->library()->execName());
+        mLibProcess->setModelName(item->name());
+        mLibProcess->setInputFile(fileInfo.completeBaseName() + ".gms");
+        mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+        mLibProcess->execute();
+        connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+        connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
     }
 }
 
@@ -580,39 +545,26 @@ void MainWindow::dropEvent(QDropEvent* e)
 }
 
 void MainWindow::on_actionRun_triggered()
-{
-    QString gamsPath = GAMSInfo::systemDir() + "/gams";
-    // TODO: add option to clear output view before running next job
-
+{// TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    mProcFgc = fgc;
     if (!fgc)
         return;
 
     ui->actionRun->setEnabled(false);
 
-    qDebug() << "starting process";
-    mProc = new QProcess(this);
-
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
-    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
-    mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
+    mProcess = new GAMSProcess(this);
+    mProcess->setWorkingDir(gmsFileInfo.path());
+    mProcess->setInputFile(gmsFilePath);
+    mProcess->setContext(fgc);
+    mProcess->execute();
 
-    mProc->setWorkingDirectory(gmsFileInfo.path());
-    QStringList args(QDir::toNativeSeparators(gmsFilePath)); //TODO(CW): call toNativeSeparators here or in runableGms?
-    args.append("lo=3"); //TODO(CW): we need this at least on wnidows in order to write explicitly to stdout. As soon as we allow user input for options, this needs to be adjusted
-    mProc->start(gamsPath, args);
-
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::postGamsRun);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
-
+    connect(mProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 
 void MainWindow::openOrShow(FileContext* fileContext)

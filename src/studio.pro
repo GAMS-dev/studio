@@ -39,7 +39,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    gamsinfo.cpp \
     fileactioncontext.cpp \
     newdialog.cpp \
     modeldialog/modeldialog.cpp \
@@ -47,8 +46,12 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/library.cpp     \
     modeldialog/librarymodel.cpp \
-    filetype.cpp \
-    filemetrics.cpp
+    gamsprocess.cpp     \
+    gamslibprocess.cpp  \
+    abstractprocess.cpp \
+    filetype.cpp        \
+    filemetrics.cpp \
+    gamspaths.cpp
 
 
 HEADERS += \
@@ -58,7 +61,6 @@ HEADERS += \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    gamsinfo.h \
     fileactioncontext.h \
     newdialog.h \
     mainwindow.h \
@@ -70,8 +72,12 @@ HEADERS += \
     modeldialog/libraryitem.h   \
     modeldialog/library.h       \
     modeldialog/librarymodel.h \
-    filetype.h \
-    filemetrics.h
+    gamsprocess.h       \
+    gamslibprocess.h    \
+    abstractprocess.h   \
+    filetype.h          \
+    filemetrics.h \
+    gamspaths.h
 
 FORMS += \
     welcomepage.ui  \

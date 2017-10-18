@@ -17,36 +17,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamsinfo.h"
+#ifndef GAMSINFO_H
+#define GAMSINFO_H
 
-#include <QDir>
-#include <QFile>
-#include <QStandardPaths>
-#include <QMessageBox>
+#include <QString>
 
 namespace gams {
 namespace studio {
 
-GAMSInfo::GAMSInfo()
+class GAMSPaths
 {
+public:
+    static QString systemDir();
+    static QString defaultWorkingDir();
 
-}
-
-QString GAMSInfo::systemDir() {
-#if defined(DISTRIB_BUILD) // For the GAMS distribution build
-#ifdef __linux__ // Linux AppImage
-    return QDir::currentPath().append("/..");
-#elif __APPLE__ // Apple MacOS dmg
-    auto path = QDir::currentPath();
-    QMessageBox::information(nullptr, "Path", path);
-    return path;
-#else // Windows
-    return QDir::currentPath().append("/..");
-#endif
-#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
-    return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-#endif
-}
+private:
+    GAMSPaths();
+};
 
 }
 }
+
+#endif // GAMSINFO_H

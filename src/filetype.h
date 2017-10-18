@@ -26,8 +26,8 @@ public:
     Kind kind() const;
     QStringList suffix() const;
     QString description() const;
-    const bool autoReload() const;
-    const Kind dependant() const;
+    bool autoReload() const;
+    Kind dependant() const;
 
     bool operator ==(const FileType& fileType) const;
     bool operator !=(const FileType& fileType) const;

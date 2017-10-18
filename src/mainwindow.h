@@ -31,6 +31,9 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
+class GAMSProcess;
+class GAMSLibProcess;
+
 struct RecentData {
     int editFileId = -1;
     QPlainTextEdit* editor = nullptr;
@@ -51,10 +54,7 @@ signals:
     void processOutput(QString text);
 
 private slots:
-    void clearProc(int exitCode);
-    void addLine(QProcess::ProcessChannel channel, QString text);
-    void readyStdOut();
-    void readyStdErr();
+    void addProcessData(QProcess::ProcessChannel channel, QString text);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
@@ -63,6 +63,7 @@ private slots:
     void fileClosed(int fileId);
     void appendOutput(QString text);
     void postGamsRun();
+    void postGamsLibRun();
     // View
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -112,17 +113,13 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    //TODO(CW): This needs refactoring in order to remove global variables and encapsulate the process and all its required information
-    QProcess *mProc = nullptr;
-    QFileInfo mProcLstFileInfo;
-    FileGroupContext* mProcFgc = nullptr;
+    GAMSProcess *mProcess = nullptr;
+    GAMSLibProcess *mLibProcess = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
-    QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     bool hasWelcomePage = false;
-
 };
 
 }
