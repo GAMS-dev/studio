@@ -621,10 +621,16 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
 void MainWindow::on_actionGDX_Viewer_triggered()
 {
-    gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer("C:\\tmp\\file.gdx", GAMSInfo::systemDir());
-    int idx = ui->mainTab->addTab(gdxViewer, "GDX Viewer");
-    ui->mainTab->setCurrentIndex(idx);
-
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open GDX file...",
+                                                 mRecent.path,
+                                                 tr("GDX file (*.gdx);;"
+                                                 "All files (*)"));
+    if (!fileName.isEmpty()) {
+        gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer(fileName, GAMSInfo::systemDir());
+        int idx = ui->mainTab->addTab(gdxViewer, "GDX Viewer");
+        ui->mainTab->setCurrentIndex(idx);
+    }
 }
 
 }

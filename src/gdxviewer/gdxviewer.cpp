@@ -1,4 +1,5 @@
 #include "gdxviewer.h"
+#include "gdxsymboltablemodel.h"
 #include "exception.h"
 
 namespace gams {
@@ -23,6 +24,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     if (errNr) reportIoError(errNr,"gdxOpenRead");
 
     mGdxSymbols =loadGDXSymbol();
+
+    ui.tvSymbols->setModel(new GdxSymbolTableModel(mGdxSymbols));
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)

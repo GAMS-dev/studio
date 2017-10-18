@@ -410,7 +410,7 @@
   </action>
   <action name="actionGDX_Viewer">
    <property name="text">
-    <string>GDX Viewer</string>
+    <string>Open GDX File</string>
    </property>
   </action>
  </widget>
