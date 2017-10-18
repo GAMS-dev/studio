@@ -18,7 +18,7 @@ FileType::Kind FileType::kind() const
 }
 
 
-const FileType::Kind FileType::dependant() const
+FileType::Kind FileType::dependant() const
 {
     return mDependant;
 }
@@ -43,7 +43,7 @@ bool FileType::operator !=(const FileType::Kind& kind) const
     return (mKind != kind);
 }
 
-const bool FileType::autoReload() const
+bool FileType::autoReload() const
 {
     return mAutoReload;
 }
