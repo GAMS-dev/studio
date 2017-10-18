@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "abstractprocess.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 
 #include <QDir>
 
@@ -27,7 +27,7 @@ namespace studio {
 
 AbstractProcess::AbstractProcess(QObject *parent)
     : QObject (parent),
-      mSystemDir(GAMSInfo::systemDir()),
+      mSystemDir(GAMSPaths::systemDir()),
       mProcess(this)
 {
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);

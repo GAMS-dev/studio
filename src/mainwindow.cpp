@@ -24,7 +24,7 @@
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
@@ -476,7 +476,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
         mLibProcess->setApp(item->library()->execName());
         mLibProcess->setModelName(item->name());
         mLibProcess->setInputFile(fileInfo.completeBaseName() + ".gms");
-        mLibProcess->setTargetDir(GAMSInfo::defaultWorkingDir());
+        mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
         mLibProcess->execute();
         connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
         connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);

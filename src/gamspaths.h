@@ -25,14 +25,14 @@
 namespace gams {
 namespace studio {
 
-class GAMSInfo
+class GAMSPaths
 {
 public:
     static QString systemDir();
     static QString defaultWorkingDir();
 
 private:
-    GAMSInfo();
+    GAMSPaths();
 };
 
 }

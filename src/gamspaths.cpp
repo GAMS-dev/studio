@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamsinfo.h"
+#include "gamspaths.h"
 
 #include <QDir>
 #include <QFile>
@@ -27,12 +27,12 @@
 namespace gams {
 namespace studio {
 
-GAMSInfo::GAMSInfo()
+GAMSPaths::GAMSPaths()
 {
 
 }
 
-QString GAMSInfo::systemDir() {
+QString GAMSPaths::systemDir() {
 #if defined(DISTRIB_BUILD) // For the GAMS distribution build
 #ifdef __linux__ // Linux AppImage
     return QDir::currentPath().append("/..");
@@ -48,7 +48,7 @@ QString GAMSInfo::systemDir() {
 #endif
 }
 
-QString GAMSInfo::defaultWorkingDir()
+QString GAMSPaths::defaultWorkingDir()
 {
     const QString currentDir = ".";
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);

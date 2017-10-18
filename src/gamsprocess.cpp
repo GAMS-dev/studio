@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsprocess.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 #include "filegroupcontext.h"
 
 #include <QDebug>
@@ -80,7 +80,7 @@ QString GAMSProcess::aboutGAMS()
 {
     QProcess process;
     QStringList args({"?", "lo=3"});
-    process.start(AbstractProcess::nativeAppPath(GAMSInfo::systemDir(), App), args);
+    process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();
