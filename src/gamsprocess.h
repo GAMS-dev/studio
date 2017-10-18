@@ -27,6 +27,7 @@ public:
     QString workingDir() const;
 
     void setInputFile(const QString &file);
+    QString inputFile() const;
 
     void execute();
     static QString aboutGAMS();
@@ -45,7 +46,7 @@ private:
     static const QString App;
     QString mSystemDir;
     QString mWorkingDir;
-    QString mGmsFile;
+    QString mInputFile;
     QProcess mProcess;
     QMutex mOutputMutex;
 };

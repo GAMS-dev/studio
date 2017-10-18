@@ -56,14 +56,19 @@ QString GAMSProcess::workingDir() const
 
 void GAMSProcess::setInputFile(const QString &file)
 {
-    mGmsFile = file;
+    mInputFile = file;
+}
+
+QString GAMSProcess::inputFile() const
+{
+    return mInputFile;
 }
 
 void GAMSProcess::execute()
 {
     qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
-    auto gms = QDir::toNativeSeparators(mGmsFile);
+    auto gms = QDir::toNativeSeparators(mInputFile);
     //TODO(CW)
     // we need this at least on wnidows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted

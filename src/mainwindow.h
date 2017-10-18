@@ -53,7 +53,6 @@ signals:
     void processOutput(QString text);
 
 private slots:
-    void clearProc(int exitCode);
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
@@ -109,10 +108,9 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    //TODO(CW): This needs refactoring in order to remove global variables and encapsulate the process and all its required information
+    // TODO(CW): This needs refactoring in order to remove global variables and
+    // encapsulate the process and all its required information
     GAMSProcess *mProcess = nullptr;
-    //QProcess *mProc = nullptr;
-    QFileInfo mProcLstFileInfo;
     FileGroupContext* mProcFgc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;

@@ -225,16 +225,6 @@ void MainWindow::on_actionClose_All_Except_triggered()
     }
 }
 
-void MainWindow::clearProc(int exitCode)
-{
-    Q_UNUSED(exitCode);
-    if (mProcess) {
-        qDebug() << "clear process";
-        mProcess->deleteLater();
-        mProcess = nullptr;
-    }
-}
-
 void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
@@ -350,10 +340,16 @@ void MainWindow::appendOutput(QString text)
 
 void MainWindow::postGamsRun()
 {
-    if(mProcLstFileInfo.exists())
-        openOrShow(mProcLstFileInfo.absoluteFilePath(), mProcFgc);
+    QFileInfo fileInfo(mProcess->inputFile());
+    if(fileInfo.exists())
+        openOrShow(fileInfo.completeBaseName() + ".lst", mProcFgc); // TODO: add .log and others)
     else
-        qDebug() << mProcLstFileInfo.absoluteFilePath() << " not found. aborting.";
+        qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
+    if (mProcess) {
+        qDebug() << "clear process";
+        mProcess->deleteLater();
+        mProcess = nullptr;
+    }
     ui->actionRun->setEnabled(true);
 }
 
@@ -484,7 +480,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         if (!ed) continue;
         CrudState cs = fc->crudState();
         if (cs == CrudState::eUpdate || cs == CrudState::eCreate) {
-            qDebug() << "CRUD-state: " << (int)cs;
+            qDebug() << "CRUD-state: " << static_cast<int>(cs);
             openIds << fc->id();
             lastName = fc->location();
         }
@@ -531,12 +527,6 @@ void MainWindow::on_actionRun_triggered()
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
-    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
-    mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
-
-//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::postGamsRun);
-//    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
-
     mProcess = new GAMSProcess(this);
     mProcess->setWorkingDir(gmsFileInfo.path());
     mProcess->setInputFile(gmsFilePath);
@@ -544,7 +534,6 @@ void MainWindow::on_actionRun_triggered()
 
     connect(mProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
     connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
-    connect(mProcess, &GAMSProcess::finished, this, &MainWindow::clearProc);
 }
 
 void MainWindow::openOrShow(FileContext* fileContext)
