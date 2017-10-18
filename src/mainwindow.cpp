@@ -362,17 +362,12 @@ void MainWindow::appendOutput(QString text)
 
 void MainWindow::postGamsRun()
 {
-    qDebug() << "MainWindow::postGamsRun()";
-    qDebug() << "InputFile: " << mProcess->inputFile();
-    auto test = QDir(mProcess->workingDir()).filePath(mProcess->inputFile());
-    qDebug() << "Test: " << test;
-    QFileInfo fileInfo(test);//(mProcess->inputFile());
+    QFileInfo fileInfo(mProcess->inputFile());
     if(fileInfo.exists()) // TODO: add .log and others)
-        openOrShow(fileInfo.completeBaseName() + ".lst", mProcess->context());
+        openOrShow(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst", mProcess->context());
     else
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     if (mProcess) {
-        qDebug() << "clear process";
         mProcess->deleteLater();
         mProcess = nullptr;
     }
@@ -383,7 +378,6 @@ void MainWindow::postGamsLibRun()
 {// TODO(AF) Are there models without a GMS file? How to handle them?"
     openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
     if (mLibProcess) {
-        qDebug() << "clear process";
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
     }
