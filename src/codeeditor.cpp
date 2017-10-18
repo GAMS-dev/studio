@@ -214,6 +214,15 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
+void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->ignore(); // paste to parent widget
+    } else {
+        QPlainTextEdit::dragEnterEvent(e);
+    }
+}
+
 void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;

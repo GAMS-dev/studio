@@ -125,7 +125,7 @@ public:
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-    FileSystemContext* findFile(QString filePath);
+    FileSystemContext* findFile(QString filePath, FileGroupContext* fileGroup = nullptr);
     QList<FileContext*> openFiles(FileGroupContext* fileGroup = nullptr);
     void editorActivated(QPlainTextEdit* edit);
 

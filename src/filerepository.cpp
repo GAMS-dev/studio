@@ -201,14 +201,16 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
-FileSystemContext* FileRepository::findFile(QString filePath)
+FileSystemContext* FileRepository::findFile(QString filePath, FileGroupContext* fileGroup)
 {
-    FileSystemContext* fsc = mTreeRoot->findFile(filePath);
+    FileGroupContext *group = fileGroup ? fileGroup : mTreeRoot;
+    FileSystemContext* fsc = group->findFile(filePath);
     return fsc;
 }
 
 QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
 {
+    // TODO(JM) rename this to modifiedFiles()
     if (!fileGroup)
         fileGroup = mTreeRoot;
     QList<FileContext*> res;
@@ -224,7 +226,7 @@ QList<FileContext*> FileRepository::openFiles(FileGroupContext *fileGroup)
         }
         if (fileGroup->childEntry(i)->type() == FileSystemContext::File) {
             FileContext *fc = static_cast<FileContext*>(fileGroup->childEntry(i));
-            if (fc->crudState() == CrudState::eUpdate) {
+            if (fc->isModified()) {
                 res << fc;
             }
         }

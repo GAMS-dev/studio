@@ -27,13 +27,6 @@
 namespace gams {
 namespace studio {
 
-enum class CrudState {
-    eCreate,
-    eRead,
-    eUpdate,
-    eDelete
-};
-
 class FileGroupContext;
 
 ///
@@ -58,9 +51,7 @@ public:
     /// \return The caption of this node.
     virtual const QString caption();
 
-    /// The CRUD-state of the node (Create,Read,Update,Delete).
-    /// \return The CRUD-state of the node.
-    CrudState crudState() const;
+    bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
@@ -114,20 +105,17 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
-public slots:
-    /// Slot to handle a change of the assigned Document
-    void modificationChanged(bool modiState);
-
 protected slots:
     void onFileChangedExtern(QString filepath);
+
+    /// Slot to handle a change of the assigned Document
+    void modificationChanged(bool modiState);
 
 protected:
     friend class FileRepository;
     FileContext(FileGroupContext *parent, int id, QString name, QString location);
-    void setCrudState(CrudState state);
 
 private:
-    CrudState mCrudState = CrudState::eCreate;
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
 
