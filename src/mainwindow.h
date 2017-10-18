@@ -108,17 +108,12 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    // TODO(CW): This needs refactoring in order to remove global variables and
-    // encapsulate the process and all its required information
     GAMSProcess *mProcess = nullptr;
-    FileGroupContext* mProcFgc = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
-    QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     bool hasWelcomePage = false;
-
 };
 
 }

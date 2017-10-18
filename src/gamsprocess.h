@@ -8,6 +8,8 @@
 namespace gams {
 namespace studio {
 
+class FileGroupContext;
+
 class GAMSProcess
         : public QObject
 {
@@ -29,6 +31,9 @@ public:
     void setInputFile(const QString &file);
     QString inputFile() const;
 
+    void setContext(FileGroupContext *context);
+    FileGroupContext* context() const;
+
     void execute();
     static QString aboutGAMS();
 
@@ -49,6 +54,7 @@ private:
     QString mInputFile;
     QProcess mProcess;
     QMutex mOutputMutex;
+    FileGroupContext *mContext = nullptr;
 };
 
 } // namespace studio

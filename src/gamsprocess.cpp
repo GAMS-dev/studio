@@ -1,5 +1,6 @@
 #include "gamsprocess.h"
 #include "gamsinfo.h"
+#include "filegroupcontext.h"
 
 #include <QDebug>
 #include <QDir>
@@ -62,6 +63,16 @@ void GAMSProcess::setInputFile(const QString &file)
 QString GAMSProcess::inputFile() const
 {
     return mInputFile;
+}
+
+void GAMSProcess::setContext(FileGroupContext *context)
+{
+    mContext = context;
+}
+
+FileGroupContext* GAMSProcess::context() const
+{
+    return mContext;
 }
 
 void GAMSProcess::execute()

@@ -341,8 +341,8 @@ void MainWindow::appendOutput(QString text)
 void MainWindow::postGamsRun()
 {
     QFileInfo fileInfo(mProcess->inputFile());
-    if(fileInfo.exists())
-        openOrShow(fileInfo.completeBaseName() + ".lst", mProcFgc); // TODO: add .log and others)
+    if(fileInfo.exists()) // TODO: add .log and others)
+        openOrShow(fileInfo.completeBaseName() + ".lst", mProcess->context());
     else
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     if (mProcess) {
@@ -517,7 +517,6 @@ void MainWindow::on_actionRun_triggered()
 {// TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    mProcFgc = fgc;
     if (!fgc)
         return;
 
@@ -530,6 +529,7 @@ void MainWindow::on_actionRun_triggered()
     mProcess = new GAMSProcess(this);
     mProcess->setWorkingDir(gmsFileInfo.path());
     mProcess->setInputFile(gmsFilePath);
+    mProcess->setContext(fgc);
     mProcess->execute();
 
     connect(mProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
