@@ -37,15 +37,15 @@ public:
     void execute();
     static QString aboutGAMS();
 
-public slots:
+signals:
+    void finished(int exitCode);
+    void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
+
+private slots:
     void completed(int exitCode);
     void readStdOut();
     void readStdErr();
     void readStdChannel(QProcess::ProcessChannel channel);
-
-signals:
-    void finished(int exitCode);
-    void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
 
 private:
     static const QString App;
