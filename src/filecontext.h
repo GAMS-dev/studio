@@ -21,61 +21,18 @@
 #define FILECONTEXT_H
 
 #include "filesystemcontext.h"
+#include "filemetrics.h"
 #include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
-// TODO(JM) define extra type class that gathers all type info (enum, suffix, description, icon, ...)
-enum class FileType {
-    ftGsp,      ///< GAMS Studio Project file
-    ftGms,      ///< GAMS source file
-    ftInc,      ///< GAMS include file
-    ftTxt,      ///< Plain text file
-    ftLog,      ///< LOG output file
-    ftLst,      ///< GAMS result file
-    ftLxi,      ///< GAMS result file index
-};
-
-enum class CrudState { // TODO(AF) move this to the abstract level?
-    eCreate,
-    eRead,
-    eUpdate,
-    eDelete
-};
-
-///
-/// The FileMetrics class stores current metrics of a file
-///
-class FileMetrics
-{
-    bool mExists;
-    qint64 mSize;
-    QDateTime mCreated;
-    QDateTime mModified;
-public:
-    enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
-    FileMetrics(): mExists(false), mSize(0) {
-    }
-    FileMetrics(QFileInfo fileInfo) {
-        mExists = fileInfo.exists();
-        mSize = mExists ? fileInfo.size() : 0;
-        mCreated = mExists ? fileInfo.created() : QDateTime();
-        mModified = mExists ? fileInfo.lastModified() : QDateTime();
-    }
-    ChangeKind check(QFileInfo fileInfo) {
-        if (mModified.isNull()) return ckSkip;
-        if (!fileInfo.exists()) {
-            // TODO(JM) #106: find a file in the path fitting created, modified and size values
-            return ckNotFound;
-        }
-        if (fileInfo.lastModified() != mModified) return ckModified;
-        return ckUnchanged;
-    }
-};
-
 class FileGroupContext;
 
+///
+/// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
+/// \see FileSystemContext, FileGroupContext, FileActionContext
+///
 class FileContext : public FileSystemContext
 {
     Q_OBJECT
@@ -94,9 +51,7 @@ public:
     /// \return The caption of this node.
     virtual const QString caption();
 
-    /// The CRUD-state of the node (Create,Read,Update,Delete).
-    /// \return The CRUD-state of the node.
-    CrudState crudState() const;
+    bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
@@ -139,6 +94,8 @@ public:
     /// \return The current QTextDocument
     QTextDocument* document();
 
+    const FileMetrics& metrics();
+
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
@@ -148,20 +105,17 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
-public slots:
-    /// Slot to handle a change of the assigned Document
-    void modificationChanged(bool modiState);
-
 protected slots:
     void onFileChangedExtern(QString filepath);
+
+    /// Slot to handle a change of the assigned Document
+    void modificationChanged(bool modiState);
 
 protected:
     friend class FileRepository;
     FileContext(FileGroupContext *parent, int id, QString name, QString location);
-    void setCrudState(CrudState state);
 
 private:
-    CrudState mCrudState = CrudState::eCreate;
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
 

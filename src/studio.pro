@@ -47,9 +47,11 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/library.cpp     \
     modeldialog/librarymodel.cpp \
-    gamsprocess.cpp \
-    gamslibprocess.cpp \
-    abstractprocess.cpp
+    gamsprocess.cpp     \
+    gamslibprocess.cpp  \
+    abstractprocess.cpp \
+    filetype.cpp        \
+    filemetrics.cpp
 
 
 HEADERS += \
@@ -71,9 +73,11 @@ HEADERS += \
     modeldialog/libraryitem.h   \
     modeldialog/library.h       \
     modeldialog/librarymodel.h \
-    gamsprocess.h \
-    gamslibprocess.h \
-    abstractprocess.h
+    gamsprocess.h       \
+    gamslibprocess.h    \
+    abstractprocess.h   \
+    filetype.h          \
+    filemetrics.h
 
 FORMS += \
     welcomepage.ui  \

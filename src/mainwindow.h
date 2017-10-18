@@ -101,12 +101,15 @@ private slots:
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dropEvent(QDropEvent *e);
 
 private:
     void initTabs();
     void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent);
     FileContext* addContext(const QString &path, const QString &fileName);
+    void openContext(const QModelIndex& index);
 
 private:
     Ui::MainWindow *ui;

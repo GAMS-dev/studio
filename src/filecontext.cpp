@@ -30,22 +30,17 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
     : FileSystemContext(parent, id, name, location, FileSystemContext::File)
 {
-    mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
+    mMetrics = FileMetrics(QFileInfo(location));
 }
 
-void FileContext::setCrudState(CrudState state)
+bool FileContext::isModified()
 {
-    mCrudState = state;
-}
-
-CrudState FileContext::crudState() const
-{
-    return mCrudState;
+    return document() && document()->isModified();
 }
 
 void FileContext::save()
 {
-    if (document() && mCrudState != CrudState::eRead) {
+    if (isModified()) {
         if (location().isEmpty())
             EXCEPT() << "Can't save without file name";
         QFile file(location());
@@ -60,7 +55,6 @@ void FileContext::save()
         file.close();
         mMetrics = FileMetrics(QFileInfo(file));
         document()->setModified(false);
-        setCrudState(CrudState::eRead);
     }
 }
 
@@ -119,16 +113,21 @@ void FileContext::setLocation(const QString& location)
 {
     if (location.isEmpty())
         EXCEPT() << "File can't be set to an empty location.";
+    QFileInfo newLoc(location);
+    if (QFileInfo(mLocation) == newLoc)
+        return; // nothing to do
+    if (newLoc.exists())
+        EXCEPT() << "Invalid renaming: File '" << location << "' already exists.";
     // TODO(JM) adapt parent group
-    // TODO (JM): handling if the file already exists
+    if (document())
+        document()->setModified(true);
     FileSystemContext::setLocation(location);
-    setCrudState(CrudState::eCreate);
+    mMetrics = FileMetrics(newLoc);
 }
 
 QIcon FileContext::icon()
 {
-    QFileInfo fi(mLocation);
-    if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
+    if (mMetrics.fileType() == FileType::Gms)
         return QIcon(":/img/gams-w");
     return QIcon(":/img/file-alt");
 }
@@ -152,12 +151,13 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
     int i = mEditors.indexOf(edit);
     if (i < 0)
         return;
+    bool wasModified = isModified();
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         unsetFlag(FileSystemContext::cfActive);
-        mCrudState = CrudState::eRead;
+        if (wasModified) emit changed(mId);
     }
 }
 
@@ -185,6 +185,11 @@ QTextDocument*FileContext::document()
     return mEditors.first()->document();
 }
 
+const FileMetrics& FileContext::metrics()
+{
+    return mMetrics;
+}
+
 FileContext::~FileContext()
 {
     removeAllEditors();
@@ -203,22 +208,13 @@ void FileContext::setCodec(const QString& codec)
 
 const QString FileContext::caption()
 {
-    return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
+    return mName + (isModified() ? "*" : "");
 }
 
 void FileContext::modificationChanged(bool modiState)
 {
-    // TODO(JM) check what todo on CrudState::eDelete
-    if (modiState && mCrudState != CrudState::eUpdate) {
-        setCrudState(CrudState::eUpdate);
-        emit changed(mId);
-        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
-    }
-    if (!modiState && mCrudState == CrudState::eUpdate) {
-        setCrudState(CrudState::eRead);
-        emit changed(mId);
-        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
-    }
+    emit changed(mId);
+    qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
 }
 
 void FileContext::onFileChangedExtern(QString filepath)

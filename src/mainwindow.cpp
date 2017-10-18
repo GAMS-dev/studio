@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setAcceptDrops(true);
 
     ui->projectView->setModel(&mFileRepo);
     ui->projectView->setRootIndex(mFileRepo.rootTreeModelIndex());
@@ -84,18 +85,29 @@ void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
+    qDebug() << " opening editor";
     if (fc) {
-        CodeEditor *codeEdit = new CodeEditor(this);
-        fc->addEditor(codeEdit);
-        int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
-        tabWidget->setTabToolTip(tabIndex, fc->location());
-        tabWidget->setCurrentIndex(tabIndex);
-        fc->load(codecName);
-        QTextCursor tc = codeEdit->textCursor();
-        tc.movePosition(QTextCursor::Start);
-        codeEdit->setTextCursor(tc);
-        ensureCodecMenu(fc->codec());
-        connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+        qDebug() << " --- valid";
+        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+            qDebug() << "     --- real";
+            CodeEditor *codeEdit = new CodeEditor(this);
+            fc->addEditor(codeEdit);
+            int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            tabWidget->setTabToolTip(tabIndex, fc->location());
+            tabWidget->setCurrentIndex(tabIndex);
+            fc->load(codecName);
+            QTextCursor tc = codeEdit->textCursor();
+            tc.movePosition(QTextCursor::Start);
+            codeEdit->setTextCursor(tc);
+            ensureCodecMenu(fc->codec());
+            if (fc->metrics().fileType() == FileType::Gms) {
+                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+            } else {
+                codeEdit->setReadOnly(true);
+                codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            }
+        }
+        // TODO(JM) other kinds
     }
 }
 
@@ -161,7 +173,7 @@ void MainWindow::on_actionSave_triggered()
     if (!fc) return;
     if (fc->location().isEmpty()) {
         on_actionSave_As_triggered();
-    } else if (fc->crudState() == CrudState::eUpdate) {
+    } else if (fc->isModified()) {
         fc->save();
     }
 }
@@ -272,30 +284,37 @@ void MainWindow::fileChangedExtern(int fileId)
     // file has not been loaded: nothing to do
     if (!fc->document()) return;
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File modified");
+    int choice;
 
     // TODO(JM) Handle other file-types
+    if (fc->metrics().fileType().autoReload()) {
+        choice = QMessageBox::Yes;
 
-    // file is loaded but unchanged: ASK, if it should be reloaded
-    if (fc->crudState() == CrudState::eRead) {
-        msgBox.setText(fc->location()+" has been modified externally.");
-        msgBox.setInformativeText("Reload?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    } else {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File modified");
+
+        // file is loaded but unchanged: ASK, if it should be reloaded
+        if (fc->document() && !fc->isModified()) {
+            msgBox.setText(fc->location()+" has been modified externally.");
+            msgBox.setInformativeText("Reload?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        }
+
+        // file has been changed in the editor: ASK, if intern or extern version should be kept.
+        if (fc->isModified()) {
+            msgBox.setText(fc->location() + " has been modified concurrently.");
+            msgBox.setInformativeText("Do you want to"
+                                      "\n- <b>Discard</b> your changes and reload the file"
+                                      "\n- <b>Ignore</b> the external changes and keep your changes");
+            msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
+        }
+
+        msgBox.setDefaultButton(QMessageBox::NoButton);
+        choice = msgBox.exec();
     }
 
-    // file has been changed in the editor: ASK, if intern or extern version should be kept.
-    if (fc->crudState() == CrudState::eUpdate) {
-        msgBox.setText(fc->location() + " has been modified concurrently.");
-        msgBox.setInformativeText("Do you want to"
-                                  "\n- <b>Discard</b> your changes and reload the file"
-                                  "\n- <b>Ignore</b> the external changes and keep your changes");
-        msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
-    }
-
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-    if (ret == QMessageBox::Yes || ret == QMessageBox::Discard) {
+    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
         fc->load(fc->codec());
     }
 }
@@ -419,7 +438,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 
     int ret = QMessageBox::Discard;
-    if (fc->editors().size() == 1 && fc->crudState() == CrudState::eUpdate) {
+    if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
         QMessageBox msgBox;
         msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
@@ -428,7 +447,9 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
     }
-    if (ret == QMessageBox::Save) fc->save();
+    if (ret == QMessageBox::Save)
+        fc->save();
+
     if (ret != QMessageBox::Cancel) {
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
@@ -470,45 +491,33 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
 {
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShow(fc);
-    }
+    openContext(index);
 }
 
 void MainWindow::on_projectView_clicked(const QModelIndex& index)
 {
-    on_projectView_doubleClicked(index);
+    openContext(index);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    QSet<int> openIds;
-    QString lastName;
-    // TODO(JM) use new function FileRepository::openFiles()
-    for (QPlainTextEdit *ed: mFileRepo.editors(mFileRepo.groupContext(mFileRepo.rootTreeModelIndex())->id())) {
-        FileContext *fc = mFileRepo.fileContext(ed);
-        if (!ed) continue;
-        CrudState cs = fc->crudState();
-        if (cs == CrudState::eUpdate || cs == CrudState::eCreate) {
-            qDebug() << "CRUD-state: " << static_cast<int>(cs);
-            openIds << fc->id();
-            lastName = fc->location();
-        }
-    }
-    if (openIds.size() > 0) {
+    QList<FileContext*> oFiles = mFileRepo.openFiles();
+    if (oFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
-        QString filesText = openIds.size()==1 ? lastName+" has been modified."
-                                              : QString::number(openIds.size())+" files have been modified";
+        QString filesText = oFiles.size()==1 ? oFiles.first()->location() + " has been modified."
+                                             : QString::number(oFiles.size())+" files have been modified";
         msgBox.setText(filesText);
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
         if (ret == QMessageBox::Save) {
-            // TODO(JM) iterate over all files to save.
+            for (FileContext* fc: oFiles) {
+                if (fc->isModified()) {
+                    fc->save();
+                }
+            }
         }
         if (ret == QMessageBox::Cancel) {
             event->setAccepted(false);
@@ -519,9 +528,39 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-        on_projectView_doubleClicked(ui->projectView->currentIndex());
+        openContext(ui->projectView->currentIndex());
     } else {
         QMainWindow::keyPressEvent(event);
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->setDropAction(Qt::CopyAction);
+        e->accept();
+    } else {
+        e->ignore();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->accept();
+        QStringList pathList;
+        for (QUrl url: e->mimeData()->urls()) {
+            if (pathList.size() > 5) {
+                break;
+            }
+            pathList << url.toLocalFile();
+        }
+        for (QString fName: pathList) {
+            QFileInfo fi(fName);
+            if (QFileInfo(fName).isFile()) {
+                openOrShow(fi.canonicalFilePath(), nullptr);
+            }
+        }
     }
 }
 
@@ -557,7 +596,6 @@ void MainWindow::openOrShow(FileContext* fileContext)
     } else {
         createEdit(ui->mainTab, fileContext->id());
     }
-    qDebug() << "openOrShow();";
     if (ui->mainTab->currentWidget())
         ui->mainTab->currentWidget()->setFocus();
 }
@@ -565,13 +603,19 @@ void MainWindow::openOrShow(FileContext* fileContext)
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
 {
     QFileInfo fileInfo(filePath);
-    QModelIndex qmi = mFileRepo.findEntry(fileInfo.fileName(), fileInfo.filePath(), mFileRepo.index(parent));
-    if (!qmi.isValid()) {
+    FileSystemContext *fsc = mFileRepo.findFile(filePath, parent);
+    if (!fsc) {
         // not yet opened by user, open file in new tab
-        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.fileName());
-        qmi = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
+        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+        QModelIndex fileMI = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
+        FileContext *fc = mFileRepo.fileContext(fileMI);
+        fsc = fc;
+        createEdit(ui->mainTab, fc->id());
+        if (ui->mainTab->currentWidget())
+            ui->mainTab->currentWidget()->setFocus();
+        ui->projectView->expand(groupMI);
     }
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(qmi.internalPointer());
+    mRecent.path = fileInfo.path();
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
@@ -583,34 +627,29 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
+
         // TODO(JM) extend for each possible type
-        qDebug() << "Type: " << fInfo.suffix();
-        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
-        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
+        FileType fType = FileType::from(fInfo.suffix());
+
+        if (fType == FileType::Gms) {
             // Create node for GIST directory and load all files of known filetypes
-            FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
-            if(hit == nullptr) {
-                QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
-
-                QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-                FileContext *fc = mFileRepo.fileContext(fileMI);
-                createEdit(ui->mainTab, fc->id());
-                if (ui->mainTab->currentWidget())
-                    ui->mainTab->currentWidget()->setFocus();
-                ui->projectView->expand(groupMI);
-                mRecent.path = fInfo.path();
-            } else {
-                auto groupContext = static_cast<FileGroupContext*>(mFileRepo.findFile(fInfo.absolutePath() +
-                                                                                      "/" + fInfo.baseName()));
-                openOrShow(fInfo.filePath(), groupContext);
-            }
+            openOrShow(fInfo.filePath(), nullptr);
         }
-        if (fType == FileType::ftGsp) {
+        if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         }
     }
     return fc;
+}
+
+void MainWindow::openContext(const QModelIndex& index)
+{
+    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        openOrShow(fc);
+    }
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)
