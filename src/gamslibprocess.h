@@ -34,9 +34,9 @@ public:
     GAMSLibProcess(QObject *parent = Q_NULLPTR);
 
     void setApp(const QString &app);
-    virtual QString app();
+    QString app() override;
 
-    virtual QString nativeAppPath();
+    QString nativeAppPath() override;
 
     void setTargetDir(const QString &targetDir);
     QString targetDir() const;
@@ -47,7 +47,7 @@ public:
     void setModelName(const QString &modelName);
     QString modelName() const;
 
-    virtual void execute();
+    void execute() override;
 
 private:
     QString mApp;
