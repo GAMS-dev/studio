@@ -1,5 +1,4 @@
 #include "gdxsymbol.h"
-#include <qDebug>
 
 namespace gams {
 namespace studio {
