@@ -83,10 +83,11 @@ SOURCES += \
     abstractprocess.cpp \
     filetype.cpp        \
     filemetrics.cpp \
-    gamspaths.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxsymbol.cpp \
-    gdxviewer/gdxsymboltable.cpp
+    gdxviewer/gdxsymboltable.cpp \
+    gamspaths.cpp \
+    filetreemodel.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -111,10 +112,11 @@ HEADERS += \
     abstractprocess.h   \
     filetype.h \
     filemetrics.h \
-    gamspaths.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
-    gdxviewer/gdxsymboltable.h
+    gdxviewer/gdxsymboltable.h \
+    gamspaths.h \
+    filetreemodel.h
 
 FORMS += \
     welcomepage.ui  \

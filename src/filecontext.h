@@ -113,7 +113,7 @@ protected slots:
 
 protected:
     friend class FileRepository;
-    FileContext(FileGroupContext *parent, int id, QString name, QString location);
+    FileContext(int id, QString name, QString location);
 
 private:
     FileMetrics mMetrics;

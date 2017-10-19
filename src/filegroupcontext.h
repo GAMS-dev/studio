@@ -56,7 +56,7 @@ protected:
     friend class FileRepository;
     friend class FileSystemContext;
 
-    FileGroupContext(FileGroupContext *parent, int id, QString name, QString location, QString runInfo);
+    FileGroupContext(int id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);

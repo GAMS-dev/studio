@@ -21,6 +21,7 @@
 #define FILEREPOSITORY_H
 
 #include <QtWidgets>
+#include "filetreemodel.h"
 #include "fileactioncontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
@@ -37,18 +38,12 @@ typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
 /// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
 /// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
 ///
-class FileRepository : public QAbstractItemModel
+class FileRepository : public QObject
 {
     Q_OBJECT
 public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
-
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    QModelIndex parent(const QModelIndex &child) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
     /// Defines actions for the <c>FileRepository</c>. For each action a <c>FileActionContext</c>-node is generated
     /// that is shown only, if there are no other nodes in the tree.
@@ -100,27 +95,23 @@ public:
 
     QList<QPlainTextEdit*> editors(int fileId);
 
-    QModelIndex index(FileSystemContext* entry);
-
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
     /// \param location The location of the directory.
     /// \param projectFile The file name w/o path of the project OR gms-start-file
     /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
     /// \return Model index to the new FileGroupContext.
-    QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+    FileGroupContext* addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
 
     /// Adds a file node to the file repository.
     /// \param name The filename without path.
     /// \param location The filename with full path.
     /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
     /// \return a <c>QModelIndex</c> to the new node.
-    QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
     void removeNode(FileSystemContext *node);
-    QModelIndex rootTreeModelIndex();
-    QModelIndex rootModelIndex();
-    QModelIndex ensureGroup(const QString& filePath);
+    FileGroupContext* ensureGroup(const QString& filePath);
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
@@ -129,6 +120,7 @@ public:
     QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
+    FileTreeModel* treeModel() const;
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
@@ -150,13 +142,11 @@ private:
 
 private:
     int mNextId;
-    FileGroupContext* mRoot;
-    FileGroupContext* mTreeRoot;
+    FileTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
-    FileSystemContext* mCurrent = nullptr;
 };
 
 } // namespace studio

@@ -57,10 +57,10 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if(child->childCount() > 0) {
-            for(int j = 0; j < child->childCount(); j++) {
+        if (child->childCount() > 0) {
+            for (int j = 0; j < child->childCount(); j++) {
                 FileSystemContext *element = child->childEntry(j)->findFile(filePath);
-                if(element != nullptr) {
+                if (element != nullptr) {
                     return element;
                 }
             }
@@ -184,8 +184,8 @@ void FileGroupContext::directoryChanged(const QString& path)
     deleteLater();
 }
 
-FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, QString runInfo)
-    : FileSystemContext(parent, id, name, location, FileSystemContext::FileGroup)
+FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
+    : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
     mRunInfo = runInfo;
 }

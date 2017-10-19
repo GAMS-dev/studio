@@ -23,17 +23,13 @@
 namespace gams {
 namespace studio {
 
-FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location)
-    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
-{
-    setParentEntry(parent);
-}
+FileSystemContext::FileSystemContext(int id, QString name, QString location)
+    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
+{}
 
-FileSystemContext::FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, ContextType type)
-    : QObject(parent), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
-{
-    setParentEntry(parent);
-}
+FileSystemContext::FileSystemContext(int id, QString name, QString location, ContextType type)
+    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
+{}
 
 void FileSystemContext::checkFlags()
 {

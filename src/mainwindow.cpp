@@ -40,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
 
-    ui->projectView->setModel(&mFileRepo);
-    ui->projectView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    ui->projectView->setModel(mFileRepo.treeModel());
+    ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
@@ -632,14 +632,13 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
     FileSystemContext *fsc = mFileRepo.findFile(filePath, parent);
     if (!fsc) {
         // not yet opened by user, open file in new tab
-        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
-        QModelIndex fileMI = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
-        FileContext *fc = mFileRepo.fileContext(fileMI);
+        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+        FileContext *fc = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), group);
         fsc = fc;
         createEdit(ui->mainTab, fc->id());
         if (ui->mainTab->currentWidget())
             ui->mainTab->currentWidget()->setFocus();
-        ui->projectView->expand(groupMI);
+        ui->projectView->expand(mFileRepo.treeModel()->index(group));
     }
     mRecent.path = fileInfo.path();
     if (fsc->type() != FileSystemContext::File) {
