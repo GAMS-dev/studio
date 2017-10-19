@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include "gdxsymbol.h"
+#include <memory>
 
 namespace gams {
 namespace studio {
@@ -13,7 +14,7 @@ class GdxSymbolTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbolTableModel(QList<GDXSymbol> data, QObject *parent = 0);
+    explicit GdxSymbolTableModel(QList<std::shared_ptr<GDXSymbol>> data, QObject *parent = 0);
 
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -23,9 +24,11 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+
 private:
     QStringList mHeaderText;
-    QList<GDXSymbol> mData;
+    QList<std::shared_ptr<GDXSymbol>> mData;
+
 
 };
 

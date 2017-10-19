@@ -2,6 +2,7 @@
 #define GDXSYMBOL_H
 
 #include <QString>
+#include "gdxcc.h"
 
 namespace gams {
 namespace studio {
@@ -10,7 +11,8 @@ namespace gdxviewer {
 class GDXSymbol
 {
 public:
-    GDXSymbol(int nr, QString name, int dimension, int type, int subType, int recordCount, QString explText);
+    GDXSymbol(int nr, QString name, int dimension, int type, int subType, int recordCount, QString explText, gdxHandle_t gdx);
+    ~GDXSymbol();
 
     int nr() const;
     QString name() const;
@@ -19,6 +21,10 @@ public:
     int subType() const;
     int recordCount() const;
     QString explText() const;
+    void loadData();
+
+    int key(int rowIdx, int colIdx) const;
+    double value(int rowIdx, int colIdx) const;
 
 private:
     int mNr;
@@ -29,6 +35,10 @@ private:
     int mRecordCount;
     QString mExplText;
 
+    gdxHandle_t mGdx;
+
+    int* mKeys;
+    double* mValues;
 };
 
 } // namespace gdxviewer

@@ -1,6 +1,8 @@
 #include "gdxviewer.h"
 #include "gdxsymboltablemodel.h"
+#include "gdxsymboldatatablemodel.h"
 #include "exception.h"
+#include <memory>
 
 namespace gams {
 namespace studio {
@@ -23,9 +25,29 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     gdxOpenRead(mGdx, gdxFile.toLatin1(), &errNr);
     if (errNr) reportIoError(errNr,"gdxOpenRead");
 
-    mGdxSymbols =loadGDXSymbol();
+    mGdxSymbols = loadGDXSymbol();
+    mUel2Label = loadUel2Label();
+
+    gdxClose(mGdx);
+    gdxFree(&mGdx);
 
     ui.tvSymbols->setModel(new GdxSymbolTableModel(mGdxSymbols));
+    connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+}
+
+void GdxViewer::updateSelectedSymbol()
+{
+    QModelIndexList modelIndexList = ui.tvSymbols->selectionModel()->selectedIndexes();
+    if(modelIndexList.size()>0)
+    {
+        GDXSymbolDataTableModel* model = new GDXSymbolDataTableModel(mGdxSymbols.at(modelIndexList.at(0).row()), &mUel2Label);
+        ui.tableView->setModel(model);
+    }
+    else
+    {
+
+    }
+
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
@@ -35,12 +57,11 @@ void GdxViewer::reportIoError(int errNr, QString message)
     throw Exception();
 }
 
-QList<GDXSymbol> GdxViewer::loadGDXSymbol()
+QList<std::shared_ptr<GDXSymbol> > GdxViewer::loadGDXSymbol()
 {
     int symbolCount = 0;
-    int uelCount = 0;
-    gdxSystemInfo(mGdx, &symbolCount, &uelCount);
-    QList<GDXSymbol> symbols;
+    gdxSystemInfo(mGdx, &symbolCount, &mUelCount);
+    QList<std::shared_ptr<GDXSymbol>> symbols;
     for(int i=1; i<symbolCount+1; i++)
     {
         char symName[GMS_SSSIZE];
@@ -51,9 +72,24 @@ QList<GDXSymbol> GdxViewer::loadGDXSymbol()
         int recordCount = 0;
         int userInfo = 0;
         gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
-        symbols.append(GDXSymbol(i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
+        std::shared_ptr<GDXSymbol> sym = std::make_shared<GDXSymbol>(i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mGdx);
+        sym->loadData();
+        symbols.append(sym);
     }
     return symbols;
+}
+
+QStringList GdxViewer::loadUel2Label()
+{
+    QStringList uel2Label;
+    char label[GMS_SSSIZE];
+    int map;
+    for(int i=0; i<=mUelCount; i++)
+    {
+        gdxUMUelGet(mGdx, i, label, &map);
+        uel2Label.append(QString(label));
+    }
+    return uel2Label;
 }
 
 } // namespace gdxviewer
