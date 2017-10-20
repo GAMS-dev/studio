@@ -5,10 +5,6 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
 
-    triggers {
-        cron('0 23 * * *')
-    }
-
     stages {
         stage('Build') {
             steps {
