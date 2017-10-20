@@ -16,6 +16,7 @@ class GdxViewer : public QFrame
 
 public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
+    ~GdxViewer();
     QStringList mUel2Label;
 
     void updateSelectedSymbol();

@@ -35,19 +35,22 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
 }
 
+GdxViewer::~GdxViewer()
+{
+    qDebug() << "destructor of GdxViewer";
+}
+
 void GdxViewer::updateSelectedSymbol()
 {
     QModelIndexList modelIndexList = ui.tvSymbols->selectionModel()->selectedIndexes();
     if(modelIndexList.size()>0)
     {
-        GDXSymbolDataTableModel* model = new GDXSymbolDataTableModel(mGdxSymbols.at(modelIndexList.at(0).row()), &mUel2Label);
-        ui.tableView->setModel(model);
+        ui.tableView->setModel(new GDXSymbolDataTableModel(mGdxSymbols.at(modelIndexList.at(0).row()), &mUel2Label));
     }
     else
     {
 
     }
-
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)

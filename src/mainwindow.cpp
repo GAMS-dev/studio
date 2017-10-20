@@ -417,6 +417,11 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
+    //TODO(CW): a closed tabWidget does not delte the underlying widget object. therefore we need to delete in manually. This needs review
+    gdxviewer::GdxViewer* gdxViewer = dynamic_cast<gdxviewer::GdxViewer*>(ui->mainTab->widget(index));
+    if(gdxViewer)
+        delete gdxViewer;
+
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -627,13 +632,11 @@ void MainWindow::on_actionGDX_Viewer_triggered()
                                                  tr("GDX file (*.gdx);;"
                                                  "All files (*)"));
     if (!fileName.isEmpty()) {
-        gdxviewer::GdxViewer *gdxViewer = new gdxviewer::GdxViewer(fileName, GAMSInfo::systemDir());
-        int idx = ui->mainTab->addTab(gdxViewer, "GDX Viewer");
+        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fileName, GAMSInfo::systemDir()), "GDX Viewer");
         ui->mainTab->setCurrentIndex(idx);
     }
 }
 
 }
 }
-
 

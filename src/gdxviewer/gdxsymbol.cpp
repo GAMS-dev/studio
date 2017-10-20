@@ -1,4 +1,5 @@
 #include "gdxsymbol.h"
+#include <qDebug>
 
 namespace gams {
 namespace studio {
@@ -13,6 +14,7 @@ GDXSymbol::GDXSymbol(int nr, QString name, int dimension, int type, int subType,
 
 GDXSymbol::~GDXSymbol()
 {
+    qDebug() << "in destructor of GDXSymbol";
     delete mKeys;
     delete mValues;
 }

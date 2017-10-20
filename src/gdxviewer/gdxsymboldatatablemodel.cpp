@@ -8,7 +8,6 @@ namespace gdxviewer {
 GDXSymbolDataTableModel::GDXSymbolDataTableModel(std::shared_ptr<GDXSymbol> gdxSymbol, QStringList *uel2Label, QObject *parent)
     : QAbstractTableModel(parent), mGdxSymbol(gdxSymbol), mUel2Label(uel2Label)
 {
-
 }
 
 QVariant GDXSymbolDataTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -33,10 +32,7 @@ QVariant GDXSymbolDataTableModel::headerData(int section, Qt::Orientation orient
                 case GMS_VAL_SCALE: return "Scale";
                 }
             }
-
         }
-
-
     }
     return QVariant();
 }
@@ -72,8 +68,6 @@ QVariant GDXSymbolDataTableModel::data(const QModelIndex &index, int role) const
         else
             return mGdxSymbol->value(index.row(), index.column()-mGdxSymbol->dim());
     }
-
-
     return QVariant();
 }
 
