@@ -34,8 +34,8 @@ public:
     GAMSLibProcess(QObject *parent = Q_NULLPTR);
 
     void setApp(const QString &app);
-    QString app() override;
 
+    QString app() override;
     QString nativeAppPath() override;
 
     void setTargetDir(const QString &targetDir);

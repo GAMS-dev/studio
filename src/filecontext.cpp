@@ -213,8 +213,8 @@ const QString FileContext::caption()
 
 void FileContext::modificationChanged(bool modiState)
 {
+    Q_UNUSED(modiState);
     emit changed(mId);
-    qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
 }
 
 void FileContext::onFileChangedExtern(QString filepath)

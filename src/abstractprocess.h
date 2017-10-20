@@ -36,7 +36,6 @@ protected:
     AbstractProcess(QObject *parent = Q_NULLPTR);
     virtual ~AbstractProcess() {}
 
-public:
     virtual QString app() = 0;
 
     virtual QString nativeAppPath() = 0;
