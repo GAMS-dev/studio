@@ -35,8 +35,8 @@ class GAMSProcess
 public:
     GAMSProcess(QObject *parent = Q_NULLPTR);
 
-    virtual QString app();
-    virtual QString nativeAppPath();
+    QString app() override;
+    QString nativeAppPath() override;
 
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
@@ -44,7 +44,7 @@ public:
     void setContext(FileGroupContext *context);
     FileGroupContext* context() const;
 
-    virtual void execute();
+    void execute() override;
 
     static QString aboutGAMS();
 

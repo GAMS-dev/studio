@@ -32,8 +32,9 @@ class AbstractProcess
 {
     Q_OBJECT
 
-public:
+protected:
     AbstractProcess(QObject *parent = Q_NULLPTR);
+    virtual ~AbstractProcess() {}
 
     virtual QString app() = 0;
 
