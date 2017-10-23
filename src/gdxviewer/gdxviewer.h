@@ -4,6 +4,7 @@
 #include "ui_gdxviewer.h"
 #include "gdxcc.h"
 #include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 #include <memory>
 
 namespace gams {
@@ -17,20 +18,16 @@ class GdxViewer : public QFrame
 public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
-    QStringList mUel2Label;
-
     void updateSelectedSymbol();
 
 private:
     Ui::GdxViewer ui;
-    gdxHandle_t mGdx = nullptr;
     void reportIoError(int errNr, QString message);
-    QList<std::shared_ptr<GDXSymbol>> mGdxSymbols;
-    QList<std::shared_ptr<GDXSymbol>> loadGDXSymbol();
-    int mUelCount;
-    QStringList loadUel2Label();
-};
 
+    GdxSymbolTable* mGdxSymbolTable;
+
+    gdxHandle_t mGdx;
+};
 
 } // namespace gdxviewer
 } // namespace studio

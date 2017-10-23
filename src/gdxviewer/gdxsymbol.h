@@ -1,32 +1,45 @@
-#ifndef GDXSYMBOL_H
-#define GDXSYMBOL_H
+#ifndef GAMS_STUDIO_GDXVIEWER_GDXSYMBOLDATATABLEMODEL_H
+#define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLDATATABLEMODEL_H
 
-#include <QString>
+#include <QAbstractTableModel>
+#include "gdxsymbol.h"
+#include <memory>
 #include "gdxcc.h"
+#include <QString>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class GDXSymbol
+class GdxSymbol : public QAbstractTableModel
 {
+    Q_OBJECT
+
 public:
-    GDXSymbol(int nr, QString name, int dimension, int type, int subType, int recordCount, QString explText, gdxHandle_t gdx);
-    ~GDXSymbol();
+    explicit GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
+    ~GdxSymbol();
+
+    // Header:
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    // Basic functionality:
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     int nr() const;
-    QString name() const;
-    int dim() const;
-    int type() const;
-    int subType() const;
-    int recordCount() const;
-    QString explText() const;
-    void loadData();
 
-    int key(int rowIdx, int colIdx) const;
-    double value(int rowIdx, int colIdx) const;
+    QString name() const;
+
+    int dim() const;
+
+    int type() const;
+
+    int recordCount() const;
 
 private:
+    void loadData();
+
     int mNr;
     QString mName;
     int mDim;
@@ -39,10 +52,13 @@ private:
 
     int* mKeys;
     double* mValues;
+
+    QStringList* mUel2Label;
+
 };
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
 
-#endif // GDXSYMBOL_H
+#endif // GAMS_STUDIO_GDXVIEWER_GDXSYMBOLDATATABLEMODEL_H

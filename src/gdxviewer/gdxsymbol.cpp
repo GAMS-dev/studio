@@ -1,58 +1,93 @@
 #include "gdxsymbol.h"
+#include <memory>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
 
-GDXSymbol::GDXSymbol(int nr, QString name, int dimension, int type, int subType, int recordCount, QString explText, gdxHandle_t gdx)
-    : mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subType), mRecordCount(recordCount), mExplText(explText), mGdx(gdx)
-{
 
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
+{
+    loadData();
 }
 
-GDXSymbol::~GDXSymbol()
+GdxSymbol::~GdxSymbol()
 {
     delete mKeys;
     delete mValues;
 }
 
-int GDXSymbol::nr() const
+QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    return mNr;
+    if (role == Qt::DisplayRole)
+    {
+        if (orientation == Qt::Horizontal)
+        {
+            if (section < mDim)
+                return "Dim " + QString::number(section+1);
+            else
+            {
+                if (mType == GMS_DT_PAR)
+                    return "Value";
+                else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+                switch(section-mDim)
+                {
+                case GMS_VAL_LEVEL: return "Level";
+                case GMS_VAL_MARGINAL: return "Marginal";
+                case GMS_VAL_LOWER: return "Lower";
+                case GMS_VAL_UPPER: return "Upper";
+                case GMS_VAL_SCALE: return "Scale";
+                }
+            }
+        }
+    }
+    return QVariant();
 }
 
-QString GDXSymbol::name() const
+int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
-    return mName;
-}
-
-int GDXSymbol::dim() const
-{
-    return mDim;
-}
-
-int GDXSymbol::type() const
-{
-    return mType;
-}
-
-int GDXSymbol::subType() const
-{
-    return mSubType;
-}
-
-int GDXSymbol::recordCount() const
-{
+    if (parent.isValid())
+        return 0;
     return mRecordCount;
 }
 
-QString GDXSymbol::explText() const
+int GdxSymbol::columnCount(const QModelIndex &parent) const
 {
-    return mExplText;
+    if (parent.isValid())
+        return 0;
+    if (mType == GMS_DT_SET)
+        return mDim;
+    else if (mType == GMS_DT_PAR)
+        return mDim + 1;
+    else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        return mDim + 5;
 }
 
-void GDXSymbol::loadData()
+QVariant GdxSymbol::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    else if (role == Qt::DisplayRole)
+    {
+        if (index.column() < mDim)
+            return mUel2Label->at(mKeys[index.row()*mDim + index.column()]);
+        else
+        {
+            if (mType == GMS_DT_PAR)
+                return mValues[index.row()];
+            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+                return mValues[index.row()*GMS_DT_MAX + index.column()];
+        }
+    }
+    return QVariant();
+}
+
+
+void GdxSymbol::loadData()
 {
     int dummy;
     int dimFirst;
@@ -85,17 +120,29 @@ void GDXSymbol::loadData()
     delete values;
 }
 
-int GDXSymbol::key(int rowIdx, int colIdx) const
+int GdxSymbol::recordCount() const
 {
-    return mKeys[rowIdx*mDim + colIdx];
+    return mRecordCount;
 }
 
-double GDXSymbol::value(int rowIdx, int colIdx) const
+int GdxSymbol::type() const
 {
-    if (mType == GMS_DT_PAR)
-        return mValues[rowIdx];
-    else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-        return mValues[rowIdx*GMS_DT_MAX + colIdx];
+    return mType;
+}
+
+int GdxSymbol::dim() const
+{
+    return mDim;
+}
+
+QString GdxSymbol::name() const
+{
+    return mName;
+}
+
+int GdxSymbol::nr() const
+{
+    return mNr;
 }
 
 

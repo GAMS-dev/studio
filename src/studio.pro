@@ -81,8 +81,7 @@ SOURCES += \
     newdialog.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxsymbol.cpp \
-    gdxviewer/gdxsymboltablemodel.cpp \
-    gdxviewer/gdxsymboldatatablemodel.cpp
+    gdxviewer/gdxsymboltable.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -105,8 +104,7 @@ HEADERS += \
     newdialog.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
-    gdxviewer/gdxsymboltablemodel.h \
-    gdxviewer/gdxsymboldatatablemodel.h
+    gdxviewer/gdxsymboltable.h
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API
