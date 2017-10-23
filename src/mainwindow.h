@@ -95,7 +95,6 @@ private slots:
     // AOB
     void on_mainTab_tabCloseRequested(int index);
     void on_projectView_doubleClicked(const QModelIndex &index);
-    void on_projectView_clicked(const QModelIndex& index);
     void on_mainTab_currentChanged(int index);
 
     void on_actionGDX_Viewer_triggered();

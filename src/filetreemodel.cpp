@@ -20,7 +20,7 @@ QModelIndex FileTreeModel::index(FileSystemContext *entry)
 {
      if (!entry)
          return QModelIndex();
-     if (!entry->parent())
+     if (!entry->parentEntry())
          return createIndex(0, 0, entry);
      for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
          if (entry->parentEntry()->childEntry(i) == entry) {

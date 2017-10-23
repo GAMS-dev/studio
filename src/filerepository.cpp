@@ -254,7 +254,8 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
         parent = mTreeModel->rootContext();
     bool hit;
     int offset = parent->peekIndex(name, &hit);
-    if (hit) offset++;
+    if (hit)
+        FATAL() << "The group '" << parent->name() << "' already contains '" << name << "'";
     FileContext* fileContext = new FileContext(mNextId++, name, location);
     mTreeModel->insertChild(offset, parent, fileContext);
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
@@ -386,6 +387,7 @@ void FileRepository::nodeClicked(QModelIndex index)
     FileActionContext* act = actionContext(index);
     if (act) {
         emit act->trigger();
+        return;
     }
 }
 

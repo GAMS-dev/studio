@@ -57,14 +57,20 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if (child->childCount() > 0) {
-            for (int j = 0; j < child->childCount(); j++) {
-                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
-                if (element != nullptr) {
-                    return element;
-                }
-            }
+        if (child->location() == filePath)
+            return child;
+        if (child->type() == FileSystemContext::FileGroup) {
+            FileGroupContext *group = static_cast<FileGroupContext*>(child);
+            return group->findFile(filePath);
         }
+//        if (child->childCount() > 0) {
+//            for (int j = 0; j < child->childCount(); j++) {
+//                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
+//                if (element != nullptr) {
+//                    return element;
+//                }
+//            }
+//        }
     }
     return nullptr;
 }

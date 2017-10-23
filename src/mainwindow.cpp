@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(15,15));
+    ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
     ui->outputView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
@@ -520,11 +520,6 @@ void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
     openContext(index);
 }
 
-void MainWindow::on_projectView_clicked(const QModelIndex& index)
-{
-    openContext(index);
-}
-
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
@@ -633,12 +628,17 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
     if (!fsc) {
         // not yet opened by user, open file in new tab
         FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
-        FileContext *fc = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), group);
-        fsc = fc;
-        createEdit(ui->mainTab, fc->id());
-        if (ui->mainTab->currentWidget())
-            ui->mainTab->currentWidget()->setFocus();
-        ui->projectView->expand(mFileRepo.treeModel()->index(group));
+        fsc = mFileRepo.findFile(filePath, group);
+        if (!fsc) {
+            FATAL() << "File not found: " << filePath;
+        }
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext *fc = static_cast<FileContext*>(fsc);
+            createEdit(ui->mainTab, fc->id());
+            if (ui->mainTab->currentWidget())
+                ui->mainTab->currentWidget()->setFocus();
+            ui->projectView->expand(mFileRepo.treeModel()->index(group));
+        }
     }
     mRecent.path = fileInfo.path();
     if (fsc->type() != FileSystemContext::File) {
