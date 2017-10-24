@@ -84,6 +84,10 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
+                return val;
+            }
+            else
+            {
                 if (val == GMS_SV_UNDEF)
                     return "UNDEF";
                 if (val == GMS_SV_NA)
@@ -96,8 +100,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "EPS";
                 //TODO(CW): check special values
             }
-            else
-                return val;
+
         }
     }
     return QVariant();
