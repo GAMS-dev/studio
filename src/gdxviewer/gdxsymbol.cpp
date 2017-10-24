@@ -61,6 +61,7 @@ int GdxSymbol::columnCount(const QModelIndex &parent) const
         return mDim + 1;
     else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
         return mDim + 5;
+    return 0;
 }
 
 QVariant GdxSymbol::data(const QModelIndex &index, int role) const
@@ -112,7 +113,6 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 void GdxSymbol::loadData()
 {
     int dummy;
-    int dimFirst;
     int* keys = new int[mDim];
     double* values = new double[GMS_VAL_MAX];
     gdxDataReadRawStart(mGdx, mNr, &dummy);
