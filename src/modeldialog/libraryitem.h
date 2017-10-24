@@ -24,6 +24,7 @@
 #include <QString>
 #include <QStringList>
 #include "library.h"
+#include <memory>
 
 namespace gams {
 namespace studio {

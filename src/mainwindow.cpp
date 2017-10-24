@@ -28,6 +28,7 @@
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
@@ -408,6 +409,14 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
+    //TODO(CW): a closed tabWidget does not delte the underlying widget object. therefore we need to delete in manually. This needs review
+    gdxviewer::GdxViewer* gdxViewer = dynamic_cast<gdxviewer::GdxViewer*>(ui->mainTab->widget(index));
+    if(gdxViewer)
+    {
+        delete gdxViewer;
+        return;
+    }
+
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -638,6 +647,18 @@ void MainWindow::on_mainTab_currentChanged(int index)
     if (edit) mFileRepo.editorActivated(edit);
 }
 
-}
+void MainWindow::on_actionGDX_Viewer_triggered()
+{
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open GDX file...",
+                                                 mRecent.path,
+                                                 tr("GDX file (*.gdx);;"
+                                                 "All files (*)"));
+    if (!fileName.isEmpty()) {
+        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fileName, GAMSPaths::systemDir()), "GDX Viewer");
+        ui->mainTab->setCurrentIndex(idx);
+    }
 }
 
+}
+}

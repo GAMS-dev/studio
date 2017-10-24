@@ -61,3 +61,5 @@ target_wrapper.*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+
+gamsinclude.pri

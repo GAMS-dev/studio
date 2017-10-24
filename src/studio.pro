@@ -12,6 +12,36 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 
+GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
+!exists($$PWD/gamsinclude.pri) {
+    equals(GAMS_CORE_TMP, "") {
+        macx {
+            GAMSINC = GAMS_DISTRIB=/Applications/GAMS24.9/sysdir \
+                      GAMS_DISTRIB_API=\$$GAMS_DISTRIB/apifiles/C/api
+        }
+        unix:!macx {
+            GAMSINC = GAMS_DISTRIB=$$(HOME)/gams/gams24.9_linux_x64_64_sfx \
+                      GAMS_DISTRIB_API=\$$GAMS_DISTRIB/apifiles/C/api
+        }
+        win32 {
+            GAMSINC = GAMS_DISTRIB=C:/GAMS/win64/24.9 \
+                      GAMS_DISTRIB_API=\$$GAMS_DISTRIB/apifiles/C/api
+        }
+        write_file($$PWD/gamsinclude.pri,GAMSINC)
+    } else {
+        GAMSINC = GAMS_DISTRIB=$$(GAMS_CORE_PATH) \
+                  GAMS_DISTRIB_API=\$$GAMS_DISTRIB/apifiles/C/api
+        write_file($$PWD/gamsinclude.pri,GAMSINC)
+    }
+}
+exists($$PWD/gamsinclude.pri) {
+    include($$PWD/gamsinclude.pri)
+}
+
+unix:LIBS += -ldl
+win32:LIBS += -luser32
+
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -29,6 +59,8 @@ macx: ICON = studio.icns
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
 
 SOURCES += \
+    $$GAMS_DISTRIB_API/gclgms.c \
+    $$GAMS_DISTRIB_API/gdxcc.c \
     main.cpp \
     codeeditor.cpp \
     filesystemcontext.cpp \
@@ -51,8 +83,10 @@ SOURCES += \
     abstractprocess.cpp \
     filetype.cpp        \
     filemetrics.cpp \
-    gamspaths.cpp
-
+    gamspaths.cpp \
+    gdxviewer/gdxviewer.cpp \
+    gdxviewer/gdxsymbol.cpp \
+    gdxviewer/gdxsymboltable.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -65,8 +99,10 @@ HEADERS += \
     newdialog.h \
     mainwindow.h \
     exception.h \
+    fileactioncontext.h \
     treeitemdelegate.h \
     version.h \
+    newdialog.h \
     modeldialog/modeldialog.h   \
     modeldialog/glbparser.h     \
     modeldialog/libraryitem.h   \
@@ -75,15 +111,22 @@ HEADERS += \
     gamsprocess.h       \
     gamslibprocess.h    \
     abstractprocess.h   \
-    filetype.h          \
+    filetype.h \
     filemetrics.h \
-    gamspaths.h
+    gamspaths.h \
+    gdxviewer/gdxviewer.h \
+    gdxviewer/gdxsymbol.h \
+    gdxviewer/gdxsymboltable.h
 
 FORMS += \
     welcomepage.ui  \
     mainwindow.ui   \
     newdialog.ui    \
-    modeldialog/modeldialog.ui
+    modeldialog/modeldialog.ui \
+    gdxviewer/gdxviewer.ui
+
+INCLUDEPATH += \
+    $$GAMS_DISTRIB_API
 
 RESOURCES += \
     ../icons/icons.qrc
