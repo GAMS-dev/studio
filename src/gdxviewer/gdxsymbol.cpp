@@ -5,8 +5,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-
-
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
 {
