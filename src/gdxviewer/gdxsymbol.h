@@ -16,7 +16,7 @@ class GdxSymbol : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:
@@ -54,6 +54,7 @@ private:
     double* mValues;
 
     QStringList* mUel2Label;
+    QStringList* mStrPool;
 
 };
 

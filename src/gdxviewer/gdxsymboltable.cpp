@@ -10,6 +10,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
+    loadStringPool();
     loadGDXSymbols();
 
     mHeaderText.append("Entry");
@@ -70,7 +71,7 @@ void GdxSymbolTable::loadGDXSymbols()
 {
     for(int i=1; i<mSymbolCount+1; i++)
     {
-        char symName[GMS_SSSIZE];
+        char symName[GMS_UEL_IDENT_SIZE];
         char explText[GMS_SSSIZE];
         int dimension = 0;
         int type = 0;
@@ -78,18 +79,31 @@ void GdxSymbolTable::loadGDXSymbols()
         int recordCount = 0;
         int userInfo = 0;
         gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
-        mGdxSymbols.append(new GdxSymbol(mGdx, &mUel2Label, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
+        mGdxSymbols.append(new GdxSymbol(mGdx, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
     }
 }
 
 void GdxSymbolTable::loadUel2Label()
 {
-    char label[GMS_SSSIZE];
+    char label[GMS_UEL_IDENT_SIZE];
     int map;
     for(int i=0; i<=mUelCount; i++)
     {
         gdxUMUelGet(mGdx, i, label, &map);
         mUel2Label.append(QString(label));
+    }
+}
+
+void GdxSymbolTable::loadStringPool()
+{
+    int strNr = 1;
+    int node;
+    char text[GMS_SSSIZE];
+    mStrPool.append("Y");
+    while(gdxGetElemText(mGdx, strNr, text, &node))
+    {
+        mStrPool.append(QString(text));
+        strNr++;
     }
 }
 

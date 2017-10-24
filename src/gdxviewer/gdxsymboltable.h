@@ -35,11 +35,13 @@ private:
     int mUelCount;
     int mSymbolCount;
     void loadUel2Label();
+    void loadStringPool();
     void loadGDXSymbols();
     void reportIoError(int errNr, QString message);
 
     QList<GdxSymbol*> mGdxSymbols;
     QStringList mUel2Label;
+    QStringList mStrPool;
 
 
 };

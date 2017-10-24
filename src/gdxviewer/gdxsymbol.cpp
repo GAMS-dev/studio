@@ -7,8 +7,8 @@ namespace gdxviewer {
 
 
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
 {
     loadData();
 }
@@ -29,7 +29,9 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
                 return "Dim " + QString::number(section+1);
             else
             {
-                if (mType == GMS_DT_PAR)
+                if (mType == GMS_DT_SET)
+                    return "Text";
+                else if (mType == GMS_DT_PAR)
                     return "Value";
                 else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
                 switch(section-mDim)
@@ -57,9 +59,7 @@ int GdxSymbol::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    if (mType == GMS_DT_SET)
-        return mDim;
-    else if (mType == GMS_DT_PAR)
+    if (mType == GMS_DT_PAR || mType == GMS_DT_SET )
         return mDim + 1;
     else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
         return mDim + 5;
@@ -79,6 +79,11 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             double val;
             if (mType == GMS_DT_PAR)
                 val = mValues[index.row()];
+            else if (mType == GMS_DT_SET)
+            {
+                val = mValues[index.row()];
+                return mStrPool->at((int) val);
+            }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
                 val = mValues[index.row()*GMS_DT_MAX + index.column()];
             //apply special values:
@@ -100,7 +105,6 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "EPS";
                 //TODO(CW): check special values
             }
-
         }
     }
     return QVariant();
@@ -115,7 +119,7 @@ void GdxSymbol::loadData()
     double* values = new double[GMS_VAL_MAX];
     gdxDataReadRawStart(mGdx, mNr, &dummy);
     mKeys = new int[mRecordCount*mDim];
-    if (mType == GMS_DT_PAR)
+    if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
         mValues = new double[mRecordCount];
     else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
         mValues = new double[mRecordCount*GMS_DT_MAX];
@@ -126,7 +130,7 @@ void GdxSymbol::loadData()
         {
             mKeys[i*mDim+j] = keys[j];
         }
-        if (mType == GMS_DT_PAR)
+        if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
             mValues[i] = values[0];
         else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
         {
