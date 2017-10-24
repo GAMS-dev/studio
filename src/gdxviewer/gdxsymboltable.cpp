@@ -60,7 +60,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         {
         case 0: return mGdxSymbols.at(index.row())->nr(); break;
         case 1: return mGdxSymbols.at(index.row())->name(); break;
-        case 2: return mGdxSymbols.at(index.row())->type(); break;
+        case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
         case 3: return mGdxSymbols.at(index.row())->dim(); break;
         case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
         }
@@ -122,6 +122,18 @@ QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
 QString GdxSymbolTable::uel2Label(int uel)
 {
     return mUel2Label.at(uel);
+}
+
+QString GdxSymbolTable::typeAsString(int type) const
+{
+    switch(type)
+    {
+        case GMS_DT_SET: return "Set"; break;
+        case GMS_DT_PAR: return "Parameter"; break;
+        case GMS_DT_VAR: return "Variable"; break;
+        case GMS_DT_EQU: return "Equation"; break;
+        case GMS_DT_ALIAS: return "Alias"; break;
+    }
 }
 
 } // namespace gdxviewer

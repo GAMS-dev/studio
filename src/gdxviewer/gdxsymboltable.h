@@ -31,6 +31,8 @@ public:
 private:
     QStringList mHeaderText;
 
+    QString typeAsString(int type) const;
+
     gdxHandle_t mGdx = nullptr;
     int mUelCount;
     int mSymbolCount;
