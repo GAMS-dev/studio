@@ -76,10 +76,28 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             return mUel2Label->at(mKeys[index.row()*mDim + index.column()]);
         else
         {
+            double val;
             if (mType == GMS_DT_PAR)
-                return mValues[index.row()];
+                val = mValues[index.row()];
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                return mValues[index.row()*GMS_DT_MAX + index.column()];
+                val = mValues[index.row()*GMS_DT_MAX + index.column()];
+            //apply special values:
+            if (val<GMS_SV_UNDEF)
+            {
+                if (val == GMS_SV_UNDEF)
+                    return "UNDEF";
+                if (val == GMS_SV_NA)
+                    return "NA";
+                if (val == GMS_SV_PINF)
+                    return "+INF";
+                if (val == GMS_SV_MINF)
+                    return "-INF";
+                if (val == GMS_SV_EPS)
+                    return "EPS";
+                //TODO(CW): check special values
+            }
+            else
+                return val;
         }
     }
     return QVariant();
