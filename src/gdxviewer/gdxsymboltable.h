@@ -26,7 +26,6 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     QList<GdxSymbol *> gdxSymbols() const;
-    QString uel2Label(int uel);
 
 private:
     QStringList mHeaderText;

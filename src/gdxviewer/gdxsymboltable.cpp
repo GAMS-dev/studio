@@ -119,11 +119,6 @@ QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
     return mGdxSymbols;
 }
 
-QString GdxSymbolTable::uel2Label(int uel)
-{
-    return mUel2Label.at(uel);
-}
-
 QString GdxSymbolTable::typeAsString(int type) const
 {
     switch(type)
