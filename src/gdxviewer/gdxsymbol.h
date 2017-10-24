@@ -37,6 +37,8 @@ public:
 
     int recordCount() const;
 
+    QString explText() const;
+
 private:
     void loadData();
 

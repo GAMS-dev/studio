@@ -12,6 +12,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     QFrame(parent)
 {
     ui.setupUi(this);
+    ui.splitter->setStretchFactor(0,1);
+    ui.splitter->setStretchFactor(1,2);
 
     char msg[GMS_SSSIZE];
     int errNr = 0;
@@ -29,6 +31,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     mGdxSymbolTable = new GdxSymbolTable(mGdx);
 
     ui.tvSymbols->setModel(mGdxSymbolTable);
+    ui.tvSymbols->resizeColumnsToContents();
+
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
 }
 

@@ -18,6 +18,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
     mHeaderText.append("Type");
     mHeaderText.append("Dimension");
     mHeaderText.append("Nr Records");
+    mHeaderText.append("Text");
 }
 
 GdxSymbolTable::~GdxSymbolTable()
@@ -63,6 +64,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
         case 3: return mGdxSymbols.at(index.row())->dim(); break;
         case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
+        case 5: return mGdxSymbols.at(index.row())->explText(); break;
         }
     else if (role == Qt::TextAlignmentRole)
         switch(index.column())
@@ -72,6 +74,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 2: return Qt::AlignLeft; break;
         case 3: return Qt::AlignRight; break;
         case 4: return Qt::AlignRight; break;
+        case 5: return Qt::AlignLeft; break;
         }
     return QVariant();
 }

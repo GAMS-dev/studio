@@ -150,6 +150,11 @@ void GdxSymbol::loadData()
     delete values;
 }
 
+QString GdxSymbol::explText() const
+{
+    return mExplText;
+}
+
 int GdxSymbol::recordCount() const
 {
     return mRecordCount;
