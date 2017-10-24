@@ -64,6 +64,15 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 3: return mGdxSymbols.at(index.row())->dim(); break;
         case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
         }
+    else if (role == Qt::TextAlignmentRole)
+        switch(index.column())
+        {
+        case 0: return Qt::AlignRight; break;
+        case 1: return Qt::AlignLeft; break;
+        case 2: return Qt::AlignLeft; break;
+        case 3: return Qt::AlignRight; break;
+        case 4: return Qt::AlignRight; break;
+        }
     return QVariant();
 }
 

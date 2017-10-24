@@ -106,6 +106,14 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             }
         }
     }
+    else if (role == Qt::TextAlignmentRole)
+    {
+        if (index.column() >= mDim)
+        {
+            if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
+                return Qt::AlignRight;
+        }
+    }
     return QVariant();
 }
 
