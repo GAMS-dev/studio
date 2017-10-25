@@ -84,6 +84,7 @@ QVariant FileRepository::data(const QModelIndex& index, int role) const
         if (mCurrent && fileContext(index) == mCurrent) {
             return QColor("#4466BBFF");
         }
+        break;
     case Qt::DisplayRole:
         return context(index)->caption();
 

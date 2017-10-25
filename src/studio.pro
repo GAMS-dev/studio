@@ -96,10 +96,8 @@ HEADERS += \
     filegroupcontext.h \
     welcomepage.h \
     fileactioncontext.h \
-    newdialog.h \
     mainwindow.h \
     exception.h \
-    fileactioncontext.h \
     treeitemdelegate.h \
     version.h \
     newdialog.h \
