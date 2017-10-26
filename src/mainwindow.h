@@ -122,6 +122,7 @@ private:
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     bool hasWelcomePage = false;
+    void renameToBackup(QFile *file);
 };
 
 }

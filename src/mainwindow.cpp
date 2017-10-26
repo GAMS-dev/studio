@@ -458,6 +458,17 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     ui->mainTab->setCurrentIndex(0);
 }
 
+void MainWindow::renameToBackup(QFile *file)
+{
+    int suffix = 1;
+    QString filename = file->fileName();
+    if(!file->rename(filename + ".bak")) {
+        while (!file->rename(filename + "." + QString::number(suffix) + ".bak")) {
+            suffix++;
+        }
+    }
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(this);
@@ -466,15 +477,41 @@ void MainWindow::on_actionGAMS_Library_triggered()
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
         QFileInfo fileInfo(item->files().first());
+        QString gmsFileName = fileInfo.completeBaseName() + ".gms";
+        QString gmsFilePath = GAMSPaths::defaultWorkingDir() + "/" + gmsFileName;
+        QFile gmsFile(gmsFilePath);
 
-        mLibProcess = new GAMSLibProcess(this);
-        mLibProcess->setApp(item->library()->execName());
-        mLibProcess->setModelName(item->name());
-        mLibProcess->setInputFile(fileInfo.completeBaseName() + ".gms");
-        mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
-        mLibProcess->execute();
-        connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
-        connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+        if (gmsFile.exists()) {
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("File already exisiting");
+
+            msgBox.setText("The file you are trying to load already exists in your temporary working directory.");
+            msgBox.setInformativeText("What do you want to do with the existing file?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Open", QMessageBox::ActionRole);
+            msgBox.addButton("Replace", QMessageBox::ActionRole);
+            int answer = msgBox.exec();
+
+            switch(answer) {
+            case 0: // open
+                addContext("", gmsFilePath);
+                break;
+            case 1: // replace
+                renameToBackup(&gmsFile);
+                mLibProcess = new GAMSLibProcess(this);
+                mLibProcess->setApp(item->library()->execName());
+                mLibProcess->setModelName(item->name());
+                mLibProcess->setInputFile(gmsFileName);
+                mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+                mLibProcess->execute();
+                connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+                connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+                break;
+            case QMessageBox::Abort:
+                break;
+            }
+        }
     }
 }
 
