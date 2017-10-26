@@ -70,9 +70,9 @@ void GAMSProcess::execute()
     mProcess.setWorkingDirectory(mWorkingDir);
     auto gms = QDir::toNativeSeparators(mInputFile);
     //TODO(CW)
-    // we need this at least on wnidows in order to write explicitly to stdout.
+    // we need this at least on windows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted
-    QStringList args({gms, "lo=3"});
+    QStringList args({gms, "lo=3", QString("ferr=..\\%1.err").arg(QFileInfo(mInputFile).completeBaseName())});
     mProcess.start(nativeAppPath(), args);
 }
 

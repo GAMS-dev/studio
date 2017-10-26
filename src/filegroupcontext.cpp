@@ -129,8 +129,8 @@ QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
     qDebug() << "runableGms:";
-    qDebug() << QDir(mLocation).filePath(mRunInfo);
-    return QDir(mLocation).filePath(mRunInfo);
+    qDebug() << QDir(location()).filePath(mRunInfo);
+    return QDir(location()).filePath(mRunInfo);
 }
 
 int FileGroupContext::childCount()
@@ -177,10 +177,9 @@ void FileGroupContext::setWatched(bool watch)
 
 void FileGroupContext::directoryChanged(const QString& path)
 {
-    qDebug() << "Dir changed";
     QDir dir(path);
     if (dir.exists()) {
-        emit contentChanged(mId, dir);
+        emit contentChanged(id(), dir);
         return;
     }
     if (testFlag(cfActive)) {

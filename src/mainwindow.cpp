@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
     ui->outputView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->outputView->setTextInteractionFlags(ui->outputView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
@@ -229,7 +230,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
-    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
+//    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
     emit processOutput(text);
 }
 
@@ -341,18 +342,34 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
-    QTextEdit *outWin = ui->outputView;
+    QPlainTextEdit *outWin = ui->outputView;
     outWin->moveCursor(QTextCursor::End);
     outWin->insertPlainText(text);
     outWin->moveCursor(QTextCursor::End);
 }
 
+void MainWindow::appendErrLink(QString text)
+{
+    ui->outputView->moveCursor(QTextCursor::End);
+    ui->outputView->insertPlainText(text);
+    ui->outputView->moveCursor(QTextCursor::End, QTextCursor::KeepAnchor);
+    QTextCursor cursor = ui->outputView->textCursor();
+    QTextCharFormat linkFormat = cursor.charFormat();
+    linkFormat.setAnchor(true);
+    linkFormat.setAnchorHref("http://www.google.com");
+    linkFormat.setAnchorName("Google");
+    cursor.setCharFormat(linkFormat);
+    ui->outputView->setTextCursor(cursor);
+}
+
 void MainWindow::postGamsRun()
 {
     QFileInfo fileInfo(mProcess->inputFile());
-    if(fileInfo.exists()) // TODO: add .log and others)
-        openOrShow(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst", mProcess->context());
-    else
+    if(fileInfo.exists()) {// TODO: add .log and others)
+        QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
+//        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
+        openOrShow(lstFile, mProcess->context());
+    } else
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     if (mProcess) {
         mProcess->deleteLater();
@@ -624,11 +641,11 @@ void MainWindow::openOrShow(FileContext* fileContext)
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
 {
     QFileInfo fileInfo(filePath);
-    FileSystemContext *fsc = mFileRepo.findFile(filePath, parent);
+    FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
     if (!fsc) {
         // not yet opened by user, open file in new tab
         FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
-        fsc = mFileRepo.findFile(filePath, group);
+        fsc = mFileRepo.findContext(filePath, group);
         if (!fsc) {
             FATAL() << "File not found: " << filePath;
         }

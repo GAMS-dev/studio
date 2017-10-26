@@ -103,14 +103,12 @@ protected:
     FileSystemContext(int id, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
-protected:
+private:
     int mId;
     FileGroupContext* mParent;
     QString mName;
     QString mLocation;
     ContextFlags mFlags;
-
-private:
     ContextType mType;
 };
 

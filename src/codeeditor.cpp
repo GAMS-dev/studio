@@ -37,6 +37,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+    setMouseTracking(true);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -221,6 +222,32 @@ void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
     } else {
         QPlainTextEdit::dragEnterEvent(e);
     }
+}
+
+bool CodeEditor::event(QEvent* event)
+{
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+        QString hint;
+        QTextCursor cur(document());
+        emit getHintForPos(this, helpEvent->pos(), hint, cur);
+        if (hint != toolTip()) {
+            setToolTip(hint);
+            setTextCursor(cur);
+        }
+        if (!hint.isEmpty()) {
+            qDebug() << "Event:  " << helpEvent->pos()
+                     << "Cursor: " << cursorRect(cur).bottomLeft()
+                     << "Viewport: " << viewport()->mapTo(this,cursorRect(cur).bottomLeft());
+                        ;
+            QToolTip::showText(viewport()->mapToGlobal(cursorRect(cur).bottomLeft()), hint);
+        }
+
+        else
+            QToolTip::hideText();
+        return true;
+    }
+    return QPlainTextEdit::event(event);
 }
 
 void CodeEditor::highlightCurrentLine()

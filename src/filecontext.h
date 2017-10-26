@@ -27,6 +27,22 @@
 namespace gams {
 namespace studio {
 
+struct GamsErrorHint {
+    GamsErrorHint(int _errCode, QString _hint) : errCode(_errCode), hint(_hint) {}
+    int errCode = 0;
+    QString hint;
+};
+
+struct LinkReference {
+    LinkReference(int _line, int _col, int _errCode) : line(_line), col(_col), errCode(_errCode) {}
+    int line = 0;
+    int col = 0;
+    int errCode = 0;
+    // TODO(JM) restructure to use active cursors
+    QTextCursor local; ///< the cursor to mark the current
+    QTextCursor source;
+};
+
 class FileGroupContext;
 
 ///
@@ -51,11 +67,13 @@ public:
     /// \return The caption of this node.
     virtual const QString caption();
 
+    int parseLst(QString text);
+
     bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
-    void setLocation(const QString &location);
+    void setLocation(const QString &_location);
 
     /// The icon for this file type.
     /// \return The icon for this file type.
@@ -105,24 +123,34 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
+    void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
+
 protected slots:
     void onFileChangedExtern(QString filepath);
 
     /// Slot to handle a change of the assigned Document
     void modificationChanged(bool modiState);
 
+    void shareHintForPos(QPlainTextEdit *sender, QPoint pos, QString& hint,  QTextCursor &cursor);
+
 protected:
     friend class FileRepository;
     FileContext(int id, QString name, QString location);
 
+    void parseErrorHints(const QString &text, int startChar, int endChar);
+    void clearLinksAndErrorHints();
+    void markLink(int from, int to, int mark);
+
 private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
-
-    // TODO(JM) When an edit gets focus: move editor to the top
+    QHash<int, LinkReference*> mLinks;
+    QHash<int, GamsErrorHint*> mErrHints;
+    FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     static const QStringList mDefaulsCodecs;
+
 };
 
 } // namespace studio

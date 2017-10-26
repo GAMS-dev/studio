@@ -8,7 +8,7 @@ namespace studio {
 FileActionContext::FileActionContext(int id, QAction *action)
     : FileSystemContext(id, action->text(), action->toolTip(), FileSystemContext::FileAction), mAction(action)
 {
-    mFlags = cfVirtual;
+    setFlag(cfVirtual);
 }
 
 void FileActionContext::trigger()

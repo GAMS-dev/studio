@@ -62,6 +62,7 @@ private slots:
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QString text);
+    void appendErrLink(QString text);
     void postGamsRun();
     void postGamsLibRun();
     // View

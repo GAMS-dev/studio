@@ -93,7 +93,7 @@ public:
     /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
     FileActionContext* actionContext(const QModelIndex& index) const;
 
-    QList<QPlainTextEdit*> editors(int fileId);
+    QList<QPlainTextEdit*> editors(int fileId = -1);
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
@@ -116,7 +116,7 @@ public:
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-    FileSystemContext* findFile(QString filePath, FileGroupContext* fileGroup = nullptr);
+    FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
     QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
@@ -131,6 +131,7 @@ public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
+    void findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup = nullptr);
 
 private slots:
     void onFileChangedExtern(int fileId);

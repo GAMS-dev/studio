@@ -185,11 +185,17 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
-FileSystemContext* FileRepository::findFile(QString filePath, FileGroupContext* fileGroup)
+FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
 {
     FileGroupContext *group = fileGroup ? fileGroup : mTreeModel->rootContext();
     FileSystemContext* fsc = group->findFile(filePath);
     return fsc;
+}
+
+void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
+{
+    FileSystemContext* fsc = findContext(filePath, fileGroup);
+    resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
@@ -261,6 +267,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
+    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fileContext;
@@ -339,7 +346,6 @@ typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
 void FileRepository::updatePathNode(int fileId, QDir dir)
 {
-    qDebug() << "updatePathNode: " << dir;
     FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
     if (!parGroup)
         throw QException();
