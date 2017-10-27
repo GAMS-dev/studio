@@ -1,3 +1,3 @@
-# GAMS IDE
+# GAMS STUDIO
 
 t.b.d.
