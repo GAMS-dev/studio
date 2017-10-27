@@ -120,8 +120,7 @@ void FileContext::setLocation(const QString& _location)
     QFileInfo newLoc(_location);
     if (QFileInfo(location()) == newLoc)
         return; // nothing to do
-    if (newLoc.exists())
-        EXCEPT() << "Invalid renaming: File '" << _location << "' already exists.";
+
     // TODO(JM) adapt parent group
     if (document())
         document()->setModified(true);
