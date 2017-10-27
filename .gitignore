@@ -63,3 +63,4 @@ target_wrapper.*
 CMakeLists.txt.user*
 
 gamsinclude.pri
+*.orig
