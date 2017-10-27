@@ -274,6 +274,7 @@ int FileContext::parseLst(QString text)
             if (mLinkFile && mLinkFile->document()) {
                 mLinkFile->clearLinksAndErrorHints();
                 // TODO(JM) mark on
+                QRegularExpression rEx("^( *).*");
                 QTextBlock block;
                 LinkReference *lr;
                 for (LocalLinkData *lld: linkDataList) {
@@ -287,8 +288,10 @@ int FileContext::parseLst(QString text)
                     lr->source = QTextCursor(mLinkFile->document());
                     lr->source.setPosition(block.position());
                     mLinkFile->mLinks.insert(lr->line, lr);
+                    QRegularExpressionMatch rEm = rEx.match(lr->source.block().text());
+                    int off = (rEm.hasMatch() ? rEm.captured(1).length()+1 : 0);
                     int start = lr->source.position()-1;
-                    mLinkFile->markLink(start, start+block.length(), start+lr->col);
+                    mLinkFile->markLink(start + off, start+block.length(), start+lr->col);
                 }
                 for (GamsErrorHint* eh: mErrHints) {
                     mLinkFile->mErrHints.insert(eh->errCode, eh);
