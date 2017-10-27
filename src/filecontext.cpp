@@ -253,7 +253,7 @@ int FileContext::parseLst(QString text)
         } else {
             QTextBlock localBlock = document()->findBlock(match.capturedStart(3));
             LocalLinkData *lld = new LocalLinkData();
-            lld->sourceLine = match.captured(2).toInt();
+            lld->sourceLine = match.captured(2).toInt()-1;
             lld->sourceCol  = match.capturedLength(4)-1;
             lld->localLine  = localBlock.blockNumber();
             lld->localCol   = match.capturedLength(4)+4;
@@ -282,8 +282,8 @@ int FileContext::parseLst(QString text)
                     lr->source.setPosition(lld->localPos);
                     mLinks.insert(lr->line, lr);
 
-                    lr = new LinkReference(lld->sourceLine-1, lld->sourceCol, lld->errCode);
-                    block = mLinkFile->document()->findBlockByLineNumber(lr->line-1);
+                    lr = new LinkReference(lld->sourceLine, lld->sourceCol, lld->errCode);
+                    block = mLinkFile->document()->findBlockByLineNumber(lr->line);
                     lr->source = QTextCursor(mLinkFile->document());
                     lr->source.setPosition(block.position());
                     mLinkFile->mLinks.insert(lr->line, lr);
@@ -344,7 +344,7 @@ void FileContext::markLink(int from, int to, int mark)
     if (!mEditors.size()) return;
     bool mod = document()->isModified();
     QPlainTextEdit *edit = mEditors.first();
-    QTextCursor oldCur = edit->textCursor();
+    QTextCursor oldCur = QTextCursor(edit->document());
     QTextCursor cur = oldCur;
     cur.setPosition(from);
     QTextCharFormat oldFormat = cur.charFormat();

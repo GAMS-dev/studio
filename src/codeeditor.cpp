@@ -245,7 +245,6 @@ bool CodeEditor::event(QEvent* event)
         emit getHintForPos(this, helpEvent->pos(), hint, cur);
         if (hint != toolTip()) {
             setToolTip(hint);
-            setTextCursor(cur);
         }
         if (!hint.isEmpty()) {
             qDebug() << "Event:  " << helpEvent->pos()
