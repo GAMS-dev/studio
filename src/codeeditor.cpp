@@ -61,10 +61,22 @@ void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 
 void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
-    if (dy)
+    if (dy) {
         lineNumberArea->scroll(0, dy);
-    else
-        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    } else {
+        int top = rect.y();
+        int bottom = top + rect.height();
+        QTextBlock b = firstVisibleBlock();
+        while (b.isValid() && b.isVisible()) {
+            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
+            if (top > blockBounds.top() && top < blockBounds.bottom())
+                top = blockBounds.top();
+            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
+                bottom = blockBounds.bottom()-1;
+            b = b.next();
+        }
+        lineNumberArea->update(0, top, lineNumberArea->width(), bottom-top);
+    }
 
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
