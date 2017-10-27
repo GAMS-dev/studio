@@ -37,6 +37,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+    setMouseTracking(true);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -214,6 +215,41 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
+void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->ignore(); // paste to parent widget
+    } else {
+        QPlainTextEdit::dragEnterEvent(e);
+    }
+}
+
+bool CodeEditor::event(QEvent* event)
+{
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+        QString hint;
+        QTextCursor cur(document());
+        emit getHintForPos(this, helpEvent->pos(), hint, cur);
+        if (hint != toolTip()) {
+            setToolTip(hint);
+            setTextCursor(cur);
+        }
+        if (!hint.isEmpty()) {
+            qDebug() << "Event:  " << helpEvent->pos()
+                     << "Cursor: " << cursorRect(cur).bottomLeft()
+                     << "Viewport: " << viewport()->mapTo(this,cursorRect(cur).bottomLeft());
+                        ;
+            QToolTip::showText(viewport()->mapToGlobal(cursorRect(cur).bottomLeft()), hint);
+        }
+
+        else
+            QToolTip::hideText();
+        return true;
+    }
+    return QPlainTextEdit::event(event);
+}
+
 void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
@@ -238,8 +274,6 @@ void CodeEditor::highlightCurrentLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(lineNumberArea);
-    painter.fillRect(event->rect(), QColor(245,245,245));
-
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -249,12 +283,17 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     int markTo = (mBlockLastCursor.isNull() ? textCursor() : mBlockLastCursor).blockNumber();
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
-    QRect markRect(event->rect().left(), top, event->rect().width(), static_cast<int>(blockBoundingRect(block).height())+1);
-    while (block.isValid() && top <= event->rect().bottom()) {
-        if (block.isVisible() && bottom >= event->rect().top()) {
+    QRect paintRect(event->rect());
+    // TODO(JM) fit paintRect to real height in case of wrapped lines (somehow it is clipped though)
+    painter.fillRect(paintRect, QColor(245,245,245));
+
+    QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(blockBoundingRect(block).height())+1);
+    while (block.isValid()) { // && top <= paintRect.bottom()) {
+        if (block.isVisible()) { // && bottom >= paintRect.top()) {
             bool mark = blockNumber >= markFrom && blockNumber <= markTo;
             if (mark) {
                 markRect.moveTop(top);
+                markRect.setHeight(bottom-top);
                 painter.fillRect(markRect, QColor(225,255,235));
             }
             QString number = QString::number(blockNumber + 1);
@@ -262,7 +301,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             f.setBold(mark);
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+            painter.drawText(0, (top+bottom-fontMetrics().height())/2, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
         }
 

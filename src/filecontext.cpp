@@ -20,6 +20,7 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "exception.h"
+#include "codeeditor.h"
 
 namespace gams {
 namespace studio {
@@ -27,25 +28,20 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(FileGroupContext *parent, int id, QString name, QString location)
-    : FileSystemContext(parent, id, name, location, FileSystemContext::File)
+FileContext::FileContext(int id, QString name, QString location)
+    : FileSystemContext(id, name, location, FileSystemContext::File)
 {
-    mCrudState = location.isEmpty() ? CrudState::eCreate : CrudState::eRead;
+    mMetrics = FileMetrics(QFileInfo(location));
 }
 
-void FileContext::setCrudState(CrudState state)
+bool FileContext::isModified()
 {
-    mCrudState = state;
-}
-
-CrudState FileContext::crudState() const
-{
-    return mCrudState;
+    return document() && document()->isModified();
 }
 
 void FileContext::save()
 {
-    if (document() && mCrudState != CrudState::eRead) {
+    if (isModified()) {
         if (location().isEmpty())
             EXCEPT() << "Can't save without file name";
         QFile file(location());
@@ -60,7 +56,6 @@ void FileContext::save()
         file.close();
         mMetrics = FileMetrics(QFileInfo(file));
         document()->setModified(false);
-        setCrudState(CrudState::eRead);
     }
 }
 
@@ -101,6 +96,9 @@ void FileContext::load(QString codecName)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
+        if (mMetrics.fileType().kind() == FileType::Lst) {
+            parseLst(text);
+        }
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
@@ -115,20 +113,25 @@ const QList<QPlainTextEdit*> FileContext::editors() const
     return mEditors;
 }
 
-void FileContext::setLocation(const QString& location)
+void FileContext::setLocation(const QString& _location)
 {
-    if (location.isEmpty())
+    if (_location.isEmpty())
         EXCEPT() << "File can't be set to an empty location.";
+    QFileInfo newLoc(_location);
+    if (QFileInfo(location()) == newLoc)
+        return; // nothing to do
+    if (newLoc.exists())
+        EXCEPT() << "Invalid renaming: File '" << _location << "' already exists.";
     // TODO(JM) adapt parent group
-    // TODO (JM): handling if the file already exists
-    FileSystemContext::setLocation(location);
-    setCrudState(CrudState::eCreate);
+    if (document())
+        document()->setModified(true);
+    FileSystemContext::setLocation(_location);
+    mMetrics = FileMetrics(newLoc);
 }
 
 QIcon FileContext::icon()
 {
-    QFileInfo fi(mLocation);
-    if (QString(".gms.inc.txt.").indexOf(QString(".%1.").arg(fi.suffix()), 0, Qt::CaseInsensitive) >= 0)
+    if (mMetrics.fileType() == FileType::Gms)
         return QIcon(":/img/gams-w");
     return QIcon(":/img/file-alt");
 }
@@ -141,6 +144,10 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        CodeEditor* ce = dynamic_cast<CodeEditor*>(edit);
+        if (ce) {
+            connect(ce, &CodeEditor::getHintForPos, this, &FileContext::shareHintForPos);
+        }
     } else {
         edit->setDocument(mEditors.first()->document());
     }
@@ -152,12 +159,13 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
     int i = mEditors.indexOf(edit);
     if (i < 0)
         return;
+    bool wasModified = isModified();
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         unsetFlag(FileSystemContext::cfActive);
-        mCrudState = CrudState::eRead;
+        if (wasModified) emit changed(id());
     }
 }
 
@@ -185,6 +193,11 @@ QTextDocument*FileContext::document()
     return mEditors.first()->document();
 }
 
+const FileMetrics& FileContext::metrics()
+{
+    return mMetrics;
+}
+
 FileContext::~FileContext()
 {
     removeAllEditors();
@@ -203,21 +216,174 @@ void FileContext::setCodec(const QString& codec)
 
 const QString FileContext::caption()
 {
-    return mName + (mCrudState==CrudState::eUpdate ? "*" : "");
+    return name() + (isModified() ? "*" : "");
+}
+
+struct LocalLinkData {
+    int sourceLine = 0;
+    int sourceCol = 0;
+    int localLine = 0;
+    int localCol = 0;
+    int localPos = 0;
+    int errCode = 0;
+    int lastPos = 0;
+};
+
+int FileContext::parseLst(QString text)
+{
+    QList<LocalLinkData*> linkDataList;
+
+    QRegularExpression regex("(?m)^"
+                             "( *(\\d+)  *(\\N*)\\n\\*{4}( *)\\$(\\d+)"
+                             "|Error Messages$"
+                             "|\\*{4} *(\\d+) ERROR\\(S\\) +(\\d+) WARNING\\(S\\)$)");
+    QRegularExpressionMatchIterator iter = regex.globalMatch(text);
+    int lastPos = 0;
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        if (match.captured().startsWith("Error")) {
+            // start of error-code description
+            lastPos = match.capturedEnd();
+        } else if (match.captured().startsWith("****")) {
+            // end of error-code description
+            if (lastPos > 0) {
+                parseErrorHints(text, lastPos, match.capturedStart());
+                lastPos = match.capturedEnd();
+            }
+        } else {
+            QTextBlock localBlock = document()->findBlock(match.capturedStart(3));
+            LocalLinkData *lld = new LocalLinkData();
+            lld->sourceLine = match.captured(2).toInt();
+            lld->sourceCol  = match.capturedLength(4)-1;
+            lld->localLine  = localBlock.blockNumber();
+            lld->localCol   = match.capturedLength(4)+4;
+            lld->localPos   = match.capturedEnd(2)+match.capturedLength(4)-1;
+            lld->errCode    = match.captured(5).toInt();
+            linkDataList << lld;
+            markLink(match.capturedStart(3), match.capturedEnd(3), match.capturedEnd(2) + match.capturedLength(4));
+        }
+    }
+    if (lastPos) {
+
+        regex.setPattern("(?m)^\\*{4} FILE SUMMARY\\s+Input +(.+)$");
+        QRegularExpressionMatch match = regex.match(text.rightRef(text.length()-lastPos));
+        if (match.hasMatch()) {
+            QString filename = QFileInfo(match.captured(1)).canonicalFilePath();
+            // get the input-file
+            emit requestContext(filename, mLinkFile, parentEntry());
+            if (mLinkFile && mLinkFile->document()) {
+                mLinkFile->clearLinksAndErrorHints();
+                // TODO(JM) mark on
+                QTextBlock block;
+                LinkReference *lr;
+                for (LocalLinkData *lld: linkDataList) {
+                    lr = new LinkReference(lld->localLine, lld->localCol, lld->errCode);
+                    lr->source = QTextCursor(document());
+                    lr->source.setPosition(lld->localPos);
+                    mLinks.insert(lr->line, lr);
+
+                    lr = new LinkReference(lld->sourceLine-1, lld->sourceCol, lld->errCode);
+                    block = mLinkFile->document()->findBlockByLineNumber(lr->line-1);
+                    lr->source = QTextCursor(mLinkFile->document());
+                    lr->source.setPosition(block.position());
+                    mLinkFile->mLinks.insert(lr->line, lr);
+                    int start = lr->source.position()-1;
+                    mLinkFile->markLink(start, start+block.length(), start+lr->col);
+                }
+                for (GamsErrorHint* eh: mErrHints) {
+                    mLinkFile->mErrHints.insert(eh->errCode, eh);
+                }
+            }
+        }
+    }
+    return mLinks.size();
+}
+
+void FileContext::parseErrorHints(const QString& text, int startChar, int endChar)
+{
+    QString part = text.mid(startChar, endChar-startChar);
+    QVector<QStringRef> lines = part.splitRef("\n", QString::SkipEmptyParts);
+    int len = 0;
+    int errCode = 0;
+    QString errHint;
+//    QString body("<table><tr><td><b>%1</b></td><td>%2</td></tr></table>");
+    QRegularExpression regEx("^( *(\\d+) +)");
+    for (QStringRef ref: lines) {
+        QRegularExpressionMatch match = regEx.match(ref);
+        if (match.hasMatch()) {
+            if (!len)
+                len = match.captured(1).length();
+            if (!errHint.isEmpty()) {
+                mErrHints.insert(errCode, new GamsErrorHint(errCode, errHint));
+            }
+            errCode = match.captured(2).toInt();
+            errHint = QString::number(errCode) + "\t" +ref.right(ref.length()-len).toString().trimmed();
+        } else {
+            errHint += "\n\t" + ref.right(ref.length()-len).toString().trimmed();
+        }
+    }
+    if (!errHint.isEmpty()) {
+        mErrHints.insert(errCode, new GamsErrorHint(errCode, errHint));
+    }
+}
+
+void FileContext::clearLinksAndErrorHints()
+{
+    while (!mErrHints.isEmpty()) {
+        int key = mErrHints.constBegin().key();
+        delete mErrHints.take(key);
+    }
+    while (!mLinks.isEmpty()) {
+        int key = mLinks.constBegin().key();
+        delete mLinks.take(key);
+    }
+}
+
+void FileContext::markLink(int from, int to, int mark)
+{
+    if (!mEditors.size()) return;
+    bool mod = document()->isModified();
+    QPlainTextEdit *edit = mEditors.first();
+    QTextCursor oldCur = edit->textCursor();
+    QTextCursor cur = oldCur;
+    cur.setPosition(from);
+    QTextCharFormat oldFormat = cur.charFormat();
+    QTextCharFormat newFormat = oldFormat;
+    newFormat.setUnderlineColor(Qt::red);
+    newFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    cur.setPosition(to, QTextCursor::KeepAnchor);
+    cur.setCharFormat(newFormat);
+    cur.setPosition(mark);
+    cur.setPosition(mark+1, QTextCursor::KeepAnchor);
+    newFormat.setBackground(QColor(225,200,255));
+    newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    newFormat.setAnchor(true);
+    cur.setCharFormat(newFormat);
+    cur.setPosition(to);
+    cur.setCharFormat(oldFormat);
+    edit->setTextCursor(oldCur);
+    document()->setModified(mod);
 }
 
 void FileContext::modificationChanged(bool modiState)
 {
-    // TODO(JM) check what todo on CrudState::eDelete
-    if (modiState && mCrudState != CrudState::eUpdate) {
-        setCrudState(CrudState::eUpdate);
-        emit changed(mId);
-        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
-    }
-    if (!modiState && mCrudState == CrudState::eUpdate) {
-        setCrudState(CrudState::eRead);
-        emit changed(mId);
-        qDebug() << "modificationChanged to " << (modiState?"changed":"unchanged");
+    Q_UNUSED(modiState);
+    emit changed(id());
+}
+
+void FileContext::shareHintForPos(QPlainTextEdit* sender, QPoint pos, QString& hint, QTextCursor& cursor)
+{
+    // TODO(JM) map pos to row,col
+    QTextCursor cur = sender->cursorForPosition(pos);
+    for (LinkReference* lr: mLinks) {
+        if (cur.block().blockNumber() == lr->line || cur.block().blockNumber() == lr->line-1) {
+            GamsErrorHint *eh = mErrHints.value(lr->errCode);
+            if (eh) {
+                cursor.setPosition(lr->source.anchor() + lr->col-1);
+                hint = eh->hint;
+                break;
+            }
+        }
     }
 }
 
@@ -231,11 +397,11 @@ void FileContext::onFileChangedExtern(QString filepath)
     if (!fi.exists()) {
         // file has been renamed or deleted
         if (document()) document()->setModified();
-        emit deletedExtern(mId);
+        emit deletedExtern(id());
     }
     if (changeKind == FileMetrics::ckModified) {
         // file changed externally
-        emit modifiedExtern(mId);
+        emit modifiedExtern(id());
     }
 }
 

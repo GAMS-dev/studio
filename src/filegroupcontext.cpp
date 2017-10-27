@@ -26,7 +26,10 @@ namespace studio {
 FileGroupContext::~FileGroupContext()
 {
     setParentEntry(nullptr);
-    mChildList.clear();
+    while (mChildList.size()) {
+        FileSystemContext* fsc = mChildList.takeFirst();
+        delete fsc;
+    }
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
@@ -54,14 +57,20 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if(child->childCount() > 0) {
-            for(int j = 0; j < child->childCount(); j++) {
-                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
-                if(element != nullptr) {
-                    return element;
-                }
-            }
+        if (child->location() == filePath)
+            return child;
+        if (child->type() == FileSystemContext::FileGroup) {
+            FileGroupContext *group = static_cast<FileGroupContext*>(child);
+            return group->findFile(filePath);
         }
+//        if (child->childCount() > 0) {
+//            for (int j = 0; j < child->childCount(); j++) {
+//                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
+//                if (element != nullptr) {
+//                    return element;
+//                }
+//            }
+//        }
     }
     return nullptr;
 }
@@ -93,11 +102,10 @@ void FileGroupContext::insertChild(FileSystemContext* child)
     if (!child) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
-    if (!hit) {
-        mChildList.insert(pos, child);
-        if (child->testFlag(cfActive))
-            setFlag(cfActive);
-    }
+    if (hit) pos++;
+    mChildList.insert(pos, child);
+    if (child->testFlag(cfActive))
+        setFlag(cfActive);
 }
 
 void FileGroupContext::removeChild(FileSystemContext* child)
@@ -121,8 +129,8 @@ QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
     qDebug() << "runableGms:";
-    qDebug() << QDir(mLocation).filePath(mRunInfo);
-    return QDir(mLocation).filePath(mRunInfo);
+    qDebug() << QDir(location()).filePath(mRunInfo);
+    return QDir(location()).filePath(mRunInfo);
 }
 
 int FileGroupContext::childCount()
@@ -171,7 +179,7 @@ void FileGroupContext::directoryChanged(const QString& path)
 {
     QDir dir(path);
     if (dir.exists()) {
-        emit contentChanged(mId, dir);
+        emit contentChanged(id(), dir);
         return;
     }
     if (testFlag(cfActive)) {
@@ -181,8 +189,8 @@ void FileGroupContext::directoryChanged(const QString& path)
     deleteLater();
 }
 
-FileGroupContext::FileGroupContext(FileGroupContext* parent, int id, QString name, QString location, QString runInfo)
-    : FileSystemContext(parent, id, name, location, FileSystemContext::FileGroup)
+FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
+    : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
     mRunInfo = runInfo;
 }

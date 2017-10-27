@@ -17,24 +17,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSINFO_H
-#define GAMSINFO_H
+#ifndef GAMSLIBPROCESS_H
+#define GAMSLIBPROCESS_H
 
-#include <QString>
+#include "abstractprocess.h"
 
 namespace gams {
 namespace studio {
 
-class GAMSInfo
+class GAMSLibProcess
+        : public AbstractProcess
 {
+    Q_OBJECT
+
 public:
-    static QString systemDir();
+    GAMSLibProcess(QObject *parent = Q_NULLPTR);
+
+    void setApp(const QString &app);
+
+    QString app() override;
+    QString nativeAppPath() override;
+
+    void setTargetDir(const QString &targetDir);
+    QString targetDir() const;
+
+    void setModelNumber(int modelNumber);
+    int modelNumber() const;
+
+    void setModelName(const QString &modelName);
+    QString modelName() const;
+
+    void execute() override;
 
 private:
-    GAMSInfo();
+    QString mApp;
+    QString mTargetDir;
+    int mModelNumber = -1;
+    QString mModelName;
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // GAMSINFO_H
+#endif // GAMSLIBPROCESS_H

@@ -99,18 +99,16 @@ signals:
     void changed(int fileId);
 
 protected:
-    FileSystemContext(FileGroupContext* parent, int id, QString name, QString location);
-    FileSystemContext(FileGroupContext* parent, int id, QString name, QString location, ContextType type);
+    FileSystemContext(int id, QString name, QString location);
+    FileSystemContext(int id, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
-protected:
+private:
     int mId;
     FileGroupContext* mParent;
     QString mName;
     QString mLocation;
     ContextFlags mFlags;
-
-private:
     ContextType mType;
 };
 

@@ -21,28 +21,35 @@
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
 #include "welcomepage.h"
-#include "modeldialog.h"
+#include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 #include "newdialog.h"
+#include "gamsprocess.h"
+#include "gamslibprocess.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setAcceptDrops(true);
 
-    ui->treeView->setModel(&mFileRepo);
-    ui->treeView->setRootIndex(mFileRepo.rootTreeModelIndex());
+    ui->projectView->setModel(mFileRepo.treeModel());
+    ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
-    ui->treeView->setHeaderHidden(true);
-    ui->treeView->setItemDelegate(new TreeItemDelegate(ui->treeView));
-    ui->treeView->setIconSize(QSize(15,15));
+    ui->projectView->setHeaderHidden(true);
+    ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
+    ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->processWindow->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->outputView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->outputView->setTextInteractionFlags(ui->outputView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
@@ -51,7 +58,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
-    connect(ui->treeView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
+    connect(ui->dockOutputView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
+    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
+    connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
 }
 
@@ -62,6 +71,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initTabs()
 {
+    QPalette pal = ui->projectView->palette();
+    pal.setColor(QPalette::Highlight, Qt::transparent);
+    ui->projectView->setPalette(pal);
+
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
     hasWelcomePage = true;
 }
@@ -75,14 +88,25 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
-        CodeEditor *codeEdit = new CodeEditor(this);
-        fc->addEditor(codeEdit);
-        int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
-        tabWidget->setTabToolTip(tabIndex, fc->location());
-        tabWidget->setCurrentIndex(tabIndex);
-        fc->load(codecName);
-        ensureCodecMenu(fc->codec());
-        connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+            CodeEditor *codeEdit = new CodeEditor(this);
+            fc->addEditor(codeEdit);
+            int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            tabWidget->setTabToolTip(tabIndex, fc->location());
+            tabWidget->setCurrentIndex(tabIndex);
+            fc->load(codecName);
+            QTextCursor tc = codeEdit->textCursor();
+            tc.movePosition(QTextCursor::Start);
+            codeEdit->setTextCursor(tc);
+            ensureCodecMenu(fc->codec());
+            if (fc->metrics().fileType() == FileType::Gms) {
+                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
+            } else {
+                codeEdit->setReadOnly(true);
+                codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            }
+        }
+        // TODO(JM) other kinds
     }
 }
 
@@ -101,6 +125,16 @@ void MainWindow::ensureCodecMenu(QString codecName)
 //        mCodecGroup->addAction(codecName);
         ui->menuEncoding->addActions(mCodecGroup->actions());
     }
+}
+
+void MainWindow::setOutputViewVisibility(bool visibility)
+{
+    ui->actionOutput_View->setChecked(visibility);
+}
+
+void MainWindow::setProjectViewVisibility(bool visibility)
+{
+    ui->actionProject_View->setChecked(visibility);
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -132,13 +166,11 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    // TODO(JM) with multiple open windows we need to store focus changes to get last active editor
-    // CodeEditor* edit = qobject_cast<CodeEditor*>(ui->mainTab->currentWidget());
     FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
     if (!fc) return;
     if (fc->location().isEmpty()) {
         on_actionSave_As_triggered();
-    } else if (fc->crudState() == CrudState::eUpdate) {
+    } else if (fc->isModified()) {
         fc->save();
     }
 }
@@ -168,7 +200,8 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    QMessageBox::information(this, "Save All", "t.b.d.");
+    int i = mFileRepo.saveAll();
+    qDebug() << i << (i==1 ? " file" : " files") << " saved.";
 }
 
 void MainWindow::on_actionClose_triggered()
@@ -195,52 +228,10 @@ void MainWindow::on_actionClose_All_Except_triggered()
     }
 }
 
-void MainWindow::clearProc(int exitCode)
+void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
-    Q_UNUSED(exitCode);
-    if (mProc) {
-        qDebug() << "clear process";
-        mProc->deleteLater();
-        mProc = nullptr;
-    }
-}
-
-void MainWindow::addLine(QProcess::ProcessChannel channel, QString text)
-{
-    ui->processWindow->setTextColor(channel ? Qt::red : Qt::black);
+//    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
     emit processOutput(text);
-}
-
-void MainWindow::readyStdOut()
-{
-    mOutputMutex.lock();
-    mProc->setReadChannel(QProcess::StandardOutput);
-    bool avail = mProc->bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProc->setReadChannel(QProcess::StandardOutput);
-        addLine(QProcess::StandardOutput, mProc->readLine());
-        avail = mProc->bytesAvailable();
-        mOutputMutex.unlock();
-    }
-}
-
-void MainWindow::readyStdErr()
-{
-    mOutputMutex.lock();
-    mProc->setReadChannel(QProcess::StandardError);
-    bool avail = mProc->bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProc->setReadChannel(QProcess::StandardError);
-        addLine(QProcess::StandardError, mProc->readLine());
-        avail = mProc->bytesAvailable();
-        mOutputMutex.unlock();
-    }
 }
 
 void MainWindow::codecChanged(QAction *action)
@@ -281,30 +272,37 @@ void MainWindow::fileChangedExtern(int fileId)
     // file has not been loaded: nothing to do
     if (!fc->document()) return;
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File modified");
+    int choice;
 
     // TODO(JM) Handle other file-types
+    if (fc->metrics().fileType().autoReload()) {
+        choice = QMessageBox::Yes;
 
-    // file is loaded but unchanged: ASK, if it should be reloaded
-    if (fc->crudState() == CrudState::eRead) {
-        msgBox.setText(fc->location()+" has been modified externally.");
-        msgBox.setInformativeText("Reload?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    } else {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File modified");
+
+        // file is loaded but unchanged: ASK, if it should be reloaded
+        if (fc->document() && !fc->isModified()) {
+            msgBox.setText(fc->location()+" has been modified externally.");
+            msgBox.setInformativeText("Reload?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        }
+
+        // file has been changed in the editor: ASK, if intern or extern version should be kept.
+        if (fc->isModified()) {
+            msgBox.setText(fc->location() + " has been modified concurrently.");
+            msgBox.setInformativeText("Do you want to"
+                                      "\n- <b>Discard</b> your changes and reload the file"
+                                      "\n- <b>Ignore</b> the external changes and keep your changes");
+            msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
+        }
+
+        msgBox.setDefaultButton(QMessageBox::NoButton);
+        choice = msgBox.exec();
     }
 
-    // file has been changed in the editor: ASK, if intern or extern version should be kept.
-    if (fc->crudState() == CrudState::eUpdate) {
-        msgBox.setText(fc->location() + " has been modified concurrently.");
-        msgBox.setInformativeText("Do you want to"
-                                  "\n- <b>Discard</b> your changes and reload the file"
-                                  "\n- <b>Ignore</b> the external changes and keep your changes");
-        msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
-    }
-
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-    if (ret == QMessageBox::Yes || ret == QMessageBox::Discard) {
+    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
         fc->load(fc->codec());
     }
 }
@@ -344,19 +342,49 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
-    QTextEdit *outWin = ui->processWindow;
+    QPlainTextEdit *outWin = ui->outputView;
     outWin->moveCursor(QTextCursor::End);
     outWin->insertPlainText(text);
     outWin->moveCursor(QTextCursor::End);
 }
 
+void MainWindow::appendErrLink(QString text)
+{
+    ui->outputView->moveCursor(QTextCursor::End);
+    ui->outputView->insertPlainText(text);
+    ui->outputView->moveCursor(QTextCursor::End, QTextCursor::KeepAnchor);
+    QTextCursor cursor = ui->outputView->textCursor();
+    QTextCharFormat linkFormat = cursor.charFormat();
+    linkFormat.setAnchor(true);
+    linkFormat.setAnchorHref("http://www.google.com");
+    linkFormat.setAnchorName("Google");
+    cursor.setCharFormat(linkFormat);
+    ui->outputView->setTextCursor(cursor);
+}
+
 void MainWindow::postGamsRun()
 {
-    if(mProcLstFileInfo.exists())
-        openOrShow(mProcLstFileInfo.absoluteFilePath(), mProcFgc);
-    else
-        qDebug() << mProcLstFileInfo.absoluteFilePath() << " not found. aborting.";
+    QFileInfo fileInfo(mProcess->inputFile());
+    if(fileInfo.exists()) {// TODO: add .log and others)
+        QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
+//        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
+        openOrShow(lstFile, mProcess->context());
+    } else
+        qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
+    if (mProcess) {
+        mProcess->deleteLater();
+        mProcess = nullptr;
+    }
     ui->actionRun->setEnabled(true);
+}
+
+void MainWindow::postGamsLibRun()
+{// TODO(AF) Are there models without a GMS file? How to handle them?"
+    openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    if (mLibProcess) {
+        mLibProcess->deleteLater();
+        mLibProcess = nullptr;
+    }
 }
 
 void MainWindow::on_actionExit_Application_triggered()
@@ -371,14 +399,8 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    auto systemDir = GAMSInfo::systemDir();
-    QProcess process(this);
-    process.start(systemDir + "/gams ? lo=3");
-    QString info;
-    if (process.waitForFinished()) {
-        info = process.readAllStandardOutput();;
-    }
-    QMessageBox::about(this, "About GAMS Studio", info);
+    auto about = GAMSProcess::aboutGAMS();
+    QMessageBox::about(this, "About GAMS Studio", about);
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -386,24 +408,32 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this, "About Qt");
 }
 
-void MainWindow::on_actionProject_Explorer_triggered(bool checked)
+void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     if(checked)
-        ui->dockProjectExplorer->show();
+        ui->dockOutputView->show();
     else
-        ui->dockProjectExplorer->hide();
+        ui->dockOutputView->hide();
 }
 
-void MainWindow::on_actionBottom_Panel_triggered(bool checked)
+void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     if(checked)
-        ui->dockBottom->show();
+        ui->dockProjectView->show();
     else
-        ui->dockBottom->hide();
+        ui->dockProjectView->hide();
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
+    //TODO(CW): a closed tabWidget does not delte the underlying widget object. therefore we need to delete in manually. This needs review
+    gdxviewer::GdxViewer* gdxViewer = dynamic_cast<gdxviewer::GdxViewer*>(ui->mainTab->widget(index));
+    if(gdxViewer)
+    {
+        delete gdxViewer;
+        return;
+    }
+
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -414,7 +444,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 
     int ret = QMessageBox::Discard;
-    if (fc->editors().size() == 1 && fc->crudState() == CrudState::eUpdate) {
+    if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
         QMessageBox msgBox;
         msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
@@ -423,7 +453,9 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
     }
-    if (ret == QMessageBox::Save) fc->save();
+    if (ret == QMessageBox::Save)
+        fc->save();
+
     if (ret != QMessageBox::Cancel) {
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
@@ -439,8 +471,18 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     if(!hasWelcomePage) {
         ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
         hasWelcomePage = true;
-    } else {
-        // TODO: jump to welcome page
+    }
+    ui->mainTab->setCurrentIndex(0);
+}
+
+void MainWindow::renameToBackup(QFile *file)
+{
+    int suffix = 1;
+    QString filename = file->fileName();
+    if(!file->rename(filename + ".bak")) {
+        while (!file->rename(filename + "." + QString::number(suffix) + ".bak")) {
+            suffix++;
+        }
     }
 }
 
@@ -451,59 +493,69 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
+        QFileInfo fileInfo(item->files().first());
+        QString gmsFileName = fileInfo.completeBaseName() + ".gms";
+        QString gmsFilePath = GAMSPaths::defaultWorkingDir() + "/" + gmsFileName;
+        QFile gmsFile(gmsFilePath);
 
-        QProcess libProc(this);
+        if (gmsFile.exists()) {
 
-        QString libExec = QDir(GAMSInfo::systemDir()).filePath(item->library()->execName());
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("File already existing");
 
-        //TODO(CW): is this the correct working directory? We need a descent working directory
-        libProc.setWorkingDirectory(".");
-        QStringList args(item->name());
-        libProc.start(libExec, args);
-        libProc.waitForFinished();
+            msgBox.setText("The file you are trying to load already exists in your temporary working directory.");
+            msgBox.setInformativeText("What do you want to do with the existing file?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Open", QMessageBox::ActionRole);
+            msgBox.addButton("Replace", QMessageBox::ActionRole);
+            int answer = msgBox.exec();
 
-        //TODO(CW): check if the creation of fileName is correct
-        QString fileName = item->files().at(0).split(".").at(0) + ".gms";
-        FileContext *fc = addContext(".", fileName);
-        openOrShow(fc);
+            switch(answer) {
+            case 0: // open
+                addContext("", gmsFilePath);
+                break;
+            case 1: // replace
+                renameToBackup(&gmsFile);
+                mLibProcess = new GAMSLibProcess(this);
+                mLibProcess->setApp(item->library()->execName());
+                mLibProcess->setModelName(item->name());
+                mLibProcess->setInputFile(gmsFileName);
+                mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+                mLibProcess->execute();
+                connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+                connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+                break;
+            case QMessageBox::Abort:
+                break;
+            }
+        }
     }
 }
 
-void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
 {
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShow(fc);
-    }
+    openContext(index);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    QSet<int> openIds;
-    QString lastName;
-    for (QPlainTextEdit *ed: mFileRepo.editors(mFileRepo.groupContext(mFileRepo.rootTreeModelIndex())->id())) {
-        FileContext *fc = mFileRepo.fileContext(ed);
-        if (!ed) continue;
-        CrudState cs = fc->crudState();
-        if (cs == CrudState::eUpdate || cs == CrudState::eCreate) {
-            qDebug() << "CRUD-state: " << (int)cs;
-            openIds << fc->id();
-            lastName = fc->location();
-        }
-    }
-    if (openIds.size() > 0) {
+    QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
+    if (oFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
-        QString filesText = openIds.size()==1 ? lastName+" has been modified."
-                                              : QString::number(openIds.size())+" files have been modified";
+        QString filesText = oFiles.size()==1 ? oFiles.first()->location() + " has been modified."
+                                             : QString::number(oFiles.size())+" files have been modified";
         msgBox.setText(filesText);
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
         if (ret == QMessageBox::Save) {
-            // TODO(JM) iterate over all files to save.
+            for (FileContext* fc: oFiles) {
+                if (fc->isModified()) {
+                    fc->save();
+                }
+            }
         }
         if (ret == QMessageBox::Cancel) {
             event->setAccepted(false);
@@ -511,40 +563,66 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 }
 
-void MainWindow::on_actionRun_triggered()
+void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    QString gamsPath = GAMSInfo::systemDir() + "/gams";
-    // TODO: add option to clear output view before running next job
+    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+        openContext(ui->projectView->currentIndex());
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
 
+void MainWindow::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->setDropAction(Qt::CopyAction);
+        e->accept();
+    } else {
+        e->ignore();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->accept();
+        QStringList pathList;
+        for (QUrl url: e->mimeData()->urls()) {
+            if (pathList.size() > 5) {
+                break;
+            }
+            pathList << url.toLocalFile();
+        }
+        for (QString fName: pathList) {
+            QFileInfo fi(fName);
+            if (QFileInfo(fName).isFile()) {
+                openOrShow(fi.canonicalFilePath(), nullptr);
+            }
+        }
+    }
+}
+
+void MainWindow::on_actionRun_triggered()
+{// TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    mProcFgc = fgc;
     if (!fgc)
         return;
 
     ui->actionRun->setEnabled(false);
 
-    qDebug() << "starting process";
-    mProc = new QProcess(this);
-
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     QString basePath = gmsFileInfo.absolutePath();
 
-    QString lstFileName = gmsFileInfo.completeBaseName() + ".lst"; // TODO: add .log and others
-    mProcLstFileInfo = QFileInfo(basePath + "/" + lstFileName);
+    mProcess = new GAMSProcess(this);
+    mProcess->setWorkingDir(gmsFileInfo.path());
+    mProcess->setInputFile(gmsFilePath);
+    mProcess->setContext(fgc);
+    mProcess->execute();
 
-    mProc->setWorkingDirectory(gmsFileInfo.path());
-    QStringList args(QDir::toNativeSeparators(gmsFilePath)); //TODO(CW): call toNativeSeparators here or in runableGms?
-    args.append("lo=3"); //TODO(CW): we need this at least on wnidows in order to write explicitly to stdout. As soon as we allow user input for options, this needs to be adjusted
-    mProc->start(gamsPath, args);
-
-    connect(mProc, &QProcess::readyReadStandardOutput, this, &MainWindow::readyStdOut);
-    connect(mProc, &QProcess::readyReadStandardError, this, &MainWindow::readyStdErr);
-
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::postGamsRun);
-    connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished), this, &MainWindow::clearProc);
-
+    connect(mProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 
 void MainWindow::openOrShow(FileContext* fileContext)
@@ -556,18 +634,30 @@ void MainWindow::openOrShow(FileContext* fileContext)
     } else {
         createEdit(ui->mainTab, fileContext->id());
     }
+    if (ui->mainTab->currentWidget())
+        ui->mainTab->currentWidget()->setFocus();
 }
 
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
 {
     QFileInfo fileInfo(filePath);
-    QModelIndex qmi = mFileRepo.findEntry(fileInfo.fileName(), fileInfo.filePath(), mFileRepo.index(parent));
-    if (!qmi.isValid()) {
+    FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
+    if (!fsc) {
         // not yet opened by user, open file in new tab
-        QModelIndex groupMI = mFileRepo.ensureGroup(fileInfo.fileName());
-        qmi = mFileRepo.addFile(fileInfo.fileName(), fileInfo.canonicalFilePath(), groupMI);
+        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+        fsc = mFileRepo.findContext(filePath, group);
+        if (!fsc) {
+            FATAL() << "File not found: " << filePath;
+        }
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext *fc = static_cast<FileContext*>(fsc);
+            createEdit(ui->mainTab, fc->id());
+            if (ui->mainTab->currentWidget())
+                ui->mainTab->currentWidget()->setFocus();
+            ui->projectView->expand(mFileRepo.treeModel()->index(group));
+        }
     }
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(qmi.internalPointer());
+    mRecent.path = fileInfo.path();
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
@@ -579,32 +669,48 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
+
         // TODO(JM) extend for each possible type
-        qDebug() << "Type: " << fInfo.suffix();
-        FileType fType = (fInfo.suffix() == "gms") ? FileType::ftGms : FileType::ftTxt;
 
-        if (fType == FileType::ftGms || fType == FileType::ftTxt) {
+        FileType fType = FileType::from(fInfo.suffix());
+
+        if (fType == FileType::Gms) {
             // Create node for GIST directory and load all files of known filetypes
-            FileSystemContext *hit = mFileRepo.findFile(fInfo.filePath());
-            if(hit == nullptr) {
-                QModelIndex groupMI = mFileRepo.ensureGroup(fInfo.canonicalFilePath());
-
-                QModelIndex fileMI = mFileRepo.addFile(fInfo.fileName(), fInfo.canonicalFilePath(), groupMI);
-                FileContext *fc = mFileRepo.fileContext(fileMI);
-                createEdit(ui->mainTab, fc->id());
-                ui->treeView->expand(groupMI);
-                mRecent.path = fInfo.path();
-            } else {
-                auto groupContext = static_cast<FileGroupContext*>(mFileRepo.findFile(fInfo.absolutePath() +
-                                                                                      "/" + fInfo.baseName()));
-                openOrShow(fInfo.filePath(), groupContext);
-            }
+            openOrShow(fInfo.filePath(), nullptr);
         }
-        if (fType == FileType::ftGsp) {
+        if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         }
     }
     return fc;
+}
+
+void MainWindow::openContext(const QModelIndex& index)
+{
+    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        openOrShow(fc);
+    }
+}
+
+void MainWindow::on_mainTab_currentChanged(int index)
+{
+    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
+    if (edit) mFileRepo.editorActivated(edit);
+}
+
+void MainWindow::on_actionGDX_Viewer_triggered()
+{
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open GDX file...",
+                                                 mRecent.path,
+                                                 tr("GDX file (*.gdx);;"
+                                                 "All files (*)"));
+    if (!fileName.isEmpty()) {
+        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fileName, GAMSPaths::systemDir()), "GDX Viewer");
+        ui->mainTab->setCurrentIndex(idx);
+    }
 }
 
 }

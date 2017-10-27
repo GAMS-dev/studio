@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>GAMS Studio</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../icons/icons.qrc">
+    <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -85,7 +89,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -121,8 +125,8 @@
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionProject_Explorer"/>
-    <addaction name="actionBottom_Panel"/>
+    <addaction name="actionProject_View"/>
+    <addaction name="actionOutput_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
    </widget>
@@ -142,6 +146,7 @@
     <addaction name="actionRun"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
+    <addaction name="actionGDX_Viewer"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -177,7 +182,7 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QDockWidget" name="dockProjectExplorer">
+  <widget class="QDockWidget" name="dockProjectView">
    <property name="accessibleName">
     <string>Project Explorer</string>
    </property>
@@ -205,7 +210,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeView" name="treeView">
+      <widget class="QTreeView" name="projectView">
        <property name="uniformRowHeights">
         <bool>true</bool>
        </property>
@@ -217,7 +222,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockBottom">
+  <widget class="QDockWidget" name="dockOutputView">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -245,18 +250,15 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="processWindow">
-       <property name="undoRedoEnabled">
-        <bool>false</bool>
+      <widget class="QPlainTextEdit" name="outputView">
+       <property name="mouseTracking">
+        <bool>true</bool>
        </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
-       <property name="acceptRichText">
-        <bool>false</bool>
-       </property>
        <property name="textInteractionFlags">
-        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
      </item>
@@ -294,7 +296,7 @@
     <string>About Qt</string>
    </property>
   </action>
-  <action name="actionBottom_Panel">
+  <action name="actionOutput_View">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -308,7 +310,7 @@
     <string>Output</string>
    </property>
   </action>
-  <action name="actionProject_Explorer">
+  <action name="actionProject_View">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -392,12 +394,12 @@
   </action>
   <action name="actionGAMS_Library">
    <property name="text">
-    <string>GAMS Library Explorer</string>
+    <string>Model Library Explorer</string>
    </property>
   </action>
   <action name="actionRun">
    <property name="icon">
-    <iconset resource="icons/icons.qrc">
+    <iconset resource="../icons/icons.qrc">
      <normaloff>:/img/play</normaloff>:/img/play</iconset>
    </property>
    <property name="text">
@@ -407,10 +409,15 @@
     <string>F9</string>
    </property>
   </action>
+  <action name="actionGDX_Viewer">
+   <property name="text">
+    <string>Open GDX File</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="icons/icons.qrc"/>
+  <include location="../icons/icons.qrc"/>
  </resources>
  <connections/>
 </ui>

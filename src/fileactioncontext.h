@@ -16,7 +16,7 @@ public:
 
 private:
     friend class FileRepository;
-    FileActionContext(FileGroupContext *parent, int id, QAction* action);
+    FileActionContext(int id, QAction* action);
 
 private:
     QAction *mAction;

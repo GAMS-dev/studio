@@ -17,38 +17,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBRARYITEM_H
-#define LIBRARYITEM_H
+#ifndef GAMSINFO_H
+#define GAMSINFO_H
 
-#include <memory>
 #include <QString>
-#include <QStringList>
-#include "library.h"
 
 namespace gams {
 namespace studio {
 
-class LibraryItem
+class GAMSPaths
 {
 public:
-    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files);
-
-    std::shared_ptr<Library> library() const;
-    QStringList values() const;
-    QString name() const;
-    QStringList files() const;
-    QString longDescription() const;
+    static QString systemDir();
+    static QString defaultWorkingDir();
 
 private:
-    std::shared_ptr<Library> mLibrary;
-    QString mDescription;
-    QString mLongDescription;
-    QStringList mFiles;
-    QStringList mValues;
-
+    GAMSPaths();
 };
 
-} // namespace sutdio
-} // namespace gams
+}
+}
 
-#endif // LIBRARYITEM_H
+#endif // GAMSINFO_H

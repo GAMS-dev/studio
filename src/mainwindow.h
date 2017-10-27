@@ -31,6 +31,9 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
+class GAMSProcess;
+class GAMSLibProcess;
+
 struct RecentData {
     int editFileId = -1;
     QPlainTextEdit* editor = nullptr;
@@ -51,10 +54,7 @@ signals:
     void processOutput(QString text);
 
 private slots:
-    void clearProc(int exitCode);
-    void addLine(QProcess::ProcessChannel channel, QString text);
-    void readyStdOut();
-    void readyStdErr();
+    void addProcessData(QProcess::ProcessChannel channel, QString text);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
@@ -62,8 +62,12 @@ private slots:
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QString text);
+    void appendErrLink(QString text);
     void postGamsRun();
-
+    void postGamsLibRun();
+    // View
+    void setOutputViewVisibility(bool visibility);
+    void setProjectViewVisibility(bool visibility);
 
 private slots:
     // File
@@ -85,36 +89,40 @@ private slots:
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
     // View
-    void on_actionProject_Explorer_triggered(bool checked);
-    void on_actionBottom_Panel_triggered(bool checked);
+    void on_actionOutput_View_triggered(bool checked);
+    void on_actionProject_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // AOB
     void on_mainTab_tabCloseRequested(int index);
-    void on_treeView_doubleClicked(const QModelIndex &index);
+    void on_projectView_doubleClicked(const QModelIndex &index);
+    void on_mainTab_currentChanged(int index);
+
+    void on_actionGDX_Viewer_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dropEvent(QDropEvent *e);
 
 private:
     void initTabs();
     void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent);
     FileContext* addContext(const QString &path, const QString &fileName);
+    void openContext(const QModelIndex& index);
 
 private:
     Ui::MainWindow *ui;
-    //TODO(CW): This needs refactoring in order to remove global variables and encapsulate the process and all its required information
-    QProcess *mProc = nullptr;
-    QFileInfo mProcLstFileInfo;
-    FileGroupContext* mProcFgc = nullptr;
+    GAMSProcess *mProcess = nullptr;
+    GAMSLibProcess *mLibProcess = nullptr;
     QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
-    QMutex mOutputMutex;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     bool hasWelcomePage = false;
-
+    void renameToBackup(QFile *file);
 };
 
 }

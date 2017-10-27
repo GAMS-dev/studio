@@ -24,15 +24,13 @@ namespace gams {
 namespace studio {
 
 FileRepository::FileRepository(QObject* parent)
-    : QAbstractItemModel(parent), mNextId(0)
-{
-    mRoot = new FileGroupContext(nullptr, mNextId++, "Root", "", "");
-    mTreeRoot = new FileGroupContext(mRoot, mNextId++, "TreeRoot", "", "");
-}
+    : QObject(parent), mNextId(0), mTreeModel(new FileTreeModel(this, new FileGroupContext(mNextId++, "Root", "", "")))
+{}
 
 FileRepository::~FileRepository()
 {
-    delete mRoot;
+    FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
+    delete mTreeModel;
 }
 
 void FileRepository::setDefaultActions(QList<QAction*> directActions)
@@ -42,8 +40,9 @@ void FileRepository::setDefaultActions(QList<QAction*> directActions)
         fac->deleteLater();
     }
     for (QAction *act: directActions) {
-        mFileActions.append(new FileActionContext(mTreeRoot, mNextId++, act));
+        mFileActions.append(new FileActionContext(mNextId++, act));
     }
+    updateActions();
 }
 
 FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startNode)
@@ -64,7 +63,7 @@ FileSystemContext* FileRepository::context(int fileId, FileSystemContext* startN
 
 FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNode)
 {
-    auto c = context(fileId, (startNode ? startNode : mRoot));
+    auto c = context(fileId, (startNode ? startNode : mTreeModel->rootContext()));
     if (c->type() == FileSystemContext::File)
         return static_cast<FileContext*>(c);
     return nullptr;
@@ -72,114 +71,17 @@ FileContext* FileRepository::fileContext(int fileId, FileSystemContext* startNod
 
 FileGroupContext* FileRepository::groupContext(int fileId, FileSystemContext* startNode)
 {
-    auto c = context(fileId, startNode ? startNode : mRoot);
+    auto c = context(fileId, startNode ? startNode : mTreeModel->rootContext());
     if (c->type() == FileSystemContext::FileGroup) {
         return static_cast<FileGroupContext*>(c);
     }
     return c->parentEntry();
 }
 
-QModelIndex FileRepository::index(FileSystemContext *entry)
-{
-     if (!entry)
-         return QModelIndex();
-     if (!entry->parent())
-         return createIndex(0, 0, entry);
-     for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
-         if (entry->parentEntry()->childEntry(i) == entry) {
-             return createIndex(i, 0, entry);
-         }
-     }
-     return QModelIndex();
-}
-
-QModelIndex FileRepository::index(int row, int column, const QModelIndex& parent) const
-{
-    if (!hasIndex(row, column, parent))
-        return QModelIndex();
-    FileSystemContext *fc = context(parent)->childEntry(row);
-    if (!fc)
-        FATAL() << "invalid child for row " << row;
-    return createIndex(row, column, fc);
-}
-
-QModelIndex FileRepository::parent(const QModelIndex& child) const
-{
-    FileSystemContext* eChild = context(child);
-    if (eChild == mTreeRoot || eChild == mRoot)
-        return QModelIndex();
-    FileGroupContext* eParent = eChild->parentEntry();
-    if (!eParent)
-        FATAL() << "invalid parent for child " << eChild->name();
-    if (eParent == mTreeRoot || eParent == mRoot)
-        return createIndex(0, child.column(), eParent);
-    int row = eParent->indexOf(eChild);
-    if (row < 0)
-        FATAL() << "could not find child in parent";
-    return createIndex(row, child.column(), eParent);
-}
-
-int FileRepository::rowCount(const QModelIndex& parent) const
-{
-    FileSystemContext* entry = context(parent);
-    if (!entry) return 0;
-    return entry->childCount();
-}
-
-int FileRepository::columnCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return 1;
-}
-
-QVariant FileRepository::data(const QModelIndex& index, int role) const
-{
-    if (!index.isValid()) return QVariant();
-    switch (role) {
-
-    case Qt::DisplayRole:
-        return context(index)->caption();
-
-    case Qt::FontRole:
-        if (context(index)->flags().testFlag(FileSystemContext::cfActive)) {
-            QFont f;
-            f.setBold(true);
-            return f;
-        }
-        if (context(index)->type() == FileSystemContext::FileAction) {
-            QFont f;
-            f.setItalic(true);
-            return f;
-        }
-        break;
-
-    case Qt::ForegroundRole: {
-        FileSystemContext::ContextFlags flags = context(index)->flags();
-        if (flags.testFlag(FileSystemContext::cfMissing))
-            return QColor(Qt::red);
-        if (flags.testFlag(FileSystemContext::cfActive)) {
-            return context(index)->type() == FileSystemContext::FileGroup ? QColor(Qt::black)
-                                                                       : QColor(Qt::blue);
-        }
-        break;
-    }
-
-    case Qt::DecorationRole:
-        return context(index)->icon();
-
-    case Qt::ToolTipRole:
-        return context(index)->location();
-
-    default:
-        break;
-    }
-    return QVariant();
-}
-
 QModelIndex FileRepository::findEntry(QString name, QString location, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
-        parentIndex = rootModelIndex();
+        parentIndex = mTreeModel->rootModelIndex();
     FileGroupContext *par = groupContext(parentIndex);
     if (!par)
         FATAL() << "Can't get parent object";
@@ -189,123 +91,136 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     if (hit) {
         FileSystemContext *fc = par->childEntry(offset);
         if (fc->location().compare(location, Qt::CaseInsensitive) == 0) {
-            return index(offset, 0, parentIndex);
+            return mTreeModel->index(offset, 0, parentIndex);
         }
     }
     return QModelIndex();
 }
 
-FileSystemContext* FileRepository::findFile(QString filePath)
+FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
 {
-    FileSystemContext* fsc = mTreeRoot->findFile(filePath);
+    FileGroupContext *group = fileGroup ? fileGroup : mTreeModel->rootContext();
+    FileSystemContext* fsc = group->findFile(filePath);
     return fsc;
 }
 
-QModelIndex FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
+void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
-    if (!parentIndex.isValid())
-        parentIndex = rootTreeModelIndex();
-    FileGroupContext *par = groupContext(parentIndex);
-    if (!par)
-        FATAL() << "Can't get parent object";
-
-    bool hit;
-    int offset = par->peekIndex(name, &hit);
-    if (hit) {
-        FileSystemContext *fc = par->childEntry(offset);
-        fc->setLocation(location);
-        qDebug() << "found dir " << name << " for " << location << " at pos=" << offset;
-        return index(offset, 0, parentIndex);
-    }
-
-    beginInsertRows(parentIndex, offset, offset);
-    FileGroupContext* fgContext = new FileGroupContext(groupContext(parentIndex), mNextId++, name, location, runInfo);
-    endInsertRows();
-    connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
-    connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
-    qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
-//    updatePathNode(fgContext->id(), fgContext->location());
-    return index(offset, 0, parentIndex);
+    FileSystemContext* fsc = findContext(filePath, fileGroup);
+    resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-QModelIndex FileRepository::addFile(QString name, QString location, QModelIndex parentIndex)
+QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
+{
+    // TODO(JM) rename this to modifiedFiles()
+    if (!fileGroup)
+        fileGroup = mTreeModel->rootContext();
+    QList<FileContext*> res;
+    for (int i = 0; i < fileGroup->childCount(); ++i) {
+        if (fileGroup->childEntry(i)->type() == FileSystemContext::FileGroup) {
+            FileGroupContext *fgc = static_cast<FileGroupContext*>(fileGroup->childEntry(i));
+            QList<FileContext*> sub = modifiedFiles(fgc);
+            for (FileContext *fc : sub) {
+                if (!res.contains(fc)) {
+                    res << fc;
+                }
+            }
+        }
+        if (fileGroup->childEntry(i)->type() == FileSystemContext::File) {
+            FileContext *fc = static_cast<FileContext*>(fileGroup->childEntry(i));
+            if (fc->isModified()) {
+                res << fc;
+            }
+        }
+    }
+    return res;
+}
+
+int FileRepository::saveAll()
+{
+    QList<FileContext*> files = modifiedFiles();
+    for (FileContext* fc: files) {
+        fc->save();
+    }
+    return files.size();
+}
+
+FileGroupContext* FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
-        parentIndex = rootModelIndex();
+        parentIndex = mTreeModel->rootModelIndex();
     FileGroupContext *par = groupContext(parentIndex);
     if (!par)
         FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
-    if (hit) {
-        FileSystemContext *fc = par->childEntry(offset);
-        fc->setLocation(location);
-        fc->setFlag(FileSystemContext::cfMissing, !QFile(location).exists());
-        qDebug() << "found file " << name << " for " << location << " at pos=" << offset;
-        return index(offset, 0, parentIndex);
-    }
-    beginInsertRows(parentIndex, offset, offset);
-    FileContext* fContext = new FileContext(groupContext(parentIndex), mNextId++, name, location);
-    endInsertRows();
-    connect(fContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
-    connect(fContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
-    connect(fContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
+    if (hit) offset++;
+    FileGroupContext* fgContext = new FileGroupContext(mNextId++, name, location, runInfo);
+    mTreeModel->insertChild(offset, groupContext(parentIndex), fgContext);
+    connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
+    connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+    fgContext->setWatched();
+    qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
+    updateActions();
+    return fgContext;
+}
+
+FileContext* FileRepository::addFile(QString name, QString location, FileGroupContext* parent)
+{
+    if (!parent)
+        parent = mTreeModel->rootContext();
+    bool hit;
+    int offset = parent->peekIndex(name, &hit);
+    if (hit)
+        FATAL() << "The group '" << parent->name() << "' already contains '" << name << "'";
+    FileContext* fileContext = new FileContext(mNextId++, name, location);
+    mTreeModel->insertChild(offset, parent, fileContext);
+    connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
+    connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
+    connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
+    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
-    return index(offset, 0, parentIndex);
+    updateActions();
+    return fileContext;
 }
 
 void FileRepository::removeNode(FileSystemContext* node)
 {
-    QModelIndex mi = index(node);
-    int ind = node->parentEntry()->indexOf(node);
-    beginRemoveRows(parent(mi), ind, ind);
-    node->setParentEntry(nullptr);
+    mTreeModel->removeChild(node);
     delete node;
-    endRemoveRows();
 }
 
-QModelIndex FileRepository::rootTreeModelIndex()
-{
-    return createIndex(0, 0, mTreeRoot);
-}
-
-QModelIndex FileRepository::rootModelIndex()
-{
-    return createIndex(0, 0, mRoot);
-}
-
-QModelIndex FileRepository::ensureGroup(const QString &filePath)
+FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
 {
     bool extendedCaption = false;
+    FileGroupContext* group = nullptr;
     QFileInfo fi(filePath);
-    QFileInfo di(fi.path());
-    for (int i = 0; i < mTreeRoot->childCount(); ++i) {
-        FileSystemContext* group = mTreeRoot->childEntry(i);
-        if (!group)
-            FATAL() << "invalid element at index " << i << " in TreeRoot";
-        if (fi.baseName() == group->name()) {
-            // (name,location)-group exists? -> return index
-            if (di == QFileInfo(group->location()))
-                return createIndex(i, 0, group);
-            else {
+    QFileInfo di(fi.canonicalPath());
+    for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
+        FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
+        if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
+            group = static_cast<FileGroupContext*>(fsc);
+            if (di == QFileInfo(group->location())) {
+                return group;
+            } else {
                 extendedCaption = true;
                 group->setFlag(FileSystemContext::cfExtendCaption);
             }
         }
     }
-    QModelIndex newGroupMi = addGroup(fi.baseName(), fi.path(), fi.fileName(), rootTreeModelIndex());
+    group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
     if (extendedCaption)
-        groupContext(newGroupMi)->setFlag(FileSystemContext::cfExtendCaption);
-    updatePathNode(groupContext(newGroupMi)->id(), fi.path());
-    return newGroupMi;
+        group->setFlag(FileSystemContext::cfExtendCaption);
+    updatePathNode(group->id(), fi.path());
+    return group;
 }
 
 void FileRepository::close(int fileId)
 {
     FileContext *fc = fileContext(fileId);
-    QModelIndex fci = index(fc);
-    dataChanged(fci, fci);
+    QModelIndex fci = mTreeModel->index(fc);
+    mTreeModel->dataChanged(fci, fci);
     emit fileClosed(fileId, QPrivateSignal());
 }
 
@@ -333,18 +248,17 @@ void FileRepository::dump(FileSystemContext *fc, int lv)
 
 void FileRepository::nodeChanged(int fileId)
 {
-    FileSystemContext* nd = context(fileId, mRoot);
+    FileSystemContext* nd = context(fileId, mTreeModel->rootContext());
     if (!nd) return;
-    QModelIndex ndIndex = index(nd);
-    dataChanged(ndIndex, ndIndex);
+    QModelIndex ndIndex = mTreeModel->index(nd);
+    emit mTreeModel->dataChanged(ndIndex, ndIndex);
 }
 
 typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
 void FileRepository::updatePathNode(int fileId, QDir dir)
 {
-    qDebug() << "updatePathNode: " << dir;
-    FileGroupContext *parGroup = groupContext(fileId, mRoot);
+    FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
     if (!parGroup)
         throw QException();
     if (dir.exists()) {
@@ -381,7 +295,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         }
         // add newly appeared files and directories
         for (QFileInfo fi: fiList) {
-            addFile(fi.fileName(), fi.canonicalFilePath(), index(parGroup));
+            addFile(fi.fileName(), fi.canonicalFilePath(), parGroup);
         }
     }
 }
@@ -391,7 +305,20 @@ void FileRepository::nodeClicked(QModelIndex index)
     FileActionContext* act = actionContext(index);
     if (act) {
         emit act->trigger();
+        return;
     }
+}
+
+void FileRepository::editorActivated(QPlainTextEdit* edit)
+{
+    FileContext *fc = fileContext(edit);
+    QModelIndex mi = mTreeModel->index(fc);
+    mTreeModel->setCurrent(mi);
+}
+
+FileTreeModel*FileRepository::treeModel() const
+{
+    return mTreeModel;
 }
 
 void FileRepository::onFileChangedExtern(int fileId)
@@ -418,7 +345,32 @@ void FileRepository::processExternFileEvents()
         emit fileChangedExtern(fileId);
     }
 }
-  
+
+void FileRepository::updateActions()
+{
+    if (mFileActions.isEmpty())
+        return;
+    bool actionsVisibleOld = mFileActions.first()->parentEntry();
+    bool actionsVisibleNew = true;
+    for (int i = 0; i < mTreeModel->rootContext()->childCount(); i++) {
+        if (mTreeModel->rootContext()->childEntry(i)->type() != FileSystemContext::FileAction) {
+            actionsVisibleNew = false;
+        }
+    }
+    if (actionsVisibleNew != actionsVisibleOld) {
+        if (actionsVisibleNew) {
+            int i = 0;
+            for (FileActionContext *fac: mFileActions) {
+                mTreeModel->insertChild(i++, mTreeModel->rootContext(), fac);
+            }
+        } else {
+            for (FileActionContext *fac: mFileActions) {
+                mTreeModel->removeChild(fac);
+            }
+        }
+    }
+}
+
 FileSystemContext*FileRepository::context(const QModelIndex& index) const
 {
     return static_cast<FileSystemContext*>(index.internalPointer());
@@ -434,8 +386,8 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
 
 FileContext* FileRepository::fileContext(QPlainTextEdit* edit)
 {
-    for (int i = 0; i < mTreeRoot->childCount(); ++i) {
-        FileSystemContext *group = mTreeRoot->childEntry(i);
+    for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
+        FileSystemContext *group = mTreeModel->rootContext()->childEntry(i);
         for (int j = 0; j < group->childCount(); ++j) {
             FileContext *file = qobject_cast<FileContext*>(group->childEntry(j));
             if (file && file->hasEditor(edit)) {
@@ -464,7 +416,7 @@ FileActionContext*FileRepository::actionContext(const QModelIndex& index) const
 
 QList<QPlainTextEdit*> FileRepository::editors(int fileId)
 {
-    FileSystemContext* fsc = (fileId < 0 ? mTreeRoot : context(fileId, mTreeRoot));
+    FileSystemContext* fsc = (fileId < 0 ? mTreeModel->rootContext() : context(fileId, mTreeModel->rootContext()));
     if (!fsc) return QList<QPlainTextEdit*>();
 
     if (fsc->type() == FileSystemContext::FileGroup) {

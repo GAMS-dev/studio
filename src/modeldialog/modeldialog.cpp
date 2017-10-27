@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "modeldialog.h"
-#include "gamsinfo.h"
+#include "gamspaths.h"
 
 #include <QDir>
 #include <QFile>
@@ -38,8 +38,9 @@ ModelDialog::ModelDialog(QWidget *parent) :
     QDialog(parent)
 {
     ui.setupUi(this);
+    this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    QDir gamsSysDir(GAMSInfo::systemDir());
+    QDir gamsSysDir(GAMSPaths::systemDir());
     QList<LibraryItem> items;
 
     items = GlbParser::parseFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
@@ -63,7 +64,7 @@ ModelDialog::ModelDialog(QWidget *parent) :
     addLibrary(items);
 
     items = GlbParser::parseFile(gamsSysDir.filePath("finlib_ml/finlib.glb"));
-    items.at(0).library()->setName("Fin Library");
+    items.at(0).library()->setName("FIN Library");
     addLibrary(items);
 
     items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));

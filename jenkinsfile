@@ -5,10 +5,6 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
 
-    triggers {
-        cron('0 23 * * *')
-    }
-
     stages {
         stage('Build') {
             steps {
@@ -105,11 +101,11 @@ pipeline {
 
                             # collect files
                             cp bin/studio appdir/usr/bin/
-                            cp res/gamsstudio.desktop appdir/
-                            cp src/icons/* appdir/
+                            cp gamsstudio.desktop appdir/
+                            cp icons/* appdir/
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs
+                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
@@ -118,7 +114,7 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '*studio*', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {

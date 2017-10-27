@@ -21,9 +21,11 @@
 #define FILEREPOSITORY_H
 
 #include <QtWidgets>
+#include "filetreemodel.h"
 #include "fileactioncontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
+#include "filetype.h"
 
 namespace gams {
 namespace studio {
@@ -36,13 +38,16 @@ typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
 /// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
 /// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
 ///
-class FileRepository : public QAbstractItemModel
+class FileRepository : public QObject
 {
     Q_OBJECT
 public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
+    /// Defines actions for the <c>FileRepository</c>. For each action a <c>FileActionContext</c>-node is generated
+    /// that is shown only, if there are no other nodes in the tree.
+    /// \param directActions A list of actions to be triggered directly.
     void setDefaultActions(QList<QAction*> directActions);
 
     /// \brief Get the <c>FileSystemContext</c> related to a file Id.
@@ -88,15 +93,7 @@ public:
     /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
     FileActionContext* actionContext(const QModelIndex& index) const;
 
-    QList<QPlainTextEdit*> editors(int fileId);
-
-    QModelIndex index(FileSystemContext* entry);
-
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    QModelIndex parent(const QModelIndex &child) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QList<QPlainTextEdit*> editors(int fileId = -1);
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
@@ -104,19 +101,26 @@ public:
     /// \param projectFile The file name w/o path of the project OR gms-start-file
     /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
     /// \return Model index to the new FileGroupContext.
-    QModelIndex addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+    FileGroupContext* addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
 
-    QModelIndex addFile(QString name, QString location, QModelIndex parentIndex = QModelIndex());
+    /// Adds a file node to the file repository.
+    /// \param name The filename without path.
+    /// \param location The filename with full path.
+    /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
+    /// \return a <c>QModelIndex</c> to the new node.
+    FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
     void removeNode(FileSystemContext *node);
-    QModelIndex rootTreeModelIndex();
-    QModelIndex rootModelIndex();
-    QModelIndex ensureGroup(const QString& filePath);
+    FileGroupContext* ensureGroup(const QString& filePath);
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-    FileSystemContext* findFile(QString filePath);
+    FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
+    QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
+    int saveAll();
+    void editorActivated(QPlainTextEdit* edit);
+    FileTreeModel* treeModel() const;
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
@@ -127,6 +131,7 @@ public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
+    void findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup = nullptr);
 
 private slots:
     void onFileChangedExtern(int fileId);
@@ -134,11 +139,11 @@ private slots:
     void processExternFileEvents();
 
 private:
+    void updateActions();
 
 private:
     int mNextId;
-    FileGroupContext* mRoot;
-    FileGroupContext* mTreeRoot;
+    FileTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
     QList<int> mChangedIds;
     QList<int> mDeletedIds;

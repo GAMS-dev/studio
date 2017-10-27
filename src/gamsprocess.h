@@ -17,22 +17,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "treeitemdelegate.h"
+#ifndef GAMSPROCESS_H
+#define GAMSPROCESS_H
+
+#include "abstractprocess.h"
 
 namespace gams {
 namespace studio {
 
-TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
-{}
+class FileGroupContext;
 
-void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+class GAMSProcess
+        : public AbstractProcess
 {
-    QStyleOptionViewItem opt(option);
-    opt.state.setFlag(QStyle::State_Selected, false);
-    opt.textElideMode = Qt::ElideMiddle;
-    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
-    QStyledItemDelegate::paint(painter, opt, index);
-}
+    Q_OBJECT
+
+public:
+    GAMSProcess(QObject *parent = Q_NULLPTR);
+
+    QString app() override;
+    QString nativeAppPath() override;
+
+    void setWorkingDir(const QString &workingDir);
+    QString workingDir() const;
+
+    void setContext(FileGroupContext *context);
+    FileGroupContext* context() const;
+
+    void execute() override;
+
+    static QString aboutGAMS();
+
+private:
+    static const QString App;
+    QString mWorkingDir;
+    FileGroupContext *mContext = nullptr;
+};
 
 } // namespace studio
 } // namespace gams
+
+#endif // GAMSPROCESS_H

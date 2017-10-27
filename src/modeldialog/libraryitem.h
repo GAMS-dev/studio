@@ -17,22 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "treeitemdelegate.h"
+#ifndef LIBRARYITEM_H
+#define LIBRARYITEM_H
+
+#include <memory>
+#include <QString>
+#include <QStringList>
+#include "library.h"
+#include <memory>
 
 namespace gams {
 namespace studio {
 
-TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
-{}
-
-void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+class LibraryItem
 {
-    QStyleOptionViewItem opt(option);
-    opt.state.setFlag(QStyle::State_Selected, false);
-    opt.textElideMode = Qt::ElideMiddle;
-    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
-    QStyledItemDelegate::paint(painter, opt, index);
-}
+public:
+    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files);
 
-} // namespace studio
+    std::shared_ptr<Library> library() const;
+    QStringList values() const;
+    QString name() const;
+    QStringList files() const;
+    QString longDescription() const;
+
+private:
+    std::shared_ptr<Library> mLibrary;
+    QString mDescription;
+    QString mLongDescription;
+    QStringList mFiles;
+    QStringList mValues;
+
+};
+
+} // namespace sutdio
 } // namespace gams
+
+#endif // LIBRARYITEM_H
