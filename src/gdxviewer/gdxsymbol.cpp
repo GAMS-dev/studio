@@ -84,7 +84,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 return mStrPool->at((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                val = mValues[index.row()*GMS_DT_MAX + index.column()];
+                val = mValues[index.row()*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
