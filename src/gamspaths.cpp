@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamspaths.h"
+#include "exception.h"
 
 #include <QDir>
 #include <QFile>
@@ -44,6 +45,10 @@ QString GAMSPaths::systemDir() {
     return QDir::currentPath().append("/..");
 #endif
 #else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
+    QString ret = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (ret == "") {
+            EXCEPT() << "GAMS not found in path.";
+        }
     return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
 #endif
 }
