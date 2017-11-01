@@ -182,18 +182,25 @@ void MainWindow::on_actionSave_As_triggered()
         FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
         if (fc) path = QFileInfo(fc->location()).path();
     }
-    auto fileName = QFileDialog::getSaveFileName(this,
+    auto newFileName = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
-    if (!fileName.isEmpty()) {
-        mRecent.path = QFileInfo(fileName).path();
+    if (!newFileName.isEmpty()) {
+        mRecent.path = QFileInfo(newFileName).path();
         FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
         if (!fc) return;
         // TODO(JM) renaming should create a new node (and maybe a new group)
-        fc->setLocation(fileName);
+
+        if(fc->location().endsWith(".gms") && !newFileName.endsWith(".gms")) {
+            newFileName = newFileName + ".gms";
+        } else if (fc->location().endsWith(".lst") && !newFileName.endsWith(".lst")) {
+            newFileName = newFileName + ".lst";
+        } // TODO: check if there are others to add
+
+        fc->setLocation(newFileName);
         fc->save();
     }
 }
