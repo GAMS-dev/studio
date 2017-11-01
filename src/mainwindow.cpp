@@ -486,6 +486,18 @@ void MainWindow::renameToBackup(QFile *file)
     }
 }
 
+void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
+{
+    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess->setApp(item->library()->execName());
+    mLibProcess->setModelName(item->name());
+    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+    mLibProcess->execute();
+    connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(this);
@@ -516,19 +528,15 @@ void MainWindow::on_actionGAMS_Library_triggered()
                 break;
             case 1: // replace
                 renameToBackup(&gmsFile);
-                mLibProcess = new GAMSLibProcess(this);
-                mLibProcess->setApp(item->library()->execName());
-                mLibProcess->setModelName(item->name());
-                mLibProcess->setInputFile(gmsFileName);
-                mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
-                mLibProcess->execute();
-                connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
-                connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+                triggerGamsLibFileCreation(item, gmsFileName);
                 break;
             case QMessageBox::Abort:
                 break;
             }
+        } else {
+            triggerGamsLibFileCreation(item, gmsFileName);
         }
+
     }
 }
 

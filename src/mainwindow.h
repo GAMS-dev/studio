@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "codeeditor.h"
+#include "modeldialog/libraryitem.h"
 
 namespace Ui {
 class MainWindow;
@@ -123,6 +124,7 @@ private:
     RecentData mRecent;
     bool hasWelcomePage = false;
     void renameToBackup(QFile *file);
+    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
 };
 
 }
