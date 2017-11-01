@@ -67,15 +67,19 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 5: return mGdxSymbols.at(index.row())->explText(); break;
         }
     else if (role == Qt::TextAlignmentRole)
+    {
+        Qt::AlignmentFlag aFlag;
         switch(index.column())
         {
-        case 0: return Qt::AlignRight; break;
-        case 1: return Qt::AlignLeft; break;
-        case 2: return Qt::AlignLeft; break;
-        case 3: return Qt::AlignRight; break;
-        case 4: return Qt::AlignRight; break;
-        case 5: return Qt::AlignLeft; break;
+        case 0: aFlag = Qt::AlignRight; break;
+        case 1: aFlag = Qt::AlignLeft; break;
+        case 2: aFlag = Qt::AlignLeft; break;
+        case 3: aFlag = Qt::AlignRight; break;
+        case 4: aFlag = Qt::AlignRight; break;
+        case 5: aFlag = Qt::AlignLeft; break;
         }
+        return QVariant(aFlag | Qt::AlignVCenter);
+    }
     return QVariant();
 }
 

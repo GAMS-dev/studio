@@ -111,7 +111,9 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
         if (index.column() >= mDim)
         {
             if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
-                return Qt::AlignRight;
+                return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+            else
+                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
     }
     return QVariant();
