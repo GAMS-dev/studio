@@ -50,13 +50,30 @@ void FileContext::save()
         mMetrics = FileMetrics();
         QTextStream out(&file);
         out.setCodec(mCodec.toLatin1().data());
-        qDebug() << "Saving with Codec set to: "<< mCodec;
         out << document()->toPlainText();
         out.flush();
         file.close();
         mMetrics = FileMetrics(QFileInfo(file));
         document()->setModified(false);
     }
+}
+
+void FileContext::save(QString filePath)
+{
+    qDebug() << "saving file to" << filePath;
+    if (filePath == "")
+        EXCEPT() << "Can't save without file name";
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        EXCEPT() << "Can't open the file";
+    mMetrics = FileMetrics();
+    QTextStream out(&file);
+    out.setCodec(mCodec.toLatin1().data());
+    out << document()->toPlainText();
+    out.flush();
+    file.close();
+    mMetrics = FileMetrics(QFileInfo(file));
+    document()->setModified(false);
 }
 
 void FileContext::load(QString codecName)
@@ -175,9 +192,6 @@ void FileContext::removeAllEditors()
         removeEditor(editor);
     }
     mEditors = editors;
-//    while (!mEditors.isEmpty()) {
-//        removeEditor(mEditors.first());
-//    }
 }
 
 bool FileContext::hasEditor(QPlainTextEdit* edit)
