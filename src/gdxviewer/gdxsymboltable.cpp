@@ -18,6 +18,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
     mHeaderText.append("Type");
     mHeaderText.append("Dim");
     mHeaderText.append("Records");
+    mHeaderText.append("Loaded");
     mHeaderText.append("Text");
 }
 
@@ -64,7 +65,8 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
         case 3: return mGdxSymbols.at(index.row())->dim(); break;
         case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
-        case 5: return mGdxSymbols.at(index.row())->explText(); break;
+        case 5: return mGdxSymbols.at(index.row())->isLoaded(); break;
+        case 6: return mGdxSymbols.at(index.row())->explText(); break;
         }
     else if (role == Qt::TextAlignmentRole)
     {

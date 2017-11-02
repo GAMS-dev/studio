@@ -39,8 +39,11 @@ public:
 
     QString explText() const;
 
-private:
+    bool isLoaded() const;
     void loadData();
+
+private:
+
 
     int mNr;
     QString mName;
@@ -51,6 +54,9 @@ private:
     QString mExplText;
 
     gdxHandle_t mGdx;
+
+    bool mIsLoaded = false;
+    int mLoadedRecCount = 0;
 
     int* mKeys;
     double* mValues;

@@ -8,7 +8,7 @@ namespace gdxviewer {
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
 {
-    loadData();
+    //loadData();
 }
 
 GdxSymbol::~GdxSymbol()
@@ -50,7 +50,7 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mRecordCount;
+    return mLoadedRecCount;
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
@@ -122,34 +122,45 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
-    int dummy;
-    int* keys = new int[mDim];
-    double* values = new double[GMS_VAL_MAX];
-    gdxDataReadRawStart(mGdx, mNr, &dummy);
-    mKeys = new int[mRecordCount*mDim];
-    if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-        mValues = new double[mRecordCount];
-    else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-        mValues = new double[mRecordCount*GMS_DT_MAX];
-    for(int i=0; i<mRecordCount; i++)
+    if(!mIsLoaded)
     {
-        gdxDataReadRaw(mGdx, keys, values, &dummy);
-        for(int j=0; j<mDim; j++)
-        {
-            mKeys[i*mDim+j] = keys[j];
-        }
+        int dummy;
+        int* keys = new int[mDim];
+        double* values = new double[GMS_VAL_MAX];
+        gdxDataReadRawStart(mGdx, mNr, &dummy);
+        mKeys = new int[mRecordCount*mDim];
         if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-            mValues[i] = values[0];
-        else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+            mValues = new double[mRecordCount];
+        else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+            mValues = new double[mRecordCount*GMS_DT_MAX];
+        for(int i=0; i<mRecordCount; i++)
         {
-            for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
-                mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
+            gdxDataReadRaw(mGdx, keys, values, &dummy);
+            for(int j=0; j<mDim; j++)
+            {
+                mKeys[i*mDim+j] = keys[j];
+            }
+            if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
+                mValues[i] = values[0];
+            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+            {
+                for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
+                    mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
+            }
+            mLoadedRecCount++;
         }
-    }
-    gdxDataReadDone(mGdx);
+        gdxDataReadDone(mGdx);
 
-    delete keys;
-    delete values;
+        mIsLoaded = true;
+
+        delete keys;
+        delete values;
+    }
+}
+
+bool GdxSymbol::isLoaded() const
+{
+    return mIsLoaded;
 }
 
 QString GdxSymbol::explText() const
