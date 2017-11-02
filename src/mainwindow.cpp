@@ -178,30 +178,32 @@ void MainWindow::on_actionSave_triggered()
 void MainWindow::on_actionSave_As_triggered()
 {
     QString path = mRecent.path;
+    FileContext *formerFc;
     if (mRecent.editFileId >= 0) {
-        FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
-        if (fc) path = QFileInfo(fc->location()).path();
+        formerFc = mFileRepo.fileContext(mRecent.editFileId);
+        if (formerFc) path = QFileInfo(formerFc->location()).path();
     }
-    auto newFileName = QFileDialog::getSaveFileName(this,
+    auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
                                                  "All files (*)"));
-    if (!newFileName.isEmpty()) {
-        mRecent.path = QFileInfo(newFileName).path();
+    if (!filePath.isEmpty()) {
+        mRecent.path = QFileInfo(filePath).path();
         FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
         if (!fc) return;
-        // TODO(JM) renaming should create a new node (and maybe a new group)
 
-        if(fc->location().endsWith(".gms") && !newFileName.endsWith(".gms")) {
-            newFileName = newFileName + ".gms";
-        } else if (fc->location().endsWith(".lst") && !newFileName.endsWith(".lst")) {
-            newFileName = newFileName + ".lst";
+        if(fc->location().endsWith(".gms") && !filePath.endsWith(".gms")) {
+            filePath = filePath + ".gms";
+        } else if (fc->location().endsWith(".lst") && !filePath.endsWith(".lst")) {
+            filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->setLocation(newFileName);
+        fc->setLocation(filePath);
         fc->save();
+        mFileRepo.removeNode(formerFc);
+        mFileRepo.ensureGroup(filePath);
     }
 }
 
