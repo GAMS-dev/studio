@@ -200,10 +200,12 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->setLocation(filePath);
-        fc->save();
-        mFileRepo.removeNode(formerFc);
-        mFileRepo.ensureGroup(filePath);
+        // given what happens on the drive when saving a file as... the old node should stay in project explorer
+
+        fc->save(filePath);
+//        mFileRepo.removeNode(formerFc);
+        openOrShow(filePath, fc->parentEntry());
+
     }
 }
 
