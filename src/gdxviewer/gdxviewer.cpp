@@ -50,7 +50,7 @@ void GdxViewer::updateSelectedSymbol()
     if(modelIndexList.size()>0)
     {
         GdxSymbol* sym = mGdxSymbolTable->gdxSymbols().at(modelIndexList.at(0).row());
-        QtConcurrent::run(sym, GdxSymbol::loadData);
+        QtConcurrent::run(sym, &GdxSymbol::loadData);
         ui.tableView->setModel(sym);
     }
     else
