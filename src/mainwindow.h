@@ -113,6 +113,9 @@ private:
     void openOrShow(QString filePath, FileGroupContext *parent);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
+    void renameToBackup(QFile *file);
+    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
+    QString extractError(QPlainTextEdit *outWin, QString text);
 
 private:
     Ui::MainWindow *ui;
@@ -122,9 +125,8 @@ private:
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
-    bool hasWelcomePage = false;
-    void renameToBackup(QFile *file);
-    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
+    bool mHasWelcomePage = false;
+    bool mBeforeErrorExtraction = true;
 };
 
 }
