@@ -73,7 +73,6 @@ QVariant FileTreeModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid()) return QVariant();
     switch (role) {
-
     case Qt::BackgroundColorRole:
         if (isCurrent(index)) return QColor("#4466BBFF");
 
