@@ -76,7 +76,7 @@ void MainWindow::initTabs()
     ui->projectView->setPalette(pal);
 
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
-    hasWelcomePage = true;
+    mHasWelcomePage = true;
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -342,11 +342,63 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
+    // TODO(JM) if (text.startsWith("*** Error")
+    QRegularExpression errRegEx("(?m)^\\*[3] Error +(\\d) in ([^\\[]+)\\[ERR:\"([^\"]+)\",(\\d+),(\\d+)");
     QPlainTextEdit *outWin = ui->outputView;
-    outWin->moveCursor(QTextCursor::End);
-    outWin->insertPlainText(text);
-    outWin->moveCursor(QTextCursor::End);
+    QString newText = extractError(outWin, text);
+    if (!newText.isNull()) {
+        outWin->moveCursor(QTextCursor::End);
+        outWin->insertPlainText(newText);
+        outWin->moveCursor(QTextCursor::End);
+    }
 }
+
+QString MainWindow::extractError(QPlainTextEdit* outWin, QString text)
+{
+    QString result;
+    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
+        if (mBeforeErrorExtraction) {
+            QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
+            if (parts.size() > 1) {
+                QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
+                for (QString part: parts) {
+                    QRegularExpressionMatch match = errRX1.match(part);
+                    if (part.startsWith("***")) {
+                        result = part;
+                        // TODO(JM) extract error-nr
+                        match.captured(2);
+                    }
+                    if (part.startsWith("ERR")) {
+                        result += "[ERR]";
+                        // TODO(JM) extract error-file, error-row, error-col
+                        match.captured(4);
+                        match.captured(5);
+                        match.captured(6);
+                    }
+                    if (part.startsWith("LST")) {
+                        result += "[LST]";
+                        match.captured(7);
+                    }
+                }
+                result += "\n";
+                mBeforeErrorExtraction = false;
+            } else {
+                result = line;
+            }
+        } else {
+            if (line.startsWith(" ")) {
+                // TODO(JM) add to description
+            } else {
+                result = line;
+                mBeforeErrorExtraction = true;
+
+//                result = text;
+            }
+        }
+    }
+    return result;
+}
+
 
 void MainWindow::appendErrLink(QString text)
 {
@@ -439,7 +491,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        hasWelcomePage = false;
+        mHasWelcomePage = false;
         return;
     }
 
@@ -468,9 +520,9 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(!hasWelcomePage) {
+    if(!mHasWelcomePage) {
         ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
-        hasWelcomePage = true;
+        mHasWelcomePage = true;
     }
     ui->mainTab->setCurrentIndex(0);
 }
