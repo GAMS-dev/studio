@@ -16,8 +16,8 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
     mHeaderText.append("Type");
-    mHeaderText.append("Dimension");
-    mHeaderText.append("Nr Records");
+    mHeaderText.append("Dim");
+    mHeaderText.append("Records");
     mHeaderText.append("Text");
 }
 
