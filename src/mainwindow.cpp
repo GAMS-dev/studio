@@ -88,7 +88,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
-        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+        if (fc->metrics().fileType() != FileType::Gdx) {
             CodeEditor *codeEdit = new CodeEditor(this);
             fc->addEditor(codeEdit);
             int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -99,12 +99,15 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             ensureCodecMenu(fc->codec());
-            if (fc->metrics().fileType() == FileType::Gms) {
+            if (fc->metrics().fileType() == FileType::Gms ||
+                    fc->metrics().fileType() == FileType::Txt) {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             } else {
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
             }
+        } else {
+            // TODO: open .gdx
         }
         // TODO(JM) other kinds
     }
@@ -152,8 +155,10 @@ void MainWindow::on_actionNew_triggered()
                                                  "All files (*)"));
 
     QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly))
+    if (!file.exists()) { // which should be the default!
+        file.open(QIODevice::WriteOnly);
         file.close();
+    }
 
     if (FileContext *fc = addContext("", filePath)) {
         fc->save();
@@ -249,6 +254,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
 //    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
+    Q_UNUSED(channel);
     emit processOutput(text);
 }
 
@@ -748,16 +754,18 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-        // TODO(JM) extend for each possible type
 
         FileType fType = FileType::from(fInfo.suffix());
 
-        if (fType == FileType::Gms) {
-            // Create node for GIST directory and load all files of known filetypes
-            openOrShow(fInfo.filePath(), nullptr);
-        }
+        // TODO(JM) extend for each possible type
+//        if (fType == FileType::Gms) {
+//            // Create node for GIST directory and load all files of known filetypes
+//            openOrShow(fInfo.filePath(), nullptr);
+//        }
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
+        } else {
+            openOrShow(fInfo.filePath(), nullptr); // open all sorts of files
         }
     }
     return fc;
