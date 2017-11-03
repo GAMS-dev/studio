@@ -133,6 +133,9 @@ signals:
 
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
+public slots:
+    void addProcessData(QProcess::ProcessChannel channel, QString text);
+
 protected slots:
     void onFileChangedExtern(QString filepath);
 
@@ -148,6 +151,7 @@ protected:
     void parseErrorHints(const QString &text, int startChar, int endChar);
     void clearLinksAndErrorHints();
     void markLink(int from, int to, int mark);
+    QString extractError(QString text);
 
 private:
     FileMetrics mMetrics;
@@ -158,6 +162,7 @@ private:
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QTextDocument *mDocument;
+    bool mBeforeErrorExtraction = true;
     static const QStringList mDefaulsCodecs;
 
 };

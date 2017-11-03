@@ -217,6 +217,8 @@ void FileContext::setKeepDocument(bool keep)
     if (keep && !mDocument) {
         if (mEditors.isEmpty()) {
             mDocument = new QTextDocument(this);
+            mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
+            mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
             connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
         } else {
             mDocument = mEditors.first()->document();
@@ -232,6 +234,29 @@ void FileContext::setKeepDocument(bool keep)
 const FileMetrics& FileContext::metrics()
 {
     return mMetrics;
+}
+
+void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
+{
+    if (!mDocument)
+        EXCEPT() << "no explicit document to add process data";
+    QString newText = extractError(text);
+    if (!newText.isNull()) {
+        QList<bool> atEnd;
+        for (QPlainTextEdit* ed: mEditors) {
+            atEnd << ed->textCursor().atEnd();
+        }
+        QTextCursor cursor(mDocument);
+        cursor.movePosition(QTextCursor::End);
+        cursor.insertText(newText);
+        int i = 0;
+        for (QPlainTextEdit* ed: mEditors) {
+            if (atEnd[i]) {
+                ed->moveCursor(QTextCursor::End);
+            }
+        }
+        mDocument->setModified(false);
+    }
 }
 
 FileContext::~FileContext()
@@ -402,6 +427,52 @@ void FileContext::markLink(int from, int to, int mark)
     cur.setCharFormat(oldFormat);
     edit->setTextCursor(oldCur);
     document()->setModified(mod);
+}
+
+QString FileContext::extractError(QString text)
+{
+    QString result;
+    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
+        if (mBeforeErrorExtraction) {
+            QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
+            if (parts.size() > 1) {
+                QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
+                for (QString part: parts) {
+                    QRegularExpressionMatch match = errRX1.match(part);
+                    if (part.startsWith("***")) {
+                        result = part;
+                        // TODO(JM) extract error-nr
+                        match.captured(2);
+                    }
+                    if (part.startsWith("ERR")) {
+                        result += "[ERR]";
+                        // TODO(JM) extract error-file, error-row, error-col
+                        match.captured(4);
+                        match.captured(5);
+                        match.captured(6);
+                    }
+                    if (part.startsWith("LST")) {
+                        result += "[LST]";
+                        match.captured(7);
+                    }
+                }
+                result += "\n";
+                mBeforeErrorExtraction = false;
+            } else {
+                result = line;
+            }
+        } else {
+            if (line.startsWith(" ")) {
+                // TODO(JM) add to description
+            } else {
+                result = line;
+                mBeforeErrorExtraction = true;
+
+//                result = text;
+            }
+        }
+    }
+    return result;
 }
 
 void FileContext::modificationChanged(bool modiState)

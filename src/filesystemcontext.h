@@ -28,24 +28,29 @@ namespace studio {
 class FileGroupContext;
 
 class FileSystemContext : public QObject
-{ // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
-    // TODO(AF) Rename this to AbstractFileContext?
+{   // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
+    // TODO(JM) Disagree: to many common members - this would lead to code doubling. If you want an interface,
+    //                    it could be set on top of this FileSystemContext (e.g. AbstractContext)
     Q_OBJECT
 
 public:
     enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
+                       // TODO(JM) I'd prefer having either a pointer-list of changed context in repo or a method here
+
+        // TODO(JM) check, which flags are better implemented as methods getting their info implicit
         cfNone          = 0x00,
-        cfActive        = 0x01,
-        cfFileMod       = 0x02,
-        cfEditMod       = 0x04,
-        cfMissing       = 0x08,
-        cfExtendCaption = 0x10,
-        cfVirtual       = 0x20,
+        cfActive        = 0x01, // TODO(JM) implemented and in use: if this is the only real flag, we should have a method instead
+        cfFileMod       = 0x02, // TODO(JM) implemented but not in use (marks changes from outside)
+        cfEditMod       = 0x04, // TODO(JM) implemented but not in use (marks changes from inside - but here we have the doc.modified())
+        cfMissing       = 0x08, // TODO(JM) some implementation missing in FileContext?
+        cfExtendCaption = 0x10, // needed for doubled groups - could be moved to a boolean there
+        cfVirtual       = 0x20, // set - but not used
     };
 
     enum ContextType {
         File,
         FileAction, // TODO(AF) still required?
+                    // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
         FileSystem
     };
