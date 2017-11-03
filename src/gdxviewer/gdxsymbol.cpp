@@ -1,5 +1,6 @@
 #include "gdxsymbol.h"
 #include <memory>
+#include <QThread>
 
 namespace gams {
 namespace studio {
@@ -13,8 +14,11 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPo
 
 GdxSymbol::~GdxSymbol()
 {
-    delete mKeys;
-    delete mValues;
+    if(mIsLoaded)
+    {
+        delete mKeys;
+        delete mValues;
+    }
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -124,6 +128,8 @@ void GdxSymbol::loadData()
 {
     if(!mIsLoaded)
     {
+        beginResetModel();
+        endResetModel();
         int dummy;
         int* keys = new int[mDim];
         double* values = new double[GMS_VAL_MAX];
@@ -133,8 +139,12 @@ void GdxSymbol::loadData()
             mValues = new double[mRecordCount];
         else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
             mValues = new double[mRecordCount*GMS_DT_MAX];
+        int updateCount = 1000;
         for(int i=0; i<mRecordCount; i++)
         {
+            if(i%updateCount == 0)
+                beginResetModel();
+
             gdxDataReadRaw(mGdx, keys, values, &dummy);
             for(int j=0; j<mDim; j++)
             {
@@ -148,10 +158,14 @@ void GdxSymbol::loadData()
                     mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
             }
             mLoadedRecCount++;
+            if(i%updateCount == 0)
+                endResetModel();
         }
         gdxDataReadDone(mGdx);
 
         mIsLoaded = true;
+        beginResetModel();
+        endResetModel();
 
         delete keys;
         delete values;

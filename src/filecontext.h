@@ -82,6 +82,10 @@ public:
     /// Saves the file, if it is changed.
     void save();
 
+    /// Saves the file to a new location.
+    /// \param filePath new location for file
+    void save(QString filePath);
+
     /// Loads the file into the current QTextDocument.
     /// \param codecName The text-codec to use.
     void load(QString codecName = QString());
