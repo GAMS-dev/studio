@@ -459,16 +459,15 @@ QString FileContext::extractError(QString text)
                 result += "\n";
                 mBeforeErrorExtraction = false;
             } else {
-                result = line;
+                result = line + "\n";
             }
         } else {
             if (line.startsWith(" ")) {
                 // TODO(JM) add to description
             } else {
-                result = line;
+                result = line+"\n";
                 mBeforeErrorExtraction = true;
 
-//                result = text;
             }
         }
     }
