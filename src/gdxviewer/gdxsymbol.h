@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLDATATABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QMutex>
 #include "gdxsymbol.h"
 #include <memory>
 #include "gdxcc.h"
@@ -16,7 +17,7 @@ class GdxSymbol : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:
@@ -41,6 +42,7 @@ public:
 
     bool isLoaded() const;
     void loadData();
+    void stopLoadingData();
 
 private:
 
@@ -58,11 +60,15 @@ private:
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
 
-    int* mKeys;
-    double* mValues;
+    bool stopLoading = false;
+
+    int* mKeys = nullptr;
+    double* mValues = nullptr;
 
     QStringList* mUel2Label;
     QStringList* mStrPool;
+
+    QMutex* mGdxMutex;
 
 };
 

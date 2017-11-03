@@ -5,8 +5,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx)
+GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
@@ -97,7 +97,7 @@ void GdxSymbolTable::loadGDXSymbols()
         int recordCount = 0;
         int userInfo = 0;
         gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
-        mGdxSymbols.append(new GdxSymbol(mGdx, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
     }
 }
 
