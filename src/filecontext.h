@@ -112,6 +112,10 @@ public:
     /// \return The current QTextDocument
     QTextDocument* document();
 
+    /// If set to TRUE, the document is kept even if the last editor is closed.
+    /// \param keep Sets whether to keep the document.
+    void setKeepDocument(bool keep = true);
+
     const FileMetrics& metrics();
 
 signals:
@@ -149,6 +153,7 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
+    QTextDocument *mDocument;
     static const QStringList mDefaulsCodecs;
 
 };

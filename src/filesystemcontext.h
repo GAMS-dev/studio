@@ -82,7 +82,7 @@ public:
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    virtual QIcon icon();
+    virtual QIcon icon() = 0;
 
     const ContextFlags &flags() const;
     virtual void setFlag(ContextFlag flag, bool value = true);

@@ -31,6 +31,7 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(int id, QString name, QString location)
     : FileSystemContext(id, name, location, FileSystemContext::File)
 {
+    mDocument = nullptr;
     mMetrics = FileMetrics(QFileInfo(location));
 }
 
@@ -139,16 +140,17 @@ void FileContext::addEditor(QPlainTextEdit* edit)
 {
     if (!edit || mEditors.contains(edit))
         return;
+
     mEditors.append(edit);
-    if (mEditors.size() == 1) {
+    if (mEditors.size() == 1 && !mDocument) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        CodeEditor* ce = dynamic_cast<CodeEditor*>(edit);
-        if (ce) {
-            connect(ce, &CodeEditor::getHintForPos, this, &FileContext::shareHintForPos);
-        }
     } else {
-        edit->setDocument(mEditors.first()->document());
+        edit->setDocument(document());
+    }
+    CodeEditor* ce = dynamic_cast<CodeEditor*>(edit);
+    if (ce) {
+        connect(ce, &CodeEditor::getHintForPos, this, &FileContext::shareHintForPos);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -165,6 +167,8 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
         edit->document()->setParent(edit);
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
+    } else {
+        edit->setDocument(document()->clone(edit));
     }
 }
 
@@ -187,9 +191,28 @@ bool FileContext::hasEditor(QPlainTextEdit* edit)
 
 QTextDocument*FileContext::document()
 {
+    if (mDocument)
+        return mDocument;
     if (mEditors.isEmpty())
         return nullptr;
     return mEditors.first()->document();
+}
+
+void FileContext::setKeepDocument(bool keep)
+{
+    if (keep && !mDocument) {
+        if (mEditors.isEmpty()) {
+            mDocument = new QTextDocument(this);
+            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        } else {
+            mDocument = mEditors.first()->document();
+        }
+    } else if (!keep && mDocument) {
+        if (mEditors.isEmpty()) {
+            mDocument->deleteLater();
+        }
+        mDocument = nullptr;
+    }
 }
 
 const FileMetrics& FileContext::metrics()
