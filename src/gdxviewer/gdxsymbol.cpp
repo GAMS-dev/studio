@@ -159,8 +159,6 @@ void GdxSymbol::loadData()
             }
         }
 
-        qDebug() << "continue loading";
-
         int updateCount = 1000;
         for(int i=mLoadedRecCount; i<mRecordCount; i++)
         {
