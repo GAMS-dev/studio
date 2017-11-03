@@ -139,16 +139,23 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::on_actionNew_triggered()
 {
-    NewDialog dialog(this);
-    dialog.exec();
-    auto fileName = dialog.fileName();
-    auto location = dialog.location();
+    QString path = mRecent.path;
+    if (mRecent.editFileId >= 0) {
+        FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
+        if (fc) path = QFileInfo(fc->location()).path();
+    }
+    auto filePath = QFileDialog::getSaveFileName(this,
+                                                 "Create new file...",
+                                                 path,
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
 
-    QFile file(QDir(location).filePath(fileName));
+    QFile file(filePath);
     if (file.open(QIODevice::WriteOnly))
         file.close();
 
-    if (FileContext *fc = addContext(location, fileName)) {
+    if (FileContext *fc = addContext("", filePath)) {
         fc->save();
     }
 }
