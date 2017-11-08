@@ -47,6 +47,7 @@ public:
     bool isWatched();
     void setWatched(bool watch = true);
     QString runableGms();
+    QString lstFileName();
 
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
@@ -74,6 +75,7 @@ private:
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
     FileContext* mLogContext;
+    QString mLstFileName;
     QStringList mAdditionalFiles;
 };
 

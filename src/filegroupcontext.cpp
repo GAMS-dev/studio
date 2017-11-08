@@ -163,6 +163,14 @@ QString FileGroupContext::runableGms()
     return QDir(location()).filePath(mRunInfo);
 }
 
+QString FileGroupContext::lstFileName()
+{
+    if (mLstFileName.isNull()) {
+        mLstFileName = QDir(location()).filePath(name())+".lst";
+    }
+    return mLstFileName;
+}
+
 FileContext*FileGroupContext::logContext()
 {
     for (FileSystemContext *fsc: mChildList) {

@@ -21,6 +21,7 @@
 #include "filegroupcontext.h"
 #include "exception.h"
 #include "codeeditor.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -114,14 +115,11 @@ void FileContext::load(QString codecName)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
-        if (mMetrics.fileType().kind() == FileType::Lst) {
-            parseLst(text);
-        }
+        QTimer::singleShot(100, this, &FileContext::updateMarks);
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
-        qDebug() << "Watching " << location();
         mWatcher->addPath(location());
     }
 }
@@ -162,6 +160,7 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1 && !mDocument) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        QTimer::singleShot(100, this, &FileContext::updateMarks);
     } else {
         edit->setDocument(document());
     }
@@ -236,26 +235,63 @@ const FileMetrics& FileContext::metrics()
     return mMetrics;
 }
 
+void FileContext::jumpTo(const QTextCursor &cursor)
+{
+    if (mEditors.size()) {
+        QTextCursor tc(cursor);
+        tc.clearSelection();
+        mEditors.first()->setTextCursor(tc);
+    }
+}
+
+void FileContext::markOld()
+{
+    if (document() && !document()->isEmpty()) {
+        QTextCursor cur(document());
+        cur.movePosition(QTextCursor::End);
+        QTextCharFormat oldFormat = cur.charFormat();
+        QTextCharFormat newFormat = oldFormat;
+        cur.insertBlock();
+        cur.movePosition(QTextCursor::StartOfBlock);
+        cur.movePosition(QTextCursor::Start, QTextCursor::KeepAnchor);
+        newFormat.setForeground(QColor(80,80,80));
+        cur.setCharFormat(newFormat);
+        cur.movePosition(QTextCursor::End);
+        cur.setBlockCharFormat(oldFormat);
+    }
+}
+
 void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
-    QString newText = extractError(text);
-    if (!newText.isNull()) {
-        QList<bool> atEnd;
-        for (QPlainTextEdit* ed: mEditors) {
-            atEnd << ed->textCursor().atEnd();
-        }
-        QTextCursor cursor(mDocument);
-        cursor.movePosition(QTextCursor::End);
-        cursor.insertText(newText);
-        int i = 0;
-        for (QPlainTextEdit* ed: mEditors) {
-            if (atEnd[i]) {
-                ed->moveCursor(QTextCursor::End);
+    ExtractionState state;
+    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
+        QList<LinkData> marks;
+        QString newLine = extractError(line, state, marks);
+        if (state != FileContext::Inside) {
+            QList<bool> atEnd;
+            for (QPlainTextEdit* ed: mEditors) {
+                atEnd << ed->textCursor().atEnd();
             }
+            QTextCursor cursor(mDocument);
+            cursor.movePosition(QTextCursor::End);
+            int line = mDocument->lineCount()-1;
+            cursor.insertText(newLine+"\n");
+            for (LinkData mark: marks) {
+                int size = (mark.size<=0) ? newLine.length()-mark.col : mark.size;
+                TextMark* tm = generateTextMark(TextMark::link, line, mark.col, size);
+                tm->setRefMark(mark.textMark);
+            }
+            int i = 0;
+            for (QPlainTextEdit* ed: mEditors) {
+                if (atEnd[i]) {
+                    ed->moveCursor(QTextCursor::End);
+                }
+                ++i;
+            }
+            mDocument->setModified(false);
         }
-        mDocument->setModified(false);
     }
 }
 
@@ -289,79 +325,6 @@ struct LocalLinkData {
     int errCode = 0;
     int lastPos = 0;
 };
-
-int FileContext::parseLst(QString text)
-{
-    QList<LocalLinkData*> linkDataList;
-
-    QRegularExpression regex("(?m)^"
-                             "( *(\\d+)  *(\\N*)\\n\\*{4}( *)\\$(\\d+)"
-                             "|Error Messages$"
-                             "|\\*{4} *(\\d+) ERROR\\(S\\) +(\\d+) WARNING\\(S\\)$)");
-    QRegularExpressionMatchIterator iter = regex.globalMatch(text);
-    int lastPos = 0;
-    while (iter.hasNext()) {
-        QRegularExpressionMatch match = iter.next();
-        if (match.captured().startsWith("Error")) {
-            // start of error-code description
-            lastPos = match.capturedEnd();
-        } else if (match.captured().startsWith("****")) {
-            // end of error-code description
-            if (lastPos > 0) {
-                parseErrorHints(text, lastPos, match.capturedStart());
-                lastPos = match.capturedEnd();
-            }
-        } else {
-            QTextBlock localBlock = document()->findBlock(match.capturedStart(3));
-            LocalLinkData *lld = new LocalLinkData();
-            lld->sourceLine = match.captured(2).toInt()-1;
-            lld->sourceCol  = match.capturedLength(4)-1;
-            lld->localLine  = localBlock.blockNumber();
-            lld->localCol   = match.capturedLength(4)+4;
-            lld->localPos   = match.capturedEnd(2)+match.capturedLength(4)-1;
-            lld->errCode    = match.captured(5).toInt();
-            linkDataList << lld;
-            markLink(match.capturedStart(3), match.capturedEnd(3), match.capturedEnd(2) + match.capturedLength(4));
-        }
-    }
-    if (lastPos) {
-
-        regex.setPattern("(?m)^\\*{4} FILE SUMMARY\\s+Input +(.+)$");
-        QRegularExpressionMatch match = regex.match(text.rightRef(text.length()-lastPos));
-        if (match.hasMatch()) {
-            QString filename = QFileInfo(match.captured(1)).canonicalFilePath();
-            // get the input-file
-            emit requestContext(filename, mLinkFile, parentEntry());
-            if (mLinkFile && mLinkFile->document()) {
-                mLinkFile->clearLinksAndErrorHints();
-                // TODO(JM) mark on
-                QRegularExpression rEx("^( *).*");
-                QTextBlock block;
-                LinkReference *lr;
-                for (LocalLinkData *lld: linkDataList) {
-                    lr = new LinkReference(lld->localLine, lld->localCol, lld->errCode);
-                    lr->source = QTextCursor(document());
-                    lr->source.setPosition(lld->localPos);
-                    mLinks.insert(lr->line, lr);
-
-                    lr = new LinkReference(lld->sourceLine, lld->sourceCol, lld->errCode);
-                    block = mLinkFile->document()->findBlockByLineNumber(lr->line);
-                    lr->source = QTextCursor(mLinkFile->document());
-                    lr->source.setPosition(block.position());
-                    mLinkFile->mLinks.insert(lr->line, lr);
-                    QRegularExpressionMatch rEm = rEx.match(lr->source.block().text());
-                    int off = (rEm.hasMatch() ? rEm.captured(1).length()+1 : 0);
-                    int start = lr->source.position()-1;
-                    mLinkFile->markLink(start + off, start+block.length(), start+lr->col);
-                }
-                for (GamsErrorHint* eh: mErrHints) {
-                    mLinkFile->mErrHints.insert(eh->errCode, eh);
-                }
-            }
-        }
-    }
-    return mLinks.size();
-}
 
 void FileContext::parseErrorHints(const QString& text, int startChar, int endChar)
 {
@@ -403,75 +366,141 @@ void FileContext::clearLinksAndErrorHints()
     }
 }
 
-void FileContext::markLink(int from, int to, int mark)
+QString FileContext::extractError(QString line, ExtractionState &state, QList<LinkData> &marks)
 {
-    if (!mEditors.size()) return;
+    TRACE();
+    QString result;
+    if (mBeforeErrorExtraction) {
+        // look, if we find the start of an error
+        QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
+        if (parts.size() > 1) {
+            QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
+            for (QString part: parts) {
+                bool ok;
+                QRegularExpressionMatch match = errRX1.match(part);
+                if (part.startsWith("***")) {
+                    result = part;
+                    int errNr = match.captured(2).toInt(&ok);
+                    if (ok) {
+                        mCurrentErrorHint.first = errNr;
+                    } else {
+                        mCurrentErrorHint.first = 0;
+                    }
+                    mCurrentErrorHint.second = "";
+                }
+                if (part.startsWith("ERR")) {
+                    LinkData mark;
+                    mark.col = result.length()+1;
+                    result += "[ERR]";
+                    mark.size = result.length() - mark.col - 1;
+                    QString fName = QDir::fromNativeSeparators(match.captured(4));
+                    int line = match.captured(5).toInt()-1;
+                    int col = match.captured(6).toInt()-1;
+                    DEB() << "captured fileName: " << fName;
+                    emit requestTextMark(TextMark::error, fName, line, 0, col, mark.textMark, parentEntry());
+                    marks << mark;
+                }
+                if (part.startsWith("LST")) {
+                    LinkData mark;
+                    mark.col = result.length()+1;
+                    result += "[LST]";
+                    mark.size = result.length() - mark.col - 1;
+                    int line = match.captured(7).toInt();
+                    QString fName = parentEntry()->lstFileName();
+                    DEB() << "captured fileName: " << fName;
+                    emit requestTextMark(TextMark::error, fName, line, 0, 0, mark.textMark, parentEntry());
+                    marks << mark;
+                }
+            }
+            state = Entering;
+            mBeforeErrorExtraction = false;
+        } else {
+            result = line;
+            state = Outside;
+        }
+    } else {
+        if (line.startsWith(" ")) {
+            mCurrentErrorHint.second += line;
+            state = Inside;
+            result = line;
+            // TODO(JM) add to description
+        } else {
+            result = line;
+            state = Exiting;
+            mBeforeErrorExtraction = true;
+        }
+    }
+    return result;
+}
+
+TextMark* FileContext::generateTextMark(TextMark::Type tmType, int line, int column, int size)
+{
+    TRACE();
+    TextMark* res = new TextMark(tmType);
+    res->mark(this, line, column, size);
+    DEB() << "TextMark: " << int(tmType) << "  pos: " << line << " col " << column << "_" << size;
+    mTextMarks.insert(line, res);
+    markLink(res);
+    return res;
+}
+
+void FileContext::markLink(TextMark* mark)
+{
+    TRACE();
+    DEB() << "--> FILE: " << name();
+    if (!mEditors.size() || !mark || mark->textCursor().isNull()) return;
     bool mod = document()->isModified();
     QPlainTextEdit *edit = mEditors.first();
     QTextCursor oldCur = QTextCursor(edit->document());
-    QTextCursor cur = oldCur;
-    cur.setPosition(from);
+    QTextCursor cur = mark->textCursor();
+    DEB() << "Selection: " << cur.selectedText();
     QTextCharFormat oldFormat = cur.charFormat();
     QTextCharFormat newFormat = oldFormat;
-    newFormat.setUnderlineColor(Qt::red);
-    newFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-    cur.setPosition(to, QTextCursor::KeepAnchor);
-    cur.setCharFormat(newFormat);
-    cur.setPosition(mark);
-    cur.setPosition(mark+1, QTextCursor::KeepAnchor);
-    newFormat.setBackground(QColor(225,200,255));
-    newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-    newFormat.setAnchor(true);
-    cur.setCharFormat(newFormat);
-    cur.setPosition(to);
-    cur.setCharFormat(oldFormat);
+    if (mark->type() == TextMark::error) {
+        DEB() << int(mark->type());
+        newFormat.setUnderlineColor(Qt::red);
+        newFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+        cur.setCharFormat(newFormat);
+        cur.setPosition(mark->textCursor().selectionEnd());
+        cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+        newFormat.setBackground(QColor(225,200,255));
+        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        cur.setCharFormat(newFormat);
+    }
+    if (mark->type() == TextMark::link) {
+        DEB() << "Link: " << mark->line() << ", " << cur.selectedText();
+        newFormat.setForeground(Qt::blue);
+        newFormat.setUnderlineColor(Qt::blue);
+        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        cur.setCharFormat(newFormat);
+    }
+//    cur.setPosition(to, QTextCursor::KeepAnchor);
+//    cur.setPosition(to);
+//    cur.setCharFormat(oldFormat);
     edit->setTextCursor(oldCur);
     document()->setModified(mod);
 }
 
-QString FileContext::extractError(QString text)
+void FileContext::removeTextMarks(TextMark::Type tmType)
 {
-    QString result;
-    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
-        if (mBeforeErrorExtraction) {
-            QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
-            if (parts.size() > 1) {
-                QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
-                for (QString part: parts) {
-                    QRegularExpressionMatch match = errRX1.match(part);
-                    if (part.startsWith("***")) {
-                        result = part;
-                        // TODO(JM) extract error-nr
-                        match.captured(2);
-                    }
-                    if (part.startsWith("ERR")) {
-                        result += "[ERR]";
-                        // TODO(JM) extract error-file, error-row, error-col
-                        match.captured(4);
-                        match.captured(5);
-                        match.captured(6);
-                    }
-                    if (part.startsWith("LST")) {
-                        result += "[LST]";
-                        match.captured(7);
-                    }
-                }
-                result += "\n";
-                mBeforeErrorExtraction = false;
-            } else {
-                result = line + "\n";
-            }
-        } else {
-            if (line.startsWith(" ")) {
-                // TODO(JM) add to description
-            } else {
-                result = line+"\n";
-                mBeforeErrorExtraction = true;
+    removeTextMarks(QSet<TextMark::Type>() << tmType);
+}
 
-            }
+void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
+{
+    QHash<int, TextMark*>::iterator i = mTextMarks.begin();
+    while (i != mTextMarks.end()) {
+        if (tmTypes.contains(i.value()->type()) || tmTypes.contains(TextMark::all)) {
+            TextMark* tm = i.value();
+            i = mTextMarks.erase(i);
+            delete tm;
+        } else {
+            ++i;
         }
     }
-    return result;
+    for (QPlainTextEdit* ed: mEditors) {
+        ed->update(); // trigger delayed repaint
+    }
 }
 
 void FileContext::modificationChanged(bool modiState)
@@ -493,6 +522,14 @@ void FileContext::shareHintForPos(QPlainTextEdit* sender, QPoint pos, QString& h
                 break;
             }
         }
+    }
+}
+
+void FileContext::updateMarks()
+{
+    for (TextMark* mark: mTextMarks) {
+        mark->updateCursor();
+        markLink(mark);
     }
 }
 

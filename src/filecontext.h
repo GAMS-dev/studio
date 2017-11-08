@@ -20,9 +20,10 @@
 #ifndef FILECONTEXT_H
 #define FILECONTEXT_H
 
+#include <QtWidgets>
 #include "filesystemcontext.h"
 #include "filemetrics.h"
-#include <QtWidgets>
+#include "textmark.h"
 
 namespace gams {
 namespace studio {
@@ -33,17 +34,19 @@ struct GamsErrorHint {
     QString hint;
 };
 
+// TODO(JM) DEPRECATED: use class TextMark
 struct LinkReference {
     LinkReference(int _line, int _col, int _errCode) : line(_line), col(_col), errCode(_errCode) {}
     int line = 0;
     int col = 0;
     int errCode = 0;
-    // TODO(JM) restructure to use active cursors
     QTextCursor local; ///< the cursor to mark the current
     QTextCursor source;
 };
 
 class FileGroupContext;
+class TextMark;
+typedef QPair<int,QString> ErrorHint;
 
 ///
 /// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
@@ -53,7 +56,14 @@ class FileContext : public FileSystemContext
 {
     Q_OBJECT
 public:
-    virtual ~FileContext();
+    enum ExtractionState {
+        Outside,
+        Entering,
+        Inside,
+        Exiting,
+    };
+
+    ~FileContext() override;
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
@@ -66,8 +76,6 @@ public:
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
     virtual const QString caption();
-
-    int parseLst(QString text);
 
     bool isModified();
 
@@ -121,6 +129,9 @@ public:
     void setKeepDocument(bool keep = true);
 
     const FileMetrics& metrics();
+    void jumpTo(const QTextCursor& cursor);
+
+    void markOld();
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -133,6 +144,11 @@ signals:
 
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
+    void requestTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom
+                         , TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
+    void createErrorHint(const int errCode, const QString &errText);
+    void requestErrorHint(const int errCode, QString &errText);
+
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
 
@@ -144,14 +160,25 @@ protected slots:
 
     void shareHintForPos(QPlainTextEdit *sender, QPoint pos, QString& hint,  QTextCursor &cursor);
 
+    void updateMarks();
+
 protected:
+    struct LinkData {
+        TextMark* textMark = nullptr;
+        int col = 0;
+        int size = 1;
+    };
+
     friend class FileRepository;
     FileContext(int id, QString name, QString location);
 
     void parseErrorHints(const QString &text, int startChar, int endChar);
     void clearLinksAndErrorHints();
-    void markLink(int from, int to, int mark);
-    QString extractError(QString text);
+    QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int line, int column, int size = 0);
+    void markLink(TextMark* mark);
+    void removeTextMarks(TextMark::Type tmType);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
 private:
     FileMetrics mMetrics;
@@ -163,6 +190,9 @@ private:
     QFileSystemWatcher *mWatcher = nullptr;
     QTextDocument *mDocument;
     bool mBeforeErrorExtraction = true;
+    QHash<int, TextMark*> mTextMarks;
+    QPair<int, QString> mCurrentErrorHint;
+
     static const QStringList mDefaulsCodecs;
 
 };

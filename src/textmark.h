@@ -17,31 +17,59 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEACTIONCONTEXT_H
-#define FILEACTIONCONTEXT_H
+#ifndef TEXTMARK_H
+#define TEXTMARK_H
 
-#include "filesystemcontext.h"
+#include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
-class FileActionContext : public FileSystemContext
+class FileContext;
+
+class TextMark
 {
-    Q_OBJECT
 public:
-    void trigger();
-    void setLocation(const QString& location);
-    virtual QIcon icon();
+    enum Type {
+        all,
+        none,
+        error,
+        link,
+        bookmark,
+    };
+
+    explicit TextMark(TextMark::Type tmType);
+    void mark(FileContext* fileContext, int line, int column, int size = 0);
+    void updateCursor();
+    void setRefMark(TextMark* refMark);
+    void jumpToRefMark();
+
+    QString toolTip() const;
+    void setToolTip(const QString &value);
+
+    int value() const;
+    void setValue(int value);
+
+    QIcon icon();
+    Type type() const;
+    bool isValid();
+    int line();
+    QTextBlock textBlock();
+    const QTextCursor textCursor();
 
 private:
-    friend class FileRepository;
-    FileActionContext(int id, QAction* action);
-
-private:
-    QAction *mAction;
+    FileContext* mFileContext = nullptr;
+    Type mType = none;
+    QString mToolTip;
+    int mLine = -1;
+    int mColumn = 0;
+    int mSize = 0;
+    int mValue = 0;
+    QTextCursor mCursor;
+    TextMark* mReference = nullptr;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // FILEACTIONCONTEXT_H
+#endif // TEXTMARK_H

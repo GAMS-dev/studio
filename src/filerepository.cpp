@@ -19,6 +19,8 @@
  */
 #include "filerepository.h"
 #include "exception.h"
+#include "textmark.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -110,6 +112,27 @@ void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGr
     resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
+void FileRepository::generateTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
+{
+    TRACE();
+    FileContext* fc;
+    findFile(filePath, fc, fileGroup);
+    textLink = fc ? fc->generateTextMark(tmType, line, column, columnFrom) : nullptr;
+}
+
+void FileRepository::setErrorHint(const int errCode, const QString &hint)
+{
+    if (mErrorHints.contains(errCode) && hint.isEmpty())
+        mErrorHints.remove(errCode);
+    else
+        mErrorHints.insert(errCode, hint);
+}
+
+void FileRepository::getErrorHint(const int errCode, QString &hint)
+{
+    hint = mErrorHints.value(errCode);
+}
+
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
     // TODO(JM) rename this to modifiedFiles()
@@ -179,7 +202,10 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
-    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
+//    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
+    connect(fileContext, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+    connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
+    connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fileContext;
@@ -340,6 +366,9 @@ FileContext*FileRepository::logContext(FileSystemContext* node)
     FileContext* res = group->logContext();
     if (!res) {
         res = new FileContext(mNextId++, "["+group->name()+"]", "");
+        connect(res, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+        connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
+        connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
         res->setKeepDocument();
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
@@ -348,6 +377,17 @@ FileContext*FileRepository::logContext(FileSystemContext* node)
         qDebug() << "generated log-context:" << res->name();
     }
     return res;
+}
+
+void FileRepository::removeMarks(FileGroupContext* group)
+{
+    for (int i = 0; i < group->childCount(); ++i) {
+        FileSystemContext* fsc = group->childEntry(i);
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext* fc = static_cast<FileContext*>(fsc);
+            fc->removeTextMarks(QSet<TextMark::Type>()<<TextMark::error<<TextMark::link);
+        }
+    }
 }
 
 void FileRepository::onFileChangedExtern(int fileId)
