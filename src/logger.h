@@ -36,17 +36,19 @@ private:
 class Tracer: public Logger
 {
 public:
-    Tracer(QString functionName): mFunctionName(functionName) {
+    Tracer(QString functionName = QString()): mFunctionName(functionName) {
         QRegularExpression regex("[^\\_]*\\_\\_cdecl ([^\\(]+)"); // (\\_\\_ccdecl )([^\\(])+
         QRegularExpressionMatch match = regex.match(functionName);
         if (match.hasMatch())
             mFunctionName = match.captured(1)+"(...)";
-        qDebug().noquote() << indent() << "IN " << mFunctionName;
+        if (!mFunctionName.isEmpty())
+            qDebug().noquote() << indent() << "IN " << mFunctionName;
         incDepth();
     }
     ~Tracer() {
         decDepth();
-        qDebug().noquote() << indent() << "OUT" << mFunctionName;
+        if (!mFunctionName.isEmpty())
+            qDebug().noquote() << indent() << "OUT" << mFunctionName;
     }
 private:
     QString mFunctionName;
@@ -60,10 +62,12 @@ private:
 //#    define TRACE() gams::studio::Tracer  _GamsTracer_(__PRETTY_FUNCTION__)
 #    define TRACE() gams::studio::Tracer  _GamsTracer_(__FUNCTION__)
 #  else
-//#    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
-#    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCTION__)
+#    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
 #    define DEB() gams::studio::Logger() << Logger::indent()
 #  endif
+#else
+#  define TRACE() gams::studio::Tracer _GamsTracer_()
+#  define DEB()  gams::studio::Logger() << Logger::indent()
 #endif
 
 #endif // LOGGER_H
