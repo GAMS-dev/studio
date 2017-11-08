@@ -122,6 +122,7 @@ public:
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
     FileContext* logContext(FileSystemContext* node);
+    void removeMarks(FileGroupContext* group);
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
@@ -138,6 +139,9 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
+    void generateTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
+    void setErrorHint(const int errCode, const QString& hint);
+    void getErrorHint(const int errCode, QString& hint);
 
 private:
     void updateActions();
@@ -149,6 +153,7 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
+    QHash<int, QString> mErrorHints;
 };
 
 } // namespace studio

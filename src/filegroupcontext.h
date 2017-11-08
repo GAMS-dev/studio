@@ -47,6 +47,7 @@ public:
     bool isWatched();
     void setWatched(bool watch = true);
     QString runableGms();
+    QString lstFileName();
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -71,6 +72,7 @@ private:
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
     FileContext* mLogContext;
+    QString mLstFileName;
 };
 
 } // namespace studio

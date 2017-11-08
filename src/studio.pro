@@ -87,7 +87,9 @@ SOURCES += \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymboltable.cpp \
     gamspaths.cpp \
-    filetreemodel.cpp
+    filetreemodel.cpp \
+    textmark.cpp \
+    logger.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -116,7 +118,9 @@ HEADERS += \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymboltable.h \
     gamspaths.h \
-    filetreemodel.h
+    filetreemodel.h \
+    textmark.h \
+    logger.h
 
 FORMS += \
     welcomepage.ui  \

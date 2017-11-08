@@ -29,6 +29,7 @@
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
 #include "gdxviewer/gdxviewer.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
+    TRACE();
     ui->setupUi(this);
     setAcceptDrops(true);
 
@@ -680,6 +682,9 @@ void MainWindow::on_actionRun_triggered()
         return;
 
     ui->actionRun->setEnabled(false);
+    mFileRepo.removeMarks(fgc);
+    FileContext* logProc = mFileRepo.logContext(fgc);
+    logProc->markOld();
 
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
@@ -691,7 +696,6 @@ void MainWindow::on_actionRun_triggered()
     mProcess->setContext(fgc);
     mProcess->execute();
 
-    FileContext* logProc = mFileRepo.logContext(fgc);
     FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
     if (currentLogProc && currentLogProc != logProc) {
         currentLogProc->removeEditor(ui->outputView);
