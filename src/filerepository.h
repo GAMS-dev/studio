@@ -128,6 +128,7 @@ signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
+    void openOrShowContext(FileContext* fileContext);
 
 public slots:
     void nodeChanged(int fileId);

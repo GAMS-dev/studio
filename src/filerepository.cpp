@@ -202,6 +202,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
+    connect(fileContext, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
     connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
@@ -360,6 +361,7 @@ FileContext*FileRepository::logContext(FileSystemContext* node)
     FileContext* res = group->logContext();
     if (!res) {
         res = new FileContext(mNextId++, "["+group->name()+"]", "");
+        connect(res, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
         connect(res, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
         connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
         connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);

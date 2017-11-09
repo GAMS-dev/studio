@@ -43,6 +43,7 @@ public:
     void updateCursor();
     void setRefMark(TextMark* refMark);
     void jumpToRefMark();
+    void jumpToMark();
 
     QString toolTip() const;
     void setToolTip(const QString &value);
@@ -53,9 +54,13 @@ public:
     QIcon icon();
     Type type() const;
     bool isValid();
-    int line();
     QTextBlock textBlock();
     const QTextCursor textCursor();
+
+    int line() const;
+    int column() const;
+    int size() const;
+    bool inColumn(int col) const;
 
 private:
     FileContext* mFileContext = nullptr;
