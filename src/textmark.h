@@ -45,8 +45,7 @@ public:
     void jumpToRefMark();
     void jumpToMark();
 
-    QString toolTip() const;
-    void setToolTip(const QString &value);
+    void showToolTip();
 
     int value() const;
     void setValue(int value);
@@ -55,7 +54,7 @@ public:
     Type type() const;
     bool isValid();
     QTextBlock textBlock();
-    const QTextCursor textCursor();
+    QTextCursor textCursor() const;
 
     int line() const;
     int column() const;
@@ -65,7 +64,6 @@ public:
 private:
     FileContext* mFileContext = nullptr;
     Type mType = none;
-    QString mToolTip;
     int mLine = -1;
     int mColumn = 0;
     int mSize = 0;

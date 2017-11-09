@@ -112,12 +112,12 @@ void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGr
     resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-void FileRepository::generateTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
+void FileRepository::generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
 {
     TRACE();
     FileContext* fc;
     findFile(filePath, fc, fileGroup);
-    textLink = fc ? fc->generateTextMark(tmType, line, column, columnFrom) : nullptr;
+    textLink = fc ? fc->generateTextMark(tmType, value, line, column, columnFrom) : nullptr;
 }
 
 void FileRepository::setErrorHint(const int errCode, const QString &hint)

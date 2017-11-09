@@ -275,11 +275,24 @@ void FileContext::load(QString codecName)
 void FileContext::jumpTo(const QTextCursor &cursor)
 {
     if (mEditors.size()) {
-        DEB() << "jumped";
         QTextCursor tc(cursor);
         tc.clearSelection();
         mEditors.first()->setTextCursor(tc);
         emit openOrShow(this);
+    }
+}
+
+void FileContext::showToolTip(const TextMark& mark)
+{
+    if (mEditors.size() && !mark.textCursor().isNull()) {
+        QPlainTextEdit* edit = mEditors.first();
+        QTextCursor cursor(mark.textCursor());
+        cursor.setPosition(cursor.anchor());
+        QPoint pos = edit->cursorRect(cursor).topLeft();
+        QString tip;
+        emit requestErrorHint(mark.value(), tip);
+
+        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
     }
 }
 
@@ -308,6 +321,9 @@ void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     for (QString line: text.split("\n", QString::SkipEmptyParts)) {
         QList<LinkData> marks;
         QString newLine = extractError(line, state, marks);
+        if (state == FileContext::Exiting) {
+            emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
+        }
         if (state != FileContext::Inside) {
             QList<bool> atEnd;
             for (QPlainTextEdit* ed: mEditors) {
@@ -319,7 +335,7 @@ void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             cursor.insertText(newLine+"\n");
             for (LinkData mark: marks) {
                 int size = (mark.size<=0) ? newLine.length()-mark.col : mark.size;
-                TextMark* tm = generateTextMark(TextMark::link, line, mark.col, size);
+                TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.first, line, mark.col, size);
                 tm->setRefMark(mark.textMark);
             }
             int i = 0;
@@ -375,7 +391,8 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     result += QString("[ERR:%1]").arg(line+1);
                     mark.size = result.length() - mark.col - 1;
                     DEB() << "captured fileName: " << fName;
-                    emit requestTextMark(TextMark::error, fName, line, 0, col, mark.textMark, parentEntry());
+                    emit requestTextMark(TextMark::error, mCurrentErrorHint.first, fName, line, 0, col
+                                         , mark.textMark, parentEntry());
                     marks << mark;
                 }
                 if (part.startsWith("LST")) {
@@ -386,7 +403,8 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     result += QString("[LST:%1]").arg(line+1);
                     mark.size = result.length() - mark.col - 1;
                     DEB() << "captured fileName: " << fName;
-                    emit requestTextMark(TextMark::error, fName, line, 0, 0, mark.textMark, parentEntry());
+                    emit requestTextMark(TextMark::error, mCurrentErrorHint.first, fName, line, 0, 0
+                                         , mark.textMark, parentEntry());
                     marks << mark;
                 }
             }
@@ -398,7 +416,11 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
         }
     } else {
         if (line.startsWith(" ")) {
-            mCurrentErrorHint.second += line;
+            if (mCurrentErrorHint.second.isEmpty())
+                mCurrentErrorHint.second += QString::number(mCurrentErrorHint.first)+'\t'+line.trimmed();
+            else
+                mCurrentErrorHint.second += "\n\t"+line.trimmed();
+
             state = Inside;
             result = line;
             // TODO(JM) add to description
@@ -411,11 +433,12 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
     return result;
 }
 
-TextMark* FileContext::generateTextMark(TextMark::Type tmType, int line, int column, int size)
+TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
     TRACE();
     TextMark* res = new TextMark(tmType);
     res->mark(this, line, column, size);
+    res->setValue(value);
     DEB() << "TextMark: " << int(tmType) << "  pos: " << line << " col " << column << "_" << size;
     mTextMarks.insertMulti(line, res);
     markLink(res);
@@ -532,10 +555,12 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
                 }
             }
         } else if (event->type() == QEvent::ToolTip) {
-//            QHelpEvent helpEv = static_cast<QHelpEvent*>(event);
-//            QToolTip::showText(x,x,x)
-//            return QObject::eventFilter(watched, event);
-            return true;
+            for (TextMark* mark: mTextMarks.values(cursor.block().blockNumber())) {
+                if (mark->inColumn(cursor.positionInBlock())) {
+                    mark->showToolTip();
+                    return true;
+                }
+            }
         }
     }
     return FileSystemContext::eventFilter(watched, event);
