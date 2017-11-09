@@ -658,7 +658,7 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
         FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
         fsc = mFileRepo.findContext(filePath, group);
         if (!fsc) {
-            FATAL() << "File not found: " << filePath;
+            EXCEPT() << "File not found: " << filePath;
         }
         if (fsc->type() == FileSystemContext::File) {
             FileContext *fc = static_cast<FileContext*>(fsc);
