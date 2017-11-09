@@ -40,7 +40,7 @@ void TextMark::mark(FileContext* fileContext, int line, int column, int size)
 void TextMark::updateCursor()
 {
     if (mFileContext && mFileContext->document()) {
-        QTextBlock block = mFileContext->document()->findBlockByLineNumber(mLine);
+        QTextBlock block = mFileContext->document()->findBlockByNumber(mLine);
         mCursor = QTextCursor(block);
         if (mSize <= 0) {
 //            mCursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
@@ -60,6 +60,12 @@ void TextMark::setRefMark(TextMark* refMark)
 }
 
 void TextMark::jumpToRefMark()
+{
+    if (mReference)
+        mReference->jumpToMark();
+}
+
+void TextMark::jumpToMark()
 {
     if (mFileContext && !mCursor.isNull())
         mFileContext->jumpTo(mCursor);
@@ -103,7 +109,7 @@ bool TextMark::isValid()
     return mFileContext && (mLine>=0) && (mColumn>=0);
 }
 
-int TextMark::line()
+int TextMark::line() const
 {
     if (mCursor.isNull())
         return mLine;
@@ -120,6 +126,21 @@ QTextBlock TextMark::textBlock()
 const QTextCursor TextMark::textCursor()
 {
     return mCursor;
+}
+
+int TextMark::column() const
+{
+    return mColumn;
+}
+
+int TextMark::size() const
+{
+    return mSize;
+}
+
+bool TextMark::inColumn(int col) const
+{
+    return col >= mColumn && col < (mColumn+mSize);
 }
 
 int TextMark::value() const

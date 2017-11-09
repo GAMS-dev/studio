@@ -66,6 +66,7 @@ private slots:
     void appendErrLink(QString text);
     void postGamsRun();
     void postGamsLibRun();
+    void openOrShowContext(FileContext *fileContext);
     // View
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -107,7 +108,6 @@ protected:
 
 private:
     void initTabs();
-    void openOrShow(FileContext *fileContext);
     void openOrShow(QString filePath, FileGroupContext *parent, bool openedManually = false);
     FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
     void openContext(const QModelIndex& index);
@@ -119,7 +119,6 @@ private:
     Ui::MainWindow *ui;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    QHash<QTextStream, QColor> mStreams;
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;

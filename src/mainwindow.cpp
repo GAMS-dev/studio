@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
+    connect(&mFileRepo, &FileRepository::openOrShowContext, this, &MainWindow::openOrShowContext);
     connect(ui->dockOutputView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
@@ -457,7 +458,7 @@ void MainWindow::postGamsRun()
 
 void MainWindow::postGamsLibRun()
 {// TODO(AF) Are there models without a GMS file? How to handle them?"
-    openOrShow(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    openOrShowContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -697,11 +698,16 @@ void MainWindow::on_actionRun_triggered()
     ui->actionRun->setEnabled(false);
     mFileRepo.removeMarks(fgc);
     FileContext* logProc = mFileRepo.logContext(fgc);
+    FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
+    if (currentLogProc && currentLogProc != logProc) {
+        currentLogProc->removeEditor(ui->outputView);
+    }
+    logProc->addEditor(ui->outputView);
     logProc->markOld();
 
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
-    QString basePath = gmsFileInfo.absolutePath();
+//    QString basePath = gmsFileInfo.absolutePath();
 
     mProcess = new GAMSProcess(this);
     mProcess->setWorkingDir(gmsFileInfo.path());
@@ -709,16 +715,11 @@ void MainWindow::on_actionRun_triggered()
     mProcess->setContext(fgc);
     mProcess->execute();
 
-    FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
-    if (currentLogProc && currentLogProc != logProc) {
-        currentLogProc->removeEditor(ui->outputView);
-    }
-    logProc->addEditor(ui->outputView);
     connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &FileContext::addProcessData);
     connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 
-void MainWindow::openOrShow(FileContext* fileContext)
+void MainWindow::openOrShowContext(FileContext* fileContext)
 {
     if (!fileContext) return;
     QPlainTextEdit* edit = fileContext->editors().empty() ? nullptr : fileContext->editors().first();
@@ -756,6 +757,7 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
+    openOrShowContext(static_cast<FileContext*>(fsc));
 }
 
 FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
@@ -781,7 +783,7 @@ void MainWindow::openContext(const QModelIndex& index)
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
         FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShow(fc);
+        openOrShowContext(fc);
     }
 }
 

@@ -34,6 +34,28 @@ FileContext::FileContext(int id, QString name, QString location)
 {
     mDocument = nullptr;
     mMetrics = FileMetrics(QFileInfo(location));
+//    QCoreApplication::instance()->installEventFilter(this);
+}
+
+FileContext::~FileContext()
+{
+    removeAllEditors();
+}
+
+QString FileContext::codec() const
+{
+    return mCodec;
+}
+
+void FileContext::setCodec(const QString& codec)
+{
+    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
+    mCodec = codec;
+}
+
+const QString FileContext::caption()
+{
+    return name() + (isModified() ? "*" : "");
 }
 
 bool FileContext::isModified()
@@ -76,6 +98,132 @@ void FileContext::save(QString filePath)
     file.close();
     mMetrics = FileMetrics(QFileInfo(file));
     document()->setModified(false);
+}
+
+const FileMetrics& FileContext::metrics()
+{
+    return mMetrics;
+}
+
+const QList<QPlainTextEdit*> FileContext::editors() const
+{
+    return mEditors;
+}
+
+void FileContext::setLocation(const QString& _location)
+{
+    if (_location.isEmpty())
+        EXCEPT() << "File can't be set to an empty location.";
+    QFileInfo newLoc(_location);
+    if (QFileInfo(location()) == newLoc)
+        return; // nothing to do
+
+    // TODO(JM) adapt parent group
+    if (document())
+        document()->setModified(true);
+    FileSystemContext::setLocation(_location);
+    mMetrics = FileMetrics(newLoc);
+}
+
+QIcon FileContext::icon()
+{
+    if (mMetrics.fileType() == FileType::Gms)
+        return QIcon(":/img/gams-w");
+    return QIcon(":/img/file-alt");
+}
+
+void FileContext::addEditor(QPlainTextEdit* edit)
+{
+    if (!edit)
+        return;
+    if (mEditors.contains(edit)) {
+        mEditors.move(mEditors.indexOf(edit), 0);
+        return;
+    }
+
+    mEditors.prepend(edit);
+    if (mEditors.size() == 1 && !mDocument) {
+        document()->setParent(this);
+        connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        QTimer::singleShot(50, this, &FileContext::updateMarks);
+    } else {
+        edit->setDocument(document());
+    }
+    // TODO(JM) getMouseMove and -click for editor to enable link-clicking
+    if (!edit->viewport()->hasMouseTracking()) {
+        edit->viewport()->setMouseTracking(true);
+    }
+    edit->viewport()->installEventFilter(this);
+    edit->installEventFilter(this);
+
+    setFlag(FileSystemContext::cfActive);
+}
+
+void FileContext::editToTop(QPlainTextEdit* edit)
+{
+    addEditor(edit);
+}
+
+void FileContext::removeEditor(QPlainTextEdit* edit)
+{
+    int i = mEditors.indexOf(edit);
+    if (i < 0)
+        return;
+    bool wasModified = isModified();
+    mEditors.removeAt(i);
+    if (mEditors.isEmpty()) {
+        // After removing last editor: paste document-parency back to editor
+        edit->document()->setParent(edit);
+        disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        unsetFlag(FileSystemContext::cfActive);
+        if (wasModified) emit changed(id());
+    } else {
+        edit->setDocument(document()->clone(edit));
+    }
+    edit->viewport()->removeEventFilter(this);
+    edit->removeEventFilter(this);
+}
+
+void FileContext::removeAllEditors()
+{
+    auto editors = mEditors;
+    for (auto editor : editors) {
+        removeEditor(editor);
+    }
+    mEditors = editors;
+}
+
+bool FileContext::hasEditor(QPlainTextEdit* edit)
+{
+    return mEditors.contains(edit);
+}
+
+QTextDocument*FileContext::document()
+{
+    if (mDocument)
+        return mDocument;
+    if (mEditors.isEmpty())
+        return nullptr;
+    return mEditors.first()->document();
+}
+
+void FileContext::setKeepDocument(bool keep)
+{
+    if (keep && !mDocument) {
+        if (mEditors.isEmpty()) {
+            mDocument = new QTextDocument(this);
+            mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
+            mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        } else {
+            mDocument = mEditors.first()->document();
+        }
+    } else if (!keep && mDocument) {
+        if (mEditors.isEmpty()) {
+            mDocument->deleteLater();
+        }
+        mDocument = nullptr;
+    }
 }
 
 void FileContext::load(QString codecName)
@@ -124,123 +272,14 @@ void FileContext::load(QString codecName)
     }
 }
 
-const QList<QPlainTextEdit*> FileContext::editors() const
-{
-    return mEditors;
-}
-
-void FileContext::setLocation(const QString& _location)
-{
-    if (_location.isEmpty())
-        EXCEPT() << "File can't be set to an empty location.";
-    QFileInfo newLoc(_location);
-    if (QFileInfo(location()) == newLoc)
-        return; // nothing to do
-
-    // TODO(JM) adapt parent group
-    if (document())
-        document()->setModified(true);
-    FileSystemContext::setLocation(_location);
-    mMetrics = FileMetrics(newLoc);
-}
-
-QIcon FileContext::icon()
-{
-    if (mMetrics.fileType() == FileType::Gms)
-        return QIcon(":/img/gams-w");
-    return QIcon(":/img/file-alt");
-}
-
-void FileContext::addEditor(QPlainTextEdit* edit)
-{
-    if (!edit || mEditors.contains(edit))
-        return;
-
-    mEditors.append(edit);
-    if (mEditors.size() == 1 && !mDocument) {
-        document()->setParent(this);
-        connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        QTimer::singleShot(100, this, &FileContext::updateMarks);
-    } else {
-        edit->setDocument(document());
-    }
-    CodeEditor* ce = dynamic_cast<CodeEditor*>(edit);
-    if (ce) {
-        connect(ce, &CodeEditor::getHintForPos, this, &FileContext::shareHintForPos);
-    }
-    setFlag(FileSystemContext::cfActive);
-}
-
-void FileContext::removeEditor(QPlainTextEdit* edit)
-{
-    int i = mEditors.indexOf(edit);
-    if (i < 0)
-        return;
-    bool wasModified = isModified();
-    mEditors.removeAt(i);
-    if (mEditors.isEmpty()) {
-        // After removing last editor: paste document-parency back to editor
-        edit->document()->setParent(edit);
-        unsetFlag(FileSystemContext::cfActive);
-        if (wasModified) emit changed(id());
-    } else {
-        edit->setDocument(document()->clone(edit));
-    }
-}
-
-void FileContext::removeAllEditors()
-{
-    auto editors = mEditors;
-    for (auto editor : editors) {
-        removeEditor(editor);
-    }
-    mEditors = editors;
-}
-
-bool FileContext::hasEditor(QPlainTextEdit* edit)
-{
-    return mEditors.contains(edit);
-}
-
-QTextDocument*FileContext::document()
-{
-    if (mDocument)
-        return mDocument;
-    if (mEditors.isEmpty())
-        return nullptr;
-    return mEditors.first()->document();
-}
-
-void FileContext::setKeepDocument(bool keep)
-{
-    if (keep && !mDocument) {
-        if (mEditors.isEmpty()) {
-            mDocument = new QTextDocument(this);
-            mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
-            mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        } else {
-            mDocument = mEditors.first()->document();
-        }
-    } else if (!keep && mDocument) {
-        if (mEditors.isEmpty()) {
-            mDocument->deleteLater();
-        }
-        mDocument = nullptr;
-    }
-}
-
-const FileMetrics& FileContext::metrics()
-{
-    return mMetrics;
-}
-
 void FileContext::jumpTo(const QTextCursor &cursor)
 {
     if (mEditors.size()) {
+        DEB() << "jumped";
         QTextCursor tc(cursor);
         tc.clearSelection();
         mEditors.first()->setTextCursor(tc);
+        emit openOrShow(this);
     }
 }
 
@@ -295,27 +334,6 @@ void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     }
 }
 
-FileContext::~FileContext()
-{
-    removeAllEditors();
-}
-
-QString FileContext::codec() const
-{
-    return mCodec;
-}
-
-void FileContext::setCodec(const QString& codec)
-{
-    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
-    mCodec = codec;
-}
-
-const QString FileContext::caption()
-{
-    return name() + (isModified() ? "*" : "");
-}
-
 struct LocalLinkData {
     int sourceLine = 0;
     int sourceCol = 0;
@@ -325,46 +343,6 @@ struct LocalLinkData {
     int errCode = 0;
     int lastPos = 0;
 };
-
-void FileContext::parseErrorHints(const QString& text, int startChar, int endChar)
-{
-    QString part = text.mid(startChar, endChar-startChar);
-    QVector<QStringRef> lines = part.splitRef("\n", QString::SkipEmptyParts);
-    int len = 0;
-    int errCode = 0;
-    QString errHint;
-//    QString body("<table><tr><td><b>%1</b></td><td>%2</td></tr></table>");
-    QRegularExpression regEx("^( *(\\d+) +)");
-    for (QStringRef ref: lines) {
-        QRegularExpressionMatch match = regEx.match(ref);
-        if (match.hasMatch()) {
-            if (!len)
-                len = match.captured(1).length();
-            if (!errHint.isEmpty()) {
-                mErrHints.insert(errCode, new GamsErrorHint(errCode, errHint));
-            }
-            errCode = match.captured(2).toInt();
-            errHint = QString::number(errCode) + "\t" +ref.right(ref.length()-len).toString().trimmed();
-        } else {
-            errHint += "\n\t" + ref.right(ref.length()-len).toString().trimmed();
-        }
-    }
-    if (!errHint.isEmpty()) {
-        mErrHints.insert(errCode, new GamsErrorHint(errCode, errHint));
-    }
-}
-
-void FileContext::clearLinksAndErrorHints()
-{
-    while (!mErrHints.isEmpty()) {
-        int key = mErrHints.constBegin().key();
-        delete mErrHints.take(key);
-    }
-    while (!mLinks.isEmpty()) {
-        int key = mLinks.constBegin().key();
-        delete mLinks.take(key);
-    }
-}
 
 QString FileContext::extractError(QString line, ExtractionState &state, QList<LinkData> &marks)
 {
@@ -389,24 +367,24 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     mCurrentErrorHint.second = "";
                 }
                 if (part.startsWith("ERR")) {
-                    LinkData mark;
-                    mark.col = result.length()+1;
-                    result += "[ERR]";
-                    mark.size = result.length() - mark.col - 1;
                     QString fName = QDir::fromNativeSeparators(match.captured(4));
                     int line = match.captured(5).toInt()-1;
                     int col = match.captured(6).toInt()-1;
+                    LinkData mark;
+                    mark.col = result.length()+1;
+                    result += QString("[ERR:%1]").arg(line+1);
+                    mark.size = result.length() - mark.col - 1;
                     DEB() << "captured fileName: " << fName;
                     emit requestTextMark(TextMark::error, fName, line, 0, col, mark.textMark, parentEntry());
                     marks << mark;
                 }
                 if (part.startsWith("LST")) {
+                    QString fName = parentEntry()->lstFileName();
+                    int line = match.captured(7).toInt()-1;
                     LinkData mark;
                     mark.col = result.length()+1;
-                    result += "[LST]";
+                    result += QString("[LST:%1]").arg(line+1);
                     mark.size = result.length() - mark.col - 1;
-                    int line = match.captured(7).toInt();
-                    QString fName = parentEntry()->lstFileName();
                     DEB() << "captured fileName: " << fName;
                     emit requestTextMark(TextMark::error, fName, line, 0, 0, mark.textMark, parentEntry());
                     marks << mark;
@@ -439,7 +417,7 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int line, int col
     TextMark* res = new TextMark(tmType);
     res->mark(this, line, column, size);
     DEB() << "TextMark: " << int(tmType) << "  pos: " << line << " col " << column << "_" << size;
-    mTextMarks.insert(line, res);
+    mTextMarks.insertMulti(line, res);
     markLink(res);
     return res;
 }
@@ -465,6 +443,7 @@ void FileContext::markLink(TextMark* mark)
         cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
         newFormat.setBackground(QColor(225,200,255));
         newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        newFormat.setAnchorName(QString::number(mark->line()));
         cur.setCharFormat(newFormat);
     }
     if (mark->type() == TextMark::link) {
@@ -472,6 +451,9 @@ void FileContext::markLink(TextMark* mark)
         newFormat.setForeground(Qt::blue);
         newFormat.setUnderlineColor(Qt::blue);
         newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        newFormat.setToolTip(QString::number(mark->value()));
+        newFormat.setAnchor(true);
+        newFormat.setAnchorName(QString::number(mark->line()));
         cur.setCharFormat(newFormat);
     }
 //    cur.setPosition(to, QTextCursor::KeepAnchor);
@@ -503,26 +485,66 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
+bool FileContext::eventFilter(QObject* watched, QEvent* event)
+{
+    static QPoint mClickPos;
+
+    if (event->type() == 2 || event->type() == 3) {
+        if (watched->parent()) {
+            QString pName = watched->parent() ? watched->parent()->objectName() : "-";
+            DEB() << "Sender: " << watched->objectName()
+                  << " par " << pName
+                  << " type " << event->type();
+        } else {
+            DEB() << "Sender: " << watched << " " << watched->objectName();
+        }
+    }
+
+    if (!mEditors.size() || (watched != mEditors.first() && watched != mEditors.first()->viewport()))
+        return FileSystemContext::eventFilter(watched, event);
+
+
+    if (event->type() == QEvent::MouseButtonPress
+        || event->type() == QEvent::MouseButtonRelease
+        || event->type() == QEvent::MouseMove
+        || event->type() == QEvent::ToolTip) {
+        QPlainTextEdit* edit = mEditors.first();
+        QPoint pos = (event->type() == QEvent::ToolTip)
+                ? static_cast<QHelpEvent*>(event)->pos()
+                : static_cast<QMouseEvent*>(event)->pos();
+        QTextCursor cursor = edit->cursorForPosition(pos);
+        if (event->type() == QEvent::MouseMove) {
+            if (cursor.charFormat().isAnchor()) {
+                edit->viewport()->setCursor(Qt::PointingHandCursor);
+            } else {
+                edit->viewport()->setCursor(Qt::ArrowCursor);
+            }
+            return true;
+        } else if (event->type() == QEvent::MouseButtonPress) {
+            mClickPos = pos;
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            if ((mClickPos-pos).manhattanLength() < 4) {
+                for (TextMark* mark: mTextMarks.values(cursor.block().blockNumber())) {
+                    if (mark->inColumn(cursor.positionInBlock())) {
+                        mark->jumpToRefMark();
+                        return true;
+                    }
+                }
+            }
+        } else if (event->type() == QEvent::ToolTip) {
+//            QHelpEvent helpEv = static_cast<QHelpEvent*>(event);
+//            QToolTip::showText(x,x,x)
+//            return QObject::eventFilter(watched, event);
+            return true;
+        }
+    }
+    return FileSystemContext::eventFilter(watched, event);
+}
+
 void FileContext::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
     emit changed(id());
-}
-
-void FileContext::shareHintForPos(QPlainTextEdit* sender, QPoint pos, QString& hint, QTextCursor& cursor)
-{
-    // TODO(JM) map pos to row,col
-    QTextCursor cur = sender->cursorForPosition(pos);
-    for (LinkReference* lr: mLinks) {
-        if (cur.block().blockNumber() == lr->line || cur.block().blockNumber() == lr->line-1) {
-            GamsErrorHint *eh = mErrHints.value(lr->errCode);
-            if (eh) {
-                cursor.setPosition(lr->source.anchor() + lr->col-1);
-                hint = eh->hint;
-                break;
-            }
-        }
-    }
 }
 
 void FileContext::updateMarks()

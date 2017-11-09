@@ -28,22 +28,6 @@
 namespace gams {
 namespace studio {
 
-struct GamsErrorHint {
-    GamsErrorHint(int _errCode, QString _hint) : errCode(_errCode), hint(_hint) {}
-    int errCode = 0;
-    QString hint;
-};
-
-// TODO(JM) DEPRECATED: use class TextMark
-struct LinkReference {
-    LinkReference(int _line, int _col, int _errCode) : line(_line), col(_col), errCode(_errCode) {}
-    int line = 0;
-    int col = 0;
-    int errCode = 0;
-    QTextCursor local; ///< the cursor to mark the current
-    QTextCursor source;
-};
-
 class FileGroupContext;
 class TextMark;
 typedef QPair<int,QString> ErrorHint;
@@ -103,9 +87,13 @@ public:
     const QList<QPlainTextEdit*> editors() const;
 
     /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
-    /// <c>QTextDocument</c>.
+    /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
     void addEditor(QPlainTextEdit *edit);
+
+    /// Moves the <c>CodeEditor</c> to the top of the editors-list of this file. (same behavior as <c>addEditor()</c>)
+    /// \param edit The <c>CodeEditor</c> to be moved to top.
+    void editToTop(QPlainTextEdit *edit);
 
     /// Removes an <c>CodeEditor</c> from the list.
     /// \param edit The <c>CodeEditor</c> to be removed.
@@ -148,6 +136,7 @@ signals:
                          , TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
+    void openOrShow(FileContext* fileContext);
 
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
@@ -157,8 +146,6 @@ protected slots:
 
     /// Slot to handle a change of the assigned Document
     void modificationChanged(bool modiState);
-
-    void shareHintForPos(QPlainTextEdit *sender, QPoint pos, QString& hint,  QTextCursor &cursor);
 
     void updateMarks();
 
@@ -172,19 +159,16 @@ protected:
     friend class FileRepository;
     FileContext(int id, QString name, QString location);
 
-    void parseErrorHints(const QString &text, int startChar, int endChar);
-    void clearLinksAndErrorHints();
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
     TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int line, int column, int size = 0);
     void markLink(TextMark* mark);
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    bool eventFilter(QObject *watched, QEvent *event);
 
 private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
-    QHash<int, LinkReference*> mLinks;
-    QHash<int, GamsErrorHint*> mErrHints;
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
