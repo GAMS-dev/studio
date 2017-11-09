@@ -125,6 +125,26 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
+QStringList FileGroupContext::additionalFiles() const
+{
+    return mAdditionalFiles;
+}
+
+void FileGroupContext::setAdditionalFiles(const QStringList &additionalFiles)
+{
+    mAdditionalFiles = additionalFiles;
+}
+
+void FileGroupContext::addAdditionalFile(const QString &additionalFile)
+{
+    if(additionalFile == "") return;
+
+    qDebug() << "adding additional file" << additionalFile;
+    if(!mAdditionalFiles.contains(additionalFile)) {
+        mAdditionalFiles << additionalFile;
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms

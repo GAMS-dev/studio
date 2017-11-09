@@ -111,7 +111,7 @@ public:
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
     void removeNode(FileSystemContext *node);
-    FileGroupContext* ensureGroup(const QString& filePath);
+    FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
@@ -121,7 +121,6 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
-
 signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);

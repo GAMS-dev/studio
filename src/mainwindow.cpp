@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
-    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
@@ -173,7 +173,7 @@ void MainWindow::on_actionOpen_triggered()
                                                  tr("GAMS code (*.gms *.inc );;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
-    addContext("", fName);
+    addContext("", fName, true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -722,13 +722,15 @@ void MainWindow::openOrShow(FileContext* fileContext)
         ui->mainTab->currentWidget()->setFocus();
 }
 
-void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
+void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool openedManually)
 {
     QFileInfo fileInfo(filePath);
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
-    if (!fsc) {
-        // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+    if (!fsc) { // not yet opened by user, open file in new tab
+
+        QString additionalFile = openedManually ? fileInfo.fileName() : "";
+        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath(), additionalFile);
+
         fsc = mFileRepo.findContext(filePath, group);
         if (!fsc) {
             EXCEPT() << "File not found: " << filePath;
@@ -748,7 +750,7 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
     openOrShow(static_cast<FileContext*>(fsc));
 }
 
-FileContext* MainWindow::addContext(const QString &path, const QString &fileName)
+FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
 {
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {
@@ -765,7 +767,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            openOrShow(fInfo.filePath(), nullptr); // open all sorts of files
+            openOrShow(fInfo.filePath(), nullptr, openedManually); // open all sorts of files
         }
     }
     return fc;
