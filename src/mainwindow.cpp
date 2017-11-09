@@ -76,7 +76,7 @@ void MainWindow::initTabs()
     ui->projectView->setPalette(pal);
 
     ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
-    hasWelcomePage = true;
+    mHasWelcomePage = true;
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -88,7 +88,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
-        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+        if (fc->metrics().fileType() != FileType::Gdx) {
             CodeEditor *codeEdit = new CodeEditor(this);
             fc->addEditor(codeEdit);
             int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -99,12 +99,15 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             ensureCodecMenu(fc->codec());
-            if (fc->metrics().fileType() == FileType::Gms) {
+            if (fc->metrics().fileType() == FileType::Gms ||
+                    fc->metrics().fileType() == FileType::Txt) {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             } else {
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
             }
+        } else {
+            // TODO: open .gdx
         }
         // TODO(JM) other kinds
     }
@@ -139,16 +142,25 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::on_actionNew_triggered()
 {
-    NewDialog dialog(this);
-    dialog.exec();
-    auto fileName = dialog.fileName();
-    auto location = dialog.location();
+    QString path = mRecent.path;
+    if (mRecent.editFileId >= 0) {
+        FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
+        if (fc) path = QFileInfo(fc->location()).path();
+    }
+    auto filePath = QFileDialog::getSaveFileName(this,
+                                                 "Create new file...",
+                                                 path,
+                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 "Text files (*.txt);;"
+                                                 "All files (*)"));
 
-    QFile file(QDir(location).filePath(fileName));
-    if (file.open(QIODevice::WriteOnly))
+    QFile file(filePath);
+    if (!file.exists()) { // which should be the default!
+        file.open(QIODevice::WriteOnly);
         file.close();
+    }
 
-    if (FileContext *fc = addContext(location, fileName)) {
+    if (FileContext *fc = addContext("", filePath)) {
         fc->save();
     }
 }
@@ -242,6 +254,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
 //    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
+    Q_UNUSED(channel);
     emit processOutput(text);
 }
 
@@ -353,11 +366,63 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
+    // TODO(JM) if (text.startsWith("*** Error")
+    QRegularExpression errRegEx("(?m)^\\*[3] Error +(\\d) in ([^\\[]+)\\[ERR:\"([^\"]+)\",(\\d+),(\\d+)");
     QPlainTextEdit *outWin = ui->outputView;
-    outWin->moveCursor(QTextCursor::End);
-    outWin->insertPlainText(text);
-    outWin->moveCursor(QTextCursor::End);
+    QString newText = extractError(outWin, text);
+    if (!newText.isNull()) {
+        outWin->moveCursor(QTextCursor::End);
+        outWin->insertPlainText(newText);
+        outWin->moveCursor(QTextCursor::End);
+    }
 }
+
+QString MainWindow::extractError(QPlainTextEdit* outWin, QString text)
+{
+    QString result;
+    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
+        if (mBeforeErrorExtraction) {
+            QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
+            if (parts.size() > 1) {
+                QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
+                for (QString part: parts) {
+                    QRegularExpressionMatch match = errRX1.match(part);
+                    if (part.startsWith("***")) {
+                        result = part;
+                        // TODO(JM) extract error-nr
+                        match.captured(2);
+                    }
+                    if (part.startsWith("ERR")) {
+                        result += "[ERR]";
+                        // TODO(JM) extract error-file, error-row, error-col
+                        match.captured(4);
+                        match.captured(5);
+                        match.captured(6);
+                    }
+                    if (part.startsWith("LST")) {
+                        result += "[LST]";
+                        match.captured(7);
+                    }
+                }
+                result += "\n";
+                mBeforeErrorExtraction = false;
+            } else {
+                result = line;
+            }
+        } else {
+            if (line.startsWith(" ")) {
+                // TODO(JM) add to description
+            } else {
+                result = line;
+                mBeforeErrorExtraction = true;
+
+//                result = text;
+            }
+        }
+    }
+    return result;
+}
+
 
 void MainWindow::appendErrLink(QString text)
 {
@@ -450,7 +515,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        hasWelcomePage = false;
+        mHasWelcomePage = false;
         return;
     }
 
@@ -479,9 +544,9 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(!hasWelcomePage) {
+    if(!mHasWelcomePage) {
         ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
-        hasWelcomePage = true;
+        mHasWelcomePage = true;
     }
     ui->mainTab->setCurrentIndex(0);
 }
@@ -495,6 +560,18 @@ void MainWindow::renameToBackup(QFile *file)
             suffix++;
         }
     }
+}
+
+void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
+{
+    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess->setApp(item->library()->execName());
+    mLibProcess->setModelName(item->name());
+    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+    mLibProcess->execute();
+    connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -527,19 +604,15 @@ void MainWindow::on_actionGAMS_Library_triggered()
                 break;
             case 1: // replace
                 renameToBackup(&gmsFile);
-                mLibProcess = new GAMSLibProcess(this);
-                mLibProcess->setApp(item->library()->execName());
-                mLibProcess->setModelName(item->name());
-                mLibProcess->setInputFile(gmsFileName);
-                mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
-                mLibProcess->execute();
-                connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
-                connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
+                triggerGamsLibFileCreation(item, gmsFileName);
                 break;
             case QMessageBox::Abort:
                 break;
             }
+        } else {
+            triggerGamsLibFileCreation(item, gmsFileName);
         }
+
     }
 }
 
@@ -681,16 +754,18 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-        // TODO(JM) extend for each possible type
 
         FileType fType = FileType::from(fInfo.suffix());
 
-        if (fType == FileType::Gms) {
-            // Create node for GIST directory and load all files of known filetypes
-            openOrShow(fInfo.filePath(), nullptr);
-        }
+        // TODO(JM) extend for each possible type
+//        if (fType == FileType::Gms) {
+//            // Create node for GIST directory and load all files of known filetypes
+//            openOrShow(fInfo.filePath(), nullptr);
+//        }
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
+        } else {
+            openOrShow(fInfo.filePath(), nullptr); // open all sorts of files
         }
     }
     return fc;

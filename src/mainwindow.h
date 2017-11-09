@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "codeeditor.h"
+#include "modeldialog/libraryitem.h"
 
 namespace Ui {
 class MainWindow;
@@ -112,6 +113,9 @@ private:
     void openOrShow(QString filePath, FileGroupContext *parent);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
+    void renameToBackup(QFile *file);
+    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
+    QString extractError(QPlainTextEdit *outWin, QString text);
 
 private:
     Ui::MainWindow *ui;
@@ -121,8 +125,8 @@ private:
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
-    bool hasWelcomePage = false;
-    void renameToBackup(QFile *file);
+    bool mHasWelcomePage = false;
+    bool mBeforeErrorExtraction = true;
 };
 
 }

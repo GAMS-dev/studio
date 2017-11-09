@@ -3,6 +3,7 @@
 #include "gdxsymbol.h"
 #include "exception.h"
 #include <memory>
+#include <QtConcurrent>
 
 namespace gams {
 namespace studio {
@@ -47,7 +48,11 @@ void GdxViewer::updateSelectedSymbol()
 {
     QModelIndexList modelIndexList = ui.tvSymbols->selectionModel()->selectedIndexes();
     if(modelIndexList.size()>0)
-        ui.tableView->setModel(mGdxSymbolTable->gdxSymbols().at(modelIndexList.at(0).row()));
+    {
+        GdxSymbol* sym = mGdxSymbolTable->gdxSymbols().at(modelIndexList.at(0).row());
+        QtConcurrent::run(sym, &GdxSymbol::loadData);
+        ui.tableView->setModel(sym);
+    }
     else
         ui.tableView->setModel(nullptr);
 }

@@ -16,8 +16,9 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QObject *parent)
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
     mHeaderText.append("Type");
-    mHeaderText.append("Dimension");
-    mHeaderText.append("Nr Records");
+    mHeaderText.append("Dim");
+    mHeaderText.append("Records");
+    mHeaderText.append("Loaded");
     mHeaderText.append("Text");
 }
 
@@ -64,18 +65,23 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
         case 3: return mGdxSymbols.at(index.row())->dim(); break;
         case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
-        case 5: return mGdxSymbols.at(index.row())->explText(); break;
+        case 5: return mGdxSymbols.at(index.row())->isLoaded(); break;
+        case 6: return mGdxSymbols.at(index.row())->explText(); break;
         }
     else if (role == Qt::TextAlignmentRole)
+    {
+        Qt::AlignmentFlag aFlag;
         switch(index.column())
         {
-        case 0: return Qt::AlignRight; break;
-        case 1: return Qt::AlignLeft; break;
-        case 2: return Qt::AlignLeft; break;
-        case 3: return Qt::AlignRight; break;
-        case 4: return Qt::AlignRight; break;
-        case 5: return Qt::AlignLeft; break;
+        case 0: aFlag = Qt::AlignRight; break;
+        case 1: aFlag = Qt::AlignLeft; break;
+        case 2: aFlag = Qt::AlignLeft; break;
+        case 3: aFlag = Qt::AlignRight; break;
+        case 4: aFlag = Qt::AlignRight; break;
+        case 5: aFlag = Qt::AlignLeft; break;
         }
+        return QVariant(aFlag | Qt::AlignVCenter);
+    }
     return QVariant();
 }
 

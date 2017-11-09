@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icons/icons.qrc">
-    <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
+    <normaloff>:/img/gams-w24</normaloff>:/img/gams-w24</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
