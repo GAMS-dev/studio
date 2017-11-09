@@ -140,7 +140,7 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
-    void generateTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
+    void generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
     void setErrorHint(const int errCode, const QString& hint);
     void getErrorHint(const int errCode, QString& hint);
 

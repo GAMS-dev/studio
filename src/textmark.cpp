@@ -71,14 +71,10 @@ void TextMark::jumpToMark()
         mFileContext->jumpTo(mCursor);
 }
 
-QString TextMark::toolTip() const
+void TextMark::showToolTip()
 {
-    return mToolTip;
-}
-
-void TextMark::setToolTip(const QString& value)
-{
-    mToolTip = value;
+    if (mFileContext)
+        mFileContext->showToolTip(*this);
 }
 
 QIcon TextMark::icon()
@@ -123,7 +119,7 @@ QTextBlock TextMark::textBlock()
     return mCursor.block();
 }
 
-const QTextCursor TextMark::textCursor()
+QTextCursor TextMark::textCursor() const
 {
     return mCursor;
 }

@@ -118,6 +118,7 @@ public:
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor);
+    void showToolTip(const TextMark& mark);
 
     void markOld();
 
@@ -132,7 +133,7 @@ signals:
 
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
-    void requestTextMark(TextMark::Type tmType, QString filePath, int line, int column, int columnFrom
+    void requestTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom
                          , TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
@@ -160,7 +161,7 @@ protected:
     FileContext(int id, QString name, QString location);
 
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int line, int column, int size = 0);
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void markLink(TextMark* mark);
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
