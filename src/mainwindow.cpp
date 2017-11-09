@@ -99,12 +99,12 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             ensureCodecMenu(fc->codec());
-            if (fc->metrics().fileType() == FileType::Gms ||
-                    fc->metrics().fileType() == FileType::Txt) {
-                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
-            } else {
+            if (fc->metrics().fileType() == FileType::Log ||
+                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            } else {
+                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
         } else {
             // TODO: open .gdx
@@ -160,7 +160,7 @@ void MainWindow::on_actionNew_triggered()
         file.close();
     }
 
-    if (FileContext *fc = addContext("", filePath)) {
+    if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
     }
 }
