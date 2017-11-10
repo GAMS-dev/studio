@@ -105,6 +105,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
+    void mouseMoveEvent(QMouseEvent *event);
 
 private:
     void initTabs();

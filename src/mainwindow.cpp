@@ -688,6 +688,17 @@ void MainWindow::dropEvent(QDropEvent* e)
     }
 }
 
+void MainWindow::mouseMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons()) {
+        QWidget* child = childAt(event->pos());
+        if (child) {
+            DEB() << "child: " << child->objectName();
+        }
+    }
+    QMainWindow::mouseMoveEvent(event);
+}
+
 void MainWindow::on_actionRun_triggered()
 {// TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
