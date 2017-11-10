@@ -61,6 +61,7 @@ private:
 #  ifdef __GNUC__
 //#    define TRACE() gams::studio::Tracer  _GamsTracer_(__PRETTY_FUNCTION__)
 #    define TRACE() gams::studio::Tracer  _GamsTracer_(__FUNCTION__)
+#    define DEB() gams::studio::Logger() << Logger::indent()
 #  else
 #    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
 #    define DEB() gams::studio::Logger() << Logger::indent()
