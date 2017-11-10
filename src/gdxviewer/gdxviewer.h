@@ -28,7 +28,7 @@ private:
     GdxSymbolTable* mGdxSymbolTable;
 
     gdxHandle_t mGdx;
-    QMutex* gdxMutex;
+    QMutex* mGdxMutex;
 };
 
 } // namespace gdxviewer
