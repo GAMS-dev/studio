@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLTABLEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QMutex>
 #include "gdxsymbol.h"
 #include <memory>
 
@@ -14,7 +15,7 @@ class GdxSymbolTable : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbolTable(gdxHandle_t gdx, QObject *parent = 0);
+    explicit GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *parent = 0);
     ~GdxSymbolTable();
 
     // Header:
@@ -44,7 +45,7 @@ private:
     QStringList mUel2Label;
     QStringList mStrPool;
 
-
+    QMutex* mGdxMutex;
 };
 
 } // namespace gdxviewer

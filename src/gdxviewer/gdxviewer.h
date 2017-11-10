@@ -6,6 +6,7 @@
 #include "gdxsymbol.h"
 #include "gdxsymboltable.h"
 #include <memory>
+#include <QMutex>
 
 namespace gams {
 namespace studio {
@@ -18,7 +19,7 @@ class GdxViewer : public QFrame
 public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
-    void updateSelectedSymbol();
+    void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
 
 private:
     Ui::GdxViewer ui;
@@ -27,6 +28,7 @@ private:
     GdxSymbolTable* mGdxSymbolTable;
 
     gdxHandle_t mGdx;
+    QMutex* mGdxMutex;
 };
 
 } // namespace gdxviewer
