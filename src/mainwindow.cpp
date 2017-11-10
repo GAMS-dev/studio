@@ -680,7 +680,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         for (QString fName: pathList) {
             QFileInfo fi(fName);
             if (QFileInfo(fName).isFile()) {
-                openOrShow(fi.canonicalFilePath(), nullptr);
+                openOrShow(fi.canonicalFilePath(), nullptr, true);
             }
         }
     }
