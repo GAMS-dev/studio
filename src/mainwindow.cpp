@@ -170,10 +170,16 @@ void MainWindow::on_actionOpen_triggered()
     QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
                                                  mRecent.path,
-                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 tr("GAMS code (*.gms *.inc *.gdx);;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
-    addContext("", fName, true);
+
+    if (fName.endsWith(".gdx", Qt::CaseInsensitive)) {
+        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fName, GAMSPaths::systemDir()), "GDX Viewer");
+        ui->mainTab->setCurrentIndex(idx);
+    } else {
+        addContext("", fName, true);
+    }
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -778,7 +784,12 @@ void MainWindow::openContext(const QModelIndex& index)
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
         FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShow(fc);
+        if (fc->name().endsWith(".gdx")) {
+            int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), "GDX Viewer");
+            ui->mainTab->setCurrentIndex(idx);
+        } else {
+            openOrShow(fc);
+        }
     }
 }
 
