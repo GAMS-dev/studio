@@ -19,6 +19,7 @@
  */
 #include "textmark.h"
 #include "filecontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -136,7 +137,7 @@ int TextMark::size() const
 
 bool TextMark::inColumn(int col) const
 {
-    return col >= mColumn && col < (mColumn+mSize);
+    return !mSize || (col >= mColumn && col < (mColumn+mSize));
 }
 
 int TextMark::value() const

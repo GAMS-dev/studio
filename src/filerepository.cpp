@@ -386,6 +386,16 @@ void FileRepository::removeMarks(FileGroupContext* group)
     }
 }
 
+void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
+{
+    if (editUnderCursor) {
+        FileContext *fc = fileContext(editUnderCursor);
+        bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
+        bool  isLink = fc->mouseOverLink();
+        editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    }
+}
+
 void FileRepository::onFileChangedExtern(int fileId)
 {
     if (!mChangedIds.contains(fileId)) mChangedIds << fileId;

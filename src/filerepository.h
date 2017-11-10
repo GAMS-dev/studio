@@ -124,6 +124,8 @@ public:
     FileContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
+    void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
+
 signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);

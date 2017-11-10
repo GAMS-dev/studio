@@ -166,6 +166,7 @@ protected:
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     bool eventFilter(QObject *watched, QEvent *event);
+    bool mouseOverLink();
 
 private:
     FileMetrics mMetrics;
@@ -177,6 +178,7 @@ private:
     bool mBeforeErrorExtraction = true;
     QHash<int, TextMark*> mTextMarks;
     QPair<int, QString> mCurrentErrorHint;
+    bool mMouseOverLink = false;
 
     static const QStringList mDefaulsCodecs;
 
