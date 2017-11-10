@@ -144,6 +144,9 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1 && !mDocument) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        if (location().isEmpty()) {
+            DEB() << " log connected";
+        }
         QTimer::singleShot(50, this, &FileContext::updateMarks);
     } else {
         edit->setDocument(document());
@@ -174,6 +177,9 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        if (location().isEmpty()) {
+            DEB() << " log disconnected";
+        }
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
     } else {
@@ -213,13 +219,21 @@ void FileContext::setKeepDocument(bool keep)
             mDocument = new QTextDocument(this);
             mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
             mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
         } else {
             mDocument = mEditors.first()->document();
+            disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+            if (location().isEmpty()) {
+                DEB() << " log disconnected";
+            }
         }
     } else if (!keep && mDocument) {
         if (mEditors.isEmpty()) {
             mDocument->deleteLater();
+        } else {
+            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+            if (location().isEmpty()) {
+                DEB() << " log connected";
+            }
         }
         mDocument = nullptr;
     }
@@ -523,9 +537,9 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     if (evCheckKey.contains(event->type())) {
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMouseOverLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
+            mEditors.first()->viewport()->setCursor(mMouseOverLink ? Qt::PointingHandCursor : Qt::IBeamCursor);
         } else {
-            mEditors.first()->viewport()->setCursor(Qt::ArrowCursor);
+            mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
         return FileSystemContext::eventFilter(watched, event);
     }
@@ -540,10 +554,10 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             if (cursor.charFormat().isAnchor()) {
                 mMouseOverLink = true;
                 bool ctrl = true; //QApplication::keyboardModifiers() & Qt::ControlModifier;
-                edit->viewport()->setCursor(ctrl ? Qt::PointingHandCursor : Qt::ArrowCursor);
+                edit->viewport()->setCursor(ctrl ? Qt::PointingHandCursor : Qt::IBeamCursor);
             } else {
                 mMouseOverLink = false;
-                edit->viewport()->setCursor(Qt::ArrowCursor);
+                edit->viewport()->setCursor(Qt::IBeamCursor);
             }
         } else if (event->type() == QEvent::MouseButtonPress) {
             clickPos = pos;
@@ -576,6 +590,9 @@ bool FileContext::mouseOverLink()
 void FileContext::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
+    if (location().isEmpty()) {
+        DEB() << " log modified";
+    }
     emit changed(id());
 }
 

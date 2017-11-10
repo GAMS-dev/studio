@@ -343,6 +343,11 @@ void FileRepository::nodeClicked(QModelIndex index)
         emit act->trigger();
         return;
     }
+//    FileContext* fc = FileContext(index);
+//    if (fc && fc->location().isEmpty()) {
+//        FileContext* lc = logContext(fc);
+//        if ()
+//    }
 }
 
 void FileRepository::editorActivated(QPlainTextEdit* edit)
