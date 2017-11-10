@@ -99,8 +99,6 @@ private slots:
     void on_projectView_doubleClicked(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
 
-    void on_actionGDX_Viewer_triggered();
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);

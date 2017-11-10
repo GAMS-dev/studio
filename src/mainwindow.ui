@@ -408,11 +408,6 @@
     <string>F9</string>
    </property>
   </action>
-  <action name="actionGDX_Viewer">
-   <property name="text">
-    <string>Open GDX File</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

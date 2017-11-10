@@ -799,18 +799,5 @@ void MainWindow::on_mainTab_currentChanged(int index)
     if (edit) mFileRepo.editorActivated(edit);
 }
 
-void MainWindow::on_actionGDX_Viewer_triggered()
-{
-    auto fileName = QFileDialog::getOpenFileName(this,
-                                                 "Open GDX file...",
-                                                 mRecent.path,
-                                                 tr("GDX file (*.gdx);;"
-                                                 "All files (*)"));
-    if (!fileName.isEmpty()) {
-        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fileName, GAMSPaths::systemDir()), "GDX Viewer");
-        ui->mainTab->setCurrentIndex(idx);
-    }
-}
-
 }
 }
