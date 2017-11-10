@@ -111,7 +111,7 @@ public:
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
     void removeNode(FileSystemContext *node);
-    FileGroupContext* ensureGroup(const QString& filePath);
+    FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
@@ -121,11 +121,16 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
+    FileContext* logContext(FileSystemContext* node);
+    void removeMarks(FileGroupContext* group);
+
+    void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
+    void openOrShowContext(FileContext* fileContext);
 
 public slots:
     void nodeChanged(int fileId);
@@ -137,6 +142,9 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
+    void generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
+    void setErrorHint(const int errCode, const QString& hint);
+    void getErrorHint(const int errCode, QString& hint);
 
 private:
     void updateActions();
@@ -148,6 +156,7 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
+    QHash<int, QString> mErrorHints;
 };
 
 } // namespace studio

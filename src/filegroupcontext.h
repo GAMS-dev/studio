@@ -25,6 +25,8 @@
 namespace gams {
 namespace studio {
 
+class FileContext;
+
 class FileGroupContext : public FileSystemContext
 {
     Q_OBJECT
@@ -45,7 +47,11 @@ public:
     bool isWatched();
     void setWatched(bool watch = true);
     QString runableGms();
+    QString lstFileName();
 
+    QStringList additionalFiles() const;
+    void setAdditionalFiles(const QStringList &additionalFiles);
+    void addAdditionalFile(const QString &additionalFile);
 signals:
     void contentChanged(int id, QDir fileInfo);
 
@@ -61,11 +67,16 @@ protected:
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
+    FileContext* logContext();
+    void setLogContext(FileContext* logContext);
 
 private:
     QList<FileSystemContext*> mChildList;
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
+    FileContext* mLogContext;
+    QString mLstFileName;
+    QStringList mAdditionalFiles;
 };
 
 } // namespace studio

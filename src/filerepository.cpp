@@ -19,6 +19,8 @@
  */
 #include "filerepository.h"
 #include "exception.h"
+#include "textmark.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -110,6 +112,27 @@ void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGr
     resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
+void FileRepository::generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
+{
+    TRACE();
+    FileContext* fc;
+    findFile(filePath, fc, fileGroup);
+    textLink = fc ? fc->generateTextMark(tmType, value, line, column, columnFrom) : nullptr;
+}
+
+void FileRepository::setErrorHint(const int errCode, const QString &hint)
+{
+    if (mErrorHints.contains(errCode) && hint.isEmpty())
+        mErrorHints.remove(errCode);
+    else
+        mErrorHints.insert(errCode, hint);
+}
+
+void FileRepository::getErrorHint(const int errCode, QString &hint)
+{
+    hint = mErrorHints.value(errCode);
+}
+
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
     // TODO(JM) rename this to modifiedFiles()
@@ -179,7 +202,11 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
-    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
+    connect(fileContext, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
+//    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
+    connect(fileContext, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+    connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
+    connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fileContext;
@@ -191,10 +218,11 @@ void FileRepository::removeNode(FileSystemContext* node)
     delete node;
 }
 
-FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
+FileGroupContext* FileRepository::ensureGroup(const QString &filePath, const QString &additionalFile)
 {
     bool extendedCaption = false;
     FileGroupContext* group = nullptr;
+
     QFileInfo fi(filePath);
     QFileInfo di(fi.canonicalPath());
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
@@ -202,6 +230,8 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
             group = static_cast<FileGroupContext*>(fsc);
             if (di == QFileInfo(group->location())) {
+                group->addAdditionalFile(additionalFile);
+                updatePathNode(group->id(), fi.path());
                 return group;
             } else {
                 extendedCaption = true;
@@ -210,6 +240,7 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
         }
     }
     group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
+    group->addAdditionalFile(additionalFile);
     if (extendedCaption)
         group->setFlag(FileSystemContext::cfExtendCaption);
     updatePathNode(group->id(), fi.path());
@@ -265,16 +296,21 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
-        QFileInfoList fiList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
+            fileFilter << parGroup->additionalFiles();
+
+        QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries
         QList<IndexedFSContext> vanishedEntries;
         for (int i = 0; i < parGroup->childCount(); ++i) {
             FileSystemContext *entry = parGroup->childEntry(i);
+            if (entry->location().isEmpty())
+                continue;
             QFileInfo fi(entry->location());
-            int pos = fiList.indexOf(fi);
+            int pos = addList.indexOf(fi);
             if (pos >= 0) {
-                fiList.removeAt(pos);
+                // keep existing entries and remove them from addList
+                addList.removeAt(pos);
                 entry->unsetFlag(FileSystemContext::cfMissing);
             } else {
                 // prepare indicees in reverse order (highest index first)
@@ -294,7 +330,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
             }
         }
         // add newly appeared files and directories
-        for (QFileInfo fi: fiList) {
+        for (QFileInfo fi: addList) {
             addFile(fi.fileName(), fi.canonicalFilePath(), parGroup);
         }
     }
@@ -319,6 +355,51 @@ void FileRepository::editorActivated(QPlainTextEdit* edit)
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;
+}
+
+FileContext*FileRepository::logContext(FileSystemContext* node)
+{
+    FileGroupContext* group = nullptr;
+    if (node->type() != FileSystemContext::FileGroup)
+        group = node->parentEntry();
+    else
+        group = static_cast<FileGroupContext*>(node);
+    FileContext* res = group->logContext();
+    if (!res) {
+        res = new FileContext(mNextId++, "["+group->name()+"]", "");
+        connect(res, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
+        connect(res, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+        connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
+        connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
+        res->setKeepDocument();
+        bool hit;
+        int offset = group->peekIndex(res->name(), &hit);
+        if (hit) offset++;
+        mTreeModel->insertChild(offset, group, res);
+        qDebug() << "generated log-context:" << res->name();
+    }
+    return res;
+}
+
+void FileRepository::removeMarks(FileGroupContext* group)
+{
+    for (int i = 0; i < group->childCount(); ++i) {
+        FileSystemContext* fsc = group->childEntry(i);
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext* fc = static_cast<FileContext*>(fsc);
+            fc->removeTextMarks(QSet<TextMark::Type>()<<TextMark::error<<TextMark::link);
+        }
+    }
+}
+
+void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
+{
+    if (editUnderCursor) {
+        FileContext *fc = fileContext(editUnderCursor);
+        bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
+        bool  isLink = fc->mouseOverLink();
+        editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    }
 }
 
 void FileRepository::onFileChangedExtern(int fileId)

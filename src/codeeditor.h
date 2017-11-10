@@ -50,12 +50,10 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e);
-    bool event(QEvent* event);
 
 signals:
     void updateBlockSelection();
     void updateBlockEdit();
-    void getHintForPos(QPlainTextEdit *sender, QPoint pos, QString& hint, QTextCursor &cursor);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

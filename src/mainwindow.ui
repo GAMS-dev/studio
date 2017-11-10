@@ -16,12 +16,15 @@
     <height>0</height>
    </size>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>GAMS Studio</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../icons/icons.qrc">
-    <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
+    <normaloff>:/img/gams-w24</normaloff>:/img/gams-w24</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -146,7 +149,6 @@
     <addaction name="actionRun"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
-    <addaction name="actionGDX_Viewer"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -407,11 +409,6 @@
    </property>
    <property name="shortcut">
     <string>F9</string>
-   </property>
-  </action>
-  <action name="actionGDX_Viewer">
-   <property name="text">
-    <string>Open GDX File</string>
    </property>
   </action>
  </widget>

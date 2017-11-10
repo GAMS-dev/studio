@@ -106,14 +106,14 @@ void FileSystemContext::setLocation(const QString& location)
 {
     if (!location.isEmpty()) {
         QFileInfo fi(location);
+        if(!fi.exists()) {
+            QFile newFile(location);
+            newFile.open(QIODevice::WriteOnly);
+            newFile.close();
+        }
         mLocation = fi.canonicalFilePath();
         setName(fi.fileName());
     }
-}
-
-QIcon FileSystemContext::icon()
-{
-    return QIcon();
 }
 
 const FileSystemContext::ContextFlags& FileSystemContext::flags() const

@@ -1,20 +1,23 @@
 #include "gdxsymbol.h"
 #include <memory>
+#include <QThread>
+#include <QtConcurrent>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
 {
-    loadData();
 }
 
 GdxSymbol::~GdxSymbol()
 {
-    delete mKeys;
-    delete mValues;
+    if(mKeys)
+        delete mKeys;
+    if (mValues)
+        delete mValues;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -50,7 +53,7 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mRecordCount;
+    return mLoadedRecCount;
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
@@ -84,7 +87,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 return mStrPool->at((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                val = mValues[index.row()*GMS_DT_MAX + index.column()];
+                val = mValues[index.row()*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
@@ -111,7 +114,9 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
         if (index.column() >= mDim)
         {
             if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
-                return Qt::AlignRight;
+                return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+            else
+                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
     }
     return QVariant();
@@ -120,34 +125,90 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
-    int dummy;
-    int* keys = new int[mDim];
-    double* values = new double[GMS_VAL_MAX];
-    gdxDataReadRawStart(mGdx, mNr, &dummy);
-    mKeys = new int[mRecordCount*mDim];
-    if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-        mValues = new double[mRecordCount];
-    else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-        mValues = new double[mRecordCount*GMS_DT_MAX];
-    for(int i=0; i<mRecordCount; i++)
+    QMutexLocker locker(mGdxMutex);
+    if(!mIsLoaded)
     {
-        gdxDataReadRaw(mGdx, keys, values, &dummy);
-        for(int j=0; j<mDim; j++)
-        {
-            mKeys[i*mDim+j] = keys[j];
-        }
-        if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-            mValues[i] = values[0];
-        else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-        {
-            for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
-                mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
-        }
-    }
-    gdxDataReadDone(mGdx);
+        beginResetModel();
+        endResetModel();
 
-    delete keys;
-    delete values;
+        if(!mKeys)
+            mKeys = new int[mRecordCount*mDim];
+        if(!mValues)
+        {
+            if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
+                mValues = new double[mRecordCount];
+            else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+                mValues = new double[mRecordCount*GMS_DT_MAX];
+        }
+
+        int dummy;
+        int* keys = new int[mDim];
+        double* values = new double[GMS_VAL_MAX];
+        gdxDataReadRawStart(mGdx, mNr, &dummy);
+
+        for(int i=0; i<mLoadedRecCount; i++) //skip records that has already been loaded
+        {
+            gdxDataReadRaw(mGdx, keys, values, &dummy);
+            if(stopLoading) //TODO(CW): redundant code (see below)
+            {
+                stopLoading = false;
+                gdxDataReadDone(mGdx);
+                delete keys;
+                delete values;
+                return;
+            }
+        }
+
+        int updateCount = 1000;
+        for(int i=mLoadedRecCount; i<mRecordCount; i++)
+        {
+            if(i%updateCount == 0)
+                beginResetModel();
+
+            gdxDataReadRaw(mGdx, keys, values, &dummy);
+            for(int j=0; j<mDim; j++)
+            {
+                mKeys[i*mDim+j] = keys[j];
+            }
+            if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
+                mValues[i] = values[0];
+            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+            {
+                for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
+                    mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
+            }
+            mLoadedRecCount++;
+            if(i%updateCount == 0)
+                endResetModel();
+
+            if(stopLoading)
+            {
+                stopLoading = false;
+                gdxDataReadDone(mGdx);
+                delete keys;
+                delete values;
+                return;
+            }
+        }
+        gdxDataReadDone(mGdx);
+
+        mIsLoaded = true;
+        beginResetModel();
+        endResetModel();
+
+        delete keys;
+        delete values;
+    }
+}
+
+void GdxSymbol::stopLoadingData()
+{
+    stopLoading = true;
+}
+
+bool GdxSymbol::isLoaded() const
+{
+    return mIsLoaded;
 }
 
 QString GdxSymbol::explText() const
