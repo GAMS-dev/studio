@@ -107,9 +107,9 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
         } else {
-            // TODO: open .gdx
+            int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), "GDX Viewer");
+            ui->mainTab->setCurrentIndex(idx);
         }
-        // TODO(JM) other kinds
     }
 }
 
@@ -173,13 +173,7 @@ void MainWindow::on_actionOpen_triggered()
                                                  tr("GAMS code (*.gms *.inc *.gdx);;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
-
-    if (fName.endsWith(".gdx", Qt::CaseInsensitive)) {
-        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fName, GAMSPaths::systemDir()), "GDX Viewer");
-        ui->mainTab->setCurrentIndex(idx);
-    } else {
-        addContext("", fName, true);
-    }
+    addContext("", fName, true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -753,7 +747,6 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
-    openOrShow(static_cast<FileContext*>(fsc));
 }
 
 FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
@@ -765,11 +758,6 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
         FileType fType = FileType::from(fInfo.suffix());
 
-        // TODO(JM) extend for each possible type
-//        if (fType == FileType::Gms) {
-//            // Create node for GIST directory and load all files of known filetypes
-//            openOrShow(fInfo.filePath(), nullptr);
-//        }
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
@@ -784,12 +772,7 @@ void MainWindow::openContext(const QModelIndex& index)
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
         FileContext *fc = static_cast<FileContext*>(fsc);
-        if (fc->name().endsWith(".gdx")) {
-            int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), "GDX Viewer");
-            ui->mainTab->setCurrentIndex(idx);
-        } else {
-            openOrShow(fc);
-        }
+        openOrShow(fc);
     }
 }
 
