@@ -733,7 +733,19 @@ void MainWindow::on_actionRun_triggered()
 void MainWindow::openOrShowContext(FileContext* fileContext)
 {
     if (!fileContext) return;
-    QPlainTextEdit* edit = fileContext->editors().empty() ? nullptr : fileContext->editors().first();
+    QPlainTextEdit* edit = nullptr;
+    if (fileContext->location().isEmpty()) {
+        // Special handling of LogContext
+        FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
+        if (currentLogProc && currentLogProc != fileContext) {
+            currentLogProc->removeEditor(ui->outputView);
+            fileContext->addEditor(ui->outputView);
+        }
+        return;
+    }
+    if (!fileContext->editors().empty()) {
+        edit = fileContext->editors().first();
+    }
     if (edit) {
         ui->mainTab->setCurrentWidget(edit);
     } else {
