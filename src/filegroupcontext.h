@@ -48,6 +48,9 @@ public:
     void setWatched(bool watch = true);
     QString runableGms();
 
+    QStringList additionalFiles() const;
+    void setAdditionalFiles(const QStringList &additionalFiles);
+    void addAdditionalFile(const QString &additionalFile);
 signals:
     void contentChanged(int id, QDir fileInfo);
 
@@ -71,6 +74,7 @@ private:
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
     FileContext* mLogContext;
+    QStringList mAdditionalFiles;
 };
 
 } // namespace studio

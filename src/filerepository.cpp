@@ -191,10 +191,11 @@ void FileRepository::removeNode(FileSystemContext* node)
     delete node;
 }
 
-FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
+FileGroupContext* FileRepository::ensureGroup(const QString &filePath, const QString &additionalFile)
 {
     bool extendedCaption = false;
     FileGroupContext* group = nullptr;
+
     QFileInfo fi(filePath);
     QFileInfo di(fi.canonicalPath());
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
@@ -202,6 +203,8 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
             group = static_cast<FileGroupContext*>(fsc);
             if (di == QFileInfo(group->location())) {
+                group->addAdditionalFile(additionalFile);
+                updatePathNode(group->id(), fi.path());
                 return group;
             } else {
                 extendedCaption = true;
@@ -210,6 +213,7 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
         }
     }
     group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
+    group->addAdditionalFile(additionalFile);
     if (extendedCaption)
         group->setFlag(FileSystemContext::cfExtendCaption);
     updatePathNode(group->id(), fi.path());
@@ -265,6 +269,8 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
+            fileFilter << parGroup->additionalFiles();
+
         QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries

@@ -17,8 +17,10 @@ public:
         None,
         Gsp,
         Gms,
+        Txt,
         Lst,
         Lxi,
+        Log,
         Gdx,
     };
 

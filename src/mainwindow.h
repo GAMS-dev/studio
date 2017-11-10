@@ -99,8 +99,6 @@ private slots:
     void on_projectView_doubleClicked(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
 
-    void on_actionGDX_Viewer_triggered();
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -110,8 +108,8 @@ protected:
 private:
     void initTabs();
     void openOrShow(FileContext *fileContext);
-    void openOrShow(QString filePath, FileGroupContext *parent);
-    FileContext* addContext(const QString &path, const QString &fileName);
+    void openOrShow(QString filePath, FileGroupContext *parent, bool openedManually = false);
+    FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);

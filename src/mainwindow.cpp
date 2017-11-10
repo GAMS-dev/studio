@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
-    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
@@ -88,7 +88,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
-        if (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Lst) {
+        if (fc->metrics().fileType() != FileType::Gdx) {
             CodeEditor *codeEdit = new CodeEditor(this);
             fc->addEditor(codeEdit);
             int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -99,14 +99,17 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             ensureCodecMenu(fc->codec());
-            if (fc->metrics().fileType() == FileType::Gms) {
-                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
-            } else {
+            if (fc->metrics().fileType() == FileType::Log ||
+                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            } else {
+                connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
+        } else {
+            int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), "GDX Viewer");
+            ui->mainTab->setCurrentIndex(idx);
         }
-        // TODO(JM) other kinds
     }
 }
 
@@ -152,10 +155,12 @@ void MainWindow::on_actionNew_triggered()
                                                  "All files (*)"));
 
     QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly))
+    if (!file.exists()) { // which should be the default!
+        file.open(QIODevice::WriteOnly);
         file.close();
+    }
 
-    if (FileContext *fc = addContext("", filePath)) {
+    if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
     }
 }
@@ -165,10 +170,10 @@ void MainWindow::on_actionOpen_triggered()
     QString fName = QFileDialog::getOpenFileName(this,
                                                  "Open file",
                                                  mRecent.path,
-                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 tr("GAMS code (*.gms *.inc *.gdx);;"
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
-    addContext("", fName);
+    addContext("", fName, true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -249,6 +254,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
 //    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
+    Q_UNUSED(channel);
     emit processOutput(text);
 }
 
@@ -673,7 +679,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         for (QString fName: pathList) {
             QFileInfo fi(fName);
             if (QFileInfo(fName).isFile()) {
-                openOrShow(fi.canonicalFilePath(), nullptr);
+                openOrShow(fi.canonicalFilePath(), nullptr, true);
             }
         }
     }
@@ -721,16 +727,18 @@ void MainWindow::openOrShow(FileContext* fileContext)
         ui->mainTab->currentWidget()->setFocus();
 }
 
-void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
+void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool openedManually)
 {
     QFileInfo fileInfo(filePath);
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
-    if (!fsc) {
-        // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+    if (!fsc) { // not yet opened by user, open file in new tab
+
+        QString additionalFile = openedManually ? fileInfo.fileName() : "";
+        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath(), additionalFile);
+
         fsc = mFileRepo.findContext(filePath, group);
         if (!fsc) {
-            FATAL() << "File not found: " << filePath;
+            EXCEPT() << "File not found: " << filePath;
         }
         if (fsc->type() == FileSystemContext::File) {
             FileContext *fc = static_cast<FileContext*>(fsc);
@@ -744,25 +752,21 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent)
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
-    openOrShow(static_cast<FileContext*>(fsc));
 }
 
-FileContext* MainWindow::addContext(const QString &path, const QString &fileName)
+FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
 {
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-        // TODO(JM) extend for each possible type
 
         FileType fType = FileType::from(fInfo.suffix());
 
-        if (fType == FileType::Gms) {
-            // Create node for GIST directory and load all files of known filetypes
-            openOrShow(fInfo.filePath(), nullptr);
-        }
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
+        } else {
+            openOrShow(fInfo.filePath(), nullptr, openedManually); // open all sorts of files
         }
     }
     return fc;
@@ -781,19 +785,6 @@ void MainWindow::on_mainTab_currentChanged(int index)
 {
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
     if (edit) mFileRepo.editorActivated(edit);
-}
-
-void MainWindow::on_actionGDX_Viewer_triggered()
-{
-    auto fileName = QFileDialog::getOpenFileName(this,
-                                                 "Open GDX file...",
-                                                 mRecent.path,
-                                                 tr("GDX file (*.gdx);;"
-                                                 "All files (*)"));
-    if (!fileName.isEmpty()) {
-        int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fileName, GAMSPaths::systemDir()), "GDX Viewer");
-        ui->mainTab->setCurrentIndex(idx);
-    }
 }
 
 }

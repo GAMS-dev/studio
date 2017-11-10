@@ -146,7 +146,6 @@
     <addaction name="actionRun"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
-    <addaction name="actionGDX_Viewer"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -407,11 +406,6 @@
    </property>
    <property name="shortcut">
     <string>F9</string>
-   </property>
-  </action>
-  <action name="actionGDX_Viewer">
-   <property name="text">
-    <string>Open GDX File</string>
    </property>
   </action>
  </widget>

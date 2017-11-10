@@ -68,7 +68,9 @@ void GAMSProcess::execute()
 {
     qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
-    auto gms = QDir::toNativeSeparators(mInputFile);
+    QString gms = QDir::toNativeSeparators(mInputFile);
+    gms.replace(" ", "\\ ");
+
     //TODO(CW)
     // we need this at least on windows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted
