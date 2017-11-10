@@ -116,11 +116,6 @@ void FileSystemContext::setLocation(const QString& location)
     }
 }
 
-QIcon FileSystemContext::icon()
-{
-    return QIcon();
-}
-
 const FileSystemContext::ContextFlags& FileSystemContext::flags() const
 {
     return mFlags;

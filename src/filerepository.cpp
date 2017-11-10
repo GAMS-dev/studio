@@ -265,16 +265,19 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
-        QFileInfoList fiList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
+        QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries
         QList<IndexedFSContext> vanishedEntries;
         for (int i = 0; i < parGroup->childCount(); ++i) {
             FileSystemContext *entry = parGroup->childEntry(i);
+            if (entry->location().isEmpty())
+                continue;
             QFileInfo fi(entry->location());
-            int pos = fiList.indexOf(fi);
+            int pos = addList.indexOf(fi);
             if (pos >= 0) {
-                fiList.removeAt(pos);
+                // keep existing entries and remove them from addList
+                addList.removeAt(pos);
                 entry->unsetFlag(FileSystemContext::cfMissing);
             } else {
                 // prepare indicees in reverse order (highest index first)
@@ -294,7 +297,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
             }
         }
         // add newly appeared files and directories
-        for (QFileInfo fi: fiList) {
+        for (QFileInfo fi: addList) {
             addFile(fi.fileName(), fi.canonicalFilePath(), parGroup);
         }
     }
@@ -319,6 +322,26 @@ void FileRepository::editorActivated(QPlainTextEdit* edit)
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;
+}
+
+FileContext*FileRepository::logContext(FileSystemContext* node)
+{
+    FileGroupContext* group = nullptr;
+    if (node->type() != FileSystemContext::FileGroup)
+        group = node->parentEntry();
+    else
+        group = static_cast<FileGroupContext*>(node);
+    FileContext* res = group->logContext();
+    if (!res) {
+        res = new FileContext(mNextId++, "["+group->name()+"]", "");
+        res->setKeepDocument();
+        bool hit;
+        int offset = group->peekIndex(res->name(), &hit);
+        if (hit) offset++;
+        mTreeModel->insertChild(offset, group, res);
+        qDebug() << "generated log-context:" << res->name();
+    }
+    return res;
 }
 
 void FileRepository::onFileChangedExtern(int fileId)

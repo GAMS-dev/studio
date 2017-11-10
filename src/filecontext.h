@@ -116,6 +116,10 @@ public:
     /// \return The current QTextDocument
     QTextDocument* document();
 
+    /// If set to TRUE, the document is kept even if the last editor is closed.
+    /// \param keep Sets whether to keep the document.
+    void setKeepDocument(bool keep = true);
+
     const FileMetrics& metrics();
 
 signals:
@@ -128,6 +132,9 @@ signals:
     void deletedExtern(int fileId);
 
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
+
+public slots:
+    void addProcessData(QProcess::ProcessChannel channel, QString text);
 
 protected slots:
     void onFileChangedExtern(QString filepath);
@@ -144,6 +151,7 @@ protected:
     void parseErrorHints(const QString &text, int startChar, int endChar);
     void clearLinksAndErrorHints();
     void markLink(int from, int to, int mark);
+    QString extractError(QString text);
 
 private:
     FileMetrics mMetrics;
@@ -153,6 +161,8 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
+    QTextDocument *mDocument;
+    bool mBeforeErrorExtraction = true;
     static const QStringList mDefaulsCodecs;
 
 };

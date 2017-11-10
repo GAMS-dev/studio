@@ -25,6 +25,8 @@
 namespace gams {
 namespace studio {
 
+class FileContext;
+
 class FileGroupContext : public FileSystemContext
 {
     Q_OBJECT
@@ -61,11 +63,14 @@ protected:
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
+    FileContext* logContext();
+    void setLogContext(FileContext* logContext);
 
 private:
     QList<FileSystemContext*> mChildList;
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
+    FileContext* mLogContext;
 };
 
 } // namespace studio

@@ -121,6 +121,7 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
+    FileContext* logContext(FileSystemContext* node);
 
 signals:
     void fileClosed(int fileId, QPrivateSignal);

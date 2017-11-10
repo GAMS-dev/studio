@@ -360,8 +360,7 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
-    // TODO(JM) if (text.startsWith("*** Error")
-    QRegularExpression errRegEx("(?m)^\\*[3] Error +(\\d) in ([^\\[]+)\\[ERR:\"([^\"]+)\",(\\d+),(\\d+)");
+    // TODO(JM) Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
     QPlainTextEdit *outWin = ui->outputView;
     QString newText = extractError(outWin, text);
     if (!newText.isNull()) {
@@ -699,7 +698,13 @@ void MainWindow::on_actionRun_triggered()
     mProcess->setContext(fgc);
     mProcess->execute();
 
-    connect(mProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    FileContext* logProc = mFileRepo.logContext(fgc);
+    FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
+    if (currentLogProc && currentLogProc != logProc) {
+        currentLogProc->removeEditor(ui->outputView);
+    }
+    logProc->addEditor(ui->outputView);
+    connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &FileContext::addProcessData);
     connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 

@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "filegroupcontext.h"
+#include "filecontext.h"
 #include "exception.h"
 
 namespace gams {
@@ -116,13 +117,22 @@ void FileGroupContext::removeChild(FileSystemContext* child)
 void FileGroupContext::checkFlags()
 {
     bool active = false;
-    for (FileSystemContext *fc: mChildList) {
-        if (fc->testFlag(cfActive)) {
+    for (FileSystemContext *fsc: mChildList) {
+        if (fsc->testFlag(cfActive)) {
             active = true;
             break;
         }
     }
     setFlag(cfActive, active);
+}
+
+void FileGroupContext::setLogContext(FileContext* logContext)
+{
+    if (mLogContext)
+        EXCEPT() << "Reset the log-context is not allowed";
+    if (logContext->metrics().fileType() != FileType::None)
+        EXCEPT() << "Invalid FileType for log-context";
+    mLogContext = logContext;
 }
 
 QString FileGroupContext::runableGms()
@@ -131,6 +141,20 @@ QString FileGroupContext::runableGms()
     qDebug() << "runableGms:";
     qDebug() << QDir(location()).filePath(mRunInfo);
     return QDir(location()).filePath(mRunInfo);
+}
+
+FileContext*FileGroupContext::logContext()
+{
+    for (FileSystemContext *fsc: mChildList) {
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext* fc = static_cast<FileContext*>(fsc);
+            if (fc->metrics().fileType() == FileType::None) {
+                return fc;
+                break;
+            }
+        }
+    }
+    return nullptr;
 }
 
 int FileGroupContext::childCount()
