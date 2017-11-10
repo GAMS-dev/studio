@@ -79,6 +79,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 3: aFlag = Qt::AlignRight; break;
         case 4: aFlag = Qt::AlignRight; break;
         case 5: aFlag = Qt::AlignLeft; break;
+        case 6: aFlag = Qt::AlignLeft; break;
         }
         return QVariant(aFlag | Qt::AlignVCenter);
     }
