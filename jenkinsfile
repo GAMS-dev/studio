@@ -102,7 +102,7 @@ pipeline {
                             # collect files
                             cp bin/studio appdir/usr/bin/
                             cp gamsstudio.desktop appdir/
-                            cp icons/* appdir/
+                            #cp icons/* appdir/
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
