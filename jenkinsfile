@@ -101,7 +101,7 @@ pipeline {
 
                             # collect files
                             cp bin/studio appdir/usr/bin/
-                            cp gamsstudio.desktop appdir/
+                            #cp gamsstudio.desktop appdir/
                             mkdir -p appdir/usr/share/icons/hicolor/scalable/
                             cp icons/* appdir/usr/share/icons/hicolor/scalable/
                             
