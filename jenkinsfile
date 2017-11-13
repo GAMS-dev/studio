@@ -106,7 +106,7 @@ pipeline {
                             cp icons/* appdir/usr/share/icons/hicolor/scalable/
                             
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations
+                            ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations -verbose=3
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
