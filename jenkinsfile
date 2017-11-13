@@ -179,13 +179,16 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        script {
-                            if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp -o "BatchMode yes" *studio*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
-                            } else {
-                                echo "${env.BRANCH_NAME}"
-                            }
-                        }
+                        //script {
+                        //    if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
+                        //       sh 'scp -o "BatchMode yes" *studio*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
+                        //    } else {
+                        //        echo "${env.BRANCH_NAME}"
+                        //    }
+                        //}
+                        sh '''
+                            echo 'TODO fix linuxdeployqt issues'
+                        '''
                     }
                 },
                 windowsX86: {
