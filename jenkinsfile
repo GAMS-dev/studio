@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
     }
@@ -94,28 +94,31 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        sh 'wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"'
+                        //sh 'wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"'
+                        //sh '''
+                        //    # create folder structure
+                        //    mkdir -p appdir/usr/bin
+                        //
+                        //    # collect files
+                        //    cp bin/studio appdir/usr/bin/
+                        //    #cp gamsstudio.desktop appdir/
+                        //    mkdir -p appdir/usr/share/icons/hicolor/scalable/
+                        //    cp icons/* appdir/usr/share/icons/hicolor/scalable/
+                        //
+                        //    chmod +x linuxdeployqt-continuous-x86_64.AppImage
+                        //    ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations -verbose=3
+                        //'''
+                        //script {
+                        //    if (env.BRANCH_NAME != 'master') {
+                        //        sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x86_64.AppImage"
+                        //    } else {
+                        //        sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
+                        //    }
+                        //}
+                        //archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
                         sh '''
-                            # create folder structure
-                            mkdir -p appdir/usr/bin
-
-                            # collect files
-                            cp bin/studio appdir/usr/bin/
-                            #cp gamsstudio.desktop appdir/
-                            mkdir -p appdir/usr/share/icons/hicolor/scalable/
-                            cp icons/* appdir/usr/share/icons/hicolor/scalable/
-                            
-                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations -verbose=3
+                            echo 'TODO fix linuxdeployqt issues'
                         '''
-                        script {
-                            if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x86_64.AppImage"
-                            } else {
-                                sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
-                            }
-                        }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
