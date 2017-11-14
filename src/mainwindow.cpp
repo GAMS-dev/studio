@@ -775,12 +775,14 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
                 ui->mainTab->currentWidget()->setFocus();
             ui->projectView->expand(mFileRepo.treeModel()->index(group));
         }
+    } else {
+        openOrShowContext(static_cast<FileContext*>(fsc));
     }
+
     mRecent.path = fileInfo.path();
     if (fsc->type() != FileSystemContext::File) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
-    openOrShowContext(static_cast<FileContext*>(fsc));
 }
 
 FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
