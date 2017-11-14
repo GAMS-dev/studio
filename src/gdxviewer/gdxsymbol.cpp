@@ -10,6 +10,14 @@ namespace gdxviewer {
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
 {
+    // read domains
+    mDomains.clear();
+    gdxStrIndexPtrs_t Indx;
+    gdxStrIndex_t     IndxXXX;
+    GDXSTRINDEXPTRS_INIT(IndxXXX,Indx);
+    gdxSymbolGetDomainX(mGdx, mNr, Indx);
+    for(int i=0; i<mDim; i++)
+        mDomains.append(Indx[i]);
 }
 
 GdxSymbol::~GdxSymbol()
@@ -27,7 +35,9 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
         if (orientation == Qt::Horizontal)
         {
             if (section < mDim)
-                return "Dim " + QString::number(section+1);
+            {
+                return mDomains.at(section);
+            }
             else
             {
                 if (mType == GMS_DT_SET)

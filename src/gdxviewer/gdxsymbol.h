@@ -70,6 +70,8 @@ private:
 
     QMutex* mGdxMutex;
 
+    QStringList mDomains;
+
 };
 
 } // namespace gdxviewer
