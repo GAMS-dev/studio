@@ -30,8 +30,15 @@ private:
     gdxHandle_t mGdx;
     QMutex* mGdxMutex;
 
+    void loadSymbol(GdxSymbol* selectedSymbol);
+
+signals:
+    void loadFinished();
+
+
 public slots:
     void toggleSqueezeDefaults(bool checked);
+    void refreshView();
 };
 
 } // namespace gdxviewer

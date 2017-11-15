@@ -4,6 +4,7 @@
 #include "exception.h"
 #include <memory>
 #include <QtConcurrent>
+#include <QFutureWatcher>
 
 namespace gams {
 namespace studio {
@@ -39,6 +40,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
 
+    connect(this, &GdxViewer::loadFinished, this, &GdxViewer::refreshView);
 }
 
 GdxViewer::~GdxViewer()
@@ -68,18 +70,19 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selected.indexes().at(0).row());
         if(!selectedSymbol->isLoaded())
         {
-            QtConcurrent::run(selectedSymbol, &GdxSymbol::loadData);
-            ui.cbSqueezeDefaults->setEnabled(false);
-        }
-        else
-        {
-            ui.cbSqueezeDefaults->setEnabled(true);
+            QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
         }
         ui.tableView->setModel(selectedSymbol);
-        ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
+        refreshView();
     }
     else
         ui.tableView->setModel(nullptr);
+}
+
+void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
+{
+    selectedSymbol->loadData();
+    emit loadFinished();
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
@@ -104,7 +107,6 @@ void GdxViewer::toggleSqueezeDefaults(bool checked)
             {
                 for(int i=0; i<GMS_VAL_MAX; i++)
                 {
-                    bool allDefault = selectedSymbol->isAllDefault(i);
                     if (selectedSymbol->isAllDefault(i))
                         ui.tableView->setColumnHidden(selectedSymbol->dim()+i, true);
                     else
@@ -121,6 +123,17 @@ void GdxViewer::toggleSqueezeDefaults(bool checked)
             ui.tableView->setUpdatesEnabled(true);
         }
     }
+}
+
+void GdxViewer::refreshView()
+{
+    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
+    GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+    if(selectedSymbol->isLoaded())
+        ui.cbSqueezeDefaults->setEnabled(true);
+    else
+        ui.cbSqueezeDefaults->setEnabled(false);
+    ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
 }
 
 
