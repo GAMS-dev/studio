@@ -41,6 +41,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void setIconSize(int size);
 
 public slots:
     void clearLineIcons();
@@ -86,7 +87,15 @@ public:
     QSize sizeHint() const override {
         return QSize(mCodeEditor->lineNumberAreaWidth(), 0);
     }
-    QHash<int, QIcon> &icons();
+    QHash<int, QIcon> &icons() {
+        return mIcons;
+    }
+    void setIconSize(int size) {
+        mIconSize = size;
+    }
+    int iconSize() const {
+        return mIconSize;
+    }
 
 protected:
     void paintEvent(QPaintEvent *event) override {
@@ -96,6 +105,7 @@ protected:
 private:
     CodeEditor *mCodeEditor;
     QHash<int, QIcon> mIcons;
+    int mIconSize = 14;
 
 };
 

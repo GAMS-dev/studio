@@ -458,7 +458,7 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.first, line, 0, 0);
+                        mark.textMark = fc->generateTextMark(TextMark::link, mCurrentErrorHint.first, line, 0, 0);
                         mMarkedContextList << fc;
                     }
                     if (errMark)

@@ -51,9 +51,15 @@ int CodeEditor::lineNumberAreaWidth()
     }
 
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
-    space += mLineNumberArea->icons().isEmpty() ? 0 : 16;
+    space += mLineNumberArea->icons().isEmpty() ? 0 : mLineNumberArea->iconSize();
 
     return space;
+}
+
+void CodeEditor::setIconSize(int size)
+{
+    mLineNumberArea->setIconSize(size);
+    updateLineNumberAreaWidth(-1);
 }
 
 void CodeEditor::clearLineIcons()
@@ -306,9 +312,9 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
             if (mLineNumberArea->icons().contains(blockNumber)) {
-                DEB() << "Painting ICON at " << realtop;
-                // TODO(JM) is somehow drawn at the wrong place
-                painter.drawPixmap(0, realtop, mLineNumberArea->icons().value(blockNumber).pixmap(QSize(16,16)));
+                int iSize = mLineNumberArea->iconSize();
+                int iTop = (2+top+bottom-iSize)/2;
+                painter.drawPixmap(1, iTop, mLineNumberArea->icons().value(blockNumber).pixmap(QSize(iSize,iSize)));
             }
         }
 
@@ -317,11 +323,6 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
-}
-
-QHash<int, QIcon>& LineNumberArea::icons()
-{
-    return mIcons;
 }
 
 } // namespace studio
