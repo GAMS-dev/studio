@@ -11,7 +11,6 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
-    loadGDXSymbols();
 
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
@@ -20,6 +19,8 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     mHeaderText.append("Records");
     mHeaderText.append("Loaded");
     mHeaderText.append("Text");
+
+    loadGDXSymbols();
 }
 
 GdxSymbolTable::~GdxSymbolTable()
@@ -88,6 +89,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
 
 void GdxSymbolTable::loadGDXSymbols()
 {
+    QMutexLocker locker(mGdxMutex);
     for(int i=1; i<mSymbolCount+1; i++)
     {
         char symName[GMS_UEL_IDENT_SIZE];
@@ -105,6 +107,7 @@ void GdxSymbolTable::loadGDXSymbols()
 
         mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
     }
+    locker.unlock();
 }
 
 void GdxSymbolTable::loadUel2Label()

@@ -1,0 +1,105 @@
+[1mdiff --git a/src/gdxviewer/gdxsymboltable.cpp b/src/gdxviewer/gdxsymboltable.cpp[m
+[1mindex 948ac3c..3c6b029 100644[m
+[1m--- a/src/gdxviewer/gdxsymboltable.cpp[m
+[1m+++ b/src/gdxviewer/gdxsymboltable.cpp[m
+[36m@@ -1,5 +1,6 @@[m
+ #include "gdxsymboltable.h"[m
+ #include "exception.h"[m
+[32m+[m[32m#include <QtConcurrent>[m
+ [m
+ namespace gams {[m
+ namespace studio {[m
+[36m@@ -11,7 +12,6 @@[m [mGdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren[m
+     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);[m
+     loadUel2Label();[m
+     loadStringPool();[m
+[31m-    loadGDXSymbols();[m
+ [m
+     mHeaderText.append("Entry");[m
+     mHeaderText.append("Name");[m
+[36m@@ -20,6 +20,8 @@[m [mGdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren[m
+     mHeaderText.append("Records");[m
+     mHeaderText.append("Loaded");[m
+     mHeaderText.append("Text");[m
+[32m+[m
+[32m+[m[32m    QtConcurrent::run(this, &GdxSymbolTable::loadGDXSymbols);[m
+ }[m
+ [m
+ GdxSymbolTable::~GdxSymbolTable()[m
+[36m@@ -43,7 +45,7 @@[m [mint GdxSymbolTable::rowCount(const QModelIndex &parent) const[m
+ {[m
+     if (parent.isValid())[m
+         return 0;[m
+[31m-    return mGdxSymbols.size();[m
+[32m+[m[32m    return mLoadedSymbolCount;[m
+ }[m
+ [m
+ int GdxSymbolTable::columnCount(const QModelIndex &parent) const[m
+[36m@@ -88,6 +90,7 @@[m [mQVariant GdxSymbolTable::data(const QModelIndex &index, int role) const[m
+ [m
+ void GdxSymbolTable::loadGDXSymbols()[m
+ {[m
+[32m+[m[32m    QMutexLocker locker(mGdxMutex);[m
+     for(int i=1; i<mSymbolCount+1; i++)[m
+     {[m
+         char symName[GMS_UEL_IDENT_SIZE];[m
+[36m@@ -104,7 +107,11 @@[m [mvoid GdxSymbolTable::loadGDXSymbols()[m
+             userInfo = gmsFixVarType(userInfo);[m
+ [m
+         mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));[m
+[32m+[m[32m        mLoadedSymbolCount++;[m
+     }[m
+[32m+[m[32m    beginResetModel();[m
+[32m+[m[32m    endResetModel();[m
+[32m+[m[32m    locker.unlock();[m
+ }[m
+ [m
+ void GdxSymbolTable::loadUel2Label()[m
+[1mdiff --git a/src/gdxviewer/gdxsymboltable.cpp b/src/gdxviewer/gdxsymboltable.cpp[m
+[1mindex 948ac3c..78585dc 100644[m
+[1m--- a/src/gdxviewer/gdxsymboltable.cpp[m
+[1m+++ b/src/gdxviewer/gdxsymboltable.cpp[m
+[36m@@ -11,7 +11,6 @@[m [mGdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren[m
+     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);[m
+     loadUel2Label();[m
+     loadStringPool();[m
+[31m-    loadGDXSymbols();[m
+ [m
+     mHeaderText.append("Entry");[m
+     mHeaderText.append("Name");[m
+[36m@@ -20,6 +19,8 @@[m [mGdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren[m
+     mHeaderText.append("Records");[m
+     mHeaderText.append("Loaded");[m
+     mHeaderText.append("Text");[m
+[32m+[m
+[32m+[m[32m    loadGDXSymbols();[m
+ }[m
+ [m
+ GdxSymbolTable::~GdxSymbolTable()[m
+[36m@@ -43,7 +44,7 @@[m [mint GdxSymbolTable::rowCount(const QModelIndex &parent) const[m
+ {[m
+     if (parent.isValid())[m
+         return 0;[m
+[31m-    return mGdxSymbols.size();[m
+[32m+[m[32m    return mLoadedSymbolCount;[m
+ }[m
+ [m
+ int GdxSymbolTable::columnCount(const QModelIndex &parent) const[m
+[36m@@ -88,6 +89,7 @@[m [mQVariant GdxSymbolTable::data(const QModelIndex &index, int role) const[m
+ [m
+ void GdxSymbolTable::loadGDXSymbols()[m
+ {[m
+[32m+[m[32m    QMutexLocker locker(mGdxMutex);[m
+     for(int i=1; i<mSymbolCount+1; i++)[m
+     {[m
+         char symName[GMS_UEL_IDENT_SIZE];[m
+[36m@@ -104,7 +106,9 @@[m [mvoid GdxSymbolTable::loadGDXSymbols()[m
+             userInfo = gmsFixVarType(userInfo);[m
+ [m
+         mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));[m
+[32m+[m[32m        mLoadedSymbolCount++;[m
+     }[m
+[32m+[m[32m    locker.unlock();[m
+ }[m
+ [m
+ void GdxSymbolTable::loadUel2Label()[m
