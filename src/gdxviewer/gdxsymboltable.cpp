@@ -98,6 +98,11 @@ void GdxSymbolTable::loadGDXSymbols()
         int recordCount = 0;
         int userInfo = 0;
         gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
+        if(type == GMS_DT_EQU)
+            userInfo = gmsFixEquType(userInfo);
+        if(type == GMS_DT_VAR)
+            userInfo = gmsFixVarType(userInfo);
+
         mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
     }
 }

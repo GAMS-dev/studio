@@ -239,7 +239,7 @@ void GdxSymbol::calcDefaultColumns()
     {
         if (mType == GMS_DT_VAR)
             defVal = gmsDefRecVar[mSubType][valColIdx];
-        else if (mType == GMS_DT_VAR)
+        else if (mType == GMS_DT_EQU)
             defVal = gmsDefRecEqu[mSubType][valColIdx];
         for(int i=0; i<mRecordCount; i++)
         {
