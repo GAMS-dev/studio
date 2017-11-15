@@ -468,7 +468,8 @@ void MainWindow::on_actionOnline_Help_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    auto about = GAMSProcess::aboutGAMS();
+    QString about = "GAMS Studio Build Date: " __DATE__ " " __TIME__ "\n\n";
+    about += GAMSProcess::aboutGAMS();
     QMessageBox::about(this, "About GAMS Studio", about);
 }
 
