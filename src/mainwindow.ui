@@ -147,6 +147,7 @@
      <string>GAMS</string>
     </property>
     <addaction name="actionRun"/>
+    <addaction name="actionCompile"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
@@ -409,6 +410,17 @@
    </property>
    <property name="shortcut">
     <string>F9</string>
+   </property>
+  </action>
+  <action name="actionCompile">
+   <property name="text">
+    <string>Compile</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F9</string>
    </property>
   </action>
  </widget>

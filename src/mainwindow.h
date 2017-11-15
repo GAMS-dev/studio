@@ -85,6 +85,7 @@ private slots:
 
     // GAMS
     void on_actionRun_triggered();
+    void on_actionCompile_triggered();
     // About
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();
@@ -114,6 +115,7 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     QString extractError(QString text);
+    void execute(QString commandLineStr);
 
 private:
     Ui::MainWindow *ui;

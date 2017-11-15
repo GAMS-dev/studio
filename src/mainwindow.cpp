@@ -691,36 +691,48 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
     QMainWindow::mouseMoveEvent(event);
 }
 
+void MainWindow::execute(QString commandLineStr)
+{
+    // TODO: add option to clear output view before running next job
+        FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+        FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+        if (!fgc)
+            return;
+
+        ui->actionRun->setEnabled(false);
+        mFileRepo.removeMarks(fgc);
+        FileContext* logProc = mFileRepo.logContext(fgc);
+        FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
+        if (currentLogProc && currentLogProc != logProc) {
+            currentLogProc->removeEditor(ui->logView);
+        }
+        logProc->addEditor(ui->logView);
+        logProc->markOld();
+        logProc->clearRecentMarks();
+
+        QString gmsFilePath = fgc->runableGms();
+        QFileInfo gmsFileInfo(gmsFilePath);
+    //    QString basePath = gmsFileInfo.absolutePath();
+
+        mProcess = new GAMSProcess(this);
+        mProcess->setWorkingDir(gmsFileInfo.path());
+        mProcess->setInputFile(gmsFilePath);
+        mProcess->setCommandLineStr(commandLineStr);
+        mProcess->setContext(fgc);
+        mProcess->execute();
+
+        connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &FileContext::addProcessData);
+        connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
+}
+
 void MainWindow::on_actionRun_triggered()
-{// TODO: add option to clear output view before running next job
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    if (!fgc)
-        return;
+{
+    execute("");
+}
 
-    ui->actionRun->setEnabled(false);
-    mFileRepo.removeMarks(fgc);
-    FileContext* logProc = mFileRepo.logContext(fgc);
-    FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
-    if (currentLogProc && currentLogProc != logProc) {
-        currentLogProc->removeEditor(ui->logView);
-    }
-    logProc->addEditor(ui->logView);
-    logProc->markOld();
-    logProc->clearRecentMarks();
-
-    QString gmsFilePath = fgc->runableGms();
-    QFileInfo gmsFileInfo(gmsFilePath);
-//    QString basePath = gmsFileInfo.absolutePath();
-
-    mProcess = new GAMSProcess(this);
-    mProcess->setWorkingDir(gmsFileInfo.path());
-    mProcess->setInputFile(gmsFilePath);
-    mProcess->setContext(fgc);
-    mProcess->execute();
-
-    connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &FileContext::addProcessData);
-    connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
+void MainWindow::on_actionCompile_triggered()
+{
+    execute("a=c");
 }
 
 void MainWindow::openOrShowContext(FileContext* fileContext)
