@@ -224,7 +224,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockOutputView">
+  <widget class="QDockWidget" name="dockLogView">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -252,7 +252,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QPlainTextEdit" name="outputView">
+      <widget class="QPlainTextEdit" name="logView">
        <property name="mouseTracking">
         <bool>true</bool>
        </property>

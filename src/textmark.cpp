@@ -82,10 +82,13 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return QIcon(":icons/errormark");
+        return QIcon(":/img/exclam-circle-r");
+        break;
+    case link:
+        return QIcon(":/img/err-ref");
         break;
     case bookmark: {
-        QIcon ico(":icons/bookmark");
+        QIcon ico(":/img/bookmark");
         // TODO(JM) insert bookmark-number from value (0-9)
         return ico;
         break;

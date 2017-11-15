@@ -136,13 +136,12 @@ public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
-    void findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup = nullptr);
+    void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
 
 private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
-    void generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
     void setErrorHint(const int errCode, const QString& hint);
     void getErrorHint(const int errCode, QString& hint);
 

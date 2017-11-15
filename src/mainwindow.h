@@ -63,7 +63,6 @@ private slots:
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QString text);
-    void appendErrLink(QString text);
     void postGamsRun();
     void postGamsLibRun();
     void openOrShowContext(FileContext *fileContext);
@@ -114,7 +113,7 @@ private:
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
-    QString extractError(QPlainTextEdit *outWin, QString text);
+    QString extractError(QString text);
 
 private:
     Ui::MainWindow *ui;

@@ -50,8 +50,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->outputView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    ui->outputView->setTextInteractionFlags(ui->outputView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
     mCodecGroup = new QActionGroup(this);
@@ -61,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openOrShowContext, this, &MainWindow::openOrShowContext);
-    connect(ui->dockOutputView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
+    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
@@ -89,11 +90,14 @@ void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 
 void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
+    TRACE();
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         if (fc->metrics().fileType() != FileType::Gdx) {
             CodeEditor *codeEdit = new CodeEditor(this);
+//            QPlainTextEdit *codeEdit = new QPlainTextEdit(this);
             fc->addEditor(codeEdit);
+            DEB() << "ADDED Editor for " << fc->name();
             int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             tabWidget->setTabToolTip(tabIndex, fc->location());
             tabWidget->setCurrentIndex(tabIndex);
@@ -369,9 +373,9 @@ void MainWindow::fileClosed(int fileId)
 
 void MainWindow::appendOutput(QString text)
 {
-    // TODO(JM) Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
-    QPlainTextEdit *outWin = ui->outputView;
-    QString newText = extractError(outWin, text);
+    // TODO(JM) DEPRECATED: Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
+    QPlainTextEdit *outWin = ui->logView;
+    QString newText = extractError(text);
     if (!newText.isNull()) {
         outWin->moveCursor(QTextCursor::End);
         outWin->insertPlainText(newText);
@@ -379,8 +383,9 @@ void MainWindow::appendOutput(QString text)
     }
 }
 
-QString MainWindow::extractError(QPlainTextEdit* outWin, QString text)
+QString MainWindow::extractError(QString text)
 {
+    // TODO(JM) DEPRECATED: Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
     QString result;
     for (QString line: text.split("\n", QString::SkipEmptyParts)) {
         if (mBeforeErrorExtraction) {
@@ -423,21 +428,6 @@ QString MainWindow::extractError(QPlainTextEdit* outWin, QString text)
         }
     }
     return result;
-}
-
-
-void MainWindow::appendErrLink(QString text)
-{
-    ui->outputView->moveCursor(QTextCursor::End);
-    ui->outputView->insertPlainText(text);
-    ui->outputView->moveCursor(QTextCursor::End, QTextCursor::KeepAnchor);
-    QTextCursor cursor = ui->outputView->textCursor();
-    QTextCharFormat linkFormat = cursor.charFormat();
-    linkFormat.setAnchor(true);
-    linkFormat.setAnchorHref("http://www.google.com");
-    linkFormat.setAnchorName("Google");
-    cursor.setCharFormat(linkFormat);
-    ui->outputView->setTextCursor(cursor);
 }
 
 void MainWindow::postGamsRun()
@@ -489,9 +479,9 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     if(checked)
-        ui->dockOutputView->show();
+        ui->dockLogView->show();
     else
-        ui->dockOutputView->hide();
+        ui->dockLogView->hide();
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -572,6 +562,7 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
     mLibProcess->execute();
+    // TODO(JM) This log should be passed to the process-logContext witch must be created before
     connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
     connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
 }
@@ -709,12 +700,13 @@ void MainWindow::on_actionRun_triggered()
     ui->actionRun->setEnabled(false);
     mFileRepo.removeMarks(fgc);
     FileContext* logProc = mFileRepo.logContext(fgc);
-    FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
+    FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
     if (currentLogProc && currentLogProc != logProc) {
-        currentLogProc->removeEditor(ui->outputView);
+        currentLogProc->removeEditor(ui->logView);
     }
-    logProc->addEditor(ui->outputView);
+    logProc->addEditor(ui->logView);
     logProc->markOld();
+    logProc->clearRecentMarks();
 
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
@@ -736,10 +728,10 @@ void MainWindow::openOrShowContext(FileContext* fileContext)
     QPlainTextEdit* edit = nullptr;
     if (fileContext->location().isEmpty()) {
         // Special handling of LogContext
-        FileContext* currentLogProc = mFileRepo.fileContext(ui->outputView);
+        FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
         if (currentLogProc && currentLogProc != fileContext) {
-            currentLogProc->removeEditor(ui->outputView);
-            fileContext->addEditor(ui->outputView);
+            currentLogProc->removeEditor(ui->logView);
+            fileContext->addEditor(ui->logView);
         }
         return;
     }

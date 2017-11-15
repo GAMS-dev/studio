@@ -41,6 +41,11 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void setIconSize(int size);
+
+public slots:
+    void clearLineIcons();
+    void addLineIcon(int line, const QIcon& icon);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -63,7 +68,7 @@ private slots:
     void onUpdateBlockEdit();
 
 private:
-    QWidget *lineNumberArea;
+    LineNumberArea *mLineNumberArea;
     int mBlockStartKey = 0;
     int mCurrentCol;
     QTextCursor mBlockStartCursor;
@@ -76,20 +81,32 @@ class LineNumberArea : public QWidget
 {
 public:
     LineNumberArea(CodeEditor *editor) : QWidget(editor) {
-        codeEditor = editor;
+        mCodeEditor = editor;
     }
 
     QSize sizeHint() const override {
-        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+        return QSize(mCodeEditor->lineNumberAreaWidth(), 0);
+    }
+    QHash<int, QIcon> &icons() {
+        return mIcons;
+    }
+    void setIconSize(int size) {
+        mIconSize = size;
+    }
+    int iconSize() const {
+        return mIconSize;
     }
 
 protected:
     void paintEvent(QPaintEvent *event) override {
-        codeEditor->lineNumberAreaPaintEvent(event);
+        mCodeEditor->lineNumberAreaPaintEvent(event);
     }
 
 private:
-    CodeEditor *codeEditor;
+    CodeEditor *mCodeEditor;
+    QHash<int, QIcon> mIcons;
+    int mIconSize = 14;
+
 };
 
 
