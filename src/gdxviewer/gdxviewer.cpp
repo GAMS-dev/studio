@@ -129,7 +129,7 @@ void GdxViewer::refreshView()
 {
     QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
     GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
-    if(selectedSymbol->isLoaded())
+    if((selectedSymbol->type() == GMS_DT_VAR || selectedSymbol->type() == GMS_DT_EQU) && selectedSymbol->isLoaded())
         ui.cbSqueezeDefaults->setEnabled(true);
     else
         ui.cbSqueezeDefaults->setEnabled(false);
