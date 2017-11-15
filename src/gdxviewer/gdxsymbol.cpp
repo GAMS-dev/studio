@@ -2,7 +2,6 @@
 #include <memory>
 #include <QThread>
 #include <QtConcurrent>
-#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -136,8 +135,6 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
-    QTime t;
-    t.start();
     QMutexLocker locker(mGdxMutex);
     if(!mIsLoaded)
     {
@@ -215,7 +212,6 @@ void GdxSymbol::loadData()
 
         delete keys;
         delete values;
-        qDebug() << t.elapsed();
     }
 }
 
