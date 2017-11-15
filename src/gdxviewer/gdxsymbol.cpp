@@ -135,6 +135,8 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
+    QTime t;
+    t.start();
     QMutexLocker locker(mGdxMutex);
     if(!mIsLoaded)
     {
@@ -170,20 +172,24 @@ void GdxSymbol::loadData()
         }
 
         int updateCount = 1000000;
+        int keyOffset;
+        int valOffset;
         for(int i=mLoadedRecCount; i<mRecordCount; i++)
         {
+            keyOffset = i*mDim;
             gdxDataReadRaw(mGdx, keys, values, &dummy);
             for(int j=0; j<mDim; j++)
             {
-                mKeys[i*mDim+j] = keys[j];
+                mKeys[keyOffset+j] = keys[j];
             }
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
                 mValues[i] = values[0];
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
             {
+                valOffset = i*GMS_VAL_MAX;
                 for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
                 {
-                    mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
+                    mValues[valOffset+vIdx] =  values[vIdx];
                 }
 
             }
@@ -193,7 +199,6 @@ void GdxSymbol::loadData()
                 beginResetModel();
                 endResetModel();
             }
-
             if(stopLoading)
             {
                 stopLoading = false;
@@ -212,6 +217,8 @@ void GdxSymbol::loadData()
 
         delete keys;
         delete values;
+
+        qDebug() << t.elapsed();
     }
 }
 
