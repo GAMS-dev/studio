@@ -93,30 +93,35 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
     TRACE();
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
+        int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
+
             CodeEditor *codeEdit = new CodeEditor(this);
-//            QPlainTextEdit *codeEdit = new QPlainTextEdit(this);
             fc->addEditor(codeEdit);
-            DEB() << "ADDED Editor for " << fc->name();
-            int tabIndex = tabWidget->addTab(codeEdit, fc->caption());
-            tabWidget->setTabToolTip(tabIndex, fc->location());
-            tabWidget->setCurrentIndex(tabIndex);
-            fc->load(codecName);
+            tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+
             QTextCursor tc = codeEdit->textCursor();
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
-            ensureCodecMenu(fc->codec());
+            fc->load(codecName);
+
             if (fc->metrics().fileType() == FileType::Log ||
                     fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
+
         } else {
-            int idx = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), "GDX Viewer");
-            ui->mainTab->setCurrentIndex(idx);
+            tabIndex = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), fc->caption());
+            ui->mainTab->setCurrentIndex(tabIndex);
         }
+
+        tabWidget->setTabToolTip(tabIndex, fc->location());
+        tabWidget->setCurrentIndex(tabIndex);
+        ensureCodecMenu(fc->codec());
     }
 }
 
