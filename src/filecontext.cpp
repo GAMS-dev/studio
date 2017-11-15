@@ -646,7 +646,6 @@ void FileContext::updateMarks()
 
 void FileContext::onFileChangedExtern(QString filepath)
 {
-    qDebug() << "changed: " << filepath;
     QFileInfo fi(filepath);
     FileMetrics::ChangeKind changeKind = mMetrics.check(fi);
     if (changeKind == FileMetrics::ckSkip) return;
