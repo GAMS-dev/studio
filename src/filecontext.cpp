@@ -232,21 +232,13 @@ void FileContext::setKeepDocument(bool keep)
             mDocument = new QTextDocument(this);
             mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
             mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
         } else {
             mDocument = mEditors.first()->document();
-            disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
-            if (location().isEmpty()) {
-                DEB() << " log disconnected";
-            }
         }
     } else if (!keep && mDocument) {
         if (mEditors.isEmpty()) {
             mDocument->deleteLater();
-        } else {
-            connect(mDocument, &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-            if (location().isEmpty()) {
-                DEB() << " log connected";
-            }
         }
         mDocument = nullptr;
     }
@@ -417,6 +409,7 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
         if (parts.size() > 1) {
             QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
             TextMark* errMark = nullptr;
+            bool errFound = false;
             for (QString part: parts) {
                 bool ok;
                 QRegularExpressionMatch match = errRX1.match(part);
@@ -447,6 +440,7 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     }
                     errMark = mark.textMark;
                     marks << mark;
+                    errFound = true;
                 }
                 if (part.startsWith("LST")) {
                     QString fName = parentEntry()->lstFileName();
@@ -458,8 +452,10 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mark.textMark = fc->generateTextMark(TextMark::link, mCurrentErrorHint.first, line, 0, 0);
+                        mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                                                             , mCurrentErrorHint.first, line, 0, 0);
                         mMarkedContextList << fc;
+                        errFound = false;
                     }
                     if (errMark)
                         mark.textMark->setRefMark(errMark);
