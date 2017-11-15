@@ -80,12 +80,12 @@ void TextMark::showToolTip()
 
 QIcon TextMark::icon()
 {
-    switch (mType) {
+    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
     case error:
         return QIcon(":/img/exclam-circle-r");
         break;
     case link:
-        return QIcon(":/img/err-ref");
+        return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
         break;
     case bookmark: {
         QIcon ico(":/img/bookmark");
