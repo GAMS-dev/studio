@@ -268,6 +268,11 @@ bool GdxSymbol::isAllDefault(int valColIdx)
         return false;
 }
 
+int GdxSymbol::subType() const
+{
+    return mSubType;
+}
+
 bool GdxSymbol::isLoaded() const
 {
     return mIsLoaded;

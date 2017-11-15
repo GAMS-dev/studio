@@ -49,6 +49,8 @@ public:
 
     bool isAllDefault(int valColIdx);
 
+    int subType() const;
+
 private:
     int mNr;
     QString mName;
