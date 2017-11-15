@@ -29,6 +29,9 @@ private:
 
     gdxHandle_t mGdx;
     QMutex* mGdxMutex;
+
+public slots:
+    void toggleSqueezeDefaults(bool checked);
 };
 
 } // namespace gdxviewer

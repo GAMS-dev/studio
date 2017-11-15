@@ -44,9 +44,12 @@ public:
     void loadData();
     void stopLoadingData();
 
+    bool squeezeDefaults() const;
+    void setSqueezeDefaults(bool squeezeDefaults);
+
+    bool isAllDefault(int valColIdx);
+
 private:
-
-
     int mNr;
     QString mName;
     int mDim;
@@ -71,6 +74,12 @@ private:
     QMutex* mGdxMutex;
 
     QStringList mDomains;
+
+    bool mSqueezeDefaults = false;
+
+    bool mDefaultColumn[GMS_VAL_MAX] {false};
+
+    void calcDefaultColumns();
 
 };
 

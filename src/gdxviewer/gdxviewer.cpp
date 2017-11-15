@@ -4,7 +4,6 @@
 #include "exception.h"
 #include <memory>
 #include <QtConcurrent>
-#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -38,6 +37,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.tvSymbols->resizeColumnsToContents();
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
+
 }
 
 GdxViewer::~GdxViewer()
@@ -66,7 +67,9 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         }
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selected.indexes().at(0).row());
         QtConcurrent::run(selectedSymbol, &GdxSymbol::loadData);
+
         ui.tableView->setModel(selectedSymbol);
+        ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
     }
     else
         ui.tableView->setModel(nullptr);
@@ -77,6 +80,40 @@ void GdxViewer::reportIoError(int errNr, QString message)
     //TODO(CW): proper Exception message and remove qDebug
     qDebug() << "**** Fatal I/O Error = " << errNr << " when calling " << message;
     throw Exception();
+}
+
+void GdxViewer::toggleSqueezeDefaults(bool checked)
+{
+    GdxSymbol* selectedSymbol;
+    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
+    if(selectedIdx.size()>0)
+    {
+        selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+        selectedSymbol->setSqueezeDefaults(checked);
+        if(selectedSymbol->type() == GMS_DT_VAR || selectedSymbol->type() == GMS_DT_EQU)
+        {
+            ui.tableView->setUpdatesEnabled(false);
+            if(checked)
+            {
+                for(int i=0; i<GMS_VAL_MAX; i++)
+                {
+                    bool allDefault = selectedSymbol->isAllDefault(i);
+                    if (selectedSymbol->isAllDefault(i))
+                        ui.tableView->setColumnHidden(selectedSymbol->dim()+i, true);
+                    else
+                        ui.tableView->setColumnHidden(selectedSymbol->dim()+i, false);
+                }
+            }
+            else
+            {
+                for(int i=0; i<GMS_VAL_MAX; i++)
+                {
+                    ui.tableView->setColumnHidden(selectedSymbol->dim()+i, false);
+                }
+            }
+            ui.tableView->setUpdatesEnabled(true);
+        }
+    }
 }
 
 

@@ -185,7 +185,10 @@ void GdxSymbol::loadData()
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
             {
                 for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
+                {
                     mValues[i*GMS_VAL_MAX+vIdx] =  values[vIdx];
+                }
+
             }
             mLoadedRecCount++;
             if(i%updateCount == 0)
@@ -202,9 +205,10 @@ void GdxSymbol::loadData()
         }
         gdxDataReadDone(mGdx);
 
-        mIsLoaded = true;
         beginResetModel();
         endResetModel();
+        calcDefaultColumns();
+        mIsLoaded = true;
 
         delete keys;
         delete values;
@@ -214,6 +218,47 @@ void GdxSymbol::loadData()
 void GdxSymbol::stopLoadingData()
 {
     stopLoading = true;
+}
+
+bool GdxSymbol::squeezeDefaults() const
+{
+    return mSqueezeDefaults;
+}
+
+void GdxSymbol::setSqueezeDefaults(bool squeezeDefaults)
+{
+    mSqueezeDefaults = squeezeDefaults;
+}
+
+void GdxSymbol::calcDefaultColumns()
+{
+    if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
+        return; // symbols other than variable and equation do not have default values
+    double defVal;
+    for(int valColIdx=0; valColIdx<GMS_VAL_MAX; valColIdx++)
+    {
+        if (mType == GMS_DT_VAR)
+            defVal = gmsDefRecVar[mSubType][valColIdx];
+        else if (mType == GMS_DT_VAR)
+            defVal = gmsDefRecEqu[mSubType][valColIdx];
+        for(int i=0; i<mRecordCount; i++)
+        {
+            if(defVal != mValues[i*GMS_VAL_MAX + valColIdx])
+            {
+                mDefaultColumn[valColIdx] = false;
+                break;
+            }
+            mDefaultColumn[valColIdx] = true;
+        }
+    }
+}
+
+bool GdxSymbol::isAllDefault(int valColIdx)
+{
+    if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        return mDefaultColumn[valColIdx];
+    else
+        return false;
 }
 
 bool GdxSymbol::isLoaded() const
