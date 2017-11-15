@@ -74,6 +74,8 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         {
             int symNr = selectedSymbol->subType() - 1;
             GdxSymbol* aliasedSet = mGdxSymbolTable->gdxSymbols().at(symNr);
+            if(!aliasedSet->isLoaded())
+                QtConcurrent::run(this, &GdxViewer::loadSymbol, aliasedSet);
             ui.tableView->setModel(aliasedSet);
         }
         else
