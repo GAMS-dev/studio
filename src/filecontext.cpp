@@ -161,6 +161,19 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     setFlag(FileSystemContext::cfActive);
 }
 
+void FileContext::addEditor(CodeEditor* edit)
+{
+    addEditor(static_cast<QPlainTextEdit*>(edit));
+    connect(this, &FileContext::clearLineIcons, edit, &CodeEditor::clearLineIcons);
+    connect(this, &FileContext::setLineIcon, edit, &CodeEditor::addLineIcon);
+    if (!mTextMarks.isEmpty()) {
+        edit->clearLineIcons();
+        for (TextMark* mark: mTextMarks) {
+            edit->addLineIcon(mark->line(), mark->icon());
+        }
+    }
+}
+
 void FileContext::editToTop(QPlainTextEdit* edit)
 {
     addEditor(edit);
@@ -246,11 +259,14 @@ void FileContext::load(QString codecName)
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
+    QTime tim(QTime::currentTime());
+    qDebug() << "Start loading ...";
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
         mMetrics = FileMetrics();
         const QByteArray data(file.readAll());
+        qDebug() << "Loaded " << (QTime::currentTime().elapsed()-tim.elapsed());
         QString text;
         QString nameOfUsedCodec;
         for (QString tcName: codecNames) {
@@ -269,11 +285,13 @@ void FileContext::load(QString codecName)
                 nameOfUsedCodec = QString();
             }
         }
+        qDebug() << "Codec checked " << (QTime::currentTime().elapsed()-tim.elapsed());
         if (!nameOfUsedCodec.isEmpty()) {
             document()->setPlainText(text);
             mCodec = nameOfUsedCodec;
         }
         file.close();
+        qDebug() << "Pasted do editor " << (QTime::currentTime().elapsed()-tim.elapsed());
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
         QTimer::singleShot(100, this, &FileContext::updateMarks);
@@ -330,6 +348,16 @@ void FileContext::markOld()
         cur.movePosition(QTextCursor::End);
         cur.setBlockCharFormat(oldFormat);
     }
+}
+
+void FileContext::clearRecentMarks()
+{
+    for (FileContext* fc: mMarkedContextList) {
+        fc->clearLineIcons();
+        fc->removeTextMarks(TextMark::all);
+    }
+    clearLineIcons();
+    removeTextMarks(TextMark::all);
 }
 
 void FileContext::addProcessData(QProcess::ProcessChannel channel, QString text)
@@ -410,8 +438,13 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     mark.col = result.length()+1;
                     result += QString("[ERR:%1]").arg(line+1);
                     mark.size = result.length() - mark.col - 1;
-                    emit requestTextMark(TextMark::error, mCurrentErrorHint.first, fName, line, 0, col
-                                         , mark.textMark, parentEntry());
+
+                    FileContext *fc;
+                    emit findFileContext(fName, &fc, parentEntry());
+                    if (fc) {
+                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.first, line, 0, col);
+                        mMarkedContextList << fc;
+                    }
                     errMark = mark.textMark;
                     marks << mark;
                 }
@@ -422,11 +455,14 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
                     mark.col = result.length()+1;
                     result += QString("[LST:%1]").arg(line+1);
                     mark.size = result.length() - mark.col - 1;
-                    emit requestTextMark(TextMark::error, mCurrentErrorHint.first, fName, line, 0, 0
-                                         , mark.textMark, parentEntry());
-                    if (errMark) {
-                        mark.textMark->setRefMark(errMark);
+                    FileContext *fc;
+                    emit findFileContext(fName, &fc, parentEntry());
+                    if (fc) {
+                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.first, line, 0, 0);
+                        mMarkedContextList << fc;
                     }
+                    if (errMark)
+                        mark.textMark->setRefMark(errMark);
                     marks << mark;
                 }
             }
@@ -463,6 +499,10 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int li
     res->setValue(value);
     mTextMarks.insertMulti(line, res);
     markLink(res);
+    if (!res->icon().isNull()) {
+        DEB() << "adding icon to " << name();
+        emit setLineIcon(line, res->icon());
+    }
     return res;
 }
 

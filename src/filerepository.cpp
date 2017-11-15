@@ -106,18 +106,10 @@ FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContex
     return fsc;
 }
 
-void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
+void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
 {
     FileSystemContext* fsc = findContext(filePath, fileGroup);
-    resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
-}
-
-void FileRepository::generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
-{
-    TRACE();
-    FileContext* fc;
-    findFile(filePath, fc, fileGroup);
-    textLink = fc ? fc->generateTextMark(tmType, value, line, column, columnFrom) : nullptr;
+    *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
 void FileRepository::setErrorHint(const int errCode, const QString &hint)
@@ -204,7 +196,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
     connect(fileContext, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
-    connect(fileContext, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+    connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
     connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
     qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
@@ -373,7 +365,7 @@ FileContext*FileRepository::logContext(FileSystemContext* node)
     if (!res) {
         res = new FileContext(mNextId++, "["+group->name()+"]", "");
         connect(res, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
-        connect(res, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+        connect(res, &FileContext::findFileContext, this, &FileRepository::findFile);
         connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
         connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
         res->setKeepDocument();

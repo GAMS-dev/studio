@@ -9,5 +9,9 @@
         <file alias="play">play.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="stop">stop.svg</file>
+        <file alias="bug-r">bug-r.svg</file>
+        <file alias="exclam-circle-r">exclam-circle-r.svg</file>
+        <file alias="exclam-triangle-y">exclam-triangle-y.svg</file>
+        <file alias="bookmark">bookmark.svg</file>
     </qresource>
 </RCC>

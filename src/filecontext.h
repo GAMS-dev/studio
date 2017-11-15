@@ -28,6 +28,7 @@
 namespace gams {
 namespace studio {
 
+class CodeEditor;
 class FileGroupContext;
 class TextMark;
 typedef QPair<int,QString> ErrorHint;
@@ -90,6 +91,7 @@ public:
     /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
     void addEditor(QPlainTextEdit *edit);
+    void addEditor(CodeEditor *edit);
 
     /// Moves the <c>CodeEditor</c> to the top of the editors-list of this file. (same behavior as <c>addEditor()</c>)
     /// \param edit The <c>CodeEditor</c> to be moved to top.
@@ -133,13 +135,15 @@ signals:
 
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
-    void requestTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom
-                         , TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
+    void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
     void openOrShow(FileContext* fileContext);
+    void clearLineIcons();
+    void setLineIcon(int line, const QIcon& icon);
 
 public slots:
+    void clearRecentMarks();
     void addProcessData(QProcess::ProcessChannel channel, QString text);
 
 protected slots:
@@ -176,6 +180,7 @@ private:
     QFileSystemWatcher *mWatcher = nullptr;
     QTextDocument *mDocument;
     bool mBeforeErrorExtraction = true;
+    QSet<FileContext*> mMarkedContextList;
     QHash<int, TextMark*> mTextMarks;
     QPair<int, QString> mCurrentErrorHint;
     bool mMouseOverLink = false;
