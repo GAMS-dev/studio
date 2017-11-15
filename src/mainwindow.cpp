@@ -380,6 +380,7 @@ void MainWindow::appendOutput(QString text)
         outWin->moveCursor(QTextCursor::End);
         outWin->insertPlainText(newText);
         outWin->moveCursor(QTextCursor::End);
+        outWin->document()->setModified(false);
     }
 }
 
