@@ -66,8 +66,15 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selected.indexes().at(0).row());
-        QtConcurrent::run(selectedSymbol, &GdxSymbol::loadData);
-
+        if(!selectedSymbol->isLoaded())
+        {
+            QtConcurrent::run(selectedSymbol, &GdxSymbol::loadData);
+            ui.cbSqueezeDefaults->setEnabled(false);
+        }
+        else
+        {
+            ui.cbSqueezeDefaults->setEnabled(true);
+        }
         ui.tableView->setModel(selectedSymbol);
         ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
     }

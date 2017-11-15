@@ -2,6 +2,7 @@
 #include <memory>
 #include <QThread>
 #include <QtConcurrent>
+#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -135,6 +136,8 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
+    QTime t;
+    t.start();
     QMutexLocker locker(mGdxMutex);
     if(!mIsLoaded)
     {
@@ -169,12 +172,9 @@ void GdxSymbol::loadData()
             }
         }
 
-        int updateCount = 1000;
+        int updateCount = 1000000;
         for(int i=mLoadedRecCount; i<mRecordCount; i++)
         {
-            if(i%updateCount == 0)
-                beginResetModel();
-
             gdxDataReadRaw(mGdx, keys, values, &dummy);
             for(int j=0; j<mDim; j++)
             {
@@ -192,7 +192,10 @@ void GdxSymbol::loadData()
             }
             mLoadedRecCount++;
             if(i%updateCount == 0)
+            {
+                beginResetModel();
                 endResetModel();
+            }
 
             if(stopLoading)
             {
@@ -212,6 +215,7 @@ void GdxSymbol::loadData()
 
         delete keys;
         delete values;
+        qDebug() << t.elapsed();
     }
 }
 
