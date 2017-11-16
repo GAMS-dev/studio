@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    TRACE();
     ui->setupUi(this);
     setAcceptDrops(true);
 
@@ -90,7 +89,6 @@ void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
 
 void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 {
-    TRACE();
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
         int tabIndex;

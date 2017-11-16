@@ -394,7 +394,6 @@ struct LocalLinkData {
 
 QString FileContext::extractError(QString line, ExtractionState &state, QList<LinkData> &marks)
 {
-    TRACE();
     QString result;
     if (mBeforeErrorExtraction) {
         // look, if we find the start of an error
@@ -482,7 +481,6 @@ QString FileContext::extractError(QString line, ExtractionState &state, QList<Li
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
-    TRACE();
     TextMark* res = new TextMark(tmType);
     res->mark(this, line, column, size);
     res->setValue(value);
