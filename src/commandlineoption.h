@@ -20,8 +20,11 @@ signals:
     void runWithChangedOption(QString text);
 
 public slots:
-    void activateRunWithCurrentOption(QString text);
+    void updateCurrentOption(QString text);
     void validateChangedOption(QString text);
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *e) override;
 
 private:
     QString mCurrentOption;
