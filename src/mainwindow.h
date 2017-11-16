@@ -21,8 +21,9 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "filerepository.h"
 #include "codeeditor.h"
+#include "commandlineoption.h"
+#include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 
 namespace Ui {
@@ -99,6 +100,8 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_projectView_doubleClicked(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
+     // Command Line Option
+    void on_runWithCommandLineOption(QString options);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -119,6 +122,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
+    CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     FileRepository mFileRepo;

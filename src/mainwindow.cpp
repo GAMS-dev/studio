@@ -55,6 +55,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
     initTabs();
+
+    ui->mainToolBar->addSeparator();
+    ui->mainToolBar->addAction(ui->actionRun);
+    mCommandLineOption = new CommandLineOption(this);
+    ui->mainToolBar->addWidget(mCommandLineOption);
+    connect(mCommandLineOption, &CommandLineOption::runWithChangedOption, this, &MainWindow::on_runWithCommandLineOption);
+
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
@@ -725,14 +732,19 @@ void MainWindow::execute(QString commandLineStr)
         connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 
+void MainWindow::on_runWithCommandLineOption(QString options)
+{
+    execute(options);
+}
+
 void MainWindow::on_actionRun_triggered()
 {
-    execute("");
+    execute(mCommandLineOption->getCurrentOption());
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute("a=c");
+    execute("A=C");
 }
 
 void MainWindow::openOrShowContext(FileContext* fileContext)
