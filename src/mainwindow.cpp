@@ -52,7 +52,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
 
-    connect(this, &MainWindow::processOutput, this, &MainWindow::appendOutput);
+    // TODO(JM) it is possible to put the QTabBar into the docks title:
+    //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
+//    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
+
     initTabs();
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
@@ -258,13 +261,6 @@ void MainWindow::on_actionClose_All_Except_triggered()
     }
 }
 
-void MainWindow::addProcessData(QProcess::ProcessChannel channel, QString text)
-{
-//    ui->outputView->setTextColor(channel ? Qt::red : Qt::black);
-    Q_UNUSED(channel);
-    emit processOutput(text);
-}
-
 void MainWindow::codecChanged(QAction *action)
 {
     qDebug() << "Codec action triggered: " << action->text();
@@ -371,64 +367,16 @@ void MainWindow::fileClosed(int fileId)
     }
 }
 
-void MainWindow::appendOutput(QString text)
+void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 {
-    // TODO(JM) DEPRECATED: Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
+    Q_UNUSED(channel);
     QPlainTextEdit *outWin = ui->logView;
-    QString newText = extractError(text);
-    if (!newText.isNull()) {
+    if (!text.isNull()) {
         outWin->moveCursor(QTextCursor::End);
-        outWin->insertPlainText(newText);
+        outWin->insertPlainText(text);
         outWin->moveCursor(QTextCursor::End);
         outWin->document()->setModified(false);
     }
-}
-
-QString MainWindow::extractError(QString text)
-{
-    // TODO(JM) DEPRECATED: Currently used by libProcess. Remove this when changed to FileContext::addProcessData()
-    QString result;
-    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
-        if (mBeforeErrorExtraction) {
-            QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
-            if (parts.size() > 1) {
-                QRegularExpression errRX1("^(\\*{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+))");
-                for (QString part: parts) {
-                    QRegularExpressionMatch match = errRX1.match(part);
-                    if (part.startsWith("***")) {
-                        result = part;
-                        // TODO(JM) extract error-nr
-                        match.captured(2);
-                    }
-                    if (part.startsWith("ERR")) {
-                        result += "[ERR]";
-                        // TODO(JM) extract error-file, error-row, error-col
-                        match.captured(4);
-                        match.captured(5);
-                        match.captured(6);
-                    }
-                    if (part.startsWith("LST")) {
-                        result += "[LST]";
-                        match.captured(7);
-                    }
-                }
-                result += "\n";
-                mBeforeErrorExtraction = false;
-            } else {
-                result = line;
-            }
-        } else {
-            if (line.startsWith(" ")) {
-                // TODO(JM) add to description
-            } else {
-                result = line;
-                mBeforeErrorExtraction = true;
-
-//                result = text;
-            }
-        }
-    }
-    return result;
 }
 
 void MainWindow::postGamsRun()
@@ -564,8 +512,8 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
     mLibProcess->execute();
-    // TODO(JM) This log should be passed to the process-logContext witch must be created before
-    connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::addProcessData);
+    // This log is passed to the system-wide log
+    connect(mLibProcess, &GAMSProcess::newStdChannelData, this, &MainWindow::appendOutput);
     connect(mLibProcess, &GAMSProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
@@ -699,13 +647,16 @@ void MainWindow::on_actionRun_triggered()
     ui->actionRun->setEnabled(false);
     mFileRepo.removeMarks(fgc);
     FileContext* logProc = mFileRepo.logContext(fgc);
-    FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
-    if (currentLogProc && currentLogProc != logProc) {
-        currentLogProc->removeEditor(ui->logView);
+
+    if (logProc->editors().isEmpty()) {
+        QPlainTextEdit* logEdit = new QPlainTextEdit();
+        ui->logTab->addTab(logEdit, logProc->caption());
+        logProc->addEditor(logEdit);
+    } else {
+        logProc->markOld();
+        logProc->clearRecentMarks();
     }
-    logProc->addEditor(ui->logView);
-    logProc->markOld();
-    logProc->clearRecentMarks();
+    ui->logTab->setCurrentWidget(logProc->editors().first());
 
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
@@ -725,25 +676,27 @@ void MainWindow::openOrShowContext(FileContext* fileContext)
 {
     if (!fileContext) return;
     QPlainTextEdit* edit = nullptr;
-    if (fileContext->location().isEmpty()) {
-        // Special handling of LogContext
-        FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
-        if (currentLogProc && currentLogProc != fileContext) {
-            currentLogProc->removeEditor(ui->logView);
-            fileContext->addEditor(ui->logView);
-        }
-        return;
-    }
+    QTabWidget* tabWidget = fileContext->location().isEmpty() ? ui->logTab : ui->mainTab;
     if (!fileContext->editors().empty()) {
         edit = fileContext->editors().first();
     }
     if (edit) {
-        ui->mainTab->setCurrentWidget(edit);
+        tabWidget->setCurrentWidget(edit);
     } else {
-        createEdit(ui->mainTab, fileContext->id());
+        createEdit(tabWidget, fileContext->id());
     }
-    if (ui->mainTab->currentWidget())
-        ui->mainTab->currentWidget()->setFocus();
+    if (tabWidget->currentWidget())
+        tabWidget->currentWidget()->setFocus();
+    if (tabWidget != ui->logTab) {
+        // if there is already a log -> show it
+        FileContext* logContext = mFileRepo.logContext(fileContext);
+        if (logContext && !logContext->editors().isEmpty()) {
+            QPlainTextEdit* logEdit = logContext->editors().first();
+            if (ui->logTab->currentWidget() != logEdit) {
+                ui->logTab->setCurrentWidget(logEdit);
+            }
+        }
+    }
 }
 
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool openedManually)
@@ -760,10 +713,11 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
             EXCEPT() << "File not found: " << filePath;
         }
         if (fsc->type() == FileSystemContext::File) {
+            QTabWidget* tabWidget = fsc->location().isEmpty() ? ui->logTab : ui->mainTab;
             FileContext *fc = static_cast<FileContext*>(fsc);
-            createEdit(ui->mainTab, fc->id());
-            if (ui->mainTab->currentWidget())
-                ui->mainTab->currentWidget()->setFocus();
+            createEdit(tabWidget, fc->id());
+            if (tabWidget->currentWidget())
+                tabWidget->currentWidget()->setFocus();
             ui->projectView->expand(mFileRepo.treeModel()->index(group));
         }
     } else {
@@ -806,7 +760,17 @@ void MainWindow::openContext(const QModelIndex& index)
 void MainWindow::on_mainTab_currentChanged(int index)
 {
     QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
-    if (edit) mFileRepo.editorActivated(edit);
+    if (edit) {
+        mFileRepo.editorActivated(edit);
+        // if there is already a log -> show it
+        FileContext* logContext = mFileRepo.logContext(mFileRepo.fileContext(edit));
+        if (logContext && !logContext->editors().isEmpty()) {
+            QPlainTextEdit* logEdit = logContext->editors().first();
+            if (ui->logTab->currentWidget() != logEdit) {
+                ui->logTab->setCurrentWidget(logEdit);
+            }
+        }
+    }
 }
 
 }

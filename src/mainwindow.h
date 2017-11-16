@@ -51,18 +51,14 @@ public:
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
 
-signals:
-    void processOutput(QString text);
-
 private slots:
-    void addProcessData(QProcess::ProcessChannel channel, QString text);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(int fileId);
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
-    void appendOutput(QString text);
+    void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun();
     void postGamsLibRun();
     void openOrShowContext(FileContext *fileContext);
@@ -113,7 +109,6 @@ private:
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
-    QString extractError(QString text);
 
 private:
     Ui::MainWindow *ui;
