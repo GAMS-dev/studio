@@ -48,9 +48,13 @@ public:
 
     static QString aboutGAMS();
 
+    QString commandLineStr() const;
+    void setCommandLineStr(const QString &commandLineStr);
+
 private:
     static const QString App;
     QString mWorkingDir;
+    QString mCommandLineStr;
     FileGroupContext *mContext = nullptr;
 };
 

@@ -21,8 +21,9 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "filerepository.h"
 #include "codeeditor.h"
+#include "commandlineoption.h"
+#include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 
 namespace Ui {
@@ -81,6 +82,7 @@ private slots:
 
     // GAMS
     void on_actionRun_triggered();
+    void on_actionCompile_triggered();
     // About
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();
@@ -94,6 +96,8 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_projectView_doubleClicked(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
+     // Command Line Option
+    void on_runWithCommandLineOption(QString options);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -109,9 +113,11 @@ private:
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
+    void execute(QString commandLineStr);
 
 private:
     Ui::MainWindow *ui;
+    CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     FileRepository mFileRepo;

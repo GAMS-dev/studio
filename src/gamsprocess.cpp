@@ -75,6 +75,10 @@ void GAMSProcess::execute()
     // we need this at least on windows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted
     QStringList args({gms, "lo=3", "ide=1", "er=99"});
+    if (!mCommandLineStr.isEmpty()) {
+       QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
+       args.append(paramList);
+    }
     mProcess.start(nativeAppPath(), args);
 }
 
@@ -88,6 +92,16 @@ QString GAMSProcess::aboutGAMS()
         about = process.readAllStandardOutput();
     }
     return about;
+}
+
+QString GAMSProcess::commandLineStr() const
+{
+    return mCommandLineStr;
+}
+
+void GAMSProcess::setCommandLineStr(const QString &commandLineStr)
+{
+    mCommandLineStr = commandLineStr;
 }
 
 } // namespace studio
