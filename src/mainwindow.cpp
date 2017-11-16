@@ -236,7 +236,6 @@ void MainWindow::on_actionSave_As_triggered()
 void MainWindow::on_actionSave_All_triggered()
 {
     int i = mFileRepo.saveAll();
-    qDebug() << i << (i==1 ? " file" : " files") << " saved.";
 }
 
 void MainWindow::on_actionClose_triggered()
@@ -254,10 +253,8 @@ void MainWindow::on_actionClose_All_triggered()
 void MainWindow::on_actionClose_All_Except_triggered()
 {
     int except = ui->mainTab->currentIndex();
-    qDebug() << "current index " << except;
     for(int i = ui->mainTab->count(); i >= 0; i--) {
         if(i != except) {
-            qDebug() << "removing tab " << i;
             on_mainTab_tabCloseRequested(i);
         }
     }
@@ -690,9 +687,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons()) {
         QWidget* child = childAt(event->pos());
-        if (child) {
-            DEB() << "child: " << child->objectName();
-        }
     }
     QMainWindow::mouseMoveEvent(event);
 }

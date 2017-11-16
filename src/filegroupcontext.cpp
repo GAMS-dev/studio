@@ -149,7 +149,6 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
 {
     if(additionalFile == "") return;
 
-    qDebug() << "adding additional file" << additionalFile;
     if(!mAdditionalFiles.contains(additionalFile)) {
         mAdditionalFiles << additionalFile;
     }
@@ -224,7 +223,6 @@ void FileGroupContext::setWatched(bool watch)
         connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
     }
     mDirWatcher->addPath(location());
-    qDebug() << "added watcher for" << location();
 }
 
 void FileGroupContext::directoryChanged(const QString& path)

@@ -176,7 +176,6 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
     fgContext->setWatched();
-    qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fgContext;
 }
@@ -199,7 +198,6 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
     connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
-    qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fileContext;
 }
@@ -373,7 +371,6 @@ FileContext*FileRepository::logContext(FileSystemContext* node)
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;
         mTreeModel->insertChild(offset, group, res);
-        qDebug() << "generated log-context:" << res->name();
     }
     return res;
 }

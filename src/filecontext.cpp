@@ -83,7 +83,6 @@ void FileContext::save()
 
 void FileContext::save(QString filePath)
 {
-    qDebug() << "saving file to" << filePath;
     if (filePath == "")
         EXCEPT() << "Can't save without file name";
     QFile file(filePath);
@@ -144,9 +143,6 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1 && !mDocument) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        if (location().isEmpty()) {
-            DEB() << " log connected";
-        }
         QTimer::singleShot(50, this, &FileContext::updateMarks);
     } else {
         edit->setDocument(document());
@@ -190,9 +186,6 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
-        if (location().isEmpty()) {
-            DEB() << " log disconnected";
-        }
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
     } else {
