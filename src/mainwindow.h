@@ -128,6 +128,10 @@ private:
     RecentData mRecent;
     bool mHasWelcomePage = false;
     bool mBeforeErrorExtraction = true;
+    void loadSettings();
+    void saveSettings();
+    QSettings *mAppSettings = nullptr;
+    QSettings *mUserSettings = nullptr;
 };
 
 }

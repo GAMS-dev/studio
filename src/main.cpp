@@ -23,6 +23,10 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setOrganizationName("GAMS");
+    a.setOrganizationDomain("www.gams.com");
+    a.setApplicationName("GAMS Studio");
+
     gams::studio::MainWindow w;
     w.show();
 

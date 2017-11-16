@@ -75,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
+    loadSettings();
 }
 
 MainWindow::~MainWindow()
@@ -533,6 +534,38 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
+void MainWindow::saveSettings()
+{
+    if (mAppSettings == nullptr) {
+        qDebug() << "ERROR: settings file missing.";
+        return;
+    }
+
+    mAppSettings->beginGroup("uiState");
+    mAppSettings->setValue("size", size());
+    mAppSettings->setValue("pos", pos());
+    mAppSettings->endGroup();
+
+    mAppSettings->sync();
+}
+
+void MainWindow::loadSettings()
+{
+    if (mAppSettings == nullptr)
+        mAppSettings = new QSettings("GAMS Software", "GAMS Studio");
+
+    qDebug() << "loading settings from" << mAppSettings->fileName();
+
+    mAppSettings->beginGroup("uiState");
+    resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+    move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
+
+    // TODO: add widget visibility, size, position, ...
+    mAppSettings->endGroup();
+
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(this);
@@ -604,6 +637,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->setAccepted(false);
         }
     }
+    saveSettings();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
