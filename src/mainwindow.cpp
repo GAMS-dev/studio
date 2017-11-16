@@ -552,7 +552,7 @@ void MainWindow::saveSettings()
 void MainWindow::loadSettings()
 {
     if (mAppSettings == nullptr)
-        mAppSettings = new QSettings("GAMS Software", "GAMS Studio");
+        mAppSettings = new QSettings("GAMS", "Studio");
 
     qDebug() << "loading settings from" << mAppSettings->fileName();
 
