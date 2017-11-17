@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include "codeeditor.h"
 #include "logger.h"
+#include "textmark.h"
 
 namespace gams {
 namespace studio {
@@ -51,7 +52,10 @@ int CodeEditor::lineNumberAreaWidth()
     }
 
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
-    space += mLineNumberArea->icons().isEmpty() ? 0 : mLineNumberArea->iconSize();
+
+    QHash<int, TextMark*>* textMarks = nullptr;
+    emit requestMarkList(&textMarks);
+    space += (textMarks && textMarks->isEmpty()) ? 0 : mLineNumberArea->iconSize();
 
     return space;
 }
@@ -59,18 +63,6 @@ int CodeEditor::lineNumberAreaWidth()
 void CodeEditor::setIconSize(int size)
 {
     mLineNumberArea->setIconSize(size);
-    updateLineNumberAreaWidth(-1);
-}
-
-void CodeEditor::clearLineIcons()
-{
-    mLineNumberArea->icons().clear();
-    updateLineNumberAreaWidth(-1);
-}
-
-void CodeEditor::addLineIcon(int line, const QIcon &icon)
-{
-    mLineNumberArea->icons().insert(line, icon);
     updateLineNumberAreaWidth(-1);
 }
 
@@ -276,12 +268,14 @@ void CodeEditor::highlightCurrentLine()
 
 //    setExtraSelections(extraSelections);
 }
-
+// _CRT_SECURE_NO_WARNINGS
 
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
+    QHash<int, TextMark*>* textMarks = nullptr;
+    emit requestMarkList(&textMarks);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -311,10 +305,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             int realtop = (top+bottom-fontMetrics().height())/2;
             painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
-            if (mLineNumberArea->icons().contains(blockNumber)) {
+            if (textMarks && textMarks->contains(blockNumber)) {
                 int iSize = mLineNumberArea->iconSize();
                 int iTop = (2+top+bottom-iSize)/2;
-                painter.drawPixmap(1, iTop, mLineNumberArea->icons().value(blockNumber).pixmap(QSize(iSize,iSize)));
+
+                painter.drawPixmap(1, iTop, textMarks->value(blockNumber)->icon().pixmap(QSize(iSize,iSize)));
             }
         }
 
