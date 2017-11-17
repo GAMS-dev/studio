@@ -691,6 +691,11 @@ void MainWindow::on_actionRun_triggered()
     execute(mCommandLineOption->getCurrentOption());
 }
 
+void MainWindow::on_actionRun_with_GDX_Creation_triggered()
+{
+    execute("GDX=default");
+}
+
 void MainWindow::on_actionCompile_triggered()
 {
     execute("A=C");
