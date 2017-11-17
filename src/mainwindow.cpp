@@ -184,11 +184,12 @@ void MainWindow::on_actionNew_triggered()
     if (!file.exists()) { // which should be the default!
         file.open(QIODevice::WriteOnly);
         file.close();
-    }
+    } // TODO: else, ask for overwrite
 
     if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
     }
+    addToOpenedFiles(filePath);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -200,6 +201,7 @@ void MainWindow::on_actionOpen_triggered()
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
     addContext("", fName, true);
+    addToOpenedFiles(fName);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -544,8 +546,14 @@ void MainWindow::saveSettings()
     mAppSettings->beginGroup("uiState");
     mAppSettings->setValue("size", size());
     mAppSettings->setValue("pos", pos());
-    mAppSettings->endGroup();
 
+    mAppSettings->beginWriteArray("lastOpenedFiles");
+    for (int i = 0; i < mLastOpenedFiles.size(); i++) {
+        mAppSettings->setArrayIndex(i);
+        mAppSettings->setValue("file", mLastOpenedFiles.at(i));
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
     mAppSettings->sync();
 }
 
@@ -559,11 +567,30 @@ void MainWindow::loadSettings()
     mAppSettings->beginGroup("uiState");
     resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
 
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    for (int i = 0; i < MAX_FILE_HISTORY; i++) {
+        mAppSettings->setArrayIndex(i);
+        mLastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+
+    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
     // TODO: add widget visibility, size, position, ...
     mAppSettings->endGroup();
+}
 
+QStringList MainWindow::getOpenedFiles()
+{
+    return mLastOpenedFiles;
+}
+
+void MainWindow::addToOpenedFiles(QString filePath)
+{
+    if(mLastOpenedFiles.size() > MAX_FILE_HISTORY) {
+        mLastOpenedFiles.removeLast();
+    }
+    mLastOpenedFiles.insert(0, filePath);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -604,7 +631,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
         } else {
             triggerGamsLibFileCreation(item, gmsFileName);
         }
-
+        addToOpenedFiles(gmsFilePath);
     }
 }
 

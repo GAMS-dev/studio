@@ -53,6 +53,8 @@ public:
     void createEdit(QTabWidget* tabWidget, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
+    void addToOpenedFiles(QString filePath);
+    QStringList getOpenedFiles();
 
 private slots:
     void codecChanged(QAction *action);
@@ -120,6 +122,8 @@ private:
     void updateRunState();
 
 private:
+    const int MAX_FILE_HISTORY = 5;
+
     Ui::MainWindow *ui;
     CommandLineOption* mCommandLineOption;
     GAMSLibProcess *mLibProcess = nullptr;
@@ -132,6 +136,7 @@ private:
     void saveSettings();
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+    QStringList mLastOpenedFiles;
 };
 
 }
