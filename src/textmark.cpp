@@ -29,7 +29,7 @@ TextMark::TextMark(Type tmType): mType(tmType)
 
 }
 
-void TextMark::mark(FileContext* fileContext, int line, int column, int size)
+void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
     mFileContext = fileContext;
     mLine = line;

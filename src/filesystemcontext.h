@@ -52,7 +52,8 @@ public:
         FileAction, // TODO(AF) still required?
                     // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
-        FileSystem
+        FileSystem,
+        Log
     };
 
     typedef QFlags<ContextFlag> ContextFlags;
@@ -95,7 +96,7 @@ public:
     virtual bool testFlag(ContextFlag flag);
 
     FileGroupContext* parentEntry() const;
-    void setParentEntry(FileGroupContext *parent);
+    virtual void setParentEntry(FileGroupContext *parent);
     virtual FileSystemContext* childEntry(int index);
     virtual int childCount();
 
@@ -104,6 +105,8 @@ signals:
     void changed(int fileId);
 
 protected:
+    friend class LogContext;
+
     FileSystemContext(int id, QString name, QString location);
     FileSystemContext(int id, QString name, QString location, ContextType type);
     virtual void checkFlags();

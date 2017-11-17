@@ -89,8 +89,9 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
+    commandlineoption.cpp \
     logger.cpp \
-    commandlineoption.cpp
+    logcontext.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -121,8 +122,9 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
+    commandlineoption.h \
     logger.h \
-    commandlineoption.h
+    logcontext.h
 
 FORMS += \
     welcomepage.ui  \

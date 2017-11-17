@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "filetreemodel.h"
 #include "fileactioncontext.h"
+#include "logcontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "filetype.h"
@@ -121,7 +122,7 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
-    FileContext* logContext(FileSystemContext* node);
+    LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);

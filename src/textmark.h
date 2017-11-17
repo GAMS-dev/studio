@@ -39,7 +39,7 @@ public:
     };
 
     explicit TextMark(TextMark::Type tmType);
-    void mark(FileContext* fileContext, int line, int column, int size = 0);
+    void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void updateCursor();
     void setRefMark(TextMark* refMark);
     void jumpToRefMark();

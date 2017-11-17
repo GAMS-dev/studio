@@ -652,16 +652,19 @@ void MainWindow::execute(QString commandLineStr)
         if (!fgc)
             return;
 
-        ui->actionRun->setEnabled(false);
-        mFileRepo.removeMarks(fgc);
-        FileContext* logProc = mFileRepo.logContext(fgc);
-        FileContext* currentLogProc = mFileRepo.fileContext(ui->logView);
-        if (currentLogProc && currentLogProc != logProc) {
-            currentLogProc->removeEditor(ui->logView);
-        }
-        logProc->addEditor(ui->logView);
-        logProc->markOld();
+    ui->actionRun->setEnabled(false);
+    mFileRepo.removeMarks(fgc);
+    LogContext* logProc = mFileRepo.logContext(fgc);
+
+    if (logProc->editors().isEmpty()) {
+        QPlainTextEdit* logEdit = new QPlainTextEdit();
+        ui->logTab->addTab(logEdit, logProc->caption());
+        logProc->addEditor(logEdit);
+    } else {
         logProc->clearRecentMarks();
+    }
+    logProc->markOld();
+    ui->logTab->setCurrentWidget(logProc->editors().first());
 
         QString gmsFilePath = fgc->runableGms();
         QFileInfo gmsFileInfo(gmsFilePath);
@@ -674,8 +677,8 @@ void MainWindow::execute(QString commandLineStr)
         mProcess->setContext(fgc);
         mProcess->execute();
 
-        connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &FileContext::addProcessData);
-        connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
+    connect(mProcess, &GAMSProcess::newStdChannelData, logProc, &LogContext::addProcessData);
+    connect(mProcess, &GAMSProcess::finished, this, &MainWindow::postGamsRun);
 }
 
 void MainWindow::on_runWithCommandLineOption(QString options)

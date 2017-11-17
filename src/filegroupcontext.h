@@ -25,6 +25,7 @@
 namespace gams {
 namespace studio {
 
+class LogContext;
 class FileContext;
 
 class FileGroupContext : public FileSystemContext
@@ -61,20 +62,21 @@ public slots:
 protected:
     friend class FileRepository;
     friend class FileSystemContext;
+    friend class LogContext;
 
     FileGroupContext(int id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
-    FileContext* logContext();
-    void setLogContext(FileContext* logContext);
+    LogContext* logContext();
+    void setLogContext(LogContext* logContext);
 
 private:
     QList<FileSystemContext*> mChildList;
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
-    FileContext* mLogContext;
+    LogContext* mLogContext = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
 };

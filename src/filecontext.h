@@ -90,8 +90,8 @@ public:
     /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
     /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
-    void addEditor(QPlainTextEdit *edit);
-    void addEditor(CodeEditor *edit);
+    virtual void addEditor(QPlainTextEdit *edit);
+    virtual void addEditor(CodeEditor *edit);
 
     /// Moves the <c>CodeEditor</c> to the top of the editors-list of this file. (same behavior as <c>addEditor()</c>)
     /// \param edit The <c>CodeEditor</c> to be moved to top.
@@ -99,7 +99,7 @@ public:
 
     /// Removes an <c>CodeEditor</c> from the list.
     /// \param edit The <c>CodeEditor</c> to be removed.
-    void removeEditor(QPlainTextEdit *edit);
+    virtual void removeEditor(QPlainTextEdit *edit);
 
     /// Removes all <c>CodeEditor</c>s from the list.
     /// \param edit The <c>CodeEditor</c> to be removed.
@@ -112,17 +112,11 @@ public:
 
     /// The current QTextDocument assigned to this file.
     /// \return The current QTextDocument
-    QTextDocument* document();
-
-    /// If set to TRUE, the document is kept even if the last editor is closed.
-    /// \param keep Sets whether to keep the document.
-    void setKeepDocument(bool keep = true);
+    virtual QTextDocument* document();
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor);
     void showToolTip(const TextMark& mark);
-
-    void markOld();
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -142,10 +136,6 @@ signals:
     void clearLineIcons();
     void setLineIcon(int line, const QIcon& icon);
 
-public slots:
-    void clearRecentMarks();
-    void addProcessData(QProcess::ProcessChannel channel, QString text);
-
 protected slots:
     void onFileChangedExtern(QString filepath);
 
@@ -155,16 +145,11 @@ protected slots:
     void updateMarks();
 
 protected:
-    struct LinkData {
-        TextMark* textMark = nullptr;
-        int col = 0;
-        int size = 1;
-    };
-
+    friend class LogContext;
     friend class FileRepository;
-    FileContext(int id, QString name, QString location);
+    FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
 
-    QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
+    QList<QPlainTextEdit*>& editorList();
     TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void markLink(TextMark* mark);
     void removeTextMarks(TextMark::Type tmType);
@@ -178,11 +163,7 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QTextDocument *mDocument;
-    bool mBeforeErrorExtraction = true;
-    QSet<FileContext*> mMarkedContextList;
     QHash<int, TextMark*> mTextMarks;
-    QPair<int, QString> mCurrentErrorHint;
     bool mMouseOverLink = false;
 
     static const QStringList mDefaulsCodecs;

@@ -352,21 +352,20 @@ FileTreeModel*FileRepository::treeModel() const
     return mTreeModel;
 }
 
-FileContext*FileRepository::logContext(FileSystemContext* node)
+LogContext*FileRepository::logContext(FileSystemContext* node)
 {
     FileGroupContext* group = nullptr;
     if (node->type() != FileSystemContext::FileGroup)
         group = node->parentEntry();
     else
         group = static_cast<FileGroupContext*>(node);
-    FileContext* res = group->logContext();
+    LogContext* res = group->logContext();
     if (!res) {
-        res = new FileContext(mNextId++, "["+group->name()+"]", "");
-        connect(res, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
-        connect(res, &FileContext::findFileContext, this, &FileRepository::findFile);
-        connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
-        connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
-        res->setKeepDocument();
+        res = new LogContext(mNextId++, "["+group->name()+"]");
+        connect(res, &LogContext::openOrShow, this, &FileRepository::openOrShowContext);
+        connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
+        connect(res, &LogContext::createErrorHint, this, &FileRepository::setErrorHint);
+        connect(res, &LogContext::requestErrorHint, this, &FileRepository::getErrorHint);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;

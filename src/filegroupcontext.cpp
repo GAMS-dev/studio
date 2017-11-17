@@ -19,6 +19,7 @@
  */
 #include "filegroupcontext.h"
 #include "filecontext.h"
+#include "logcontext.h"
 #include "exception.h"
 
 namespace gams {
@@ -126,12 +127,10 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
-void FileGroupContext::setLogContext(FileContext* logContext)
+void FileGroupContext::setLogContext(LogContext* logContext)
 {
     if (mLogContext)
         EXCEPT() << "Reset the log-context is not allowed";
-    if (logContext->metrics().fileType() != FileType::None)
-        EXCEPT() << "Invalid FileType for log-context";
     mLogContext = logContext;
 }
 
@@ -170,18 +169,16 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-FileContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext()
 {
-    for (FileSystemContext *fsc: mChildList) {
-        if (fsc->type() == FileSystemContext::File) {
-            FileContext* fc = static_cast<FileContext*>(fsc);
-            if (fc->metrics().fileType() == FileType::None) {
-                return fc;
-                break;
-            }
-        }
-    }
-    return nullptr;
+    return mLogContext;
+//    for (FileSystemContext *fsc: mChildList) {
+//        if (fsc->type() == FileSystemContext::Log) {
+//            LogContext* fc = static_cast<LogContext*>(fsc);
+//            return fc;
+//        }
+//    }
+//    return nullptr;
 }
 
 int FileGroupContext::childCount()
