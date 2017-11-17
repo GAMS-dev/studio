@@ -17,7 +17,7 @@ class GdxSymbol : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:
@@ -51,6 +51,8 @@ public:
 
     int subType() const;
 
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+
 private:
     int mNr;
     QString mName;
@@ -82,6 +84,9 @@ private:
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
     void calcDefaultColumns();
+
+    int* mSortMap = nullptr;
+    int* mSortIndex;
 
 };
 

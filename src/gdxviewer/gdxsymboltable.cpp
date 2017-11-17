@@ -28,6 +28,8 @@ GdxSymbolTable::~GdxSymbolTable()
 {
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
+    if(mSortIndex)
+        delete mSortIndex;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -106,7 +108,7 @@ void GdxSymbolTable::loadGDXSymbols()
         if(type == GMS_DT_VAR)
             userInfo = gmsFixVarType(userInfo);
 
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mSortIndex));
     }
     locker.unlock();
 }

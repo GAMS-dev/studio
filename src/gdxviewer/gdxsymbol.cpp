@@ -2,13 +2,14 @@
 #include <memory>
 #include <QThread>
 #include <QtConcurrent>
+#include <QTime>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mSortIndex(sortIndex)
 {
     // read domains
     mDomains.clear();
@@ -18,6 +19,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, 
     gdxSymbolGetDomainX(mGdx, mNr, Indx);
     for(int i=0; i<mDim; i++)
         mDomains.append(Indx[i]);
+    mSortMap = new int[mRecordCount];
+    for(int i=0; i<mRecordCount; i++)
+        mSortMap[i] = i;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -26,6 +30,8 @@ GdxSymbol::~GdxSymbol()
         delete mKeys;
     if (mValues)
         delete mValues;
+    if (mSortMap)
+        delete mSortMap;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -84,20 +90,21 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
     else if (role == Qt::DisplayRole)
     {
+        int row = mSortMap[index.row()];
         if (index.column() < mDim)
-            return mUel2Label->at(mKeys[index.row()*mDim + index.column()]);
+            return mUel2Label->at(mKeys[row*mDim + index.column()]);
         else
         {
             double val;
             if (mType == GMS_DT_PAR)
-                val = mValues[index.row()];
+                val = mValues[row];
             else if (mType == GMS_DT_SET)
             {
-                val = mValues[index.row()];
+                val = mValues[row];
                 return mStrPool->at((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                val = mValues[index.row()*GMS_DT_MAX + (index.column()-mDim)];
+                val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
@@ -271,6 +278,51 @@ bool GdxSymbol::isAllDefault(int valColIdx)
 int GdxSymbol::subType() const
 {
     return mSubType;
+}
+
+struct {
+    bool operator()(QPair<int, int> left, QPair<int, int> right) const
+    {
+        return left.first > right.first;
+    }
+} lessThanUel;
+
+struct {
+    bool operator()(QPair<int, int> left, QPair<int, int> right) const
+    {
+        return left.first < right.first;
+    }
+} greaterThanUel;
+
+void GdxSymbol::sort(int column, Qt::SortOrder order)
+{
+    qDebug() << "in sort";
+    QTime t;
+    t.start();
+    // sort values
+    QList<QPair<int, int>> l;
+    for(int rec=0; rec<mRecordCount; rec++)
+    {
+        //l.append(QPair<int, int>(mSortIndex[mKeys[rec*mDim + column]], rec));
+        l.append(QPair<int, int>(mSortIndex[mKeys[mSortMap[rec]*mDim + column]], mSortMap[rec]));
+    }
+    //qDebug() << l;
+
+
+    if(order == Qt::SortOrder::AscendingOrder)
+        std::stable_sort(l.begin(), l.end(), lessThanUel);
+    else
+        std::stable_sort(l.begin(), l.end(), greaterThanUel);
+
+    for(int rec=0; rec< mRecordCount; rec++)
+        mSortMap[rec] = l.at(rec).second;
+
+    qDebug() << "elapsed: " << t.elapsed();
+    //qDebug() << l;
+
+    beginResetModel();
+    endResetModel();
+
 }
 
 bool GdxSymbol::isLoaded() const
