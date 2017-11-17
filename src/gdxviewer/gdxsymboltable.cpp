@@ -11,6 +11,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
+    createSortIndex();
 
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
@@ -109,6 +110,21 @@ void GdxSymbolTable::loadGDXSymbols()
     }
     locker.unlock();
 }
+
+//TODO (CW): refactor
+void GdxSymbolTable::createSortIndex()
+{
+    QStringList uel2LabelCopy(mUel2Label);
+    uel2LabelCopy.sort();
+    mSortIndex = new int[mUelCount+1];
+    int idx = 0;
+    for(QString label : uel2LabelCopy)
+    {
+        mSortIndex[mUel2Label.indexOf(label)] =idx;
+        idx++;
+    }
+}
+
 
 void GdxSymbolTable::loadUel2Label()
 {
