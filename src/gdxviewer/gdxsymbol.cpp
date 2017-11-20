@@ -296,17 +296,39 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     t.start();
     beginResetModel();
 
-    QList<QPair<int, int>> l;
-    for(int rec=0; rec<mRecordCount; rec++)
-        l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
+    // sort by key column
+    if(column<mDim)
+    {
+        QList<QPair<int, int>> l;
+        for(int rec=0; rec<mRecordCount; rec++)
+            l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
 
-    if(order == Qt::SortOrder::AscendingOrder)
-        std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
+    // sort by value column
     else
-        std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first > b.first; });
+    {
+        QList<QPair<double, int>> l;
+        if(mType == GMS_DT_PAR)
+        {
+            for(int rec=0; rec<mRecordCount; rec++)
+                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]], mRecSortIdx[rec]));
+        }
 
-    for(int rec=0; rec< mRecordCount; rec++)
-        mRecSortIdx[rec] = l.at(rec).second;
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
 
     qDebug() << "sorting elapsed: " << t.elapsed();
     endResetModel();
