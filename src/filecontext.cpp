@@ -207,7 +207,6 @@ void FileContext::load(QString codecName)
 
     QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
     QFile file(location());
-    QTime tim(QTime::currentTime());
     qDebug() << "Start loading ...";
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -235,7 +234,6 @@ void FileContext::load(QString codecName)
             mCodec = nameOfUsedCodec;
         }
         file.close();
-        qDebug() << "Pasted do editor " << (QTime::currentTime().elapsed()-tim.elapsed());
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
         QTimer::singleShot(100, this, &FileContext::updateMarks);

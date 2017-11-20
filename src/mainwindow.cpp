@@ -189,7 +189,6 @@ void MainWindow::on_actionNew_triggered()
     if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
     }
-    addToOpenedFiles(filePath);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -201,7 +200,6 @@ void MainWindow::on_actionOpen_triggered()
                                                     "Text files (*.txt);;"
                                                     "All files (*)"));
     addContext("", fName, true);
-    addToOpenedFiles(fName);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -604,6 +602,8 @@ void MainWindow::addToOpenedFiles(QString filePath)
         history->lastOpenedFiles.insert(0, filePath);
     else
         history->lastOpenedFiles.move(history->lastOpenedFiles.indexOf(filePath), 0);
+
+    wp->historyChanged(history);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -644,7 +644,6 @@ void MainWindow::on_actionGAMS_Library_triggered()
         } else {
             triggerGamsLibFileCreation(item, gmsFileName);
         }
-        addToOpenedFiles(gmsFilePath);
     }
 }
 
@@ -809,6 +808,7 @@ void MainWindow::openOrShowContext(FileContext* fileContext)
             }
         }
     }
+    addToOpenedFiles(fileContext->location());
 }
 
 void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool openedManually)
@@ -832,6 +832,7 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
             if (tabWidget->currentWidget())
                 tabWidget->currentWidget()->setFocus();
             ui->projectView->expand(mFileRepo.treeModel()->index(group));
+            addToOpenedFiles(filePath);
         }
     } else if (fc) {
         openOrShowContext(fc);
