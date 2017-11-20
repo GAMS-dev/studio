@@ -312,8 +312,9 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             mRecSortIdx[rec] = l.at(rec).second;
     }
 
+    //TODO(CW): make string pool sorting index like for uels for increasing sort speed on explanatory text
     //sort set and alias by explanatory text
-    else if(mType == GMS_DT_SET || mType == GMS_DT_PAR)
+    else if(mType == GMS_DT_SET || mType == GMS_DT_ALIAS)
     {
         QList<QPair<QString, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
