@@ -57,6 +57,8 @@ public:
 
     Qt::SortOrder sortOrder() const;
 
+    void resetSorting();
+
 private:
     int mNr;
     QString mName;

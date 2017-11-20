@@ -39,6 +39,7 @@ signals:
 public slots:
     void toggleSqueezeDefaults(bool checked);
     void refreshView();
+    void resetSorting();
 };
 
 } // namespace gdxviewer

@@ -272,6 +272,14 @@ Qt::SortOrder GdxSymbol::sortOrder() const
     return mSortOrder;
 }
 
+void GdxSymbol::resetSorting()
+{
+    for(int i=0; i<mRecordCount; i++)
+        mRecSortIdx[i] = i;
+    mSortColumn = -1;
+    layoutChanged();
+}
+
 int GdxSymbol::sortColumn() const
 {
     return mSortColumn;
