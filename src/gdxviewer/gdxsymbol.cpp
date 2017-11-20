@@ -280,20 +280,6 @@ int GdxSymbol::subType() const
     return mSubType;
 }
 
-struct {
-    bool operator()(QPair<int, int> left, QPair<int, int> right) const
-    {
-        return left.first > right.first;
-    }
-} lessThanUel;
-
-struct {
-    bool operator()(QPair<int, int> left, QPair<int, int> right) const
-    {
-        return left.first < right.first;
-    }
-} greaterThanUel;
-
 /*
  * Custom sorting algorithm that sorts by column using a stable sorting algorithm (std::stable_sort)
  *
@@ -315,9 +301,9 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
 
     if(order == Qt::SortOrder::AscendingOrder)
-        std::stable_sort(l.begin(), l.end(), lessThanUel);
+        std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
     else
-        std::stable_sort(l.begin(), l.end(), greaterThanUel);
+        std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first > b.first; });
 
     for(int rec=0; rec< mRecordCount; rec++)
         mRecSortIdx[rec] = l.at(rec).second;
