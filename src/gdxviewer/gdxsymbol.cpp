@@ -320,6 +320,13 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             for(int rec=0; rec<mRecordCount; rec++)
                 l.append(QPair<double, int>(mValues[mRecSortIdx[rec]], mRecSortIdx[rec]));
         }
+        else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        {
+            for(int rec=0; rec<mRecordCount; rec++)
+                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)], mRecSortIdx[rec]));
+        }
+
+        //TODO:set and alias
 
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first < b.first; });

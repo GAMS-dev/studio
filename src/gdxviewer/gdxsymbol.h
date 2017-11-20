@@ -87,7 +87,6 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mLabelCompIdx;
-
 };
 
 } // namespace gdxviewer
