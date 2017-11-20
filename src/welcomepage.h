@@ -21,6 +21,7 @@
 #define WELCOMEPAGE_H
 
 #include <QWidget>
+#include "mainwindow.h"
 
 namespace Ui {
 class WelcomePage;
@@ -34,7 +35,7 @@ class WelcomePage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WelcomePage(QWidget *parent = 0);
+    explicit WelcomePage(HistoryData *history, QWidget *parent = 0);
     ~WelcomePage();
 
 private slots:
@@ -42,6 +43,10 @@ private slots:
 
 private:
     Ui::WelcomePage *ui;
+
+signals:
+    void linkActivated(const QString &link);
+
 };
 
 }

@@ -21,6 +21,7 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
+#include "filerepository.h"
 #include "codeeditor.h"
 #include "commandlineoption.h"
 #include "filerepository.h"
@@ -34,14 +35,24 @@ namespace gams {
 namespace studio {
 
 class AbstractProcess;
+class GAMSProcess;
 class GAMSLibProcess;
-class GamsProcess;
+class WelcomePage;
 
 struct RecentData {
     int editFileId = -1;
     QPlainTextEdit* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
+};
+
+struct HistoryData {
+    const int MAX_FILE_HISTORY = 5;
+    QStringList lastOpenedFiles;
+
+    // TODO: implement projects & sessions
+    // QStringList mLastOpenedProjects;
+    // QStringList mLastOpenedSessions;
 };
 
 class MainWindow : public QMainWindow
@@ -55,6 +66,7 @@ public:
     void ensureCodecMenu(QString codecName);
     void addToOpenedFiles(QString filePath);
     QStringList getOpenedFiles();
+    void openFile(const QString &filePath);
 
 private slots:
     void codecChanged(QAction *action);
@@ -126,17 +138,19 @@ private:
 
     Ui::MainWindow *ui;
     CommandLineOption* mCommandLineOption;
+    GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
-    bool mHasWelcomePage = false;
     bool mBeforeErrorExtraction = true;
-    void loadSettings();
-    void saveSettings();
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
-    QStringList mLastOpenedFiles;
+    HistoryData *history;
+    WelcomePage *wp = nullptr;
+    void loadSettings();
+    void saveSettings();
+    void createWelcomePage();
 };
 
 }

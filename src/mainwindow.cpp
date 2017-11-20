@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
+    history = new HistoryData();
+    loadSettings();
     ui->setupUi(this);
     setAcceptDrops(true);
 
@@ -75,7 +77,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
-    loadSettings();
 }
 
 MainWindow::~MainWindow()
@@ -89,8 +90,7 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    ui->mainTab->addTab(new WelcomePage(), QString("Welcome"));
-    mHasWelcomePage = true;
+    createWelcomePage();
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
@@ -476,7 +476,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        mHasWelcomePage = false;
+        wp = nullptr;
         return;
     }
 
@@ -503,12 +503,17 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 }
 
+void MainWindow::createWelcomePage()
+{
+    wp = new WelcomePage(history);
+    ui->mainTab->insertTab(0, wp, QString("Welcome")); // always first position
+    connect(wp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+}
+
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(!mHasWelcomePage) {
-        ui->mainTab->insertTab(0, new WelcomePage(), QString("Welcome")); // always first position
-        mHasWelcomePage = true;
-    }
+    if(wp == nullptr)
+        createWelcomePage();
     ui->mainTab->setCurrentIndex(0);
 }
 
@@ -548,9 +553,9 @@ void MainWindow::saveSettings()
     mAppSettings->setValue("pos", pos());
 
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < mLastOpenedFiles.size(); i++) {
+    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("file", mLastOpenedFiles.at(i));
+        mAppSettings->setValue("file", history->lastOpenedFiles.at(i));
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
@@ -569,9 +574,9 @@ void MainWindow::loadSettings()
     move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
 
     mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < MAX_FILE_HISTORY; i++) {
+    for (int i = 0; i < history->MAX_FILE_HISTORY; i++) {
         mAppSettings->setArrayIndex(i);
-        mLastOpenedFiles.append(mAppSettings->value("file").toString());
+        history->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
 
@@ -582,15 +587,20 @@ void MainWindow::loadSettings()
 
 QStringList MainWindow::getOpenedFiles()
 {
-    return mLastOpenedFiles;
+    return history->lastOpenedFiles;
+}
+
+void MainWindow::openFile(const QString &filePath)
+{
+    openOrShow(filePath, nullptr);
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if(mLastOpenedFiles.size() > MAX_FILE_HISTORY) {
-        mLastOpenedFiles.removeLast();
+    if (history->lastOpenedFiles.size() > history->MAX_FILE_HISTORY) {
+        history->lastOpenedFiles.removeLast();
     }
-    mLastOpenedFiles.insert(0, filePath);
+    history->lastOpenedFiles.insert(0, filePath);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()

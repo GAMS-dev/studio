@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(QWidget *parent) :
+WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WelcomePage)
 {
@@ -35,6 +35,15 @@ WelcomePage::WelcomePage(QWidget *parent) :
     connect(ui->label_gamsworld, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
     connect(ui->label_gamsyoutube, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
     connect(ui->label_stackoverflow, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
+
+    QLabel *tmpLabel;
+    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
+        QFileInfo file(history->lastOpenedFiles.at(i));
+        tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a>");
+
+        connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
+        ui->layout_lastFiles->addWidget(tmpLabel);
+    }
 }
 
 WelcomePage::~WelcomePage()
