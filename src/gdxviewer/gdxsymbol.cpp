@@ -19,9 +19,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, 
     gdxSymbolGetDomainX(mGdx, mNr, Indx);
     for(int i=0; i<mDim; i++)
         mDomains.append(Indx[i]);
-    mSortMap = new int[mRecordCount];
+    mRecSortIdx = new int[mRecordCount];
     for(int i=0; i<mRecordCount; i++)
-        mSortMap[i] = i;
+        mRecSortIdx[i] = i;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -30,8 +30,8 @@ GdxSymbol::~GdxSymbol()
         delete mKeys;
     if (mValues)
         delete mValues;
-    if (mSortMap)
-        delete mSortMap;
+    if (mRecSortIdx)
+        delete mRecSortIdx;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -90,7 +90,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
     else if (role == Qt::DisplayRole)
     {
-        int row = mSortMap[index.row()];
+        int row = mRecSortIdx[index.row()];
         if (index.column() < mDim)
             return mUel2Label->at(mKeys[row*mDim + index.column()]);
         else
@@ -294,18 +294,25 @@ struct {
     }
 } greaterThanUel;
 
+/*
+ * Custom sorting algorithm that sorts by column using a stable sorting algorithm (std::stable_sort)
+ *
+ * mRecSortIdx maps a row index in the view to a row index in the data. This way the sorting is implemented
+ * without actually changing the order of the data itself but storing a mapping of row indexes
+ *
+ * mLabelCompIdx is used to map a UEL (int) to a specific number (int) which refelects the lexicographical
+ * order of label. This allows for better sorting performance since the compare functions only need to compare int
+ * instead of QString
+ */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
     QTime t;
     t.start();
+    beginResetModel();
 
     QList<QPair<int, int>> l;
     for(int rec=0; rec<mRecordCount; rec++)
-    {
-        l.append(QPair<int, int>(mLabelCompIdx[mKeys[mSortMap[rec]*mDim + column]], mSortMap[rec]));
-    }
-    //qDebug() << l;
-
+        l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
 
     if(order == Qt::SortOrder::AscendingOrder)
         std::stable_sort(l.begin(), l.end(), lessThanUel);
@@ -313,13 +320,10 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         std::stable_sort(l.begin(), l.end(), greaterThanUel);
 
     for(int rec=0; rec< mRecordCount; rec++)
-        mSortMap[rec] = l.at(rec).second;
+        mRecSortIdx[rec] = l.at(rec).second;
 
     qDebug() << "sorting elapsed: " << t.elapsed();
-
-    beginResetModel();
     endResetModel();
-
 }
 
 bool GdxSymbol::isLoaded() const
