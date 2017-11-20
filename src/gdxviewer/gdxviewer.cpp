@@ -146,6 +146,7 @@ void GdxViewer::refreshView()
         ui.cbSqueezeDefaults->setEnabled(false);
     }
     ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
+    ui.tableView->horizontalHeader()->setSortIndicator(selectedSymbol->sortColumn(), selectedSymbol->sortOrder());
 }
 
 

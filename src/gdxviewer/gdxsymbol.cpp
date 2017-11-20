@@ -267,6 +267,16 @@ void GdxSymbol::calcDefaultColumns()
     }
 }
 
+Qt::SortOrder GdxSymbol::sortOrder() const
+{
+    return mSortOrder;
+}
+
+int GdxSymbol::sortColumn() const
+{
+    return mSortColumn;
+}
+
 bool GdxSymbol::isAllDefault(int valColIdx)
 {
     if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
@@ -292,9 +302,12 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
+    //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
+    if(column == mSortColumn && order == mSortOrder)
+        return;
+
     QTime t;
     t.start();
-    beginResetModel();
 
     // sort by key column
     if(column<mDim)
@@ -353,8 +366,10 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             mRecSortIdx[rec] = l.at(rec).second;
     }
 
+    mSortColumn = column;
+    mSortOrder = order;
     qDebug() << "sorting elapsed: " << t.elapsed();
-    endResetModel();
+    layoutChanged();
 }
 
 bool GdxSymbol::isLoaded() const

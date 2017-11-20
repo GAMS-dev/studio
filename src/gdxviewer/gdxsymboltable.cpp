@@ -130,7 +130,6 @@ void GdxSymbolTable::createSortIndex()
     }
 }
 
-
 void GdxSymbolTable::loadUel2Label()
 {
     char label[GMS_UEL_IDENT_SIZE];

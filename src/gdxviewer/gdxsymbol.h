@@ -53,6 +53,10 @@ public:
 
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 
+    int sortColumn() const;
+
+    Qt::SortOrder sortOrder() const;
+
 private:
     int mNr;
     QString mName;
@@ -87,6 +91,9 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mLabelCompIdx;
+
+    int mSortColumn = -1;
+    Qt::SortOrder mSortOrder;
 };
 
 } // namespace gdxviewer
