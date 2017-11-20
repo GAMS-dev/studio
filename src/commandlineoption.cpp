@@ -1,6 +1,9 @@
 #include <QKeyEvent>
 #include "commandlineoption.h"
 
+namespace gams {
+namespace studio {
+
 CommandLineOption::CommandLineOption(QWidget* parent) : QComboBox(parent)
 {
     this->setEditable(true);
@@ -34,3 +37,6 @@ void CommandLineOption::keyPressEvent(QKeyEvent *event)
         emit runWithChangedOption(this->getCurrentOption());
     }
 }
+
+} // namespace studio
+} // namespace gams
