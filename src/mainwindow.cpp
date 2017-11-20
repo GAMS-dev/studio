@@ -600,7 +600,10 @@ void MainWindow::addToOpenedFiles(QString filePath)
     if (history->lastOpenedFiles.size() > history->MAX_FILE_HISTORY) {
         history->lastOpenedFiles.removeLast();
     }
-    history->lastOpenedFiles.insert(0, filePath);
+    if (!history->lastOpenedFiles.contains(filePath))
+        history->lastOpenedFiles.insert(0, filePath);
+    else
+        history->lastOpenedFiles.move(history->lastOpenedFiles.indexOf(filePath), 0);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()

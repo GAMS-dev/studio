@@ -40,6 +40,7 @@ WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a>");
+        tmpLabel->setToolTip(file.filePath());
 
         connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         ui->layout_lastFiles->addWidget(tmpLabel);
