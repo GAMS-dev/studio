@@ -116,13 +116,16 @@ void GdxSymbolTable::loadGDXSymbols()
 //TODO (CW): refactor
 void GdxSymbolTable::createSortIndex()
 {
-    QStringList uel2LabelCopy(mUel2Label);
-    uel2LabelCopy.sort();
+    QList<QPair<QString, int>> l;
+    for(int uel=0; uel<=mUelCount; uel++)
+        l.append(QPair<QString, int>(mUel2Label.at(uel), uel));
+    std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+
     mLabelCompIdx = new int[mUelCount+1];
     int idx = 0;
-    for(QString label : uel2LabelCopy)
+    for(QPair<QString, int> p : l)
     {
-        mLabelCompIdx[mUel2Label.indexOf(label)] = idx;
+        mLabelCompIdx[p.second] = idx;
         idx++;
     }
 }
