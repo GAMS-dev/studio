@@ -117,6 +117,10 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 QString LogContext::extractError(QString line, FileContext::ExtractionState& state, QList<LogContext::LinkData>& marks)
 {
     QString result;
+    bool doubleLines = false;
+    if (doubleLines) {
+        result = "{"+line+"}\n";
+    }
     if (!mInErrorDescription) {
         // look, if we find the start of an error
         QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
@@ -128,7 +132,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                 bool ok;
                 QRegularExpressionMatch match = errRX1.match(part);
                 if (part.startsWith("***") || part.startsWith("---")) {
-                    result = part;
+                    result += part;
                     int errNr = match.captured(2).toInt(&ok);
                     if (ok) {
                         mCurrentErrorHint.first = errNr;
@@ -175,7 +179,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         mMarkedContextList << fc;
                         errFound = false;
                     } else {
-                        result = line;
+                        result += line;
                         state = Outside;
                         break;
                     }
@@ -198,7 +202,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         mMarkedContextList << fc;
                         errFound = false;
                     } else {
-                        result = line;
+                        result += line;
                         state = Outside;
                         break;
                     }
@@ -207,21 +211,20 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
             }
             state = Entering;
         } else {
-            result = line;
+            result += line;
             state = Outside;
         }
     } else {
         if (line.startsWith(" ")) {
+            // TODO(JM) get description from LST-file instead (-> there are more details)
             if (mCurrentErrorHint.second.isEmpty())
                 mCurrentErrorHint.second += QString::number(mCurrentErrorHint.first)+'\t'+line.trimmed();
             else
                 mCurrentErrorHint.second += "\n\t"+line.trimmed();
-
             state = Inside;
-            result = line;
-            // TODO(JM) add to description
+            result += line;
         } else {
-            result = line;
+            result += line;
             state = Exiting;
             mInErrorDescription = false;
         }
