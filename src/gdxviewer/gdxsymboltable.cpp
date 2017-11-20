@@ -122,7 +122,7 @@ void GdxSymbolTable::createSortIndex()
     int idx = 0;
     for(QString label : uel2LabelCopy)
     {
-        mLabelCompIdx[mUel2Label.indexOf(label)] =idx;
+        mLabelCompIdx[mUel2Label.indexOf(label)] = idx;
         idx++;
     }
 }

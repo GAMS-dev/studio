@@ -311,7 +311,24 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         for(int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
-    // sort by value column
+
+    //sort set and alias by explanatory text
+    else if(mType == GMS_DT_SET || mType == GMS_DT_PAR)
+    {
+        QList<QPair<QString, int>> l;
+        for(int rec=0; rec<mRecordCount; rec++)
+            l.append(QPair<QString, int>(mStrPool->at(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
+
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
+
+    // sort parameter, variable and equation by value columns
     else
     {
         QList<QPair<double, int>> l;
@@ -325,8 +342,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             for(int rec=0; rec<mRecordCount; rec++)
                 l.append(QPair<double, int>(mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)], mRecSortIdx[rec]));
         }
-
-        //TODO:set and alias
 
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first < b.first; });
