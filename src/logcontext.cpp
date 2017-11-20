@@ -60,8 +60,7 @@ void LogContext::setParentEntry(FileGroupContext* parent)
 {
     if (parent){
         parent->setLogContext(this);
-    }
-    else {
+    } else {
         mParent->setLogContext(nullptr);
     }
     mParent = parent;

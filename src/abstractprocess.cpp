@@ -30,6 +30,7 @@ AbstractProcess::AbstractProcess(QObject *parent)
       mSystemDir(GAMSPaths::systemDir()),
       mProcess(this)
 {
+    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);
     connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractProcess::readStdErr);
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
@@ -61,9 +62,19 @@ QString AbstractProcess::inputFile() const
     return mInputFile;
 }
 
+FileGroupContext*AbstractProcess::context()
+{
+    return nullptr;
+}
+
+QProcess::ProcessState AbstractProcess::state() const
+{
+    return mProcess.state();
+}
+
 void AbstractProcess::completed(int exitCode)
 {
-    emit finished(exitCode);
+    emit finished(this, exitCode);
 }
 
 void AbstractProcess::readStdOut()

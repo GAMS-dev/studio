@@ -33,13 +33,15 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
-class GAMSProcess;
+class AbstractProcess;
 class GAMSLibProcess;
+class GamsProcess;
 
 struct RecentData {
     int editFileId = -1;
     QPlainTextEdit* editor = nullptr;
     QString path = ".";
+    FileGroupContext* group = nullptr;
 };
 
 class MainWindow : public QMainWindow
@@ -60,12 +62,13 @@ private slots:
     void fileDeletedExtern(int fileId);
     void fileClosed(int fileId);
     void appendOutput(QProcess::ProcessChannel channel, QString text);
-    void postGamsRun();
-    void postGamsLibRun();
+    void postGamsRun(AbstractProcess* process);
+    void postGamsLibRun(AbstractProcess* process);
     void openOrShowContext(FileContext *fileContext);
     // View
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
+    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
 
 private slots:
     // File
@@ -114,11 +117,11 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
+    void updateRunState();
 
 private:
     Ui::MainWindow *ui;
     CommandLineOption* mCommandLineOption;
-    GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
