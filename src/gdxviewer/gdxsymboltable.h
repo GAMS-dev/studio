@@ -46,7 +46,7 @@ private:
     QStringList mUel2Label;
     QStringList mStrPool;
 
-    int* mSortIndex = nullptr;
+    int* mLabelCompIdx = nullptr;
 
     QMutex* mGdxMutex;
 };

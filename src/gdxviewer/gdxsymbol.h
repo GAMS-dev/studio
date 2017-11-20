@@ -86,7 +86,7 @@ private:
     void calcDefaultColumns();
 
     int* mSortMap = nullptr;
-    int* mSortIndex;
+    int* mLabelCompIdx;
 
 };
 

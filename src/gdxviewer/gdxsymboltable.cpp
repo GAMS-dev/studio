@@ -28,8 +28,8 @@ GdxSymbolTable::~GdxSymbolTable()
 {
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
-    if(mSortIndex)
-        delete mSortIndex;
+    if(mLabelCompIdx)
+        delete mLabelCompIdx;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -108,7 +108,7 @@ void GdxSymbolTable::loadGDXSymbols()
         if(type == GMS_DT_VAR)
             userInfo = gmsFixVarType(userInfo);
 
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mSortIndex));
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mLabelCompIdx));
     }
     locker.unlock();
 }
@@ -118,11 +118,11 @@ void GdxSymbolTable::createSortIndex()
 {
     QStringList uel2LabelCopy(mUel2Label);
     uel2LabelCopy.sort();
-    mSortIndex = new int[mUelCount+1];
+    mLabelCompIdx = new int[mUelCount+1];
     int idx = 0;
     for(QString label : uel2LabelCopy)
     {
-        mSortIndex[mUel2Label.indexOf(label)] =idx;
+        mLabelCompIdx[mUel2Label.indexOf(label)] =idx;
         idx++;
     }
 }

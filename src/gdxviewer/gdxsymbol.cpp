@@ -9,7 +9,7 @@ namespace studio {
 namespace gdxviewer {
 
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mSortIndex(sortIndex)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mLabelCompIdx(sortIndex)
 {
     // read domains
     mDomains.clear();
@@ -296,15 +296,13 @@ struct {
 
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
-    qDebug() << "in sort";
     QTime t;
     t.start();
-    // sort values
+
     QList<QPair<int, int>> l;
     for(int rec=0; rec<mRecordCount; rec++)
     {
-        //l.append(QPair<int, int>(mSortIndex[mKeys[rec*mDim + column]], rec));
-        l.append(QPair<int, int>(mSortIndex[mKeys[mSortMap[rec]*mDim + column]], mSortMap[rec]));
+        l.append(QPair<int, int>(mLabelCompIdx[mKeys[mSortMap[rec]*mDim + column]], mSortMap[rec]));
     }
     //qDebug() << l;
 
@@ -317,8 +315,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     for(int rec=0; rec< mRecordCount; rec++)
         mSortMap[rec] = l.at(rec).second;
 
-    qDebug() << "elapsed: " << t.elapsed();
-    //qDebug() << l;
+    qDebug() << "sorting elapsed: " << t.elapsed();
 
     beginResetModel();
     endResetModel();
