@@ -214,7 +214,6 @@ void FileContext::load(QString codecName)
             EXCEPT() << "Error opening file " << location();
         mMetrics = FileMetrics();
         const QByteArray data(file.readAll());
-        qDebug() << "Loaded " << (QTime::currentTime().elapsed()-tim.elapsed());
         QString text;
         QString nameOfUsedCodec;
         for (QString tcName: codecNames) {
@@ -224,16 +223,13 @@ void FileContext::load(QString codecName)
                 nameOfUsedCodec = tcName;
                 text = codec->toUnicode(data.constData(), data.size(), &state);
                 if (state.invalidChars == 0) {
-                    qDebug() << "opened with codec " << nameOfUsedCodec;
                     break;
                 }
-                qDebug() << "Codec " << nameOfUsedCodec << " contains " << QString::number(state.invalidChars) << "invalid chars.";
             } else {
                 qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
                 nameOfUsedCodec = QString();
             }
         }
-        qDebug() << "Codec checked " << (QTime::currentTime().elapsed()-tim.elapsed());
         if (!nameOfUsedCodec.isEmpty()) {
             document()->setPlainText(text);
             mCodec = nameOfUsedCodec;
