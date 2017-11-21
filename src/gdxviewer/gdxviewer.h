@@ -41,6 +41,7 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void refreshView();
     void resetSorting();
+    void showColumnFilter(QPoint p);
 };
 
 } // namespace gdxviewer

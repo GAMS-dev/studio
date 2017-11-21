@@ -5,6 +5,7 @@
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -16,6 +17,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.setupUi(this);
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
+
+    ui.tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui.tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxViewer::showColumnFilter);
 
     mGdxMutex = new QMutex();
 
@@ -36,6 +40,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
 
     ui.tvSymbols->setModel(mGdxSymbolTable);
     ui.tvSymbols->resizeColumnsToContents();
+
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
@@ -163,6 +168,14 @@ void GdxViewer::resetSorting()
     GdxSymbol* selected = selectedSymbol();
     selected->resetSorting();
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
+}
+
+void GdxViewer::showColumnFilter(QPoint p)
+{
+    QMenu* m = new QMenu(this);
+    m->addAction(new QAction("Action 1", this));
+    m->addAction(new QAction("Action 2", this));
+    m->popup(ui.tableView->mapToGlobal(p));
 }
 
 } // namespace gdxviewer

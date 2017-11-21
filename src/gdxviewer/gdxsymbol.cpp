@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QtConcurrent>
 #include <QTime>
+#include <QIcon>
 
 namespace gams {
 namespace studio {
