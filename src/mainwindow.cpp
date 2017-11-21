@@ -235,14 +235,13 @@ void MainWindow::on_actionSave_As_triggered()
 
         if(fc->location().endsWith(".gms") && !filePath.endsWith(".gms")) {
             filePath = filePath + ".gms";
+        } else if (fc->location().endsWith(".gdx") && !filePath.endsWith(".gdx")) {
+            filePath = filePath + ".gdx";
         } else if (fc->location().endsWith(".lst") && !filePath.endsWith(".lst")) {
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        // given what happens on the drive when saving a file as... the old node should stay in project explorer
-
         fc->save(filePath);
-//        mFileRepo.removeNode(formerFc);
         openOrShow(filePath, fc->parentEntry());
 
     }
