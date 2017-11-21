@@ -7,6 +7,7 @@
 #include <memory>
 #include "gdxcc.h"
 #include <QString>
+#include <QSet>
 
 namespace gams {
 namespace studio {
@@ -90,12 +91,17 @@ private:
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
     void calcDefaultColumns();
+    void calcUelsInColumn();
+
+    QList<QList<int>*> mUelsInColumn;
 
     int* mRecSortIdx = nullptr;
     int* mLabelCompIdx;
 
     int mSortColumn = -1;
     Qt::SortOrder mSortOrder;
+
+
 };
 
 } // namespace gdxviewer

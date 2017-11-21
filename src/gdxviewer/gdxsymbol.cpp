@@ -4,6 +4,7 @@
 #include <QtConcurrent>
 #include <QTime>
 #include <QIcon>
+#include <QVarLengthArray>
 
 namespace gams {
 namespace studio {
@@ -33,6 +34,8 @@ GdxSymbol::~GdxSymbol()
         delete mValues;
     if (mRecSortIdx)
         delete mRecSortIdx;
+    for(auto s : mUelsInColumn)
+        delete s;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -221,6 +224,7 @@ void GdxSymbol::loadData()
         beginResetModel();
         endResetModel();
         calcDefaultColumns();
+        calcUelsInColumn();
         mIsLoaded = true;
 
         delete keys;
@@ -266,6 +270,31 @@ void GdxSymbol::calcDefaultColumns()
             mDefaultColumn[valColIdx] = true;
         }
     }
+}
+
+//TODO(CW): refactoring for better performance
+void GdxSymbol::calcUelsInColumn()
+{
+    QTime t;
+    t.start();
+
+    for(int dim=0; dim<mDim; dim++)
+    {
+        QList<int> l;
+        int lastUel = -1;
+        int currentUel = - 1;
+        for(int rec=0; rec<mRecordCount; rec++)
+        {
+            currentUel = mKeys[rec*mDim + dim];
+            if(lastUel != currentUel)
+            {
+                lastUel = currentUel;
+                l.append(currentUel);
+            }
+        }
+        mUelsInColumn.append(new QList<int>(QSet<int>::fromList(l).toList()));
+    }
+    qDebug() <<"uel: " << mUelsInColumn.at(0)->at(0);
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
