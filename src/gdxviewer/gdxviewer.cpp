@@ -46,9 +46,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
 
 GdxViewer::~GdxViewer()
 {
-    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
-    if(selectedIdx.size()>0)
-        mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row())->stopLoadingData();
+    GdxSymbol* selected = selectedSymbol();
+    if(selected)
+        selected->stopLoadingData();
 
     delete mGdxSymbolTable;
 
@@ -87,6 +87,15 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         ui.tableView->setModel(nullptr);
 }
 
+GdxSymbol *GdxViewer::selectedSymbol()
+{
+    GdxSymbol* selected = nullptr;
+    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
+    if(!selectedIdx.isEmpty())
+        selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+    return selected;
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
@@ -102,30 +111,28 @@ void GdxViewer::reportIoError(int errNr, QString message)
 
 void GdxViewer::toggleSqueezeDefaults(bool checked)
 {
-    GdxSymbol* selectedSymbol;
-    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
-    if(selectedIdx.size()>0)
+    GdxSymbol* selected = selectedSymbol();
+    if(selected)
     {
-        selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
-        selectedSymbol->setSqueezeDefaults(checked);
-        if(selectedSymbol->type() == GMS_DT_VAR || selectedSymbol->type() == GMS_DT_EQU)
+        selected->setSqueezeDefaults(checked);
+        if(selected->type() == GMS_DT_VAR || selected->type() == GMS_DT_EQU)
         {
             ui.tableView->setUpdatesEnabled(false);
             if(checked)
             {
                 for(int i=0; i<GMS_VAL_MAX; i++)
                 {
-                    if (selectedSymbol->isAllDefault(i))
-                        ui.tableView->setColumnHidden(selectedSymbol->dim()+i, true);
+                    if (selected->isAllDefault(i))
+                        ui.tableView->setColumnHidden(selected->dim()+i, true);
                     else
-                        ui.tableView->setColumnHidden(selectedSymbol->dim()+i, false);
+                        ui.tableView->setColumnHidden(selected->dim()+i, false);
                 }
             }
             else
             {
                 for(int i=0; i<GMS_VAL_MAX; i++)
                 {
-                    ui.tableView->setColumnHidden(selectedSymbol->dim()+i, false);
+                    ui.tableView->setColumnHidden(selected->dim()+i, false);
                 }
             }
             ui.tableView->setUpdatesEnabled(true);
@@ -135,29 +142,28 @@ void GdxViewer::toggleSqueezeDefaults(bool checked)
 
 void GdxViewer::refreshView()
 {
-    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
-    GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
-    if(selectedSymbol->isLoaded())
+    GdxSymbol* selected = selectedSymbol();
+    if(selected->isLoaded())
     {
-        if(selectedSymbol->type() == GMS_DT_VAR || selectedSymbol->type() == GMS_DT_EQU)
+        if(selected->type() == GMS_DT_VAR || selected->type() == GMS_DT_EQU)
             ui.cbSqueezeDefaults->setEnabled(true);
+        else
+            ui.cbSqueezeDefaults->setEnabled(false);
     }
     else
     {
         ui.cbSqueezeDefaults->setEnabled(false);
     }
-    ui.cbSqueezeDefaults->setChecked(selectedSymbol->squeezeDefaults());
-    ui.tableView->horizontalHeader()->setSortIndicator(selectedSymbol->sortColumn(), selectedSymbol->sortOrder());
+    ui.cbSqueezeDefaults->setChecked(selected->squeezeDefaults());
+    ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
 
 void GdxViewer::resetSorting()
 {
-    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
-    GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
-    selectedSymbol->resetSorting();
-    ui.tableView->horizontalHeader()->setSortIndicator(selectedSymbol->sortColumn(), selectedSymbol->sortOrder());
+    GdxSymbol* selected = selectedSymbol();
+    selected->resetSorting();
+    ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
-
 
 } // namespace gdxviewer
 } // namespace studio

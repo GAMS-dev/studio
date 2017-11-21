@@ -20,6 +20,7 @@ public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    GdxSymbol* selectedSymbol();
 
 private:
     Ui::GdxViewer ui;
