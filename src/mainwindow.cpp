@@ -163,6 +163,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState)
 {
+    Q_UNUSED(newState);
     if (mRecent.group == group) updateRunState();
 }
 
@@ -249,7 +250,7 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    int i = mFileRepo.saveAll();
+    mFileRepo.saveAll();
 }
 
 void MainWindow::on_actionClose_triggered()
@@ -729,6 +730,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons()) {
         QWidget* child = childAt(event->pos());
+        Q_UNUSED(child);
     }
     QMainWindow::mouseMoveEvent(event);
 }

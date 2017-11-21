@@ -413,9 +413,6 @@ bool FileContext::mouseOverLink()
 void FileContext::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
-    if (location().isEmpty()) {
-        DEB() << " log modified";
-    }
     emit changed(id());
 }
 

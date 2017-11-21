@@ -376,7 +376,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
     mSortColumn = column;
     mSortOrder = order;
-    qDebug() << "sorting elapsed: " << t.elapsed();
     layoutChanged();
 }
 
