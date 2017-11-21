@@ -52,6 +52,7 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e);
+    void wheelEvent(QWheelEvent *e);
 
 signals:
     void updateBlockSelection();

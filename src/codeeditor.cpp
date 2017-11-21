@@ -241,6 +241,18 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
+void CodeEditor::wheelEvent(QWheelEvent *e) {
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->delta();
+        if (delta < 0)
+            zoomOut();
+        else if (delta > 0)
+            zoomIn();
+        return;
+    }
+    QPlainTextEdit::wheelEvent(e);
+}
+
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
 {
     if (e->mimeData()->hasUrls()) {
