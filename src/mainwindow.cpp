@@ -290,6 +290,13 @@ void MainWindow::activeTabChanged(int index)
             mRecent.editor = edit;
             mRecent.group = fc->parentEntry();
         }
+        if (fc && !edit->isReadOnly()) {
+            mCommandLineOption->setDisabled(false);
+        } else {
+            mCommandLineOption->setDisabled(true);
+        }
+    }  else {
+        mCommandLineOption->setDisabled(true);
     }
 }
 

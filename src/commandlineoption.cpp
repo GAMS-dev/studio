@@ -6,6 +6,7 @@ namespace studio {
 
 CommandLineOption::CommandLineOption(QWidget* parent) : QComboBox(parent)
 {
+    this->setDisabled(true);
     this->setEditable(true);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     connect(this, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
