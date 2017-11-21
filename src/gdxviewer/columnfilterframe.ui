@@ -21,7 +21,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QListView" name="listView"/>
+    <widget class="QListWidget" name="listWidget"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pbApply">
+     <property name="text">
+      <string>Apply</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

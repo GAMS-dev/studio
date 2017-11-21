@@ -6,15 +6,15 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ColumnFilter::ColumnFilter(QWidget *parent)
-    :QWidgetAction(parent)
+ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
+    :QWidgetAction(parent), mSymbol(symbol), mColumn(column)
 {
 
 }
 
 QWidget *ColumnFilter::createWidget(QWidget *parent)
 {
-    return new ColumnFilterFrame(parent);
+    return new ColumnFilterFrame(mSymbol, mColumn, parent);
 }
 
 } // namespace gdxviewer

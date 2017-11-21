@@ -176,7 +176,7 @@ void GdxViewer::showColumnFilter(QPoint p)
 {
     int column = ui.tableView->horizontalHeader()->logicalIndexAt(p);
     QMenu* m = new QMenu(this);
-    m->addAction(new ColumnFilter(this));
+    m->addAction(new ColumnFilter(selectedSymbol(), column, this));
     m->popup(ui.tableView->mapToGlobal(p));
 }
 

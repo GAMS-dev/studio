@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_GDXVIEWER_COLUMNFILTERFRAME_H
 
 #include "ui_columnfilterframe.h"
+#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {
@@ -12,10 +13,15 @@ class ColumnFilterFrame : public QFrame
     Q_OBJECT
 
 public:
-    explicit ColumnFilterFrame(QWidget *parent = 0);
+    explicit ColumnFilterFrame(GdxSymbol* symbol, int column, QWidget *parent = 0);
 
 private:
     Ui::ColumnFilterFrame ui;
+    GdxSymbol* mSymbol;
+    int mColumn;
+
+public slots:
+    void apply();
 };
 
 

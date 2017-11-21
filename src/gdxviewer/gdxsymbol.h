@@ -61,6 +61,10 @@ public:
 
     void resetSorting();
 
+    QList<QSet<int> *> uelsInColumn() const;
+
+    QList<QSet<int> *> filterUels() const;
+
 private:
     int mNr;
     QString mName;

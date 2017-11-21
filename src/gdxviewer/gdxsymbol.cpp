@@ -306,7 +306,17 @@ void GdxSymbol::calcUelsInColumn()
         mUelsInColumn.append(new QSet<int>(set));
         mFilterUels.append(new QSet<int>(set));
     }
-    mFilterUels.at(0)->remove(1);
+    //mFilterUels.at(0)->remove(1);
+}
+
+QList<QSet<int> *> GdxSymbol::filterUels() const
+{
+    return mFilterUels;
+}
+
+QList<QSet<int> *> GdxSymbol::uelsInColumn() const
+{
+    return mUelsInColumn;
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
