@@ -39,11 +39,14 @@ private:
     void loadUel2Label();
     void loadStringPool();
     void loadGDXSymbols();
+    void createSortIndex();
     void reportIoError(int errNr, QString message);
 
     QList<GdxSymbol*> mGdxSymbols;
     QStringList mUel2Label;
     QStringList mStrPool;
+
+    int* mLabelCompIdx = nullptr;
 
     QMutex* mGdxMutex;
 };

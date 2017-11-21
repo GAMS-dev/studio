@@ -20,6 +20,7 @@ public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    GdxSymbol* selectedSymbol();
 
 private:
     Ui::GdxViewer ui;
@@ -39,6 +40,7 @@ signals:
 public slots:
     void toggleSqueezeDefaults(bool checked);
     void refreshView();
+    void resetSorting();
 };
 
 } // namespace gdxviewer

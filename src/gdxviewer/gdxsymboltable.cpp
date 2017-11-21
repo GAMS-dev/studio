@@ -11,6 +11,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
+    createSortIndex();
 
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
@@ -27,6 +28,8 @@ GdxSymbolTable::~GdxSymbolTable()
 {
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
+    if(mLabelCompIdx)
+        delete mLabelCompIdx;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -105,9 +108,26 @@ void GdxSymbolTable::loadGDXSymbols()
         if(type == GMS_DT_VAR)
             userInfo = gmsFixVarType(userInfo);
 
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText)));
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mLabelCompIdx));
     }
     locker.unlock();
+}
+
+//TODO (CW): refactor
+void GdxSymbolTable::createSortIndex()
+{
+    QList<QPair<QString, int>> l;
+    for(int uel=0; uel<=mUelCount; uel++)
+        l.append(QPair<QString, int>(mUel2Label.at(uel), uel));
+    std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+
+    mLabelCompIdx = new int[mUelCount+1];
+    int idx = 0;
+    for(QPair<QString, int> p : l)
+    {
+        mLabelCompIdx[p.second] = idx;
+        idx++;
+    }
 }
 
 void GdxSymbolTable::loadUel2Label()

@@ -2,13 +2,14 @@
 #include <memory>
 #include <QThread>
 #include <QtConcurrent>
+#include <QTime>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mLabelCompIdx(sortIndex)
 {
     // read domains
     mDomains.clear();
@@ -18,6 +19,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, 
     gdxSymbolGetDomainX(mGdx, mNr, Indx);
     for(int i=0; i<mDim; i++)
         mDomains.append(Indx[i]);
+    mRecSortIdx = new int[mRecordCount];
+    for(int i=0; i<mRecordCount; i++)
+        mRecSortIdx[i] = i;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -26,6 +30,8 @@ GdxSymbol::~GdxSymbol()
         delete mKeys;
     if (mValues)
         delete mValues;
+    if (mRecSortIdx)
+        delete mRecSortIdx;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -84,20 +90,21 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
     else if (role == Qt::DisplayRole)
     {
+        int row = mRecSortIdx[index.row()];
         if (index.column() < mDim)
-            return mUel2Label->at(mKeys[index.row()*mDim + index.column()]);
+            return mUel2Label->at(mKeys[row*mDim + index.column()]);
         else
         {
             double val;
             if (mType == GMS_DT_PAR)
-                val = mValues[index.row()];
+                val = mValues[row];
             else if (mType == GMS_DT_SET)
             {
-                val = mValues[index.row()];
+                val = mValues[row];
                 return mStrPool->at((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                val = mValues[index.row()*GMS_DT_MAX + (index.column()-mDim)];
+                val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
@@ -260,6 +267,24 @@ void GdxSymbol::calcDefaultColumns()
     }
 }
 
+Qt::SortOrder GdxSymbol::sortOrder() const
+{
+    return mSortOrder;
+}
+
+void GdxSymbol::resetSorting()
+{
+    for(int i=0; i<mRecordCount; i++)
+        mRecSortIdx[i] = i;
+    mSortColumn = -1;
+    layoutChanged();
+}
+
+int GdxSymbol::sortColumn() const
+{
+    return mSortColumn;
+}
+
 bool GdxSymbol::isAllDefault(int valColIdx)
 {
     if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
@@ -271,6 +296,88 @@ bool GdxSymbol::isAllDefault(int valColIdx)
 int GdxSymbol::subType() const
 {
     return mSubType;
+}
+
+/*
+ * Custom sorting algorithm that sorts by column using a stable sorting algorithm (std::stable_sort)
+ *
+ * mRecSortIdx maps a row index in the view to a row index in the data. This way the sorting is implemented
+ * without actually changing the order of the data itself but storing a mapping of row indexes
+ *
+ * mLabelCompIdx is used to map a UEL (int) to a specific number (int) which refelects the lexicographical
+ * order of label. This allows for better sorting performance since the compare functions only need to compare int
+ * instead of QString
+ */
+void GdxSymbol::sort(int column, Qt::SortOrder order)
+{
+    //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
+    if(column == mSortColumn && order == mSortOrder)
+        return;
+
+    QTime t;
+    t.start();
+
+    // sort by key column
+    if(column<mDim)
+    {
+        QList<QPair<int, int>> l;
+        for(int rec=0; rec<mRecordCount; rec++)
+            l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
+
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
+
+    //TODO(CW): make string pool sorting index like for uels for increasing sort speed on explanatory text
+    //sort set and alias by explanatory text
+    else if(mType == GMS_DT_SET || mType == GMS_DT_ALIAS)
+    {
+        QList<QPair<QString, int>> l;
+        for(int rec=0; rec<mRecordCount; rec++)
+            l.append(QPair<QString, int>(mStrPool->at(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
+
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
+
+    // sort parameter, variable and equation by value columns
+    else
+    {
+        QList<QPair<double, int>> l;
+        if(mType == GMS_DT_PAR)
+        {
+            for(int rec=0; rec<mRecordCount; rec++)
+                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]], mRecSortIdx[rec]));
+        }
+        else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        {
+            for(int rec=0; rec<mRecordCount; rec++)
+                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)], mRecSortIdx[rec]));
+        }
+
+        if(order == Qt::SortOrder::AscendingOrder)
+            std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first < b.first; });
+        else
+            std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first > b.first; });
+
+        for(int rec=0; rec< mRecordCount; rec++)
+            mRecSortIdx[rec] = l.at(rec).second;
+    }
+
+    mSortColumn = column;
+    mSortOrder = order;
+    qDebug() << "sorting elapsed: " << t.elapsed();
+    layoutChanged();
 }
 
 bool GdxSymbol::isLoaded() const
