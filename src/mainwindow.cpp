@@ -595,7 +595,7 @@ void MainWindow::openFile(const QString &filePath)
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history->lastOpenedFiles.size() > history->MAX_FILE_HISTORY) {
+    if (history->lastOpenedFiles.size() >= history->MAX_FILE_HISTORY) {
         history->lastOpenedFiles.removeLast();
     }
     if (!history->lastOpenedFiles.contains(filePath))

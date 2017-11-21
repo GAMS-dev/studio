@@ -307,7 +307,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Gists</string>
+        <string>Last Files</string>
        </property>
       </widget>
      </item>

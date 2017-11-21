@@ -36,6 +36,7 @@ class WelcomePage : public QWidget
 
 public:
     explicit WelcomePage(HistoryData *history, QWidget *parent = 0);
+    void historyChanged(HistoryData *history);
     ~WelcomePage();
 
 private slots:
