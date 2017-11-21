@@ -4,6 +4,9 @@
 #include <QtCore>
 #include<QComboBox>
 
+namespace gams {
+namespace studio {
+
 class CommandLineOption : public QComboBox
 {
     Q_OBJECT
@@ -30,4 +33,8 @@ private:
     QString mCurrentOption;
 };
 
+} // namespace studio
+} // namespace gams
+
 #endif // COMMANDLINEOPTION_H
+

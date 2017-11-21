@@ -291,6 +291,13 @@ void MainWindow::activeTabChanged(int index)
             mRecent.editor = edit;
             mRecent.group = fc->parentEntry();
         }
+        if (fc && !edit->isReadOnly()) {
+            mCommandLineOption->setDisabled(false);
+        } else {
+            mCommandLineOption->setDisabled(true);
+        }
+    }  else {
+        mCommandLineOption->setDisabled(true);
     }
 }
 
@@ -776,6 +783,11 @@ void MainWindow::on_runWithCommandLineOption(QString options)
 void MainWindow::on_actionRun_triggered()
 {
     execute(mCommandLineOption->getCurrentOption());
+}
+
+void MainWindow::on_actionRun_with_GDX_Creation_triggered()
+{
+    execute("GDX=default");
 }
 
 void MainWindow::on_actionCompile_triggered()

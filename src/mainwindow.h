@@ -99,6 +99,7 @@ private slots:
 
     // GAMS
     void on_actionRun_triggered();
+    void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     // About
     void on_actionOnline_Help_triggered();
