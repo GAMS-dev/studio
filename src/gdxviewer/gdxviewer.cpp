@@ -1,6 +1,7 @@
 #include "gdxviewer.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbol.h"
+#include "columnfilter.h"
 #include "exception.h"
 #include <memory>
 #include <QtConcurrent>
@@ -173,8 +174,7 @@ void GdxViewer::resetSorting()
 void GdxViewer::showColumnFilter(QPoint p)
 {
     QMenu* m = new QMenu(this);
-    m->addAction(new QAction("Action 1", this));
-    m->addAction(new QAction("Action 2", this));
+    m->addAction(new ColumnFilter(this));
     m->popup(ui.tableView->mapToGlobal(p));
 }
 

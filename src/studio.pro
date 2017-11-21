@@ -92,7 +92,9 @@ SOURCES += \
     textmark.cpp \
     commandlineoption.cpp \
     logger.cpp \
-    logcontext.cpp
+    logcontext.cpp \
+    gdxviewer/columnfilter.cpp \
+    gdxviewer/columnfilterframe.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -125,14 +127,17 @@ HEADERS += \
     textmark.h \
     commandlineoption.h \
     logger.h \
-    logcontext.h
+    logcontext.h \
+    gdxviewer/columnfilter.h \
+    gdxviewer/columnfilterframe.h
 
 FORMS += \
     welcomepage.ui  \
     mainwindow.ui   \
     newdialog.ui    \
     modeldialog/modeldialog.ui \
-    gdxviewer/gdxviewer.ui
+    gdxviewer/gdxviewer.ui \
+    gdxviewer/columnfilterframe.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API
