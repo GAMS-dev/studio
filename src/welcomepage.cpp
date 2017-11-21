@@ -49,7 +49,9 @@ void WelcomePage::historyChanged(HistoryData *history)
     QLabel *tmpLabel;
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
-        tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a>");
+        tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName()
+                              + "</a><br/>"
+                              + "<small>" + file.filePath() + "</small>");
         tmpLabel->setToolTip(file.filePath());
 
         connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
