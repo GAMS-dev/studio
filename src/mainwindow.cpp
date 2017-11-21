@@ -63,7 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionRun);
     mCommandLineOption = new CommandLineOption(this);
+    mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
+    connect(mCommandLineOption, &CommandLineOption::runWithChangedOption,
+            mCommandLineModel, &CommandLineModel::addOptionIntoCurrentContext );
     connect(mCommandLineOption, &CommandLineOption::runWithChangedOption, this, &MainWindow::on_runWithCommandLineOption);
 
     mCodecGroup = new QActionGroup(this);
@@ -292,11 +295,19 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
+            QStringList option = mCommandLineModel->getOptionsFor(fc->location());
+            mCommandLineOption->clear();
+            foreach(QString str, option) {
+                mCommandLineOption->insertItem(0, str );
+            }
+            mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setDisabled(false);
         } else {
+            mCommandLineOption->setCurrentIndex(-1);
             mCommandLineOption->setDisabled(true);
         }
     }  else {
+        mCommandLineOption->setCurrentIndex(-1);
         mCommandLineOption->setDisabled(true);
     }
 }
