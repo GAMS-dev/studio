@@ -286,8 +286,8 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
-            fileFilter << parGroup->additionalFiles();
 
+        fileFilter << parGroup->additionalFiles();
         QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries

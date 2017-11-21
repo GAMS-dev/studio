@@ -42,13 +42,11 @@ WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
 void WelcomePage::historyChanged(HistoryData *history)
 {
     int size = ui->layout_lastFiles->rowCount();
-    qDebug() << "size" << size;
     for (int i = 0; i < size; i++) {
         ui->layout_lastFiles->removeRow(0);
     }
 
     QLabel *tmpLabel;
-    qDebug() << "history->lastOpenedFiles.size()" << history->lastOpenedFiles.size();
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a>");
