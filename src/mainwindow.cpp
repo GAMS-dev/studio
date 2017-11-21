@@ -39,8 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow)
 {
     history = new HistoryData();
-    loadSettings();
     ui->setupUi(this);
+    loadSettings();
     setAcceptDrops(true);
 
     ui->projectView->setModel(mFileRepo.treeModel());
@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
@@ -553,10 +553,21 @@ void MainWindow::saveSettings()
         return;
     }
 
-    mAppSettings->beginGroup("uiState");
+    mAppSettings->beginGroup("mainWindow");
+    // window
     mAppSettings->setValue("size", size());
     mAppSettings->setValue("pos", pos());
+    mAppSettings->setValue("windowState", saveState());
 
+    mAppSettings->endGroup();
+    mAppSettings->beginGroup("viewMenu");
+    // tool-/menubar
+    mAppSettings->setValue("projectView", ui->actionProject_View->isChecked());
+    mAppSettings->setValue("outputView", ui->actionProject_View->isChecked());
+
+    mAppSettings->endGroup();
+    mAppSettings->beginGroup("history");
+    // history
     mAppSettings->beginWriteArray("lastOpenedFiles");
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -574,20 +585,31 @@ void MainWindow::loadSettings()
 
     qDebug() << "loading settings from" << mAppSettings->fileName();
 
-    mAppSettings->beginGroup("uiState");
+    mAppSettings->beginGroup("mainWindow");
+    // window
     resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    restoreState(mAppSettings->value("windowState").toByteArray());
 
+    mAppSettings->endGroup();
+    mAppSettings->beginGroup("viewMenu");
+    // tool-/menubar
+    setProjectViewVisibility(mAppSettings->value("projectView").toBool());
+    setOutputViewVisibility(mAppSettings->value("outputView").toBool());
+
+    mAppSettings->endGroup();
+    mAppSettings->beginGroup("history");
+    // history
     mAppSettings->beginReadArray("lastOpenedFiles");
     for (int i = 0; i < history->MAX_FILE_HISTORY; i++) {
         mAppSettings->setArrayIndex(i);
         history->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
 
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
     // TODO: add widget visibility, size, position, ...
-    mAppSettings->endGroup();
 }
 
 QStringList MainWindow::getOpenedFiles()
