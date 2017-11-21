@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "codeeditor.h"
+#include "commandlinemodel.h"
 #include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
@@ -138,6 +139,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
+    CommandLineModel* mCommandLineModel;
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

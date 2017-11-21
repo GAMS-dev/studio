@@ -90,6 +90,7 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
+    commandlinemodel.cpp \
     commandlineoption.cpp \
     logger.cpp \
     logcontext.cpp
@@ -123,6 +124,7 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
+    commandlinemodel.h \
     commandlineoption.h \
     logger.h \
     logcontext.h
