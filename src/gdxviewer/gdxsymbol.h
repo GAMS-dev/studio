@@ -54,6 +54,7 @@ public:
 
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 
+    void filterRows();
     int sortColumn() const;
 
     Qt::SortOrder sortOrder() const;
@@ -73,6 +74,7 @@ private:
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
+    int mFilterRecCount = 0;
 
     bool stopLoading = false;
 
@@ -93,9 +95,12 @@ private:
     void calcDefaultColumns();
     void calcUelsInColumn();
 
-    QList<QList<int>*> mUelsInColumn;
+    QList<QSet<int>*> mUelsInColumn;
+    QList<QSet<int>*> mFilterUels;
 
     int* mRecSortIdx = nullptr;
+    int* mRecFilterIdx = nullptr;
+
     int* mLabelCompIdx;
 
     int mSortColumn = -1;

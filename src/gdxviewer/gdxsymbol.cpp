@@ -24,6 +24,10 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, 
     mRecSortIdx = new int[mRecordCount];
     for(int i=0; i<mRecordCount; i++)
         mRecSortIdx[i] = i;
+
+    mRecFilterIdx = new int[mRecordCount];
+    for(int i=0; i<mRecordCount; i++)
+        mRecFilterIdx[i] = i;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -34,7 +38,11 @@ GdxSymbol::~GdxSymbol()
         delete mValues;
     if (mRecSortIdx)
         delete mRecSortIdx;
+    if (mRecFilterIdx)
+        delete mRecFilterIdx;
     for(auto s : mUelsInColumn)
+        delete s;
+    for(auto s : mFilterUels)
         delete s;
 }
 
@@ -73,7 +81,8 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mLoadedRecCount;
+    //return mLoadedRecCount;
+    return mFilterRecCount;
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
@@ -94,7 +103,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
     else if (role == Qt::DisplayRole)
     {
-        int row = mRecSortIdx[index.row()];
+        int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
             return mUel2Label->at(mKeys[row*mDim + index.column()]);
         else
@@ -205,6 +214,7 @@ void GdxSymbol::loadData()
 
             }
             mLoadedRecCount++;
+            mFilterRecCount = mLoadedRecCount;
             if(i%updateCount == 0)
             {
                 beginResetModel();
@@ -292,9 +302,11 @@ void GdxSymbol::calcUelsInColumn()
                 l.append(currentUel);
             }
         }
-        mUelsInColumn.append(new QList<int>(QSet<int>::fromList(l).toList()));
+        QSet<int> set = QSet<int>::fromList(l);
+        mUelsInColumn.append(new QSet<int>(set));
+        mFilterUels.append(new QSet<int>(set));
     }
-    qDebug() <<"uel: " << mUelsInColumn.at(0)->at(0);
+    mFilterUels.at(0)->remove(1);
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
@@ -408,6 +420,36 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     mSortOrder = order;
     qDebug() << "sorting elapsed: " << t.elapsed();
     layoutChanged();
+    filterRows();
+}
+
+void GdxSymbol::filterRows()
+{
+    qDebug() << "filterRows";
+
+
+    for(int i=0; i<mRecordCount; i++)
+        mRecFilterIdx[i] = i;
+
+    int removedCount = 0;
+
+    mFilterRecCount = mLoadedRecCount;
+    for(int row=0; row<mRecordCount; row++)
+    {
+        int recIdx = mRecSortIdx[row];
+        mRecFilterIdx[row-removedCount] = row;
+        for(int dim=0; dim<mDim; dim++)
+        {
+            if(mFilterUels.at(dim)->find(mKeys[recIdx*mDim + dim]) == mFilterUels.at(dim)->end()) //filter record
+            {
+                mFilterRecCount--;
+                removedCount++;
+                break;
+            }
+        }
+    }
+    beginResetModel();
+    endResetModel();
 }
 
 bool GdxSymbol::isLoaded() const

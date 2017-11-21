@@ -155,6 +155,7 @@ void GdxViewer::refreshView()
             ui.cbSqueezeDefaults->setEnabled(true);
         else
             ui.cbSqueezeDefaults->setEnabled(false);
+        selectedSymbol()->filterRows();
     }
     else
     {
