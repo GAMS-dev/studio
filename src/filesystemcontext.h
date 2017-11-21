@@ -66,6 +66,10 @@ public:
     /// \return Returns the file context type as <c>int</c>.
     int type() const;
 
+    /// \brief Checks if the node can be represented in a tab.
+    /// \return True, if the node can be represented in a tab.
+    bool canShowAsTab() const;
+
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
     virtual const QString caption();

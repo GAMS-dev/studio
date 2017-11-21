@@ -29,6 +29,7 @@ class QWidget;
 
 namespace gams {
 namespace studio {
+class TextMark;
 
 class LineNumberArea;
 
@@ -43,10 +44,6 @@ public:
     int lineNumberAreaWidth();
     void setIconSize(int size);
 
-public slots:
-    void clearLineIcons();
-    void addLineIcon(int line, const QIcon& icon);
-
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
@@ -59,6 +56,7 @@ protected:
 signals:
     void updateBlockSelection();
     void updateBlockEdit();
+    void requestMarkList(QHash<int, TextMark*>** marks);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

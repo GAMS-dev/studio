@@ -32,7 +32,7 @@ protected:
 
 private:
 
-    bool mBeforeErrorExtraction = true;
+    bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     QPair<int, QString> mCurrentErrorHint;
     QSet<FileContext*> mMarkedContextList;

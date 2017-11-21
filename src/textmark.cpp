@@ -68,8 +68,12 @@ void TextMark::jumpToRefMark()
 
 void TextMark::jumpToMark()
 {
-    if (mFileContext && !mCursor.isNull())
-        mFileContext->jumpTo(mCursor);
+    if (mFileContext) {
+        if (mCursor.isNull())
+            emit mFileContext->openOrShow(mFileContext);
+        else
+            mFileContext->jumpTo(mCursor);
+    }
 }
 
 void TextMark::showToolTip()

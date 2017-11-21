@@ -27,6 +27,8 @@
 namespace gams {
 namespace studio {
 
+class FileGroupContext;
+
 class AbstractProcess
         : public QObject
 {
@@ -49,10 +51,13 @@ public:
     QString inputFile() const;
 
     virtual void execute() = 0;
+    virtual FileGroupContext* context();
+    QProcess::ProcessState state() const;
 
 signals:
-    void finished(int exitCode);
+    void finished(AbstractProcess *process, int exitCode);
     void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
+    void  stateChanged(QProcess::ProcessState newState);
 
 protected slots:
     void completed(int exitCode);

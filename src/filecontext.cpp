@@ -151,14 +151,7 @@ void FileContext::addEditor(QPlainTextEdit* edit)
 void FileContext::addEditor(CodeEditor* edit)
 {
     addEditor(static_cast<QPlainTextEdit*>(edit));
-    connect(this, &FileContext::clearLineIcons, edit, &CodeEditor::clearLineIcons);
-    connect(this, &FileContext::setLineIcon, edit, &CodeEditor::addLineIcon);
-    if (!mTextMarks.isEmpty()) {
-        edit->clearLineIcons();
-        for (TextMark* mark: mTextMarks) {
-            edit->addLineIcon(mark->line(), mark->icon());
-        }
-    }
+    connect(edit, &CodeEditor::requestMarkList, this, &FileContext::shareMarkList);
 }
 
 void FileContext::editToTop(QPlainTextEdit* edit)
@@ -296,7 +289,7 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int li
     mTextMarks.insertMulti(line, res);
     markLink(res);
     if (!res->icon().isNull()) {
-        DEB() << "adding icon to " << name();
+        // TODO(JM) to early
         emit setLineIcon(line, res->icon());
     }
     return res;
@@ -439,6 +432,11 @@ void FileContext::updateMarks()
         mark->updateCursor();
         markLink(mark);
     }
+}
+
+void FileContext::shareMarkList(QHash<int, TextMark*>** marks)
+{
+    *marks = &mTextMarks;
 }
 
 void FileContext::onFileChangedExtern(QString filepath)

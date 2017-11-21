@@ -26,14 +26,15 @@ namespace gams {
 namespace studio {
 
 class FileGroupContext;
+class LogContext;
 
-class GAMSProcess
+class GamsProcess
         : public AbstractProcess
 {
     Q_OBJECT
 
 public:
-    GAMSProcess(QObject *parent = Q_NULLPTR);
+    GamsProcess(QObject *parent = Q_NULLPTR);
 
     QString app() override;
     QString nativeAppPath() override;
@@ -42,7 +43,8 @@ public:
     QString workingDir() const;
 
     void setContext(FileGroupContext *context);
-    FileGroupContext* context() const;
+    FileGroupContext* context();
+    LogContext* logContext() const;
 
     void execute() override;
 
@@ -56,6 +58,7 @@ private:
     QString mWorkingDir;
     QString mCommandLineStr;
     FileGroupContext *mContext = nullptr;
+    LogContext *mLogContext = nullptr;
 };
 
 } // namespace studio

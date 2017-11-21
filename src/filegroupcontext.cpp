@@ -21,6 +21,7 @@
 #include "filecontext.h"
 #include "logcontext.h"
 #include "exception.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
@@ -178,7 +179,28 @@ LogContext*FileGroupContext::logContext()
 //            return fc;
 //        }
 //    }
-//    return nullptr;
+    //    return nullptr;
+}
+
+GamsProcess*FileGroupContext::newGamsProcess()
+{
+    if (mGamsProcess)
+        EXCEPT() << "Cannot create process. This group already has an active process.";
+    mGamsProcess = new GamsProcess();
+    mGamsProcess->setContext(this);
+    connect(mGamsProcess, &GamsProcess::destroyed, this, &FileGroupContext::processDeleted);
+    connect(mGamsProcess, &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
+    return mGamsProcess;
+}
+
+GamsProcess*FileGroupContext::gamsProcess()
+{
+    return mGamsProcess;
+}
+
+QProcess::ProcessState FileGroupContext::gamsProcessState() const
+{
+    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
 int FileGroupContext::childCount()
@@ -234,6 +256,17 @@ void FileGroupContext::directoryChanged(const QString& path)
         return;
     }
     deleteLater();
+}
+
+void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
+{
+    emit gamsProcessStateChanged(this, newState);
+}
+
+void FileGroupContext::processDeleted()
+{
+    mGamsProcess = nullptr;
+    emit gamsProcessStateChanged(this, QProcess::NotRunning);
 }
 
 FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)

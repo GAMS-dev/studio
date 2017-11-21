@@ -20,51 +20,56 @@
 #include "gamsprocess.h"
 #include "gamspaths.h"
 #include "filegroupcontext.h"
-
+#include "logcontext.h"
 #include <QDebug>
 #include <QDir>
 
 namespace gams {
 namespace studio {
 
-const QString GAMSProcess::App = "gams";
+const QString GamsProcess::App = "gams";
 
-GAMSProcess::GAMSProcess(QObject *parent)
+GamsProcess::GamsProcess(QObject *parent)
     : AbstractProcess(parent)
 {
 }
 
-QString GAMSProcess::app()
+QString GamsProcess::app()
 {
     return App;
 }
 
-QString GAMSProcess::nativeAppPath()
+QString GamsProcess::nativeAppPath()
 {
     return AbstractProcess::nativeAppPath(mSystemDir, App);
 }
 
-void GAMSProcess::setWorkingDir(const QString &workingDir)
+void GamsProcess::setWorkingDir(const QString &workingDir)
 {
     mWorkingDir = workingDir;
 }
 
-QString GAMSProcess::workingDir() const
+QString GamsProcess::workingDir() const
 {
     return mWorkingDir;
 }
 
-void GAMSProcess::setContext(FileGroupContext *context)
+void GamsProcess::setContext(FileGroupContext *context)
 {
     mContext = context;
 }
 
-FileGroupContext* GAMSProcess::context() const
+FileGroupContext* GamsProcess::context()
 {
     return mContext;
 }
 
-void GAMSProcess::execute()
+LogContext*GamsProcess::logContext() const
+{
+    return mContext ? mContext->logContext() : nullptr;
+}
+
+void GamsProcess::execute()
 {
     qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
@@ -82,7 +87,7 @@ void GAMSProcess::execute()
     mProcess.start(nativeAppPath(), args);
 }
 
-QString GAMSProcess::aboutGAMS()
+QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QStringList args({"?", "lo=3"});
@@ -94,12 +99,12 @@ QString GAMSProcess::aboutGAMS()
     return about;
 }
 
-QString GAMSProcess::commandLineStr() const
+QString GamsProcess::commandLineStr() const
 {
     return mCommandLineStr;
 }
 
-void GAMSProcess::setCommandLineStr(const QString &commandLineStr)
+void GamsProcess::setCommandLineStr(const QString &commandLineStr)
 {
     mCommandLineStr = commandLineStr;
 }

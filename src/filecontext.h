@@ -133,7 +133,6 @@ signals:
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
     void openOrShow(FileContext* fileContext);
-    void clearLineIcons();
     void setLineIcon(int line, const QIcon& icon);
 
 protected slots:
@@ -143,6 +142,7 @@ protected slots:
     void modificationChanged(bool modiState);
 
     void updateMarks();
+    void shareMarkList(QHash<int, TextMark*>** marks);
 
 protected:
     friend class LogContext;

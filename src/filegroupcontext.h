@@ -27,6 +27,7 @@ namespace studio {
 
 class LogContext;
 class FileContext;
+class GamsProcess;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -49,15 +50,25 @@ public:
     void setWatched(bool watch = true);
     QString runableGms();
     QString lstFileName();
+    LogContext* logContext();
+
+    GamsProcess* newGamsProcess();
+    GamsProcess* gamsProcess();
+    QProcess::ProcessState gamsProcessState() const;
 
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
     void addAdditionalFile(const QString &additionalFile);
 signals:
     void contentChanged(int id, QDir fileInfo);
+    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
 
 public slots:
     void directoryChanged(const QString &path);
+
+protected slots:
+    void onGamsProcessStateChanged(QProcess::ProcessState newState);
+    void processDeleted();
 
 protected:
     friend class FileRepository;
@@ -69,7 +80,6 @@ protected:
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
-    LogContext* logContext();
     void setLogContext(LogContext* logContext);
 
 private:
@@ -77,6 +87,7 @@ private:
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
     LogContext* mLogContext = nullptr;
+    GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
 };
