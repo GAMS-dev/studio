@@ -314,6 +314,11 @@ QList<QSet<int> *> GdxSymbol::filterUels() const
     return mFilterUels;
 }
 
+QStringList *GdxSymbol::uel2Label() const
+{
+    return mUel2Label;
+}
+
 QList<QSet<int> *> GdxSymbol::uelsInColumn() const
 {
     return mUelsInColumn;

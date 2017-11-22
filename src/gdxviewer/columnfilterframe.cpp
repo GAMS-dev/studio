@@ -9,40 +9,33 @@ namespace studio {
 namespace gdxviewer {
 
 //TODO(CW): refactor
-ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *parent) :
-    QFrame(parent), mSymbol(symbol), mColumn(column)
+ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *parent)
+    :QFrame(parent), mSymbol(symbol), mColumn(column)
 {
     ui.setupUi(this);
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     QSet<int>* p = symbol->uelsInColumn().at(column);
 
-    for(int i=0; i<p->size(); i++)
-    {
-        int uel = p->values().at(i);
-        QListWidgetItem* item = new QListWidgetItem(QString::number(uel), ui.listWidget);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        if(symbol->filterUels().at(column)->find(uel) != symbol->filterUels().at(column)->end())
-            item->setCheckState(Qt::Checked);
-        else
-            item->setCheckState(Qt::Unchecked);
-    }
+    mModel = new FilterUelModel(symbol, column);
+    ui.lvLabels->setModel(mModel);
 }
 
 void ColumnFilterFrame::apply()
 {
     qDebug() << "apply";
-    for(int i=0; i<ui.listWidget->count(); i++)
+
+    for(int i=0; i<mModel->rowCount(); i++)
     {
-        QListWidgetItem* item = ui.listWidget->item(i);
-        if(item->checkState() == Qt::Checked)
+        int uel = mModel->uels()[i];
+        if(mModel->checked()[i])
         {
             qDebug() << "checked";
-            mSymbol->filterUels().at(mColumn)->insert(item->text().toInt());
+            mSymbol->filterUels().at(mColumn)->insert(uel);
         }
         else
         {
             qDebug() << "unchecked";
-            mSymbol->filterUels().at(mColumn)->remove(item->text().toInt());
+            mSymbol->filterUels().at(mColumn)->remove(uel);
         }
     }
     mSymbol->filterRows();

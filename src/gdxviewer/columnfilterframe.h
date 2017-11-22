@@ -3,6 +3,7 @@
 
 #include "ui_columnfilterframe.h"
 #include "gdxsymbol.h"
+#include "filteruelmodel.h"
 
 namespace gams {
 namespace studio {
@@ -19,8 +20,9 @@ private:
     Ui::ColumnFilterFrame ui;
     GdxSymbol* mSymbol;
     int mColumn;
+    FilterUelModel* mModel;
 
-public slots:
+private slots:
     void apply();
 };
 

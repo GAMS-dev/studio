@@ -94,7 +94,8 @@ SOURCES += \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
-    gdxviewer/columnfilterframe.cpp
+    gdxviewer/columnfilterframe.cpp \
+    gdxviewer/filteruelmodel.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -129,7 +130,8 @@ HEADERS += \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
-    gdxviewer/columnfilterframe.h
+    gdxviewer/columnfilterframe.h \
+    gdxviewer/filteruelmodel.h
 
 FORMS += \
     welcomepage.ui  \

@@ -65,6 +65,8 @@ public:
 
     QList<QSet<int> *> filterUels() const;
 
+    QStringList *uel2Label() const;
+
 private:
     int mNr;
     QString mName;
