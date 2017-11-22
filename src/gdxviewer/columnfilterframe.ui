@@ -34,6 +34,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="pbSelectAll">
+     <property name="text">
+      <string>Select All</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="pbApply">
      <property name="text">
       <string>Apply</string>

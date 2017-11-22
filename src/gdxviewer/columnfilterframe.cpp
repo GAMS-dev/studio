@@ -14,6 +14,8 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
 {
     ui.setupUi(this);
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
+    connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
+
     mModel = new FilterUelModel(symbol, column);
     ui.lvLabels->setModel(mModel);
 }
@@ -29,6 +31,12 @@ void ColumnFilterFrame::apply()
     }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
+}
+
+void ColumnFilterFrame::selectAll()
+{
+    for(int row=0; row<mModel->rowCount(); row++)
+        mModel->setData(mModel->index(row,0), true, Qt::CheckStateRole);
 }
 
 } // namespace gdxviewer

@@ -75,6 +75,8 @@ bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, in
 {
     if (role==Qt::CheckStateRole)
         mChanged.insert(mfilterUels->keys().at(index.row()), value.toBool());
+
+    dataChanged(index, index, QVector<int>(Qt::CheckStateRole));
     return true;
 }
 
