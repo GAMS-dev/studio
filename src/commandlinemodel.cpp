@@ -6,37 +6,65 @@ namespace studio {
 CommandLineModel::CommandLineModel(QWidget* parent):
     QWidget(parent)
 {
+    mHistorySize = 20;
 }
 
 CommandLineModel::~CommandLineModel()
 {
-    mOptions.clear();
+    mHistory.clear();
+}
+
+void CommandLineModel::setHistory(QString context, QStringList history)
+{
+    mHistory[context] = history;
+}
+
+void CommandLineModel::addIntoCurrentContextHistory(QString option)
+{
+    if (option.simplified().isEmpty())
+        return;
+
+    if (mHistory.contains(mCurrentContext)) {
+        QStringList list = mHistory[mCurrentContext].filter(option.simplified());
+        if (list.size() > 0) {
+            mHistory[mCurrentContext].removeOne(option.simplified());
+        }
+
+        if (mHistory[mCurrentContext].size() >= mHistorySize) {
+            mHistory[mCurrentContext].removeFirst();
+        }
+        mHistory[mCurrentContext].append(option.simplified());
+    }
+}
+
+int CommandLineModel::getHistorySize() const
+{
+    return mHistorySize;
+}
+
+void CommandLineModel::setHistorySize(int historySize)
+{
+    mHistorySize = historySize;
+}
+
+QMap<QString, QStringList> CommandLineModel::getAllHistory() const
+{
+    return mHistory;
+}
+
+QStringList CommandLineModel::getHistoryFor(QString context)
+{
+    setContext(context);
+    return mHistory[mCurrentContext];
 }
 
 void CommandLineModel::setContext(QString context)
 {
     mCurrentContext = context;
-    if (!mOptions.contains(mCurrentContext)) {
+    if (!mHistory.contains(mCurrentContext)) {
         QStringList strList;
-        mOptions[mCurrentContext] = strList;
+        mHistory[mCurrentContext] = strList;
     }
-}
-
-void CommandLineModel::addOptionIntoCurrentContext(QString option)
-{
-    if (mOptions.contains(mCurrentContext)) {
-        QStringList list = mOptions[mCurrentContext].filter(option);
-        if (list.size()>0) {
-            mOptions[mCurrentContext].removeOne(option);
-        }
-        mOptions[mCurrentContext].append(option);
-    }
-}
-
-QStringList CommandLineModel::getOptionsFor(QString context)
-{
-    setContext(context);
-    return mOptions[mCurrentContext];
 }
 
 } // namespace studio

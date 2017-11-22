@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
     connect(mCommandLineOption, &CommandLineOption::runWithChangedOption,
-            mCommandLineModel, &CommandLineModel::addOptionIntoCurrentContext );
+            mCommandLineModel, &CommandLineModel::addIntoCurrentContextHistory );
     connect(mCommandLineOption, &CommandLineOption::runWithChangedOption, this, &MainWindow::on_runWithCommandLineOption);
 
     mCodecGroup = new QActionGroup(this);
@@ -295,10 +295,10 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
-            QStringList option = mCommandLineModel->getOptionsFor(fc->location());
+            QStringList option = mCommandLineModel->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
-                mCommandLineOption->insertItem(0, str );
+                mCommandLineOption->insertItem(0, str);
             }
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setDisabled(false);
@@ -816,7 +816,8 @@ void MainWindow::on_runWithCommandLineOption(QString options)
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute(mCommandLineOption->getCurrentOption());
+    // forward signal with additional current command line parameter
+    emit mCommandLineOption->runWithChangedOption(mCommandLineOption->getCurrentOption());
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()

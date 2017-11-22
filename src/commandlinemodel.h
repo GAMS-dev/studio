@@ -13,16 +13,23 @@ public:
     CommandLineModel(QWidget* parent=0);
     ~CommandLineModel();
 
-    QStringList getOptionsFor(QString context);
-    void setContext(QString context);
+    QStringList getHistoryFor(QString context);
+    void setHistory(QString context, QStringList history);
+
+    QMap<QString, QStringList> getAllHistory() const;
+
+    int getHistorySize() const;
+    void setHistorySize(int historySize);
 
 public slots:
-    void addOptionIntoCurrentContext(QString option);
+    void addIntoCurrentContextHistory(QString option);
 
 private:
+    QMap<QString, QStringList> mHistory;
     QString mCurrentContext;
-    QMap<QString, QStringList> mOptions;
+    int mHistorySize;
 
+    void setContext(QString context);
 };
 
 } // namespace studio

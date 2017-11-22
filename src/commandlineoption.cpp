@@ -19,13 +19,13 @@ CommandLineOption::CommandLineOption(QWidget* parent) : QComboBox(parent)
 
 void CommandLineOption::updateCurrentOption(QString text)
 {
-    mCurrentOption = text;
+    mCurrentOption = text.simplified();
 }
 
 void CommandLineOption::validateChangedOption(QString text)
 {
     // TODO: validate option key and value against optgams.def
-    mCurrentOption = text;
+    mCurrentOption = text.simplified();
 }
 
 QString CommandLineOption::getCurrentOption() const
