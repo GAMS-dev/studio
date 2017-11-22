@@ -563,7 +563,7 @@ void MainWindow::saveSettings()
         qDebug() << "ERROR: settings file missing.";
         return;
     }
-
+    // Main Application Settings
     mAppSettings->beginGroup("mainWindow");
     // window
     mAppSettings->setValue("size", size());
@@ -586,6 +586,15 @@ void MainWindow::saveSettings()
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+
+    // User Settings
+    mUserSettings->beginGroup("General");
+    // todo
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Editor");
+    // todo
+    mUserSettings->endGroup();
+
     mAppSettings->sync();
 }
 
@@ -619,8 +628,20 @@ void MainWindow::loadSettings()
     mAppSettings->endArray();
     mAppSettings->endGroup();
 
+
+    if (mUserSettings == nullptr)
+        mUserSettings = new QSettings("GAMS", "Studio-User");
+
+    mUserSettings->beginGroup("General");
+    // todo
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Editor");
+    // todo
+    mUserSettings->endGroup();
+
+    qDebug() << "loading user settings from" << mUserSettings->fileName();
+
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
-    // TODO: add widget visibility, size, position, ...
 }
 
 QStringList MainWindow::getOpenedFiles()
