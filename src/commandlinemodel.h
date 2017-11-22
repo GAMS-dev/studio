@@ -11,6 +11,7 @@ class CommandLineModel : public QWidget
     Q_OBJECT
 public:
     CommandLineModel(QWidget* parent=0);
+    CommandLineModel(QMap<QString, QStringList> map);
     ~CommandLineModel();
 
     QStringList getOptionsFor(QString context);
@@ -18,6 +19,8 @@ public:
 
 public slots:
     void addOptionIntoCurrentContext(QString option);
+    void setAllOptions(QMap<QString, QStringList> opts);
+    QMap<QString, QStringList> allOptions();
 
 private:
     QString mCurrentContext;

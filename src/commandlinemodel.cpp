@@ -8,6 +8,11 @@ CommandLineModel::CommandLineModel(QWidget* parent):
 {
 }
 
+CommandLineModel::CommandLineModel(QMap<QString, QStringList> map)
+{
+    setAllOptions(map);
+}
+
 CommandLineModel::~CommandLineModel()
 {
     mOptions.clear();
@@ -31,6 +36,16 @@ void CommandLineModel::addOptionIntoCurrentContext(QString option)
         }
         mOptions[mCurrentContext].append(option);
     }
+}
+
+void CommandLineModel::setAllOptions(QMap<QString, QStringList> opts)
+{
+    mOptions = opts;
+}
+
+QMap<QString, QStringList> CommandLineModel::allOptions()
+{
+    return mOptions;
 }
 
 QStringList CommandLineModel::getOptionsFor(QString context)

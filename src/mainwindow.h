@@ -74,6 +74,9 @@ public:
     HistoryData *history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
+    void setCommandLineModel(CommandLineModel* opt);
+    CommandLineModel* commandLineModel();
+
 
 private slots:
     void codecChanged(QAction *action);

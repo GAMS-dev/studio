@@ -60,8 +60,6 @@ MainWindow::MainWindow(QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mSettings->loadSettings();
-    initTabs();
 
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionRun);
@@ -84,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
 
+    mSettings->loadSettings();
+    initTabs();
 }
 
 MainWindow::~MainWindow()
@@ -176,6 +176,16 @@ bool MainWindow::projectViewVisibility()
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility);
+}
+
+void MainWindow::setCommandLineModel(CommandLineModel* opt)
+{
+    mCommandLineModel = opt;
+}
+
+CommandLineModel* MainWindow::commandLineModel()
+{
+    return mCommandLineModel;
 }
 
 HistoryData* MainWindow::history()
