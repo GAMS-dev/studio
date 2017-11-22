@@ -42,7 +42,8 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
-    void setIconSize(int size);
+    int iconSize();
+    LineNumberArea* lineNumberArea();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -57,7 +58,8 @@ protected:
 signals:
     void updateBlockSelection();
     void updateBlockEdit();
-    void requestMarkList(QHash<int, TextMark*>** marks);
+    void requestMarkHash(QHash<int, TextMark*>* marks);
+    void requestMarksEmpty(bool* marksEmpty);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -89,12 +91,6 @@ public:
     QHash<int, QIcon> &icons() {
         return mIcons;
     }
-    void setIconSize(int size) {
-        mIconSize = size;
-    }
-    int iconSize() const {
-        return mIconSize;
-    }
 
 protected:
     void paintEvent(QPaintEvent *event) override {
@@ -104,7 +100,6 @@ protected:
 private:
     CodeEditor *mCodeEditor;
     QHash<int, QIcon> mIcons;
-    int mIconSize = 14;
 
 };
 

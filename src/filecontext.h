@@ -142,7 +142,8 @@ protected slots:
     void modificationChanged(bool modiState);
 
     void updateMarks();
-    void shareMarkList(QHash<int, TextMark*>** marks);
+    void shareMarkHash(QHash<int, TextMark*>* marks);
+    void textMarksEmpty(bool *empty);
 
 protected:
     friend class LogContext;
@@ -163,8 +164,9 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QHash<int, TextMark*> mTextMarks;
-    bool mMouseOverLink = false;
+    QList<TextMark*> mTextMarks;
+    bool mMouseOverTextLink = false;
+    bool mMouseOverIconLink = false;
 
     static const QStringList mDefaulsCodecs;
 

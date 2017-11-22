@@ -117,7 +117,7 @@ int TextMark::line() const
 {
     if (mCursor.isNull())
         return mLine;
-    return mCursor.block().userState();
+    return mCursor.block().blockNumber();
 }
 
 QTextBlock TextMark::textBlock()

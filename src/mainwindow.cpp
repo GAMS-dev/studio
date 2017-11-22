@@ -76,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openOrShowContext, this, &MainWindow::openOrShowContext);
+    connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
@@ -113,18 +114,19 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
             QTextCursor tc = codeEdit->textCursor();
-            tc.movePosition(QTextCursor::Start);
-            codeEdit->setTextCursor(tc);
             fc->load(codecName);
 
-            if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+            if (fc->metrics().fileType() == FileType::Log
+                || fc->metrics().fileType() == FileType::Lst
+                || fc->metrics().fileType() == FileType::Lxi) {  // TODO: add .ref ?
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
+            tc.movePosition(QTextCursor::Start);
+            codeEdit->setTextCursor(tc);
 
         } else {
             tabIndex = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), fc->caption());
@@ -164,10 +166,16 @@ void MainWindow::setProjectViewVisibility(bool visibility)
     ui->actionProject_View->setChecked(visibility);
 }
 
-void MainWindow::gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState)
+void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
-    Q_UNUSED(newState);
     if (mRecent.group == group) updateRunState();
+}
+
+void MainWindow::updateRunState()
+{
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState()
+                                                 : QProcess::NotRunning;
+    ui->actionRun->setEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -801,12 +809,6 @@ void MainWindow::execute(QString commandLineStr)
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &LogContext::addProcessData);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
-}
-
-void MainWindow::updateRunState()
-{
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    ui->actionRun->setEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_runWithCommandLineOption(QString options)

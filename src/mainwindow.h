@@ -83,7 +83,7 @@ private slots:
     // View
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
-    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 private slots:
     // File

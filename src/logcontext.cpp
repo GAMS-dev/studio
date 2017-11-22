@@ -182,8 +182,10 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         state = Outside;
                         break;
                     }
-                    if (errMark)
+                    if (errMark) {
                         mark.textMark->setRefMark(errMark);
+                        errMark->setRefMark(mark.textMark);
+                    }
                     marks << mark;
                 } else if (part.startsWith("FIL")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(8));

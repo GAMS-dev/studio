@@ -61,7 +61,7 @@ public:
     void addAdditionalFile(const QString &additionalFile);
 signals:
     void contentChanged(int id, QDir fileInfo);
-    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void directoryChanged(const QString &path);
@@ -81,6 +81,7 @@ protected:
     void removeChild(FileSystemContext *child);
     void checkFlags();
     void setLogContext(LogContext* logContext);
+    void updateRunState(const QProcess::ProcessState &state);
 
 private:
     QList<FileSystemContext*> mChildList;

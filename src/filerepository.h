@@ -132,6 +132,7 @@ signals:
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
     void openOrShowContext(FileContext* fileContext);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void nodeChanged(int fileId);

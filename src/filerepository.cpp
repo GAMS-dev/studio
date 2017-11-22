@@ -175,6 +175,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     mTreeModel->insertChild(offset, groupContext(parentIndex), fgContext);
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+    connect(fgContext, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
     fgContext->setWatched();
     updateActions();
     return fgContext;

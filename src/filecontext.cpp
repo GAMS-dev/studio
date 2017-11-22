@@ -151,7 +151,8 @@ void FileContext::addEditor(QPlainTextEdit* edit)
 void FileContext::addEditor(CodeEditor* edit)
 {
     addEditor(static_cast<QPlainTextEdit*>(edit));
-    connect(edit, &CodeEditor::requestMarkList, this, &FileContext::shareMarkList);
+    connect(edit, &CodeEditor::requestMarkHash, this, &FileContext::shareMarkHash);
+    connect(edit, &CodeEditor::requestMarksEmpty, this, &FileContext::textMarksEmpty);
 }
 
 void FileContext::editToTop(QPlainTextEdit* edit)
@@ -279,7 +280,7 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int li
     TextMark* res = new TextMark(tmType);
     res->setPosition(this, line, column, size);
     res->setValue(value);
-    mTextMarks.insertMulti(line, res);
+    mTextMarks << res;
     markLink(res);
     if (!res->icon().isNull()) {
         // TODO(JM) to early
@@ -329,16 +330,14 @@ void FileContext::removeTextMarks(TextMark::Type tmType)
 
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
-    QHash<int, TextMark*>::iterator i = mTextMarks.begin();
-    while (i != mTextMarks.end()) {
-        if (tmTypes.contains(i.value()->type()) || tmTypes.contains(TextMark::all)) {
-            TextMark* tm = i.value();
-            i = mTextMarks.erase(i);
-            delete tm;
-        } else {
-            ++i;
-        }
+    int i = mTextMarks.size();
+    while (i > 0) {
+        --i;
+        TextMark* tm = mTextMarks.at(i);
+        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all))
+            delete mTextMarks.takeAt(i);
     }
+
     for (QPlainTextEdit* ed: mEditors) {
         ed->update(); // trigger delayed repaint
     }
@@ -360,7 +359,8 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     if (evCheckKey.contains(event->type())) {
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMouseOverLink ? Qt::PointingHandCursor : Qt::IBeamCursor);
+            mEditors.first()->viewport()->setCursor(mMouseOverTextLink ||mMouseOverIconLink
+                                                    ? Qt::PointingHandCursor : Qt::IBeamCursor);
         } else {
             mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
@@ -373,29 +373,64 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
                 ? static_cast<QHelpEvent*>(event)->pos()
                 : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        if (event->type() == QEvent::MouseMove) {
-            if (cursor.charFormat().isAnchor()) {
-                mMouseOverLink = true;
-                bool ctrl = true; //QApplication::keyboardModifiers() & Qt::ControlModifier;
-                edit->viewport()->setCursor(ctrl ? Qt::PointingHandCursor : Qt::IBeamCursor);
-            } else {
-                mMouseOverLink = false;
-                edit->viewport()->setCursor(Qt::IBeamCursor);
+
+        // TODO(JM) use the textcursor to request the line
+        DEB() << "## Sender: " << watched->objectName();
+        CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
+        bool linkFromText = true;
+        TextMark* iconMark = nullptr;
+        if (codeEdit) {
+            int line = cursor.blockNumber();
+            for (TextMark* mark: mTextMarks) {
+                if (mark->line() == line) {
+                    iconMark = mark;
+                    linkFromText = (mark->type() != TextMark::error && codeEdit->lineNumberAreaWidth() > pos.x());
+                    mMouseOverIconLink = !linkFromText;
+
+                }
+                if (mark->line() >= line) {
+                    break;
+                }
             }
-        } else if (event->type() == QEvent::MouseButtonPress) {
+        }
+
+        if (event->type() == QEvent::MouseMove) {
+            if (cursor.charFormat().isAnchor() || iconMark) {
+                mMouseOverTextLink = linkFromText;
+                bool ctrl = true; //QApplication::keyboardModifiers() & Qt::ControlModifier;
+                if (linkFromText)
+                    edit->viewport()->setCursor(ctrl ? Qt::PointingHandCursor : Qt::IBeamCursor);
+                if (iconMark)
+                    codeEdit->lineNumberArea()->setCursor(Qt::PointingHandCursor);
+            } else {
+                mMouseOverTextLink = false;
+                mMouseOverIconLink = false;
+                edit->viewport()->setCursor(Qt::IBeamCursor);
+                if (codeEdit)
+                    codeEdit->lineNumberArea()->setCursor(Qt::ArrowCursor);
+            }
+        } else if (event->type() == QEvent::MouseButtonPress && (mMouseOverTextLink || mMouseOverIconLink)) {
             clickPos = pos;
-        } else if (event->type() == QEvent::MouseButtonRelease) {
+        } else if (event->type() == QEvent::MouseButtonRelease && (mMouseOverTextLink || mMouseOverIconLink)) {
             if ((clickPos-pos).manhattanLength() < 4) {
-                for (TextMark* mark: mTextMarks.values(cursor.block().blockNumber())) {
-                    if (mark->inColumn(cursor.positionInBlock())) {
+                if (iconMark) {
+                    iconMark->jumpToRefMark();
+                    return true;
+                }
+                for (TextMark* mark: mTextMarks) {
+                    if (mark->line() == cursor.block().blockNumber()) {
                         mark->jumpToRefMark();
                         return true;
                     }
                 }
             }
         } else if (event->type() == QEvent::ToolTip) {
-            for (TextMark* mark: mTextMarks.values(cursor.block().blockNumber())) {
-                if (mark->inColumn(cursor.positionInBlock())) {
+            if (iconMark) {
+                iconMark->showToolTip();
+                return true;
+            }
+            for (TextMark* mark: mTextMarks) {
+                if (mark->line() == cursor.block().blockNumber()) {
                     mark->showToolTip();
                     return true;
                 }
@@ -407,7 +442,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
 bool FileContext::mouseOverLink()
 {
-    return mMouseOverLink;
+    return mMouseOverTextLink;
 }
 
 void FileContext::modificationChanged(bool modiState)
@@ -424,9 +459,16 @@ void FileContext::updateMarks()
     }
 }
 
-void FileContext::shareMarkList(QHash<int, TextMark*>** marks)
+void FileContext::shareMarkHash(QHash<int, TextMark*>* marks)
 {
-    *marks = &mTextMarks;
+    for (TextMark* mark: mTextMarks) {
+        marks->insert(mark->line(), mark);
+    }
+}
+
+void FileContext::textMarksEmpty(bool* empty)
+{
+    *empty = mTextMarks.isEmpty();
 }
 
 void FileContext::onFileChangedExtern(QString filepath)
