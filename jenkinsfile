@@ -101,12 +101,11 @@ pipeline {
 
                             # collect files
                             cp bin/studio appdir/usr/bin/
-                            #cp gamsstudio.desktop appdir/
-                            mkdir -p appdir/usr/share/icons/hicolor/scalable/
-                            cp icons/* appdir/usr/share/icons/hicolor/scalable/
+                            cp gamsstudio.desktop appdir/
+                            cp icons/* appdir/
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations -verbose=3
+                            ./linuxdeployqt-continuous-x86_64.AppImage gamsstudio.desktop -appimage -bundle-non-qt-libs -no-translations
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
