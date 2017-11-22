@@ -42,9 +42,8 @@ WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
 void WelcomePage::historyChanged(HistoryData *history)
 {
     int size = ui->layout_lastFiles->rowCount();
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
         ui->layout_lastFiles->removeRow(0);
-    }
 
     QLabel *tmpLabel;
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
@@ -55,10 +54,9 @@ void WelcomePage::historyChanged(HistoryData *history)
                                   + "</a><br/>"
                                   + "<small>" + file.filePath() + "</small>");
             tmpLabel->setToolTip(file.filePath());
-
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
-            tmpLabel = new QLabel(file.fileName() + " (File missing!)<br/><small>" + file.filePath() + "</small>");
+            tmpLabel = new QLabel(file.fileName() + " (File missing!)<br/><small>" + file.canonicalPath() + "</small>");
         }
         ui->layout_lastFiles->addWidget(tmpLabel);
     }

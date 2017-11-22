@@ -7,7 +7,6 @@ namespace studio {
 StudioSettings::StudioSettings(MainWindow *main)
     : mMain(main)
 {
-    //
 }
 
 void StudioSettings::saveSettings()
