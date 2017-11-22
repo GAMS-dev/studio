@@ -17,8 +17,6 @@ FilterUelModel::~FilterUelModel()
 {
     if (mUels)
         delete mUels;
-    if (mChecked)
-        delete mChecked;
 }
 
 QVariant FilterUelModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -32,7 +30,6 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
-    qDebug() << "rowCount: " << mSymbol->filterUels().at(mColumn)->count();
     return mSymbol->filterUels().at(mColumn)->count();
 
 }
@@ -51,6 +48,13 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
     }
     else if(role == Qt::CheckStateRole)
     {
+        if(mChanged.find(mfilterUels->keys().at(index.row())) != mChanged.end())
+        {
+            if(mChanged.find( mfilterUels->keys().at(index.row())).value())
+                return Qt::Checked;
+            else
+                return Qt::Unchecked;
+        }
         if (mfilterUels->values().at(index.row()))
             return Qt::Checked;
         else
@@ -70,7 +74,7 @@ Qt::ItemFlags FilterUelModel::flags(const QModelIndex &index) const
 bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role==Qt::CheckStateRole)
-        mChecked[index.row()] = value.toBool();
+        mChanged.insert(mfilterUels->keys().at(index.row()), value.toBool());
     return true;
 }
 
@@ -79,9 +83,9 @@ int *FilterUelModel::uels() const
     return mUels;
 }
 
-bool *FilterUelModel::checked() const
+QMap<int, bool> FilterUelModel::changed() const
 {
-    return mChecked;
+    return mChanged;
 }
 
 } // namespace gdxviewer

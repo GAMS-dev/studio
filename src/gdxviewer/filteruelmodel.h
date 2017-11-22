@@ -30,12 +30,12 @@ public:
 
     int *uels() const;
 
-    bool *checked() const;
+    QMap<int, bool> changed() const;
 
 private:
     GdxSymbol* mSymbol;
     int* mUels;
-    bool* mChecked;
+    QMap<int, bool> mChanged;
     int mColumn;
     QMap<int, bool>* mfilterUels;
 

@@ -22,19 +22,10 @@ void ColumnFilterFrame::apply()
 {
     qDebug() << "apply";
 
-    for(int i=0; i<mModel->rowCount(); i++)
+    for(int i=0; i<mModel->changed().count(); i++)
     {
-        int uel = mModel->uels()[i];
-        if(mModel->checked()[i])
-        {
-            qDebug() << "checked";
-            mSymbol->filterUels().at(mColumn)->insert(uel, true);
-        }
-        else
-        {
-            qDebug() << "unchecked";
-            mSymbol->filterUels().at(mColumn)->insert(uel, false);
-        }
+        qDebug() << "checked";
+        mSymbol->filterUels().at(mColumn)->insert(mModel->changed().keys().at(i), mModel->changed().values().at(i));
     }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
