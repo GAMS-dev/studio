@@ -94,7 +94,8 @@ SOURCES += \
     commandlineoption.cpp \
     logger.cpp \
     logcontext.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    studiosettings.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -129,7 +130,8 @@ HEADERS += \
     commandlineoption.h \
     logger.h \
     logcontext.h \
-    settingsdialog.h
+    settingsdialog.h \
+    studiosettings.h
 
 FORMS += \
     welcomepage.ui  \

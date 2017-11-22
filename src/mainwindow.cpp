@@ -30,6 +30,7 @@
 #include "gamslibprocess.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
@@ -38,9 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    history = new HistoryData();
+    mHistory = new HistoryData();
+    mSettings = new StudioSettings(this);
+
     ui->setupUi(this);
-    loadSettings();
     setAcceptDrops(true);
 
     ui->projectView->setModel(mFileRepo.treeModel());
@@ -154,14 +156,29 @@ void MainWindow::ensureCodecMenu(QString codecName)
     }
 }
 
+bool MainWindow::outputViewVisibility()
+{
+    return ui->actionOutput_View->isChecked();
+}
+
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
     ui->actionOutput_View->setChecked(visibility);
 }
 
+bool MainWindow::projectViewVisibility()
+{
+    return ui->actionProject_View->isChecked();
+}
+
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility);
+}
+
+HistoryData* MainWindow::history()
+{
+    return mHistory;
 }
 
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState)
@@ -492,7 +509,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        wp = nullptr;
+        mWp = nullptr;
         return;
     }
 
@@ -521,14 +538,14 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::createWelcomePage()
 {
-    wp = new WelcomePage(history);
-    ui->mainTab->insertTab(0, wp, QString("Welcome")); // always first position
-    connect(wp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    mWp = new WelcomePage(mHistory);
+    ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
+    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(wp == nullptr)
+    if(mWp == nullptr)
         createWelcomePage();
     ui->mainTab->setCurrentIndex(0);
 }
@@ -557,96 +574,9 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::saveSettings()
+QStringList MainWindow::openedFiles()
 {
-    if (mAppSettings == nullptr) {
-        qDebug() << "ERROR: settings file missing.";
-        return;
-    }
-    // Main Application Settings
-    mAppSettings->beginGroup("mainWindow");
-    // window
-    mAppSettings->setValue("size", size());
-    mAppSettings->setValue("pos", pos());
-    mAppSettings->setValue("windowState", saveState());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("viewMenu");
-    // tool-/menubar
-    mAppSettings->setValue("projectView", ui->actionProject_View->isChecked());
-    mAppSettings->setValue("outputView", ui->actionProject_View->isChecked());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("history");
-    // history
-    mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("file", history->lastOpenedFiles.at(i));
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-    // User Settings
-    mUserSettings->beginGroup("General");
-    // todo
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-    // todo
-    mUserSettings->endGroup();
-
-    mAppSettings->sync();
-}
-
-void MainWindow::loadSettings()
-{
-    if (mAppSettings == nullptr)
-        mAppSettings = new QSettings("GAMS", "Studio");
-
-    qDebug() << "loading settings from" << mAppSettings->fileName();
-
-    mAppSettings->beginGroup("mainWindow");
-    // window
-    resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
-    move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
-    restoreState(mAppSettings->value("windowState").toByteArray());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("viewMenu");
-    // tool-/menubar
-    setProjectViewVisibility(mAppSettings->value("projectView").toBool());
-    setOutputViewVisibility(mAppSettings->value("outputView").toBool());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("history");
-    // history
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < history->MAX_FILE_HISTORY; i++) {
-        mAppSettings->setArrayIndex(i);
-        history->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-
-    if (mUserSettings == nullptr)
-        mUserSettings = new QSettings("GAMS", "Studio-User");
-
-    mUserSettings->beginGroup("General");
-    // todo
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-    // todo
-    mUserSettings->endGroup();
-
-    qDebug() << "loading user settings from" << mUserSettings->fileName();
-
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
-}
-
-QStringList MainWindow::getOpenedFiles()
-{
-    return history->lastOpenedFiles;
+    return mHistory->lastOpenedFiles;
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -656,15 +586,15 @@ void MainWindow::openFile(const QString &filePath)
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history->lastOpenedFiles.size() >= history->MAX_FILE_HISTORY) {
-        history->lastOpenedFiles.removeLast();
+    if (mHistory->lastOpenedFiles.size() >= mHistory->MAX_FILE_HISTORY) {
+        mHistory->lastOpenedFiles.removeLast();
     }
-    if (!history->lastOpenedFiles.contains(filePath))
-        history->lastOpenedFiles.insert(0, filePath);
+    if (!mHistory->lastOpenedFiles.contains(filePath))
+        mHistory->lastOpenedFiles.insert(0, filePath);
     else
-        history->lastOpenedFiles.move(history->lastOpenedFiles.indexOf(filePath), 0);
+        mHistory->lastOpenedFiles.move(mHistory->lastOpenedFiles.indexOf(filePath), 0);
 
-    wp->historyChanged(history);
+    mWp->historyChanged(mHistory);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -737,7 +667,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->setAccepted(false);
         }
     }
-    saveSettings();
+    mSettings->saveSettings();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
