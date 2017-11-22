@@ -1,7 +1,6 @@
 #include "columnfilter.h"
 #include "columnfilterframe.h"
 
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {

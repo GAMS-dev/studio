@@ -2,6 +2,7 @@
 
 #include <QSet>
 #include <QDebug>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -24,7 +25,6 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
             item->setCheckState(Qt::Checked);
         else
             item->setCheckState(Qt::Unchecked);
-
     }
 }
 
@@ -46,6 +46,7 @@ void ColumnFilterFrame::apply()
         }
     }
     mSymbol->filterRows();
+    static_cast<QMenu*>(this->parent())->close();
 }
 
 } // namespace gdxviewer
