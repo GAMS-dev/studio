@@ -6,11 +6,13 @@
 namespace gams {
 namespace studio {
 
-class CommandLineModel : public QWidget
+class CommandLineModel : public QObject
 {
     Q_OBJECT
+
 public:
-    CommandLineModel(QWidget* parent=0);
+    CommandLineModel(int initialHistorySize = 20);
+
     ~CommandLineModel();
 
     QStringList getHistoryFor(QString context);

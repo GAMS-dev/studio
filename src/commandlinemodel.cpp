@@ -3,10 +3,9 @@
 namespace gams {
 namespace studio {
 
-CommandLineModel::CommandLineModel(QWidget* parent):
-    QWidget(parent)
+CommandLineModel::CommandLineModel(int initialHistorySize):
+    mHistorySize(initialHistorySize)
 {
-    mHistorySize = 20;
 }
 
 CommandLineModel::~CommandLineModel()

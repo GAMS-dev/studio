@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionRun);
     mCommandLineOption = new CommandLineOption(this);
-    mCommandLineModel = new CommandLineModel(this);
+    mCommandLineModel = new CommandLineModel;
     ui->mainToolBar->addWidget(mCommandLineOption);
     connect(mCommandLineOption, &CommandLineOption::runWithChangedOption,
             mCommandLineModel, &CommandLineModel::addIntoCurrentContextHistory );
