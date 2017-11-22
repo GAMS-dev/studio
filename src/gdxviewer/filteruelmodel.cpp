@@ -1,5 +1,7 @@
 #include "filteruelmodel.h"
 
+#include <QTime>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -8,21 +10,7 @@ namespace gdxviewer {
 FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
     : QAbstractListModel(parent), mSymbol(symbol), mColumn(column)
 {
-    QSet<int>* uelsInColumn = mSymbol->uelsInColumn().at(column);
-    QSet<int>* filterUels = symbol->filterUels().at(column);
-
-    mUels = new int[uelsInColumn->count()];
-    mChecked = new bool[uelsInColumn->count()];
-
-    for(int i=0; i<uelsInColumn->count(); i++)
-    {
-        int uel = uelsInColumn->values().at(i);
-        mUels[i] = uel;
-        if(filterUels->find(uel) == filterUels->end())
-            mChecked[i] = false;
-        else
-            mChecked[i] = true;
-    }
+    mfilterUels = mSymbol->filterUels().at(mColumn);
 }
 
 FilterUelModel::~FilterUelModel()
@@ -44,21 +32,26 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
-    return mSymbol->uelsInColumn().at(mColumn)->count();
+    qDebug() << "rowCount: " << mSymbol->filterUels().at(mColumn)->count();
+    return mSymbol->filterUels().at(mColumn)->count();
+
 }
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const
 {
+    //qDebug() << "data: " << index.row();
     if (!index.isValid())
         return QVariant();
 
     if(role == Qt::DisplayRole)
     {
-        return mSymbol->uel2Label()->at(mUels[index.row()]);
+        int uel = mfilterUels->keys().at(index.row());
+        return mSymbol->uel2Label()->at(uel);
+        //return mSymbol->uel2Label()->at(mUels[index.row()]);
     }
     else if(role == Qt::CheckStateRole)
     {
-        if (mChecked[index.row()])
+        if (mfilterUels->values().at(index.row()))
             return Qt::Checked;
         else
             return Qt::Unchecked;

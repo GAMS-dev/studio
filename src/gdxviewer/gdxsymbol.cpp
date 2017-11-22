@@ -40,8 +40,6 @@ GdxSymbol::~GdxSymbol()
         delete mRecSortIdx;
     if (mRecFilterIdx)
         delete mRecFilterIdx;
-    for(auto s : mUelsInColumn)
-        delete s;
     for(auto s : mFilterUels)
         delete s;
 }
@@ -82,6 +80,7 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
     //return mLoadedRecCount;
+    qDebug() << "rowCount: " << mFilterRecCount;
     return mFilterRecCount;
 }
 
@@ -290,7 +289,7 @@ void GdxSymbol::calcUelsInColumn()
 
     for(int dim=0; dim<mDim; dim++)
     {
-        QList<int> l;
+        QMap<int, bool>* map = new QMap<int, bool>();
         int lastUel = -1;
         int currentUel = - 1;
         for(int rec=0; rec<mRecordCount; rec++)
@@ -299,29 +298,23 @@ void GdxSymbol::calcUelsInColumn()
             if(lastUel != currentUel)
             {
                 lastUel = currentUel;
-                l.append(currentUel);
+                map->insert(currentUel, true);
             }
         }
-        QSet<int> set = QSet<int>::fromList(l);
-        mUelsInColumn.append(new QSet<int>(set));
-        mFilterUels.append(new QSet<int>(set));
+        mFilterUels.append(map);
     }
     //mFilterUels.at(0)->remove(1);
 }
 
-QList<QSet<int> *> GdxSymbol::filterUels() const
+QList<QMap<int, bool> *> GdxSymbol::filterUels() const
 {
     return mFilterUels;
 }
 
+
 QStringList *GdxSymbol::uel2Label() const
 {
     return mUel2Label;
-}
-
-QList<QSet<int> *> GdxSymbol::uelsInColumn() const
-{
-    return mUelsInColumn;
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
@@ -441,7 +434,8 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 void GdxSymbol::filterRows()
 {
     qDebug() << "filterRows";
-
+    QTime t;
+    t.start();
 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
@@ -455,7 +449,7 @@ void GdxSymbol::filterRows()
         mRecFilterIdx[row-removedCount] = row;
         for(int dim=0; dim<mDim; dim++)
         {
-            if(mFilterUels.at(dim)->find(mKeys[recIdx*mDim + dim]) == mFilterUels.at(dim)->end()) //filter record
+            if(!mFilterUels.at(dim)->value(mKeys[recIdx*mDim + dim])) //filter record
             {
                 mFilterRecCount--;
                 removedCount++;
@@ -465,6 +459,7 @@ void GdxSymbol::filterRows()
     }
     beginResetModel();
     endResetModel();
+    qDebug() << "filterRows: " << t.elapsed();
 }
 
 bool GdxSymbol::isLoaded() const

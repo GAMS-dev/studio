@@ -14,8 +14,6 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
 {
     ui.setupUi(this);
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
-    QSet<int>* p = symbol->uelsInColumn().at(column);
-
     mModel = new FilterUelModel(symbol, column);
     ui.lvLabels->setModel(mModel);
 }
@@ -30,12 +28,12 @@ void ColumnFilterFrame::apply()
         if(mModel->checked()[i])
         {
             qDebug() << "checked";
-            mSymbol->filterUels().at(mColumn)->insert(uel);
+            mSymbol->filterUels().at(mColumn)->insert(uel, true);
         }
         else
         {
             qDebug() << "unchecked";
-            mSymbol->filterUels().at(mColumn)->remove(uel);
+            mSymbol->filterUels().at(mColumn)->insert(uel, false);
         }
     }
     mSymbol->filterRows();

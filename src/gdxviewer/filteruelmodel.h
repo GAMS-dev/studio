@@ -37,6 +37,7 @@ private:
     int* mUels;
     bool* mChecked;
     int mColumn;
+    QMap<int, bool>* mfilterUels;
 
 };
 

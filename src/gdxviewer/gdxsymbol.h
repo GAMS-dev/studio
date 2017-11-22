@@ -61,11 +61,9 @@ public:
 
     void resetSorting();
 
-    QList<QSet<int> *> uelsInColumn() const;
-
-    QList<QSet<int> *> filterUels() const;
-
     QStringList *uel2Label() const;
+
+    QList<QMap<int, bool> *> filterUels() const;
 
 private:
     int mNr;
@@ -101,8 +99,7 @@ private:
     void calcDefaultColumns();
     void calcUelsInColumn();
 
-    QList<QSet<int>*> mUelsInColumn;
-    QList<QSet<int>*> mFilterUels;
+    QList<QMap<int, bool>*> mFilterUels;
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
