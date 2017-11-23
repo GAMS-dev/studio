@@ -5,6 +5,7 @@
 #include <QTime>
 #include <QIcon>
 #include <QVarLengthArray>
+#include <algorithm>
 
 namespace gams {
 namespace studio {
@@ -35,10 +36,6 @@ GdxSymbol::~GdxSymbol()
         delete mRecSortIdx;
     if (mRecFilterIdx)
         delete mRecFilterIdx;
-    if (mMinUel)
-        delete mMinUel;
-    if (mMaxUel)
-        delete mMaxUel;
     for(auto s : mFilterUels)
         delete s;
 }
@@ -153,8 +150,6 @@ void GdxSymbol::loadData()
 {
     QTime t;
     t.start();
-    mMinUel = new int[mDim];
-    mMaxUel = new int[mDim];
     QMutexLocker locker(mGdxMutex);
     if(!mIsLoaded)
     {
