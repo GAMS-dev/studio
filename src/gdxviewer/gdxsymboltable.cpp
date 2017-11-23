@@ -62,16 +62,19 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     if (role == Qt::DisplayRole)
+    {
+        GdxSymbol* symbol = mGdxSymbols.at(index.row());
         switch(index.column())
         {
-        case 0: return mGdxSymbols.at(index.row())->nr(); break;
-        case 1: return mGdxSymbols.at(index.row())->name(); break;
-        case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
-        case 3: return mGdxSymbols.at(index.row())->dim(); break;
-        case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
-        case 5: return mGdxSymbols.at(index.row())->isLoaded(); break;
-        case 6: return mGdxSymbols.at(index.row())->explText(); break;
+        case 0: return symbol->nr(); break;
+        case 1: return symbol->name(); break;
+        case 2: return typeAsString(symbol->type()); break;
+        case 3: return symbol->dim(); break;
+        case 4: return symbol->recordCount(); break;
+        case 5: return symbol->isLoaded(); break;
+        case 6: return symbol->explText(); break;
         }
+    }
     else if (role == Qt::TextAlignmentRole)
     {
         Qt::AlignmentFlag aFlag;
