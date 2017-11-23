@@ -76,8 +76,8 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setCommandLineModel(CommandLineModel* opt);
     CommandLineModel* commandLineModel();
+    FileRepository* fileRepository();
 
-    FileRepository mFileRepo;
 
 private slots:
     void codecChanged(QAction *action);
@@ -158,6 +158,7 @@ private:
     StudioSettings *mSettings;
     WelcomePage *mWp = nullptr;
     bool mBeforeErrorExtraction = true;
+    FileRepository mFileRepo;
 };
 
 }

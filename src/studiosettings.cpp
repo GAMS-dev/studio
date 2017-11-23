@@ -51,10 +51,10 @@ void StudioSettings::saveSettings()
     mAppSettings->endArray();
 
     mAppSettings->beginWriteArray("openedTabs");
-    QList<QPlainTextEdit*> editList = mMain->mFileRepo.editors();
+    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
         mAppSettings->setArrayIndex(i);
-        FileContext *fc = mMain->mFileRepo.fileContext(editList.at(i));
+        FileContext *fc = mMain->fileRepository()->fileContext(editList.at(i));
         mAppSettings->setValue("location", fc->location());
     }
 

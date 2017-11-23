@@ -187,6 +187,11 @@ CommandLineModel* MainWindow::commandLineModel()
     return mCommandLineModel;
 }
 
+FileRepository* MainWindow::fileRepository()
+{
+    return &mFileRepo;
+}
+
 HistoryData* MainWindow::history()
 {
     return mHistory;
