@@ -3,7 +3,7 @@
 
 #include <QAbstractTableModel>
 #include <QMutex>
-#include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 #include <memory>
 #include "gdxcc.h"
 #include <QString>
@@ -13,12 +13,15 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+class GdxSymbolTable;
+
+
 class GdxSymbol : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, GdxSymbolTable* gdxSymbolTable, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:
@@ -61,9 +64,9 @@ public:
 
     void resetSorting();
 
-    QStringList *uel2Label() const;
-
     QList<QMap<int, bool> *> filterUels() const;
+
+    GdxSymbolTable *gdxSymbolTable() const;
 
 private:
     int mNr;
@@ -73,6 +76,8 @@ private:
     int mSubType;
     int mRecordCount;
     QString mExplText;
+
+    GdxSymbolTable* mGdxSymbolTable;
 
     gdxHandle_t mGdx;
 
@@ -84,9 +89,6 @@ private:
 
     int* mKeys = nullptr;
     double* mValues = nullptr;
-
-    QStringList* mUel2Label;
-    QStringList* mStrPool;
 
     QMutex* mGdxMutex;
 
@@ -103,8 +105,6 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
-
-    int* mLabelCompIdx;
 
     int mSortColumn = -1;
     Qt::SortOrder mSortOrder;

@@ -108,7 +108,7 @@ void GdxSymbolTable::loadGDXSymbols()
         if(type == GMS_DT_VAR)
             userInfo = gmsFixVarType(userInfo);
 
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mLabelCompIdx));
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), this));
     }
     locker.unlock();
 }
@@ -159,6 +159,21 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
     //TODO(CW): proper Exception message and remove qDebug
     qDebug() << "**** Fatal I/O Error = " << errNr << " when calling " << message;
     throw Exception();
+}
+
+int *GdxSymbolTable::labelCompIdx() const
+{
+    return mLabelCompIdx;
+}
+
+QStringList GdxSymbolTable::strPool() const
+{
+    return mStrPool;
+}
+
+QStringList GdxSymbolTable::uel2Label() const
+{
+    return mUel2Label;
 }
 
 QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const

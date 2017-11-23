@@ -5,10 +5,13 @@
 #include <QMutex>
 #include "gdxsymbol.h"
 #include <memory>
+#include "gdxcc.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+class GdxSymbol;
 
 class GdxSymbolTable : public QAbstractTableModel
 {
@@ -27,6 +30,12 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     QList<GdxSymbol *> gdxSymbols() const;
+
+    QStringList uel2Label() const;
+
+    QStringList strPool() const;
+
+    int *labelCompIdx() const;
 
 private:
     QStringList mHeaderText;

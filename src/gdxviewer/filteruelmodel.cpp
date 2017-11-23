@@ -43,7 +43,7 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
     if(role == Qt::DisplayRole)
     {
         int uel = mfilterUels->keys().at(index.row());
-        return mSymbol->uel2Label()->at(uel);
+        return mSymbol->gdxSymbolTable()->uel2Label().at(uel);
     }
     else if(role == Qt::CheckStateRole)
     {

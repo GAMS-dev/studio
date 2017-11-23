@@ -10,8 +10,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mUel2Label(uel2Label), mStrPool(strPool),  mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mLabelCompIdx(sortIndex)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, GdxSymbolTable* gdxSymbolTable, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mGdxSymbolTable(gdxSymbolTable)
 {
     // read domains
     mDomains.clear();
@@ -103,7 +103,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
-            return mUel2Label->at(mKeys[row*mDim + index.column()]);
+            return mGdxSymbolTable->uel2Label().at(mKeys[row*mDim + index.column()]);
         else
         {
             double val;
@@ -112,7 +112,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             else if (mType == GMS_DT_SET)
             {
                 val = mValues[row];
-                return mStrPool->at((int) val);
+                return gdxSymbolTable()->strPool().at((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
@@ -310,10 +310,9 @@ QList<QMap<int, bool> *> GdxSymbol::filterUels() const
     return mFilterUels;
 }
 
-
-QStringList *GdxSymbol::uel2Label() const
+GdxSymbolTable *GdxSymbol::gdxSymbolTable() const
 {
-    return mUel2Label;
+    return mGdxSymbolTable;
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
@@ -366,12 +365,14 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     QTime t;
     t.start();
 
+    int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
+
     // sort by key column
     if(column<mDim)
     {
         QList<QPair<int, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
-            l.append(QPair<int, int>(mLabelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
+            l.append(QPair<int, int>(labelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
 
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
@@ -388,7 +389,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     {
         QList<QPair<QString, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
-            l.append(QPair<QString, int>(mStrPool->at(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
+            l.append(QPair<QString, int>(mGdxSymbolTable->strPool().at(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
 
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
