@@ -742,6 +742,25 @@ void MainWindow::execute(QString commandLineStr)
         if (!fgc)
             return;
 
+    int ret = QMessageBox::Save;
+    if (fc->editors().size() == 1 && fc->isModified()) {
+         QMessageBox msgBox;
+         msgBox.setIcon(QMessageBox::Warning);
+         msgBox.setText(fc->location()+" has been modified.");
+         msgBox.setInformativeText("Do you want to save your changes before running?");
+         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+         QAbstractButton* buttonContinueWithOutSaving = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
+         msgBox.setDefaultButton(QMessageBox::Save);
+         ret = msgBox.exec();
+    }
+    if (ret == QMessageBox::Cancel) {
+        return;
+    } else if (ret == QMessageBox::Save) {
+        fc->save();
+    } else {
+        fc->load(fc->codec());
+    }
+
     ui->actionRun->setEnabled(false);
     mFileRepo.removeMarks(fgc);
     LogContext* logProc = mFileRepo.logContext(fgc);
@@ -755,7 +774,7 @@ void MainWindow::execute(QString commandLineStr)
     }
     logProc->markOld();
     ui->logTab->setCurrentWidget(logProc->editors().first());
-
+fc->load();
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
