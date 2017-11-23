@@ -375,7 +375,6 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
         QTextCursor cursor = edit->cursorForPosition(pos);
 
         // TODO(JM) use the textcursor to request the line
-        DEB() << "## Sender: " << watched->objectName();
         CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
         bool linkFromText = true;
         TextMark* iconMark = nullptr;

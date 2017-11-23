@@ -39,6 +39,7 @@ class AbstractProcess;
 class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
+class StudioSettings;
 
 struct RecentData {
     int editFileId = -1;
@@ -66,8 +67,17 @@ public:
     void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
     void addToOpenedFiles(QString filePath);
-    QStringList getOpenedFiles();
+    QStringList openedFiles();
     void openFile(const QString &filePath);
+    bool outputViewVisibility();
+    bool projectViewVisibility();
+    HistoryData* history();
+    void setOutputViewVisibility(bool visibility);
+    void setProjectViewVisibility(bool visibility);
+    void setCommandLineModel(CommandLineModel* opt);
+    CommandLineModel* commandLineModel();
+    FileRepository* fileRepository();
+
 
 private slots:
     void codecChanged(QAction *action);
@@ -81,8 +91,6 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void openOrShowContext(FileContext *fileContext);
     // View
-    void setOutputViewVisibility(bool visibility);
-    void setProjectViewVisibility(bool visibility);
     void gamsProcessStateChanged(FileGroupContext* group);
 
 private slots:
@@ -134,6 +142,7 @@ private:
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
     void updateRunState();
+    void createWelcomePage();
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -143,17 +152,13 @@ private:
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
+    HistoryData *mHistory;
+    StudioSettings *mSettings;
+    WelcomePage *mWp = nullptr;
     bool mBeforeErrorExtraction = true;
-    QSettings *mAppSettings = nullptr;
-    QSettings *mUserSettings = nullptr;
-    HistoryData *history;
-    WelcomePage *wp = nullptr;
-    void loadSettings();
-    void saveSettings();
-    void createWelcomePage();
+    FileRepository mFileRepo;
 };
 
 }

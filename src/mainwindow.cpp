@@ -30,6 +30,7 @@
 #include "gamslibprocess.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
@@ -38,9 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    history = new HistoryData();
+    mHistory = new HistoryData();
+    mSettings = new StudioSettings(this);
+
     ui->setupUi(this);
-    loadSettings();
     setAcceptDrops(true);
 
     ui->projectView->setModel(mFileRepo.treeModel());
@@ -58,12 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    initTabs();
-
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionRun);
     mCommandLineOption = new CommandLineOption(this);
-    mCommandLineModel = new CommandLineModel;
+    mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
     connect(mCommandLineOption, &CommandLineOption::runWithChangedOption,
             mCommandLineModel, &CommandLineModel::addIntoCurrentContextHistory );
@@ -81,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     ensureCodecMenu("System");
+
+    mSettings->loadSettings();
+    initTabs();
 }
 
 MainWindow::~MainWindow()
@@ -114,19 +117,18 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
             QTextCursor tc = codeEdit->textCursor();
+            tc.movePosition(QTextCursor::Start);
+            codeEdit->setTextCursor(tc);
             fc->load(codecName);
 
-            if (fc->metrics().fileType() == FileType::Log
-                || fc->metrics().fileType() == FileType::Lst
-                || fc->metrics().fileType() == FileType::Lxi) {  // TODO: add .ref ?
+            if (fc->metrics().fileType() == FileType::Log ||
+                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
-            tc.movePosition(QTextCursor::Start);
-            codeEdit->setTextCursor(tc);
 
         } else {
             tabIndex = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), fc->caption());
@@ -161,21 +163,38 @@ void MainWindow::setOutputViewVisibility(bool visibility)
     ui->actionOutput_View->setChecked(visibility);
 }
 
+bool MainWindow::outputViewVisibility()
+{
+    return ui->actionOutput_View->isChecked();
+}
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility);
 }
 
+void MainWindow::setCommandLineModel(CommandLineModel *opt)
+{
+    mCommandLineModel = opt;
+}
+
+CommandLineModel *MainWindow::commandLineModel()
+{
+    return mCommandLineModel;
+}
+
+FileRepository *MainWindow::fileRepository()
+{
+    return &mFileRepo;
+}
+
+bool MainWindow::projectViewVisibility()
+{
+    return ui->actionProject_View->isChecked();
+}
+
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
     if (mRecent.group == group) updateRunState();
-}
-
-void MainWindow::updateRunState()
-{
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState()
-                                                 : QProcess::NotRunning;
-    ui->actionRun->setEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -306,7 +325,7 @@ void MainWindow::activeTabChanged(int index)
             QStringList option = mCommandLineModel->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
-                mCommandLineOption->insertItem(0, str);
+                mCommandLineOption->insertItem(0, str );
             }
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setDisabled(false);
@@ -500,7 +519,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        wp = nullptr;
+        mWp = nullptr;
         return;
     }
 
@@ -529,14 +548,14 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::createWelcomePage()
 {
-    wp = new WelcomePage(history);
-    ui->mainTab->insertTab(0, wp, QString("Welcome")); // always first position
-    connect(wp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    mWp = new WelcomePage(history());
+    ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
+    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(wp == nullptr)
+    if(mWp == nullptr)
         createWelcomePage();
     ui->mainTab->setCurrentIndex(0);
 }
@@ -565,75 +584,9 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::saveSettings()
+QStringList MainWindow::openedFiles()
 {
-    if (mAppSettings == nullptr) {
-        qDebug() << "ERROR: settings file missing.";
-        return;
-    }
-
-    mAppSettings->beginGroup("mainWindow");
-    // window
-    mAppSettings->setValue("size", size());
-    mAppSettings->setValue("pos", pos());
-    mAppSettings->setValue("windowState", saveState());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("viewMenu");
-    // tool-/menubar
-    mAppSettings->setValue("projectView", ui->actionProject_View->isChecked());
-    mAppSettings->setValue("outputView", ui->actionProject_View->isChecked());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("history");
-    // history
-    mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("file", history->lastOpenedFiles.at(i));
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-    mAppSettings->sync();
-}
-
-void MainWindow::loadSettings()
-{
-    if (mAppSettings == nullptr)
-        mAppSettings = new QSettings("GAMS", "Studio");
-
-    qDebug() << "loading settings from" << mAppSettings->fileName();
-
-    mAppSettings->beginGroup("mainWindow");
-    // window
-    resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
-    move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
-    restoreState(mAppSettings->value("windowState").toByteArray());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("viewMenu");
-    // tool-/menubar
-    setProjectViewVisibility(mAppSettings->value("projectView").toBool());
-    setOutputViewVisibility(mAppSettings->value("outputView").toBool());
-
-    mAppSettings->endGroup();
-    mAppSettings->beginGroup("history");
-    // history
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < history->MAX_FILE_HISTORY; i++) {
-        mAppSettings->setArrayIndex(i);
-        history->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
-    // TODO: add widget visibility, size, position, ...
-}
-
-QStringList MainWindow::getOpenedFiles()
-{
-    return history->lastOpenedFiles;
+    return history()->lastOpenedFiles;
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -641,17 +594,23 @@ void MainWindow::openFile(const QString &filePath)
     openOrShow(filePath, nullptr);
 }
 
+HistoryData *MainWindow::history()
+{
+    return mHistory;
+}
+
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history->lastOpenedFiles.size() >= history->MAX_FILE_HISTORY) {
-        history->lastOpenedFiles.removeLast();
+    if (history()->lastOpenedFiles.size() >= history()->MAX_FILE_HISTORY) {
+        history()->lastOpenedFiles.removeLast();
     }
-    if (!history->lastOpenedFiles.contains(filePath))
-        history->lastOpenedFiles.insert(0, filePath);
+    if (!history()->lastOpenedFiles.contains(filePath))
+        history()->lastOpenedFiles.insert(0, filePath);
     else
-        history->lastOpenedFiles.move(history->lastOpenedFiles.indexOf(filePath), 0);
+        history()->lastOpenedFiles.move(history()->lastOpenedFiles.indexOf(filePath), 0);
 
-    wp->historyChanged(history);
+    if(mWp)
+        mWp->historyChanged(history());
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -724,7 +683,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
             event->setAccepted(false);
         }
     }
-    saveSettings();
+    mSettings->saveSettings();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -811,6 +770,12 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
+void MainWindow::updateRunState()
+{
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    ui->actionRun->setEnabled(state != QProcess::Running);
+}
+
 void MainWindow::on_runWithCommandLineOption(QString options)
 {
     execute(options);
@@ -818,8 +783,7 @@ void MainWindow::on_runWithCommandLineOption(QString options)
 
 void MainWindow::on_actionRun_triggered()
 {
-    // forward signal with additional current command line parameter
-    emit mCommandLineOption->runWithChangedOption(mCommandLineOption->getCurrentOption());
+    execute(mCommandLineOption->getCurrentOption());
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()

@@ -93,7 +93,9 @@ SOURCES += \
     commandlinemodel.cpp \
     commandlineoption.cpp \
     logger.cpp \
-    logcontext.cpp
+    logcontext.cpp \
+    settingsdialog.cpp \
+    studiosettings.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -127,14 +129,17 @@ HEADERS += \
     commandlinemodel.h \
     commandlineoption.h \
     logger.h \
-    logcontext.h
+    logcontext.h \
+    settingsdialog.h \
+    studiosettings.h
 
 FORMS += \
     welcomepage.ui  \
     mainwindow.ui   \
     newdialog.ui    \
     modeldialog/modeldialog.ui \
-    gdxviewer/gdxviewer.ui
+    gdxviewer/gdxviewer.ui \
+    settingsdialog.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

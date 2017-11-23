@@ -3,9 +3,14 @@
 namespace gams {
 namespace studio {
 
-CommandLineModel::CommandLineModel(int initialHistorySize):
-    mHistorySize(initialHistorySize)
+CommandLineModel::CommandLineModel(QObject* parent, int initialHistorySize)
+    : QObject(parent), mHistorySize(initialHistorySize)
 {
+}
+
+CommandLineModel::CommandLineModel(QMap<QString, QStringList> map)
+{
+    setAllHistory(map);
 }
 
 CommandLineModel::~CommandLineModel()
@@ -36,6 +41,16 @@ void CommandLineModel::addIntoCurrentContextHistory(QString option)
     }
 }
 
+void CommandLineModel::setAllHistory(QMap<QString, QStringList> opts)
+{
+    mHistory = opts;
+}
+
+QMap<QString, QStringList> CommandLineModel::allHistory() const
+{
+    return mHistory;
+}
+
 int CommandLineModel::getHistorySize() const
 {
     return mHistorySize;
@@ -44,11 +59,6 @@ int CommandLineModel::getHistorySize() const
 void CommandLineModel::setHistorySize(int historySize)
 {
     mHistorySize = historySize;
-}
-
-QMap<QString, QStringList> CommandLineModel::getAllHistory() const
-{
-    return mHistory;
 }
 
 QStringList CommandLineModel::getHistoryFor(QString context)
