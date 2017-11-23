@@ -21,7 +21,7 @@ class GdxSymbol : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, GdxSymbolTable* gdxSymbolTable, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:

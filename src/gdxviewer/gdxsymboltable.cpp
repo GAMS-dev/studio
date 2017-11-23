@@ -97,22 +97,7 @@ void GdxSymbolTable::loadGDXSymbols()
 {
     QMutexLocker locker(mGdxMutex);
     for(int i=1; i<mSymbolCount+1; i++)
-    {
-        char symName[GMS_UEL_IDENT_SIZE];
-        char explText[GMS_SSSIZE];
-        int dimension = 0;
-        int type = 0;
-        gdxSymbolInfo(mGdx, i, symName, &dimension, &type);
-        int recordCount = 0;
-        int userInfo = 0;
-        gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
-        if(type == GMS_DT_EQU)
-            userInfo = gmsFixEquType(userInfo);
-        if(type == GMS_DT_VAR)
-            userInfo = gmsFixVarType(userInfo);
-
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), this));
-    }
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, this));
     locker.unlock();
 }
 

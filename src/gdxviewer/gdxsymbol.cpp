@@ -10,9 +10,20 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, GdxSymbolTable* gdxSymbolTable, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mNr(nr), mName(name), mDim(dimension), mType(type), mSubType(subtype), mRecordCount(recordCount), mExplText(explText), mGdxSymbolTable(gdxSymbolTable)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mNr(nr), mGdxSymbolTable(gdxSymbolTable)
 {
+    char symName[GMS_UEL_IDENT_SIZE];
+    char explText[GMS_SSSIZE];
+    gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
+    int recordCount = 0;
+    int userInfo = 0;
+    gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
+    if(mType == GMS_DT_EQU)
+        mSubType = gmsFixEquType(mSubType);
+    if(mType == GMS_DT_VAR)
+        mSubType = gmsFixVarType(mSubType);
+
     // read domains
     mDomains.clear();
     gdxStrIndexPtrs_t Indx;
