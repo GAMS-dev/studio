@@ -69,6 +69,8 @@ public:
     GdxSymbolTable *gdxSymbolTable() const;
 
 private:
+    void loadMetaData();
+    void loadDomains();
     int mNr;
     QString mName;
     int mDim;

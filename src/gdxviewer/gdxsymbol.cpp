@@ -13,22 +13,9 @@ namespace gdxviewer {
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mNr(nr), mGdxSymbolTable(gdxSymbolTable)
 {
-    char symName[GMS_UEL_IDENT_SIZE];
-    char explText[GMS_SSSIZE];
-    gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
-    if(mType == GMS_DT_EQU)
-        mSubType = gmsFixEquType(mSubType);
-    if(mType == GMS_DT_VAR)
-        mSubType = gmsFixVarType(mSubType);
+    loadMetaData();
+    loadDomains();
 
-    // read domains
-    gdxStrIndexPtrs_t Indx;
-    gdxStrIndex_t     IndxXXX;
-    GDXSTRINDEXPTRS_INIT(IndxXXX,Indx);
-    gdxSymbolGetDomainX(mGdx, mNr, Indx);
-    for(int i=0; i<mDim; i++)
-        mDomains.append(Indx[i]);
     mRecSortIdx = new int[mRecordCount];
     for(int i=0; i<mRecordCount; i++)
         mRecSortIdx[i] = i;
@@ -321,6 +308,28 @@ QList<QMap<int, bool> *> GdxSymbol::filterUels() const
 GdxSymbolTable *GdxSymbol::gdxSymbolTable() const
 {
     return mGdxSymbolTable;
+}
+
+void GdxSymbol::loadMetaData()
+{
+    char symName[GMS_UEL_IDENT_SIZE];
+    char explText[GMS_SSSIZE];
+    gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
+    gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
+    if(mType == GMS_DT_EQU)
+        mSubType = gmsFixEquType(mSubType);
+    if(mType == GMS_DT_VAR)
+        mSubType = gmsFixVarType(mSubType);
+}
+
+void GdxSymbol::loadDomains()
+{
+    gdxStrIndexPtrs_t domX;
+    gdxStrIndex_t     domXXX;
+    GDXSTRINDEXPTRS_INIT(domXXX,domX);
+    gdxSymbolGetDomainX(mGdx, mNr, domX);
+    for(int i=0; i<mDim; i++)
+        mDomains.append(domX[i]);
 }
 
 Qt::SortOrder GdxSymbol::sortOrder() const
