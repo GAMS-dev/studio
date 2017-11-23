@@ -69,15 +69,16 @@ public:
     GdxSymbolTable *gdxSymbolTable() const;
 
 private:
-    void loadMetaData();
-    void loadDomains();
     int mNr;
-    QString mName;
     int mDim;
     int mType;
     int mSubType;
     int mRecordCount;
     QString mExplText;
+    QString mName;
+
+    int* mMinUel;
+    int* mMaxUel;
 
     GdxSymbolTable* mGdxSymbolTable;
 
@@ -102,6 +103,8 @@ private:
 
     void calcDefaultColumns();
     void calcUelsInColumn();
+    void loadMetaData();
+    void loadDomains();
 
     QList<QMap<int, bool>*> mFilterUels;
 

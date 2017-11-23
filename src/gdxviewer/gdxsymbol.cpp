@@ -35,6 +35,10 @@ GdxSymbol::~GdxSymbol()
         delete mRecSortIdx;
     if (mRecFilterIdx)
         delete mRecFilterIdx;
+    if (mMinUel)
+        delete mMinUel;
+    if (mMaxUel)
+        delete mMaxUel;
     for(auto s : mFilterUels)
         delete s;
 }
@@ -74,7 +78,6 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    //return mLoadedRecCount;
     return mFilterRecCount;
 }
 
@@ -150,6 +153,8 @@ void GdxSymbol::loadData()
 {
     QTime t;
     t.start();
+    mMinUel = new int[mDim];
+    mMaxUel = new int[mDim];
     QMutexLocker locker(mGdxMutex);
     if(!mIsLoaded)
     {
