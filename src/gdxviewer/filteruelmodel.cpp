@@ -44,7 +44,6 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
     {
         int uel = mfilterUels->keys().at(index.row());
         return mSymbol->uel2Label()->at(uel);
-        //return mSymbol->uel2Label()->at(mUels[index.row()]);
     }
     else if(role == Qt::CheckStateRole)
     {

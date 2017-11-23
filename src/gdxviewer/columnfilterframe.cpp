@@ -25,10 +25,7 @@ void ColumnFilterFrame::apply()
     qDebug() << "apply";
 
     for(int i=0; i<mModel->changed().count(); i++)
-    {
-        qDebug() << "checked";
         mSymbol->filterUels().at(mColumn)->insert(mModel->changed().keys().at(i), mModel->changed().values().at(i));
-    }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
 }
