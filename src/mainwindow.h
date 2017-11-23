@@ -77,6 +77,7 @@ public:
     void setCommandLineModel(CommandLineModel* opt);
     CommandLineModel* commandLineModel();
 
+    FileRepository mFileRepo;
 
 private slots:
     void codecChanged(QAction *action);
@@ -141,6 +142,7 @@ private:
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
     void updateRunState();
+    void createWelcomePage();
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -150,14 +152,12 @@ private:
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
-    bool mBeforeErrorExtraction = true;
     HistoryData *mHistory;
     StudioSettings *mSettings;
     WelcomePage *mWp = nullptr;
-    void createWelcomePage();
+    bool mBeforeErrorExtraction = true;
 };
 
 }

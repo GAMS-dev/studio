@@ -60,7 +60,6 @@ MainWindow::MainWindow(QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionRun);
     mCommandLineOption = new CommandLineOption(this);
@@ -606,7 +605,8 @@ void MainWindow::addToOpenedFiles(QString filePath)
     else
         mHistory->lastOpenedFiles.move(mHistory->lastOpenedFiles.indexOf(filePath), 0);
 
-    mWp->historyChanged(mHistory);
+    if(mWp)
+        mWp->historyChanged(mHistory);
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()

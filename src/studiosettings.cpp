@@ -48,6 +48,15 @@ void StudioSettings::saveSettings()
         mAppSettings->setValue("path", map.keys().at(i));
         mAppSettings->setValue("opt", map.values().at(i));
     }
+    mAppSettings->endArray();
+
+    mAppSettings->beginWriteArray("openedTabs");
+    QList<QPlainTextEdit*> editList = mMain->mFileRepo.editors();
+    for (int i = 0; i < editList.size(); i++) {
+        mAppSettings->setArrayIndex(i);
+        FileContext *fc = mMain->mFileRepo.fileContext(editList.at(i));
+        mAppSettings->setValue("location", fc->location());
+    }
 
     mAppSettings->endArray();
     mAppSettings->endGroup();
@@ -102,8 +111,16 @@ void StudioSettings::loadSettings()
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
-    mAppSettings->endGroup();
     mMain->commandLineModel()->setAllOptions(map);
+
+    size = mAppSettings->beginReadArray("openedTabs");
+    for (int i = 0; i < size; i++) {
+        mAppSettings->setArrayIndex(i);
+        mMain->openFile(mAppSettings->value("location").toString());
+    }
+
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
 
     if (mUserSettings == nullptr)
         mUserSettings = new QSettings("GAMS", "Studio-User");
