@@ -16,8 +16,6 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    int recordCount = 0;
-    int userInfo = 0;
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
@@ -25,7 +23,6 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
         mSubType = gmsFixVarType(mSubType);
 
     // read domains
-    mDomains.clear();
     gdxStrIndexPtrs_t Indx;
     gdxStrIndex_t     IndxXXX;
     GDXSTRINDEXPTRS_INIT(IndxXXX,Indx);
