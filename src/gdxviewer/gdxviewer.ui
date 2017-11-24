@@ -51,7 +51,7 @@
        <number>22</number>
       </attribute>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QTableView" name="tableView">
@@ -88,9 +88,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pbResetSorting">
+          <widget class="QPushButton" name="pbResetSortFilter">
            <property name="text">
-            <string>Reset Sorting</string>
+            <string>Reset</string>
            </property>
           </widget>
          </item>
