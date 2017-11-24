@@ -144,6 +144,7 @@ private:
     void execute(QString commandLineStr);
     void updateRunState();
     void createWelcomePage();
+    void createRunAndCommandLineWidgets();
 
 private:
     const int MAX_FILE_HISTORY = 5;

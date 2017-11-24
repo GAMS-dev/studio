@@ -61,26 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
     ui->mainToolBar->addSeparator();
-    QMenu* runMenu = new QMenu;
-    runMenu->addAction(ui->actionRun);
-    runMenu->addAction(ui->actionRun_with_GDX_Creation);
-    runMenu->addSeparator();
-    runMenu->addAction(ui->actionCompile);
-
-    QToolButton* runToolButton = new QToolButton(this);
-    runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    runToolButton->setMenu(runMenu);
-    runToolButton->setDefaultAction(ui->actionRun);
-    ui->mainToolBar->addWidget(runToolButton);
-
-    mCommandLineOption = new CommandLineOption(this);
-    mCommandLineModel = new CommandLineModel(this);
-    ui->mainToolBar->addWidget(mCommandLineOption);
-
-    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
-            this, &MainWindow::on_runWithChangedOptions);
-    connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
-            this, &MainWindow::on_runWithParamAndChangedOptions);
+    createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
@@ -566,6 +547,30 @@ void MainWindow::createWelcomePage()
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
 
+void MainWindow::createRunAndCommandLineWidgets()
+{
+    QMenu* runMenu = new QMenu;
+    runMenu->addAction(ui->actionRun);
+    runMenu->addAction(ui->actionRun_with_GDX_Creation);
+    runMenu->addSeparator();
+    runMenu->addAction(ui->actionCompile);
+
+    QToolButton* runToolButton = new QToolButton(this);
+    runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    runToolButton->setMenu(runMenu);
+    runToolButton->setDefaultAction(ui->actionRun);
+    ui->mainToolBar->addWidget(runToolButton);
+
+    mCommandLineOption = new CommandLineOption(this);
+    mCommandLineModel = new CommandLineModel(this);
+    ui->mainToolBar->addWidget(mCommandLineOption);
+
+    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
+            this, &MainWindow::on_runWithChangedOptions);
+    connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
+            this, &MainWindow::on_runWithParamAndChangedOptions);
+}
+
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     if(mWp == nullptr)
@@ -756,7 +761,6 @@ void MainWindow::execute(QString commandLineStr)
             return;
 
     if (fc->editors().size() == 1 && fc->isModified()) {
-         int ret = QMessageBox::Save;
          QMessageBox msgBox;
          msgBox.setIcon(QMessageBox::Warning);
          msgBox.setText(fc->location()+" has been modified.");
@@ -764,7 +768,7 @@ void MainWindow::execute(QString commandLineStr)
          msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
          QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
          msgBox.setDefaultButton(QMessageBox::Save);
-         ret = msgBox.exec();
+         int ret = msgBox.exec();
 
          if (ret == QMessageBox::Cancel) {
              return;
