@@ -19,17 +19,20 @@
  */
 #include <QtWidgets>
 #include "codeeditor.h"
+#include "logger.h"
+#include "textmark.h"
 
 namespace gams {
 namespace studio {
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
-    lineNumberArea = new LineNumberArea(this);
+    mLineNumberArea = new LineNumberArea(this);
 
     this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    mLineNumberArea->setMouseTracking(true);
 
-    connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
+    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     connect(this, &CodeEditor::updateBlockSelection, this, &CodeEditor::onUpdateBlockSelection, Qt::QueuedConnection);
@@ -38,6 +41,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
     setMouseTracking(true);
+    viewport()->setMouseTracking(true);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -51,7 +55,21 @@ int CodeEditor::lineNumberAreaWidth()
 
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
+    bool marksEmpty = true;
+    emit requestMarksEmpty(&marksEmpty);
+    space += (marksEmpty ? 0 : iconSize());
+
     return space;
+}
+
+int CodeEditor::iconSize()
+{
+    return fontMetrics().height()-3;
+}
+
+LineNumberArea* CodeEditor::lineNumberArea()
+{
+    return mLineNumberArea;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
@@ -62,7 +80,7 @@ void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
     if (dy) {
-        lineNumberArea->scroll(0, dy);
+        mLineNumberArea->scroll(0, dy);
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
@@ -73,9 +91,11 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
                 top = blockBounds.top();
             if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
                 bottom = blockBounds.bottom()-1;
+            if (blockBounds.bottom() >= rect.bottom())
+                break;
             b = b.next();
         }
-        lineNumberArea->update(0, top, lineNumberArea->width(), bottom-top);
+        mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
     }
 
     if (rect.contains(viewport()->rect()))
@@ -143,7 +163,7 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
-    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
@@ -227,6 +247,18 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
+void CodeEditor::wheelEvent(QWheelEvent *e) {
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->delta();
+        if (delta < 0)
+            zoomOut();
+        else if (delta > 0)
+            zoomIn();
+        return;
+    }
+    QPlainTextEdit::wheelEvent(e);
+}
+
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
 {
     if (e->mimeData()->hasUrls()) {
@@ -254,12 +286,14 @@ void CodeEditor::highlightCurrentLine()
 
 //    setExtraSelections(extraSelections);
 }
-
+// _CRT_SECURE_NO_WARNINGS
 
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
-    QPainter painter(lineNumberArea);
+    QPainter painter(mLineNumberArea);
+    QHash<int, TextMark*> textMarks;
+    emit requestMarkHash(&textMarks);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -270,12 +304,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
     QRect paintRect(event->rect());
-    // TODO(JM) fit paintRect to real height in case of wrapped lines (somehow it is clipped though)
     painter.fillRect(paintRect, QColor(245,245,245));
 
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(blockBoundingRect(block).height())+1);
-    while (block.isValid()) { // && top <= paintRect.bottom()) {
-        if (block.isVisible()) { // && bottom >= paintRect.top()) {
+    while (block.isValid() && top <= paintRect.bottom()) {
+        if (block.isVisible() && bottom >= paintRect.top()) {
             bool mark = blockNumber >= markFrom && blockNumber <= markTo;
             if (mark) {
                 markRect.moveTop(top);
@@ -287,8 +320,13 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             f.setBold(mark);
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
-            painter.drawText(0, (top+bottom-fontMetrics().height())/2, lineNumberArea->width(), fontMetrics().height(),
+            int realtop = top; // (top+bottom-fontMetrics().height())/2;
+            painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
+            if (textMarks.contains(blockNumber)) {
+                int iTop = (2+top+bottom-iconSize())/2;
+                painter.drawPixmap(1, iTop, textMarks.value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+            }
         }
 
         block = block.next();

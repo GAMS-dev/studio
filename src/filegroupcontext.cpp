@@ -19,7 +19,9 @@
  */
 #include "filegroupcontext.h"
 #include "filecontext.h"
+#include "logcontext.h"
 #include "exception.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
@@ -126,13 +128,16 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
-void FileGroupContext::setLogContext(FileContext* logContext)
+void FileGroupContext::setLogContext(LogContext* logContext)
 {
     if (mLogContext)
         EXCEPT() << "Reset the log-context is not allowed";
-    if (logContext->metrics().fileType() != FileType::None)
-        EXCEPT() << "Invalid FileType for log-context";
     mLogContext = logContext;
+}
+
+void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
+{
+    // TODO(JM) visualize if a state is running
 }
 
 QStringList FileGroupContext::additionalFiles() const
@@ -149,9 +154,21 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
 {
     if(additionalFile == "") return;
 
-    qDebug() << "adding additional file" << additionalFile;
     if(!mAdditionalFiles.contains(additionalFile)) {
         mAdditionalFiles << additionalFile;
+    }
+}
+
+void FileGroupContext::jumpToMark(bool focus)
+{
+    if (!mLogContext) return;
+    TextMark* textMark = mLogContext->firstErrorMark();
+    if (textMark) {
+        if (!textMark->textCursor().isNull()) {
+            textMark->jumpToMark(focus);
+            textMark->jumpToRefMark(focus);
+        }
+        textMark = nullptr;
     }
 }
 
@@ -171,18 +188,37 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-FileContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext()
 {
-    for (FileSystemContext *fsc: mChildList) {
-        if (fsc->type() == FileSystemContext::File) {
-            FileContext* fc = static_cast<FileContext*>(fsc);
-            if (fc->metrics().fileType() == FileType::None) {
-                return fc;
-                break;
-            }
-        }
-    }
-    return nullptr;
+    return mLogContext;
+//    for (FileSystemContext *fsc: mChildList) {
+//        if (fsc->type() == FileSystemContext::Log) {
+//            LogContext* fc = static_cast<LogContext*>(fsc);
+//            return fc;
+//        }
+//    }
+    //    return nullptr;
+}
+
+GamsProcess*FileGroupContext::newGamsProcess()
+{
+    if (mGamsProcess)
+        EXCEPT() << "Cannot create process. This group already has an active process.";
+    mGamsProcess = new GamsProcess();
+    mGamsProcess->setContext(this);
+    connect(mGamsProcess, &GamsProcess::destroyed, this, &FileGroupContext::processDeleted);
+    connect(mGamsProcess, &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
+    return mGamsProcess;
+}
+
+GamsProcess*FileGroupContext::gamsProcess()
+{
+    return mGamsProcess;
+}
+
+QProcess::ProcessState FileGroupContext::gamsProcessState() const
+{
+    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
 int FileGroupContext::childCount()
@@ -224,7 +260,6 @@ void FileGroupContext::setWatched(bool watch)
         connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
     }
     mDirWatcher->addPath(location());
-    qDebug() << "added watcher for" << location();
 }
 
 void FileGroupContext::directoryChanged(const QString& path)
@@ -239,6 +274,20 @@ void FileGroupContext::directoryChanged(const QString& path)
         return;
     }
     deleteLater();
+}
+
+void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
+{
+    Q_UNUSED(newState);
+    updateRunState(newState);
+    emit gamsProcessStateChanged(this);
+}
+
+void FileGroupContext::processDeleted()
+{
+    mGamsProcess = nullptr;
+    updateRunState(QProcess::NotRunning);
+    emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)

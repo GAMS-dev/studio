@@ -30,20 +30,15 @@ class FileContext;
 class TextMark
 {
 public:
-    enum Type {
-        all,
-        none,
-        error,
-        link,
-        bookmark,
-    };
+    enum Type {none, error, link, bookmark, all};
 
     explicit TextMark(TextMark::Type tmType);
-    void mark(FileContext* fileContext, int line, int column, int size = 0);
+    void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void updateCursor();
     void setRefMark(TextMark* refMark);
-    void jumpToRefMark();
-    void jumpToMark();
+    void jumpToRefMark(bool focus = true);
+    void jumpToMark(bool focus = true);
+    bool isErrorRef();
 
     void showToolTip();
 
@@ -52,7 +47,9 @@ public:
 
     QIcon icon();
     Type type() const;
+    Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
     bool isValid();
+    bool isValidLink(bool inIconRegion = false);
     QTextBlock textBlock();
     QTextCursor textCursor() const;
 
@@ -69,6 +66,7 @@ private:
     int mSize = 0;
     int mValue = 0;
     QTextCursor mCursor;
+    Qt::CursorShape *mCursorShape = nullptr;
     TextMark* mReference = nullptr;
 };
 

@@ -29,6 +29,7 @@ class QWidget;
 
 namespace gams {
 namespace studio {
+class TextMark;
 
 class LineNumberArea;
 
@@ -41,6 +42,8 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    int iconSize();
+    LineNumberArea* lineNumberArea();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -50,10 +53,13 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e);
+    void wheelEvent(QWheelEvent *e);
 
 signals:
     void updateBlockSelection();
     void updateBlockEdit();
+    void requestMarkHash(QHash<int, TextMark*>* marks);
+    void requestMarksEmpty(bool* marksEmpty);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -63,7 +69,7 @@ private slots:
     void onUpdateBlockEdit();
 
 private:
-    QWidget *lineNumberArea;
+    LineNumberArea *mLineNumberArea;
     int mBlockStartKey = 0;
     int mCurrentCol;
     QTextCursor mBlockStartCursor;
@@ -76,20 +82,25 @@ class LineNumberArea : public QWidget
 {
 public:
     LineNumberArea(CodeEditor *editor) : QWidget(editor) {
-        codeEditor = editor;
+        mCodeEditor = editor;
     }
 
     QSize sizeHint() const override {
-        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+        return QSize(mCodeEditor->lineNumberAreaWidth(), 0);
+    }
+    QHash<int, QIcon> &icons() {
+        return mIcons;
     }
 
 protected:
     void paintEvent(QPaintEvent *event) override {
-        codeEditor->lineNumberAreaPaintEvent(event);
+        mCodeEditor->lineNumberAreaPaintEvent(event);
     }
 
 private:
-    CodeEditor *codeEditor;
+    CodeEditor *mCodeEditor;
+    QHash<int, QIcon> mIcons;
+
 };
 
 

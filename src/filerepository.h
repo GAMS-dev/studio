@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "filetreemodel.h"
 #include "fileactioncontext.h"
+#include "logcontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "filetype.h"
@@ -121,7 +122,7 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
-    FileContext* logContext(FileSystemContext* node);
+    LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
@@ -130,19 +131,19 @@ signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
-    void openOrShowContext(FileContext* fileContext);
+    void openFileContext(FileContext* fileContext, bool focus = true);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void nodeChanged(int fileId);
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
-    void findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup = nullptr);
+    void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
 
 private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
-    void generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup = nullptr);
     void setErrorHint(const int errCode, const QString& hint);
     void getErrorHint(const int errCode, QString& hint);
 

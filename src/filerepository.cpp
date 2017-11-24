@@ -106,18 +106,10 @@ FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContex
     return fsc;
 }
 
-void FileRepository::findFile(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
+void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
 {
     FileSystemContext* fsc = findContext(filePath, fileGroup);
-    resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
-}
-
-void FileRepository::generateTextMark(TextMark::Type tmType, int value, QString filePath, int line, int column, int columnFrom, TextMark*& textLink, FileGroupContext* fileGroup)
-{
-    TRACE();
-    FileContext* fc;
-    findFile(filePath, fc, fileGroup);
-    textLink = fc ? fc->generateTextMark(tmType, value, line, column, columnFrom) : nullptr;
+    *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
 void FileRepository::setErrorHint(const int errCode, const QString &hint)
@@ -183,8 +175,8 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     mTreeModel->insertChild(offset, groupContext(parentIndex), fgContext);
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+    connect(fgContext, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
     fgContext->setWatched();
-    qDebug() << "added dir " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fgContext;
 }
@@ -202,12 +194,11 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
-    connect(fileContext, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
+    connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
-    connect(fileContext, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
+    connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
     connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
-    qDebug() << "added file " << name << " for " << location << " at pos=" << offset;
     updateActions();
     return fileContext;
 }
@@ -296,8 +287,8 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
-            fileFilter << parGroup->additionalFiles();
 
+        fileFilter << parGroup->additionalFiles();
         QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries
@@ -362,26 +353,24 @@ FileTreeModel*FileRepository::treeModel() const
     return mTreeModel;
 }
 
-FileContext*FileRepository::logContext(FileSystemContext* node)
+LogContext*FileRepository::logContext(FileSystemContext* node)
 {
     FileGroupContext* group = nullptr;
     if (node->type() != FileSystemContext::FileGroup)
         group = node->parentEntry();
     else
         group = static_cast<FileGroupContext*>(node);
-    FileContext* res = group->logContext();
+    LogContext* res = group->logContext();
     if (!res) {
-        res = new FileContext(mNextId++, "["+group->name()+"]", "");
-        connect(res, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
-        connect(res, &FileContext::requestTextMark, this, &FileRepository::generateTextMark);
-        connect(res, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
-        connect(res, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
-        res->setKeepDocument();
+        res = new LogContext(mNextId++, "["+group->name()+"]");
+        connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
+        connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
+        connect(res, &LogContext::createErrorHint, this, &FileRepository::setErrorHint);
+        connect(res, &LogContext::requestErrorHint, this, &FileRepository::getErrorHint);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;
         mTreeModel->insertChild(offset, group, res);
-        qDebug() << "generated log-context:" << res->name();
     }
     return res;
 }

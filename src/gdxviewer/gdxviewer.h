@@ -20,6 +20,7 @@ public:
     explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    GdxSymbol* selectedSymbol();
 
 private:
     Ui::GdxViewer ui;
@@ -29,6 +30,18 @@ private:
 
     gdxHandle_t mGdx;
     QMutex* mGdxMutex;
+
+    void loadSymbol(GdxSymbol* selectedSymbol);
+
+signals:
+    void loadFinished();
+
+
+public slots:
+    void toggleSqueezeDefaults(bool checked);
+    void refreshView();
+    void resetSortFilter();
+    void showColumnFilter(QPoint p);
 };
 
 } // namespace gdxviewer

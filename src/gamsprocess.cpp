@@ -20,51 +20,56 @@
 #include "gamsprocess.h"
 #include "gamspaths.h"
 #include "filegroupcontext.h"
-
+#include "logcontext.h"
 #include <QDebug>
 #include <QDir>
 
 namespace gams {
 namespace studio {
 
-const QString GAMSProcess::App = "gams";
+const QString GamsProcess::App = "gams";
 
-GAMSProcess::GAMSProcess(QObject *parent)
+GamsProcess::GamsProcess(QObject *parent)
     : AbstractProcess(parent)
 {
 }
 
-QString GAMSProcess::app()
+QString GamsProcess::app()
 {
     return App;
 }
 
-QString GAMSProcess::nativeAppPath()
+QString GamsProcess::nativeAppPath()
 {
     return AbstractProcess::nativeAppPath(mSystemDir, App);
 }
 
-void GAMSProcess::setWorkingDir(const QString &workingDir)
+void GamsProcess::setWorkingDir(const QString &workingDir)
 {
     mWorkingDir = workingDir;
 }
 
-QString GAMSProcess::workingDir() const
+QString GamsProcess::workingDir() const
 {
     return mWorkingDir;
 }
 
-void GAMSProcess::setContext(FileGroupContext *context)
+void GamsProcess::setContext(FileGroupContext *context)
 {
     mContext = context;
 }
 
-FileGroupContext* GAMSProcess::context() const
+FileGroupContext* GamsProcess::context()
 {
     return mContext;
 }
 
-void GAMSProcess::execute()
+LogContext*GamsProcess::logContext() const
+{
+    return mContext ? mContext->logContext() : nullptr;
+}
+
+void GamsProcess::execute()
 {
     qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
@@ -75,10 +80,14 @@ void GAMSProcess::execute()
     // we need this at least on windows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted
     QStringList args({gms, "lo=3", "ide=1", "er=99"});
+    if (!mCommandLineStr.isEmpty()) {
+       QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
+       args.append(paramList);
+    }
     mProcess.start(nativeAppPath(), args);
 }
 
-QString GAMSProcess::aboutGAMS()
+QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QStringList args({"?", "lo=3"});
@@ -88,6 +97,16 @@ QString GAMSProcess::aboutGAMS()
         about = process.readAllStandardOutput();
     }
     return about;
+}
+
+QString GamsProcess::commandLineStr() const
+{
+    return mCommandLineStr;
+}
+
+void GamsProcess::setCommandLineStr(const QString &commandLineStr)
+{
+    mCommandLineStr = commandLineStr;
 }
 
 } // namespace studio

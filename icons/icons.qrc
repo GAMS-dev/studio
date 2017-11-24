@@ -1,5 +1,11 @@
 <RCC>
     <qresource prefix="/img">
+        <file alias="bookmark">bookmark.svg</file>
+        <file alias="bug-r">bug-r.svg</file>
+        <file alias="err-ref">err-ref.svg</file>
+        <file alias="err-ref-missing">err-ref-missing.svg</file>
+        <file alias="exclam-circle-r">exclam-circle-r.svg</file>
+        <file alias="exclam-triangle-y">exclam-triangle-y.svg</file>
         <file alias="file-alt">file-alt.svg</file>
         <file alias="folder">folder.svg</file>
         <file alias="folder-open">folder-open.svg</file>

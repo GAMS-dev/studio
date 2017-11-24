@@ -26,10 +26,9 @@ namespace studio {
 
 TextMark::TextMark(Type tmType): mType(tmType)
 {
-
 }
 
-void TextMark::mark(FileContext* fileContext, int line, int column, int size)
+void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
     mFileContext = fileContext;
     mLine = line;
@@ -60,16 +59,25 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
-void TextMark::jumpToRefMark()
+void TextMark::jumpToRefMark(bool focus)
 {
     if (mReference)
-        mReference->jumpToMark();
+        mReference->jumpToMark(focus);
 }
 
-void TextMark::jumpToMark()
+void TextMark::jumpToMark(bool focus)
 {
-    if (mFileContext && !mCursor.isNull())
-        mFileContext->jumpTo(mCursor);
+    if (mFileContext) {
+        if (mCursor.isNull())
+            emit mFileContext->openFileContext(mFileContext, focus);
+        else
+            mFileContext->jumpTo(mCursor, focus);
+    }
+}
+
+bool TextMark::isErrorRef()
+{
+    return mReference && mReference->type() == error;
 }
 
 void TextMark::showToolTip()
@@ -80,12 +88,15 @@ void TextMark::showToolTip()
 
 QIcon TextMark::icon()
 {
-    switch (mType) {
+    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
     case error:
-        return QIcon(":icons/errormark");
+        return QIcon(":/img/exclam-circle-r");
+        break;
+    case link:
+        return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
         break;
     case bookmark: {
-        QIcon ico(":icons/bookmark");
+        QIcon ico(":/img/bookmark");
         // TODO(JM) insert bookmark-number from value (0-9)
         return ico;
         break;
@@ -101,16 +112,32 @@ TextMark::Type TextMark::type() const
     return mType;
 }
 
+Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
+{
+    if (shape && ((mType == error && inIconRegion) || mType == link)) {
+        *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+        DEB() << "Shape: " << QString::number(*shape);
+    } else {
+        DEB() << "NO Shape!";
+    }
+    return *shape;
+}
+
 bool TextMark::isValid()
 {
     return mFileContext && (mLine>=0) && (mColumn>=0);
+}
+
+bool TextMark::isValidLink(bool inIconRegion)
+{
+    return mReference && ((mType == error && inIconRegion) || mType == link);
 }
 
 int TextMark::line() const
 {
     if (mCursor.isNull())
         return mLine;
-    return mCursor.block().userState();
+    return mCursor.block().blockNumber();
 }
 
 QTextBlock TextMark::textBlock()

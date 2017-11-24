@@ -52,7 +52,8 @@ public:
         FileAction, // TODO(AF) still required?
                     // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
-        FileSystem
+        FileSystem,
+        Log
     };
 
     typedef QFlags<ContextFlag> ContextFlags;
@@ -64,6 +65,10 @@ public:
     /// \brief File context type.
     /// \return Returns the file context type as <c>int</c>.
     int type() const;
+
+    /// \brief Checks if the node can be represented in a tab.
+    /// \return True, if the node can be represented in a tab.
+    bool canShowAsTab() const;
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -95,7 +100,7 @@ public:
     virtual bool testFlag(ContextFlag flag);
 
     FileGroupContext* parentEntry() const;
-    void setParentEntry(FileGroupContext *parent);
+    virtual void setParentEntry(FileGroupContext *parent);
     virtual FileSystemContext* childEntry(int index);
     virtual int childCount();
 
@@ -104,6 +109,8 @@ signals:
     void changed(int fileId);
 
 protected:
+    friend class LogContext;
+
     FileSystemContext(int id, QString name, QString location);
     FileSystemContext(int id, QString name, QString location, ContextType type);
     virtual void checkFlags();

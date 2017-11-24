@@ -54,6 +54,12 @@ int FileSystemContext::type() const
     return mType;
 }
 
+bool FileSystemContext::canShowAsTab() const
+{
+    static QList<int> showableTypes = {ContextType::File};
+    return showableTypes.contains(mType);
+}
+
 FileGroupContext* FileSystemContext::parentEntry() const
 {
     return mParent;

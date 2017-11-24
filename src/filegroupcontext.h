@@ -25,7 +25,10 @@
 namespace gams {
 namespace studio {
 
+class LogContext;
 class FileContext;
+class GamsProcess;
+class TextMark;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -48,33 +51,47 @@ public:
     void setWatched(bool watch = true);
     QString runableGms();
     QString lstFileName();
+    LogContext* logContext();
+
+    GamsProcess* newGamsProcess();
+    GamsProcess* gamsProcess();
+    QProcess::ProcessState gamsProcessState() const;
 
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
     void addAdditionalFile(const QString &additionalFile);
+    void jumpToMark(bool focus);
+
 signals:
     void contentChanged(int id, QDir fileInfo);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void directoryChanged(const QString &path);
 
+protected slots:
+    void onGamsProcessStateChanged(QProcess::ProcessState newState);
+    void processDeleted();
+
 protected:
     friend class FileRepository;
     friend class FileSystemContext;
+    friend class LogContext;
 
     FileGroupContext(int id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
-    FileContext* logContext();
-    void setLogContext(FileContext* logContext);
+    void setLogContext(LogContext* logContext);
+    void updateRunState(const QProcess::ProcessState &state);
 
 private:
     QList<FileSystemContext*> mChildList;
     QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
-    FileContext* mLogContext;
+    LogContext* mLogContext = nullptr;
+    GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
 };

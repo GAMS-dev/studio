@@ -147,6 +147,9 @@
      <string>GAMS</string>
     </property>
     <addaction name="actionRun"/>
+    <addaction name="actionRun_with_GDX_Creation"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompile"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
@@ -175,7 +178,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionRun"/>
    <addaction name="separator"/>
    <addaction name="actionGAMS_Library"/>
   </widget>
@@ -224,7 +226,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockOutputView">
+  <widget class="QDockWidget" name="dockLogView">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -232,7 +234,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Output</string>
+    <string>Process</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -252,16 +254,45 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QPlainTextEdit" name="outputView">
-       <property name="mouseTracking">
-        <bool>true</bool>
+      <widget class="QTabWidget" name="logTab">
+       <property name="tabPosition">
+        <enum>QTabWidget::South</enum>
        </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-       </property>
+       <widget class="QWidget" name="log">
+        <attribute name="title">
+         <string>System</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPlainTextEdit" name="logView">
+           <property name="mouseTracking">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -409,6 +440,25 @@
    </property>
    <property name="shortcut">
     <string>F9</string>
+   </property>
+  </action>
+  <action name="actionCompile">
+   <property name="text">
+    <string>Compile</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F9</string>
+   </property>
+  </action>
+  <action name="actionRun_with_GDX_Creation">
+   <property name="text">
+    <string>Run with GDX Creation</string>
+   </property>
+   <property name="toolTip">
+    <string>Run and Create a GDX File with gms file root name</string>
    </property>
   </action>
  </widget>

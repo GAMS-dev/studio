@@ -5,10 +5,13 @@
 #include <QMutex>
 #include "gdxsymbol.h"
 #include <memory>
+#include "gdxcc.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+class GdxSymbol;
 
 class GdxSymbolTable : public QAbstractTableModel
 {
@@ -28,10 +31,17 @@ public:
 
     QList<GdxSymbol *> gdxSymbols() const;
 
+    QStringList uel2Label() const;
+
+    QStringList strPool() const;
+
+    int *labelCompIdx();
+
 private:
     QStringList mHeaderText;
 
     QString typeAsString(int type) const;
+    void createSortIndex();
 
     gdxHandle_t mGdx = nullptr;
     int mUelCount;
@@ -44,6 +54,8 @@ private:
     QList<GdxSymbol*> mGdxSymbols;
     QStringList mUel2Label;
     QStringList mStrPool;
+
+    int* mLabelCompIdx = nullptr;
 
     QMutex* mGdxMutex;
 };

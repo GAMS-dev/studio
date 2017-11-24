@@ -47,6 +47,7 @@ win32:LIBS += -luser32
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += _CRT_SECURE_NO_WARNINGS
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -89,7 +90,15 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
-    logger.cpp
+    commandlinemodel.cpp \
+    commandlineoption.cpp \
+    logger.cpp \
+    logcontext.cpp \
+    gdxviewer/columnfilter.cpp \
+    gdxviewer/columnfilterframe.cpp \
+    gdxviewer/filteruelmodel.cpp \
+    settingsdialog.cpp \
+    studiosettings.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -120,14 +129,24 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
-    logger.h
+    commandlinemodel.h \
+    commandlineoption.h \
+    logger.h \
+    logcontext.h \
+    gdxviewer/columnfilter.h \
+    gdxviewer/columnfilterframe.h \
+    gdxviewer/filteruelmodel.h \
+    settingsdialog.h \
+    studiosettings.h
 
 FORMS += \
     welcomepage.ui  \
     mainwindow.ui   \
     newdialog.ui    \
     modeldialog/modeldialog.ui \
-    gdxviewer/gdxviewer.ui
+    gdxviewer/gdxviewer.ui \
+    gdxviewer/columnfilterframe.ui \
+    settingsdialog.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

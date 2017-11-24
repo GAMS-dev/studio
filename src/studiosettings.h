@@ -17,40 +17,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef WELCOMEPAGE_H
-#define WELCOMEPAGE_H
+#ifndef STUDIOSETTINGS_H
+#define STUDIOSETTINGS_H
 
-#include <QWidget>
+#include <QSettings>
+#include <QDebug>
 #include "mainwindow.h"
-
-namespace Ui {
-class WelcomePage;
-}
 
 namespace gams {
 namespace studio {
 
-class WelcomePage : public QWidget
+
+class StudioSettings
 {
-    Q_OBJECT
 
 public:
-    explicit WelcomePage(HistoryData *history, QWidget *parent = 0);
-    void historyChanged(HistoryData *history);
-    ~WelcomePage();
+    StudioSettings(MainWindow *main);
+    ~StudioSettings();
 
-private slots:
-    void labelLinkActivated(const QString &link);
+    void loadSettings();
+    void saveSettings();
 
 private:
-    Ui::WelcomePage *ui;
-
-signals:
-    void linkActivated(const QString &link);
+    MainWindow *mMain = nullptr;
+    QSettings *mAppSettings = nullptr;
+    QSettings *mUserSettings = nullptr;
 
 };
 
 }
 }
 
-#endif // WELCOMEPAGE_H
+#endif // STUDIOSETTINGS_H
