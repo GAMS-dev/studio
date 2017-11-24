@@ -159,19 +159,16 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
     }
 }
 
-void FileGroupContext::setAutoJumpMark(TextMark* textMark)
+void FileGroupContext::jumpToMark(bool focus)
 {
-    mAutoJumpTextMark = textMark;
-}
-
-void FileGroupContext::triggerAutoJump()
-{
-    if (mAutoJumpTextMark) {
-        if (!mAutoJumpTextMark->textCursor().isNull()) {
-            mAutoJumpTextMark->jumpToMark();
-            mAutoJumpTextMark->jumpToRefMark();
+    if (!mLogContext) return;
+    TextMark* textMark = mLogContext->firstErrorMark();
+    if (textMark) {
+        if (!textMark->textCursor().isNull()) {
+            textMark->jumpToMark(focus);
+            textMark->jumpToRefMark(focus);
         }
-        mAutoJumpTextMark = nullptr;
+        textMark = nullptr;
     }
 }
 

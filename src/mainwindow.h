@@ -89,7 +89,7 @@ private slots:
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
-    void openOrShowContext(FileContext *fileContext);
+    void openFileContext(FileContext *fileContext, bool focus = true);
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
 
@@ -135,7 +135,7 @@ protected:
 
 private:
     void initTabs();
-    void openOrShow(QString filePath, FileGroupContext *parent, bool openedManually = false);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually = false);
     FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);

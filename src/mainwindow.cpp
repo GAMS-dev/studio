@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
-    connect(&mFileRepo, &FileRepository::openOrShowContext, this, &MainWindow::openOrShowContext);
+    connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
@@ -272,7 +272,7 @@ void MainWindow::on_actionSave_As_triggered()
         } // TODO: check if there are others to add
 
         fc->save(filePath);
-        openOrShow(filePath, fc->parentEntry());
+        openFilePath(filePath, fc->parentEntry(), true);
 
     }
 }
@@ -446,11 +446,11 @@ void MainWindow::postGamsRun(AbstractProcess* process)
     if(groupContext && fileInfo.exists()) {// TODO: add .log and others)
         QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
-        openOrShow(lstFile, groupContext);
-        groupContext->setAutoJumpMark(groupContext->logContext()->firstErrorMark());
-        if (groupContext == mRecent.group) {
-            groupContext->triggerAutoJump();
-        }
+
+        // TODO(JM)
+        bool doFocus = groupContext == mRecent.group;
+        openFilePath(lstFile, groupContext, doFocus);
+        groupContext->jumpToMark(doFocus);
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
@@ -464,7 +464,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     Q_UNUSED(process);
-    openOrShowContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    openFileContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -596,7 +596,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openOrShow(filePath, nullptr);
+    openFilePath(filePath, nullptr, true);
 }
 
 HistoryData *MainWindow::history()
@@ -724,7 +724,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         for (QString fName: pathList) {
             QFileInfo fi(fName);
             if (QFileInfo(fName).isFile()) {
-                openOrShow(fi.canonicalFilePath(), nullptr, true);
+                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
             }
         }
     }
@@ -820,7 +820,7 @@ void MainWindow::on_actionCompile_triggered()
     execute("A=C");
 }
 
-void MainWindow::openOrShowContext(FileContext* fileContext)
+void MainWindow::openFileContext(FileContext* fileContext, bool focus)
 {
     if (!fileContext) return;
     QPlainTextEdit* edit = nullptr;
@@ -833,14 +833,14 @@ void MainWindow::openOrShowContext(FileContext* fileContext)
     } else {
         createEdit(tabWidget, fileContext->id());
     }
-    if (tabWidget->currentWidget())
+    if (focus && tabWidget->currentWidget())
         tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         FileContext* logContext = mFileRepo.logContext(fileContext);
         if (logContext && !logContext->editors().isEmpty()) {
             QPlainTextEdit* logEdit = logContext->editors().first();
-            if (ui->logTab->currentWidget() != logEdit) {
+            if (focus && ui->logTab->currentWidget() != logEdit) {
                 ui->logTab->setCurrentWidget(logEdit);
             }
         }
@@ -848,7 +848,7 @@ void MainWindow::openOrShowContext(FileContext* fileContext)
     addToOpenedFiles(fileContext->location());
 }
 
-void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool openedManually)
+void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually)
 {
     QFileInfo fileInfo(filePath);
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
@@ -866,13 +866,13 @@ void MainWindow::openOrShow(QString filePath, FileGroupContext *parent, bool ope
             QTabWidget* tabWidget = fsc->location().isEmpty() ? ui->logTab : ui->mainTab;
             fc = static_cast<FileContext*>(fsc);
             createEdit(tabWidget, fc->id());
-            if (tabWidget->currentWidget())
+            if (focus && tabWidget->currentWidget())
                 tabWidget->currentWidget()->setFocus();
             ui->projectView->expand(mFileRepo.treeModel()->index(group));
             addToOpenedFiles(filePath);
         }
     } else if (fc) {
-        openOrShowContext(fc);
+        openFileContext(fc);
     }
     if (!fc) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
@@ -893,7 +893,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            openOrShow(fInfo.filePath(), nullptr, openedManually); // open all sorts of files
+            openFilePath(fInfo.filePath(), nullptr, true, openedManually); // open all sorts of files
         }
     }
     return fc;
@@ -904,7 +904,7 @@ void MainWindow::openContext(const QModelIndex& index)
     FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
     if (fsc && fsc->type() == FileSystemContext::File) {
         FileContext *fc = static_cast<FileContext*>(fsc);
-        openOrShowContext(fc);
+        openFileContext(fc);
     }
 }
 

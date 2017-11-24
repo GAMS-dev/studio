@@ -36,8 +36,8 @@ public:
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void updateCursor();
     void setRefMark(TextMark* refMark);
-    void jumpToRefMark();
-    void jumpToMark();
+    void jumpToRefMark(bool focus = true);
+    void jumpToMark(bool focus = true);
     bool isErrorRef();
 
     void showToolTip();

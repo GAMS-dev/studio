@@ -115,7 +115,7 @@ public:
     virtual QTextDocument* document();
 
     const FileMetrics& metrics();
-    void jumpTo(const QTextCursor& cursor);
+    void jumpTo(const QTextCursor& cursor, bool focus);
     void showToolTip(const TextMark& mark);
 
 signals:
@@ -132,7 +132,7 @@ signals:
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
-    void openOrShow(FileContext* fileContext);
+    void openFileContext(FileContext* fileContext, bool focus = true);
     void setLineIcon(int line, const QIcon& icon);
 
 protected slots:

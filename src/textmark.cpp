@@ -59,19 +59,19 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
-void TextMark::jumpToRefMark()
+void TextMark::jumpToRefMark(bool focus)
 {
     if (mReference)
-        mReference->jumpToMark();
+        mReference->jumpToMark(focus);
 }
 
-void TextMark::jumpToMark()
+void TextMark::jumpToMark(bool focus)
 {
     if (mFileContext) {
         if (mCursor.isNull())
-            emit mFileContext->openOrShow(mFileContext);
+            emit mFileContext->openFileContext(mFileContext, focus);
         else
-            mFileContext->jumpTo(mCursor);
+            mFileContext->jumpTo(mCursor, focus);
     }
 }
 

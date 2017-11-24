@@ -60,8 +60,7 @@ public:
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
     void addAdditionalFile(const QString &additionalFile);
-    void setAutoJumpMark(TextMark* textMark);
-    void triggerAutoJump();
+    void jumpToMark(bool focus);
 
 signals:
     void contentChanged(int id, QDir fileInfo);
@@ -95,7 +94,6 @@ private:
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
-    TextMark* mAutoJumpTextMark = nullptr;
 };
 
 } // namespace studio

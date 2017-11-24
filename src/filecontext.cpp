@@ -253,14 +253,14 @@ void FileContext::load(QString codecName)
     }
 }
 
-void FileContext::jumpTo(const QTextCursor &cursor)
+void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
 {
     if (mEditors.size()) {
         QPlainTextEdit* edit = mEditors.first();
         QTextCursor tc(cursor);
         tc.clearSelection();
         edit->setTextCursor(tc);
-        emit openOrShow(this);
+        emit openFileContext(this, focus);
         // center line vertically
         int lines = edit->rect().bottom() / edit->cursorRect().height();
         int line = edit->cursorRect().bottom() / edit->cursorRect().height();
