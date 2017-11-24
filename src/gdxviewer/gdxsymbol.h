@@ -62,7 +62,7 @@ public:
 
     Qt::SortOrder sortOrder() const;
 
-    void resetSorting();
+    void resetSortFilter();
 
     QList<QMap<int, bool> *> filterUels() const;
 

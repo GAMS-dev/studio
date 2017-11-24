@@ -337,10 +337,14 @@ Qt::SortOrder GdxSymbol::sortOrder() const
     return mSortOrder;
 }
 
-void GdxSymbol::resetSorting()
+void GdxSymbol::resetSortFilter()
 {
     for(int i=0; i<mRecordCount; i++)
+    {
         mRecSortIdx[i] = i;
+        mRecFilterIdx[i] = i;
+    }
+    mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
     mSortColumn = -1;
     layoutChanged();
 }

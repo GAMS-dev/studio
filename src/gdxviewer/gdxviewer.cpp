@@ -47,7 +47,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
 
     connect(this, &GdxViewer::loadFinished, this, &GdxViewer::refreshView);
-    connect(ui.pbResetSorting, &QPushButton::clicked, this, &GdxViewer::resetSorting);
+    connect(ui.pbResetSortFilter, &QPushButton::clicked, this, &GdxViewer::resetSortFilter);
 }
 
 GdxViewer::~GdxViewer()
@@ -165,10 +165,10 @@ void GdxViewer::refreshView()
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
 
-void GdxViewer::resetSorting()
+void GdxViewer::resetSortFilter()
 {
     GdxSymbol* selected = selectedSymbol();
-    selected->resetSorting();
+    selected->resetSortFilter();
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
 
