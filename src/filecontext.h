@@ -157,6 +157,7 @@ protected:
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     bool eventFilter(QObject *watched, QEvent *event);
     bool mouseOverLink();
+    TextMark* findMark(const QTextCursor& cursor);
 
 private:
     FileMetrics mMetrics;
@@ -165,8 +166,8 @@ private:
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QList<TextMark*> mTextMarks;
-    bool mMouseOverTextLink = false;
-    bool mMouseOverIconLink = false;
+    TextMark *mMarkAtMouse = nullptr;
+    QPoint mClickPos;
 
     static const QStringList mDefaulsCodecs;
 

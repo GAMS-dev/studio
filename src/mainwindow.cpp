@@ -441,18 +441,23 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
     FileGroupContext* groupContext = process ? process->context() : nullptr;
+    // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupContext && fileInfo.exists()) {// TODO: add .log and others)
         QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
         openOrShow(lstFile, groupContext);
+        groupContext->setAutoJumpMark(groupContext->logContext()->firstErrorMark());
+        if (groupContext == mRecent.group) {
+            groupContext->triggerAutoJump();
+        }
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
     if (process) {
         process->deleteLater();
     }
-    ui->actionRun->setEnabled(true);
+//    ui->actionRun->setEnabled(true);
 }
 
 void MainWindow::postGamsLibRun(AbstractProcess* process)

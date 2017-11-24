@@ -159,6 +159,22 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
     }
 }
 
+void FileGroupContext::setAutoJumpMark(TextMark* textMark)
+{
+    mAutoJumpTextMark = textMark;
+}
+
+void FileGroupContext::triggerAutoJump()
+{
+    if (mAutoJumpTextMark) {
+        if (!mAutoJumpTextMark->textCursor().isNull()) {
+            mAutoJumpTextMark->jumpToMark();
+            mAutoJumpTextMark->jumpToRefMark();
+        }
+        mAutoJumpTextMark = nullptr;
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms

@@ -28,6 +28,7 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
+class TextMark;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -59,6 +60,9 @@ public:
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
     void addAdditionalFile(const QString &additionalFile);
+    void setAutoJumpMark(TextMark* textMark);
+    void triggerAutoJump();
+
 signals:
     void contentChanged(int id, QDir fileInfo);
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -91,6 +95,7 @@ private:
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
+    TextMark* mAutoJumpTextMark = nullptr;
 };
 
 } // namespace studio

@@ -41,6 +41,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
     setMouseTracking(true);
+    viewport()->setMouseTracking(true);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -319,7 +320,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             f.setBold(mark);
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
-            int realtop = (top+bottom-fontMetrics().height())/2;
+            int realtop = top; // (top+bottom-fontMetrics().height())/2;
             painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
             if (textMarks.contains(blockNumber)) {
