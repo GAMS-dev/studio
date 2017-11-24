@@ -131,7 +131,8 @@ signals:
     void fileClosed(int fileId, QPrivateSignal);
     void fileChangedExtern(int fileId);
     void fileDeletedExtern(int fileId);
-    void openOrShowContext(FileContext* fileContext);
+    void openFileContext(FileContext* fileContext, bool focus = true);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void nodeChanged(int fileId);

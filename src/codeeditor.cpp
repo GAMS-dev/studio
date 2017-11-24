@@ -30,6 +30,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     mLineNumberArea = new LineNumberArea(this);
 
     this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    mLineNumberArea->setMouseTracking(true);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -40,6 +41,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
     setMouseTracking(true);
+    viewport()->setMouseTracking(true);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -53,17 +55,21 @@ int CodeEditor::lineNumberAreaWidth()
 
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    QHash<int, TextMark*>* textMarks = nullptr;
-    emit requestMarkList(&textMarks);
-    space += (textMarks && textMarks->isEmpty()) ? 0 : mLineNumberArea->iconSize();
+    bool marksEmpty = true;
+    emit requestMarksEmpty(&marksEmpty);
+    space += (marksEmpty ? 0 : iconSize());
 
     return space;
 }
 
-void CodeEditor::setIconSize(int size)
+int CodeEditor::iconSize()
 {
-    mLineNumberArea->setIconSize(size);
-    updateLineNumberAreaWidth(-1);
+    return fontMetrics().height()-3;
+}
+
+LineNumberArea* CodeEditor::lineNumberArea()
+{
+    return mLineNumberArea;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
@@ -241,6 +247,18 @@ void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
+void CodeEditor::wheelEvent(QWheelEvent *e) {
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->delta();
+        if (delta < 0)
+            zoomOut();
+        else if (delta > 0)
+            zoomIn();
+        return;
+    }
+    QPlainTextEdit::wheelEvent(e);
+}
+
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
 {
     if (e->mimeData()->hasUrls()) {
@@ -274,8 +292,8 @@ void CodeEditor::highlightCurrentLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    QHash<int, TextMark*>* textMarks = nullptr;
-    emit requestMarkList(&textMarks);
+    QHash<int, TextMark*> textMarks;
+    emit requestMarkHash(&textMarks);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -302,14 +320,12 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             f.setBold(mark);
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
-            int realtop = (top+bottom-fontMetrics().height())/2;
+            int realtop = top; // (top+bottom-fontMetrics().height())/2;
             painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
-            if (textMarks && textMarks->contains(blockNumber)) {
-                int iSize = mLineNumberArea->iconSize();
-                int iTop = (2+top+bottom-iSize)/2;
-
-                painter.drawPixmap(1, iTop, textMarks->value(blockNumber)->icon().pixmap(QSize(iSize,iSize)));
+            if (textMarks.contains(blockNumber)) {
+                int iTop = (2+top+bottom-iconSize())/2;
+                painter.drawPixmap(1, iTop, textMarks.value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 

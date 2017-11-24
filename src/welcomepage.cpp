@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(QWidget *parent) :
+WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WelcomePage)
 {
@@ -35,6 +35,31 @@ WelcomePage::WelcomePage(QWidget *parent) :
     connect(ui->label_gamsworld, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
     connect(ui->label_gamsyoutube, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
     connect(ui->label_stackoverflow, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
+
+    historyChanged(history);
+}
+
+void WelcomePage::historyChanged(HistoryData *history)
+{
+    int size = ui->layout_lastFiles->rowCount();
+    for (int i = 0; i < size; i++)
+        ui->layout_lastFiles->removeRow(0);
+
+    QLabel *tmpLabel;
+    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
+        QFileInfo file(history->lastOpenedFiles.at(i));
+        if (history->lastOpenedFiles.at(i) == "") continue;
+        if (file.exists()) {
+            tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName()
+                                  + "</a><br/>"
+                                  + "<small>" + file.filePath() + "</small>");
+            tmpLabel->setToolTip(file.filePath());
+            connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
+        } else {
+            tmpLabel = new QLabel(file.fileName() + " (File missing!)<br/><small>" + file.canonicalPath() + "</small>");
+        }
+        ui->layout_lastFiles->addWidget(tmpLabel);
+    }
 }
 
 WelcomePage::~WelcomePage()

@@ -66,6 +66,13 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     mParent = parent;
 }
 
+TextMark*LogContext::firstErrorMark()
+{
+    for (TextMark* mark: mTextMarks)
+        if (mark->isErrorRef()) return mark;
+    return nullptr;
+}
+
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     if (!mDocument)
@@ -182,8 +189,10 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         state = Outside;
                         break;
                     }
-                    if (errMark)
+                    if (errMark) {
                         mark.textMark->setRefMark(errMark);
+                        errMark->setRefMark(mark.textMark);
+                    }
                     marks << mark;
                 } else if (part.startsWith("FIL")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(8));

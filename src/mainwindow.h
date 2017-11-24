@@ -21,7 +21,9 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
+#include "filerepository.h"
 #include "codeeditor.h"
+#include "commandlinemodel.h"
 #include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
@@ -34,8 +36,10 @@ namespace gams {
 namespace studio {
 
 class AbstractProcess;
+class GAMSProcess;
 class GAMSLibProcess;
-class GamsProcess;
+class WelcomePage;
+class StudioSettings;
 
 struct RecentData {
     int editFileId = -1;
@@ -44,15 +48,36 @@ struct RecentData {
     FileGroupContext* group = nullptr;
 };
 
+struct HistoryData {
+    const int MAX_FILE_HISTORY = 5;
+    QStringList lastOpenedFiles;
+
+    // TODO: implement projects & sessions
+    // QStringList mLastOpenedProjects;
+    // QStringList mLastOpenedSessions;
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, QString codecName = QString());
-    void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
+    void addToOpenedFiles(QString filePath);
+    QStringList openedFiles();
+    void openFile(const QString &filePath);
+    bool outputViewVisibility();
+    bool projectViewVisibility();
+    HistoryData* history();
+    void setOutputViewVisibility(bool visibility);
+    void setProjectViewVisibility(bool visibility);
+    void setCommandLineModel(CommandLineModel* opt);
+    CommandLineModel* commandLineModel();
+    FileRepository* fileRepository();
+
 
 private slots:
     void codecChanged(QAction *action);
@@ -64,11 +89,9 @@ private slots:
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
-    void openOrShowContext(FileContext *fileContext);
+    void openFileContext(FileContext *fileContext, bool focus = true);
     // View
-    void setOutputViewVisibility(bool visibility);
-    void setProjectViewVisibility(bool visibility);
-    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 private slots:
     // File
@@ -85,6 +108,7 @@ private slots:
 
     // GAMS
     void on_actionRun_triggered();
+    void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     // About
     void on_actionOnline_Help_triggered();
@@ -111,23 +135,30 @@ protected:
 
 private:
     void initTabs();
-    void openOrShow(QString filePath, FileGroupContext *parent, bool openedManually = false);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually = false);
     FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
     void updateRunState();
+    void createWelcomePage();
 
 private:
+    const int MAX_FILE_HISTORY = 5;
+
     Ui::MainWindow *ui;
+    CommandLineModel* mCommandLineModel;
     CommandLineOption* mCommandLineOption;
+    GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    FileRepository mFileRepo;
     QActionGroup *mCodecGroup;
     RecentData mRecent;
-    bool mHasWelcomePage = false;
+    HistoryData *mHistory;
+    StudioSettings *mSettings;
+    WelcomePage *mWp = nullptr;
     bool mBeforeErrorExtraction = true;
+    FileRepository mFileRepo;
 };
 
 }

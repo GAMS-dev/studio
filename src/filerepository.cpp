@@ -175,6 +175,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     mTreeModel->insertChild(offset, groupContext(parentIndex), fgContext);
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+    connect(fgContext, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
     fgContext->setWatched();
     updateActions();
     return fgContext;
@@ -193,7 +194,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
-    connect(fileContext, &FileContext::openOrShow, this, &FileRepository::openOrShowContext);
+    connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
@@ -286,8 +287,8 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
             fileFilter << parGroup->name() + suff;
-            fileFilter << parGroup->additionalFiles();
 
+        fileFilter << parGroup->additionalFiles();
         QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
         // remove known entries from fileList and remember vanished entries
@@ -362,7 +363,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
     LogContext* res = group->logContext();
     if (!res) {
         res = new LogContext(mNextId++, "["+group->name()+"]");
-        connect(res, &LogContext::openOrShow, this, &FileRepository::openOrShowContext);
+        connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
         connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
         connect(res, &LogContext::createErrorHint, this, &FileRepository::setErrorHint);
         connect(res, &LogContext::requestErrorHint, this, &FileRepository::getErrorHint);

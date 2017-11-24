@@ -135,6 +135,11 @@ void FileGroupContext::setLogContext(LogContext* logContext)
     mLogContext = logContext;
 }
 
+void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
+{
+    // TODO(JM) visualize if a state is running
+}
+
 QStringList FileGroupContext::additionalFiles() const
 {
     return mAdditionalFiles;
@@ -151,6 +156,19 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
 
     if(!mAdditionalFiles.contains(additionalFile)) {
         mAdditionalFiles << additionalFile;
+    }
+}
+
+void FileGroupContext::jumpToMark(bool focus)
+{
+    if (!mLogContext) return;
+    TextMark* textMark = mLogContext->firstErrorMark();
+    if (textMark) {
+        if (!textMark->textCursor().isNull()) {
+            textMark->jumpToMark(focus);
+            textMark->jumpToRefMark(focus);
+        }
+        textMark = nullptr;
     }
 }
 
@@ -260,13 +278,16 @@ void FileGroupContext::directoryChanged(const QString& path)
 
 void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
-    emit gamsProcessStateChanged(this, newState);
+    Q_UNUSED(newState);
+    updateRunState(newState);
+    emit gamsProcessStateChanged(this);
 }
 
 void FileGroupContext::processDeleted()
 {
     mGamsProcess = nullptr;
-    emit gamsProcessStateChanged(this, QProcess::NotRunning);
+    updateRunState(QProcess::NotRunning);
+    emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)

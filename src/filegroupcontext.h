@@ -28,6 +28,7 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
+class TextMark;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -59,9 +60,11 @@ public:
     QStringList additionalFiles() const;
     void setAdditionalFiles(const QStringList &additionalFiles);
     void addAdditionalFile(const QString &additionalFile);
+    void jumpToMark(bool focus);
+
 signals:
     void contentChanged(int id, QDir fileInfo);
-    void gamsProcessStateChanged(FileGroupContext* group, QProcess::ProcessState newState);
+    void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
     void directoryChanged(const QString &path);
@@ -81,6 +84,7 @@ protected:
     void removeChild(FileSystemContext *child);
     void checkFlags();
     void setLogContext(LogContext* logContext);
+    void updateRunState(const QProcess::ProcessState &state);
 
 private:
     QList<FileSystemContext*> mChildList;
