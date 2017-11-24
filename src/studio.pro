@@ -98,7 +98,8 @@ SOURCES += \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/filteruelmodel.cpp \
     settingsdialog.cpp \
-    studiosettings.cpp
+    studiosettings.cpp \
+    application.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -137,7 +138,8 @@ HEADERS += \
     gdxviewer/columnfilterframe.h \
     gdxviewer/filteruelmodel.h \
     settingsdialog.h \
-    studiosettings.h
+    studiosettings.h \
+    application.h
 
 FORMS += \
     welcomepage.ui  \
