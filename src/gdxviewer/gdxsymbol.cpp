@@ -344,6 +344,15 @@ void GdxSymbol::resetSortFilter()
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
     }
+    for(int dim=0; dim<mDim; dim++)
+    {
+        QMap<int,bool>* map = mFilterUels.at(dim);
+        for(int uel : map->keys())
+        {
+            map->insert(uel, true);
+        }
+    }
+
     mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
     mSortColumn = -1;
     layoutChanged();
