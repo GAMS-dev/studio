@@ -25,7 +25,6 @@ public:
     void setHistorySize(int historySize);
     QMap<QString, QStringList> allOptions();
 
-public slots:
     void addIntoCurrentContextHistory(QString option);
 
 private:

@@ -124,7 +124,8 @@ private slots:
     void on_projectView_doubleClicked(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
-    void on_runWithCommandLineOption(QString options);
+    void on_runWithChangedOptions();
+    void on_runWithParamAndChangedOptions(QString parameter);
 
 protected:
     void closeEvent(QCloseEvent *event);

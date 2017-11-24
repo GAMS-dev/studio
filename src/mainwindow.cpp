@@ -61,13 +61,26 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
     ui->mainToolBar->addSeparator();
-    ui->mainToolBar->addAction(ui->actionRun);
+    QMenu* runMenu = new QMenu;
+    runMenu->addAction(ui->actionRun);
+    runMenu->addAction(ui->actionRun_with_GDX_Creation);
+    runMenu->addSeparator();
+    runMenu->addAction(ui->actionCompile);
+
+    QToolButton* runToolButton = new QToolButton(this);
+    runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    runToolButton->setMenu(runMenu);
+    runToolButton->setDefaultAction(ui->actionRun);
+    ui->mainToolBar->addWidget(runToolButton);
+
     mCommandLineOption = new CommandLineOption(this);
     mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
-    connect(mCommandLineOption, &CommandLineOption::runWithChangedOption,
-            mCommandLineModel, &CommandLineModel::addIntoCurrentContextHistory );
-    connect(mCommandLineOption, &CommandLineOption::runWithChangedOption, this, &MainWindow::on_runWithCommandLineOption);
+
+    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
+            this, &MainWindow::on_runWithChangedOptions);
+    connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
+            this, &MainWindow::on_runWithParamAndChangedOptions);
 
     mCodecGroup = new QActionGroup(this);
     connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
@@ -742,23 +755,24 @@ void MainWindow::execute(QString commandLineStr)
         if (!fgc)
             return;
 
-    int ret = QMessageBox::Save;
     if (fc->editors().size() == 1 && fc->isModified()) {
+         int ret = QMessageBox::Save;
          QMessageBox msgBox;
          msgBox.setIcon(QMessageBox::Warning);
          msgBox.setText(fc->location()+" has been modified.");
          msgBox.setInformativeText("Do you want to save your changes before running?");
          msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-         QAbstractButton* buttonContinueWithOutSaving = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
+         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
          msgBox.setDefaultButton(QMessageBox::Save);
          ret = msgBox.exec();
-    }
-    if (ret == QMessageBox::Cancel) {
-        return;
-    } else if (ret == QMessageBox::Save) {
-        fc->save();
-    } else {
-        fc->load(fc->codec());
+
+         if (ret == QMessageBox::Cancel) {
+             return;
+         } else if (ret == QMessageBox::Save) {
+             fc->save();
+         } else if (msgBox.clickedButton() == discardButton) {
+             fc->load(fc->codec());
+         }
     }
 
     ui->actionRun->setEnabled(false);
@@ -795,25 +809,31 @@ void MainWindow::updateRunState()
     ui->actionRun->setEnabled(state != QProcess::Running);
 }
 
-void MainWindow::on_runWithCommandLineOption(QString options)
+void MainWindow::on_runWithChangedOptions()
 {
-    execute(options);
+    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    execute( mCommandLineOption->getCurrentOption() );
+}
+
+void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
+{
+    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
 }
 
 void MainWindow::on_actionRun_triggered()
 {
-    // forward signal with additional current command line parameter
-    emit mCommandLineOption->runWithChangedOption(mCommandLineOption->getCurrentOption());
+    emit mCommandLineOption->optionRunChanged();
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute("GDX=default");
+    emit mCommandLineOption->optionRunWithParameterChanged( "GDX=default" );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute("A=C");
+    emit mCommandLineOption->optionRunWithParameterChanged( "A=C" );
 }
 
 void MainWindow::openOrShowContext(FileContext* fileContext)
