@@ -11,7 +11,6 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
-    createSortIndex();
 
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
@@ -149,8 +148,10 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
     throw Exception();
 }
 
-int *GdxSymbolTable::labelCompIdx() const
+int *GdxSymbolTable::labelCompIdx()
 {
+    if(!mLabelCompIdx)
+        this->createSortIndex();
     return mLabelCompIdx;
 }
 

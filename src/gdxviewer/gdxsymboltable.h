@@ -35,12 +35,13 @@ public:
 
     QStringList strPool() const;
 
-    int *labelCompIdx() const;
+    int *labelCompIdx();
 
 private:
     QStringList mHeaderText;
 
     QString typeAsString(int type) const;
+    void createSortIndex();
 
     gdxHandle_t mGdx = nullptr;
     int mUelCount;
@@ -48,7 +49,6 @@ private:
     void loadUel2Label();
     void loadStringPool();
     void loadGDXSymbols();
-    void createSortIndex();
     void reportIoError(int errNr, QString message);
 
     QList<GdxSymbol*> mGdxSymbols;
