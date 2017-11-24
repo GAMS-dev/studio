@@ -802,7 +802,8 @@ void MainWindow::on_runWithCommandLineOption(QString options)
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute(mCommandLineOption->getCurrentOption());
+    // forward signal with additional current command line parameter
+    emit mCommandLineOption->runWithChangedOption(mCommandLineOption->getCurrentOption());
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
