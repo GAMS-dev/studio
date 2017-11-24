@@ -100,12 +100,12 @@ void MainWindow::initTabs()
     createWelcomePage();
 }
 
-void MainWindow::createEdit(QTabWidget* tabWidget, QString codecName)
+void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
 {
-    createEdit(tabWidget, -1, codecName);
+    createEdit(tabWidget, focus, -1, codecName);
 }
 
-void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
+void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString codecName)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
@@ -132,11 +132,10 @@ void MainWindow::createEdit(QTabWidget *tabWidget, int id, QString codecName)
 
         } else {
             tabIndex = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), fc->caption());
-            ui->mainTab->setCurrentIndex(tabIndex);
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
-        tabWidget->setCurrentIndex(tabIndex);
+        if (focus) tabWidget->setCurrentIndex(tabIndex);
         ensureCodecMenu(fc->codec());
     }
 }
@@ -829,19 +828,19 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         edit = fileContext->editors().first();
     }
     if (edit) {
-        tabWidget->setCurrentWidget(edit);
+        if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        createEdit(tabWidget, fileContext->id());
+        createEdit(tabWidget, focus, fileContext->id());
     }
-    if (focus && tabWidget->currentWidget())
-        tabWidget->currentWidget()->setFocus();
+    if (tabWidget->currentWidget())
+        if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         FileContext* logContext = mFileRepo.logContext(fileContext);
         if (logContext && !logContext->editors().isEmpty()) {
             QPlainTextEdit* logEdit = logContext->editors().first();
-            if (focus && ui->logTab->currentWidget() != logEdit) {
-                ui->logTab->setCurrentWidget(logEdit);
+            if (ui->logTab->currentWidget() != logEdit) {
+                if (focus) ui->logTab->setCurrentWidget(logEdit);
             }
         }
     }
@@ -865,14 +864,14 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
         if (fsc->type() == FileSystemContext::File) {
             QTabWidget* tabWidget = fsc->location().isEmpty() ? ui->logTab : ui->mainTab;
             fc = static_cast<FileContext*>(fsc);
-            createEdit(tabWidget, fc->id());
-            if (focus && tabWidget->currentWidget())
-                tabWidget->currentWidget()->setFocus();
+            createEdit(tabWidget, focus, fc->id());
+            if (tabWidget->currentWidget())
+                if (focus) tabWidget->currentWidget()->setFocus();
             ui->projectView->expand(mFileRepo.treeModel()->index(group));
             addToOpenedFiles(filePath);
         }
     } else if (fc) {
-        openFileContext(fc);
+        openFileContext(fc, focus);
     }
     if (!fc) {
         EXCEPT() << "invalid pointer found: FileContext expected.";

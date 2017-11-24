@@ -63,8 +63,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, QString codecName = QString());
-    void createEdit(QTabWidget* tabWidget, int id = -1, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
     void addToOpenedFiles(QString filePath);
     QStringList openedFiles();
