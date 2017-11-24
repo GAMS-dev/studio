@@ -20,7 +20,8 @@ public:
     QString getCurrentOption() const;
 
 signals:
-    void runWithChangedOption(QString text);
+    void optionRunChanged();
+    void optionRunWithParameterChanged(QString parameter);
 
 public slots:
     void updateCurrentOption(QString text);
