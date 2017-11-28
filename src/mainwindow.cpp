@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
     ui->mainToolBar->addSeparator();
+
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
@@ -561,7 +562,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setDefaultAction(ui->actionRun);
     ui->mainToolBar->addWidget(runToolButton);
 
-    mCommandLineOption = new CommandLineOption(this);
+    mCommandLineOption = new CommandLineOption(false, this);
     mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 

@@ -22,7 +22,7 @@ public:
     CommandLineTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
-    QList<QTextLayout::FormatRange> format(const QList<OptionItem> &item);
+    QList<QTextLayout::FormatRange> format(const QList<OptionItem> &items);
 
 private:
     QTextCharFormat mInvalidKeyFormat;
