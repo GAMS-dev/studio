@@ -62,6 +62,7 @@ macx: ICON = studio.icns
 SOURCES += \
     $$GAMS_DISTRIB_API/gclgms.c \
     $$GAMS_DISTRIB_API/gdxcc.c \
+    $$GAMS_DISTRIB_API/optcc.c \
     main.cpp \
     codeeditor.cpp \
     filesystemcontext.cpp \
