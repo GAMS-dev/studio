@@ -40,7 +40,8 @@ signals:
 public slots:
     void toggleSqueezeDefaults(bool checked);
     void refreshView();
-    void resetSorting();
+    void resetSortFilter();
+    void showColumnFilter(QPoint p);
 };
 
 } // namespace gdxviewer

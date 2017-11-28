@@ -116,7 +116,9 @@ void StudioSettings::loadSettings()
     size = mAppSettings->beginReadArray("openedTabs");
     for (int i = 0; i < size; i++) {
         mAppSettings->setArrayIndex(i);
-        mMain->openFile(mAppSettings->value("location").toString());
+        QString value = mAppSettings->value("location").toString();
+        if(QFileInfo(value).exists())
+            mMain->openFile(value);
     }
 
     mAppSettings->endArray();

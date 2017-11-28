@@ -26,7 +26,6 @@ namespace studio {
 
 TextMark::TextMark(Type tmType): mType(tmType)
 {
-
 }
 
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
@@ -60,20 +59,25 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
-void TextMark::jumpToRefMark()
+void TextMark::jumpToRefMark(bool focus)
 {
     if (mReference)
-        mReference->jumpToMark();
+        mReference->jumpToMark(focus);
 }
 
-void TextMark::jumpToMark()
+void TextMark::jumpToMark(bool focus)
 {
     if (mFileContext) {
         if (mCursor.isNull())
-            emit mFileContext->openOrShow(mFileContext);
+            emit mFileContext->openFileContext(mFileContext, focus);
         else
-            mFileContext->jumpTo(mCursor);
+            mFileContext->jumpTo(mCursor, focus);
     }
+}
+
+bool TextMark::isErrorRef()
+{
+    return mReference && mReference->type() == error;
 }
 
 void TextMark::showToolTip()
@@ -108,9 +112,25 @@ TextMark::Type TextMark::type() const
     return mType;
 }
 
+Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
+{
+    if (shape && ((mType == error && inIconRegion) || mType == link)) {
+        *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+        DEB() << "Shape: " << QString::number(*shape);
+    } else {
+        DEB() << "NO Shape!";
+    }
+    return *shape;
+}
+
 bool TextMark::isValid()
 {
     return mFileContext && (mLine>=0) && (mColumn>=0);
+}
+
+bool TextMark::isValidLink(bool inIconRegion)
+{
+    return mReference && ((mType == error && inIconRegion) || mType == link);
 }
 
 int TextMark::line() const

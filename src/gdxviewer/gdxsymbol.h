@@ -3,21 +3,25 @@
 
 #include <QAbstractTableModel>
 #include <QMutex>
-#include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 #include <memory>
 #include "gdxcc.h"
 #include <QString>
+#include <QSet>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+class GdxSymbolTable;
+
 
 class GdxSymbol : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, QStringList* uel2Label, QStringList* strPool, int nr, QString name, int dimension, int type, int subtype, int recordCount, QString explText, int* sortIndex, QObject *parent = 0);
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent = 0);
     ~GdxSymbol();
 
     // Header:
@@ -53,33 +57,38 @@ public:
 
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 
+    void filterRows();
     int sortColumn() const;
 
     Qt::SortOrder sortOrder() const;
 
-    void resetSorting();
+    void resetSortFilter();
+
+    QList<QMap<int, bool> *> filterUels() const;
+
+    GdxSymbolTable *gdxSymbolTable() const;
 
 private:
     int mNr;
-    QString mName;
     int mDim;
     int mType;
     int mSubType;
     int mRecordCount;
     QString mExplText;
+    QString mName;
+
+    GdxSymbolTable* mGdxSymbolTable;
 
     gdxHandle_t mGdx;
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
+    int mFilterRecCount = 0;
 
     bool stopLoading = false;
 
     int* mKeys = nullptr;
     double* mValues = nullptr;
-
-    QStringList* mUel2Label;
-    QStringList* mStrPool;
 
     QMutex* mGdxMutex;
 
@@ -90,12 +99,19 @@ private:
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
     void calcDefaultColumns();
+    void calcUelsInColumn();
+    void loadMetaData();
+    void loadDomains();
+
+    QList<QMap<int, bool>*> mFilterUels;
 
     int* mRecSortIdx = nullptr;
-    int* mLabelCompIdx;
+    int* mRecFilterIdx = nullptr;
 
     int mSortColumn = -1;
     Qt::SortOrder mSortOrder;
+
+
 };
 
 } // namespace gdxviewer

@@ -93,11 +93,15 @@ SOURCES += \
     textmark.cpp \
     commandlinemodel.cpp \
     commandlineoption.cpp \
+    commandlinetokenizer.cpp \
     logger.cpp \
     logcontext.cpp \
+    gdxviewer/columnfilter.cpp \
+    gdxviewer/columnfilterframe.cpp \
+    gdxviewer/filteruelmodel.cpp \
     settingsdialog.cpp \
     studiosettings.cpp \
-    commandlinetokenizer.cpp
+    application.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -130,11 +134,15 @@ HEADERS += \
     textmark.h \
     commandlinemodel.h \
     commandlineoption.h \
+    commandlinetokenizer.h \
     logger.h \
     logcontext.h \
+    gdxviewer/columnfilter.h \
+    gdxviewer/columnfilterframe.h \
+    gdxviewer/filteruelmodel.h \
     settingsdialog.h \
     studiosettings.h \
-    commandlinetokenizer.h
+    application.h
 
 FORMS += \
     welcomepage.ui  \
@@ -142,6 +150,7 @@ FORMS += \
     newdialog.ui    \
     modeldialog/modeldialog.ui \
     gdxviewer/gdxviewer.ui \
+    gdxviewer/columnfilterframe.ui \
     settingsdialog.ui
 
 INCLUDEPATH += \

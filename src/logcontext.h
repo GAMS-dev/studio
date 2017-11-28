@@ -14,6 +14,7 @@ public:
     void addEditor(QPlainTextEdit *edit) override;
     void removeEditor(QPlainTextEdit *edit) override;
     void setParentEntry(FileGroupContext *parent) override;
+    TextMark* firstErrorMark();
 
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
@@ -31,7 +32,6 @@ protected:
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
-
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     QPair<int, QString> mCurrentErrorHint;

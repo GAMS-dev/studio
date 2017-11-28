@@ -1,10 +1,12 @@
 #include "gdxviewer.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbol.h"
+#include "columnfilter.h"
 #include "exception.h"
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -16,6 +18,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.setupUi(this);
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
+
+    ui.tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui.tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxViewer::showColumnFilter);
 
     mGdxMutex = new QMutex();
 
@@ -37,11 +42,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.tvSymbols->setModel(mGdxSymbolTable);
     ui.tvSymbols->resizeColumnsToContents();
 
+
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
 
     connect(this, &GdxViewer::loadFinished, this, &GdxViewer::refreshView);
-    connect(ui.pbResetSorting, &QPushButton::clicked, this, &GdxViewer::resetSorting);
+    connect(ui.pbResetSortFilter, &QPushButton::clicked, this, &GdxViewer::resetSortFilter);
 }
 
 GdxViewer::~GdxViewer()
@@ -149,6 +155,7 @@ void GdxViewer::refreshView()
             ui.cbSqueezeDefaults->setEnabled(true);
         else
             ui.cbSqueezeDefaults->setEnabled(false);
+        selectedSymbol()->filterRows();
     }
     else
     {
@@ -158,11 +165,23 @@ void GdxViewer::refreshView()
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
 
-void GdxViewer::resetSorting()
+void GdxViewer::resetSortFilter()
 {
     GdxSymbol* selected = selectedSymbol();
-    selected->resetSorting();
+    selected->resetSortFilter();
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
+}
+
+void GdxViewer::showColumnFilter(QPoint p)
+{
+    int column = ui.tableView->horizontalHeader()->logicalIndexAt(p);
+    GdxSymbol* selected = selectedSymbol();
+    if(selected->isLoaded() && column>=0 && column<selected->dim())
+    {
+        QMenu* m = new QMenu(this);
+        m->addAction(new ColumnFilter(selected, column, this));
+        m->popup(ui.tableView->mapToGlobal(p));
+    }
 }
 
 } // namespace gdxviewer

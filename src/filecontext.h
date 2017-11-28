@@ -115,7 +115,7 @@ public:
     virtual QTextDocument* document();
 
     const FileMetrics& metrics();
-    void jumpTo(const QTextCursor& cursor);
+    void jumpTo(const QTextCursor& cursor, bool focus);
     void showToolTip(const TextMark& mark);
 
 signals:
@@ -132,7 +132,7 @@ signals:
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
-    void openOrShow(FileContext* fileContext);
+    void openFileContext(FileContext* fileContext, bool focus = true);
     void setLineIcon(int line, const QIcon& icon);
 
 protected slots:
@@ -157,6 +157,7 @@ protected:
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     bool eventFilter(QObject *watched, QEvent *event);
     bool mouseOverLink();
+    TextMark* findMark(const QTextCursor& cursor);
 
 private:
     FileMetrics mMetrics;
@@ -165,8 +166,8 @@ private:
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QList<TextMark*> mTextMarks;
-    bool mMouseOverTextLink = false;
-    bool mMouseOverIconLink = false;
+    TextMark *mMarkAtMouse = nullptr;
+    QPoint mClickPos;
 
     static const QStringList mDefaulsCodecs;
 

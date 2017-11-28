@@ -18,11 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mainwindow.h"
-#include <QApplication>
+#include "application.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    gams::studio::Application a(argc, argv);
     a.setOrganizationName("GAMS");
     a.setOrganizationDomain("www.gams.com");
     a.setApplicationName("Studio");

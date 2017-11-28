@@ -11,7 +11,6 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
-    createSortIndex();
 
     mHeaderText.append("Entry");
     mHeaderText.append("Name");
@@ -62,16 +61,19 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     if (role == Qt::DisplayRole)
+    {
+        GdxSymbol* symbol = mGdxSymbols.at(index.row());
         switch(index.column())
         {
-        case 0: return mGdxSymbols.at(index.row())->nr(); break;
-        case 1: return mGdxSymbols.at(index.row())->name(); break;
-        case 2: return typeAsString(mGdxSymbols.at(index.row())->type()); break;
-        case 3: return mGdxSymbols.at(index.row())->dim(); break;
-        case 4: return mGdxSymbols.at(index.row())->recordCount(); break;
-        case 5: return mGdxSymbols.at(index.row())->isLoaded(); break;
-        case 6: return mGdxSymbols.at(index.row())->explText(); break;
+        case 0: return symbol->nr(); break;
+        case 1: return symbol->name(); break;
+        case 2: return typeAsString(symbol->type()); break;
+        case 3: return symbol->dim(); break;
+        case 4: return symbol->recordCount(); break;
+        case 5: return symbol->isLoaded(); break;
+        case 6: return symbol->explText(); break;
         }
+    }
     else if (role == Qt::TextAlignmentRole)
     {
         Qt::AlignmentFlag aFlag;
@@ -94,22 +96,7 @@ void GdxSymbolTable::loadGDXSymbols()
 {
     QMutexLocker locker(mGdxMutex);
     for(int i=1; i<mSymbolCount+1; i++)
-    {
-        char symName[GMS_UEL_IDENT_SIZE];
-        char explText[GMS_SSSIZE];
-        int dimension = 0;
-        int type = 0;
-        gdxSymbolInfo(mGdx, i, symName, &dimension, &type);
-        int recordCount = 0;
-        int userInfo = 0;
-        gdxSymbolInfoX (mGdx, i, &recordCount, &userInfo, explText);
-        if(type == GMS_DT_EQU)
-            userInfo = gmsFixEquType(userInfo);
-        if(type == GMS_DT_VAR)
-            userInfo = gmsFixVarType(userInfo);
-
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, &mUel2Label, &mStrPool, i, QString(symName), dimension, type, userInfo, recordCount, QString(explText), mLabelCompIdx));
-    }
+        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, this));
     locker.unlock();
 }
 
@@ -159,6 +146,23 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
     //TODO(CW): proper Exception message and remove qDebug
     qDebug() << "**** Fatal I/O Error = " << errNr << " when calling " << message;
     throw Exception();
+}
+
+int *GdxSymbolTable::labelCompIdx()
+{
+    if(!mLabelCompIdx)
+        this->createSortIndex();
+    return mLabelCompIdx;
+}
+
+QStringList GdxSymbolTable::strPool() const
+{
+    return mStrPool;
+}
+
+QStringList GdxSymbolTable::uel2Label() const
+{
+    return mUel2Label;
 }
 
 QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const

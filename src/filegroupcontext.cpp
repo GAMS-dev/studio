@@ -159,6 +159,19 @@ void FileGroupContext::addAdditionalFile(const QString &additionalFile)
     }
 }
 
+void FileGroupContext::jumpToMark(bool focus)
+{
+    if (!mLogContext) return;
+    TextMark* textMark = mLogContext->firstErrorMark();
+    if (textMark) {
+        if (!textMark->textCursor().isNull()) {
+            textMark->jumpToMark(focus);
+            textMark->jumpToRefMark(focus);
+        }
+        textMark = nullptr;
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms

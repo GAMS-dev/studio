@@ -66,6 +66,13 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     mParent = parent;
 }
 
+TextMark*LogContext::firstErrorMark()
+{
+    for (TextMark* mark: mTextMarks)
+        if (mark->isErrorRef()) return mark;
+    return nullptr;
+}
+
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     if (!mDocument)

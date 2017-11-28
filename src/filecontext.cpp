@@ -29,6 +29,14 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
+enum MouseOverLinkType {
+    molNone = 0,
+    molErrIcon = TextMark::error,
+    molLinkIcon = TextMark::link,
+    molBookmarkIcon = TextMark::bookmark,
+    molText = TextMark::all+1,
+};
+
 FileContext::FileContext(int id, QString name, QString location, ContextType type)
     : FileSystemContext(id, name, location, type)
 {
@@ -245,14 +253,14 @@ void FileContext::load(QString codecName)
     }
 }
 
-void FileContext::jumpTo(const QTextCursor &cursor)
+void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
 {
     if (mEditors.size()) {
         QPlainTextEdit* edit = mEditors.first();
         QTextCursor tc(cursor);
         tc.clearSelection();
         edit->setTextCursor(tc);
-        emit openOrShow(this);
+        emit openFileContext(this, focus);
         // center line vertically
         int lines = edit->rect().bottom() / edit->cursorRect().height();
         int line = edit->cursorRect().bottom() / edit->cursorRect().height();
@@ -343,15 +351,39 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
+TextMark* FileContext::findMark(const QTextCursor &cursor)
+{
+    for (TextMark* mark: mTextMarks) {
+        QTextCursor tc = mark->textCursor();
+        if (tc.isNull()) break;
+        if (tc.blockNumber() > cursor.blockNumber()) break;
+        if (tc.blockNumber() < cursor.blockNumber()) continue;
+        if (cursor.atBlockStart())
+            return mark;
+
+        int a = tc.block().position() + mark->column();
+        int b = a + (mark->size() ? mark->size() : tc.block().length());
+        DEB() << "a = " << a << "   b = " << b << "   curso-at: " << cursor.position();
+        if (cursor.position() >= b) continue;
+        if (cursor.position() >= a && (cursor.selectionEnd() < b))
+            return mark;
+    }
+    return nullptr;
+}
+
 bool FileContext::eventFilter(QObject* watched, QEvent* event)
 {
-    static QPoint clickPos;
     static QSet<QEvent::Type> evCheckMouse {QEvent::MouseButtonPress, QEvent::MouseButtonRelease, QEvent::MouseMove, QEvent::ToolTip};
     static QSet<QEvent::Type> evCheckKey {QEvent::KeyPress, QEvent::KeyRelease};
 
-    if (!mEditors.size() || (watched != mEditors.first() && watched != mEditors.first()->viewport()))
-        return FileSystemContext::eventFilter(watched, event);
+//    if (!mEditors.size() || (watched != mEditors.first() && watched != mEditors.first()->viewport()))
+//        return FileSystemContext::eventFilter(watched, event);
 
+    // For events MouseButtonPress, MouseButtonRelease, MouseMove,
+    // - when send by viewport -> content
+    // - when send by CodeEdit -> lineNumberArea
+    // For event ToolTip
+    // - always two events occur: one for viewport and one for CodeEdit
 
     // TODO(JM) use updateLinkDisplay
 
@@ -359,8 +391,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     if (evCheckKey.contains(event->type())) {
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMouseOverTextLink ||mMouseOverIconLink
-                                                    ? Qt::PointingHandCursor : Qt::IBeamCursor);
+            mEditors.first()->viewport()->setCursor(mMarkAtMouse ? Qt::PointingHandCursor : Qt::IBeamCursor);
         } else {
             mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
@@ -369,71 +400,36 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
     if (evCheckMouse.contains(event->type())) {
         QPlainTextEdit* edit = mEditors.first();
-        QPoint pos = (event->type() == QEvent::ToolTip)
-                ? static_cast<QHelpEvent*>(event)->pos()
-                : static_cast<QMouseEvent*>(event)->pos();
+        QPoint pos = (event->type() == QEvent::ToolTip) ? static_cast<QHelpEvent*>(event)->pos()
+                                                        : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-
-        // TODO(JM) use the textcursor to request the line
         CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
-        bool linkFromText = true;
-        TextMark* iconMark = nullptr;
-        if (codeEdit) {
-            int line = cursor.blockNumber();
-            for (TextMark* mark: mTextMarks) {
-                if (mark->line() == line) {
-                    iconMark = mark;
-                    linkFromText = (mark->type() != TextMark::error && codeEdit->lineNumberAreaWidth() > pos.x());
-                    mMouseOverIconLink = !linkFromText;
+        mMarkAtMouse = findMark(cursor);
+        bool isValidLink = false;
 
-                }
-                if (mark->line() >= line) {
-                    break;
-                }
-            }
+        // if in CodeEditors lineNumberArea
+        if (codeEdit && watched == codeEdit && event->type() != QEvent::ToolTip) {
+            Qt::CursorShape shape = Qt::ArrowCursor;
+            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape, true);
+            codeEdit->lineNumberArea()->setCursor(shape);
+            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink(true) : false;
+        } else {
+            Qt::CursorShape shape = Qt::IBeamCursor;
+            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape);
+            edit->viewport()->setCursor(shape);
+            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink() : false;
         }
 
-        if (event->type() == QEvent::MouseMove) {
-            if (cursor.charFormat().isAnchor() || iconMark) {
-                mMouseOverTextLink = linkFromText;
-                bool ctrl = true; //QApplication::keyboardModifiers() & Qt::ControlModifier;
-                if (linkFromText)
-                    edit->viewport()->setCursor(ctrl ? Qt::PointingHandCursor : Qt::IBeamCursor);
-                if (iconMark)
-                    codeEdit->lineNumberArea()->setCursor(Qt::PointingHandCursor);
-            } else {
-                mMouseOverTextLink = false;
-                mMouseOverIconLink = false;
-                edit->viewport()->setCursor(Qt::IBeamCursor);
-                if (codeEdit)
-                    codeEdit->lineNumberArea()->setCursor(Qt::ArrowCursor);
-            }
-        } else if (event->type() == QEvent::MouseButtonPress && (mMouseOverTextLink || mMouseOverIconLink)) {
-            clickPos = pos;
-        } else if (event->type() == QEvent::MouseButtonRelease && (mMouseOverTextLink || mMouseOverIconLink)) {
-            if ((clickPos-pos).manhattanLength() < 4) {
-                if (iconMark) {
-                    iconMark->jumpToRefMark();
-                    return true;
-                }
-                for (TextMark* mark: mTextMarks) {
-                    if (mark->line() == cursor.block().blockNumber()) {
-                        mark->jumpToRefMark();
-                        return true;
-                    }
-                }
+        if (mMarkAtMouse && event->type() == QEvent::MouseButtonPress) {
+            mClickPos = pos;
+        } else if (mMarkAtMouse && event->type() == QEvent::MouseButtonRelease) {
+            if ((mClickPos-pos).manhattanLength() < 4 && isValidLink) {
+                if (mMarkAtMouse) mMarkAtMouse->jumpToRefMark();
+                return mMarkAtMouse;
             }
         } else if (event->type() == QEvent::ToolTip) {
-            if (iconMark) {
-                iconMark->showToolTip();
-                return true;
-            }
-            for (TextMark* mark: mTextMarks) {
-                if (mark->line() == cursor.block().blockNumber()) {
-                    mark->showToolTip();
-                    return true;
-                }
-            }
+            if (mMarkAtMouse) mMarkAtMouse->showToolTip();
+            return mMarkAtMouse;
         }
     }
     return FileSystemContext::eventFilter(watched, event);
@@ -441,7 +437,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
 bool FileContext::mouseOverLink()
 {
-    return mMouseOverTextLink;
+    return mMarkAtMouse;
 }
 
 void FileContext::modificationChanged(bool modiState)
