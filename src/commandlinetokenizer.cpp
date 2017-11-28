@@ -6,11 +6,11 @@ namespace studio {
 CommandLineTokenizer::CommandLineTokenizer()
 {
     mInvalidKeyFormat.setFontItalic(true);
-    mInvalidKeyFormat.setBackground(Qt::darkYellow);
-    mInvalidKeyFormat.setForeground(Qt::white);
+    mInvalidKeyFormat.setBackground(Qt::lightGray);
+    mInvalidKeyFormat.setForeground(Qt::blue);
 
     mInvalidValueFormat.setFontItalic(true);
-    mInvalidKeyFormat.setBackground(Qt::darkYellow);
+    mInvalidValueFormat.setBackground(Qt::lightGray); //Qt::darkYellow);
     mInvalidValueFormat.setForeground(Qt::red);
 }
 
@@ -36,9 +36,11 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                 key = entry.at(0);
                 kpos = offset;
                 offset += key.size();
-                offset++;
+                while(commandLineStr.midRef(offset).startsWith("=") || commandLineStr.midRef(offset).startsWith(" "))
+                    ++offset;
                 value = entry.at(1);
-                vpos = offset;   offset = offset+value.size();
+                vpos = offset;
+                offset = offset+value.size();
 //                qDebug() << QString("         [%1,%2] checkpoint_1").arg(key).arg(value);
                 if (value.isEmpty()) {
                     ++it;
@@ -48,6 +50,8 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                         break;
                     }
                     value = *it;
+                    while(commandLineStr.midRef(offset).startsWith("=") || commandLineStr.midRef(offset).startsWith(" "))
+                        ++offset;
                     offset += value.size();
 //                    qDebug() << QString("         [%1,%2] checkpoint_3").arg(key).arg(value);
                 } else {
@@ -55,8 +59,7 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                     while(i < entry.size()) {
                         QString str = entry.at(i++);
                         value.append("=").append(str);
-                        offset = offset + 1;
-                        offset = offset + str.size();
+                        offset = offset + 1 + str.size();
                     }
 //                    qDebug() << QString("         [%1,%2] entry.size()=%3 checkpoint_3").arg(key).arg(value).arg(entry.size());
                 }
@@ -64,7 +67,8 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                key =  param;
                kpos = offset;
                offset += key.size();
-               offset++;
+               while(commandLineStr.midRef(offset).startsWith("=") || commandLineStr.midRef(offset).startsWith(" "))
+                   ++offset;
 //               qDebug() << QString("         [%1,%2] checkpoint_5").arg(key).arg(value);
                ++it;
                if (it == paramList.cend()) {
@@ -78,15 +82,18 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
 
                    if (value.startsWith("=")) {  // e.g. ("=","=x","x=x.gdx","=x=x.gdx") in  ("gdx = x","gdx =x", "gdx = x=x.gdx", "gdx =x=x.gdx");
                        value = value.mid(1);
+                       --offset;
                        if (value.isEmpty()) {
-//                           qDebug() << QString("         [%1,%2] checkpoint_7").arg(key).arg(value);
-                           offset++;
+                           qDebug() << QString("         [%1,%2] checkpoint_7").arg(key).arg(value);
                            vpos=offset;
                            ++it;
                            if (it == paramList.cend()) {
                                commandLineList.append(OptionItem(key, value, kpos, vpos));
                                break;
                            }
+                           while(commandLineStr.midRef(offset).startsWith(" "))
+                               ++offset;
+
                            value = *it;
                            offset += value.size();
 //                           qDebug() << QString("         [%1,%2] checkpoint_8").arg(key).arg(value);
@@ -108,7 +115,6 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
 QList<QTextLayout::FormatRange> CommandLineTokenizer::format(const QList<OptionItem> &items)
 {
     QList<QTextLayout::FormatRange> frList;
-
     for (OptionItem item : items) {
         if (item.key.isEmpty()) {
            QTextLayout::FormatRange fr;
@@ -116,19 +122,14 @@ QList<QTextLayout::FormatRange> CommandLineTokenizer::format(const QList<OptionI
            fr.length = item.value.size();
            fr.format = mInvalidValueFormat;
            frList.append(fr);
-           qDebug() << QString("key(%1=%2) empty %3 %4").arg(item.key).arg(item.value).arg(fr.start).arg(fr.length);
         } else if (item.value.isEmpty()) {
             QTextLayout::FormatRange fr;
-            fr.start = item.key.size();
+            fr.start = item.keyPosition;
             fr.length = item.key.length();
             fr.format = mInvalidKeyFormat;
             frList.append(fr);
-            qDebug() << QString("value(%1=%2) empty %3 %4").arg(item.key).arg(item.value).arg(fr.start).arg(fr.length);;
-        } else {
-           qDebug()  << QString("value(%1=%2)").arg(item.key).arg(item.value);
         }
     }
-    // TODO
     return frList;
 }
 

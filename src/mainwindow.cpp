@@ -61,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
     ui->mainToolBar->addSeparator();
-
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);

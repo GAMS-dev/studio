@@ -39,6 +39,9 @@ private:
     QString mCurrentOption;
     bool mValidated;
     CommandLineTokenizer* mCommandLineTokenizer;
+
+    void clearLineEditTextFormat(QLineEdit* lineEdit);
+    void setLineEditTextFormat(QLineEdit* lineEdit, const QList<QTextLayout::FormatRange>& formats);
 };
 
 } // namespace studio
