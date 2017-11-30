@@ -466,6 +466,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
+    mSettings->saveSettings();
     QCoreApplication::quit();
 }
 
