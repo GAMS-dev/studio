@@ -31,6 +31,7 @@
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
+#include "settingsdialog.h"
 
 namespace gams {
 namespace studio {
@@ -466,6 +467,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
+    mSettings->saveSettings();
     QCoreApplication::quit();
 }
 
@@ -954,4 +956,10 @@ void MainWindow::on_mainTab_currentChanged(int index)
 }
 
 }
+}
+
+void gams::studio::MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog sd(this);
+    sd.exec();
 }

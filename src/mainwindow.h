@@ -127,6 +127,8 @@ private slots:
     void on_runWithChangedOptions();
     void on_runWithParamAndChangedOptions(QString parameter);
 
+    void on_actionSettings_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
