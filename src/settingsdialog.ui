@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>740</width>
+    <width>613</width>
     <height>517</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -34,7 +34,7 @@
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>691</width>
+         <width>561</width>
          <height>151</height>
         </rect>
        </property>
@@ -59,7 +59,7 @@
          <rect>
           <x>10</x>
           <y>50</y>
-          <width>671</width>
+          <width>540</width>
           <height>25</height>
          </rect>
         </property>
@@ -99,7 +99,7 @@
         <rect>
          <x>10</x>
          <y>190</y>
-         <width>691</width>
+         <width>561</width>
          <height>121</height>
         </rect>
        </property>
@@ -151,8 +151,8 @@
         <rect>
          <x>10</x>
          <y>330</y>
-         <width>691</width>
-         <height>81</height>
+         <width>561</width>
+         <height>71</height>
         </rect>
        </property>
        <property name="title">
@@ -161,8 +161,8 @@
        <widget class="QPushButton" name="pushButton">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>40</y>
+          <x>10</x>
+          <y>35</y>
           <width>80</width>
           <height>25</height>
          </rect>
@@ -174,8 +174,8 @@
        <widget class="QPushButton" name="pushButton_2">
         <property name="geometry">
          <rect>
-          <x>120</x>
-          <y>40</y>
+          <x>110</x>
+          <y>35</y>
           <width>80</width>
           <height>25</height>
          </rect>
@@ -190,6 +190,270 @@
       <attribute name="title">
        <string>Editor</string>
       </attribute>
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>561</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Editor Settings</string>
+       </property>
+       <widget class="QFontComboBox" name="fontComboBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>271</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="fontFilters">
+         <set>QFontComboBox::MonospacedFonts</set>
+        </property>
+        <property name="currentFont">
+         <font>
+          <family>Source Code Pro</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>50</y>
+          <width>40</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>5</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>12</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>56</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_3">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>30</y>
+          <width>56</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font Size</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_9">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Trim whitespaces on file save</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_10">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show line numbers</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_11">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>150</y>
+          <width>141</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show vertical line at</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox_2">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>150</y>
+          <width>51</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>20</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_8">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>150</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight code blocks</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_6">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>90</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight current line</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_7">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>120</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight matching brackets</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>230</y>
+         <width>561</width>
+         <height>181</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Tab Settings</string>
+       </property>
+       <widget class="QCheckBox" name="checkBox_12">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>34</y>
+          <width>231</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Replace tabs with spaces. Tab size</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox_3">
+        <property name="geometry">
+         <rect>
+          <x>230</x>
+          <y>32</y>
+          <width>40</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>4</number>
+        </property>
+       </widget>
+      </widget>
      </widget>
      <widget class="QWidget" name="tabDisplay">
       <attribute name="title">
