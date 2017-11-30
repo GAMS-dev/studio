@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
      </property>
@@ -23,7 +26,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -196,7 +199,7 @@
          <x>10</x>
          <y>20</y>
          <width>561</width>
-         <height>191</height>
+         <height>401</height>
         </rect>
        </property>
        <property name="title">
@@ -402,19 +405,25 @@
          <bool>true</bool>
         </property>
        </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_5">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>230</y>
-         <width>561</width>
-         <height>181</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Tab Settings</string>
-       </property>
+       <widget class="QCheckBox" name="checkBox_13">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>180</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show line numbers</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
        <widget class="QCheckBox" name="checkBox_12">
         <property name="enabled">
          <bool>true</bool>
@@ -422,7 +431,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>34</y>
+          <y>213</y>
           <width>231</width>
           <height>17</height>
          </rect>
@@ -438,7 +447,7 @@
         <property name="geometry">
          <rect>
           <x>230</x>
-          <y>32</y>
+          <y>212</y>
           <width>40</width>
           <height>20</height>
          </rect>
@@ -453,14 +462,64 @@
          <number>4</number>
         </property>
        </widget>
+       <widget class="QCheckBox" name="checkBox_14">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>240</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable auto-indentation</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_15">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>270</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable line wrapping</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="tabDisplay">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <attribute name="title">
        <string>Display</string>
       </attribute>
      </widget>
      <widget class="QWidget" name="tabControls">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <attribute name="title">
        <string>Controls</string>
       </attribute>
