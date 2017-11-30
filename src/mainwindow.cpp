@@ -197,14 +197,16 @@ void MainWindow::on_actionNew_triggered()
         FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
         if (fc) path = QFileInfo(fc->location()).path();
     }
-    auto filePath = QFileDialog::getSaveFileName(this,
-                                                 "Create new file...",
-                                                 path,
-                                                 tr("GAMS code (*.gms *.inc );;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*)"));
+    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
+                                                    tr("GAMS code (*.gms *.inc );;"
+                                                       "Text files (*.txt);;"
+                                                       "All files (*)"));
 
+    QFileInfo fi(filePath);
+    if (fi.suffix().isEmpty())
+        filePath += ".gms";
     QFile file(filePath);
+
     if (!file.exists()) { // which should be the default!
         file.open(QIODevice::WriteOnly);
         file.close();
