@@ -348,6 +348,11 @@ void FileRepository::editorActivated(QPlainTextEdit* edit)
     mTreeModel->setCurrent(mi);
 }
 
+void FileRepository::setSelected(const QModelIndex& ind)
+{
+    mTreeModel->setSelected(ind);
+}
+
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;

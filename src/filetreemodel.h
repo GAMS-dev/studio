@@ -53,8 +53,8 @@ protected:
     void setCurrent(const QModelIndex& ind);
     bool isCurrentGroup(const QModelIndex& ind) const;
 
-    QModelIndex selected() const;
-    void setSelected(const QModelIndex& selected);
+    bool isSelected(const QModelIndex& ind) const;
+    void setSelected(const QModelIndex& ind);
 
 private:
     FileRepository *mFileRepo;

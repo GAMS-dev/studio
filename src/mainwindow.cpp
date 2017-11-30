@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
+    connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     ensureCodecMenu("System");
 
     mSettings->loadSettings();
@@ -691,7 +692,13 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
 {
+//    openContext(index);
+}
+
+void MainWindow::on_projectView_activated(const QModelIndex &index)
+{
     openContext(index);
+//    mFileRepo.setSelected(index);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -966,6 +973,8 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
 }
 
+
 }
 }
+
 

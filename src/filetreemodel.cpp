@@ -94,7 +94,7 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
     if (!ind.isValid()) return QVariant();
     switch (role) {
     case Qt::BackgroundColorRole:
-        if (isCurrent(ind)) return QColor("#4466BBFF");
+        if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
         return mFileRepo->context(ind)->caption();
@@ -178,12 +178,12 @@ void FileTreeModel::setCurrent(const QModelIndex& ind)
         QModelIndex mi = mCurrent;
         mCurrent = ind;
         if (mi.isValid()) {
-            dataChanged(mi, mi);                      // invalidate old
+            dataChanged(mi, mi);                        // invalidate old
             QModelIndex par = index(mFileRepo->context(ind)->parentEntry());
             if (par.isValid()) dataChanged(par, par);
         }
         if (mCurrent.isValid()) {
-            dataChanged(mCurrent, mCurrent);    // invalidate new
+            dataChanged(mCurrent, mCurrent);            // invalidate new
             QModelIndex par = index(mFileRepo->context(mCurrent)->parentEntry());
             if (par.isValid()) dataChanged(par, par);
         }
@@ -201,14 +201,19 @@ bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
     return false;
 }
 
-QModelIndex FileTreeModel::selected() const
+bool FileTreeModel::isSelected(const QModelIndex& ind) const
 {
-    return mSelected;
+    return (mSelected.isValid() && ind == mSelected);
 }
 
-void FileTreeModel::setSelected(const QModelIndex& selected)
+void FileTreeModel::setSelected(const QModelIndex& ind)
 {
-    mSelected = selected;
+    if (!isSelected(ind)) {
+        QModelIndex mi = mSelected;
+        mSelected = ind;
+        if (mi.isValid()) dataChanged(mi, mi);                      // invalidate old
+        if (mSelected.isValid()) dataChanged(mSelected, mSelected); // invalidate new
+    }
 }
 
 } // namespace studio
