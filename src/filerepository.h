@@ -122,6 +122,7 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
+    LogContext* logContext(QPlainTextEdit* edit);
     LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 

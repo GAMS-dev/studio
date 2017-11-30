@@ -547,6 +547,16 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 }
 
+void MainWindow::on_logTab_tabCloseRequested(int index)
+{
+    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->logTab->widget(index));
+    if (edit) {
+        LogContext* log = mFileRepo.logContext(edit);
+        log->removeEditor(edit);
+        ui->logTab->removeTab(index);
+    }
+}
+
 void MainWindow::createWelcomePage()
 {
     mWp = new WelcomePage(history());
@@ -958,3 +968,4 @@ void MainWindow::on_mainTab_currentChanged(int index)
 
 }
 }
+
