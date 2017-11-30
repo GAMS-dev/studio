@@ -41,7 +41,7 @@ private:
     CommandLineTokenizer* mCommandLineTokenizer;
 
     void clearLineEditTextFormat(QLineEdit* lineEdit);
-    void setLineEditTextFormat(QLineEdit* lineEdit, const QList<QTextLayout::FormatRange>& formats);
+    void setLineEditTextFormat(QLineEdit* lineEdit, const QList<OptionError>& errList);
 };
 
 } // namespace studio

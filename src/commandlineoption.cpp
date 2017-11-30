@@ -60,7 +60,6 @@ void CommandLineOption::validateChangedOption(QString text)
                     .arg(mCurrentOption.mid(item.keyPosition, item.key.size()))
                     .arg(mCurrentOption.mid(item.valuePosition, item.value.size()));
         }
-       qDebug() << this->lineEdit()->text();
        setLineEditTextFormat(this->lineEdit(), mCommandLineTokenizer->format(list));
 
     }
@@ -81,22 +80,43 @@ void CommandLineOption::keyPressEvent(QKeyEvent *event)
 
 void CommandLineOption::clearLineEditTextFormat(QLineEdit *lineEdit)
 {
-    setLineEditTextFormat(lineEdit, QList<QTextLayout::FormatRange>());
+    setLineEditTextFormat(lineEdit, QList<OptionError>());
 }
 
-void CommandLineOption::setLineEditTextFormat(QLineEdit *lineEdit, const QList<QTextLayout::FormatRange> &frList)
+void CommandLineOption::setLineEditTextFormat(QLineEdit *lineEdit, const QList<OptionError> &errList)
 {
-    qDebug() << QString("fr.size()=%1").arg(frList.size());
+    qDebug() << QString("err.size()=%1").arg(errList.size());
 
+
+    QString errorMessage;
     QList<QInputMethodEvent::Attribute> attributes;
-    foreach(const QTextLayout::FormatRange& fr, frList)   {
+    foreach(const OptionError err, errList)   {
         QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
-        int start = fr.start - lineEdit->cursorPosition();
-        int length = fr.length;
-        QVariant value = fr.format;
+        int start = err.formatRange.start - lineEdit->cursorPosition();
+        int length = err.formatRange.length;
+        QVariant value = err.formatRange.format;
         qDebug() << QString("   start=%1, length=%2").arg(start).arg(length);
         attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
+
+        if (errorMessage.isEmpty()) {
+            errorMessage.append("Error: Parameter error(s) or deprecation");
+        }
+        if (err.type == InvalidKey) {
+            errorMessage.append("\n   "+ lineEdit->text().mid(err.formatRange.start, err.formatRange.length)+" (Unknown option)");
+        } else if (err.type == InvalidValue) {
+            errorMessage.append("\n   "+ lineEdit->text().mid(err.formatRange.start, err.formatRange.length)+" (Invalid value)");
+        } else if (err.type == Deprecated) {
+            errorMessage.append("\n   "+ lineEdit->text().mid(err.formatRange.start, err.formatRange.length)+" (Deprecated, will be ignored)");
+        } else if (err.type == NoKey) {
+            errorMessage.append("\n   "+ lineEdit->text().mid(err.formatRange.start, err.formatRange.length)+" (Option keyword expected)");
+        }
     }
+    if (!errorMessage.isEmpty())
+        lineEdit->setToolTip(errorMessage);
+    else
+        lineEdit->setToolTip("");
+
+    qDebug() << QString("   errorMessage=[%1]").arg(errorMessage);
     QInputMethodEvent event(QString(), attributes);
     QCoreApplication::sendEvent(lineEdit, &event);
 }

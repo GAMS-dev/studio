@@ -11,7 +11,9 @@ class CommandLineModel : public QObject
     Q_OBJECT
 
 public:
-    CommandLineModel(QObject* parent, int initialHistorySize = 20);
+    static const int MAX_HISTORY_SIZE = 20;
+
+    CommandLineModel(QObject* parent, int initialHistorySize = MAX_HISTORY_SIZE);
     CommandLineModel(QMap<QString, QStringList> map);
     ~CommandLineModel();
 

@@ -101,7 +101,8 @@ SOURCES += \
     gdxviewer/filteruelmodel.cpp \
     settingsdialog.cpp \
     studiosettings.cpp \
-    application.cpp
+    application.cpp \
+    option.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -142,7 +143,8 @@ HEADERS += \
     gdxviewer/filteruelmodel.h \
     settingsdialog.h \
     studiosettings.h \
-    application.h
+    application.h \
+    option.h
 
 FORMS += \
     welcomepage.ui  \
