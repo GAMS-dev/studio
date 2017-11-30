@@ -74,7 +74,6 @@ void GamsProcess::execute()
     qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
     QString gms = QDir::toNativeSeparators(mInputFile);
-    gms.replace(" ", "\\ ");
 
     //TODO(CW)
     // we need this at least on windows in order to write explicitly to stdout.
