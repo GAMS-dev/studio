@@ -121,7 +121,6 @@ private slots:
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTab_tabCloseRequested(int index);
-    void on_projectView_doubleClicked(const QModelIndex &index);
     void on_projectView_activated(const QModelIndex &index);
     void on_actionProject_View_triggered(bool checked);
     void on_mainTab_currentChanged(int index);

@@ -690,15 +690,20 @@ void MainWindow::on_actionGAMS_Library_triggered()
     }
 }
 
-void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
-{
-//    openContext(index);
-}
-
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
-    openContext(index);
-//    mFileRepo.setSelected(index);
+    FileSystemContext* fsc = mFileRepo.context(index);
+    if (fsc->type() == FileSystemContext::FileGroup) {
+        LogContext* logProc = mFileRepo.logContext(fsc);
+        if (logProc->editors().isEmpty()) {
+            QPlainTextEdit* logEdit = new QPlainTextEdit();
+            int ind = ui->logTab->addTab(logEdit, logProc->caption());
+            logProc->addEditor(logEdit);
+            ui->logTab->setCurrentIndex(ind);
+        }
+    } else {
+        openContext(index);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -779,10 +784,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 void MainWindow::execute(QString commandLineStr)
 {
     // TODO: add option to clear output view before running next job
-        FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-        FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-        if (!fgc)
-            return;
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    if (!fgc)
+        return;
 
     if (fc->editors().size() == 1 && fc->isModified()) {
          QMessageBox msgBox;

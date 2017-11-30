@@ -363,7 +363,6 @@ TextMark* FileContext::findMark(const QTextCursor &cursor)
 
         int a = tc.block().position() + mark->column();
         int b = a + (mark->size() ? mark->size() : tc.block().length());
-        DEB() << "a = " << a << "   b = " << b << "   curso-at: " << cursor.position();
         if (cursor.position() >= b) continue;
         if (cursor.position() >= a && (cursor.selectionEnd() < b))
             return mark;
