@@ -304,6 +304,11 @@ void MainWindow::codecChanged(QAction *action)
 
 void MainWindow::activeTabChanged(int index)
 {
+    if (!mCommandLineOption->getCurrentContext().isEmpty()) {
+        mCommandLineModel->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
+        mCommandLineOption->resetCurrentValue();
+    }
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = static_cast<QPlainTextEdit*>(editWidget);
     if (edit) {
@@ -322,6 +327,7 @@ void MainWindow::activeTabChanged(int index)
             }
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setDisabled(false);
+            mCommandLineOption->setCurrentContext(fc->location());
         } else {
             mCommandLineOption->setCurrentIndex(-1);
             mCommandLineOption->setDisabled(true);

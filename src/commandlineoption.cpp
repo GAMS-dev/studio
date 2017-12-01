@@ -37,12 +37,12 @@ CommandLineOption::~CommandLineOption()
    delete mCommandLineTokenizer;
 }
 
-void CommandLineOption::updateCurrentOption(QString text)
+void CommandLineOption::updateCurrentOption(const QString &text)
 {
     mCurrentOption = text.simplified();
 }
 
-void CommandLineOption::validateChangedOption(QString text)
+void CommandLineOption::validateChangedOption(const QString &text)
 {
     // TODO: validate option key and value against optgams.def
     mCurrentOption = text.simplified();
@@ -76,6 +76,22 @@ void CommandLineOption::keyPressEvent(QKeyEvent *event)
     if ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
         emit optionRunChanged();
     }
+}
+
+QString CommandLineOption::getCurrentContext() const
+{
+    return mCurrentContext;
+}
+
+void CommandLineOption::setCurrentContext(const QString &currentContext)
+{
+    mCurrentContext = currentContext;
+}
+
+void CommandLineOption::resetCurrentValue()
+{
+    mCurrentContext = "";
+    mCurrentOption = "";
 }
 
 void CommandLineOption::clearLineEditTextFormat(QLineEdit *lineEdit)

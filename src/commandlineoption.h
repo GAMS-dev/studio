@@ -16,27 +16,30 @@ public:
     CommandLineOption(bool validateFlag, QWidget* parent);
     ~CommandLineOption();
 
-    QString getCurrentCommandLineOption() const;
-    void setCurrentCommandLineOption(QString text);
-
     QString getCurrentOption() const;
 
     bool isValidated() const;
     void validated(bool value);
 
+    QString getCurrentContext() const;
+    void setCurrentContext(const QString &currentContext);
+
+    void resetCurrentValue();
+
 signals:
     void optionRunChanged();
-    void optionRunWithParameterChanged(QString parameter);
+    void optionRunWithParameterChanged(const QString &parameter);
 
 public slots:
-    void updateCurrentOption(QString text);
-    void validateChangedOption(QString text);
+    void updateCurrentOption(const QString &text);
+    void validateChangedOption(const QString &text);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
 private:
     QString mCurrentOption;
+    QString mCurrentContext;
     bool mValidated;
     CommandLineTokenizer* mCommandLineTokenizer;
 
