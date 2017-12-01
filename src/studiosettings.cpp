@@ -17,7 +17,6 @@ void StudioSettings::saveSettings()
         return;
     }
     // Main Application Settings
-    qDebug() << "Saving settings";
     // window
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", mMain->size());
@@ -157,7 +156,6 @@ void StudioSettings::loadSettings()
     QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 12).toInt());
-    qDebug() << "fontsize" << mUserSettings->value("fontSize", 12).toInt();
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());

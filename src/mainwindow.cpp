@@ -601,7 +601,7 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     mLibProcess->setApp(item->library()->execName());
     mLibProcess->setModelName(item->name());
     mLibProcess->setInputFile(gmsFileName);
-    mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
     // This log is passed to the system-wide log
     connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
@@ -646,7 +646,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
         LibraryItem *item = dialog.selectedLibraryItem();
         QFileInfo fileInfo(item->files().first());
         QString gmsFileName = fileInfo.completeBaseName() + ".gms";
-        QString gmsFilePath = GAMSPaths::defaultWorkingDir() + "/" + gmsFileName;
+        QString gmsFilePath = mSettings->defaultWorkspace() + "/" + gmsFileName;
         QFile gmsFile(gmsFilePath);
 
         if (gmsFile.exists()) {
