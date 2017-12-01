@@ -29,7 +29,6 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     mLineNumberArea = new LineNumberArea(this);
 
-    this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     mLineNumberArea->setMouseTracking(true);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);

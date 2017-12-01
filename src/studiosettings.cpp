@@ -294,5 +294,13 @@ void StudioSettings::setFontFamily(const QString &value)
     mFontFamily = value;
 }
 
+void StudioSettings::updateEditors(QString fontFamily, int fontSize)
+{
+    QFont font(fontFamily, fontSize);
+    foreach (QPlainTextEdit* edit, mMain->openEditors()) {
+        edit->setFont(font);
+    }
+}
+
 }
 }

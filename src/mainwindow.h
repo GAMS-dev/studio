@@ -77,7 +77,7 @@ public:
     void setCommandLineModel(CommandLineModel* opt);
     CommandLineModel* commandLineModel();
     FileRepository* fileRepository();
-
+    QList<QPlainTextEdit*> openEditors();
 
 private slots:
     void codecChanged(QAction *action);

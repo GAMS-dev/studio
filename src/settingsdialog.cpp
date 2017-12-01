@@ -62,6 +62,16 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     }
 }
 
+void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
+{
+    mSettings->updateEditors(arg1, ui->sb_fontsize->value());
+}
+
+void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
+{
+    mSettings->updateEditors(ui->fontComboBox->currentFont().family(), arg1);
+}
+
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
@@ -69,3 +79,4 @@ SettingsDialog::~SettingsDialog()
 
 }
 }
+

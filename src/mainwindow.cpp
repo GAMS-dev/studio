@@ -111,6 +111,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         if (fc->metrics().fileType() != FileType::Gdx) {
 
             CodeEditor *codeEdit = new CodeEditor(this);
+            codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
@@ -182,6 +183,11 @@ CommandLineModel *MainWindow::commandLineModel()
 FileRepository *MainWindow::fileRepository()
 {
     return &mFileRepo;
+}
+
+QList<QPlainTextEdit *> MainWindow::openEditors()
+{
+    return mFileRepo.editors();
 }
 
 bool MainWindow::projectViewVisibility()

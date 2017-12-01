@@ -74,6 +74,8 @@ public:
     QString fontFamily() const;
     void setFontFamily(const QString &value);
 
+    void updateEditors(QString fontFamily, int fontSize);
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
