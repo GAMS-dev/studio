@@ -768,31 +768,31 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 void MainWindow::execute(QString commandLineStr)
 {
     // TODO: add option to clear output view before running next job
-        FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-        FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-        if (!fgc)
-            return;
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    if (!fgc)
+        return;
 
     if (mSettings->autosaveOnRun())
         fc->save();
 
     if (fc->editors().size() == 1 && fc->isModified()) {
-         QMessageBox msgBox;
-         msgBox.setIcon(QMessageBox::Warning);
-         msgBox.setText(fc->location()+" has been modified.");
-         msgBox.setInformativeText("Do you want to save your changes before running?");
-         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
-         msgBox.setDefaultButton(QMessageBox::Save);
-         int ret = msgBox.exec();
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(fc->location()+" has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes before running?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
 
-         if (ret == QMessageBox::Cancel) {
-             return;
-         } else if (ret == QMessageBox::Save) {
-             fc->save();
-         } else if (msgBox.clickedButton() == discardButton) {
-             fc->load(fc->codec());
-         }
+        if (ret == QMessageBox::Cancel) {
+            return;
+        } else if (ret == QMessageBox::Save) {
+            fc->save();
+        } else if (msgBox.clickedButton() == discardButton) {
+            fc->load(fc->codec());
+        }
     }
 
     ui->actionRun->setEnabled(false);
