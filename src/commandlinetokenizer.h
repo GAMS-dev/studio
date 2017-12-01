@@ -7,22 +7,13 @@
 namespace gams {
 namespace studio {
 
-enum OptionErrorType {
-    InvalidKey,
-    InvalidValue,
-    NoKey,
-    NoValue,
-    Deprecated,
-    unknown,
-};
-
 struct OptionError {
     OptionError() { }
-    OptionError(QTextLayout::FormatRange fr, OptionErrorType t):
-         formatRange(fr), type(t) { }
+    OptionError(QTextLayout::FormatRange fr, QString m):
+         formatRange(fr), message(m) { }
 
     QTextLayout::FormatRange formatRange;
-    OptionErrorType type;
+    QString message;
 };
 
 class CommandLineTokenizer

@@ -66,29 +66,31 @@ class Option
 public:
     static const int GAMS_DEPRECATED_GROUP_NUMBER = 4;
 
-    Option(QString systemPath, QString optionFileName);
+    Option(const QString &systemPath, const QString &optionFileName);
     ~Option();
 
     void dumpAll();
 
-    bool isValid(QString optionName);
-    bool isDeprecated(QString optionName);
-    QString getSynonym(QString optionName) const;
-    QVariant getDefaultValue(QString optionName) const;
-    QString getDescription(QString optionName) const;
+    bool isValid(const QString &optionName);
+    bool isDeprecated(const QString &optionName);
+    QString getSynonym(const QString &optionName) const;
+    optOptionType getType(const QString &optionName) const;
+    QVariant getDefaultValue(const QString &optionName) const;
+    QString getDescription(const QString &optionName) const;
+    QList<OptionValue> getValueList(const QString &optionName) const;
 
-    OptionDefinition getOptionDefinition(QString optionName) const;
+    OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
-    QMap<int, QString> getOptionTypeNameMap() const;
+    QString getOptionTypeName(int type) const;
 
 private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
-    QMap<QString, QString> mDeprecatedMap;
+//    QMap<QString, QString> mDeprecatedMap;
     QMap<int, QString> mOptionTypeNameMap;
     QList<OptionGroup> mOptionGroupList;
 
-    void readDefinition(QString systemPath, QString optionFileName);
+    void readDefinition(const QString &systemPath, const QString &optionFileName);
 };
 
 } // namespace studio

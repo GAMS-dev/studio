@@ -571,7 +571,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setDefaultAction(ui->actionRun);
     ui->mainToolBar->addWidget(runToolButton);
 
-    mCommandLineOption = new CommandLineOption(false, this);
+    mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 

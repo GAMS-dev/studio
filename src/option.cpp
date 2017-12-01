@@ -6,14 +6,17 @@ namespace gams {
 namespace studio {
 
 
-Option::Option(QString systemPath, QString optionFileName)
+Option::Option(const QString &systemPath, const QString &optionFileName)
 {
    readDefinition(systemPath, optionFileName);
 }
 
 Option::~Option()
 {
-
+    mOption.clear();
+    mSynonymMap.clear();
+    mOptionTypeNameMap.clear();
+    mOptionGroupList.clear();
 }
 
 void Option::dumpAll()
@@ -61,12 +64,12 @@ void Option::dumpAll()
     }
 }
 
-bool Option::isValid(QString optionName)
+bool Option::isValid(const QString &optionName)
 {
     return mOption.contains(optionName.toUpper());
 }
 
-bool Option::isDeprecated(QString optionName)
+bool Option::isDeprecated(const QString &optionName)
 {
     if (isValid(optionName))
        return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
@@ -74,9 +77,19 @@ bool Option::isDeprecated(QString optionName)
     return false;
 }
 
-QString Option::getSynonym(QString optionName) const
+QString Option::getSynonym(const QString &optionName) const
 {
     return mSynonymMap[optionName.toUpper()];
+}
+
+optOptionType Option::getType(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].type;
+}
+
+QList<OptionValue> Option::getValueList(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].valueList;
 }
 
 QList<OptionGroup> Option::getOptionGroupList() const
@@ -84,17 +97,17 @@ QList<OptionGroup> Option::getOptionGroupList() const
     return mOptionGroupList;
 }
 
-QMap<int, QString> Option::getOptionTypeNameMap() const
+QString Option::getOptionTypeName(int type) const
 {
-    return mOptionTypeNameMap;
+    return mOptionTypeNameMap[type];
 }
 
-OptionDefinition Option::getOptionDefinition(QString optionName) const
+OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 {
     return mOption[optionName.toUpper()];
 }
 
-void Option::readDefinition(QString systemPath, QString optionFileName)
+void Option::readDefinition(const QString &systemPath, const QString &optionFileName)
 {
     optHandle_t mOPTHandle;
 
@@ -105,7 +118,7 @@ void Option::readDefinition(QString systemPath, QString optionFileName)
     if (msg[0] != '\0')
         EXCEPT() << "ERROR" << msg;
 
-    qDebug() << QDir(systemPath).filePath("optgams.def").toLatin1();
+    qDebug() << QDir(systemPath).filePath(optionFileName).toLatin1();
 
 
     if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath("optgams.def").toLatin1())) {
@@ -205,7 +218,7 @@ void Option::readDefinition(QString systemPath, QString optionFileName)
                      }
 
 
-                     int count = optListCountStr(mOPTHandle, name);
+//                     int count = optListCountStr(mOPTHandle, name);
                      optGetEnumCount(mOPTHandle, i, &enumCount);
 //                     qDebug() << QString("%1 = ").arg(name) << QString::number(enumCount) << QString(", subtype=%1, %2").arg(ioptsubtype).arg(count);
 //                     for (int c = 1; c<= count ; ++i) {
@@ -241,7 +254,6 @@ void Option::readDefinition(QString systemPath, QString optionFileName)
                           }
                      }
                      mOption[nameStr] = opt;
-//                     mOption.append(opt);
          }
      } else {
           EXCEPT() << "Problem reading definition file " << QDir(systemPath).filePath("optgams.def").toLatin1();
