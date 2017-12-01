@@ -75,12 +75,12 @@
          <rect>
           <x>10</x>
           <y>90</y>
-          <width>131</width>
+          <width>231</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>Skip welcome page</string>
+         <string>Do not show welcome page</string>
         </property>
        </widget>
        <widget class="QCheckBox" name="cb_restoretabs">

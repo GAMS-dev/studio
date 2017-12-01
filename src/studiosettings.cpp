@@ -127,15 +127,6 @@ void StudioSettings::loadSettings()
     mAppSettings->endArray();
     mMain->commandLineModel()->setAllHistory(map);
 
-    size = mAppSettings->beginReadArray("openedTabs");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        QString value = mAppSettings->value("location").toString();
-        if(QFileInfo(value).exists())
-            mMain->openFile(value);
-    }
-
-    mAppSettings->endArray();
     mAppSettings->endGroup();
 
     if (mUserSettings == nullptr)
@@ -166,6 +157,21 @@ void StudioSettings::loadSettings()
     qDebug() << "loading user settings from" << mUserSettings->fileName();
 
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
+
+    // after loading all the settings, tabs will be restored
+    if(!restoreTabs())
+        return;
+
+    mAppSettings->beginGroup("fileHistory");
+    size = mAppSettings->beginReadArray("openedTabs");
+    for (int i = 0; i < size; i++) {
+        mAppSettings->setArrayIndex(i);
+        QString value = mAppSettings->value("location").toString();
+        if(QFileInfo(value).exists())
+            mMain->openFile(value);
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
 }
 
 QString StudioSettings::defaultWorkspace() const

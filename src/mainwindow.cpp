@@ -92,7 +92,10 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    createWelcomePage();
+    if (!mSettings->skipWelcomePage()) {
+        createWelcomePage();
+        ui->mainTab->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
