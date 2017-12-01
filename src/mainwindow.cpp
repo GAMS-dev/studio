@@ -955,11 +955,11 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
 }
 
-}
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog sd(mSettings ,this);
+    sd.exec();
 }
 
-void gams::studio::MainWindow::on_actionSettings_triggered()
-{
-    SettingsDialog sd(this);
-    sd.exec();
+}
 }

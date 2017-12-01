@@ -59,7 +59,7 @@ QString GAMSPaths::defaultWorkingDir()
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
         return currentDir;
-    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio" + "/gist");
+    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio");
     if (workingDir.mkpath(workingDir.path()))
         return QDir::toNativeSeparators(workingDir.path());
     return currentDir;

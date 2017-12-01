@@ -32,7 +32,7 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="gb_general">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -57,7 +57,7 @@
          <string>Default GAMS Studio workspace:</string>
         </property>
        </widget>
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="txt_workspace">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -70,7 +70,7 @@
          <string/>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="cb_skipwelcome">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -83,7 +83,7 @@
          <string>Skip welcome page</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_2">
+       <widget class="QCheckBox" name="cb_restoretabs">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -97,7 +97,7 @@
         </property>
        </widget>
       </widget>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QGroupBox" name="gb_behavior">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -109,7 +109,7 @@
        <property name="title">
         <string>Behavior</string>
        </property>
-       <widget class="QCheckBox" name="checkBox_3">
+       <widget class="QCheckBox" name="cb_autosave">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -122,7 +122,7 @@
          <string>Automatically save modified files before running GAMS</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_4">
+       <widget class="QCheckBox" name="cb_openlst">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -135,7 +135,7 @@
          <string>Open .lst file after running GAMS</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_5">
+       <widget class="QCheckBox" name="cb_jumptoerror">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -149,7 +149,7 @@
         </property>
        </widget>
       </widget>
-      <widget class="QGroupBox" name="groupBox_3">
+      <widget class="QGroupBox" name="gp_backup">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -161,7 +161,7 @@
        <property name="title">
         <string>Backup and Restore</string>
        </property>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btn_export">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -174,7 +174,7 @@
          <string>Export</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="btn_import">
         <property name="geometry">
          <rect>
           <x>110</x>
@@ -193,7 +193,7 @@
       <attribute name="title">
        <string>Editor</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_4">
+      <widget class="QGroupBox" name="gp_editor">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -224,7 +224,7 @@
          </font>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox">
+       <widget class="QSpinBox" name="sb_fontsize">
         <property name="geometry">
          <rect>
           <x>300</x>
@@ -269,7 +269,7 @@
          <string>Font Size</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_9">
+       <widget class="QCheckBox" name="cb_trimwhitespace">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -288,7 +288,7 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_10">
+       <widget class="QCheckBox" name="cb_showlinenr">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -307,7 +307,7 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_11">
+       <widget class="QCheckBox" name="cb_verticalline">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -326,7 +326,7 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox_2">
+       <widget class="QSpinBox" name="sb_verticalline">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -348,7 +348,7 @@
          <number>100</number>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_8">
+       <widget class="QCheckBox" name="cb_highlightblock">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -367,7 +367,7 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_6">
+       <widget class="QCheckBox" name="cb_highlightcurrent">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -386,7 +386,7 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_7">
+       <widget class="QCheckBox" name="cb_highlightmatching">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -405,33 +405,14 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_13">
+       <widget class="QCheckBox" name="cb_replacetabs">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>180</y>
-          <width>271</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show line numbers</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_12">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>213</y>
+          <y>183</y>
           <width>231</width>
           <height>17</height>
          </rect>
@@ -443,11 +424,11 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox_3">
+       <widget class="QSpinBox" name="sb_tabsize">
         <property name="geometry">
          <rect>
           <x>230</x>
-          <y>212</y>
+          <y>182</y>
           <width>40</width>
           <height>20</height>
          </rect>
@@ -462,14 +443,14 @@
          <number>4</number>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_14">
+       <widget class="QCheckBox" name="cb_autoindent">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>240</y>
+          <y>210</y>
           <width>271</width>
           <height>23</height>
          </rect>
@@ -484,14 +465,14 @@
          <bool>false</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_15">
+       <widget class="QCheckBox" name="cb_linewrap">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>270</y>
+          <y>240</y>
           <width>271</width>
           <height>23</height>
          </rect>
@@ -510,7 +491,7 @@
      </widget>
      <widget class="QWidget" name="tabDisplay">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <attribute name="title">
        <string>Display</string>
@@ -518,7 +499,7 @@
      </widget>
      <widget class="QWidget" name="tabControls">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <attribute name="title">
        <string>Controls</string>
