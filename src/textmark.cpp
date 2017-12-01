@@ -116,9 +116,6 @@ Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion
 {
     if (shape && ((mType == error && inIconRegion) || mType == link)) {
         *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
-        DEB() << "Shape: " << QString::number(*shape);
-    } else {
-        DEB() << "NO Shape!";
     }
     return *shape;
 }

@@ -78,7 +78,14 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
     ExtractionState state;
-    for (QString line: text.split("\n", QString::SkipEmptyParts)) {
+    QRegularExpression rEx("(\r?\n|\r\n?)");
+    QStringList lines = text.split(rEx);
+    if (!mLineBuffer.isEmpty()) {
+        lines.replace(0,mLineBuffer+lines.at(0));
+    }
+    mLineBuffer = lines.last();
+    lines.removeAt(lines.count()-1);
+    for (QString line: lines) {
         QList<LinkData> marks;
         QString newLine = extractError(line, state, marks);
         if (state == FileContext::Exiting) {

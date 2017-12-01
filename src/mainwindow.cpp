@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
+    connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     ensureCodecMenu("System");
 
     mSettings->loadSettings();
@@ -197,14 +198,16 @@ void MainWindow::on_actionNew_triggered()
         FileContext *fc = mFileRepo.fileContext(mRecent.editFileId);
         if (fc) path = QFileInfo(fc->location()).path();
     }
-    auto filePath = QFileDialog::getSaveFileName(this,
-                                                 "Create new file...",
-                                                 path,
-                                                 tr("GAMS code (*.gms *.inc );;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*)"));
+    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
+                                                    tr("GAMS code (*.gms *.inc );;"
+                                                       "Text files (*.txt);;"
+                                                       "All files (*)"));
 
+    QFileInfo fi(filePath);
+    if (fi.suffix().isEmpty())
+        filePath += ".gms";
     QFile file(filePath);
+
     if (!file.exists()) { // which should be the default!
         file.open(QIODevice::WriteOnly);
         file.close();
@@ -472,6 +475,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
+    mSettings->saveSettings();
     QCoreApplication::quit();
 }
 
@@ -547,6 +551,16 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
             fc->removeEditor(edit);
             ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         }
+    }
+}
+
+void MainWindow::on_logTab_tabCloseRequested(int index)
+{
+    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->logTab->widget(index));
+    if (edit) {
+        LogContext* log = mFileRepo.logContext(edit);
+        log->removeEditor(edit);
+        ui->logTab->removeTab(index);
     }
 }
 
@@ -682,9 +696,20 @@ void MainWindow::on_actionGAMS_Library_triggered()
     }
 }
 
-void MainWindow::on_projectView_doubleClicked(const QModelIndex &index)
+void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
-    openContext(index);
+    FileSystemContext* fsc = mFileRepo.context(index);
+    if (fsc->type() == FileSystemContext::FileGroup) {
+        LogContext* logProc = mFileRepo.logContext(fsc);
+        if (logProc->editors().isEmpty()) {
+            QPlainTextEdit* logEdit = new QPlainTextEdit();
+            int ind = ui->logTab->addTab(logEdit, logProc->caption());
+            logProc->addEditor(logEdit);
+            ui->logTab->setCurrentIndex(ind);
+        }
+    } else {
+        openContext(index);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -765,10 +790,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 void MainWindow::execute(QString commandLineStr)
 {
     // TODO: add option to clear output view before running next job
-        FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-        FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-        if (!fgc)
-            return;
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    if (!fgc)
+        return;
 
     if (fc->editors().size() == 1 && fc->isModified()) {
          QMessageBox msgBox;
@@ -959,5 +984,8 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
 }
 
+
 }
 }
+
+

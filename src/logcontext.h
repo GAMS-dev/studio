@@ -36,6 +36,7 @@ private:
     QTextDocument *mDocument = nullptr;
     QPair<int, QString> mCurrentErrorHint;
     QSet<FileContext*> mMarkedContextList;
+    QString mLineBuffer;
 
 };
 

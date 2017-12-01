@@ -37,9 +37,9 @@ public:
     QModelIndex parent(const QModelIndex &child) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(FileSystemContext* entry);
+    QModelIndex index(FileSystemContext* entry) const;
     QModelIndex rootModelIndex() const;
     FileGroupContext* rootContext() const;
 
@@ -49,13 +49,18 @@ protected:
     bool insertChild(int row, FileGroupContext* parent, FileSystemContext* child);
     bool removeChild(FileSystemContext* child);
 
-    bool isCurrent(const QModelIndex& index) const;
-    void setCurrent(const QModelIndex& index);
+    bool isCurrent(const QModelIndex& ind) const;
+    void setCurrent(const QModelIndex& ind);
+    bool isCurrentGroup(const QModelIndex& ind) const;
+
+    bool isSelected(const QModelIndex& ind) const;
+    void setSelected(const QModelIndex& ind);
 
 private:
     FileRepository *mFileRepo;
     FileGroupContext* mRoot = nullptr;
     QModelIndex mCurrent;
+    QModelIndex mSelected;
 
 };
 
