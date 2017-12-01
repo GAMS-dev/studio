@@ -446,8 +446,12 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         // TODO(JM)
         bool doFocus = groupContext == mRecent.group;
-        openFilePath(lstFile, groupContext, doFocus);
-        groupContext->jumpToMark(doFocus);
+        if (mSettings->openLst())
+            openFilePath(lstFile, groupContext, doFocus);
+
+        if (mSettings->jumpToError())
+            groupContext->jumpToMark(doFocus);
+
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
