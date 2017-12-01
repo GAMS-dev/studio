@@ -773,6 +773,9 @@ void MainWindow::execute(QString commandLineStr)
         if (!fgc)
             return;
 
+    if (mSettings->autosaveOnRun())
+        fc->save();
+
     if (fc->editors().size() == 1 && fc->isModified()) {
          QMessageBox msgBox;
          msgBox.setIcon(QMessageBox::Warning);
