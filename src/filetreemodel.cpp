@@ -147,6 +147,15 @@ FileGroupContext* FileTreeModel::rootContext() const
     return mRoot;
 }
 
+bool FileTreeModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    Q_UNUSED(row);
+    Q_UNUSED(count);
+    Q_UNUSED(parent);
+    EXCEPT() << "FileTreeModel::removeRows is unsupported, please use FileTreeModel::removeChild";
+    return false;
+}
+
 bool FileTreeModel::insertChild(int row, FileGroupContext* parent, FileSystemContext* child)
 {
     QModelIndex parMi = index(parent);
@@ -161,9 +170,9 @@ bool FileTreeModel::removeChild(FileSystemContext* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
-    beginRemoveRows(mi, mi.row(), mi.row());
+    beginRemoveRows(index(child->parentEntry()), mi.row(), mi.row());
     child->setParentEntry(nullptr);
-    endInsertRows();
+    endRemoveRows();
     return true;
 }
 

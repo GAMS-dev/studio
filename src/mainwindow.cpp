@@ -55,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->setIconSize(QSize(21,21));
     ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+    ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
@@ -75,8 +76,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
-    ensureCodecMenu("System");
+    connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
+//    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
+    ensureCodecMenu("System");
     mSettings->loadSettings();
     initTabs();
 }
@@ -189,6 +193,15 @@ bool MainWindow::projectViewVisibility()
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
     if (mRecent.group == group) updateRunState();
+}
+
+void MainWindow::projectContextMenuRequested(const QPoint& pos)
+{
+    QModelIndex index = ui->projectView->indexAt(pos);
+    if (!index.isValid()) return;
+    mProjectContextMenu.setNode(mFileRepo.context(index));
+    mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
+
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -712,31 +725,40 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     }
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
 {
-    QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
-    if (oFiles.size() > 0) {
+    if (changedFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
-        QString filesText = oFiles.size()==1 ? oFiles.first()->location() + " has been modified."
-                                             : QString::number(oFiles.size())+" files have been modified";
+        QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
+                                             : QString::number(changedFiles.size())+" files have been modified";
         msgBox.setText(filesText);
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
         if (ret == QMessageBox::Save) {
-            for (FileContext* fc: oFiles) {
+            for (FileContext* fc: changedFiles) {
                 if (fc->isModified()) {
                     fc->save();
                 }
             }
         }
         if (ret == QMessageBox::Cancel) {
-            event->setAccepted(false);
+            return false;
         }
     }
-    mSettings->saveSettings();
+    return true;
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
+    if (!requestCloseChanged(oFiles)) {
+        event->setAccepted(false);
+    } else {
+        mSettings->saveSettings();
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -901,6 +923,31 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         }
     }
     addToOpenedFiles(fileContext->location());
+}
+
+void MainWindow::closeGroup(FileGroupContext* group)
+{
+    if (!group) return;
+    QList<FileContext*> changedFiles;
+    QList<FileContext*> openFiles;
+    for (int i = 0; i < group->childCount(); ++i) {
+        FileSystemContext* fsc = group->childEntry(i);
+        if (fsc->type() == FileSystemContext::File) {
+            FileContext* file = static_cast<FileContext*>(fsc);
+            openFiles << file;
+            if (file->isModified())
+                changedFiles << file;
+        }
+    }
+    if (requestCloseChanged(changedFiles)) {
+        // TODO(JM)  close if selected
+        for (FileContext *file: openFiles) {
+            fileClosed(file->id());
+        }
+        mFileRepo.removeGroup(group);
+        mSettings->saveSettings();
+    }
+
 }
 
 void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually)

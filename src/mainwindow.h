@@ -27,6 +27,7 @@
 #include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
+#include "projectcontextmenu.h"
 
 namespace Ui {
 class MainWindow;
@@ -90,8 +91,10 @@ private slots:
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void openFileContext(FileContext *fileContext, bool focus = true);
+    void closeGroup(FileGroupContext* group);
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
+    void projectContextMenuRequested(const QPoint &pos);
 
 private slots:
     // File
@@ -148,6 +151,7 @@ private:
     void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
+    bool requestCloseChanged(QList<FileContext*> changedFiles);
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -164,6 +168,7 @@ private:
     WelcomePage *mWp = nullptr;
     bool mBeforeErrorExtraction = true;
     FileRepository mFileRepo;
+    ProjectContextMenu mProjectContextMenu;
 };
 
 }

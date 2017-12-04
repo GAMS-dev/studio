@@ -353,6 +353,18 @@ void FileRepository::setSelected(const QModelIndex& ind)
     mTreeModel->setSelected(ind);
 }
 
+void FileRepository::removeGroup(FileGroupContext* fileGroup)
+{
+    fileGroup->setWatched(false);
+    for (int i = 0; i < fileGroup->childCount(); ++i) {
+        FileSystemContext *child = fileGroup->childEntry(i);
+        mTreeModel->removeChild(child);
+        delete child;
+    }
+    mTreeModel->removeChild(fileGroup);
+    delete fileGroup;
+}
+
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;

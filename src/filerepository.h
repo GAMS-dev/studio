@@ -141,6 +141,7 @@ public slots:
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
+    void removeGroup(FileGroupContext* fileGroup);
 
 private slots:
     void onFileChangedExtern(int fileId);

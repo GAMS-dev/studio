@@ -42,6 +42,7 @@ public:
     QModelIndex index(FileSystemContext* entry) const;
     QModelIndex rootModelIndex() const;
     FileGroupContext* rootContext() const;
+    bool removeRows(int row, int count, const QModelIndex &parent);
 
 protected:
     friend class FileRepository;

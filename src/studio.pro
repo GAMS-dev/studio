@@ -102,6 +102,7 @@ SOURCES += \
     settingsdialog.cpp \
     studiosettings.cpp \
     application.cpp \
+    projectcontextmenu.cpp \
     option.cpp
 
 HEADERS += \
@@ -144,6 +145,7 @@ HEADERS += \
     settingsdialog.h \
     studiosettings.h \
     application.h \
+    projectcontextmenu.h \
     option.h
 
 FORMS += \
