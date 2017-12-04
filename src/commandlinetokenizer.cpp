@@ -150,7 +150,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
 {
     QList<OptionError> optionErrorList;
     for (OptionItem item : items) {
-        if (item.key.startsWith("--"))
+        if (item.key.startsWith("--")) // ignore double dash parameter
             continue;
 
         QString key = item.key;
@@ -166,6 +166,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
            fr.format = mInvalidValueFormat;
            optionErrorList.append(OptionError(fr, item.value + " (Option keyword expected)"));
         } else {
+
             if (!gamsOption->isValid(key) &&
                 !gamsOption->isValid(gamsOption->getSynonym(key))
                ) {
@@ -183,56 +184,108 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                    fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
                 fr.format = mDeprecateOptionFormat;
                 optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
-            } else {
+            } else { // neither invalid nor deprecated
+
                 QString keyStr = key;
                 if (!gamsOption->isValid(key))
                     key = gamsOption->getSynonym(key);
-                bool found = false;
-//                qDebug() << QString("format -> comparing [%1] type [%2] [%3]").arg(key).arg(gamsOption->getType(key))
-//                            .arg(gamsOption->getOptionTypeName(gamsOption->getType(key)));
-                switch (gamsOption->getType(key)) {
-                case optTypeEnumInt :
-                    for (OptionValue optValue: gamsOption->getValueList(key)) {
-//                        qDebug() << QString("  [%1, %2]").arg(optValue.value.toInt()).arg(item.value.toInt());
-                        if (optValue.value.toInt()==item.value.toInt() && !optValue.hidden) {
-                            found = true;
-                            break;
-                        }
+
+                if (gamsOption->getValueList(key).size() > 0) {
+
+                    bool foundError = true;
+                    int n = -1;
+                    bool isCorrectDataType = false;
+                    switch (gamsOption->getOptionType(key)) {
+                    case optTypeEnumInt :
+                       n = item.value.toInt(&isCorrectDataType);
+                       if (isCorrectDataType) {
+                         for (OptionValue optValue: gamsOption->getValueList(key)) {
+                            if (optValue.value.toInt() == n) { // && !optValue.hidden) {
+                                foundError = false;
+                                break;
+                            }
+                         }
+                       }
+                       break;
+                    case optTypeEnumStr :
+                       for (OptionValue optValue: gamsOption->getValueList(key)) {
+                           if (QString::compare(optValue.value.toString(), item.value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
+                               foundError = false;
+                               break;
+                           }
+                       }
+                       break;
+                    default:
+                       foundError = false;  // do nothing for the moment
+                       break;
                     }
-                    break;
-                case optTypeEnumStr :
-                    for (OptionValue optValue: gamsOption->getValueList(key)) {
-                        if (QString::compare(optValue.value.toString(), item.value, Qt::CaseInsensitive)==0
-                            && !optValue.hidden) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    break;
-                default:
-                    found = true;  // do nothing for the moment
-                    break;
-                }
-                if (!found) {
-                    QTextLayout::FormatRange fr;
-                    fr.start = item.valuePosition;
-                    fr.length = item.value.length();
-                    fr.format = mInvalidValueFormat;
-                    QString errorMessage = item.value + " (unknown value for option \""+keyStr+"\")";
-                    if (gamsOption->getValueList(key).size() > 0) {
-                        errorMessage += ", Possible values are ";
-                        for (OptionValue optValue: gamsOption->getValueList(key)) {
-                            if (optValue.hidden)
+                    if (foundError) {
+                       QTextLayout::FormatRange fr;
+                       fr.start = item.valuePosition;
+                       fr.length = item.value.length();
+                       fr.format = mInvalidValueFormat;
+                       QString errorMessage = item.value + " (unknown value for option \""+keyStr+"\")";
+                       if (gamsOption->getValueList(key).size() > 0) {
+                          errorMessage += ", Possible values are ";
+                          for (OptionValue optValue: gamsOption->getValueList(key)) {
+                             if (optValue.hidden)
                                 continue;
-                            errorMessage += optValue.value.toString();
-                            errorMessage += " ";
-                        }
+                             errorMessage += optValue.value.toString();
+                             errorMessage += " ";
+                          }
+                       }
+                       optionErrorList.append(OptionError(fr, errorMessage));
+                   }
+                } else { // not enum
+
+                    bool foundError = false;
+                    bool isCorrectDataType = false;
+                    QString errorMessage = item.value + " (value error ";
+                    switch(gamsOption->getOptionType(key)) {
+                     case optTypeInteger:
+                        int n;
+                         n = item.value.toInt(&isCorrectDataType);
+                         if (isCorrectDataType) {
+                            if ((n < gamsOption->getLowerBound(key).toInt()) ||
+                                (gamsOption->getUpperBound(key).toInt() < n)) {
+                                errorMessage.append( QString("for option \"%1\"), not in range [%2,%3]").arg(keyStr).arg(gamsOption->getLowerBound(key).toInt()).arg(gamsOption->getUpperBound(key).toInt()) );
+                                foundError = true;
+                            }
+                         } else {
+                             errorMessage.append( QString("for option \"%1\"), Integer epxected").arg(keyStr) );
+                             foundError = true;
+                         }
+                         break;
+                     case optTypeDouble:
+                         double d;
+                         d = item.value.toDouble(&isCorrectDataType);
+                         if (isCorrectDataType) {
+                            if ((d < gamsOption->getLowerBound(key).toDouble()) ||
+                                (gamsOption->getUpperBound(key).toDouble() < d)) {
+                                errorMessage.append( QString("for option \"%1\"), not in range [%2,%3]").arg(keyStr).arg(gamsOption->getLowerBound(key).toDouble()).arg(gamsOption->getUpperBound(key).toDouble()) );
+                                foundError = true;
+                            }
+                         } else {
+                             errorMessage.append( QString("for option \"%1\"), Double epxected").arg(keyStr) );
+                             foundError = true;
+                         }
+                         break;
+                     default:
+                         foundError = false;  // do nothing for the moment
+                         break;
+                     }
+
+                    if (foundError) {
+                       QTextLayout::FormatRange fr;
+                       fr.start = item.valuePosition;
+                       fr.length = item.value.length();
+                       fr.format = mInvalidValueFormat;
+                       optionErrorList.append(OptionError(fr, errorMessage));
                     }
-                    optionErrorList.append(OptionError(fr, errorMessage));
-                }
-            }
-        }
-    }
+                 }
+              }
+        } // if (key.isEmpty()) { } else {
+    } // for (OptionItem item : items)
     return optionErrorList;
 }
 

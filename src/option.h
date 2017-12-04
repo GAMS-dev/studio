@@ -74,7 +74,10 @@ public:
     bool isValid(const QString &optionName);
     bool isDeprecated(const QString &optionName);
     QString getSynonym(const QString &optionName) const;
-    optOptionType getType(const QString &optionName) const;
+    optOptionType getOptionType(const QString &optionName) const;
+    optDataType getDataType(const QString &optionName) const;
+    QVariant getUpperBound(const QString &optionName) const;
+    QVariant getLowerBound(const QString &optionName) const;
     QVariant getDefaultValue(const QString &optionName) const;
     QString getDescription(const QString &optionName) const;
     QList<OptionValue> getValueList(const QString &optionName) const;
