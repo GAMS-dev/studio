@@ -73,7 +73,7 @@ public:
     QString fontFamily() const;
     void setFontFamily(const QString &value);
 
-    void updateEditors(QString fontFamily, int fontSize);
+    void updateEditorFont(QString fontFamily, int fontSize);
     void redrawEditors();
 
 private:

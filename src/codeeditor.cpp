@@ -42,6 +42,11 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : mSettings(se
     highlightCurrentLine();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+
+    if(mSettings->lineWrap())
+        setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    else
+        setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 int CodeEditor::lineNumberAreaWidth()

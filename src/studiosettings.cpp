@@ -290,7 +290,7 @@ void StudioSettings::setFontFamily(const QString &value)
     mFontFamily = value;
 }
 
-void StudioSettings::updateEditors(QString fontFamily, int fontSize)
+void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     foreach (QPlainTextEdit* edit, mMain->openEditors()) {
@@ -300,9 +300,16 @@ void StudioSettings::updateEditors(QString fontFamily, int fontSize)
 
 void StudioSettings::redrawEditors()
 {
+    QPlainTextEdit::LineWrapMode wrapMode;
+    if(lineWrap())
+        wrapMode = QPlainTextEdit::WidgetWidth;
+    else
+        wrapMode = QPlainTextEdit::NoWrap;
+
     QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
         editList.at(i)->blockCountChanged(0);
+        editList.at(i)->setLineWrapMode(wrapMode);
     }
 }
 
