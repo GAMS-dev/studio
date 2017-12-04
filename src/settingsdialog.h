@@ -28,9 +28,10 @@ private slots:
     void on_sb_fontsize_valueChanged(int arg1);
 
 private:
-    Ui::SettingsDialog *ui;
     StudioSettings *mSettings;
+    Ui::SettingsDialog *ui;
     void saveSettings();
+    void loadSettings();
 };
 
 }

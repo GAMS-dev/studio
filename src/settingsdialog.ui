@@ -38,7 +38,7 @@
          <x>10</x>
          <y>20</y>
          <width>561</width>
-         <height>151</height>
+         <height>181</height>
         </rect>
        </property>
        <property name="title">
@@ -96,24 +96,11 @@
          <string>Restore last opened tabs on startup</string>
         </property>
        </widget>
-      </widget>
-      <widget class="QGroupBox" name="gb_behavior">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>190</y>
-         <width>561</width>
-         <height>121</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Behavior</string>
-       </property>
        <widget class="QCheckBox" name="cb_autosave">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>30</y>
+          <y>150</y>
           <width>661</width>
           <height>23</height>
          </rect>
@@ -122,11 +109,24 @@
          <string>Automatically save modified files before running GAMS</string>
         </property>
        </widget>
+      </widget>
+      <widget class="QGroupBox" name="gb_behavior">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>220</y>
+         <width>561</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Behavior</string>
+       </property>
        <widget class="QCheckBox" name="cb_openlst">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>60</y>
+          <y>30</y>
           <width>661</width>
           <height>23</height>
          </rect>
@@ -139,7 +139,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>90</y>
+          <y>60</y>
           <width>661</width>
           <height>23</height>
          </rect>

@@ -11,8 +11,12 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     ui->setupUi(this);
     setFixedSize(size());
 
-// load from settings to UI
+    // load from settings to UI
+    loadSettings();
+}
 
+void SettingsDialog::loadSettings()
+{
     // general tab page
     ui->txt_workspace->setText(mSettings->defaultWorkspace());
     ui->cb_skipwelcome->setChecked(mSettings->skipWelcomePage());
@@ -58,7 +62,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     } else if (button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
         saveSettings();
     } else { // reject
-        // do nothing
+        loadSettings(); // reset settings (mostly font and -size)
     }
 }
 

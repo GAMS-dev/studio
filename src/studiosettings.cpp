@@ -146,7 +146,7 @@ void StudioSettings::loadSettings()
 
     QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
-    setFontSize(mUserSettings->value("fontSize", 12).toInt());
+    setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
@@ -158,7 +158,7 @@ void StudioSettings::loadSettings()
 
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
 
-    // after loading all the settings, tabs will be restored
+    // only after loading all settings tabs can be restored
     if(!restoreTabs())
         return;
 
