@@ -36,6 +36,10 @@ GdxSymbol::~GdxSymbol()
         delete mRecSortIdx;
     if (mRecFilterIdx)
         delete mRecFilterIdx;
+    if (mMinUel)
+        delete mMinUel;
+    if (mMaxUel)
+        delete mMaxUel;
     for(auto s : mFilterUels)
         delete s;
 }
@@ -151,6 +155,8 @@ void GdxSymbol::loadData()
     QTime t;
     t.start();
     QMutexLocker locker(mGdxMutex);
+    int* mMinUel = new int[mDim];
+    int* mMaxUel = new int[mDim];
     if(!mIsLoaded)
     {
         beginResetModel();
@@ -187,13 +193,18 @@ void GdxSymbol::loadData()
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
+        int k;
         for(int i=mLoadedRecCount; i<mRecordCount; i++)
         {
             keyOffset = i*mDim;
             gdxDataReadRaw(mGdx, keys, values, &dummy);
+
             for(int j=0; j<mDim; j++)
             {
-                mKeys[keyOffset+j] = keys[j];
+                k = keys[j];
+                mKeys[keyOffset+j] = k;
+                mMinUel[j] = qMin(mMinUel[j], k);
+                mMaxUel[j] = qMax(mMaxUel[j], k);
             }
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
                 mValues[i] = values[0];
@@ -233,7 +244,7 @@ void GdxSymbol::loadData()
         delete keys;
         delete values;
 
-        qDebug() << t.elapsed();
+        qDebug() << "loadData: " << t.elapsed();
     }
 }
 
@@ -315,6 +326,7 @@ void GdxSymbol::loadMetaData()
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
+    mName = symName;
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);

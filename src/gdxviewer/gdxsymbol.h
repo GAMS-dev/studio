@@ -77,6 +77,9 @@ private:
     QString mExplText;
     QString mName;
 
+    int* mMinUel = nullptr;
+    int* mMaxUel = nullptr;
+
     GdxSymbolTable* mGdxSymbolTable;
 
     gdxHandle_t mGdx;
