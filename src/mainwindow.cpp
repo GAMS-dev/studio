@@ -110,7 +110,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEditor *codeEdit = new CodeEditor(this);
+            CodeEditor *codeEdit = new CodeEditor(mSettings, this);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -973,7 +973,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog sd(mSettings ,this);
+    SettingsDialog sd(mSettings, this);
     sd.exec();
 }
 

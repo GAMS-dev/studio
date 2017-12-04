@@ -87,6 +87,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
     }
+    mSettings->redrawEditors();
 }
 
 void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
@@ -106,4 +107,3 @@ SettingsDialog::~SettingsDialog()
 
 }
 }
-

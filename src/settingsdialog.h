@@ -26,7 +26,6 @@ private slots:
     void on_sb_fontsize_valueChanged(int arg1);
     void setModified();
 
-
 private:
     StudioSettings *mSettings;
     Ui::SettingsDialog *ui;

@@ -27,7 +27,6 @@
 namespace gams {
 namespace studio {
 
-
 class StudioSettings
 {
 
@@ -75,6 +74,7 @@ public:
     void setFontFamily(const QString &value);
 
     void updateEditors(QString fontFamily, int fontSize);
+    void redrawEditors();
 
 private:
     MainWindow *mMain = nullptr;

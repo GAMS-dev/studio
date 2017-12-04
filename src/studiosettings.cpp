@@ -1,4 +1,5 @@
 #include "studiosettings.h"
+#include "mainwindow.h"
 #include "gamspaths.h"
 
 namespace gams {
@@ -91,8 +92,6 @@ void StudioSettings::loadSettings()
     if (mAppSettings == nullptr)
         mAppSettings = new QSettings("GAMS", "Studio");
 
-    qDebug() << "loading settings from" << mAppSettings->fileName();
-
     // window
     mAppSettings->beginGroup("mainWindow");
     mMain->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
@@ -154,11 +153,8 @@ void StudioSettings::loadSettings()
 
     mUserSettings->endGroup();
 
-    qDebug() << "loading user settings from" << mUserSettings->fileName();
-
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
 
-    // only after loading all settings tabs can be restored
     if(!restoreTabs())
         return;
 
@@ -299,6 +295,14 @@ void StudioSettings::updateEditors(QString fontFamily, int fontSize)
     QFont font(fontFamily, fontSize);
     foreach (QPlainTextEdit* edit, mMain->openEditors()) {
         edit->setFont(font);
+    }
+}
+
+void StudioSettings::redrawEditors()
+{
+    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    for (int i = 0; i < editList.size(); i++) {
+        editList.at(i)->blockCountChanged(0);
     }
 }
 
