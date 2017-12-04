@@ -82,9 +82,24 @@ QString Option::getSynonym(const QString &optionName) const
     return mSynonymMap[optionName.toUpper()];
 }
 
-optOptionType Option::getType(const QString &optionName) const
+optOptionType Option::getOptionType(const QString &optionName) const
 {
     return mOption[optionName.toUpper()].type;
+}
+
+optDataType Option::getDataType(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].dataType;
+}
+
+QVariant Option::getUpperBound(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].upperBound;
+}
+
+QVariant Option::getLowerBound(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].lowerBound;
 }
 
 QList<OptionValue> Option::getValueList(const QString &optionName) const
