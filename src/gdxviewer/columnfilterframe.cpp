@@ -24,8 +24,14 @@ void ColumnFilterFrame::apply()
 {
     qDebug() << "apply";
 
-    for(int i=0; i<mModel->changed().count(); i++)
-        mSymbol->filterUels().at(mColumn)->insert(mModel->changed().keys().at(i), mModel->changed().values().at(i));
+    bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
+    QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
+    bool checked;
+    for (int idx=0; idx<uelsInColumn->size(); idx++)
+    {
+        checked = mModel->checked()[idx];
+        showUelInColumn[uelsInColumn->at(idx)] = checked;
+    }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
 }
