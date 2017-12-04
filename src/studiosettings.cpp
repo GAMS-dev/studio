@@ -91,7 +91,6 @@ void StudioSettings::loadSettings()
 {
     if (mAppSettings == nullptr)
         mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio");
-    qDebug() << "Settings location:" << mAppSettings->fileName();
 
     // window
     mAppSettings->beginGroup("mainWindow");

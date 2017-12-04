@@ -23,7 +23,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
-    connect(ui->sb_fontsize, qOverload<int>(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 

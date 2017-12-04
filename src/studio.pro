@@ -12,6 +12,8 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 
+CONFIG += c++14
+
 GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {
     equals(GAMS_CORE_TMP, "") {
