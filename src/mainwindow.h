@@ -78,7 +78,7 @@ public:
     void setCommandLineModel(CommandLineModel* opt);
     CommandLineModel* commandLineModel();
     FileRepository* fileRepository();
-
+    QList<QPlainTextEdit*> openEditors();
 
 private slots:
     void codecChanged(QAction *action);
@@ -131,7 +131,7 @@ private slots:
     void on_runWithChangedOptions();
     void on_runWithParamAndChangedOptions(QString parameter);
 
-
+    void on_actionSettings_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);

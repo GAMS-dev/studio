@@ -31,6 +31,7 @@
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
+#include "settingsdialog.h"
 
 namespace gams {
 namespace studio {
@@ -96,7 +97,10 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    createWelcomePage();
+    if (!mSettings->skipWelcomePage()) {
+        createWelcomePage();
+        ui->mainTab->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -111,7 +115,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEditor *codeEdit = new CodeEditor(this);
+            CodeEditor *codeEdit = new CodeEditor(mSettings, this);
+            codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
@@ -183,6 +188,11 @@ CommandLineModel *MainWindow::commandLineModel()
 FileRepository *MainWindow::fileRepository()
 {
     return &mFileRepo;
+}
+
+QList<QPlainTextEdit *> MainWindow::openEditors()
+{
+    return mFileRepo.editors();
 }
 
 bool MainWindow::projectViewVisibility()
@@ -464,8 +474,12 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         // TODO(JM)
         bool doFocus = groupContext == mRecent.group;
-        openFilePath(lstFile, groupContext, doFocus);
-        groupContext->jumpToMark(doFocus);
+        if (mSettings->openLst())
+            openFilePath(lstFile, groupContext, doFocus);
+
+        if (mSettings->jumpToError())
+            groupContext->jumpToMark(doFocus);
+
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
@@ -632,7 +646,7 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
     mLibProcess->setApp(item->library()->execName());
     mLibProcess->setModelName(item->name());
     mLibProcess->setInputFile(gmsFileName);
-    mLibProcess->setTargetDir(GAMSPaths::defaultWorkingDir());
+    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
     // This log is passed to the system-wide log
     connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
@@ -677,7 +691,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
         LibraryItem *item = dialog.selectedLibraryItem();
         QFileInfo fileInfo(item->files().first());
         QString gmsFileName = fileInfo.completeBaseName() + ".gms";
-        QString gmsFilePath = GAMSPaths::defaultWorkingDir() + "/" + gmsFileName;
+        QString gmsFilePath = mSettings->defaultWorkspace() + "/" + gmsFileName;
         QFile gmsFile(gmsFilePath);
 
         if (gmsFile.exists()) {
@@ -817,23 +831,26 @@ void MainWindow::execute(QString commandLineStr)
     if (!fgc)
         return;
 
-    if (fc->editors().size() == 1 && fc->isModified()) {
-         QMessageBox msgBox;
-         msgBox.setIcon(QMessageBox::Warning);
-         msgBox.setText(fc->location()+" has been modified.");
-         msgBox.setInformativeText("Do you want to save your changes before running?");
-         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
-         msgBox.setDefaultButton(QMessageBox::Save);
-         int ret = msgBox.exec();
+    if (mSettings->autosaveOnRun())
+        fc->save();
 
-         if (ret == QMessageBox::Cancel) {
-             return;
-         } else if (ret == QMessageBox::Save) {
-             fc->save();
-         } else if (msgBox.clickedButton() == discardButton) {
-             fc->load(fc->codec());
-         }
+    if (fc->editors().size() == 1 && fc->isModified()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(fc->location()+" has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes before running?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        if (ret == QMessageBox::Cancel) {
+            return;
+        } else if (ret == QMessageBox::Save) {
+            fc->save();
+        } else if (msgBox.clickedButton() == discardButton) {
+            fc->load(fc->codec());
+        }
     }
 
     ui->actionRun->setEnabled(false);
@@ -1031,6 +1048,11 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
 }
 
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog sd(mSettings, this);
+    sd.exec();
+}
 
 }
 }

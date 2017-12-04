@@ -1,4 +1,6 @@
 #include "studiosettings.h"
+#include "mainwindow.h"
+#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -16,7 +18,6 @@ void StudioSettings::saveSettings()
         return;
     }
     // Main Application Settings
-    qDebug() << "Saving settings";
     // window
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", mMain->size());
@@ -63,10 +64,24 @@ void StudioSettings::saveSettings()
 
     // User Settings
     mUserSettings->beginGroup("General");
-    // todo
+
+    mUserSettings->setValue("defaultWorkspace", defaultWorkspace());
+    mUserSettings->setValue("skipWelcome", skipWelcomePage());
+    mUserSettings->setValue("restoreTabs", restoreTabs());
+    mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
+    mUserSettings->setValue("openLst", openLst());
+    mUserSettings->setValue("jumpToError", jumpToError());
+
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
-    // todo
+
+    mUserSettings->setValue("fontFamily", fontFamily());
+    mUserSettings->setValue("fontSize", fontSize());
+    mUserSettings->setValue("showLineNr", showLineNr());
+    mUserSettings->setValue("replaceTabsWithSpaces", replaceTabsWithSpaces());
+    mUserSettings->setValue("tabSize", tabSize());
+    mUserSettings->setValue("lineWrap", lineWrap());
+
     mUserSettings->endGroup();
 
     mAppSettings->sync();
@@ -75,9 +90,7 @@ void StudioSettings::saveSettings()
 void StudioSettings::loadSettings()
 {
     if (mAppSettings == nullptr)
-        mAppSettings = new QSettings("GAMS", "Studio");
-
-    qDebug() << "loading settings from" << mAppSettings->fileName();
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio");
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -113,6 +126,39 @@ void StudioSettings::loadSettings()
     mAppSettings->endArray();
     mMain->commandLineModel()->setAllHistory(map);
 
+    mAppSettings->endGroup();
+
+    if (mUserSettings == nullptr)
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio-User");
+
+    mUserSettings->beginGroup("General");
+
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
+    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
+    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
+    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
+    setOpenLst(mUserSettings->value("openLst", false).toBool());
+    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Editor");
+
+    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    setFontSize(mUserSettings->value("fontSize", 10).toInt());
+    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
+    setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
+    setTabSize(mUserSettings->value("tabSize", 4).toInt());
+    setLineWrap(mUserSettings->value("lineWrap", false).toBool());
+
+    mUserSettings->endGroup();
+
+    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
+
+    if(!restoreTabs())
+        return;
+
+    mAppSettings->beginGroup("fileHistory");
     size = mAppSettings->beginReadArray("openedTabs");
     for (int i = 0; i < size; i++) {
         mAppSettings->setArrayIndex(i);
@@ -120,23 +166,151 @@ void StudioSettings::loadSettings()
         if(QFileInfo(value).exists())
             mMain->openFile(value);
     }
-
     mAppSettings->endArray();
     mAppSettings->endGroup();
+}
 
-    if (mUserSettings == nullptr)
-        mUserSettings = new QSettings("GAMS", "Studio-User");
+QString StudioSettings::defaultWorkspace() const
+{
+    return mDefaultWorkspace;
+}
 
-    mUserSettings->beginGroup("General");
-    // todo
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-    // todo
-    mUserSettings->endGroup();
+void StudioSettings::setDefaultWorkspace(const QString &value)
+{
+    mDefaultWorkspace = value;
+}
 
-    qDebug() << "loading user settings from" << mUserSettings->fileName();
+bool StudioSettings::skipWelcomePage() const
+{
+    return mSkipWelcomePage;
+}
 
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
+void StudioSettings::setSkipWelcomePage(bool value)
+{
+    mSkipWelcomePage = value;
+}
+
+bool StudioSettings::restoreTabs() const
+{
+    return mRestoreTabs;
+}
+
+void StudioSettings::setRestoreTabs(bool value)
+{
+    mRestoreTabs = value;
+}
+
+bool StudioSettings::autosaveOnRun() const
+{
+    return mAutosaveOnRun;
+}
+
+void StudioSettings::setAutosaveOnRun(bool value)
+{
+    mAutosaveOnRun = value;
+}
+
+bool StudioSettings::openLst() const
+{
+    return mOpenLst;
+}
+
+void StudioSettings::setOpenLst(bool value)
+{
+    mOpenLst = value;
+}
+
+bool StudioSettings::jumpToError() const
+{
+    return mJumpToError;
+}
+
+void StudioSettings::setJumpToError(bool value)
+{
+    mJumpToError = value;
+}
+
+int StudioSettings::fontSize() const
+{
+    return mFontSize;
+}
+
+void StudioSettings::setFontSize(int value)
+{
+    mFontSize = value;
+}
+
+bool StudioSettings::showLineNr() const
+{
+    return mShowLineNr;
+}
+
+void StudioSettings::setShowLineNr(bool value)
+{
+    mShowLineNr = value;
+}
+
+bool StudioSettings::replaceTabsWithSpaces() const
+{
+    return mReplaceTabsWithSpaces;
+}
+
+void StudioSettings::setReplaceTabsWithSpaces(bool value)
+{
+    mReplaceTabsWithSpaces = value;
+}
+
+int StudioSettings::tabSize() const
+{
+    return mTabSize;
+}
+
+void StudioSettings::setTabSize(int value)
+{
+    mTabSize = value;
+}
+
+bool StudioSettings::lineWrap() const
+{
+    return mLineWrap;
+}
+
+void StudioSettings::setLineWrap(bool value)
+{
+    mLineWrap = value;
+}
+
+QString StudioSettings::fontFamily() const
+{
+    return mFontFamily;
+}
+
+void StudioSettings::setFontFamily(const QString &value)
+{
+    mFontFamily = value;
+}
+
+void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
+{
+    QFont font(fontFamily, fontSize);
+    foreach (QPlainTextEdit* edit, mMain->openEditors()) {
+        edit->setFont(font);
+    }
+}
+
+void StudioSettings::redrawEditors()
+{
+    QPlainTextEdit::LineWrapMode wrapMode;
+    if(lineWrap())
+        wrapMode = QPlainTextEdit::WidgetWidth;
+    else
+        wrapMode = QPlainTextEdit::NoWrap;
+
+    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    for (int i = 0; i < editList.size(); i++) {
+        editList.at(i)->blockCountChanged(0);
+        editList.at(i)->setLineWrapMode(wrapMode);
+    }
 }
 
 }

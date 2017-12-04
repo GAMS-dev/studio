@@ -27,7 +27,6 @@
 namespace gams {
 namespace studio {
 
-
 class StudioSettings
 {
 
@@ -38,10 +37,65 @@ public:
     void loadSettings();
     void saveSettings();
 
+    QString defaultWorkspace() const;
+    void setDefaultWorkspace(const QString &value);
+
+    bool skipWelcomePage() const;
+    void setSkipWelcomePage(bool value);
+
+    bool restoreTabs() const;
+    void setRestoreTabs(bool value);
+
+    bool autosaveOnRun() const;
+    void setAutosaveOnRun(bool value);
+
+    bool openLst() const;
+    void setOpenLst(bool value);
+
+    bool jumpToError() const;
+    void setJumpToError(bool value);
+
+    int fontSize() const;
+    void setFontSize(int value);
+
+    bool showLineNr() const;
+    void setShowLineNr(bool value);
+
+    bool replaceTabsWithSpaces() const;
+    void setReplaceTabsWithSpaces(bool value);
+
+    int tabSize() const;
+    void setTabSize(int value);
+
+    bool lineWrap() const;
+    void setLineWrap(bool value);
+
+    QString fontFamily() const;
+    void setFontFamily(const QString &value);
+
+    void updateEditorFont(QString fontFamily, int fontSize);
+    void redrawEditors();
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+
+    // general
+    QString mDefaultWorkspace;
+    bool mSkipWelcomePage;
+    bool mRestoreTabs;
+    bool mAutosaveOnRun;
+    bool mOpenLst;
+    bool mJumpToError;
+
+    // editor
+    QString mFontFamily;
+    int mFontSize;
+    bool mShowLineNr;
+    bool mReplaceTabsWithSpaces;
+    int mTabSize;
+    bool mLineWrap;
 
 };
 

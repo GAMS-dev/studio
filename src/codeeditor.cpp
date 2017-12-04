@@ -19,17 +19,17 @@
  */
 #include <QtWidgets>
 #include "codeeditor.h"
+#include "studiosettings.h"
 #include "logger.h"
 #include "textmark.h"
 
 namespace gams {
 namespace studio {
 
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : mSettings(settings), QPlainTextEdit(parent)
 {
     mLineNumberArea = new LineNumberArea(this);
 
-    this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     mLineNumberArea->setMouseTracking(true);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -42,6 +42,11 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     highlightCurrentLine();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+
+    if(mSettings->lineWrap())
+        setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    else
+        setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -53,7 +58,10 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    int space = 0;
+
+    if(mSettings->showLineNr())
+        space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
     bool marksEmpty = true;
     emit requestMarksEmpty(&marksEmpty);
@@ -321,8 +329,10 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
             int realtop = top; // (top+bottom-fontMetrics().height())/2;
-            painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+
+            if(mSettings->showLineNr())
+                painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+
             if (textMarks.contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
                 painter.drawPixmap(1, iTop, textMarks.value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
