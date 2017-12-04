@@ -22,16 +22,17 @@ public:
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
-
     void on_fontComboBox_currentIndexChanged(const QString &arg1);
-
     void on_sb_fontsize_valueChanged(int arg1);
+    void setModified();
+
 
 private:
     StudioSettings *mSettings;
     Ui::SettingsDialog *ui;
     void saveSettings();
     void loadSettings();
+    void setModifiedStatus(bool status);
 };
 
 }

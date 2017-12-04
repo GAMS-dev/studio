@@ -13,6 +13,18 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
 
     // load from settings to UI
     loadSettings();
+    setModifiedStatus(false);
+
+    // connections to track modified status
+    connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
+    connect(ui->cb_skipwelcome, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_restoretabs, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
+    connect(ui->sb_fontsize, qOverload<int>(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -29,9 +41,19 @@ void SettingsDialog::loadSettings()
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
-    ui->cb_replacetabs->setChecked(mSettings->replaceTabsWithSpaces());
-    ui->sb_tabsize->setValue(mSettings->tabSize());
+//    ui->cb_replacetabs->setChecked(mSettings->replaceTabsWithSpaces());
+//    ui->sb_tabsize->setValue(mSettings->tabSize());
     ui->cb_linewrap->setChecked(mSettings->lineWrap());
+}
+
+void SettingsDialog::setModified()
+{
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+}
+
+void SettingsDialog::setModifiedStatus(bool status)
+{
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(status);
 }
 
 void SettingsDialog::saveSettings()
@@ -47,12 +69,13 @@ void SettingsDialog::saveSettings()
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
-    mSettings->setReplaceTabsWithSpaces(ui->cb_replacetabs->isChecked());
-    mSettings->setTabSize(ui->sb_tabsize->value());
+//    mSettings->setReplaceTabsWithSpaces(ui->cb_replacetabs->isChecked());
+//    mSettings->setTabSize(ui->sb_tabsize->value());
     mSettings->setLineWrap(ui->cb_linewrap->isChecked());
 
     // done
     mSettings->saveSettings();
+    setModifiedStatus(false);
 }
 
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
@@ -62,7 +85,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     } else if (button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
         saveSettings();
     } else { // reject
-        loadSettings(); // reset settings (mostly font and -size)
+        loadSettings(); // reset changes (mostly font and -size)
     }
 }
 
