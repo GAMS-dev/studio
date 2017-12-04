@@ -128,21 +128,13 @@ void Option::readDefinition(const QString &systemPath, const QString &optionFile
 
     char msg[GMS_SSSIZE];
 //    const char* sysPath = QDir::toNativeSeparators(systemPath).toLatin1().data();
-    qDebug() << QString(systemPath.toLatin1());
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0')
         EXCEPT() << "ERROR" << msg;
 
-    qDebug() << QDir(systemPath).filePath(optionFileName).toLatin1();
-
+//    qDebug() << QDir(systemPath).filePath(optionFileName).toLatin1();
 
     if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath("optgams.def").toLatin1())) {
-
-        qDebug() << "optCount:" << optCount(mOPTHandle)
-                 << ", optMessageCount:" << optMessageCount(mOPTHandle)
-                 << ", optGroupCount:" << optGroupCount(mOPTHandle)
-                 << ", optSynonymCount:" << optSynonymCount(mOPTHandle)
-                 << ", optRecentEnabled:" << optRecentEnabled(mOPTHandle);
 
          QMap<QString, QString> synonym;
          char name[GMS_SSSIZE];
@@ -158,7 +150,6 @@ void Option::readDefinition(const QString &systemPath, const QString &optionFile
              int helpContextNr;
              int group;
              optGetGroupNr(mOPTHandle, i, name, &group, &helpContextNr, help);
-//             qDebug() << QString("%1: %2 group_%3 %4 help_%5").arg(i).arg(name).arg(group).arg(helpContextNr).arg(help);
              mOptionGroupList.append( OptionGroup(name, i, QString::fromLatin1(help), helpContextNr));
          }
 
@@ -232,16 +223,7 @@ void Option::readDefinition(const QString &systemPath, const QString &optionFile
                        default: break;
                      }
 
-
-//                     int count = optListCountStr(mOPTHandle, name);
                      optGetEnumCount(mOPTHandle, i, &enumCount);
-//                     qDebug() << QString("%1 = ").arg(name) << QString::number(enumCount) << QString(", subtype=%1, %2").arg(ioptsubtype).arg(count);
-//                     for (int c = 1; c<= count ; ++i) {
-//                         char msg[GMS_SSSIZE];
-//                         optReadFromListStr(mOPTHandle, name, c, msg);
-//                         qDebug() << QString("   %1 msg=%2").arg(c).arg(msg);
-//                     }
-
                      for (int j = 1; j <= enumCount; j++) {
                           int ihelpContext;
                           char shelpText[GMS_SSSIZE];

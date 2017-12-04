@@ -15,17 +15,6 @@ CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
 
     mCommandLineTokenizer = new CommandLineTokenizer;
 
-//    if (validateFlag)  {
-//       QString cmlStr = "=a a c gdx=default=s.g a = c --limcow 2 =abc /o ouut.out";
-//       QList<OptionItem> list = mCommandLineTokenizer->tokenize(cmlStr);
-//       qDebug() << cmlStr;
-//       for(OptionItem item : list) {
-//           qDebug() << QString("[%1, %2] = (%3, %4)=>['%5', '%6']").arg(item.key).arg(item.value).arg(item.keyPosition).arg(item.valuePosition)
-//                    .arg(cmlStr.mid(item.keyPosition, item.key.size()))
-//                    .arg(cmlStr.mid(item.valuePosition, item.value.size()));
-//       }
-//    }
-
     connect(this, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &CommandLineOption::updateCurrentOption );
     connect(this, &QComboBox::editTextChanged,
@@ -44,7 +33,6 @@ void CommandLineOption::updateCurrentOption(const QString &text)
 
 void CommandLineOption::validateChangedOption(const QString &text)
 {
-    // TODO: validate option key and value against optgams.def
     mCurrentOption = text.simplified();
 
     if (mCurrentOption.isEmpty())
@@ -54,14 +42,7 @@ void CommandLineOption::validateChangedOption(const QString &text)
         clearLineEditTextFormat(this->lineEdit());
 
         QList<OptionItem> list = mCommandLineTokenizer->tokenize(mCurrentOption);
-//        qDebug() << mCurrentOption;
-//        for(OptionItem item : list) {
-//           qDebug() << QString("[%1, %2] = (%3, %4)=>['%5', '%6']").arg(item.key).arg(item.value).arg(item.keyPosition).arg(item.valuePosition)
-//                    .arg(mCurrentOption.mid(item.keyPosition, item.key.size()))
-//                    .arg(mCurrentOption.mid(item.valuePosition, item.value.size()));
-//        }
-       setLineEditTextFormat(this->lineEdit(), mCommandLineTokenizer->format(list));
-
+        setLineEditTextFormat(this->lineEdit(), mCommandLineTokenizer->format(list));
     }
 }
 
@@ -120,7 +101,6 @@ void CommandLineOption::setLineEditTextFormat(QLineEdit *lineEdit, const QList<O
     else
         lineEdit->setToolTip("");
 
-//    qDebug() << QString("   errorMessage=[%1]").arg(errorMessage);
     QInputMethodEvent event(QString(), attributes);
     QCoreApplication::sendEvent(lineEdit, &event);
 }
