@@ -90,6 +90,7 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymboltable.cpp \
+    gamshighlight.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
@@ -133,6 +134,7 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymboltable.h \
+    gamshighlight.h \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
