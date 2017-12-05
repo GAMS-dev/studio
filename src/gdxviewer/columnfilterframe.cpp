@@ -8,7 +8,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-//TODO(CW): refactor
 ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *parent)
     :QFrame(parent), mSymbol(symbol), mColumn(column)
 {
@@ -16,16 +15,25 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
 
-    mModel = new FilterUelModel(symbol, column);
+    mModel = new FilterUelModel(symbol, column, this);
     ui.lvLabels->setModel(mModel);
+}
+
+ColumnFilterFrame::~ColumnFilterFrame()
+{
+    delete mModel;
 }
 
 void ColumnFilterFrame::apply()
 {
-    qDebug() << "apply";
-
-    for(int i=0; i<mModel->changed().count(); i++)
-        mSymbol->filterUels().at(mColumn)->insert(mModel->changed().keys().at(i), mModel->changed().values().at(i));
+    bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
+    QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
+    bool checked;
+    for (int idx=0; idx<uelsInColumn->size(); idx++)
+    {
+        checked = mModel->checked()[idx];
+        showUelInColumn[uelsInColumn->at(idx)] = checked;
+    }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
 }

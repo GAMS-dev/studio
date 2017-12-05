@@ -40,8 +40,13 @@ GdxSymbol::~GdxSymbol()
         delete mMinUel;
     if (mMaxUel)
         delete mMaxUel;
-    for(auto s : mFilterUels)
-        delete s;
+    for(auto v : mUelsInColumn)
+        delete v;
+    for(auto a: mShowUelInColumn)
+    {
+        if(a)
+            delete a;
+    }
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -155,8 +160,8 @@ void GdxSymbol::loadData()
     QTime t;
     t.start();
     QMutexLocker locker(mGdxMutex);
-    int* mMinUel = new int[mDim];
-    int* mMaxUel = new int[mDim];
+    mMinUel = new int[mDim];
+    mMaxUel = new int[mDim];
     if(!mIsLoaded)
     {
         beginResetModel();
@@ -289,12 +294,11 @@ void GdxSymbol::calcDefaultColumns()
 //TODO(CW): refactoring for better performance
 void GdxSymbol::calcUelsInColumn()
 {
-    QTime t;
-    t.start();
-
     for(int dim=0; dim<mDim; dim++)
     {
-        QMap<int, bool>* map = new QMap<int, bool>();
+        QVector<int>* uels = new QVector<int>();
+        bool* sawUel = new bool[mMaxUel[dim]+1] {false}; //TODO(CW): squeeze using mMinUel
+
         int lastUel = -1;
         int currentUel = - 1;
         for(int rec=0; rec<mRecordCount; rec++)
@@ -303,17 +307,16 @@ void GdxSymbol::calcUelsInColumn()
             if(lastUel != currentUel)
             {
                 lastUel = currentUel;
-                map->insert(currentUel, true);
+                if(!sawUel[currentUel])
+                {
+                    sawUel[currentUel] = true;
+                    uels->append(currentUel);
+                }
             }
         }
-        mFilterUels.append(map);
+        mUelsInColumn.append(uels);
+        mShowUelInColumn.append(sawUel);
     }
-    //mFilterUels.at(0)->remove(1);
-}
-
-QList<QMap<int, bool> *> GdxSymbol::filterUels() const
-{
-    return mFilterUels;
 }
 
 GdxSymbolTable *GdxSymbol::gdxSymbolTable() const
@@ -344,6 +347,21 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
+void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
+{
+    mShowUelInColumn = showUelInColumn;
+}
+
+QVector<bool *> GdxSymbol::showUelInColumn() const
+{
+    return mShowUelInColumn;
+}
+
+QVector<QVector<int> *> GdxSymbol::uelsInColumn() const
+{
+    return mUelsInColumn;
+}
+
 Qt::SortOrder GdxSymbol::sortOrder() const
 {
     return mSortOrder;
@@ -358,10 +376,9 @@ void GdxSymbol::resetSortFilter()
     }
     for(int dim=0; dim<mDim; dim++)
     {
-        QMap<int,bool>* map = mFilterUels.at(dim);
-        for(int uel : map->keys())
+        for(int uel : *mUelsInColumn.at(dim))
         {
-            map->insert(uel, true);
+            mShowUelInColumn.at(dim)[uel] = true;
         }
     }
 
@@ -490,7 +507,7 @@ void GdxSymbol::filterRows()
         mRecFilterIdx[row-removedCount] = row;
         for(int dim=0; dim<mDim; dim++)
         {
-            if(!mFilterUels.at(dim)->value(mKeys[recIdx*mDim + dim])) //filter record
+            if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) //filter record
             {
                 mFilterRecCount--;
                 removedCount++;

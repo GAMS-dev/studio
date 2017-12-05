@@ -28,17 +28,13 @@ public:
 
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    int *uels() const;
-
-    QMap<int, bool> changed() const;
+    bool *checked() const;
 
 private:
     GdxSymbol* mSymbol;
-    int* mUels;
-    QMap<int, bool> mChanged;
     int mColumn;
-    QMap<int, bool>* mfilterUels;
-
+    QVector<int>* mUels;
+    bool* mChecked;
 };
 
 } // namespace gdxviewer

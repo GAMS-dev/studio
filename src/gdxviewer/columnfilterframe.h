@@ -15,6 +15,7 @@ class ColumnFilterFrame : public QFrame
 
 public:
     explicit ColumnFilterFrame(GdxSymbol* symbol, int column, QWidget *parent = 0);
+    ~ColumnFilterFrame();
 
 private:
     Ui::ColumnFilterFrame ui;
