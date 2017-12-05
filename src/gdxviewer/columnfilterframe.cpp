@@ -14,6 +14,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     ui.setupUi(this);
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
+    connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
     connect(ui.pbFilter, &QPushButton::clicked, this, &ColumnFilterFrame::filterLabels);
 
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
@@ -47,6 +48,12 @@ void ColumnFilterFrame::selectAll()
 {
     for(int row=0; row<mModel->rowCount(); row++)
         mModel->setData(mModel->index(row,0), true, Qt::CheckStateRole); //TODO: do not call setData multipe times but one function for setAll
+}
+
+void ColumnFilterFrame::deselectAll()
+{
+    for(int row=0; row<mModel->rowCount(); row++)
+        mModel->setData(mModel->index(row,0), false, Qt::CheckStateRole); //TODO: do not call setData multipe times but one function for setAll
 }
 
 void ColumnFilterFrame::filterLabels()
