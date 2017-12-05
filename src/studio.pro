@@ -90,7 +90,6 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymboltable.cpp \
-    gamshighlight.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
@@ -106,7 +105,9 @@ SOURCES += \
     studiosettings.cpp \
     application.cpp \
     projectcontextmenu.cpp \
-    option.cpp
+    option.cpp \
+    syntaxhighlighter.cpp \
+    syntaxformats.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -134,7 +135,6 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymboltable.h \
-    gamshighlight.h \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
@@ -150,7 +150,9 @@ HEADERS += \
     studiosettings.h \
     application.h \
     projectcontextmenu.h \
-    option.h
+    option.h \
+    syntaxhighlighter.h \
+    syntaxformats.h
 
 FORMS += \
     welcomepage.ui  \
