@@ -72,8 +72,6 @@ bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, in
 {
     if (role==Qt::CheckStateRole)
         mChecked[index.row()] = value.toBool();
-
-    dataChanged(index, index, QVector<int>(Qt::CheckStateRole));
     return true;
 }
 
