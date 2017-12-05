@@ -88,6 +88,8 @@ void FilterUelModel::filterLabels(QString filterString)
     t.start();
     bool checkedOld, checkedNew;
     QRegExp regExp(filterString);
+    regExp.setCaseSensitivity(Qt::CaseInsensitive);
+    regExp.setPatternSyntax(QRegExp::Wildcard);
     for(int idx=0; idx<mUels->size(); idx++)
     {
         int uel = mUels->at(idx);
