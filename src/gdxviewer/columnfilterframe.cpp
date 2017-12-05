@@ -8,7 +8,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-//TODO(CW): refactor
 ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *parent)
     :QFrame(parent), mSymbol(symbol), mColumn(column)
 {
