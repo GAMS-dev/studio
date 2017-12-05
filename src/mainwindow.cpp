@@ -243,13 +243,15 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString fName = QFileDialog::getOpenFileName(this,
-                                                 "Open file",
-                                                 mRecent.path,
-                                                 tr("GAMS code (*.gms *.inc *.gdx);;"
-                                                    "Text files (*.txt);;"
-                                                    "All files (*)"));
-    addContext("", fName, true);
+    QFileDialog openDialog(this, "Open file", mRecent.path, tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                               "Text files (*.txt);;"
+                                                               "All files (*)"));
+    openDialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList fNames = openDialog.getOpenFileNames();
+
+    foreach (QString item, fNames) {
+        addContext("", item, true);
+    }
 }
 
 void MainWindow::on_actionSave_triggered()

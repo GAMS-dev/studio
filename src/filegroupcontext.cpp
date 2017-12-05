@@ -175,8 +175,6 @@ void FileGroupContext::jumpToMark(bool focus)
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    qDebug() << "runableGms:";
-    qDebug() << QDir(location()).filePath(mRunInfo);
     return QDir(location()).filePath(mRunInfo);
 }
 
