@@ -79,6 +79,7 @@ public:
     CommandLineModel* commandLineModel();
     FileRepository* fileRepository();
     QList<QPlainTextEdit*> openEditors();
+    QList<QPlainTextEdit*> openLogs();
 
 private slots:
     void codecChanged(QAction *action);

@@ -306,6 +306,9 @@
         <property name="checkable">
          <bool>true</bool>
         </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
        </widget>
        <widget class="QCheckBox" name="cb_verticalline">
         <property name="enabled">
@@ -468,7 +471,7 @@
          <bool>false</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="cb_linewrap">
+       <widget class="QCheckBox" name="cb_linewrap_editor">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -481,13 +484,35 @@
          </rect>
         </property>
         <property name="text">
-         <string>Enable line wrapping</string>
+         <string>Enable line wrapping in editor</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
         </property>
         <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_linewrap_process">
+        <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>270</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable line wrapping in process log</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </widget>

@@ -83,6 +83,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ensureCodecMenu("System");
     mSettings->loadSettings();
+
+    if (mSettings->lineWrapProcess())
+        ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    else
+        ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
+
     initTabs();
 }
 
@@ -190,9 +196,18 @@ FileRepository *MainWindow::fileRepository()
     return &mFileRepo;
 }
 
-QList<QPlainTextEdit *> MainWindow::openEditors()
+QList<QPlainTextEdit*> MainWindow::openEditors()
 {
     return mFileRepo.editors();
+}
+
+QList<QPlainTextEdit*> MainWindow::openLogs()
+{
+    QList<QPlainTextEdit*> resList;
+    for (int i = 0; i < ui->logTab->count(); i++) {
+        resList << dynamic_cast<QPlainTextEdit*>(ui->logTab->widget(i));
+    }
+    return resList;
 }
 
 bool MainWindow::projectViewVisibility()
@@ -732,6 +747,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
             QPlainTextEdit* logEdit = new QPlainTextEdit();
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
+                                                                  : QPlainTextEdit::NoWrap);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -861,6 +878,7 @@ void MainWindow::execute(QString commandLineStr)
 
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
+        logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     } else {

@@ -25,6 +25,8 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -43,7 +45,8 @@ void SettingsDialog::loadSettings()
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
 //    ui->cb_replacetabs->setChecked(mSettings->replaceTabsWithSpaces());
 //    ui->sb_tabsize->setValue(mSettings->tabSize());
-    ui->cb_linewrap->setChecked(mSettings->lineWrap());
+    ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
+    ui->cb_linewrap_process->setChecked(mSettings->lineWrapProcess());
 }
 
 void SettingsDialog::setModified()
@@ -71,7 +74,8 @@ void SettingsDialog::saveSettings()
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
 //    mSettings->setReplaceTabsWithSpaces(ui->cb_replacetabs->isChecked());
 //    mSettings->setTabSize(ui->sb_tabsize->value());
-    mSettings->setLineWrap(ui->cb_linewrap->isChecked());
+    mSettings->setLineWrapEditor(ui->cb_linewrap_editor->isChecked());
+    mSettings->setLineWrapProcess(ui->cb_linewrap_process->isChecked());
 
     // done
     mSettings->saveSettings();

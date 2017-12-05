@@ -80,7 +80,8 @@ void StudioSettings::saveSettings()
     mUserSettings->setValue("showLineNr", showLineNr());
     mUserSettings->setValue("replaceTabsWithSpaces", replaceTabsWithSpaces());
     mUserSettings->setValue("tabSize", tabSize());
-    mUserSettings->setValue("lineWrap", lineWrap());
+    mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
+    mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
 
     mUserSettings->endGroup();
 
@@ -149,7 +150,8 @@ void StudioSettings::loadSettings()
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
-    setLineWrap(mUserSettings->value("lineWrap", false).toBool());
+    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
+    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
 
     mUserSettings->endGroup();
 
@@ -270,14 +272,24 @@ void StudioSettings::setTabSize(int value)
     mTabSize = value;
 }
 
-bool StudioSettings::lineWrap() const
+bool StudioSettings::lineWrapEditor() const
 {
-    return mLineWrap;
+    return mLineWrapEditor;
 }
 
-void StudioSettings::setLineWrap(bool value)
+void StudioSettings::setLineWrapEditor(bool value)
 {
-    mLineWrap = value;
+    mLineWrapEditor = value;
+}
+
+bool StudioSettings::lineWrapProcess() const
+{
+    return mLineWrapProcess;
+}
+
+void StudioSettings::setLineWrapProcess(bool value)
+{
+    mLineWrapProcess = value;
 }
 
 QString StudioSettings::fontFamily() const
@@ -300,17 +312,30 @@ void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
 
 void StudioSettings::redrawEditors()
 {
-    QPlainTextEdit::LineWrapMode wrapMode;
-    if(lineWrap())
-        wrapMode = QPlainTextEdit::WidgetWidth;
+    QPlainTextEdit::LineWrapMode wrapModeEditor;
+    if(lineWrapEditor())
+        wrapModeEditor = QPlainTextEdit::WidgetWidth;
     else
-        wrapMode = QPlainTextEdit::NoWrap;
+        wrapModeEditor = QPlainTextEdit::NoWrap;
 
     QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
-        editList.at(i)->blockCountChanged(0);
-        editList.at(i)->setLineWrapMode(wrapMode);
+        editList.at(i)->blockCountChanged(0); // force redraw for line number area
+        editList.at(i)->setLineWrapMode(wrapModeEditor);
     }
+
+    QPlainTextEdit::LineWrapMode wrapModeProcess;
+    if(lineWrapProcess())
+        wrapModeProcess = QPlainTextEdit::WidgetWidth;
+    else
+        wrapModeProcess = QPlainTextEdit::NoWrap;
+
+    QList<QPlainTextEdit*> logList = mMain->openLogs();
+    for (int i = 0; i < logList.size(); i++) {
+        if (logList.at(i))
+            logList.at(i)->setLineWrapMode(wrapModeProcess);
+    }
+
 }
 
 }
