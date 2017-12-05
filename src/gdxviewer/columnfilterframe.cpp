@@ -57,7 +57,6 @@ void ColumnFilterFrame::filterLabels()
 
 void ColumnFilterFrame::toggleHideUnselected(bool checked)
 {
-    ui.lvLabels->setUpdatesEnabled(false);
     if (checked)
     {
         for(int row=0; row<mModel->rowCount(); row++)
