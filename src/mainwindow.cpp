@@ -662,7 +662,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true);
+    openFilePath(filePath, nullptr, true, true);
 }
 
 HistoryData *MainWindow::history()
