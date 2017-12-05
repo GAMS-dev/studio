@@ -589,10 +589,20 @@ void MainWindow::createRunAndCommandLineWidgets()
     mCommandLineModel = new CommandLineModel(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 
+    QPushButton* helpButton = new QPushButton(this);
+    QPixmap pixmap(":/img/gams");
+    QIcon ButtonIcon(pixmap);
+    helpButton->setIcon(ButtonIcon);
+    helpButton->setToolTip("Help on Command Line Option");
+
+    ui->mainToolBar->addWidget(helpButton);
+
     connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
             this, &MainWindow::on_runWithChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
+    connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
+
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -858,6 +868,12 @@ void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
     mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
+}
+
+void MainWindow::on_commandLineHelpTriggered()
+{
+    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 }
 
 void MainWindow::on_actionRun_triggered()

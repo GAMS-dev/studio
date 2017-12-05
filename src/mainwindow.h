@@ -127,7 +127,7 @@ private slots:
      // Command Line Option
     void on_runWithChangedOptions();
     void on_runWithParamAndChangedOptions(QString parameter);
-
+    void on_commandLineHelpTriggered();
 
 
 protected:
