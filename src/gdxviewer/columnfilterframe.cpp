@@ -57,6 +57,7 @@ void ColumnFilterFrame::filterLabels()
 
 void ColumnFilterFrame::toggleHideUnselected(bool checked)
 {
+    ui.lvLabels->setUpdatesEnabled(false);
     if (checked)
     {
         for(int row=0; row<mModel->rowCount(); row++)
@@ -68,8 +69,7 @@ void ColumnFilterFrame::toggleHideUnselected(bool checked)
         }
     }
     else
-        for(int row=0; row<mModel->rowCount(); row++)
-            ui.lvLabels->setRowHidden(row, false);
+        ui.lvLabels->reset();
 }
 
 void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
