@@ -80,6 +80,23 @@ bool *FilterUelModel::checked() const
     return mChecked;
 }
 
+void FilterUelModel::filterLabels(QString filterString)
+{
+    QTime t;
+    t.start();
+    QRegExp regExp(filterString);
+    for(int idx=0; idx<mUels->size(); idx++)
+    {
+        int uel = mUels->at(idx);
+        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label().at(uel)))
+            mChecked[idx] = true;
+        else
+            mChecked[idx] = false;
+    }
+    layoutChanged();
+    qDebug() << "fitler elapsed: " << t.elapsed();
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

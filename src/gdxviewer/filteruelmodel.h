@@ -30,11 +30,14 @@ public:
 
     bool *checked() const;
 
+    void filterLabels(QString filterString);
+
 private:
     GdxSymbol* mSymbol;
     int mColumn;
     QVector<int>* mUels;
     bool* mChecked;
+
 };
 
 } // namespace gdxviewer
