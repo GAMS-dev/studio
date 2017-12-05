@@ -37,7 +37,6 @@ private:
     int mColumn;
     QVector<int>* mUels;
     bool* mChecked;
-
 };
 
 } // namespace gdxviewer

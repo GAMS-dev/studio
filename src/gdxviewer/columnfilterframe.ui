@@ -55,6 +55,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbToggleHideUnselected">
+     <property name="text">
+      <string>Hide unselected items</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="pbApply">
      <property name="text">
       <string>Apply</string>
