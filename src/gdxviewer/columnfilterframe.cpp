@@ -16,14 +16,17 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
 
-    mModel = new FilterUelModel(symbol, column);
+    mModel = new FilterUelModel(symbol, column, this);
     ui.lvLabels->setModel(mModel);
+}
+
+ColumnFilterFrame::~ColumnFilterFrame()
+{
+    delete mModel;
 }
 
 void ColumnFilterFrame::apply()
 {
-    qDebug() << "apply";
-
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
     QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
     bool checked;

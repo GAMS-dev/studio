@@ -21,8 +21,6 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
 
 FilterUelModel::~FilterUelModel()
 {
-    if (mUels)
-        delete mUels;
     if (mChecked)
         delete mChecked;
 }

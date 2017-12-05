@@ -178,9 +178,9 @@ void GdxViewer::showColumnFilter(QPoint p)
     GdxSymbol* selected = selectedSymbol();
     if(selected->isLoaded() && column>=0 && column<selected->dim())
     {
-        QMenu* m = new QMenu(this);
-        m->addAction(new ColumnFilter(selected, column, this));
-        m->popup(ui.tableView->mapToGlobal(p));
+        QMenu m(this);
+        m.addAction(new ColumnFilter(selected, column, this));
+        m.exec(ui.tableView->mapToGlobal(p));
     }
 }
 
