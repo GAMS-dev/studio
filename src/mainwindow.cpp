@@ -897,6 +897,7 @@ void MainWindow::execute(QString commandLineStr)
     logProc->markOld();
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
+    ui->dockLogView->setVisible(true);
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
