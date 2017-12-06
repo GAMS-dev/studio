@@ -67,8 +67,11 @@ public:
     int tabSize() const;
     void setTabSize(int value);
 
-    bool lineWrap() const;
-    void setLineWrap(bool value);
+    bool lineWrapEditor() const;
+    void setLineWrapEditor(bool value);
+
+    bool lineWrapProcess() const;
+    void setLineWrapProcess(bool value);
 
     QString fontFamily() const;
     void setFontFamily(const QString &value);
@@ -95,7 +98,8 @@ private:
     bool mShowLineNr;
     bool mReplaceTabsWithSpaces;
     int mTabSize;
-    bool mLineWrap;
+    bool mLineWrapEditor;
+    bool mLineWrapProcess;
 
 };
 

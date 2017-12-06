@@ -83,6 +83,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ensureCodecMenu("System");
     mSettings->loadSettings();
+
+    if (mSettings->lineWrapProcess())
+        ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    else
+        ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
+
     initTabs();
 }
 
@@ -190,9 +196,18 @@ FileRepository *MainWindow::fileRepository()
     return &mFileRepo;
 }
 
-QList<QPlainTextEdit *> MainWindow::openEditors()
+QList<QPlainTextEdit*> MainWindow::openEditors()
 {
     return mFileRepo.editors();
+}
+
+QList<QPlainTextEdit*> MainWindow::openLogs()
+{
+    QList<QPlainTextEdit*> resList;
+    for (int i = 0; i < ui->logTab->count(); i++) {
+        resList << dynamic_cast<QPlainTextEdit*>(ui->logTab->widget(i));
+    }
+    return resList;
 }
 
 bool MainWindow::projectViewVisibility()
@@ -243,13 +258,15 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString fName = QFileDialog::getOpenFileName(this,
-                                                 "Open file",
-                                                 mRecent.path,
-                                                 tr("GAMS code (*.gms *.inc *.gdx);;"
-                                                    "Text files (*.txt);;"
-                                                    "All files (*)"));
-    addContext("", fName, true);
+    QFileDialog openDialog(this, "Open file", mRecent.path, tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                               "Text files (*.txt);;"
+                                                               "All files (*)"));
+    openDialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList fNames = openDialog.getOpenFileNames();
+
+    foreach (QString item, fNames) {
+        addContext("", item, true);
+    }
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -660,7 +677,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true);
+    openFilePath(filePath, nullptr, true, true);
 }
 
 HistoryData *MainWindow::history()
@@ -730,6 +747,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
             QPlainTextEdit* logEdit = new QPlainTextEdit();
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
+                                                                  : QPlainTextEdit::NoWrap);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -859,6 +878,7 @@ void MainWindow::execute(QString commandLineStr)
 
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
+        logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     } else {
