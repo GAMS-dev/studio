@@ -86,6 +86,7 @@ const QList<FileType*> FileType::list()
         mList << new FileType(Lst, "lst", "GAMS List File", true);
         mList << new FileType(Lxi, "lxi", "GAMS List File Index", true, Lst);
         mList << new FileType(Gdx, "gdx", "GAMS Data", true);
+        mList << new FileType(Ref, "ref", "GAMS Ref File", true);
         mList << new FileType(Log, "log", "GAMS Log File", false);
         mNone = new FileType(None, "", "Unknown File", false);
     }

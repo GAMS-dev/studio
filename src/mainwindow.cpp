@@ -132,7 +132,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             fc->load(codecName);
 
             if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+                    fc->metrics().fileType() == FileType::Lst ||
+                    fc->metrics().fileType() == FileType::Ref) {
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
