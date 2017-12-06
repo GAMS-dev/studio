@@ -1,58 +1,74 @@
 #include "syntaxformats.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
+
+QTextCharFormat SyntaxAbstract::charFormatError()
+{
+    QTextCharFormat errorFormat(charFormat());
+    errorFormat.setUnderlineColor(Qt::red);
+    errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    return errorFormat;
+}
 
 SyntaxStandard::SyntaxStandard()
 {
     mSubStates << SyntaxState::Directive << SyntaxState::CommentLine;
 }
 
-SyntaxState SyntaxStandard::process(SyntaxState fromState, const QString& line, int& start, int &end)
+SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
 {
-    Q_UNUSED(start);
-    if (fromState == state())
-        end = line.length();
-    return fromState;
+    Q_UNUSED(entryState);
+    return SyntaxBlock(this, SyntaxState::Standard, index, line.length());
 }
 
-SyntaxDirective::SyntaxDirective(QChar directiveChar): mDirectiveChar(directiveChar)
+
+SyntaxDirective::SyntaxDirective(QChar directiveChar)
 {
-    mDirectives << "dollar" << "offtext" << "ontext";
+    mRex.setPattern(QString("(^%1|%1%1)([\\w\\.]+)").arg(QRegularExpression::escape(directiveChar)));
+    mDirectives << "dollar" << "ontext" << "title" << "hidden";
+    mSpecialStates.insert("ontext", SyntaxState::CommentBlock);
+    mSpecialStates.insert("hidden", SyntaxState::CommentLine);
 }
 
-SyntaxState SyntaxDirective::process(SyntaxState fromState, const QString& line, int& start, int &end)
+SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, int index)
 {
-    static QSet<QChar::Category> cats = {QChar::Letter_Lowercase, QChar::Letter_Uppercase, QChar::Letter_Titlecase};
-
-    if (!line.length() || start > 0 || line[0] != mDirectiveChar) {
-        return fromState;
+    QRegularExpressionMatch match = mRex.match(line, index);
+    if (!match.hasMatch()) return SyntaxBlock();
+    if (entryState == SyntaxState::CommentBlock) {
+        DEB() << "Directive from CommentBlock";
+        if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
+            return SyntaxBlock(this, SyntaxState::Standard, match.capturedStart(1), match.capturedEnd(2));
+        return SyntaxBlock();
     }
-    QStringList directives = (fromState != SyntaxState::CommentBlock) ? mDirectives
-                                                                      : QStringList() << "offtext";
-    QStringRef ref = line.rightRef(line.length()-1);
-    for (const QString directive: directives) {
-        if (ref.startsWith(directive, Qt::CaseInsensitive)
-            && (ref.length()==directive.length() || !cats.contains(ref[directive.length()].category()))) {
-            end = directive.length();
-            break;
-        }
-    }
-    start = -1;
-    return fromState;
+    SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::Standard);
+    return SyntaxBlock(this, next, match.capturedStart(1), match.capturedEnd(2)
+                       , !mDirectives.contains(match.captured(2), Qt::CaseInsensitive));
 }
 
 
 SyntaxCommentLine::SyntaxCommentLine(QChar commentChar): mCommentChar(commentChar)
 { }
 
-SyntaxState SyntaxCommentLine::process(SyntaxState fromState, const QString& line, int& start, int &end)
+SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line, int index)
 {
-    Q_UNUSED(fromState)
-    if (start==0 && line.startsWith(mCommentChar))
-        end = line.length();
-    return fromState;
+    if (entryState != SyntaxState::CommentBlock && index==0 && line.startsWith(mCommentChar))
+        return SyntaxBlock(this, SyntaxState::Standard, 0, line.length());
+    return SyntaxBlock();
+}
+
+
+SyntaxCommentBlock::SyntaxCommentBlock()
+{
+    mSubStates << SyntaxState::Directive;
+}
+
+SyntaxBlock SyntaxCommentBlock::find(SyntaxState entryState, const QString& line, int index)
+{
+    Q_UNUSED(entryState)
+    return SyntaxBlock(this, state(), index, line.length());
 }
 
 

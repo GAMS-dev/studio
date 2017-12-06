@@ -124,9 +124,13 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             fc->load(codecName);
+            if (fc->metrics().fileType() == FileType::Gms
+                || fc->metrics().fileType() == FileType::Txt) {
+                fc->setSyntaxHighlight(true);
+            }
 
-            if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+            if (fc->metrics().fileType() == FileType::Log
+                || fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);

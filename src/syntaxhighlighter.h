@@ -23,6 +23,7 @@ private:
     typedef QList<SyntaxAbstract*> States;
 
     States mStates;
+    int mLastBaseState = 0;
 };
 
 } // namespace studio

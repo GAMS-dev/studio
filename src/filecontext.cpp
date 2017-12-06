@@ -253,6 +253,17 @@ void FileContext::load(QString codecName)
     }
 }
 
+void FileContext::setSyntaxHighlight(bool on)
+{
+    if (!document() && on)
+        EXCEPT() << "No document to highlight the syntax";
+
+    if (on && !mSyntaxHighlighter)
+        mSyntaxHighlighter = new SyntaxHighlighter(document());
+    else if (!on && mSyntaxHighlighter)
+        delete mSyntaxHighlighter;
+}
+
 void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
 {
     if (mEditors.size()) {

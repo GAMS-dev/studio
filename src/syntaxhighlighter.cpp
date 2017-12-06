@@ -1,4 +1,5 @@
 #include "syntaxhighlighter.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -6,9 +7,24 @@ namespace studio {
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument *parent)
     :QSyntaxHighlighter(parent)
 {
-    mStates << new SyntaxStandard();
-    mStates << new SyntaxDirective();
-    mStates << new SyntaxCommentLine();
+    SyntaxAbstract* syntax = new SyntaxStandard();
+    mStates << syntax;
+
+    syntax = new SyntaxDirective();
+    syntax->charFormat().setForeground(Qt::darkBlue);
+    syntax->charFormat().setFontWeight(QFont::Bold);
+    mStates << syntax;
+
+    syntax = new SyntaxCommentLine();
+    syntax->charFormat().setForeground(Qt::darkGreen);
+    syntax->charFormat().setFontItalic(true);
+    mStates << syntax;
+
+    syntax = new SyntaxCommentBlock();
+    syntax->copyCharFormat(mStates.last()->charFormat());
+    mStates << syntax;
+
+    mLastBaseState = mStates.length();
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
@@ -25,59 +41,67 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     SyntaxState nextState = syntax->state();
 
     int index = 0;
-    bool direct = false;
-    while (index < text.length()) {
-        int end = index;
-        // get end of this syntax-state
-        nextState = syntax->process(syntax->state(), text, index, end);
-        SyntaxAbstract* candidate = syntax;
-        // scan valid sub-states for nearest hit
+    while (index < text.length()-1) {
+        // TODO(JM) use SyntaxBlock instead
+        SyntaxBlock thisBlock = syntax->find(syntax->state(), text, index);
+        if (!thisBlock.isValid()) {
+            DEB() << "Syntax not found for type " << int(syntax->state());
+            index++;
+            continue;
+        }
+        SyntaxBlock nextBlock;
         for (SyntaxState subState: syntax->subStates()) {
             SyntaxAbstract* subSyntax = getSyntax(stateIdx, subState);
             if (subSyntax) {
-                int subStart = index;
-                int subEnd = index;
-                SyntaxState locState = subSyntax->process(syntax->state(), text, subStart, subEnd);
-
-                if (subStart == index && subEnd > index) {
-                    // another state starts at index and has a length -> highlight and jump to end
-                    if (subSyntax->charFormat())
-                        setFormat(subStart, subEnd-subStart, *subSyntax->charFormat());
-                    nextState = subSyntax->state();
-                    index = subEnd;
-                    direct = true;
-                    break;
-                } else if (subStart > index && subStart < end) {
-                    end = subStart;
-                    candidate = subSyntax;
-                    nextState = locState;
+                SyntaxBlock subBlock = subSyntax->find(syntax->state(), text, index);
+                if (subBlock.isValid()) {
+                    if (!nextBlock.isValid() || nextBlock.start > subBlock.start)
+                        nextBlock = subBlock;
                 }
             }
         }
-        if (!direct) {
-            if (syntax->charFormat())
-                setFormat(index, end-index, *syntax->charFormat());
+        if (nextBlock.isValid()) {
+            // new state inside current block -> shorten end
+            if (nextBlock.start < thisBlock.end) thisBlock.end = nextBlock.start;
+            // current block has zero size
+            if (thisBlock.length()<1) thisBlock = nextBlock;
+        }
+        if (thisBlock.isValid() && thisBlock.length()>0) {
+            if (thisBlock.syntax->state() != SyntaxState::Standard)
+                setFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormat());
+            if (thisBlock.error && thisBlock.length()>0)
+                setFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError());
+            index = thisBlock.end;
+            nextState = thisBlock.next;
+            DEB() << "line " << currentBlock().blockNumber() << ": marked state " << int(thisBlock.syntax->state()) << " - next is " << int(nextState);
+        } else {
+            index++;
         }
     }
-    if (nextState == SyntaxState::Standard) {
+    if (nextState != SyntaxState::Standard) {
         setCurrentBlockState(getStateIdx(stateIdx, nextState));
+        DEB() << "currentBlockState set to " << currentBlockState();
+    } else if (currentBlockState() != -1) {
+        setCurrentBlockState(-1);
     }
 }
 
 SyntaxAbstract*SyntaxHighlighter::getSyntax(int maxIdx, SyntaxState state) const
 {
-    while (maxIdx > 0) {
-        --maxIdx;
-        if (mStates.at(maxIdx)->state() == state) return mStates.at(maxIdx);
+    int i = qMax(maxIdx, mLastBaseState);
+    while (i > 0) {
+        --i;
+        if (mStates.at(i)->state() == state) return mStates.at(i);
     }
     return nullptr;
 }
 
 int SyntaxHighlighter::getStateIdx(int maxIdx, SyntaxState state) const
 {
-    while (maxIdx > 0) {
-        --maxIdx;
-        if (mStates.at(maxIdx)->state() == state) return maxIdx;
+    int i = qMax(maxIdx, mLastBaseState);
+    while (i > 0) {
+        --i;
+        if (mStates.at(i)->state() == state) return i;
     }
     return -1;
 }
