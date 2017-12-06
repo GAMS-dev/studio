@@ -19,17 +19,32 @@ enum class SyntaxState {
 };
 typedef QList<SyntaxState> SyntaxStates;
 
+enum class SyntaxStateShift {
+    stay,
+    in,
+    out
+};
+
 class SyntaxAbstract;
 
 struct SyntaxBlock
 {
-    SyntaxBlock(SyntaxAbstract* _syntax=nullptr, SyntaxState _next=SyntaxState::Standard, int _start=0, int _end=0, bool _error=false)
-        : syntax(_syntax), next(_next), start(_start), end(_end), error(_error) { }
+    SyntaxBlock(SyntaxAbstract* _syntax=nullptr, int _start=0, int _end=0, bool _error=false
+            , SyntaxStateShift _shift = SyntaxStateShift::stay, SyntaxState _next=SyntaxState::Standard)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(_next)
+    { }
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool _error=false)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in), next(_next)
+    { }
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool _error=false)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(SyntaxState::Standard)
+    { }
     SyntaxAbstract *syntax;
-    SyntaxState next;
     int start;
     int end;
     bool error;
+    SyntaxStateShift shift;
+    SyntaxState next;
     int length() { return end-start; }
     bool isValid() { return syntax; }
 };

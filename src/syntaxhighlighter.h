@@ -7,6 +7,8 @@
 namespace gams {
 namespace studio {
 
+
+
 class SyntaxHighlighter : public QSyntaxHighlighter
 {
 public:
@@ -16,14 +18,22 @@ public:
     void highlightBlock(const QString &text);
 
 private:
-    SyntaxAbstract *getSyntax(int maxIdx, SyntaxState state) const;
-    int getStateIdx(int maxIdx, SyntaxState state) const;
+    SyntaxAbstract *getSyntax(SyntaxState state) const;
+    int getStateIdx(SyntaxState state) const;
 
 private:
+    typedef int StateIndex;
+    typedef int CodeIndex;
+    typedef QPair<StateIndex, CodeIndex> StateCode;
     typedef QList<SyntaxAbstract*> States;
+    typedef QList<StateCode> Codes;
+
+    void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
+    int addCode(StateIndex si, CodeIndex ci);
+    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state);
 
     States mStates;
-    int mLastBaseState = 0;
+    Codes mCodes;
 };
 
 } // namespace studio

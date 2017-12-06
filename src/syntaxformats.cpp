@@ -21,7 +21,7 @@ SyntaxStandard::SyntaxStandard()
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
 {
     Q_UNUSED(entryState);
-    return SyntaxBlock(this, SyntaxState::Standard, index, line.length());
+    return SyntaxBlock(this, index, line.length());
 }
 
 
@@ -40,11 +40,11 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     if (entryState == SyntaxState::CommentBlock) {
         DEB() << "Directive from CommentBlock";
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
-            return SyntaxBlock(this, SyntaxState::Standard, match.capturedStart(1), match.capturedEnd(2));
+            return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(2), SyntaxStateShift::out);
         return SyntaxBlock();
     }
     SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::Standard);
-    return SyntaxBlock(this, next, match.capturedStart(1), match.capturedEnd(2)
+    return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(2), next
                        , !mDirectives.contains(match.captured(2), Qt::CaseInsensitive));
 }
 
@@ -54,8 +54,9 @@ SyntaxCommentLine::SyntaxCommentLine(QChar commentChar): mCommentChar(commentCha
 
 SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line, int index)
 {
-    if (entryState != SyntaxState::CommentBlock && index==0 && line.startsWith(mCommentChar))
-        return SyntaxBlock(this, SyntaxState::Standard, 0, line.length());
+    Q_UNUSED(entryState)
+    if (index==0 && line.startsWith(mCommentChar))
+        return SyntaxBlock(this, 0, line.length());
     return SyntaxBlock();
 }
 
@@ -68,7 +69,7 @@ SyntaxCommentBlock::SyntaxCommentBlock()
 SyntaxBlock SyntaxCommentBlock::find(SyntaxState entryState, const QString& line, int index)
 {
     Q_UNUSED(entryState)
-    return SyntaxBlock(this, state(), index, line.length());
+    return SyntaxBlock(this, index, line.length());
 }
 
 
