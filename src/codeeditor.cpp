@@ -180,6 +180,24 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     QKeyEvent ev(*e);
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
+
+    if (e->modifiers() & Qt::ControlModifier && e->modifiers() & Qt::ShiftModifier && e->key() == Qt::Key_L) {
+        int blockNr = textCursor().blockNumber();
+        int colNr = textCursor().columnNumber();
+        QTextBlock blockFound = document()->findBlockByNumber(blockNr);
+        QTextCursor t(blockFound);
+        t.beginEditBlock();
+        t.movePosition(QTextCursor::NextBlock);
+        t.insertText(blockFound.text());
+        t.insertBlock();
+        moveCursor(QTextCursor::NextBlock);
+
+        for(int i = 0; i < colNr; i++)
+            moveCursor(QTextCursor::NextCharacter);
+
+        t.endEditBlock();
+    }
+
     // TODO(JM) get definition from studio key-config
     if (!mBlockStartKey && e->modifiers() & Qt::AltModifier && e->modifiers() & Qt::ShiftModifier) {
         mBlockStartKey = e->key();
@@ -187,10 +205,10 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         mBlockLastCursor = mBlockStartCursor;
         qDebug() << "blockEdit START";
     }
+
     if (!mBlockStartKey) {
         if (moveKeys.contains(ev.key())) {
             setExtraSelections(QList<QTextEdit::ExtraSelection>());
-            qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
             mBlockStartCursor = QTextCursor();
         } else if (extraSelections().size() > 1) {
             if (mBlockStartCursor.blockNumber() > mBlockLastCursor.blockNumber()) {
