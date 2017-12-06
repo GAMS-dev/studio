@@ -30,12 +30,17 @@ CommandLineTokenizer::~CommandLineTokenizer()
 
 QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
 {
-    int offset = 0;
-    QList<OptionItem> commandLineList;
-//    qDebug() << QString("tokenize => %1").arg(commandLineStr);
 
+    int offset = 0;
+    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+        offset++;
+    }
+    QList<OptionItem> commandLineList;
+
+//    qDebug() << QString("  Tokenize  => %1").arg(commandLineStr);
     if (!commandLineStr.isEmpty()) {
-        QStringList paramList = commandLineStr.split(QRegExp("\\s+"));
+        QString str  = commandLineStr.mid(offset);
+        QStringList paramList = str.split(QRegExp("\\s+"));
 
         QStringList::const_iterator it = paramList.cbegin();
         while(it != paramList.cend()) {
@@ -66,7 +71,7 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
 //                    qDebug() << QString("         [%1,%2] checkpoint_1").arg(key).arg(value);
                     ++offset;  // move over "="
                     if (entry.at(1).isEmpty()) { // param starts with "a= =" or "a= c"
-                        while( commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+                        while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
                             offset++;
 //                            qDebug() << QString(" checkpoint_1_1 offset  => %1").arg(offset);
                         }
@@ -92,9 +97,7 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                     }
                }
              } else { // eg. param starts with "a =" or "a x" or "a ==" or "a = x" or "a = ="
-                key =  param;
-                kpos = offset;
-                offset += key.size();
+//                qDebug() << QString("         [%1,%2,%3]  checkpoint_5_1").arg(key).arg(value).arg(offset);
                 while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
                     offset++;
                 }
@@ -104,17 +107,32 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                 while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
                     offset++;
                 }
-//                qDebug() << QString("         [%1,%2,%3]  checkpoint_5_2").arg(key).arg(value).arg(offset);
+                key = param;
+                kpos = offset;
+                offset += key.size();
+//                qDebug() << QString("         [%1,%2,%3]  checkpoint_5_2").arg(kpos).arg(vpos).arg(offset);
                 ++it;
                 if (it == paramList.cend()) {
                    commandLineList.append(OptionItem(key, value, kpos, vpos));
+//                   qDebug() << QString("         [%1,%2],%3  checkpoint_5_3").arg(kpos).arg(vpos).arg(offset);
                    break;
                 } else {
+//                    qDebug() << QString("           param=[%1]").arg(*it);
+//                    qDebug() << QString("         [%1,%2]  checkpoint_5_4").arg((*it).mid(offset)).arg(offset);
                     value = *it;
-//                    qDebug() << QString("         [%1,%2,%3] checkpoint_6").arg(key).arg(value).arg(offset);
+                    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+                        offset++;
+                    }
+                    if (commandLineStr.midRef(offset).startsWith("=")) {
+                        ++offset;
+                    }
+                    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+                        offset++;
+                    }
                     vpos=offset;
                     offset += value.size();
 
+//                    qDebug() << QString("         [%1,%2,%3] checkpoint_6").arg(vpos).arg(value).arg(offset);
                     if (value.startsWith("=")) {  // e.g. ("=","=x","x=x.gdx","=x=x.gdx") in  ("gdx = x","gdx =x", "gdx = x=x.gdx", "gdx =x=x.gdx");
                        value = value.mid(1);
                        --offset;
