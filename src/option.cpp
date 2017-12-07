@@ -8,7 +8,7 @@ namespace studio {
 
 Option::Option(const QString &systemPath, const QString &optionFileName)
 {
-   readDefinition(systemPath, optionFileName);
+    mAvailable = readDefinition(systemPath, optionFileName);
 }
 
 Option::~Option()
@@ -117,24 +117,29 @@ QString Option::getOptionTypeName(int type) const
     return mOptionTypeNameMap[type];
 }
 
+bool Option::available() const
+{
+    return mAvailable;
+}
+
 OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 {
     return mOption[optionName.toUpper()];
 }
 
-void Option::readDefinition(const QString &systemPath, const QString &optionFileName)
+bool Option::readDefinition(const QString &systemPath, const QString &optionFileName)
 {
     optHandle_t mOPTHandle;
 
     char msg[GMS_SSSIZE];
-//    const char* sysPath = QDir::toNativeSeparators(systemPath).toLatin1().data();
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
-    if (msg[0] != '\0')
-        EXCEPT() << "ERROR" << msg;
+    if (msg[0] != '\0') {
+        qDebug() << QString("ERROR: ").arg(msg);
+        optFree(&mOPTHandle);
+        return false;
+    }
 
-//    qDebug() << QDir(systemPath).filePath(optionFileName).toLatin1();
-
-    if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath("optgams.def").toLatin1())) {
+    if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath(optionFileName).toLatin1())) {
 
          QMap<QString, QString> synonym;
          char name[GMS_SSSIZE];
@@ -252,11 +257,15 @@ void Option::readDefinition(const QString &systemPath, const QString &optionFile
                      }
                      mOption[nameStr] = opt;
          }
+         optFree(&mOPTHandle);
+         return true;
      } else {
-          EXCEPT() << "Problem reading definition file " << QDir(systemPath).filePath("optgams.def").toLatin1();
+
+        qDebug() << "Problem reading definition file " << QDir(systemPath).filePath(optionFileName).toLatin1();
+        optFree(&mOPTHandle);
+        return false;
      }
 
-     optFree(&mOPTHandle);
 }
 
 } // namespace studio
