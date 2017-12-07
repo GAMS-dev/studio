@@ -30,6 +30,8 @@ public:
 
     bool *checked() const;
 
+    void filterLabels(QString filterString);
+
 private:
     GdxSymbol* mSymbol;
     int mColumn;

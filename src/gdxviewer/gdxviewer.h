@@ -36,7 +36,6 @@ private:
 signals:
     void loadFinished();
 
-
 public slots:
     void toggleSqueezeDefaults(bool checked);
     void refreshView();

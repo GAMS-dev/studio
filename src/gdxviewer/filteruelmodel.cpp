@@ -72,12 +72,39 @@ bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, in
 {
     if (role==Qt::CheckStateRole)
         mChecked[index.row()] = value.toBool();
+
+    dataChanged(index, index);
     return true;
 }
 
 bool *FilterUelModel::checked() const
 {
     return mChecked;
+}
+
+void FilterUelModel::filterLabels(QString filterString)
+{
+    QTime t;
+    t.start();
+    bool checkedOld, checkedNew;
+    QRegExp regExp(filterString);
+    regExp.setCaseSensitivity(Qt::CaseInsensitive);
+    regExp.setPatternSyntax(QRegExp::Wildcard);
+    for(int idx=0; idx<mUels->size(); idx++)
+    {
+        int uel = mUels->at(idx);
+        checkedOld = mChecked[idx];
+        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label().at(uel)))
+            checkedNew = true;
+        else
+            checkedNew = false;
+        if(checkedNew != checkedOld)
+        {
+            mChecked[idx] = checkedNew;
+            dataChanged(index(idx,0), index(idx,0));
+        }
+    }
+    qDebug() << "fitler elapsed: " << t.elapsed();
 }
 
 

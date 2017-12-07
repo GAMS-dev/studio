@@ -4,6 +4,7 @@
 #include "ui_columnfilterframe.h"
 #include "gdxsymbol.h"
 #include "filteruelmodel.h"
+#include <QVector>
 
 namespace gams {
 namespace studio {
@@ -26,6 +27,10 @@ private:
 private slots:
     void apply();
     void selectAll();
+    void deselectAll();
+    void filterLabels();
+    void toggleHideUnselected(bool checked);
+    void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 };
 
 
