@@ -53,7 +53,6 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                 key = entry.at(0);
                 kpos = offset;
                 offset += key.size();
-
                 if (entry.size() > 2) { // param starts with "a=="
                     ++offset;
                     vpos = offset;
@@ -100,6 +99,9 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                 ++it;
                 if (it == paramList.cend()) {
                    commandLineList.append(OptionItem(key, value, kpos, vpos));
+                   while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+                        ++offset;
+                  }
                    break;
                 } else {
                     value = *it;
@@ -125,8 +127,9 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
                                commandLineList.append(OptionItem(key, value, kpos, vpos));
                                break;
                            }
-                           while(commandLineStr.midRef(offset).startsWith(" "))
+                           while(commandLineStr.midRef(offset).startsWith(" ")  && (offset< commandLineStr.length())) {
                                ++offset;
+                           }
 
                            value = *it;
                            offset += value.size();
@@ -136,7 +139,10 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
              }
              commandLineList.append(OptionItem(key, value, kpos, vpos));
              if (it != paramList.cend()) {
-                ++it;  offset++;
+                ++it;
+                while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
+                     ++offset;
+                }
              }
         }  // end while
     }
@@ -152,7 +158,6 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
     for (OptionItem item : items) {
         if (item.key.startsWith("--")) // ignore double dash parameter
             continue;
-
         QString key = item.key;
         if (key.startsWith("-"))
             key = key.mid(1);
@@ -164,7 +169,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
            fr.start = item.valuePosition;
            fr.length = item.value.size();
            fr.format = mInvalidValueFormat;
-           optionErrorList.append(OptionError(fr, item.value + " (Option keyword expected)"));
+           optionErrorList.append(OptionError(fr, item.value + QString(" (Option keyword expected for value \"%1\")").arg(item.value)) );
         } else {
 
             if (!gamsOption->isValid(key) &&
