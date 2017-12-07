@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : mSettings(settings), QPlainTextEdit(parent)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
     mLineNumberArea = new LineNumberArea(this);
 
