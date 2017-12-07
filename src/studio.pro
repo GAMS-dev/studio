@@ -105,7 +105,8 @@ SOURCES += \
     studiosettings.cpp \
     application.cpp \
     projectcontextmenu.cpp \
-    option.cpp
+    option.cpp \
+    gdxviewer/gdxsymbolheaderview.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -148,7 +149,8 @@ HEADERS += \
     studiosettings.h \
     application.h \
     projectcontextmenu.h \
-    option.h
+    option.h \
+    gdxviewer/gdxsymbolheaderview.h
 
 FORMS += \
     welcomepage.ui  \
