@@ -80,6 +80,16 @@ LineNumberArea* CodeEditor::lineNumberArea()
     return mLineNumberArea;
 }
 
+QMimeData* CodeEditor::createMimeDataFromSelection() const
+{
+    QMimeData* mimeData = new QMimeData;
+    QTextCursor c = textCursor();
+    QString plainTextStr = c.selectedText();
+    mimeData->setText( plainTextStr );
+
+    return mimeData;
+}
+
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
