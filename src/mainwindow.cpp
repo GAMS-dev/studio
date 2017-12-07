@@ -166,14 +166,14 @@ void MainWindow::setProjectViewVisibility(bool visibility)
     ui->actionProject_View->setChecked(visibility);
 }
 
-void MainWindow::setCommandLineModel(CommandLineModel *opt)
+void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
-    mCommandLineModel = opt;
+    mCommandLineHistory = opt;
 }
 
-CommandLineModel *MainWindow::commandLineModel()
+CommandLineHistory *MainWindow::commandLineHistory()
 {
-    return mCommandLineModel;
+    return mCommandLineHistory;
 }
 
 FileRepository *MainWindow::fileRepository()
@@ -308,7 +308,7 @@ void MainWindow::codecChanged(QAction *action)
 void MainWindow::activeTabChanged(int index)
 {
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
-        mCommandLineModel->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
+        mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
         mCommandLineOption->resetCurrentValue();
     }
 
@@ -323,7 +323,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
-            QStringList option = mCommandLineModel->getHistoryFor(fc->location());
+            QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
                 mCommandLineOption->insertItem(0, str );
@@ -586,7 +586,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->mainToolBar->addWidget(runToolButton);
 
     mCommandLineOption = new CommandLineOption(true, this);
-    mCommandLineModel = new CommandLineModel(this);
+    mCommandLineHistory = new CommandLineHistory(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
@@ -860,13 +860,13 @@ void MainWindow::updateRunState()
 
 void MainWindow::on_runWithChangedOptions()
 {
-    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( mCommandLineOption->getCurrentOption() );
 }
 
 void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
-    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
 }
 

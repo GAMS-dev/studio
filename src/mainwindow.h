@@ -23,7 +23,7 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "codeeditor.h"
-#include "commandlinemodel.h"
+#include "commandlinehistory.h"
 #include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
@@ -74,8 +74,8 @@ public:
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
-    void setCommandLineModel(CommandLineModel* opt);
-    CommandLineModel* commandLineModel();
+    void setCommandLineHistory(CommandLineHistory* opt);
+    CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
 
 
@@ -153,7 +153,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
-    CommandLineModel* mCommandLineModel;
+    CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

@@ -1,21 +1,21 @@
-#ifndef COMMANDLINEMODEL_H
-#define COMMANDLINEMODEL_H
+#ifndef COMMANDLINEHISTORY_H
+#define COMMANDLINEHISTORY_H
 
 #include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
-class CommandLineModel : public QObject
+class CommandLineHistory : public QObject
 {
     Q_OBJECT
 
 public:
     static const int MAX_HISTORY_SIZE = 20;
 
-    CommandLineModel(QObject* parent, int initialHistorySize = MAX_HISTORY_SIZE);
-    CommandLineModel(QMap<QString, QStringList> map);
-    ~CommandLineModel();
+    CommandLineHistory(QObject* parent, int initialHistorySize = MAX_HISTORY_SIZE);
+    CommandLineHistory(QMap<QString, QStringList> map);
+    ~CommandLineHistory();
 
     QStringList getHistoryFor(QString context);
     void setHistory(QString context, QStringList history);
@@ -40,4 +40,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEMODEL_H
+#endif // COMMANDLINEHISTORY_H
