@@ -41,7 +41,7 @@ void CommandLineOption::validateChangedOption(const QString &text)
     if (mValidated)  {
         clearLineEditTextFormat(this->lineEdit());
 
-        QList<OptionItem> list = mCommandLineTokenizer->tokenize(mCurrentOption);
+        QList<OptionItem> list = mCommandLineTokenizer->tokenize(text);
         setLineEditTextFormat(this->lineEdit(), mCommandLineTokenizer->format(list));
     }
 }

@@ -86,6 +86,8 @@ public:
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
 
+    bool available() const;
+
 private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
@@ -93,7 +95,8 @@ private:
     QMap<int, QString> mOptionTypeNameMap;
     QList<OptionGroup> mOptionGroupList;
 
-    void readDefinition(const QString &systemPath, const QString &optionFileName);
+    bool mAvailable;
+    bool readDefinition(const QString &systemPath, const QString &optionFileName);
 };
 
 } // namespace studio

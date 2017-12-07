@@ -1,29 +1,29 @@
-#include "commandlinemodel.h"
+#include "commandlinehistory.h"
 
 namespace gams {
 namespace studio {
 
-CommandLineModel::CommandLineModel(QObject* parent, int initialHistorySize)
+CommandLineHistory::CommandLineHistory(QObject* parent, int initialHistorySize)
     : QObject(parent), mHistorySize(initialHistorySize)
 {
 }
 
-CommandLineModel::CommandLineModel(QMap<QString, QStringList> map)
+CommandLineHistory::CommandLineHistory(QMap<QString, QStringList> map)
 {
     setAllHistory(map);
 }
 
-CommandLineModel::~CommandLineModel()
+CommandLineHistory::~CommandLineHistory()
 {
     mHistory.clear();
 }
 
-void CommandLineModel::setHistory(QString context, QStringList history)
+void CommandLineHistory::setHistory(QString context, QStringList history)
 {
     mHistory[context] = history;
 }
 
-void CommandLineModel::addIntoCurrentContextHistory(QString option)
+void CommandLineHistory::addIntoCurrentContextHistory(QString option)
 {
 //    if (option.simplified().isEmpty())
 //        return;
@@ -41,33 +41,33 @@ void CommandLineModel::addIntoCurrentContextHistory(QString option)
     }
 }
 
-void CommandLineModel::setAllHistory(QMap<QString, QStringList> opts)
+void CommandLineHistory::setAllHistory(QMap<QString, QStringList> opts)
 {
     mHistory = opts;
 }
 
-QMap<QString, QStringList> CommandLineModel::allHistory() const
+QMap<QString, QStringList> CommandLineHistory::allHistory() const
 {
     return mHistory;
 }
 
-int CommandLineModel::getHistorySize() const
+int CommandLineHistory::getHistorySize() const
 {
     return mHistorySize;
 }
 
-void CommandLineModel::setHistorySize(int historySize)
+void CommandLineHistory::setHistorySize(int historySize)
 {
     mHistorySize = historySize;
 }
 
-QStringList CommandLineModel::getHistoryFor(QString context)
+QStringList CommandLineHistory::getHistoryFor(QString context)
 {
     setContext(context);
     return mHistory[mCurrentContext];
 }
 
-void CommandLineModel::setContext(QString context)
+void CommandLineHistory::setContext(QString context)
 {
     mCurrentContext = context;
     if (!mHistory.contains(mCurrentContext)) {
