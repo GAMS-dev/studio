@@ -15,7 +15,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
-    connect(ui.pbFilter, &QPushButton::clicked, this, &ColumnFilterFrame::filterLabels);
+    connect(ui.leSearch, &QLineEdit::textChanged, this, &ColumnFilterFrame::filterLabels);
 
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
 

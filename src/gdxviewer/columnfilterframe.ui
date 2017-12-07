@@ -21,18 +21,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLineEdit" name="leSearch"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pbFilter">
-       <property name="text">
-        <string>Filter</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QLineEdit" name="leSearch">
+     <property name="inputMask">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Filter</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QListView" name="lvLabels">
