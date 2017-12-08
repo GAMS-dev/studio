@@ -20,6 +20,8 @@ public:
     explicit SettingsDialog(StudioSettings* settings, QWidget *parent = 0);
     ~SettingsDialog();
 
+protected:
+    void closeEvent(QCloseEvent *event);
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_fontComboBox_currentIndexChanged(const QString &arg1);
@@ -32,6 +34,7 @@ private:
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
+    bool isModified = false;
 };
 
 }

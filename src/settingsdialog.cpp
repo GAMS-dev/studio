@@ -51,11 +51,13 @@ void SettingsDialog::loadSettings()
 
 void SettingsDialog::setModified()
 {
+    isModified = true;
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
 {
+    isModified = status;
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(status);
 }
 
@@ -102,6 +104,24 @@ void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 {
     mSettings->updateEditorFont(ui->fontComboBox->currentFont().family(), arg1);
+}
+
+void SettingsDialog::closeEvent(QCloseEvent *event) {
+    if (isModified) {
+        QMessageBox msgBox;
+        msgBox.setText("You have unsaved changes.");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        int answer = msgBox.exec();
+
+        if (answer == QMessageBox::Save) {
+            saveSettings();
+        } else if (answer == QMessageBox::Discard) {
+            loadSettings();
+        } else {
+            event->setAccepted(false);
+        }
+    }
+    mSettings->redrawEditors();
 }
 
 SettingsDialog::~SettingsDialog()
