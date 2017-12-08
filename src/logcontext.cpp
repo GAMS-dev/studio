@@ -28,7 +28,7 @@ void LogContext::markOld()
         cur.insertBlock();
         cur.movePosition(QTextCursor::StartOfBlock);
         cur.movePosition(QTextCursor::Start, QTextCursor::KeepAnchor);
-        newFormat.setForeground(QColor(80,80,80));
+        newFormat.setForeground(QColor(165,165,165));
         cur.setCharFormat(newFormat);
         cur.movePosition(QTextCursor::End);
         cur.setBlockCharFormat(oldFormat);
