@@ -45,6 +45,7 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+    QMimeData* createMimeDataFromSelection() const;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

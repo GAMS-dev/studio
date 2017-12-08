@@ -132,7 +132,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             fc->load(codecName);
 
             if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+                    fc->metrics().fileType() == FileType::Lst ||
+                    fc->metrics().fileType() == FileType::Ref) {
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
@@ -829,15 +830,24 @@ void MainWindow::dropEvent(QDropEvent* e)
         e->accept();
         QStringList pathList;
         for (QUrl url: e->mimeData()->urls()) {
-            if (pathList.size() > 5) {
-                break;
-            }
             pathList << url.toLocalFile();
         }
-        for (QString fName: pathList) {
-            QFileInfo fi(fName);
-            if (QFileInfo(fName).isFile()) {
-                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
+
+        int answer;
+        if(pathList.size() > 25) {
+            QMessageBox msgBox;
+            msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
+                           " files at once. Depending on the file sizes this may take a long time.");
+            msgBox.setInformativeText("Do you want to continue?");
+            msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            answer = msgBox.exec();
+        }
+        if(answer == QMessageBox::Ok) {
+            for (QString fName: pathList) {
+                QFileInfo fi(fName);
+                if (QFileInfo(fName).isFile()) {
+                    openFilePath(fi.canonicalFilePath(), nullptr, true, true);
+                }
             }
         }
     }
@@ -897,6 +907,7 @@ void MainWindow::execute(QString commandLineStr)
     logProc->markOld();
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
+    ui->dockLogView->setVisible(true);
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
