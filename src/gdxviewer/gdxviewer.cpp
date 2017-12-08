@@ -7,6 +7,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QMenu>
+#include "gdxsymbolheaderview.h"
 
 namespace gams {
 namespace studio {
@@ -16,10 +17,19 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     QFrame(parent)
 {
     ui.setupUi(this);
+
+    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
+
+    ui.tableView->setHorizontalHeader(headerView);
+    ui.tableView->setSortingEnabled(true);
+    ui.tableView->horizontalHeader()->setSortIndicatorShown(true);
+    ui.tableView->horizontalHeader()->setSectionsClickable(true);
+
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
 
     ui.tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(ui.tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxViewer::showColumnFilter);
 
     mGdxMutex = new QMutex();
