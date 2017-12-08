@@ -33,6 +33,8 @@ private:
 
     void loadSymbol(GdxSymbol* selectedSymbol);
 
+    QByteArray mGdxSymbolHeaderViewState;
+
 signals:
     void loadFinished();
 
