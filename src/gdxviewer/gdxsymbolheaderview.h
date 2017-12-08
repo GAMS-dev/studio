@@ -2,8 +2,8 @@
 #define GDXSYMBOLHEADERVIEW_H
 
 #include <QHeaderView>
+#include <QString>
 #include <QIcon>
-
 
 namespace gams {
 namespace studio {
@@ -19,6 +19,11 @@ public:
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
 
+private:
+    QString iconFilterOn = ":/img/filter";
+    QString iconFilterOff = ":/img/filter-off";
+    const double ICON_SCALE_FACTOR = 0.5;
+    const double ICON_MARGIN_FACTOR = 0.1;
 };
 
 } // namespace gdxviewer

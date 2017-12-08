@@ -35,6 +35,7 @@ void ColumnFilterFrame::apply()
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
     QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
     bool checked;
+    mSymbol->filterActive()[mColumn] = false;
     for (int idx=0; idx<uelsInColumn->size(); idx++)
     {
         checked = mModel->checked()[idx];

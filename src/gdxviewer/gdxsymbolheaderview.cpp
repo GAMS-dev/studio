@@ -17,7 +17,7 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *p
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
     GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
-/*
+
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
@@ -26,18 +26,21 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         painter->restore();
         QString iconRes;
         if(symbol->filterActive()[logicalIndex])
-            iconRes = ":/img/filter";
+            iconRes = iconFilterOn;
         else
-            iconRes = ":/img/filter";
+            iconRes = iconFilterOff;
 
         QIcon icon(iconRes);
-        int iconWidth = rect.height()/2;
-        QPixmap pm = icon->pixmap(iconWidth, iconWidth);
+        int iconWidth = rect.height()*ICON_SCALE_FACTOR;
+        int iconMargin = rect.height()*ICON_MARGIN_FACTOR;
+        QPixmap pm = icon.pixmap(iconWidth, iconWidth);
 
-        painter->drawImage(rect.bottomRight().x()-iconWidth-2, rect.bottomRight().y()-iconWidth-2, pm.toImage());
+        int posX = rect.bottomRight().x()-iconWidth-iconMargin;
+        int posY = rect.bottomRight().y()-iconWidth-iconMargin;
+
+        painter->drawImage(posX, posY, pm.toImage());
         painter->save();
     }
-    */
 }
 
 } // namespace gdxviewer
