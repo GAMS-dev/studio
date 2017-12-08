@@ -2,6 +2,7 @@
 #define GDXSYMBOLHEADERVIEW_H
 
 #include <QHeaderView>
+#include <QIcon>
 
 
 namespace gams {
@@ -14,6 +15,10 @@ class GdxSymbolHeaderView : public QHeaderView
 
 public:
     GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent=nullptr);
+
+protected:
+    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
+
 };
 
 } // namespace gdxviewer

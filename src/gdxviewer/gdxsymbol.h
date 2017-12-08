@@ -72,6 +72,8 @@ public:
 
     void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
 
+    bool *filterActive() const;
+
 private:
     int mNr;
     int mDim;
@@ -112,6 +114,7 @@ private:
 
     QVector<QVector<int>*> mUelsInColumn;
     QVector<bool*> mShowUelInColumn;
+    bool* mFilterActive = nullptr;
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;

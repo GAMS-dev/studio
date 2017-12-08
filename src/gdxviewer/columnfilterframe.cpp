@@ -39,6 +39,8 @@ void ColumnFilterFrame::apply()
     {
         checked = mModel->checked()[idx];
         showUelInColumn[uelsInColumn->at(idx)] = checked;
+        if(!checked)
+            mSymbol->filterActive()[mColumn] = true; //TODO(CW): set this only once
     }
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
