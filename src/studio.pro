@@ -105,8 +105,10 @@ SOURCES += \
     studiosettings.cpp \
     application.cpp \
     projectcontextmenu.cpp \
+    gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
-    gdxviewer/gdxsymbolheaderview.cpp
+    syntaxhighlighter.cpp \
+    syntaxformats.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -149,8 +151,10 @@ HEADERS += \
     studiosettings.h \
     application.h \
     projectcontextmenu.h \
+    gdxviewer/gdxsymbolheaderview.h \
     option.h \
-    gdxviewer/gdxsymbolheaderview.h
+    syntaxhighlighter.h \
+    syntaxformats.h
 
 FORMS += \
     welcomepage.ui  \

@@ -24,6 +24,7 @@
 #include "filesystemcontext.h"
 #include "filemetrics.h"
 #include "textmark.h"
+#include "syntaxhighlighter.h"
 
 namespace gams {
 namespace studio {
@@ -82,6 +83,8 @@ public:
     /// Loads the file into the current QTextDocument.
     /// \param codecName The text-codec to use.
     void load(QString codecName = QString());
+
+    void setSyntaxHighlight(bool on);
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
@@ -168,6 +171,7 @@ private:
     QList<TextMark*> mTextMarks;
     TextMark *mMarkAtMouse = nullptr;
     QPoint mClickPos;
+    SyntaxHighlighter* mSyntaxHighlighter = nullptr;
 
     static const QStringList mDefaulsCodecs;
 
