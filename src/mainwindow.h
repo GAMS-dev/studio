@@ -114,6 +114,7 @@ private slots:
     void on_actionRun_triggered();
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
+    void on_actionCompile_with_GDX_Creation_triggered();
     // About
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();

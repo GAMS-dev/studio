@@ -151,6 +151,7 @@
     <addaction name="actionRun_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
+    <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
@@ -470,6 +471,9 @@
    <property name="toolTip">
     <string>Run and Create a GDX File with gms file root name</string>
    </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
   </action>
   <action name="actionSettings">
    <property name="text">
@@ -477,6 +481,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionCompile_with_GDX_Creation">
+   <property name="text">
+    <string>Compile with GDX Creation</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile with GDX Creation</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F10</string>
    </property>
   </action>
  </widget>

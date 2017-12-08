@@ -623,6 +623,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     runMenu->addAction(ui->actionRun_with_GDX_Creation);
     runMenu->addSeparator();
     runMenu->addAction(ui->actionCompile);
+    runMenu->addAction(ui->actionCompile_with_GDX_Creation);
 
     QToolButton* runToolButton = new QToolButton(this);
     runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -959,6 +960,11 @@ void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 void MainWindow::on_actionCompile_triggered()
 {
     emit mCommandLineOption->optionRunWithParameterChanged( "A=C" );
+}
+
+void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
+{
+    emit mCommandLineOption->optionRunWithParameterChanged( "A=C GDX=default" );
 }
 
 void MainWindow::openFileContext(FileContext* fileContext, bool focus)

@@ -257,7 +257,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                                 foundError = true;
                             }
                          } else {
-                             errorMessage.append( QString("for option \"%1\"), Integer epxected").arg(keyStr) );
+                             errorMessage.append( QString("for option \"%1\"), Integer expected").arg(keyStr) );
                              foundError = true;
                          }
                          break;
@@ -271,7 +271,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                                 foundError = true;
                             }
                          } else {
-                             errorMessage.append( QString("for option \"%1\"), Double epxected").arg(keyStr) );
+                             errorMessage.append( QString("for option \"%1\"), Double expected").arg(keyStr) );
                              foundError = true;
                          }
                          break;
