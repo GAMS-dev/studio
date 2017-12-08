@@ -13,6 +13,11 @@ LogContext::LogContext(int id, QString name)
     mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
+void LogContext::clearLog()
+{
+    document()->clear();
+}
+
 void LogContext::markOld()
 {
     if (document() && !document()->isEmpty()) {

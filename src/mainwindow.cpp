@@ -905,7 +905,13 @@ void MainWindow::execute(QString commandLineStr)
     } else {
         logProc->clearRecentMarks();
     }
-    logProc->markOld();
+
+    if (!mSettings->clearLog()) {
+        logProc->markOld();
+    } else {
+        logProc->clearLog();
+    }
+
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);

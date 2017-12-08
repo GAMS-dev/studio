@@ -79,6 +79,9 @@ public:
     void updateEditorFont(QString fontFamily, int fontSize);
     void redrawEditors();
 
+    bool clearLog() const;
+    void setClearLog(bool value);
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
@@ -100,6 +103,7 @@ private:
     int mTabSize;
     bool mLineWrapEditor;
     bool mLineWrapProcess;
+    bool mClearLog;
 
 };
 

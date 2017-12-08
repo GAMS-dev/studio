@@ -82,6 +82,7 @@ void StudioSettings::saveSettings()
     mUserSettings->setValue("tabSize", tabSize());
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
+    mUserSettings->setValue("clearLog", clearLog());
 
     mUserSettings->endGroup();
 
@@ -152,6 +153,7 @@ void StudioSettings::loadSettings()
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
+    setClearLog(mUserSettings->value("clearLog", false).toBool());
 
     mUserSettings->endGroup();
 
@@ -336,6 +338,16 @@ void StudioSettings::redrawEditors()
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
 
+}
+
+bool StudioSettings::clearLog() const
+{
+    return mClearLog;
+}
+
+void StudioSettings::setClearLog(bool value)
+{
+    mClearLog = value;
 }
 
 }

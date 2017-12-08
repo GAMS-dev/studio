@@ -26,7 +26,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -199,7 +199,7 @@
          <x>10</x>
          <y>20</y>
          <width>561</width>
-         <height>401</height>
+         <height>271</height>
         </rect>
        </property>
        <property name="title">
@@ -493,6 +493,19 @@
          <bool>false</bool>
         </property>
        </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>309</y>
+         <width>561</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>GroupBox</string>
+       </property>
        <widget class="QCheckBox" name="cb_linewrap_process">
         <property name="enabled">
          <bool>true</bool>
@@ -500,13 +513,35 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>270</y>
+          <y>30</y>
           <width>271</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
          <string>Enable line wrapping in process log</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_clearlog">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Clear process log before GAMS execution</string>
         </property>
         <property name="checkable">
          <bool>true</bool>

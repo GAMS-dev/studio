@@ -15,7 +15,7 @@ public:
     void removeEditor(QPlainTextEdit *edit) override;
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
-
+    void clearLog();
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void clearRecentMarks();
