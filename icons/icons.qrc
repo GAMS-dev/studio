@@ -15,5 +15,7 @@
         <file alias="play">play.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="stop">stop.svg</file>
+        <file alias="filter">filter.svg</file>
+        <file alias="filter-off">filter-off.svg</file>
     </qresource>
 </RCC>

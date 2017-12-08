@@ -64,9 +64,15 @@ public:
 
     void resetSortFilter();
 
-    QList<QMap<int, bool> *> filterUels() const;
-
     GdxSymbolTable *gdxSymbolTable() const;
+
+    QVector<QVector<int> *> uelsInColumn() const;
+
+    QVector<bool *> showUelInColumn() const;
+
+    void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
+
+    bool *filterActive() const;
 
 private:
     int mNr;
@@ -76,6 +82,9 @@ private:
     int mRecordCount;
     QString mExplText;
     QString mName;
+
+    int* mMinUel = nullptr;
+    int* mMaxUel = nullptr;
 
     GdxSymbolTable* mGdxSymbolTable;
 
@@ -103,15 +112,15 @@ private:
     void loadMetaData();
     void loadDomains();
 
-    QList<QMap<int, bool>*> mFilterUels;
+    QVector<QVector<int>*> mUelsInColumn;
+    QVector<bool*> mShowUelInColumn;
+    bool* mFilterActive = nullptr;
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
 
     int mSortColumn = -1;
     Qt::SortOrder mSortOrder;
-
-
 };
 
 } // namespace gdxviewer

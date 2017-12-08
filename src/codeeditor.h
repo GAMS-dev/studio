@@ -29,8 +29,9 @@ class QWidget;
 
 namespace gams {
 namespace studio {
-class TextMark;
 
+class TextMark;
+class StudioSettings;
 class LineNumberArea;
 
 class CodeEditor : public QPlainTextEdit
@@ -38,12 +39,13 @@ class CodeEditor : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    CodeEditor(QWidget *parent = 0);
+    CodeEditor(StudioSettings *settings, QWidget *parent = 0);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+    QMimeData* createMimeDataFromSelection() const;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -75,6 +77,7 @@ private:
     QTextCursor mBlockStartCursor;
     QTextCursor mBlockLastCursor;
     QRect mBlockCursorRect;
+    StudioSettings *mSettings;
 };
 
 

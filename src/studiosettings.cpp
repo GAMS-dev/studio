@@ -1,4 +1,6 @@
 #include "studiosettings.h"
+#include "mainwindow.h"
+#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -16,7 +18,6 @@ void StudioSettings::saveSettings()
         return;
     }
     // Main Application Settings
-    qDebug() << "Saving settings";
     // window
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", mMain->size());
@@ -41,7 +42,7 @@ void StudioSettings::saveSettings()
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(mMain->commandLineModel()->allHistory());
+    QMap<QString, QStringList> map(mMain->commandLineHistory()->allHistory());
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -63,10 +64,25 @@ void StudioSettings::saveSettings()
 
     // User Settings
     mUserSettings->beginGroup("General");
-    // todo
+
+    mUserSettings->setValue("defaultWorkspace", defaultWorkspace());
+    mUserSettings->setValue("skipWelcome", skipWelcomePage());
+    mUserSettings->setValue("restoreTabs", restoreTabs());
+    mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
+    mUserSettings->setValue("openLst", openLst());
+    mUserSettings->setValue("jumpToError", jumpToError());
+
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
-    // todo
+
+    mUserSettings->setValue("fontFamily", fontFamily());
+    mUserSettings->setValue("fontSize", fontSize());
+    mUserSettings->setValue("showLineNr", showLineNr());
+    mUserSettings->setValue("replaceTabsWithSpaces", replaceTabsWithSpaces());
+    mUserSettings->setValue("tabSize", tabSize());
+    mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
+    mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
+
     mUserSettings->endGroup();
 
     mAppSettings->sync();
@@ -75,9 +91,7 @@ void StudioSettings::saveSettings()
 void StudioSettings::loadSettings()
 {
     if (mAppSettings == nullptr)
-        mAppSettings = new QSettings("GAMS", "Studio");
-
-    qDebug() << "loading settings from" << mAppSettings->fileName();
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio");
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -111,30 +125,217 @@ void StudioSettings::loadSettings()
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
-    mMain->commandLineModel()->setAllHistory(map);
+    mMain->commandLineHistory()->setAllHistory(map);
 
-    size = mAppSettings->beginReadArray("openedTabs");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        mMain->openFile(mAppSettings->value("location").toString());
-    }
-
-    mAppSettings->endArray();
     mAppSettings->endGroup();
 
     if (mUserSettings == nullptr)
-        mUserSettings = new QSettings("GAMS", "Studio-User");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio-User");
 
     mUserSettings->beginGroup("General");
-    // todo
+
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
+    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
+    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
+    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
+    setOpenLst(mUserSettings->value("openLst", false).toBool());
+    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
-    // todo
+
+    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    setFontSize(mUserSettings->value("fontSize", 10).toInt());
+    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
+    setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
+    setTabSize(mUserSettings->value("tabSize", 4).toInt());
+    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
+    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
+
     mUserSettings->endGroup();
 
-    qDebug() << "loading user settings from" << mUserSettings->fileName();
-
     // TODO: before adding list of open tabs/files, add functionality to remove them from ui
+
+    if(!restoreTabs())
+        return;
+
+    mAppSettings->beginGroup("fileHistory");
+    size = mAppSettings->beginReadArray("openedTabs");
+    for (int i = 0; i < size; i++) {
+        mAppSettings->setArrayIndex(i);
+        QString value = mAppSettings->value("location").toString();
+        if(QFileInfo(value).exists())
+            mMain->openFile(value);
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+}
+
+QString StudioSettings::defaultWorkspace() const
+{
+    return mDefaultWorkspace;
+}
+
+void StudioSettings::setDefaultWorkspace(const QString &value)
+{
+    mDefaultWorkspace = value;
+}
+
+bool StudioSettings::skipWelcomePage() const
+{
+    return mSkipWelcomePage;
+}
+
+void StudioSettings::setSkipWelcomePage(bool value)
+{
+    mSkipWelcomePage = value;
+}
+
+bool StudioSettings::restoreTabs() const
+{
+    return mRestoreTabs;
+}
+
+void StudioSettings::setRestoreTabs(bool value)
+{
+    mRestoreTabs = value;
+}
+
+bool StudioSettings::autosaveOnRun() const
+{
+    return mAutosaveOnRun;
+}
+
+void StudioSettings::setAutosaveOnRun(bool value)
+{
+    mAutosaveOnRun = value;
+}
+
+bool StudioSettings::openLst() const
+{
+    return mOpenLst;
+}
+
+void StudioSettings::setOpenLst(bool value)
+{
+    mOpenLst = value;
+}
+
+bool StudioSettings::jumpToError() const
+{
+    return mJumpToError;
+}
+
+void StudioSettings::setJumpToError(bool value)
+{
+    mJumpToError = value;
+}
+
+int StudioSettings::fontSize() const
+{
+    return mFontSize;
+}
+
+void StudioSettings::setFontSize(int value)
+{
+    mFontSize = value;
+}
+
+bool StudioSettings::showLineNr() const
+{
+    return mShowLineNr;
+}
+
+void StudioSettings::setShowLineNr(bool value)
+{
+    mShowLineNr = value;
+}
+
+bool StudioSettings::replaceTabsWithSpaces() const
+{
+    return mReplaceTabsWithSpaces;
+}
+
+void StudioSettings::setReplaceTabsWithSpaces(bool value)
+{
+    mReplaceTabsWithSpaces = value;
+}
+
+int StudioSettings::tabSize() const
+{
+    return mTabSize;
+}
+
+void StudioSettings::setTabSize(int value)
+{
+    mTabSize = value;
+}
+
+bool StudioSettings::lineWrapEditor() const
+{
+    return mLineWrapEditor;
+}
+
+void StudioSettings::setLineWrapEditor(bool value)
+{
+    mLineWrapEditor = value;
+}
+
+bool StudioSettings::lineWrapProcess() const
+{
+    return mLineWrapProcess;
+}
+
+void StudioSettings::setLineWrapProcess(bool value)
+{
+    mLineWrapProcess = value;
+}
+
+QString StudioSettings::fontFamily() const
+{
+    return mFontFamily;
+}
+
+void StudioSettings::setFontFamily(const QString &value)
+{
+    mFontFamily = value;
+}
+
+void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
+{
+    QFont font(fontFamily, fontSize);
+    foreach (QPlainTextEdit* edit, mMain->openEditors()) {
+        edit->setFont(font);
+    }
+}
+
+void StudioSettings::redrawEditors()
+{
+    QPlainTextEdit::LineWrapMode wrapModeEditor;
+    if(lineWrapEditor())
+        wrapModeEditor = QPlainTextEdit::WidgetWidth;
+    else
+        wrapModeEditor = QPlainTextEdit::NoWrap;
+
+    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    for (int i = 0; i < editList.size(); i++) {
+        editList.at(i)->blockCountChanged(0); // force redraw for line number area
+        editList.at(i)->setLineWrapMode(wrapModeEditor);
+    }
+
+    QPlainTextEdit::LineWrapMode wrapModeProcess;
+    if(lineWrapProcess())
+        wrapModeProcess = QPlainTextEdit::WidgetWidth;
+    else
+        wrapModeProcess = QPlainTextEdit::NoWrap;
+
+    QList<QPlainTextEdit*> logList = mMain->openLogs();
+    for (int i = 0; i < logList.size(); i++) {
+        if (logList.at(i))
+            logList.at(i)->setLineWrapMode(wrapModeProcess);
+    }
+
 }
 
 }

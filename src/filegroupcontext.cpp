@@ -175,8 +175,6 @@ void FileGroupContext::jumpToMark(bool focus)
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    qDebug() << "runableGms:";
-    qDebug() << QDir(location()).filePath(mRunInfo);
     return QDir(location()).filePath(mRunInfo);
 }
 
@@ -293,7 +291,18 @@ void FileGroupContext::processDeleted()
 FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
     : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
-    mRunInfo = runInfo;
+    if (runInfo == "") return;
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(location + "/" + runInfo);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+
+    // fix for .lst-as-basefile bug
+    if (runnableFile.suffix() == "gms") {
+        mRunInfo = runInfo;
+    } else if (alternateFile.exists()) {
+        mRunInfo = alternateFile.fileName();
+    }
 }
 
 } // namespace studio

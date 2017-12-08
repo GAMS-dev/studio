@@ -6,29 +6,549 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>380</width>
-    <height>276</height>
+    <width>613</width>
+    <height>517</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="tabPosition">
+      <enum>QTabWidget::North</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tabGeneral">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <widget class="QGroupBox" name="gb_general">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>561</width>
+         <height>181</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>General Settings</string>
+       </property>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>261</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Default GAMS Studio workspace:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txt_workspace">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>540</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_skipwelcome">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>231</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Do not show welcome page</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_restoretabs">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>231</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Restore last opened tabs on startup</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_autosave">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>150</y>
+          <width>661</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Automatically save modified files before running GAMS</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="gb_behavior">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>220</y>
+         <width>561</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Behavior</string>
+       </property>
+       <widget class="QCheckBox" name="cb_openlst">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>661</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Open .lst file after running GAMS</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_jumptoerror">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>661</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Jump to compilation errors</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="gp_backup">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>330</y>
+         <width>561</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Backup and Restore</string>
+       </property>
+       <widget class="QPushButton" name="btn_export">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>35</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Export</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_import">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>35</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabEditor">
+      <attribute name="title">
+       <string>Editor</string>
+      </attribute>
+      <widget class="QGroupBox" name="gp_editor">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>561</width>
+         <height>401</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Editor Settings</string>
+       </property>
+       <widget class="QFontComboBox" name="fontComboBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>271</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="fontFilters">
+         <set>QFontComboBox::MonospacedFonts</set>
+        </property>
+        <property name="currentFont">
+         <font>
+          <family>Source Code Pro</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="sb_fontsize">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>50</y>
+          <width>40</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>5</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>12</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>56</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_3">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>30</y>
+          <width>56</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font Size</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_trimwhitespace">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Trim whitespaces on file save</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_showlinenr">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show line numbers</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_verticalline">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>150</y>
+          <width>141</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show vertical line at</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="sb_verticalline">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>150</y>
+          <width>51</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>20</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_highlightblock">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>150</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight code blocks</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_highlightcurrent">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>90</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight current line</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_highlightmatching">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>120</y>
+          <width>201</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Highlight matching brackets</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_replacetabs">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>183</y>
+          <width>231</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Replace tabs with spaces. Tab size</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="sb_tabsize">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>230</x>
+          <y>182</y>
+          <width>40</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>4</number>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_autoindent">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>210</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable auto-indentation</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_linewrap_editor">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>240</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable line wrapping in editor</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="cb_linewrap_process">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>270</y>
+          <width>271</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable line wrapping in process log</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabDisplay">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <attribute name="title">
+       <string>Display</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tabControls">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <attribute name="title">
+       <string>Controls</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
@@ -39,8 +559,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>227</x>
+     <y>497</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -55,8 +575,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>295</x>
+     <y>503</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

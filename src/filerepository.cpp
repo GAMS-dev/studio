@@ -348,9 +348,40 @@ void FileRepository::editorActivated(QPlainTextEdit* edit)
     mTreeModel->setCurrent(mi);
 }
 
+void FileRepository::setSelected(const QModelIndex& ind)
+{
+    mTreeModel->setSelected(ind);
+}
+
+void FileRepository::removeGroup(FileGroupContext* fileGroup)
+{
+    fileGroup->setWatched(false);
+    for (int i = 0; i < fileGroup->childCount(); ++i) {
+        FileSystemContext *child = fileGroup->childEntry(i);
+        mTreeModel->removeChild(child);
+        delete child;
+    }
+    mTreeModel->removeChild(fileGroup);
+    delete fileGroup;
+}
+
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;
+}
+
+LogContext*FileRepository::logContext(QPlainTextEdit* edit)
+{
+    for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
+        FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
+        if (fsc->type() == FileSystemContext::FileGroup) {
+            FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+            if (group->logContext()->editors().contains(edit)) {
+                return group->logContext();
+            }
+        }
+    }
+    return nullptr;
 }
 
 LogContext*FileRepository::logContext(FileSystemContext* node)

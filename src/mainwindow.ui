@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -109,6 +109,8 @@
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
     <addaction name="actionClose_All_Except"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
     <addaction name="separator"/>
     <addaction name="actionExit_Application"/>
    </widget>
@@ -150,6 +152,7 @@
     <addaction name="actionRun_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
+    <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
@@ -221,6 +224,9 @@
        <property name="animated">
         <bool>true</bool>
        </property>
+       <property name="expandsOnDoubleClick">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -257,6 +263,12 @@
       <widget class="QTabWidget" name="logTab">
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>true</bool>
        </property>
        <widget class="QWidget" name="log">
         <attribute name="title">
@@ -459,6 +471,28 @@
    </property>
    <property name="toolTip">
     <string>Run and Create a GDX File with gms file root name</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionCompile_with_GDX_Creation">
+   <property name="text">
+    <string>Compile with GDX Creation</string>
+   </property>
+   <property name="toolTip">
+    <string>Compile with GDX Creation</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F10</string>
    </property>
   </action>
  </widget>

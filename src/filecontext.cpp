@@ -253,6 +253,17 @@ void FileContext::load(QString codecName)
     }
 }
 
+void FileContext::setSyntaxHighlight(bool on)
+{
+    if (!document() && on)
+        EXCEPT() << "No document to highlight the syntax";
+
+    if (on && !mSyntaxHighlighter)
+        mSyntaxHighlighter = new SyntaxHighlighter(document());
+    else if (!on && mSyntaxHighlighter)
+        delete mSyntaxHighlighter;
+}
+
 void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
 {
     if (mEditors.size()) {
@@ -363,7 +374,6 @@ TextMark* FileContext::findMark(const QTextCursor &cursor)
 
         int a = tc.block().position() + mark->column();
         int b = a + (mark->size() ? mark->size() : tc.block().length());
-        DEB() << "a = " << a << "   b = " << b << "   curso-at: " << cursor.position();
         if (cursor.position() >= b) continue;
         if (cursor.position() >= a && (cursor.selectionEnd() < b))
             return mark;

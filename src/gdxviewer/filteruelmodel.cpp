@@ -10,13 +10,19 @@ namespace gdxviewer {
 FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
     : QAbstractListModel(parent), mSymbol(symbol), mColumn(column)
 {
-    mfilterUels = mSymbol->filterUels().at(mColumn);
+    mUels = mSymbol->uelsInColumn().at(mColumn);
+    mChecked = new bool[mUels->size()];
+    bool* showUelInColumn = mSymbol->showUelInColumn().at(column);
+    for(int idx=0; idx<mUels->size(); idx++)
+    {
+        mChecked[idx] = showUelInColumn[mUels->at(idx)];
+    }
 }
 
 FilterUelModel::~FilterUelModel()
 {
-    if (mUels)
-        delete mUels;
+    if (mChecked)
+        delete mChecked;
 }
 
 QVariant FilterUelModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -30,8 +36,7 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
-    return mSymbol->filterUels().at(mColumn)->count();
-
+    return mUels->size();
 }
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const
@@ -42,19 +47,12 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
 
     if(role == Qt::DisplayRole)
     {
-        int uel = mfilterUels->keys().at(index.row());
+        int uel = mUels->at(index.row());
         return mSymbol->gdxSymbolTable()->uel2Label().at(uel);
     }
     else if(role == Qt::CheckStateRole)
     {
-        if(mChanged.find(mfilterUels->keys().at(index.row())) != mChanged.end())
-        {
-            if(mChanged.find( mfilterUels->keys().at(index.row())).value())
-                return Qt::Checked;
-            else
-                return Qt::Unchecked;
-        }
-        if (mfilterUels->values().at(index.row()))
+        if(mChecked[index.row()])
             return Qt::Checked;
         else
             return Qt::Unchecked;
@@ -73,21 +71,42 @@ Qt::ItemFlags FilterUelModel::flags(const QModelIndex &index) const
 bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role==Qt::CheckStateRole)
-        mChanged.insert(mfilterUels->keys().at(index.row()), value.toBool());
+        mChecked[index.row()] = value.toBool();
 
-    dataChanged(index, index, QVector<int>(Qt::CheckStateRole));
+    dataChanged(index, index);
     return true;
 }
 
-int *FilterUelModel::uels() const
+bool *FilterUelModel::checked() const
 {
-    return mUels;
+    return mChecked;
 }
 
-QMap<int, bool> FilterUelModel::changed() const
+void FilterUelModel::filterLabels(QString filterString)
 {
-    return mChanged;
+    QTime t;
+    t.start();
+    bool checkedOld, checkedNew;
+    QRegExp regExp(filterString);
+    regExp.setCaseSensitivity(Qt::CaseInsensitive);
+    regExp.setPatternSyntax(QRegExp::Wildcard);
+    for(int idx=0; idx<mUels->size(); idx++)
+    {
+        int uel = mUels->at(idx);
+        checkedOld = mChecked[idx];
+        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label().at(uel)))
+            checkedNew = true;
+        else
+            checkedNew = false;
+        if(checkedNew != checkedOld)
+        {
+            mChecked[idx] = checkedNew;
+            dataChanged(index(idx,0), index(idx,0));
+        }
+    }
+    qDebug() << "fitler elapsed: " << t.elapsed();
 }
+
 
 } // namespace gdxviewer
 } // namespace studio

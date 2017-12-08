@@ -24,6 +24,7 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "fileactioncontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -35,7 +36,7 @@ FileTreeModel::FileTreeModel(FileRepository* parent, FileGroupContext* root)
         FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
 }
 
-QModelIndex FileTreeModel::index(FileSystemContext *entry)
+QModelIndex FileTreeModel::index(FileSystemContext *entry) const
 {
      if (!entry)
          return QModelIndex();
@@ -88,45 +89,47 @@ int FileTreeModel::columnCount(const QModelIndex& parent) const
     return 1;
 }
 
-QVariant FileTreeModel::data(const QModelIndex& index, int role) const
+QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
 {
-    if (!index.isValid()) return QVariant();
+    if (!ind.isValid()) return QVariant();
     switch (role) {
     case Qt::BackgroundColorRole:
-        if (isCurrent(index)) return QColor("#4466BBFF");
+        if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
-        return mFileRepo->context(index)->caption();
+        return mFileRepo->context(ind)->caption();
 
-    case Qt::FontRole:
-        if (mFileRepo->context(index)->flags().testFlag(FileSystemContext::cfActive)) {
+    case Qt::FontRole: {
+        if (isCurrent(ind) || isCurrentGroup(ind)) {
+//        if (mFileRepo->context(index)->flags().testFlag(FileSystemContext::cfActive)) {
             QFont f;
             f.setBold(true);
             return f;
         }
-        if (mFileRepo->context(index)->type() == FileSystemContext::FileAction) {
+        if (mFileRepo->context(ind)->type() == FileSystemContext::FileAction) {
             QFont f;
             f.setItalic(true);
             return f;
         }
+    }
         break;
 
     case Qt::ForegroundRole: {
-        FileSystemContext::ContextFlags flags = mFileRepo->context(index)->flags();
+        FileSystemContext::ContextFlags flags = mFileRepo->context(ind)->flags();
         if (flags.testFlag(FileSystemContext::cfMissing))
             return QColor(Qt::red);
         if (flags.testFlag(FileSystemContext::cfActive)) {
-            return (isCurrent(index)) ? QColor(Qt::blue)
+            return (isCurrent(ind)) ? QColor(Qt::blue)
                                       : QColor(Qt::black);
         }
         break;
     }
 
     case Qt::DecorationRole:
-        return mFileRepo->context(index)->icon();
+        return mFileRepo->context(ind)->icon();
 
     case Qt::ToolTipRole:
-        return mFileRepo->context(index)->location();
+        return mFileRepo->context(ind)->location();
 
     default:
         break;
@@ -144,6 +147,15 @@ FileGroupContext* FileTreeModel::rootContext() const
     return mRoot;
 }
 
+bool FileTreeModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    Q_UNUSED(row);
+    Q_UNUSED(count);
+    Q_UNUSED(parent);
+    EXCEPT() << "FileTreeModel::removeRows is unsupported, please use FileTreeModel::removeChild";
+    return false;
+}
+
 bool FileTreeModel::insertChild(int row, FileGroupContext* parent, FileSystemContext* child)
 {
     QModelIndex parMi = index(parent);
@@ -158,24 +170,58 @@ bool FileTreeModel::removeChild(FileSystemContext* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
-    beginRemoveRows(mi, mi.row(), mi.row());
+    beginRemoveRows(index(child->parentEntry()), mi.row(), mi.row());
     child->setParentEntry(nullptr);
-    endInsertRows();
+    endRemoveRows();
     return true;
 }
 
-bool FileTreeModel::isCurrent(const QModelIndex& index) const
+bool FileTreeModel::isCurrent(const QModelIndex& ind) const
 {
-    return (mCurrent.isValid() && index == mCurrent);
+    return (mCurrent.isValid() && ind == mCurrent);
 }
 
-void FileTreeModel::setCurrent(const QModelIndex& index)
+void FileTreeModel::setCurrent(const QModelIndex& ind)
 {
-    if (!isCurrent(index)) {
+    if (!isCurrent(ind)) {
         QModelIndex mi = mCurrent;
-        mCurrent = index;
+        mCurrent = ind;
+        if (mi.isValid()) {
+            dataChanged(mi, mi);                        // invalidate old
+            QModelIndex par = index(mFileRepo->context(ind)->parentEntry());
+            if (par.isValid()) dataChanged(par, par);
+        }
+        if (mCurrent.isValid()) {
+            dataChanged(mCurrent, mCurrent);            // invalidate new
+            QModelIndex par = index(mFileRepo->context(mCurrent)->parentEntry());
+            if (par.isValid()) dataChanged(par, par);
+        }
+    }
+}
+
+bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
+{
+    if (mCurrent.isValid()) {
+        FileSystemContext* fsc = mFileRepo->context(mCurrent);
+        if (fsc->parentEntry() == ind.internalPointer()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FileTreeModel::isSelected(const QModelIndex& ind) const
+{
+    return (mSelected.isValid() && ind == mSelected);
+}
+
+void FileTreeModel::setSelected(const QModelIndex& ind)
+{
+    if (!isSelected(ind)) {
+        QModelIndex mi = mSelected;
+        mSelected = ind;
         if (mi.isValid()) dataChanged(mi, mi);                      // invalidate old
-        if (mCurrent.isValid()) dataChanged(mCurrent, mCurrent);    // invalidate new
+        if (mSelected.isValid()) dataChanged(mSelected, mSelected); // invalidate new
     }
 }
 

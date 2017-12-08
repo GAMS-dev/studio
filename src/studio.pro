@@ -12,6 +12,8 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 
+CONFIG += c++14
+
 GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {
     equals(GAMS_CORE_TMP, "") {
@@ -62,6 +64,7 @@ macx: ICON = studio.icns
 SOURCES += \
     $$GAMS_DISTRIB_API/gclgms.c \
     $$GAMS_DISTRIB_API/gdxcc.c \
+    $$GAMS_DISTRIB_API/optcc.c \
     main.cpp \
     codeeditor.cpp \
     filesystemcontext.cpp \
@@ -90,15 +93,22 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
-    commandlinemodel.cpp \
+    commandlinehistory.cpp \
     commandlineoption.cpp \
+    commandlinetokenizer.cpp \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/filteruelmodel.cpp \
     settingsdialog.cpp \
-    studiosettings.cpp
+    studiosettings.cpp \
+    application.cpp \
+    projectcontextmenu.cpp \
+    gdxviewer/gdxsymbolheaderview.cpp \
+    option.cpp \
+    syntaxhighlighter.cpp \
+    syntaxformats.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -129,15 +139,22 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
-    commandlinemodel.h \
+    commandlinehistory.h \
     commandlineoption.h \
+    commandlinetokenizer.h \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
     gdxviewer/columnfilterframe.h \
     gdxviewer/filteruelmodel.h \
     settingsdialog.h \
-    studiosettings.h
+    studiosettings.h \
+    application.h \
+    projectcontextmenu.h \
+    gdxviewer/gdxsymbolheaderview.h \
+    option.h \
+    syntaxhighlighter.h \
+    syntaxformats.h
 
 FORMS += \
     welcomepage.ui  \

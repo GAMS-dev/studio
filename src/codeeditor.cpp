@@ -19,17 +19,17 @@
  */
 #include <QtWidgets>
 #include "codeeditor.h"
+#include "studiosettings.h"
 #include "logger.h"
 #include "textmark.h"
 
 namespace gams {
 namespace studio {
 
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
     mLineNumberArea = new LineNumberArea(this);
 
-    this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     mLineNumberArea->setMouseTracking(true);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -42,6 +42,11 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     highlightCurrentLine();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+
+    if(mSettings->lineWrapEditor())
+        setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    else
+        setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -53,7 +58,10 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    int space = 0;
+
+    if(mSettings->showLineNr())
+        space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
     bool marksEmpty = true;
     emit requestMarksEmpty(&marksEmpty);
@@ -70,6 +78,16 @@ int CodeEditor::iconSize()
 LineNumberArea* CodeEditor::lineNumberArea()
 {
     return mLineNumberArea;
+}
+
+QMimeData* CodeEditor::createMimeDataFromSelection() const
+{
+    QMimeData* mimeData = new QMimeData;
+    QTextCursor c = textCursor();
+    QString plainTextStr = c.selectedText();
+    mimeData->setText( plainTextStr );
+
+    return mimeData;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
@@ -172,6 +190,24 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     QKeyEvent ev(*e);
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
+
+    if (e->modifiers() & Qt::ControlModifier && e->modifiers() & Qt::ShiftModifier && e->key() == Qt::Key_L) {
+        int blockNr = textCursor().blockNumber();
+        int colNr = textCursor().columnNumber();
+        QTextBlock blockFound = document()->findBlockByNumber(blockNr);
+        QTextCursor t(blockFound);
+        t.beginEditBlock();
+        t.movePosition(QTextCursor::NextBlock);
+        t.insertText(blockFound.text());
+        t.insertBlock();
+        moveCursor(QTextCursor::NextBlock);
+
+        for(int i = 0; i < colNr; i++)
+            moveCursor(QTextCursor::NextCharacter);
+
+        t.endEditBlock();
+    }
+
     // TODO(JM) get definition from studio key-config
     if (!mBlockStartKey && e->modifiers() & Qt::AltModifier && e->modifiers() & Qt::ShiftModifier) {
         mBlockStartKey = e->key();
@@ -179,10 +215,10 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         mBlockLastCursor = mBlockStartCursor;
         qDebug() << "blockEdit START";
     }
+
     if (!mBlockStartKey) {
         if (moveKeys.contains(ev.key())) {
             setExtraSelections(QList<QTextEdit::ExtraSelection>());
-            qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
             mBlockStartCursor = QTextCursor();
         } else if (extraSelections().size() > 1) {
             if (mBlockStartCursor.blockNumber() > mBlockLastCursor.blockNumber()) {
@@ -321,8 +357,10 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
             int realtop = top; // (top+bottom-fontMetrics().height())/2;
-            painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+
+            if(mSettings->showLineNr())
+                painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+
             if (textMarks.contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
                 painter.drawPixmap(1, iTop, textMarks.value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));

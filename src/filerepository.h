@@ -122,6 +122,7 @@ public:
     int saveAll();
     void editorActivated(QPlainTextEdit* edit);
     FileTreeModel* treeModel() const;
+    LogContext* logContext(QPlainTextEdit* edit);
     LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
@@ -139,6 +140,8 @@ public slots:
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void setSelected(const QModelIndex& ind);
+    void removeGroup(FileGroupContext* fileGroup);
 
 private slots:
     void onFileChangedExtern(int fileId);

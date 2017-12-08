@@ -23,10 +23,11 @@
 #include <QtWidgets>
 #include "filerepository.h"
 #include "codeeditor.h"
-#include "commandlinemodel.h"
+#include "commandlinehistory.h"
 #include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
+#include "projectcontextmenu.h"
 
 namespace Ui {
 class MainWindow;
@@ -74,10 +75,11 @@ public:
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
-    void setCommandLineModel(CommandLineModel* opt);
-    CommandLineModel* commandLineModel();
+    void setCommandLineHistory(CommandLineHistory* opt);
+    CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
-
+    QList<QPlainTextEdit*> openEditors();
+    QList<QPlainTextEdit*> openLogs();
 
 private slots:
     void codecChanged(QAction *action);
@@ -90,8 +92,10 @@ private slots:
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void openFileContext(FileContext *fileContext, bool focus = true);
+    void closeGroup(FileGroupContext* group);
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
+    void projectContextMenuRequested(const QPoint &pos);
 
 private slots:
     // File
@@ -110,21 +114,27 @@ private slots:
     void on_actionRun_triggered();
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
+    void on_actionCompile_with_GDX_Creation_triggered();
     // About
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
-    void on_actionProject_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
-    // AOB
+    // Other
     void on_mainTab_tabCloseRequested(int index);
-    void on_projectView_doubleClicked(const QModelIndex &index);
+    void on_logTab_tabCloseRequested(int index);
+    void on_projectView_activated(const QModelIndex &index);
+    void on_actionProject_View_triggered(bool checked);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
-    void on_runWithCommandLineOption(QString options);
+    void on_runWithChangedOptions();
+    void on_runWithParamAndChangedOptions(QString parameter);
+    void on_commandLineHelpTriggered();
+
+    void on_actionSettings_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -143,12 +153,14 @@ private:
     void execute(QString commandLineStr);
     void updateRunState();
     void createWelcomePage();
+    void createRunAndCommandLineWidgets();
+    bool requestCloseChanged(QList<FileContext*> changedFiles);
 
 private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
-    CommandLineModel* mCommandLineModel;
+    CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
@@ -159,6 +171,7 @@ private:
     WelcomePage *mWp = nullptr;
     bool mBeforeErrorExtraction = true;
     FileRepository mFileRepo;
+    ProjectContextMenu mProjectContextMenu;
 };
 
 }

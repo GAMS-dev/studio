@@ -21,6 +21,16 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLineEdit" name="leSearch">
+     <property name="inputMask">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Filter</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QListView" name="lvLabels">
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
@@ -34,18 +44,53 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pbSelectAll">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pbSelectAll">
+       <property name="text">
+        <string>Select All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbDeselectAll">
+       <property name="text">
+        <string>Deselect All</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="cbToggleHideUnselected">
      <property name="text">
-      <string>Select All</string>
+      <string>Hide unselected items</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="pbApply">
-     <property name="text">
-      <string>Apply</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbApply">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
