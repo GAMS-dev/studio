@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : mSettings(settings), QPlainTextEdit(parent)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
     mLineNumberArea = new LineNumberArea(this);
 
@@ -78,6 +78,16 @@ int CodeEditor::iconSize()
 LineNumberArea* CodeEditor::lineNumberArea()
 {
     return mLineNumberArea;
+}
+
+QMimeData* CodeEditor::createMimeDataFromSelection() const
+{
+    QMimeData* mimeData = new QMimeData;
+    QTextCursor c = textCursor();
+    QString plainTextStr = c.selectedText();
+    mimeData->setText( plainTextStr );
+
+    return mimeData;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)

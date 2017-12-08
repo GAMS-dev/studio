@@ -291,7 +291,18 @@ void FileGroupContext::processDeleted()
 FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
     : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
-    mRunInfo = runInfo;
+    if (runInfo == "") return;
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(location + "/" + runInfo);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+
+    // fix for .lst-as-basefile bug
+    if (runnableFile.suffix() == "gms") {
+        mRunInfo = runInfo;
+    } else if (alternateFile.exists()) {
+        mRunInfo = alternateFile.fileName();
+    }
 }
 
 } // namespace studio

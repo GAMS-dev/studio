@@ -42,7 +42,7 @@ void StudioSettings::saveSettings()
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(mMain->commandLineModel()->allHistory());
+    QMap<QString, QStringList> map(mMain->commandLineHistory()->allHistory());
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -125,7 +125,7 @@ void StudioSettings::loadSettings()
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
-    mMain->commandLineModel()->setAllHistory(map);
+    mMain->commandLineHistory()->setAllHistory(map);
 
     mAppSettings->endGroup();
 

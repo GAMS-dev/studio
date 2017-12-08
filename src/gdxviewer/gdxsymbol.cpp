@@ -164,8 +164,9 @@ void GdxSymbol::loadData()
     QTime t;
     t.start();
     QMutexLocker locker(mGdxMutex);
-    mMinUel = new int[mDim];
-    mMaxUel = new int[mDim];
+    mMinUel = new int[mDim] {INT_MAX} ;
+    mMaxUel = new int[mDim] {INT_MIN};
+
     if(!mIsLoaded)
     {
         beginResetModel();

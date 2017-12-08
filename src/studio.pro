@@ -93,7 +93,7 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
-    commandlinemodel.cpp \
+    commandlinehistory.cpp \
     commandlineoption.cpp \
     commandlinetokenizer.cpp \
     logger.cpp \
@@ -137,7 +137,7 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
-    commandlinemodel.h \
+    commandlinehistory.h \
     commandlineoption.h \
     commandlinetokenizer.h \
     logger.h \

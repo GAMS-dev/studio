@@ -41,6 +41,7 @@ public:
         Lxi,
         Log,
         Gdx,
+        Ref,
     };
 
 public:

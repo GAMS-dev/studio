@@ -132,7 +132,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             fc->load(codecName);
 
             if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst) {  // TODO: add .ref ?
+                    fc->metrics().fileType() == FileType::Lst ||
+                    fc->metrics().fileType() == FileType::Ref) {
 
                 codeEdit->setReadOnly(true);
                 codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
@@ -181,14 +182,14 @@ void MainWindow::setProjectViewVisibility(bool visibility)
     ui->actionProject_View->setChecked(visibility);
 }
 
-void MainWindow::setCommandLineModel(CommandLineModel *opt)
+void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
-    mCommandLineModel = opt;
+    mCommandLineHistory = opt;
 }
 
-CommandLineModel *MainWindow::commandLineModel()
+CommandLineHistory *MainWindow::commandLineHistory()
 {
-    return mCommandLineModel;
+    return mCommandLineHistory;
 }
 
 FileRepository *MainWindow::fileRepository()
@@ -348,7 +349,7 @@ void MainWindow::codecChanged(QAction *action)
 void MainWindow::activeTabChanged(int index)
 {
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
-        mCommandLineModel->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
+        mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
         mCommandLineOption->resetCurrentValue();
     }
 
@@ -363,7 +364,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
-            QStringList option = mCommandLineModel->getHistoryFor(fc->location());
+            QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
                 mCommandLineOption->insertItem(0, str );
@@ -630,13 +631,23 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->mainToolBar->addWidget(runToolButton);
 
     mCommandLineOption = new CommandLineOption(true, this);
-    mCommandLineModel = new CommandLineModel(this);
+    mCommandLineHistory = new CommandLineHistory(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
+
+    QPushButton* helpButton = new QPushButton(this);
+    QPixmap pixmap(":/img/gams");
+    QIcon ButtonIcon(pixmap);
+    helpButton->setIcon(ButtonIcon);
+    helpButton->setToolTip("Help on Command Line Option");
+
+    ui->mainToolBar->addWidget(helpButton);
 
     connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
             this, &MainWindow::on_runWithChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
+    connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
+
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -819,15 +830,24 @@ void MainWindow::dropEvent(QDropEvent* e)
         e->accept();
         QStringList pathList;
         for (QUrl url: e->mimeData()->urls()) {
-            if (pathList.size() > 5) {
-                break;
-            }
             pathList << url.toLocalFile();
         }
-        for (QString fName: pathList) {
-            QFileInfo fi(fName);
-            if (QFileInfo(fName).isFile()) {
-                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
+
+        int answer;
+        if(pathList.size() > 25) {
+            QMessageBox msgBox;
+            msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
+                           " files at once. Depending on the file sizes this may take a long time.");
+            msgBox.setInformativeText("Do you want to continue?");
+            msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            answer = msgBox.exec();
+        }
+        if(answer == QMessageBox::Ok) {
+            for (QString fName: pathList) {
+                QFileInfo fi(fName);
+                if (QFileInfo(fName).isFile()) {
+                    openFilePath(fi.canonicalFilePath(), nullptr, true, true);
+                }
             }
         }
     }
@@ -887,6 +907,7 @@ void MainWindow::execute(QString commandLineStr)
     logProc->markOld();
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
+    ui->dockLogView->setVisible(true);
     QString gmsFilePath = fgc->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
@@ -909,14 +930,20 @@ void MainWindow::updateRunState()
 
 void MainWindow::on_runWithChangedOptions()
 {
-    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( mCommandLineOption->getCurrentOption() );
 }
 
 void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
-    mCommandLineModel->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
+    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
+}
+
+void MainWindow::on_commandLineHelpTriggered()
+{
+    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 }
 
 void MainWindow::on_actionRun_triggered()
