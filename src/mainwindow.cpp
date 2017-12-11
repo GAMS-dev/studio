@@ -248,16 +248,17 @@ void MainWindow::on_actionNew_triggered()
                                                        "All files (*)"));
 
     if (filePath == "") return;
-
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
         filePath += ".gms";
     QFile file(filePath);
 
-    if (!file.exists()) { // which should be the default!
+    if (!file.exists()) { // new
         file.open(QIODevice::WriteOnly);
         file.close();
-    } // TODO: else, ask for overwrite
+    } else { // replace old
+        file.resize(0);
+    }
 
     if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
