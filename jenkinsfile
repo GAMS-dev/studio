@@ -177,7 +177,7 @@ pipeline {
                     node('master') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp -o "BatchMode yes" *studio*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
+                               sh 'scp -o "BatchMode yes" *studio*.AppImage ${ARTIFACT_TARGET}'
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
@@ -191,10 +191,10 @@ pipeline {
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
                             set res=F
                             if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}
                             )
                             if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}
                             )
                         """
                     }
@@ -208,10 +208,10 @@ pipeline {
                             if "${env.BRANCH_NAME}"=="develop" set res=T
                             if "${env.BRANCH_NAME}"=="master" set res=T
                             if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}
                             )
                             if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x64.zip ${ARTIFACT_TARGET}
                             )
                         """
                     }
@@ -220,7 +220,7 @@ pipeline {
                     node('macos') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide'
+                               sh 'scp *.dmg ${ARTIFACT_TARGET}'
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
