@@ -22,8 +22,6 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
                             qmake studio.pro
                             make
@@ -37,8 +35,6 @@ pipeline {
                         bat 'set'
                         bat '''
                             @echo off
-                            echo Setting up environment for Qt usage...
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
                             echo Setting up environment for VS2014 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC"
                             call vcvarsall.bat amd64
@@ -120,8 +116,6 @@ pipeline {
                 windowsX86: {
                     node('windowsX86') {
                         bat """
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
@@ -138,8 +132,6 @@ pipeline {
                 windowsX64: {
                     node('windowsX64') {
                         bat """
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
@@ -191,7 +183,6 @@ pipeline {
                         bat """
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            set res=F
                             if "${env.BRANCH_NAME}"=="develop" (
                                 pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}
                             )
@@ -206,9 +197,6 @@ pipeline {
                         bat """
                             echo 'Setting up environment for putty usage...'
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            set res=F
-                            if "${env.BRANCH_NAME}"=="develop" set res=T
-                            if "${env.BRANCH_NAME}"=="master" set res=T
                             if "${env.BRANCH_NAME}"=="develop" (
                                 pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}
                             )
