@@ -850,15 +850,17 @@ void MainWindow::dropEvent(QDropEvent* e)
             msgBox.setInformativeText("Do you want to continue?");
             msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             answer = msgBox.exec();
+
+            if(answer != QMessageBox::Ok) return;
         }
-        if(answer == QMessageBox::Ok) {
-            for (QString fName: pathList) {
-                QFileInfo fi(fName);
-                if (QFileInfo(fName).isFile()) {
-                    openFilePath(fi.canonicalFilePath(), nullptr, true, true);
-                }
+
+        for (QString fName: pathList) {
+            QFileInfo fi(fName);
+            if (QFileInfo(fName).isFile()) {
+                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
             }
         }
+
     }
 }
 
