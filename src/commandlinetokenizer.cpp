@@ -156,8 +156,15 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         return optionErrorList;
 
     for (OptionItem item : items) {
-        if (item.key.startsWith("--")) // ignore double dash parameter
+        if (item.key.startsWith("--")) // ignore "--" parameter
             continue;
+        else if (item.key.startsWith("-/")) // ignore "-/" parameter
+                continue;
+        else if (item.key.startsWith("/-")) // ignore "/-" parameter
+                continue;
+        else if (item.key.startsWith("//")) // ignore "//" parameter
+                continue;
+
         QString key = item.key;
         if (key.startsWith("-"))
             key = key.mid(1);
