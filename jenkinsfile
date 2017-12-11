@@ -128,11 +128,12 @@ pipeline {
                         """
                         script {
                             if (env.BRANCH_NAME == 'master') {
-                                zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip', archive: true
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip'
                             } else {
-                                zip zipFile: 'studio-x86.zip', archive: true
+                                zip zipFile: 'studio-x86.zip'
                             }
                         }
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
                 windowsX64: {
@@ -146,11 +147,12 @@ pipeline {
                         """
                         script {
                             if (env.BRANCH_NAME == 'master') {
-                                zip zipFile: '${env.BRANCH_NAME}-studio-x64.zip', archive: true
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x64.zip'
                             } else {
-                                zip zipFile: 'studio-x64.zip', archive: true
+                                zip zipFile: 'studio-x64.zip'
                             }
                         }
+                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
                     }
                 },
                 macos: {
