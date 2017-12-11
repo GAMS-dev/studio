@@ -62,6 +62,8 @@ void ColumnFilterFrame::deselectAll()
 void ColumnFilterFrame::filterLabels()
 {
     QString filterString = ui.leSearch->text();
+    if(filterString.isEmpty())
+        filterString = "*";
     mModel->filterLabels(filterString);
 }
 
