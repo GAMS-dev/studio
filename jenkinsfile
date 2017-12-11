@@ -127,10 +127,10 @@ pipeline {
                             del *.zip
                         """
                         script {
-                            if (env.BRANCH_NAME == 'master') {
-                                zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip'
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip', dir: 'src\bin'
                             } else {
-                                zip zipFile: 'studio-x86.zip'
+                                zip zipFile: 'studio-x86.zip', dir: 'src\bin'
                             }
                         }
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
@@ -146,10 +146,10 @@ pipeline {
                             del *.zip
                         """
                         script {
-                            if (env.BRANCH_NAME == 'master') {
-                                zip zipFile: '${env.BRANCH_NAME}-studio-x64.zip'
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x64.zip', dir: 'src\bin'
                             } else {
-                                zip zipFile: 'studio-x64.zip'
+                                zip zipFile: 'studio-x64.zip', dir: 'src\bin'
                             }
                         }
                         archiveArtifacts artifacts: '**/*.zip', fingerprint: true
