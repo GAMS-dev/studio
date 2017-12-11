@@ -191,10 +191,10 @@ pipeline {
                             set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
                             set res=F
                             if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                             )
                             if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
                             )
                         """
                     }
@@ -208,10 +208,10 @@ pipeline {
                             if "${env.BRANCH_NAME}"=="develop" set res=T
                             if "${env.BRANCH_NAME}"=="master" set res=T
                             if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
                             )
                             if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
+                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey ${WIN_DEPLOY_HOSTKEY} -batch src\\bin\\studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
                             )
                         """
                     }
