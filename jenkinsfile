@@ -130,7 +130,7 @@ pipeline {
                             if (env.BRANCH_NAME == 'master') {
                                 zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip', archive: true
                             } else {
-                                zip zipFile: 'studio-x86.zip' archive: true
+                                zip zipFile: 'studio-x86.zip', archive: true
                             }
                         }
                     }
