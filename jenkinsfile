@@ -128,9 +128,9 @@ pipeline {
                         """
                         script {
                             if (env.BRANCH_NAME == 'master') {
-                                zip: ${env.BRANCH_NAME}-studio-x86.zip archive
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x86.zip', archive: true
                             } else {
-                                zip: studio-x86.zip archive
+                                zip zipFile: 'studio-x86.zip' archive: true
                             }
                         }
                     }
@@ -146,9 +146,9 @@ pipeline {
                         """
                         script {
                             if (env.BRANCH_NAME == 'master') {
-                                zip: ${env.BRANCH_NAME}-studio-x64.zip archive
+                                zip zipFile: '${env.BRANCH_NAME}-studio-x64.zip', archive: true
                             } else {
-                                zip: studio-x64.zip archive
+                                zip zipFile: 'studio-x64.zip', archive: true
                             }
                         }
                     }
