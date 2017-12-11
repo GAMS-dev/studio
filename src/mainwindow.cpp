@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ensureCodecMenu("System");
     mSettings->loadSettings();
+    mRecent.path = mSettings->defaultWorkspace();
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -245,6 +246,8 @@ void MainWindow::on_actionNew_triggered()
                                                     tr("GAMS code (*.gms *.inc );;"
                                                        "Text files (*.txt);;"
                                                        "All files (*)"));
+
+    if (filePath == "") return;
 
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
