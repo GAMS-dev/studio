@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
+    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -860,7 +860,6 @@ void MainWindow::dropEvent(QDropEvent* e)
                 openFilePath(fi.canonicalFilePath(), nullptr, true, true);
             }
         }
-
     }
 }
 
