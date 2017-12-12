@@ -3,13 +3,32 @@
 
 #include <QtGui>
 #include "syntaxformats.h"
+#include "syntaxdeclaration.h"
 
 namespace gams {
 namespace studio {
 
+class ErrorHighlighter : public QSyntaxHighlighter
+{
+public:
+    struct ErrorMark {
+        ErrorMark() {}
 
+    };
 
-class SyntaxHighlighter : public QSyntaxHighlighter
+    ErrorHighlighter(QTextDocument *parent = 0);
+    void highlightBlock(const QString &text);
+
+private slots:
+    void docBlockCountChanged(int newCount);
+    void docContentsChange(int from, int removed, int added);
+
+private:
+    QTextBlock mTestBlock;
+    QList<ErrorMark*> mErrors;
+};
+
+class SyntaxHighlighter : public ErrorHighlighter
 {
 public:
     SyntaxHighlighter(QTextDocument *parent = 0);

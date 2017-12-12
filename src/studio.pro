@@ -107,7 +107,8 @@ SOURCES += \
     projectcontextmenu.cpp \
     option.cpp \
     syntaxhighlighter.cpp \
-    syntaxformats.cpp
+    syntaxformats.cpp \
+    syntaxdeclaration.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -152,7 +153,8 @@ HEADERS += \
     projectcontextmenu.h \
     option.h \
     syntaxhighlighter.h \
-    syntaxformats.h
+    syntaxformats.h \
+    syntaxdeclaration.h
 
 FORMS += \
     welcomepage.ui  \

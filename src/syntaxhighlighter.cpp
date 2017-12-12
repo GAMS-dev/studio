@@ -4,15 +4,53 @@
 namespace gams {
 namespace studio {
 
+
+ErrorHighlighter::ErrorHighlighter(QTextDocument* parent)
+    : QSyntaxHighlighter(parent)
+{
+    mTestBlock = parent->findBlockByNumber(3);
+    connect(parent, &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
+    connect(parent, &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
+}
+
+void ErrorHighlighter::highlightBlock(const QString& text)
+{
+    QTextBlockUserData *data = currentBlock().userData();
+    DEB() << "BlockData: " << mTestBlock.isValid()
+          << " / " << mTestBlock.blockNumber()
+          << " /p " << mTestBlock.position()
+          << " /l " << mTestBlock.length();
+    DEB() << "           " << mTestBlock.text();
+    // TODO(JM) analyze data for marks
+}
+
+void ErrorHighlighter::docBlockCountChanged(int newCount)
+{
+    TRACE();
+}
+
+void ErrorHighlighter::docContentsChange(int from, int removed, int added)
+{
+    TRACE();
+}
+
+
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument *parent)
-    :QSyntaxHighlighter(parent)
+    : ErrorHighlighter(parent)
 {
     SyntaxAbstract* syntax = new SyntaxStandard();
     addState(syntax);
 
     syntax = new SyntaxDirective();
-    syntax->charFormat().setForeground(Qt::darkBlue);
-    syntax->charFormat().setFontWeight(QFont::Bold);
+    syntax->charFormat().setForeground(Qt::darkMagenta);
+//    syntax->charFormat().setFontWeight(QFont::Bold);
+    addState(syntax);
+
+    syntax = new SyntaxTitle();
+    syntax->charFormat().setForeground(Qt::blue);
+    syntax->charFormat().setFontWeight(QFont::Medium);
+    syntax->charFormat().setFont(syntax->charFormat().font());
+    syntax->charFormat().setFontStretch(120);
     addState(syntax);
 
     syntax = new SyntaxCommentLine();
@@ -21,6 +59,19 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument *parent)
     addState(syntax);
 
     syntax = new SyntaxCommentBlock();
+    syntax->copyCharFormat(mStates.last()->charFormat());
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::Declaration);
+    syntax->charFormat().setForeground(Qt::darkBlue);
+    syntax->charFormat().setFontWeight(QFont::Bold);
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::DeclarationSetType);
+    syntax->copyCharFormat(mStates.last()->charFormat());
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::DeclarationVariableType);
     syntax->copyCharFormat(mStates.last()->charFormat());
     addState(syntax);
 }
@@ -34,6 +85,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
+
     int code = previousBlockState();
 
     int index = 0;
@@ -89,6 +141,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
+    ErrorHighlighter::highlightBlock(text);
 }
 
 SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxState state) const
@@ -137,6 +190,7 @@ int SyntaxHighlighter::getCode(CodeIndex code, SyntaxStateShift shift, StateInde
         return addCode(state, code);
     return code;
 }
+
 
 } // namespace studio
 } // namespace gams
