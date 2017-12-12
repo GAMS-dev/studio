@@ -46,14 +46,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
 
+    int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(16,16));
-    ui->mainToolBar->setIconSize(QSize(21,21));
+    ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
+    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
     ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
