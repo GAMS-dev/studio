@@ -18,6 +18,11 @@ public:
     explicit ColumnFilterFrame(GdxSymbol* symbol, int column, QWidget *parent = 0);
     ~ColumnFilterFrame();
 
+protected:
+    //mouse events overwritten to prevent closing of the filter menu if user click on empty spaces regions within the frame
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseMoveEvent(QMouseEvent * event) override;
+
 private:
     Ui::ColumnFilterFrame ui;
     GdxSymbol* mSymbol;

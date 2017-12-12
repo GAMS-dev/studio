@@ -3,6 +3,7 @@
 #include <QSet>
 #include <QDebug>
 #include <QMenu>
+#include <QMouseEvent>
 
 namespace gams {
 namespace studio {
@@ -12,6 +13,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     :QFrame(parent), mSymbol(symbol), mColumn(column)
 {
     ui.setupUi(this);
+
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
@@ -29,6 +31,17 @@ ColumnFilterFrame::~ColumnFilterFrame()
 {
     delete mModel;
 }
+
+
+void ColumnFilterFrame::mousePressEvent(QMouseEvent *event)
+{
+}
+
+
+void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
+{
+}
+
 
 void ColumnFilterFrame::apply()
 {
