@@ -84,8 +84,6 @@ public:
     /// \param codecName The text-codec to use.
     void load(QString codecName = QString());
 
-    void setSyntaxHighlight(bool on);
-
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
     const QList<QPlainTextEdit*> editors() const;
@@ -163,6 +161,9 @@ protected:
     TextMark* findMark(const QTextCursor& cursor);
 
 private:
+    inline void removeHighlighter();
+
+private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     FileContext *mLinkFile = nullptr;
@@ -171,7 +172,7 @@ private:
     QList<TextMark*> mTextMarks;
     TextMark *mMarkAtMouse = nullptr;
     QPoint mClickPos;
-    SyntaxHighlighter* mSyntaxHighlighter = nullptr;
+    ErrorHighlighter* mSyntaxHighlighter = nullptr;
 
     static const QStringList mDefaulsCodecs;
 

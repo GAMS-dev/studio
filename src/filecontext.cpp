@@ -176,6 +176,7 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
     bool wasModified = isModified();
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
+        if (!document()) removeHighlighter();
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
@@ -211,6 +212,7 @@ QTextDocument*FileContext::document()
 
 void FileContext::load(QString codecName)
 {
+    removeHighlighter();
     if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 
@@ -251,17 +253,11 @@ void FileContext::load(QString codecName)
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
         mWatcher->addPath(location());
     }
-}
-
-void FileContext::setSyntaxHighlight(bool on)
-{
-    if (!document() && on)
-        EXCEPT() << "No document to highlight the syntax";
-
-    if (on && !mSyntaxHighlighter)
+    if (metrics().fileType() == FileType::Gms || metrics().fileType() == FileType::Txt) {
         mSyntaxHighlighter = new SyntaxHighlighter(document());
-    else if (!on && mSyntaxHighlighter)
-        delete mSyntaxHighlighter;
+    } else if (document()) {
+        mSyntaxHighlighter = new ErrorHighlighter(document());
+    }
 }
 
 void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
@@ -379,6 +375,14 @@ TextMark* FileContext::findMark(const QTextCursor &cursor)
             return mark;
     }
     return nullptr;
+}
+
+void FileContext::removeHighlighter()
+{
+    if (mSyntaxHighlighter) {
+        delete mSyntaxHighlighter;
+        mSyntaxHighlighter = nullptr;
+    }
 }
 
 bool FileContext::eventFilter(QObject* watched, QEvent* event)
