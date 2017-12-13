@@ -491,6 +491,7 @@ void FileContext::onFileChangedExtern(QString filepath)
         // file changed externally
         emit modifiedExtern(id());
     }
+    mWatcher->addPath(location());
 }
 
 } // namespace studio
