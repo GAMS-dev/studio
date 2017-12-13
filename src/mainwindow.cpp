@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(16,16));
     ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
+    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ensureCodecMenu("System");
     mSettings->loadSettings();
+    mRecent.path = mSettings->defaultWorkspace();
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -246,15 +247,18 @@ void MainWindow::on_actionNew_triggered()
                                                        "Text files (*.txt);;"
                                                        "All files (*)"));
 
+    if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
         filePath += ".gms";
     QFile file(filePath);
 
-    if (!file.exists()) { // which should be the default!
+    if (!file.exists()) { // new
         file.open(QIODevice::WriteOnly);
         file.close();
-    } // TODO: else, ask for overwrite
+    } else { // replace old
+        file.resize(0);
+    }
 
     if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
@@ -846,13 +850,14 @@ void MainWindow::dropEvent(QDropEvent* e)
             msgBox.setInformativeText("Do you want to continue?");
             msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             answer = msgBox.exec();
+
+            if(answer != QMessageBox::Ok) return;
         }
-        if(answer == QMessageBox::Ok) {
-            for (QString fName: pathList) {
-                QFileInfo fi(fName);
-                if (QFileInfo(fName).isFile()) {
-                    openFilePath(fi.canonicalFilePath(), nullptr, true, true);
-                }
+
+        for (QString fName: pathList) {
+            QFileInfo fi(fName);
+            if (QFileInfo(fName).isFile()) {
+                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
             }
         }
     }

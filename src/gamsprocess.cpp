@@ -71,7 +71,6 @@ LogContext*GamsProcess::logContext() const
 
 void GamsProcess::execute()
 {
-    qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
     QString gms = QDir::toNativeSeparators(mInputFile);
 
