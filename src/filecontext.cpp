@@ -41,6 +41,11 @@ FileContext::FileContext(int id, QString name, QString location, ContextType typ
     : FileSystemContext(id, name, location, type)
 {
     mMetrics = FileMetrics(QFileInfo(location));
+    if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
+        mSyntaxHighlighter = new SyntaxHighlighter(this, &mMarks);
+    else if (mMetrics.fileType() != FileType::Gdx) {
+        mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
+    }
 }
 
 QList<QPlainTextEdit*>&FileContext::editorList()
@@ -142,7 +147,9 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        QTimer::singleShot(50, this, &FileContext::updateMarks);
+        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
+        if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
+            mSyntaxHighlighter->setDocAndConnect(document());
     } else {
         edit->setDocument(document());
     }
@@ -159,8 +166,8 @@ void FileContext::addEditor(QPlainTextEdit* edit)
 void FileContext::addEditor(CodeEditor* edit)
 {
     addEditor(static_cast<QPlainTextEdit*>(edit));
-    connect(edit, &CodeEditor::requestMarkHash, this, &FileContext::shareMarkHash);
-    connect(edit, &CodeEditor::requestMarksEmpty, this, &FileContext::textMarksEmpty);
+    connect(edit, &CodeEditor::requestMarkHash, &mMarks, &TextMarkList::shareMarkHash);
+    connect(edit, &CodeEditor::requestMarksEmpty, &mMarks, &TextMarkList::textMarksEmpty);
 }
 
 void FileContext::editToTop(QPlainTextEdit* edit)
@@ -176,7 +183,9 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
     bool wasModified = isModified();
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
-        if (!document()) removeHighlighter();
+        if (mSyntaxHighlighter && !document()) {
+            mSyntaxHighlighter->setDocAndConnect(nullptr);
+        }
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
@@ -212,7 +221,6 @@ QTextDocument*FileContext::document()
 
 void FileContext::load(QString codecName)
 {
-    removeHighlighter();
     if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 
@@ -246,17 +254,12 @@ void FileContext::load(QString codecName)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
-        QTimer::singleShot(100, this, &FileContext::updateMarks);
+//        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
         mWatcher->addPath(location());
-    }
-    if (metrics().fileType() == FileType::Gms || metrics().fileType() == FileType::Txt) {
-        mSyntaxHighlighter = new SyntaxHighlighter(document());
-    } else if (document()) {
-        mSyntaxHighlighter = new ErrorHighlighter(document());
     }
 }
 
@@ -290,52 +293,15 @@ void FileContext::showToolTip(const TextMark& mark)
     }
 }
 
-TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
+void FileContext::rehighlightAt(int pos)
 {
-    TextMark* res = new TextMark(tmType);
-    res->setPosition(this, line, column, size);
-    res->setValue(value);
-    mTextMarks << res;
-    markLink(res);
-    if (!res->icon().isNull()) {
-        // TODO(JM) to early
-        emit setLineIcon(line, res->icon());
-    }
-    return res;
+    if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
 }
 
-void FileContext::markLink(TextMark* mark)
+TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
-    // TODO(JM) process marking in TextMark
-    if (!mEditors.size() || !mark || mark->textCursor().isNull()) return;
-    bool mod = document()->isModified();
-    QPlainTextEdit *edit = mEditors.first();
-    QTextCursor oldCur = QTextCursor(edit->document());
-    QTextCursor cur = mark->textCursor();
-    QTextCharFormat oldFormat = cur.charFormat();
-    QTextCharFormat newFormat = oldFormat;
-    if (mark->type() == TextMark::error) {
-        newFormat.setUnderlineColor(Qt::red);
-        newFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-        cur.setCharFormat(newFormat);
-        cur.setPosition(mark->textCursor().selectionEnd());
-        cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-        newFormat.setBackground(QColor(225,200,255));
-        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        newFormat.setAnchorName(QString::number(mark->line()));
-        cur.setCharFormat(newFormat);
-    }
-    if (mark->type() == TextMark::link) {
-        newFormat.setForeground(Qt::blue);
-        newFormat.setUnderlineColor(Qt::blue);
-        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        newFormat.setToolTip(QString::number(mark->value()));
-        newFormat.setAnchor(true);
-        newFormat.setAnchorName(QString::number(mark->line()));
-        cur.setCharFormat(newFormat);
-    }
-    edit->setTextCursor(oldCur);
-    document()->setModified(mod);
+    TextMark* mark = mMarks.generateTextMark(this, tmType, value, line, column, size);
+    return mark;
 }
 
 void FileContext::removeTextMarks(TextMark::Type tmType)
@@ -345,43 +311,9 @@ void FileContext::removeTextMarks(TextMark::Type tmType)
 
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
-    int i = mTextMarks.size();
-    while (i > 0) {
-        --i;
-        TextMark* tm = mTextMarks.at(i);
-        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all))
-            delete mTextMarks.takeAt(i);
-    }
-
+    mMarks.removeTextMarks(tmTypes);
     for (QPlainTextEdit* ed: mEditors) {
         ed->update(); // trigger delayed repaint
-    }
-}
-
-TextMark* FileContext::findMark(const QTextCursor &cursor)
-{
-    for (TextMark* mark: mTextMarks) {
-        QTextCursor tc = mark->textCursor();
-        if (tc.isNull()) break;
-        if (tc.blockNumber() > cursor.blockNumber()) break;
-        if (tc.blockNumber() < cursor.blockNumber()) continue;
-        if (cursor.atBlockStart())
-            return mark;
-
-        int a = tc.block().position() + mark->column();
-        int b = a + (mark->size() ? mark->size() : tc.block().length());
-        if (cursor.position() >= b) continue;
-        if (cursor.position() >= a && (cursor.selectionEnd() < b))
-            return mark;
-    }
-    return nullptr;
-}
-
-void FileContext::removeHighlighter()
-{
-    if (mSyntaxHighlighter) {
-        delete mSyntaxHighlighter;
-        mSyntaxHighlighter = nullptr;
     }
 }
 
@@ -418,7 +350,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
                                                         : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
-        mMarkAtMouse = findMark(cursor);
+        mMarkAtMouse = mMarks.findMark(cursor);
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea
@@ -458,26 +390,6 @@ void FileContext::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
     emit changed(id());
-}
-
-void FileContext::updateMarks()
-{
-    for (TextMark* mark: mTextMarks) {
-        mark->updateCursor();
-        markLink(mark);
-    }
-}
-
-void FileContext::shareMarkHash(QHash<int, TextMark*>* marks)
-{
-    for (TextMark* mark: mTextMarks) {
-        marks->insert(mark->line(), mark);
-    }
-}
-
-void FileContext::textMarksEmpty(bool* empty)
-{
-    *empty = mTextMarks.isEmpty();
 }
 
 void FileContext::onFileChangedExtern(QString filepath)

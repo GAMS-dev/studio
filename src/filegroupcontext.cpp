@@ -191,13 +191,6 @@ QString FileGroupContext::lstFileName()
 LogContext*FileGroupContext::logContext()
 {
     return mLogContext;
-//    for (FileSystemContext *fsc: mChildList) {
-//        if (fsc->type() == FileSystemContext::Log) {
-//            LogContext* fc = static_cast<LogContext*>(fsc);
-//            return fc;
-//        }
-//    }
-    //    return nullptr;
 }
 
 GamsProcess*FileGroupContext::newGamsProcess()

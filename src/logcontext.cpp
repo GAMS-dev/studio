@@ -1,6 +1,7 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "filegroupcontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -11,6 +12,7 @@ LogContext::LogContext(int id, QString name)
     mDocument = new QTextDocument(this);
     mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
     mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
 }
 
 void LogContext::markOld()
@@ -68,9 +70,7 @@ void LogContext::setParentEntry(FileGroupContext* parent)
 
 TextMark*LogContext::firstErrorMark()
 {
-    for (TextMark* mark: mTextMarks)
-        if (mark->isErrorRef()) return mark;
-    return nullptr;
+    return mMarks.firstErrorMark();
 }
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
@@ -111,7 +111,13 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
                 int size = (mark.size<=0) ? newLine.length()-mark.col : mark.size;
                 TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.first, line, mark.col, size);
                 tm->setRefMark(mark.textMark);
+                if (mark.textMark) mark.textMark->rehighlight();
+                tm->rehighlight();
+                qDebug() << "-------------------------------- LOG";
+                DEB() << "tm: " << tm->dump();
+                DEB() << "mark.textMark: " << mark.textMark->dump();
             }
+
             int i = 0;
             for (QPlainTextEdit* ed: editors()) {
                 if (scrollVal[i] > 0) {

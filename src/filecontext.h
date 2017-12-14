@@ -119,6 +119,8 @@ public:
     void jumpTo(const QTextCursor& cursor, bool focus);
     void showToolTip(const TextMark& mark);
 
+    void rehighlightAt(int pos);
+
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
@@ -134,17 +136,11 @@ signals:
     void createErrorHint(const int errCode, const QString &errText);
     void requestErrorHint(const int errCode, QString &errText);
     void openFileContext(FileContext* fileContext, bool focus = true);
-    void setLineIcon(int line, const QIcon& icon);
 
 protected slots:
     void onFileChangedExtern(QString filepath);
-
     /// Slot to handle a change of the assigned Document
     void modificationChanged(bool modiState);
-
-    void updateMarks();
-    void shareMarkHash(QHash<int, TextMark*>* marks);
-    void textMarksEmpty(bool *empty);
 
 protected:
     friend class LogContext;
@@ -152,16 +148,12 @@ protected:
     FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
 
     QList<QPlainTextEdit*>& editorList();
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
-    void markLink(TextMark* mark);
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
     bool eventFilter(QObject *watched, QEvent *event);
     bool mouseOverLink();
-    TextMark* findMark(const QTextCursor& cursor);
 
-private:
-    inline void removeHighlighter();
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    void removeTextMarks(TextMark::Type tmType);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
 private:
     FileMetrics mMetrics;
@@ -169,9 +161,9 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QList<TextMark*> mTextMarks;
     TextMark *mMarkAtMouse = nullptr;
     QPoint mClickPos;
+    TextMarkList mMarks;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
 
     static const QStringList mDefaulsCodecs;
