@@ -921,6 +921,7 @@ void MainWindow::execute(QString commandLineStr)
         logProc->clearLog();
     }
 
+
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
@@ -928,6 +929,7 @@ void MainWindow::execute(QString commandLineStr)
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
+    logProc->setJumpToLogEnd(true);
     GamsProcess* process = fgc->newGamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
