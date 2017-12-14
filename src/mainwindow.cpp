@@ -769,6 +769,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             QPlainTextEdit* logEdit = new QPlainTextEdit();
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
+            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -874,7 +875,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 
 void MainWindow::execute(QString commandLineStr)
 {
-    // TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
     if (!fgc)
@@ -909,6 +909,7 @@ void MainWindow::execute(QString commandLineStr)
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+        logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     } else {
