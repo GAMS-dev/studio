@@ -316,5 +316,20 @@ QTextCharFormat CommandLineTokenizer::deprecateOptionFormat() const
     return mDeprecateOptionFormat;
 }
 
+void CommandLineTokenizer::setInvalidKeyFormat(const QTextCharFormat &invalidKeyFormat)
+{
+    mInvalidKeyFormat = invalidKeyFormat;
+}
+
+void CommandLineTokenizer::setInvalidValueFormat(const QTextCharFormat &invalidValueFormat)
+{
+    mInvalidValueFormat = invalidValueFormat;
+}
+
+void CommandLineTokenizer::setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat)
+{
+    mDeprecateOptionFormat = deprecateOptionFormat;
+}
+
 } // namespace studio
 } // namespace gams

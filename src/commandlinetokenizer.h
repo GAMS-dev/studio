@@ -30,6 +30,10 @@ public:
     QTextCharFormat invalidValueFormat() const;
     QTextCharFormat deprecateOptionFormat() const;
 
+    void setInvalidKeyFormat(const QTextCharFormat &invalidKeyFormat);
+    void setInvalidValueFormat(const QTextCharFormat &invalidValueFormat);
+    void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
+
 private:
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
