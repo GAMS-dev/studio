@@ -955,7 +955,11 @@ void MainWindow::on_runWithChangedOptions()
 void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
+
+    if (mCommandLineOption->getCurrentOption() != "")
+        execute(mCommandLineOption->getCurrentOption().append(" ").append(parameter));
+    else
+        execute(parameter);
 }
 
 void MainWindow::on_commandLineHelpTriggered()
