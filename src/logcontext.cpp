@@ -100,10 +100,10 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             QList<int> scrollVal;
             QList<QTextCursor> cursors;
             for (QPlainTextEdit* ed: editors()) {
-                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1){
+                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                     scrollVal << 0;
                     cursors << QTextCursor();
-                } else{
+                } else {
                     scrollVal << ed->verticalScrollBar()->value();
                     cursors << ed->textCursor();
                 }
@@ -119,10 +119,8 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             }
             int i = 0;
             for (QPlainTextEdit* ed: editors()) {
-                if (scrollVal[i] > 0) {
-                    ed->verticalScrollBar()->setValue(scrollVal[i]);
-                    ed->setTextCursor(cursors[i]);
-                } else {
+                if (mJumpToLogEnd || scrollVal[i] == 0) {
+                    mJumpToLogEnd = false;
                     ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
                 }
                 ++i;
@@ -258,6 +256,11 @@ void LogContext::clearRecentMarks()
         fc->removeTextMarks(TextMark::all);
     }
     removeTextMarks(TextMark::all);
+}
+
+void LogContext::setJumpToLogEnd(bool state)
+{
+    mJumpToLogEnd = state;
 }
 
 } // namespace studio
