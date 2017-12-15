@@ -1,7 +1,7 @@
 #ifndef SYNTAXVARIABLE_H
 #define SYNTAXVARIABLE_H
 
-#include <QObject>
+#include "syntaxformats.h"
 
 namespace gams {
 namespace studio {
