@@ -108,7 +108,9 @@ SOURCES += \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
     syntaxhighlighter.cpp \
-    syntaxformats.cpp
+    syntaxformats.cpp \
+    syntaxdeclaration.cpp \
+    textmarklist.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -154,7 +156,9 @@ HEADERS += \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
     syntaxhighlighter.h \
-    syntaxformats.h
+    syntaxformats.h \
+    syntaxdeclaration.h \
+    textmarklist.h
 
 FORMS += \
     welcomepage.ui  \

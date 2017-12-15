@@ -1,18 +1,121 @@
 #include "syntaxhighlighter.h"
 #include "logger.h"
+#include "filecontext.h"
+#include "textmark.h"
 
 namespace gams {
 namespace studio {
 
-SyntaxHighlighter::SyntaxHighlighter(QTextDocument *parent)
-    :QSyntaxHighlighter(parent)
+
+ErrorHighlighter::ErrorHighlighter(FileContext* context, TextMarkList *marks)
+    : QSyntaxHighlighter(context->document()), mContext(context), mMarks(marks)
+{
+    if (!document()) return;
+    connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
+    connect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
+}
+
+void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
+{
+    if (document() && doc != document()) {
+        disconnect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
+        disconnect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
+    }
+    setDocument(doc);
+    if (doc) {
+        connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
+        connect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
+        if (mMarks) mMarks->rehighlight();
+    }
+}
+
+void ErrorHighlighter::highlightBlock(const QString& text)
+{
+    QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
+    setCombiFormat(0, text.length(), QTextCharFormat(), marks);
+}
+
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &format, QList<TextMark*> marks)
+{
+    int end = start+len;
+    int marksStart = end;
+    int marksEnd = start;
+    for (TextMark* mark: marks) {
+        if (mark->blockStart() < marksStart) marksStart = qMax(start, mark->blockStart());
+        if (mark->blockEnd() > marksEnd) marksEnd = qMin(end, mark->blockEnd());
+    }
+    if (marksStart == end) {
+        setFormat(start, len, format);
+        return;
+    }
+    if (marksStart > start) setFormat(start, marksStart-start, format);
+    if (marksEnd < end) setFormat(marksEnd, end-marksEnd, format);
+    start = marksStart;
+    end = marksEnd;
+
+    for (TextMark* mark: marks) {
+        if (mark->blockStart() >= end || mark->blockEnd() < start)
+            continue;
+        QTextCharFormat combinedFormat(format);
+        marksStart = qMax(mark->blockStart(), start);
+        marksEnd = qMin(mark->blockEnd(), end);
+        if (mark->type() == TextMark::error) {
+            combinedFormat.setUnderlineColor(Qt::red);
+            combinedFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+            combinedFormat.setAnchorName(QString::number(mark->line()));
+            setFormat(marksStart, marksEnd-marksStart, combinedFormat);
+            if (marksEnd == mark->blockEnd()) {
+                combinedFormat.setBackground(QColor(225,200,255));
+                combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                setFormat(marksEnd, 1, combinedFormat);
+            }
+        }
+        if (mark->type() == TextMark::link) {
+            combinedFormat.setForeground(Qt::blue);
+            combinedFormat.setUnderlineColor(Qt::blue);
+            combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+            combinedFormat.setAnchor(true);
+            combinedFormat.setAnchorName(QString::number(mark->line()));
+            setFormat(marksStart, marksEnd-marksStart, combinedFormat);
+        }
+
+    }
+}
+
+void ErrorHighlighter::docBlockCountChanged(int newCount)
+{
+    Q_UNUSED(newCount);
+    QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
+    for (TextMark* mark: marks) {
+        mark->modified();
+    }
+}
+
+void ErrorHighlighter::docContentsChange(int from, int removed, int added)
+{
+    // TODO(JM) check for use of removed and added to remove display
+    QList<TextMark*> marks = mMarks->marksForBlock(document()->findBlock(from));
+    for (TextMark* mark: marks) {
+        mark->modified();
+    }
+}
+
+SyntaxHighlighter::SyntaxHighlighter(FileContext* context, TextMarkList* marks)
+    : ErrorHighlighter(context, marks)
 {
     SyntaxAbstract* syntax = new SyntaxStandard();
     addState(syntax);
 
     syntax = new SyntaxDirective();
-    syntax->charFormat().setForeground(Qt::darkBlue);
-    syntax->charFormat().setFontWeight(QFont::Bold);
+    syntax->charFormat().setForeground(Qt::darkMagenta);
+//    syntax->charFormat().setFontWeight(QFont::Bold);
+    addState(syntax);
+
+    syntax = new SyntaxTitle();
+    syntax->charFormat().setForeground(Qt::blue);
+    syntax->charFormat().setFontWeight(QFont::Medium);
+    syntax->charFormat().setFont(syntax->charFormat().font());
+    syntax->charFormat().setFontStretch(120);
     addState(syntax);
 
     syntax = new SyntaxCommentLine();
@@ -21,6 +124,19 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument *parent)
     addState(syntax);
 
     syntax = new SyntaxCommentBlock();
+    syntax->copyCharFormat(mStates.last()->charFormat());
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::Declaration);
+    syntax->charFormat().setForeground(Qt::darkBlue);
+    syntax->charFormat().setFontWeight(QFont::Bold);
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::DeclarationSetType);
+    syntax->copyCharFormat(mStates.last()->charFormat());
+    addState(syntax);
+
+    syntax = new SyntaxDeclaration(SyntaxState::DeclarationVariableType);
     syntax->copyCharFormat(mStates.last()->charFormat());
     addState(syntax);
 }
@@ -34,8 +150,9 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
+    ErrorHighlighter::highlightBlock(text);
+    QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
     int code = previousBlockState();
-
     int index = 0;
     while (index < text.length()-1) {
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
@@ -68,11 +185,12 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         if (thisBlock.isValid() && thisBlock.length() > 0) {
             if (thisBlock.syntax->state() != SyntaxState::Standard)
-                setFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormat());
-            if (thisBlock.error && thisBlock.length()>0)
-                setFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError());
-            index = thisBlock.end;
+                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormat(), marks);
 
+            if (thisBlock.error && thisBlock.length() > 0)
+                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError(), marks);
+
+            index = thisBlock.end;
             code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.next));
 
 //            stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
@@ -123,7 +241,6 @@ int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
     int index = mCodes.indexOf(sc);
     if (index >= 0)
         return index;
-    DEB() << mCodes.length() << ": added state " << si << " in code " << ci;
     mCodes << sc;
     return mCodes.length()-1;
 }
@@ -137,6 +254,7 @@ int SyntaxHighlighter::getCode(CodeIndex code, SyntaxStateShift shift, StateInde
         return addCode(state, code);
     return code;
 }
+
 
 } // namespace studio
 } // namespace gams
