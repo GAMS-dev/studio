@@ -113,9 +113,6 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
                 tm->setRefMark(mark.textMark);
                 if (mark.textMark) mark.textMark->rehighlight();
                 tm->rehighlight();
-                qDebug() << "-------------------------------- LOG";
-                DEB() << "tm: " << tm->dump();
-                DEB() << "mark.textMark: " << mark.textMark->dump();
             }
 
             int i = 0;

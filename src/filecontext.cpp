@@ -147,9 +147,9 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
         if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
             mSyntaxHighlighter->setDocAndConnect(document());
+        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
     } else {
         edit->setDocument(document());
     }
@@ -263,6 +263,19 @@ void FileContext::load(QString codecName)
     }
 }
 
+void FileContext::jumpTo(int line, int column, bool focus)
+{
+    if (!mEditors.size())
+        emit openFileContext(this, true);
+    if (mEditors.size()) {
+        QPlainTextEdit* edit = mEditors.first();
+        QTextCursor tc(edit->document()->findBlockByNumber(line));
+        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
+        jumpTo(tc, focus);
+    }
+}
+
+
 void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
 {
     if (mEditors.size()) {
@@ -296,6 +309,11 @@ void FileContext::showToolTip(const TextMark& mark)
 void FileContext::rehighlightAt(int pos)
 {
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
+}
+
+void FileContext::updateMarks()
+{
+    mMarks.updateMarks();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)

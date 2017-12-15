@@ -66,7 +66,7 @@ public:
     inline int blockStart() const {return (mCursor.isNull()) ? -1 : mCursor.selectionStart()-mCursor.block().position();}
     inline int blockEnd() const {return (mCursor.isNull()) ? -1 : mCursor.selectionEnd()-mCursor.block().position();}
     void rehighlight();
-    inline void modified() {mSize = 0; mColumn=0; mCursor=QTextCursor(); rehighlight();}
+    void modified();
 
     QString dump();
 

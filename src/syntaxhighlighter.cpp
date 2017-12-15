@@ -25,6 +25,7 @@ void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
     if (doc) {
         connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
         connect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
+        if (mMarks) mMarks->rehighlight();
     }
 }
 
@@ -63,9 +64,11 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             combinedFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
             combinedFormat.setAnchorName(QString::number(mark->line()));
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
-            combinedFormat.setBackground(QColor(225,200,255));
-            combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-            setFormat(marksEnd, 1, combinedFormat);
+            if (marksEnd == mark->blockEnd()) {
+                combinedFormat.setBackground(QColor(225,200,255));
+                combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                setFormat(marksEnd, 1, combinedFormat);
+            }
         }
         if (mark->type() == TextMark::link) {
             combinedFormat.setForeground(Qt::blue);
@@ -147,6 +150,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
+    ErrorHighlighter::highlightBlock(text);
     QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
     int code = previousBlockState();
     int index = 0;
@@ -237,7 +241,6 @@ int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
     int index = mCodes.indexOf(sc);
     if (index >= 0)
         return index;
-    DEB() << mCodes.length() << ": added state " << si << " in code " << ci;
     mCodes << sc;
     return mCodes.length()-1;
 }

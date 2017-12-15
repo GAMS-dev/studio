@@ -40,13 +40,13 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock();
     if (entryState == SyntaxState::CommentBlock) {
-        DEB() << "Directive from CommentBlock";
+//        DEB() << "Directive from CommentBlock";
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
         return SyntaxBlock();
     }
     SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::Standard);
-    DEB() << match.captured(2) << " cap-end 2: " << match.capturedEnd(2) << "  cap-end 0: " << match.capturedEnd(0);
+//    DEB() << match.captured(2) << " cap-end 2: " << match.capturedEnd(2) << "  cap-end 0: " << match.capturedEnd(0);
     return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next
                        , !mDirectives.contains(match.captured(2), Qt::CaseInsensitive));
 }

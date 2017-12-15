@@ -43,7 +43,9 @@ void TextMark::updateCursor()
         QTextBlock block = mFileContext->document()->findBlockByNumber(mLine);
         mCursor = QTextCursor(block);
         if (mSize <= 0) {
-            mCursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            int end = block.next().text().indexOf('$')+1;
+            if (end == 0) end = block.next().length();
+            if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end);
             mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
         } else {
             mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
@@ -63,10 +65,14 @@ void TextMark::jumpToRefMark(bool focus)
 void TextMark::jumpToMark(bool focus)
 {
     if (mFileContext) {
-        if (mCursor.isNull())
-            emit mFileContext->openFileContext(mFileContext, focus);
-        else
+        if (mCursor.isNull()) {
+            if (mFileContext->metrics().fileType() == FileType::Gdx)
+                mFileContext->openFileContext(mFileContext, focus);
+            else
+                mFileContext->jumpTo(mLine, mColumn, focus);
+        } else {
             mFileContext->jumpTo(mCursor, focus);
+        }
     }
 }
 
@@ -124,6 +130,14 @@ QTextCursor TextMark::textCursor() const
 void TextMark::rehighlight()
 {
     if (mFileContext) mFileContext->rehighlightAt(position());
+}
+
+void TextMark::modified()
+{
+    mSize = 0;
+    mColumn = 0;
+    mCursor.setPosition(mCursor.position());
+    rehighlight();
 }
 
 QString TextMark::dump()

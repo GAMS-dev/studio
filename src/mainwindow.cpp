@@ -928,6 +928,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
     } else {
         createEdit(tabWidget, focus, fileContext->id());
     }
+    fileContext->updateMarks();
     if (tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {

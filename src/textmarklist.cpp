@@ -10,6 +10,14 @@ void TextMarkList::updateMarks()
 {
     for (TextMark* mark: mTextMarks) {
         mark->updateCursor();
+        mark->rehighlight();
+    }
+}
+
+void TextMarkList::rehighlight()
+{
+    for (TextMark* mark: mTextMarks) {
+        mark->rehighlight();
     }
 }
 

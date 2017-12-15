@@ -116,10 +116,12 @@ public:
     virtual QTextDocument* document();
 
     const FileMetrics& metrics();
+    void jumpTo(int line, int column, bool focus);
     void jumpTo(const QTextCursor& cursor, bool focus);
     void showToolTip(const TextMark& mark);
 
     void rehighlightAt(int pos);
+    void updateMarks();
 
 signals:
     /// Signal is emitted when the file has been modified externally.

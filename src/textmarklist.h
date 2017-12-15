@@ -15,6 +15,7 @@ class TextMarkList: public QObject
 public:
     TextMarkList();
     void updateMarks();
+    void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block);
 
 public slots:
