@@ -108,7 +108,8 @@ SOURCES += \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
     syntaxhighlighter.cpp \
-    syntaxformats.cpp
+    syntaxformats.cpp \
+    optionconfigurator.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -154,7 +155,8 @@ HEADERS += \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
     syntaxhighlighter.h \
-    syntaxformats.h
+    syntaxformats.h \
+    optionconfigurator.h
 
 FORMS += \
     welcomepage.ui  \
@@ -163,7 +165,8 @@ FORMS += \
     modeldialog/modeldialog.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    optionconfigurator.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API
