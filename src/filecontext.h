@@ -163,7 +163,7 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    TextMark *mMarkAtMouse = nullptr;
+    QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     TextMarkList mMarks;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;

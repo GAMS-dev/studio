@@ -27,7 +27,7 @@ protected:
     friend class FileContext;
     TextMark* generateTextMark(FileContext *context, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
-    TextMark* findMark(const QTextCursor& cursor);
+    QList<TextMark*> findMarks(const QTextCursor& cursor);
     TextMark* firstErrorMark();
 
 private:

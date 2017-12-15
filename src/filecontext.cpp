@@ -344,7 +344,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     if (evCheckKey.contains(event->type())) {
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMarkAtMouse ? Qt::PointingHandCursor : Qt::IBeamCursor);
+            mEditors.first()->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
         } else {
             mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
@@ -357,32 +357,32 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
                                                         : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
-        mMarkAtMouse = mMarks.findMark(cursor);
+        mMarksAtMouse = mMarks.findMarks(cursor);
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea
         if (codeEdit && watched == codeEdit && event->type() != QEvent::ToolTip) {
             Qt::CursorShape shape = Qt::ArrowCursor;
-            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape, true);
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
             codeEdit->lineNumberArea()->setCursor(shape);
-            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink(true) : false;
+            isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink(true);
         } else {
             Qt::CursorShape shape = Qt::IBeamCursor;
-            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape);
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
             edit->viewport()->setCursor(shape);
-            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink() : false;
+            isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink();
         }
 
-        if (mMarkAtMouse && event->type() == QEvent::MouseButtonPress) {
+        if (!mMarksAtMouse.isEmpty() && event->type() == QEvent::MouseButtonPress) {
             mClickPos = pos;
-        } else if (mMarkAtMouse && event->type() == QEvent::MouseButtonRelease) {
+        } else if (!mMarksAtMouse.isEmpty() && event->type() == QEvent::MouseButtonRelease) {
             if ((mClickPos-pos).manhattanLength() < 4 && isValidLink) {
-                if (mMarkAtMouse) mMarkAtMouse->jumpToRefMark();
-                return mMarkAtMouse;
+                if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->jumpToRefMark();
+                return !mMarksAtMouse.isEmpty();
             }
         } else if (event->type() == QEvent::ToolTip) {
-            if (mMarkAtMouse) mMarkAtMouse->showToolTip();
-            return mMarkAtMouse;
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->showToolTip();
+            return !mMarksAtMouse.isEmpty();
         }
     }
     return FileSystemContext::eventFilter(watched, event);
@@ -390,7 +390,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
 bool FileContext::mouseOverLink()
 {
-    return mMarkAtMouse;
+    return !mMarksAtMouse.isEmpty();
 }
 
 void FileContext::modificationChanged(bool modiState)
