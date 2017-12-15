@@ -107,9 +107,10 @@ SOURCES += \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
-    syntaxhighlighter.cpp \
-    syntaxformats.cpp \
-    syntaxdeclaration.cpp \
+    syntax.h \
+    syntax/syntaxhighlighter.cpp \
+    syntax/syntaxformats.cpp \
+    syntax/syntaxdeclaration.cpp \
     textmarklist.cpp
 
 HEADERS += \
@@ -155,9 +156,9 @@ HEADERS += \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
-    syntaxhighlighter.h \
-    syntaxformats.h \
-    syntaxdeclaration.h \
+    syntax/syntaxhighlighter.h \
+    syntax/syntaxformats.h \
+    syntax/syntaxdeclaration.h \
     textmarklist.h
 
 FORMS += \

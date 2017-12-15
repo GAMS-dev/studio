@@ -24,7 +24,7 @@
 #include "filesystemcontext.h"
 #include "filemetrics.h"
 #include "textmark.h"
-#include "syntaxhighlighter.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
