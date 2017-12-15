@@ -158,7 +158,6 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
     for (OptionItem item : items) {
         if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
             if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
-                qDebug() << QString("%1").arg(item.key.mid(2));
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
                 fr.length = item.key.length();
