@@ -28,6 +28,7 @@
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 #include "projectcontextmenu.h"
+#include "optionconfigurator.h"
 
 namespace Ui {
 class MainWindow;

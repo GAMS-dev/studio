@@ -958,8 +958,18 @@ void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+//    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
+//    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+    if (!fgc)
+        return;
+
+
+    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit(), this), QString("Run - %1").arg(fc->caption()) );
+    ui->mainTab->setCurrentIndex(idx);
+
 }
 
 void MainWindow::on_actionRun_triggered()

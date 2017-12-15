@@ -12,11 +12,21 @@ class OptionConfigurator : public QFrame
 {
     Q_OBJECT
 public:
-    OptionConfigurator(QLineEdit* lineEditText, QWidget *parent);
+    OptionConfigurator(QString label, QLineEdit* lineEditText, QWidget *parent);
     ~OptionConfigurator();
+
+signals:
+    void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
+
+public slots:
+    void toggleOptionDefinition(bool checked);
 
 private:
     Ui::OptionConfigurator ui;
+    QLineEdit* searchLineEdit;
+    QTreeView* optionDefintionTreeView;
+
+    void createOptionDefinitionWidget();
 };
 
 } // namespace studio

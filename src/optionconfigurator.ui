@@ -27,7 +27,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="FileLabel">
+    <widget class="QLabel" name="fileLabel">
      <property name="text">
       <string>File :  </string>
      </property>
@@ -36,14 +36,21 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="CommandLinelabel">
+      <widget class="QLabel" name="commandLineLabel">
        <property name="text">
         <string>Option :  </string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="CommandLineEdit"/>
+      <widget class="QLineEdit" name="commandLineEdit"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="resetButton">
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -59,30 +66,12 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget_2">
-      <layout class="QVBoxLayout" name="OptionDefinition_VLayout">
-       <item>
-        <widget class="QLineEdit" name="SearchLineEdit">
-         <property name="text">
-          <string>Search...</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTreeView" name="OptionDefintionTreeView">
-         <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
-         </property>
-         <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <layout class="QVBoxLayout" name="optionDefinition_VLayout"/>
      </widget>
      <widget class="QWidget" name="layoutWidget_3">
       <layout class="QVBoxLayout" name="Option_VLayout">
        <item>
-        <widget class="QTableView" name="CommandLineTableView">
+        <widget class="QTableView" name="commandLineTableView">
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -108,7 +97,14 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="Button_HLayout">
+    <layout class="QHBoxLayout" name="button_HLayout">
+     <item>
+      <widget class="QCheckBox" name="showOptionDefintionCheckBox">
+       <property name="text">
+        <string>Opton Definition</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -123,14 +119,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="CloseViewButton">
+      <widget class="QPushButton" name="closeViewButton">
        <property name="text">
         <string>Close</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="RunButton">
+      <widget class="QPushButton" name="runButton">
        <property name="text">
         <string>Run</string>
        </property>
