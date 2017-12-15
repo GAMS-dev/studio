@@ -80,6 +80,9 @@ TextMark*LogContext::firstErrorMark()
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
+    bool debugTheLog = true;
+    // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
+    //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
     ExtractionState state;
@@ -93,6 +96,10 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     for (QString line: lines) {
         QList<LinkData> marks;
         QString newLine = extractError(line, state, marks);
+        if (state == FileContext::FollowupError) {
+            emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
+            newLine = extractError(line, state, marks);
+        }
         if (state == FileContext::Exiting) {
             emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
         }
@@ -110,6 +117,12 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             }
             QTextCursor cursor(mDocument);
             cursor.movePosition(QTextCursor::End);
+            if (debugTheLog) {
+                QTextCharFormat fmtk; fmtk.setForeground(QColor(120,150,100));
+                cursor.insertText(line, fmtk);
+                QTextCharFormat fmt;
+                cursor.insertText("\n", fmt);
+            }
             int line = mDocument->lineCount()-1;
             cursor.insertText(newLine+"\n");
             for (LinkData mark: marks) {
@@ -136,15 +149,16 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 QString LogContext::extractError(QString line, FileContext::ExtractionState& state, QList<LogContext::LinkData>& marks)
 {
     QString result;
-    bool doubleLines = false;
-    if (doubleLines) {
-        result = "{"+line+"}\n";
+    QRegularExpression errRX1("^([\\*\\-]{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+)|FIL:\"([^\"]+)\",(\\d+),(\\d+))");
+    if (mInErrorDescription && line.startsWith("***") || line.startsWith("---")) {
+        state = FollowupError;
+        mInErrorDescription = false;
+        return QString();
     }
     if (!mInErrorDescription) {
         // look, if we find the start of an error
         QStringList parts = line.split(QRegularExpression("(\\[|]\\[|])"), QString::SkipEmptyParts);
         if (parts.size() > 1) {
-            QRegularExpression errRX1("^([\\*\\-]{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+)|FIL:\"([^\"]+)\",(\\d+),(\\d+))");
             TextMark* errMark = nullptr;
             bool errFound = false;
             for (QString part: parts) {

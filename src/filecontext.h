@@ -47,6 +47,7 @@ public:
         Entering,
         Inside,
         Exiting,
+        FollowupError,
     };
 
     ~FileContext() override;
