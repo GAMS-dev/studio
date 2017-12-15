@@ -26,7 +26,7 @@ pipeline {
                             set PATH=C:\\Qt\\5.9.3\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
                             qmake studio.pro
-                            make
+                            mingw32-make
                         '''
                     }
                 },
