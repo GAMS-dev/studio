@@ -10,6 +10,7 @@ void TextMarkList::updateMarks()
 {
     for (TextMark* mark: mTextMarks) {
         mark->updateCursor();
+        // TODO(JM) Read the more specific error message from lst-file
         mark->rehighlight();
     }
 }
