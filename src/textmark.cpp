@@ -69,7 +69,7 @@ void TextMark::jumpToMark(bool focus)
             if (mFileContext->metrics().fileType() == FileType::Gdx)
                 mFileContext->openFileContext(mFileContext, focus);
             else
-                mFileContext->jumpTo(mLine, mColumn, focus);
+                mFileContext->jumpTo(mCursor, focus, mLine, mColumn);
         } else {
             mFileContext->jumpTo(mCursor, focus);
         }

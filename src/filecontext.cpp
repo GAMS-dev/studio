@@ -263,27 +263,15 @@ void FileContext::load(QString codecName)
     }
 }
 
-void FileContext::jumpTo(int line, int column, bool focus)
+void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
 {
-    if (!mEditors.size())
-        emit openFileContext(this, true);
+    emit openFileContext(this, focus);
     if (mEditors.size()) {
         QPlainTextEdit* edit = mEditors.first();
-        QTextCursor tc(edit->document()->findBlockByNumber(line));
-        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
-        jumpTo(tc, focus);
-    }
-}
-
-
-void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
-{
-    if (mEditors.size()) {
-        QPlainTextEdit* edit = mEditors.first();
-        QTextCursor tc(cursor);
+        QTextCursor tc(cursor.isNull() ? QTextCursor(edit->document()->findBlockByNumber(altLine)) : cursor);
+        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
         tc.clearSelection();
         edit->setTextCursor(tc);
-        emit openFileContext(this, focus);
         // center line vertically
         int lines = edit->rect().bottom() / edit->cursorRect().height();
         int line = edit->cursorRect().bottom() / edit->cursorRect().height();
