@@ -318,6 +318,7 @@ void FileContext::removeTextMarks(TextMark::Type tmType)
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     mMarks.removeTextMarks(tmTypes);
+    if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
     for (QPlainTextEdit* ed: mEditors) {
         ed->update(); // trigger delayed repaint
     }

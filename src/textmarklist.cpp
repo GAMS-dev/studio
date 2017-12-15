@@ -49,8 +49,9 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
     while (i > 0) {
         --i;
         TextMark* tm = mTextMarks.at(i);
-        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all))
+        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             delete mTextMarks.takeAt(i);
+        }
     }
 }
 

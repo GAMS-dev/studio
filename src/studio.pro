@@ -111,7 +111,8 @@ SOURCES += \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxdeclaration.cpp \
-    textmarklist.cpp
+    textmarklist.cpp \
+    syntax/syntaxvariable.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -159,7 +160,8 @@ HEADERS += \
     syntax/syntaxhighlighter.h \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
-    textmarklist.h
+    textmarklist.h \
+    syntax/syntaxvariable.h
 
 FORMS += \
     welcomepage.ui  \
