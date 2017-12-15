@@ -280,17 +280,28 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
     }
 }
 
-void FileContext::showToolTip(const TextMark& mark)
+void FileContext::showToolTip(const QList<TextMark*> marks)
 {
-    if (mEditors.size() && !mark.textCursor().isNull()) {
+    if (mEditors.size() && marks.size() > 0 &&  !marks.first()->textCursor().isNull()) {
         QPlainTextEdit* edit = mEditors.first();
-        QTextCursor cursor(mark.textCursor());
+        QTextCursor cursor(marks.first()->textCursor());
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
-        QString tip;
-        emit requestErrorHint(mark.value(), tip);
+        QStringList tips;
+        for (TextMark* mark: marks) {
+            QString tip;
+            emit requestErrorHint(mark->value(), tip);
+            tips << tip;
+        }
+        QToolTip::showText(edit->mapToGlobal(pos), tips.join("\n"), edit);
+    }
+}
 
-        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
+void FileContext::showToolTip(int lstLine)
+{
+    if (mEditors.size()) {
+        FileGroupContext* group = parentEntry();
+
     }
 }
 
@@ -302,6 +313,21 @@ void FileContext::rehighlightAt(int pos)
 void FileContext::updateMarks()
 {
     mMarks.updateMarks();
+    if (mMetrics.fileType() == FileType::Lst && document()) {
+        parentEntry()->clearLstErrorTexts();
+        for (TextMark* mark: mMarks.marks()) {
+            // TODO(JM) parse lst-file for each line
+            int line = mark->line();
+            if (parentEntry()->hasLstErrorText(line)) continue;
+            QTextBlock block = document()->findBlockByNumber(line).next();
+            QStringList errText;
+            while (block.isValid()) {
+                if (!block.text().startsWith("****")) break;
+//                errText <<
+                block = block.next();
+            }
+        }
+    }
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
@@ -381,7 +407,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
                 return !mMarksAtMouse.isEmpty();
             }
         } else if (event->type() == QEvent::ToolTip) {
-            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->showToolTip();
+            if (!mMarksAtMouse.isEmpty()) showToolTip(mMarksAtMouse);
             return !mMarksAtMouse.isEmpty();
         }
     }

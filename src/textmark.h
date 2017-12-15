@@ -40,8 +40,6 @@ public:
     void setRefMark(TextMark* refMark);
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
 
-    void showToolTip();
-
     int value() const;
     void setValue(int value);
 

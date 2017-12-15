@@ -172,6 +172,26 @@ void FileGroupContext::jumpToMark(bool focus)
     }
 }
 
+QString FileGroupContext::lstErrorText(int line)
+{
+    return mLstErrorTexts.value(line);
+}
+
+void FileGroupContext::addLstErrorText(int line, QString text)
+{
+    mLstErrorTexts.insert(line, text);
+}
+
+void FileGroupContext::clearLstErrorTexts()
+{
+    mLstErrorTexts.clear();
+}
+
+bool FileGroupContext::hasLstErrorText(int line)
+{
+    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms

@@ -81,12 +81,6 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
-void TextMark::showToolTip()
-{
-    if (mFileContext)
-        mFileContext->showToolTip(*this);
-}
-
 QIcon TextMark::icon()
 {
     switch (mType) { // TODO(JM) hold ref to TextMark instead of icon

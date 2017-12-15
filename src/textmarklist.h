@@ -17,6 +17,7 @@ public:
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block);
+    QList<TextMark*> marks() { return mTextMarks;}
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);

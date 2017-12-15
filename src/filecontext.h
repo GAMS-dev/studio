@@ -118,7 +118,8 @@ public:
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const TextMark& mark);
+    void showToolTip(const QList<TextMark*> marks); // TODO(JM) deprecated: use lst-line
+    void showToolTip(int lstLine);
 
     void rehighlightAt(int pos);
     void updateMarks();
