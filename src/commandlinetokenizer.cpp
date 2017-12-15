@@ -156,14 +156,17 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         return optionErrorList;
 
     for (OptionItem item : items) {
-        if (item.key.startsWith("--")) // ignore "--" parameter
+        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+            if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
+                qDebug() << QString("%1").arg(item.key.mid(2));
+                QTextLayout::FormatRange fr;
+                fr.start = item.keyPosition;
+                fr.length = item.key.length();
+                fr.format = mInvalidKeyFormat;
+                optionErrorList.append(OptionError(fr, item.key.mid(2) + QString(" (Option keyword expected)")) );
+            }
             continue;
-        else if (item.key.startsWith("-/")) // ignore "-/" parameter
-                continue;
-        else if (item.key.startsWith("/-")) // ignore "/-" parameter
-                continue;
-        else if (item.key.startsWith("//")) // ignore "//" parameter
-                continue;
+        }
 
         QString key = item.key;
         if (key.startsWith("-"))
