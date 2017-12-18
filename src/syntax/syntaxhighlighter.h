@@ -3,16 +3,42 @@
 
 #include <QtGui>
 #include "syntaxformats.h"
+#include "syntaxdeclaration.h"
+#include "textmark.h"
+#include "textmarklist.h"
 
 namespace gams {
 namespace studio {
 
-
-
-class SyntaxHighlighter : public QSyntaxHighlighter
+class ErrorHighlighter : public QSyntaxHighlighter
 {
+    Q_OBJECT
 public:
-    SyntaxHighlighter(QTextDocument *parent = 0);
+    ErrorHighlighter(FileContext *context, TextMarkList* marks);
+    void highlightBlock(const QString &text);
+    void setDocAndConnect(QTextDocument* doc);
+
+protected:
+    void setCombiFormat(int start, int len, const QTextCharFormat& format, QList<TextMark*> marks);
+
+private slots:
+    void docBlockCountChanged(int newCount);
+    void docContentsChange(int from, int removed, int added);
+
+protected:
+    TextMarkList* mMarks;
+
+private:
+    FileContext* mContext = nullptr;
+    QTextBlock mTestBlock;
+
+};
+
+class SyntaxHighlighter : public ErrorHighlighter
+{
+    Q_OBJECT
+public:
+    SyntaxHighlighter(FileContext *context, TextMarkList *marks);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

@@ -16,9 +16,11 @@ public:
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
     void clearLog();
+    bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void clearRecentMarks();
+    void setJumpToLogEnd(bool state);
 
 protected:
     friend class FileRepository;

@@ -24,7 +24,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.tableView->setSortingEnabled(true);
     ui.tableView->horizontalHeader()->setSortIndicatorShown(true);
     ui.tableView->horizontalHeader()->setSectionsClickable(true);
-    ui.tableView->horizontalHeader()->setSectionsMovable(true);
 
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
@@ -174,15 +173,13 @@ void GdxViewer::refreshView()
     }
     ui.cbSqueezeDefaults->setChecked(selected->squeezeDefaults());
     ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
-    mGdxSymbolHeaderViewState = ui.tableView->horizontalHeader()->saveState();
 }
 
 void GdxViewer::resetSortFilter()
 {
     GdxSymbol* selected = selectedSymbol();
     selected->resetSortFilter();
-    ui.tableView->horizontalHeader()->restoreState(mGdxSymbolHeaderViewState);
-    //ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
+    ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
 }
 
 void GdxViewer::showColumnFilter(QPoint p)

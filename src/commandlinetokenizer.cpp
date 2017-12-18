@@ -8,8 +8,6 @@ CommandLineTokenizer::CommandLineTokenizer()
 {
     gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
 
-//    gamsOption->dumpAll();
-
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
     mInvalidKeyFormat.setForeground(Qt::red);
@@ -30,122 +28,42 @@ CommandLineTokenizer::~CommandLineTokenizer()
 
 QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
 {
-
-    int offset = 0;
-    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-        offset++;
-    }
     QList<OptionItem> commandLineList;
-
     if (!commandLineStr.isEmpty()) {
-        QString str  = commandLineStr.mid(offset);
-        QStringList paramList = str.split(QRegExp("\\s+"));
 
-        QStringList::const_iterator it = paramList.cbegin();
-        while(it != paramList.cend()) {
-            QString param = *it;
-            QString key;
-            QString value;
-            int kpos = -1;
-            int vpos = -1;
-            if (param.contains("=")) {  // eg. param starts with "a=" or "=c" or "gdx=x" or "gdx=x=x.gdx"
-                QStringList entry = param.split(QRegExp("="));
-                key = entry.at(0);
-                kpos = offset;
-                offset += key.size();
-                if (entry.size() > 2) { // param starts with "a=="
-                    ++offset;
-                    vpos = offset;
-                    value = commandLineStr.mid(offset++, 1);
-                    while(!commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                        value += commandLineStr.mid(offset++, 1);
-                    }
-                } else { // param starts with "a="
-                    ++offset;  // move over "="
-                    if (entry.at(1).isEmpty()) { // param starts with "a= =" or "a= c"
-                        while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                            offset++;
-                        }
-                        ++it;
-                        if (it == paramList.cend()) {
-                            commandLineList.append(OptionItem(key, value, kpos, vpos));
-                            break;
-                        }
-                        value = *it;
-                        vpos = offset;
-                        offset += value.size();
-                    } else { // param starts with a=c
-                        vpos = offset;
-                        value = entry.at(1);
-                        offset += value.size();
-                    }
-                    while(!commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                        offset++;
-                    }
-               }
-             } else { // eg. param starts with "a =" or "a x" or "a ==" or "a = x" or "a = ="
-                while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                    offset++;
-                }
-                if (commandLineStr.midRef(offset).startsWith("=")) {
-                    ++offset;
-                }
-                while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                    offset++;
-                }
-                key = param;
-                kpos = offset;
-                offset += key.size();
-                ++it;
-                if (it == paramList.cend()) {
-                   commandLineList.append(OptionItem(key, value, kpos, vpos));
-                   while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                        ++offset;
-                  }
-                   break;
-                } else {
-                    value = *it;
-                    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                        offset++;
-                    }
-                    if (commandLineStr.midRef(offset).startsWith("=")) {
-                        ++offset;
-                    }
-                    while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                        offset++;
-                    }
-                    vpos=offset;
-                    offset += value.size();
+        int offset = 0;
+        int length = commandLineStr.length();
+        QStringRef str = commandLineStr.midRef(0);
+        offsetWhiteSpaces(str, offset, length);
+        while( offset < commandLineStr.length() ) {
+            QString key = "";
+            QString value = "";
+            int keyPosition = -1;
+            int valuePosition = -1;
 
-                    if (value.startsWith("=")) {  // e.g. ("=","=x","x=x.gdx","=x=x.gdx") in  ("gdx = x","gdx =x", "gdx = x=x.gdx", "gdx =x=x.gdx");
-                       value = value.mid(1);
-                       --offset;
-                       if (value.isEmpty()) {
-                           vpos=offset;
-                           ++it;
-                           if (it == paramList.cend()) {
-                               commandLineList.append(OptionItem(key, value, kpos, vpos));
-                               break;
-                           }
-                           while(commandLineStr.midRef(offset).startsWith(" ")  && (offset< commandLineStr.length())) {
-                               ++offset;
-                           }
+            offsetKey(str, key, keyPosition, offset, length);
+            if (offset >= commandLineStr.length()) {
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
+                break;
+            }
 
-                           value = *it;
-                           offset += value.size();
-                       }
-                   }
-                }
-             }
-             commandLineList.append(OptionItem(key, value, kpos, vpos));
-             if (it != paramList.cend()) {
-                ++it;
-                while(commandLineStr.midRef(offset).startsWith(" ") && (offset< commandLineStr.length())) {
-                     ++offset;
-                }
-             }
-        }  // end while
+            offsetAssignment(str, offset, length);
+            if (offset >= commandLineStr.length()) {
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
+                break;
+            }
+
+            offsetValue(str, value, valuePosition, offset, length);
+
+            commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
+
+            offsetWhiteSpaces(str, offset, length);
+            if (offset >= commandLineStr.length()) {
+                break;
+            }
+        }
     }
+
     return commandLineList;
 }
 
@@ -156,14 +74,16 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         return optionErrorList;
 
     for (OptionItem item : items) {
-        if (item.key.startsWith("--")) // ignore "--" parameter
+        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+            if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
+                QTextLayout::FormatRange fr;
+                fr.start = item.keyPosition;
+                fr.length = item.key.length();
+                fr.format = mInvalidKeyFormat;
+                optionErrorList.append(OptionError(fr, item.key.mid(2) + QString(" (Option keyword expected)")) );
+            }
             continue;
-        else if (item.key.startsWith("-/")) // ignore "-/" parameter
-                continue;
-        else if (item.key.startsWith("/-")) // ignore "/-" parameter
-                continue;
-        else if (item.key.startsWith("//")) // ignore "//" parameter
-                continue;
+        }
 
         QString key = item.key;
         if (key.startsWith("-"))
@@ -196,20 +116,32 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                    fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
                 fr.format = mDeprecateOptionFormat;
                 optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
-            } else { // neither invalid nor deprecated
+            } else { // neither invalid nor deprecated key
 
                 QString keyStr = key;
                 if (!gamsOption->isValid(key))
                     key = gamsOption->getSynonym(key);
 
-                if (gamsOption->getValueList(key).size() > 0) {
+                QString value = item.value;
+                if (item.value.startsWith("\"") && item.value.endsWith("\"")) { // peel off double quote
+                    value = item.value.mid(1, item.value.length()-2);
+                }  else if (item.value.contains("\"")) { // badly double quoted
+                    QTextLayout::FormatRange fr;
+                    fr.start = item.valuePosition;
+                    fr.length = item.value.length();
+                    fr.format = mInvalidValueFormat;
+                    optionErrorList.append(OptionError(fr, QString("%1 (value error, bad double quoted value)").arg(item.value) ));
+                    continue;
+                }
+
+                if (gamsOption->getValueList(key).size() > 0) { // enum type
 
                     bool foundError = true;
                     int n = -1;
                     bool isCorrectDataType = false;
                     switch (gamsOption->getOptionType(key)) {
                     case optTypeEnumInt :
-                       n = item.value.toInt(&isCorrectDataType);
+                       n = value.toInt(&isCorrectDataType);
                        if (isCorrectDataType) {
                          for (OptionValue optValue: gamsOption->getValueList(key)) {
                             if (optValue.value.toInt() == n) { // && !optValue.hidden) {
@@ -221,7 +153,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                        break;
                     case optTypeEnumStr :
                        for (OptionValue optValue: gamsOption->getValueList(key)) {
-                           if (QString::compare(optValue.value.toString(), item.value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
+                           if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
                                foundError = false;
                                break;
                            }
@@ -236,7 +168,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                        fr.start = item.valuePosition;
                        fr.length = item.value.length();
                        fr.format = mInvalidValueFormat;
-                       QString errorMessage = item.value + " (unknown value for option \""+keyStr+"\")";
+                       QString errorMessage = value + " (unknown value for option \""+keyStr+"\")";
                        if (gamsOption->getValueList(key).size() > 0) {
                           errorMessage += ", Possible values are ";
                           for (OptionValue optValue: gamsOption->getValueList(key)) {
@@ -252,11 +184,11 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
 
                     bool foundError = false;
                     bool isCorrectDataType = false;
-                    QString errorMessage = item.value + " (value error ";
+                    QString errorMessage = value + " (value error ";
                     switch(gamsOption->getOptionType(key)) {
                      case optTypeInteger:
                         int n;
-                         n = item.value.toInt(&isCorrectDataType);
+                         n = value.toInt(&isCorrectDataType);
                          if (isCorrectDataType) {
                             if ((n < gamsOption->getLowerBound(key).toInt()) ||
                                 (gamsOption->getUpperBound(key).toInt() < n)) {
@@ -270,7 +202,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                          break;
                      case optTypeDouble:
                          double d;
-                         d = item.value.toDouble(&isCorrectDataType);
+                         d = value.toDouble(&isCorrectDataType);
                          if (isCorrectDataType) {
                             if ((d < gamsOption->getLowerBound(key).toDouble()) ||
                                 (gamsOption->getUpperBound(key).toDouble() < d)) {
@@ -299,6 +231,75 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         } // if (key.isEmpty()) { } else {
     } // for (OptionItem item : items)
     return optionErrorList;
+}
+
+void CommandLineTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const int length)
+{
+    while( str.mid(offset).startsWith(" ") && (offset < length) ) {
+           ++offset;
+    }
+}
+
+void CommandLineTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, int &offset, const int length)
+{
+    while( offset < length ) {
+        if  (str.mid(offset).startsWith(" ") || str.mid(offset).startsWith("="))
+            break;
+        if (keyPosition == -1)
+            keyPosition = offset;
+        key += str.mid(offset, 1);
+        ++offset;
+    }
+}
+
+void CommandLineTokenizer::offsetAssignment(QStringRef str, int &offset, const int length)
+{
+    bool seenAssignmentOperator = false;
+    while( (offset < length) &&
+           (str.mid(offset).startsWith(" ") || str.mid(offset).startsWith("="))
+         )
+    {
+        if (str.mid(offset).startsWith("=")) {
+            if (!seenAssignmentOperator)
+               seenAssignmentOperator = true;
+            else
+                break;
+        }
+        ++offset;
+    }
+}
+
+void CommandLineTokenizer::offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length)
+{
+    bool startedWithDoubleQuote = false;
+    bool seenCompleteDoubleQuotation = false;
+    if (offset < length &&  str.mid(offset).startsWith("\"") ) {
+        startedWithDoubleQuote = true;
+        valuePosition = offset;
+        value += str.mid(offset, 1);
+        ++offset;
+    }
+    while( offset < length ) {
+
+        if (!startedWithDoubleQuote) {
+            if (str.mid(offset).startsWith(" ")) {
+               break;
+            }
+        } else { // start with double quote
+            if (seenCompleteDoubleQuotation && str.mid(offset).startsWith(" ")) {
+                break;
+            } else  { // seen only first double quote so far or currently not a whitespace
+                if (str.mid(offset).startsWith("\"")) { // currently encounter a double quote
+                    seenCompleteDoubleQuotation = true;
+                }
+            }
+        }
+
+        if (valuePosition == -1)
+            valuePosition = offset;
+        value += str.mid(offset, 1);
+        ++offset;
+    }
 }
 
 QTextCharFormat CommandLineTokenizer::invalidKeyFormat() const

@@ -1,6 +1,7 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "filegroupcontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -11,6 +12,7 @@ LogContext::LogContext(int id, QString name)
     mDocument = new QTextDocument(this);
     mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
     mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
 }
 
 void LogContext::clearLog()
@@ -73,9 +75,7 @@ void LogContext::setParentEntry(FileGroupContext* parent)
 
 TextMark*LogContext::firstErrorMark()
 {
-    for (TextMark* mark: mTextMarks)
-        if (mark->isErrorRef()) return mark;
-    return nullptr;
+    return mMarks.firstErrorMark();
 }
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
@@ -100,10 +100,10 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             QList<int> scrollVal;
             QList<QTextCursor> cursors;
             for (QPlainTextEdit* ed: editors()) {
-                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1){
+                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                     scrollVal << 0;
                     cursors << QTextCursor();
-                } else{
+                } else {
                     scrollVal << ed->verticalScrollBar()->value();
                     cursors << ed->textCursor();
                 }
@@ -116,13 +116,14 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
                 int size = (mark.size<=0) ? newLine.length()-mark.col : mark.size;
                 TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.first, line, mark.col, size);
                 tm->setRefMark(mark.textMark);
+                if (mark.textMark) mark.textMark->rehighlight();
+                tm->rehighlight();
             }
+
             int i = 0;
             for (QPlainTextEdit* ed: editors()) {
-                if (scrollVal[i] > 0) {
-                    ed->verticalScrollBar()->setValue(scrollVal[i]);
-                    ed->setTextCursor(cursors[i]);
-                } else {
+                if (mJumpToLogEnd || scrollVal[i] == 0) {
+                    mJumpToLogEnd = false;
                     ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
                 }
                 ++i;
@@ -258,6 +259,11 @@ void LogContext::clearRecentMarks()
         fc->removeTextMarks(TextMark::all);
     }
     removeTextMarks(TextMark::all);
+}
+
+void LogContext::setJumpToLogEnd(bool state)
+{
+    mJumpToLogEnd = state;
 }
 
 } // namespace studio

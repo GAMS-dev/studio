@@ -41,6 +41,10 @@ private:
 
     Option* gamsOption;
 
+    void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
+    void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
+    void offsetAssignment(QStringRef str, int &offset, const int length);
+    void offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length);
 };
 
 } // namespace studio

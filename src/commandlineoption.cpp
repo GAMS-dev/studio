@@ -35,6 +35,7 @@ void CommandLineOption::validateChangedOption(const QString &text)
 {
     mCurrentOption = text.simplified();
 
+    this->lineEdit()->setToolTip("");
     if (mCurrentOption.isEmpty())
         return;
 

@@ -32,7 +32,6 @@ GdxSymbolHeaderView::~GdxSymbolHeaderView()
 
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
-    qDebug() << "paint";
     GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
 
     QTableView* tv = static_cast<QTableView*>(this->parent());

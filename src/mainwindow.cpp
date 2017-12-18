@@ -46,14 +46,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
 
+    int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(16,16));
-    ui->mainToolBar->setIconSize(QSize(21,21));
+    ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
+    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
     ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -131,10 +132,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             fc->load(codecName);
-            if (fc->metrics().fileType() == FileType::Gms
-                || fc->metrics().fileType() == FileType::Txt) {
-                fc->setSyntaxHighlight(true);
-            }
 
             if (fc->metrics().fileType() == FileType::Log ||
                     fc->metrics().fileType() == FileType::Lst ||
@@ -769,6 +766,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             QPlainTextEdit* logEdit = new QPlainTextEdit();
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
+            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -874,7 +872,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 
 void MainWindow::execute(QString commandLineStr)
 {
-    // TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
     if (!fgc)
@@ -909,6 +906,7 @@ void MainWindow::execute(QString commandLineStr)
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+        logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     } else {
@@ -921,6 +919,7 @@ void MainWindow::execute(QString commandLineStr)
         logProc->clearLog();
     }
 
+
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
@@ -928,6 +927,7 @@ void MainWindow::execute(QString commandLineStr)
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
+    logProc->setJumpToLogEnd(true);
     GamsProcess* process = fgc->newGamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
@@ -953,7 +953,11 @@ void MainWindow::on_runWithChangedOptions()
 void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
+
+    if (mCommandLineOption->getCurrentOption() != "")
+        execute(mCommandLineOption->getCurrentOption().append(" ").append(parameter));
+    else
+        execute(parameter);
 }
 
 void MainWindow::on_commandLineHelpTriggered()
@@ -1005,6 +1009,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
     } else {
         createEdit(tabWidget, focus, fileContext->id());
     }
+    fileContext->updateMarks();
     if (tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {

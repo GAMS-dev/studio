@@ -43,8 +43,10 @@ void TextMark::updateCursor()
         QTextBlock block = mFileContext->document()->findBlockByNumber(mLine);
         mCursor = QTextCursor(block);
         if (mSize <= 0) {
-//            mCursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
-            mCursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            int end = block.next().text().indexOf('$')+1;
+            if (end == 0) end = block.next().length();
+            if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end);
+            mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
         } else {
             mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mSize);
@@ -52,11 +54,6 @@ void TextMark::updateCursor()
     } else {
         mCursor = QTextCursor();
     }
-}
-
-void TextMark::setRefMark(TextMark* refMark)
-{
-    mReference = refMark;
 }
 
 void TextMark::jumpToRefMark(bool focus)
@@ -68,16 +65,20 @@ void TextMark::jumpToRefMark(bool focus)
 void TextMark::jumpToMark(bool focus)
 {
     if (mFileContext) {
-        if (mCursor.isNull())
-            emit mFileContext->openFileContext(mFileContext, focus);
-        else
+        if (mCursor.isNull()) {
+            if (mFileContext->metrics().fileType() == FileType::Gdx)
+                mFileContext->openFileContext(mFileContext, focus);
+            else
+                mFileContext->jumpTo(mCursor, focus, mLine, mColumn);
+        } else {
             mFileContext->jumpTo(mCursor, focus);
+        }
     }
 }
 
-bool TextMark::isErrorRef()
+void TextMark::setRefMark(TextMark* refMark)
 {
-    return mReference && mReference->type() == error;
+    mReference = refMark;
 }
 
 void TextMark::showToolTip()
@@ -107,34 +108,11 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-TextMark::Type TextMark::type() const
-{
-    return mType;
-}
-
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {
-    if (shape && ((mType == error && inIconRegion) || mType == link)) {
+    if (shape && ((mType == error && inIconRegion) || mType == link))
         *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
-    }
     return *shape;
-}
-
-bool TextMark::isValid()
-{
-    return mFileContext && (mLine>=0) && (mColumn>=0);
-}
-
-bool TextMark::isValidLink(bool inIconRegion)
-{
-    return mReference && ((mType == error && inIconRegion) || mType == link);
-}
-
-int TextMark::line() const
-{
-    if (mCursor.isNull())
-        return mLine;
-    return mCursor.block().blockNumber();
 }
 
 QTextBlock TextMark::textBlock()
@@ -149,19 +127,23 @@ QTextCursor TextMark::textCursor() const
     return mCursor;
 }
 
-int TextMark::column() const
+void TextMark::rehighlight()
 {
-    return mColumn;
+    if (mFileContext) mFileContext->rehighlightAt(position());
 }
 
-int TextMark::size() const
+void TextMark::modified()
 {
-    return mSize;
+    mSize = 0;
+    mColumn = 0;
+    mCursor.setPosition(mCursor.position());
+    rehighlight();
 }
 
-bool TextMark::inColumn(int col) const
+QString TextMark::dump()
 {
-    return !mSize || (col >= mColumn && col < (mColumn+mSize));
+    return QString("Line %1 [c%2 l%3]  (in type %7)").arg(line()).arg(column()).arg(size())
+            .arg(mFileContext->type());
 }
 
 int TextMark::value() const
