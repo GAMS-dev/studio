@@ -17,7 +17,6 @@ public:
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block);
-    QList<TextMark*> marksForLstLine(int line);
     QList<TextMark*> marks() { return mTextMarks;}
 
 public slots:

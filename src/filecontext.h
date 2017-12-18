@@ -118,8 +118,7 @@ public:
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const QList<TextMark*> marks); // TODO(JM) deprecated: use lst-line
-    void showToolTip(int lstLine);
+    void showToolTip(const QList<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void updateMarks();
@@ -137,8 +136,6 @@ signals:
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void createErrorHint(const int errCode, const QString &errText);
-    void requestErrorHint(const int errCode, QString &errText);
     void openFileContext(FileContext* fileContext, bool focus = true);
 
 protected slots:

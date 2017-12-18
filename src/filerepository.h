@@ -147,8 +147,6 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
-    void setErrorHint(const int errCode, const QString& hint);
-    void getErrorHint(const int errCode, QString& hint);
 
 private:
     void updateActions();
@@ -160,7 +158,6 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
-    QHash<int, QString> mErrorHints;
 };
 
 } // namespace studio

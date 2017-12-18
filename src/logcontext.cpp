@@ -98,7 +98,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         QString newLine = extractError(line, state, marks);
         // TODO(JM) cleanup usage of createErrorHint
         if (state >= FileContext::Exiting)
-            parentEntry()->setLstErrorText(mCurrentErrorHint.first, mCurrentErrorHint.second);
+            parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
 //            emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
         if (state == FileContext::FollowupError)
             newLine = extractError(line, state, marks);
@@ -126,7 +126,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             cursor.insertText(newLine+"\n");
             for (LinkData mark: marks) {
                 int size = (mark.size<=0) ? newLine.length()-mark.col : mark.size;
-                TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.first, line, mark.col, size);
+                TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, line, mark.col, size);
                 tm->setRefMark(mark.textMark);
                 if (mark.textMark) mark.textMark->rehighlight();
                 tm->rehighlight();
@@ -161,18 +161,14 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
             TextMark* errMark = nullptr;
             bool errFound = false;
             for (QString part: parts) {
-//                bool ok;
+                bool ok;
                 QRegularExpressionMatch match = errRX1.match(part);
                 if (part.startsWith("***") || part.startsWith("---")) {
                     result += part;
-//                    int errNr = match.captured(2).toInt(&ok);
-//                    if (ok) {
-//                        mCurrentErrorHint.first = errNr;
-//                    } else {
-//                        mCurrentErrorHint.first = 0;
-//                    }
-                    mCurrentErrorHint.first = 0;
-                    mCurrentErrorHint.second = "";
+                    int errNr = match.captured(2).toInt(&ok);
+                    mCurrentErrorHint.errNr = ok ? errNr : 0;
+                    mCurrentErrorHint.lstLine = 0;
+                    mCurrentErrorHint.text = "";
 
                 } else if (part.startsWith("ERR")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(4));
@@ -182,14 +178,10 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     mark.col = result.indexOf(" ")+1;
                     result += " ";
                     mark.size = result.length() - mark.col - 1;
-//                    mark.col = result.length()+1;
-//                    result += QString("[ERR:%1]").arg(line+1);
-//                    mark.size = result.length() - mark.col - 1;
-
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.first, line, 0, col);
+                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
                     }
                     errMark = mark.textMark;
@@ -207,9 +199,9 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mCurrentErrorHint.first = lineNr;
+                        mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                             , mCurrentErrorHint.first, lineNr, 0, 0);
+                                                             , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                         mMarkedContextList << fc;
                         errFound = false;
                     } else {
@@ -218,7 +210,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         break;
                     }
                     if (errMark) {
-                        errMark->setValue(mCurrentErrorHint.first);
+                        errMark->setValue(mCurrentErrorHint.lstLine);
                         mark.textMark->setRefMark(errMark);
                         errMark->setRefMark(mark.textMark);
                     }
@@ -235,7 +227,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                             , mCurrentErrorHint.first, line, 0, col);
+                                                             , mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
                         errFound = false;
                     } else {
@@ -254,10 +246,13 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
     } else {
         if (line.startsWith(" ")) {
             // TODO(JM) get description from LST-file instead (-> there are more details)
-            if (mCurrentErrorHint.second.isEmpty())
-                mCurrentErrorHint.second += QString::number(mCurrentErrorHint.first)+'\t'+line.trimmed();
-            else
-                mCurrentErrorHint.second += "\n\t"+line.trimmed();
+            if (mCurrentErrorHint.text.isEmpty()) {
+                if (mCurrentErrorHint.errNr)
+                    mCurrentErrorHint.text += QString("%1\t").arg(mCurrentErrorHint.errNr)+line.trimmed();
+                else
+                    mCurrentErrorHint.text += '\t'+line.trimmed();
+            } else
+                mCurrentErrorHint.text += "\n\t"+line.trimmed();
             state = Inside;
             result += line;
         } else {

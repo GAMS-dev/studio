@@ -292,12 +292,6 @@ void FileContext::showToolTip(const QList<TextMark*> marks)
     }
 }
 
-void FileContext::showToolTip(int lstLine)
-{
-    if (!mEditors.size() || !parentEntry()->hasLstErrorText(lstLine)) return;
-    mMarks.marksForLstLine(lstLine);
-}
-
 void FileContext::rehighlightAt(int pos)
 {
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
