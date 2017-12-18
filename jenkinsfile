@@ -173,7 +173,7 @@ pipeline {
                     node('master') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh "scp -o "BatchMode yes" *studio*.AppImage ${ARTIFACT_TARGET}"
+                               sh "scp -o \\"BatchMode yes\\" *studio*.AppImage ${ARTIFACT_TARGET}"
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
