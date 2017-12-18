@@ -6,9 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
-    <height>70</height>
+    <width>520</width>
+    <height>101</height>
    </rect>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
   </property>
   <property name="frameShape">
    <enum>QFrame::StyledPanel</enum>
@@ -16,25 +19,50 @@
   <property name="frameShadow">
    <enum>QFrame::Sunken</enum>
   </property>
-  <widget class="QPushButton" name="button_Next">
+  <widget class="QPushButton" name="buttonFind">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>307</x>
      <y>7</y>
-     <width>70</width>
+     <width>100</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string>Next</string>
+    <string>Find Next</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonReplaceAll">
+   <property name="geometry">
+    <rect>
+     <x>413</x>
+     <y>40</y>
+     <width>100</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace All</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="default">
+    <bool>false</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>59</x>
      <y>7</y>
-     <width>250</width>
+     <width>241</width>
      <height>25</height>
     </rect>
    </property>
@@ -42,7 +70,7 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>8</x>
      <y>7</y>
      <width>65</width>
      <height>25</height>
@@ -52,12 +80,25 @@
     <string>Find:</string>
    </property>
   </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>8</x>
+     <y>40</y>
+     <width>65</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace:</string>
+   </property>
+  </widget>
   <widget class="QLineEdit" name="lineEdit_2">
    <property name="geometry">
     <rect>
-     <x>410</x>
-     <y>7</y>
-     <width>250</width>
+     <x>59</x>
+     <y>40</y>
+     <width>241</width>
      <height>25</height>
     </rect>
    </property>
@@ -65,14 +106,27 @@
   <widget class="QPushButton" name="buttonFindAll">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>40</y>
-     <width>141</width>
+     <x>413</x>
+     <y>7</y>
+     <width>100</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string>Apply to all</string>
+    <string>Find All</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonReplace">
+   <property name="geometry">
+    <rect>
+     <x>307</x>
+     <y>40</y>
+     <width>100</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="cb_regex">
@@ -81,9 +135,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>171</width>
+     <x>23</x>
+     <y>70</y>
+     <width>181</width>
      <height>25</height>
     </rect>
    </property>
@@ -94,42 +148,26 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QCheckBox" name="cb_locationFilter">
+  <widget class="QComboBox" name="combo_locationFilter">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>40</y>
-     <width>191</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Search in</string>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="combo_locationFilter">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>40</y>
+     <x>397</x>
+     <y>70</y>
      <width>100</width>
      <height>25</height>
     </rect>
    </property>
    <item>
     <property name="text">
-     <string>Open Files</string>
+     <string>This File</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>This File</string>
+     <string>Open .gms Files</string>
     </property>
    </item>
    <item>
@@ -138,15 +176,15 @@
     </property>
    </item>
   </widget>
-  <widget class="QCheckBox" name="cb_regex_2">
+  <widget class="QCheckBox" name="cb_caseSens">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>40</y>
-     <width>121</width>
+     <x>204</x>
+     <y>70</y>
+     <width>131</width>
      <height>25</height>
     </rect>
    </property>
@@ -157,86 +195,21 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QCheckBox" name="cb_regex_3">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>490</x>
-     <y>40</y>
-     <width>210</width>
+     <x>337</x>
+     <y>70</y>
+     <width>56</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string>Filter</string>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_3">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>550</x>
-     <y>40</y>
-     <width>111</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>*.gms</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cb_replace">
-   <property name="geometry">
-    <rect>
-     <x>310</x>
-     <y>7</y>
-     <width>91</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Replace with:</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="button_Back">
-   <property name="geometry">
-    <rect>
-     <x>740</x>
-     <y>7</y>
-     <width>70</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Back</string>
+    <string>Search in</string>
    </property>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="9"/>
  <resources/>
  <connections/>
- <designerdata>
-  <property name="gridDeltaX">
-   <number>10</number>
-  </property>
-  <property name="gridDeltaY">
-   <number>10</number>
-  </property>
-  <property name="gridSnapX">
-   <bool>true</bool>
-  </property>
-  <property name="gridSnapY">
-   <bool>true</bool>
-  </property>
-  <property name="gridVisible">
-   <bool>true</bool>
-  </property>
- </designerdata>
 </ui>

@@ -1133,7 +1133,6 @@ void MainWindow::on_actionSearch_triggered()
     // create
     if (sw == nullptr) {
         sw = new SearchWidget(mRecent, this);
-        sw->setAutoFillBackground(true);
     }
 
     // toggle visibility
@@ -1142,7 +1141,7 @@ void MainWindow::on_actionSearch_triggered()
     } else {
         QPoint p(0,0);
         QPoint newP(ui->mainTab->currentWidget()->mapTo(this, p));
-        int offset = (ui->mainTab->currentWidget()->width() - sw->width()) / 2;
+        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
         sw->move(newP.x() + offset, newP.y());
         sw->show();
     }
