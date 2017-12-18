@@ -26,7 +26,6 @@ private:
     QLineEdit* searchLineEdit;
     QTreeView* optionDefintionTreeView;
 
-    void createOptionDefinitionWidget();
 };
 
 } // namespace studio
