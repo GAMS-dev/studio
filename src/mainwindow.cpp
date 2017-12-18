@@ -1132,18 +1132,17 @@ void MainWindow::on_actionSearch_triggered()
 {
     // create
     if (sw == nullptr) {
-        qDebug() << "sw created";
         sw = new SearchWidget(mRecent, this);
-        sw->setGeometry(100, 100, 520, 150);
         sw->setAutoFillBackground(true);
     }
 
     // toggle visibility
-    if (sw->isVisible())
+    if (sw->isVisible()) {
         sw->hide();
-    else
+    } else {
+        QWidget *tmp = ui->mainTab->currentWidget();
         sw->show();
-
+    }
 }
 
 }
