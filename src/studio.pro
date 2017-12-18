@@ -112,7 +112,8 @@ SOURCES += \
     syntax/syntaxformats.cpp \
     syntax/syntaxdeclaration.cpp \
     textmarklist.cpp \
-    syntax/syntaxvariable.cpp
+    syntax/syntaxvariable.cpp \
+    searchwidget.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -161,7 +162,9 @@ HEADERS += \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     textmarklist.h \
-    syntax/syntaxvariable.h
+    syntax/syntaxvariable.h \
+    searchwindow.h \
+    searchwidget.h
 
 FORMS += \
     welcomepage.ui  \
@@ -170,7 +173,8 @@ FORMS += \
     modeldialog/modeldialog.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    searchwidget.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

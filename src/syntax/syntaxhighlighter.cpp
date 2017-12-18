@@ -203,7 +203,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
     if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {
         setCurrentBlockState(code);
-        DEB() << "currentBlockState set to " << currentBlockState();
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }

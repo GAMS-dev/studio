@@ -125,6 +125,7 @@
      <addaction name="actionSystem_2"/>
     </widget>
     <addaction name="menuEncoding"/>
+    <addaction name="actionSearch"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -493,6 +494,14 @@
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>
+   </property>
+  </action>
+  <action name="actionSearch">
+   <property name="text">
+    <string>Search</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>

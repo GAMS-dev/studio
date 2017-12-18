@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -1125,6 +1126,12 @@ void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(mSettings, this);
     sd.exec();
+}
+
+void MainWindow::on_actionSearch_triggered()
+{
+    SearchWidget sw(mRecent, this);
+    sw.exec();
 }
 
 }
