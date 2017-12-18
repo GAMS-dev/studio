@@ -503,6 +503,12 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->jumpToError())
             groupContext->jumpToMark(doFocus);
 
+        FileContext* lstCtx = nullptr;
+        mFileRepo.findFile(lstFile, &lstCtx, groupContext);
+        if (lstCtx) {
+            lstCtx->updateMarks();
+        }
+
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
@@ -877,6 +883,8 @@ void MainWindow::execute(QString commandLineStr)
     if (!fgc)
         return;
 
+    fgc->clearLstErrorTexts();
+
     if (mSettings->autosaveOnRun())
         fc->save();
 
@@ -999,7 +1007,6 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
     } else {
         createEdit(tabWidget, focus, fileContext->id());
     }
-    fileContext->updateMarks();
     if (tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {

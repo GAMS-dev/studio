@@ -95,5 +95,16 @@ QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block)
     return marks;
 }
 
+QList<TextMark*> TextMarkList::marksForLstLine(int line)
+{
+    QList<TextMark *> marks;
+    for (TextMark* tm: mTextMarks) {
+        if (tm->value() == line) {
+            marks << tm;
+        }
+    }
+    return marks;
+}
+
 } // namespace source
 } // namespace gams

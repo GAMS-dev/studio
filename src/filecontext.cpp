@@ -149,7 +149,7 @@ void FileContext::addEditor(QPlainTextEdit* edit)
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
         if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
             mSyntaxHighlighter->setDocAndConnect(document());
-        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
+        QTimer::singleShot(50, this, &FileContext::updateMarks);
     } else {
         edit->setDocument(document());
     }
@@ -254,7 +254,7 @@ void FileContext::load(QString codecName)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
-//        QTimer::singleShot(50, &mMarks, &TextMarkList::updateMarks);
+        QTimer::singleShot(50, this, &FileContext::updateMarks);
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
@@ -287,22 +287,15 @@ void FileContext::showToolTip(const QList<TextMark*> marks)
         QTextCursor cursor(marks.first()->textCursor());
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
-        QStringList tips;
-        for (TextMark* mark: marks) {
-            QString tip;
-            emit requestErrorHint(mark->value(), tip);
-            tips << tip;
-        }
-        QToolTip::showText(edit->mapToGlobal(pos), tips.join("\n"), edit);
+        QString tip = parentEntry()->lstErrorText(marks.first()->value());
+        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
     }
 }
 
 void FileContext::showToolTip(int lstLine)
 {
-    if (mEditors.size()) {
-        FileGroupContext* group = parentEntry();
-
-    }
+    if (!mEditors.size() || !parentEntry()->hasLstErrorText(lstLine)) return;
+    mMarks.marksForLstLine(lstLine);
 }
 
 void FileContext::rehighlightAt(int pos)
@@ -312,21 +305,34 @@ void FileContext::rehighlightAt(int pos)
 
 void FileContext::updateMarks()
 {
+    // TODO(JM) Perform a large-file-test if this should have an own thread
     mMarks.updateMarks();
+    if (mMarksEnhanced) return;
+    QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
     if (mMetrics.fileType() == FileType::Lst && document()) {
-        parentEntry()->clearLstErrorTexts();
         for (TextMark* mark: mMarks.marks()) {
-            // TODO(JM) parse lst-file for each line
-            int line = mark->line();
-            if (parentEntry()->hasLstErrorText(line)) continue;
-            QTextBlock block = document()->findBlockByNumber(line).next();
+            QList<int> errNrs;
+            int lineNr = mark->line();
+            QTextBlock block = document()->findBlockByNumber(lineNr).next();
             QStringList errText;
             while (block.isValid()) {
-                if (!block.text().startsWith("****")) break;
-//                errText <<
+                QRegularExpressionMatch match = rex.match(block.text());
+                if (!match.hasMatch()) break;
+                if (match.capturedLength(3)) { // first line with error numbers and indent
+                    for (QString nrText: match.captured(3).split(",")) errNrs << nrText.toInt();
+                    if (match.capturedLength(4)) errText << match.captured(4);
+                } else if (match.capturedLength(5)) { // line with error number and description
+                    errText << match.captured(5)+"\t"+match.captured(6);
+                } else if (match.capturedLength(7)) { // indented follow-up line for error description
+                    errText << "\t"+match.captured(7);
+                } else if (match.capturedLength(8)) { // non-indented line for additional error description
+                    errText << match.captured(8);
+                }
                 block = block.next();
             }
+            parentEntry()->setLstErrorText(lineNr, errText.join("\n"));
         }
+        mMarksEnhanced = true;
     }
 }
 

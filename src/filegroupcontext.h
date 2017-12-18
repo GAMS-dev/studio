@@ -63,7 +63,7 @@ public:
     void jumpToMark(bool focus);
 
     QString lstErrorText(int line);
-    void addLstErrorText(int line, QString text);
+    void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
 

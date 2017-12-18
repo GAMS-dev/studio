@@ -177,7 +177,7 @@ QString FileGroupContext::lstErrorText(int line)
     return mLstErrorTexts.value(line);
 }
 
-void FileGroupContext::addLstErrorText(int line, QString text)
+void FileGroupContext::setLstErrorText(int line, QString text)
 {
     mLstErrorTexts.insert(line, text);
 }
@@ -185,6 +185,11 @@ void FileGroupContext::addLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
+    FileSystemContext *fsc = findFile(lstFileName());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        fc->clearMarksEnhanced();
+    }
 }
 
 bool FileGroupContext::hasLstErrorText(int line)

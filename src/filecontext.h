@@ -123,6 +123,7 @@ public:
 
     void rehighlightAt(int pos);
     void updateMarks();
+    inline void clearMarksEnhanced() {mMarksEnhanced = false;}
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -168,6 +169,7 @@ private:
     QPoint mClickPos;
     TextMarkList mMarks;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
+    bool mMarksEnhanced = true;
 
     static const QStringList mDefaulsCodecs;
 
