@@ -21,14 +21,13 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "filerepository.h"
 #include "codeeditor.h"
-#include "commandlinehistory.h"
-#include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
+#include "option/commandlinehistory.h"
+#include "option/commandlineoption.h"
+#include "option/optionconfigurator.h"
 #include "projectcontextmenu.h"
-#include "optionconfigurator.h"
 
 namespace Ui {
 class MainWindow;

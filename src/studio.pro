@@ -93,9 +93,6 @@ SOURCES += \
     gamspaths.cpp \
     filetreemodel.cpp \
     textmark.cpp \
-    commandlinehistory.cpp \
-    commandlineoption.cpp \
-    commandlinetokenizer.cpp \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
@@ -106,14 +103,17 @@ SOURCES += \
     application.cpp \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    option.cpp \
-    optionconfigurator.cpp \
     syntax.h \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxdeclaration.cpp \
     textmarklist.cpp \
-    syntax/syntaxvariable.cpp
+    syntax/syntaxvariable.cpp \
+    option/option.cpp \
+    option/optionconfigurator.cpp \
+    option/commandlinehistory.cpp \
+    option/commandlineoption.cpp \
+    option/commandlinetokenizer.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -144,9 +144,6 @@ HEADERS += \
     gamspaths.h \
     filetreemodel.h \
     textmark.h \
-    commandlinehistory.h \
-    commandlineoption.h \
-    commandlinetokenizer.h \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
@@ -157,13 +154,16 @@ HEADERS += \
     application.h \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolheaderview.h \
-    option.h \
-    optionconfigurator.h \
     syntax/syntaxhighlighter.h \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     textmarklist.h \
-    syntax/syntaxvariable.h
+    syntax/syntaxvariable.h \
+    option/option.h \
+    option/optionconfigurator.h \
+    option/commandlinehistory.h \
+    option/commandlinetokenizer.h \
+    option/commandlineoption.h
 
 FORMS += \
     welcomepage.ui  \
