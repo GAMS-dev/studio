@@ -186,7 +186,7 @@ pipeline {
                             if (env.BRANCH_NAME=='develop') {
                                 bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}'
                             }
-                            if (env.BRANCH_NAME=='master'} {
+                            if (env.BRANCH_NAME=='master') {
                                 bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}'
                             }
                         }
