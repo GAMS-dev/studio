@@ -23,10 +23,10 @@ pipeline {
                         checkout scm
                         bat '''
                             echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
+                            set PATH=C:\\Qt\\5.9.3\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
                             qmake studio.pro
-                            make
+                            mingw32-make
                         '''
                     }
                 },
@@ -37,11 +37,9 @@ pipeline {
                         bat 'set'
                         bat '''
                             @echo off
-                            echo Setting up environment for Qt usage...
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;%PATH%
                             echo Setting up environment for VS2014 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC"
-                            call vcvarsall.bat amd64
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            call vcvars64.bat
                             set
                             cd %WORKSPACE%\\src
                             qmake studio.pro "CONFIG+=release"
@@ -109,9 +107,9 @@ pipeline {
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x86_64.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
                             } else {
-                                sh "mv GAMS_Studio-x86_64.AppImage studio-x86_64.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
                         }
                         archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
@@ -120,35 +118,33 @@ pipeline {
                 windowsX86: {
                     node('windowsX86') {
                         bat """
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            if not "${env.BRANCH_NAME}"=="master" (
-                                7z a -r ${env.BRANCH_NAME}-studio-x86.zip *
-                            ) else (
-                                7z a -r studio-x86.zip *
-                            )
                         """
-                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
+                            } else {
+                                zip zipFile: 'studio-x86.zip', archive: true, dir: 'src/bin'
+                            }
+                        }
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
                         bat """
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.1\\msvc2015_64\\bin;"C:\\Program Files\\7-Zip";%PATH%
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
                             del *.zip
-                            if not "${env.BRANCH_NAME}"=="master" (
-                                7z a -r ${env.BRANCH_NAME}-studio-x64.zip *
-                            ) else (
-                                7z a -r studio-x64.zip *
-                            )
                         """
-                        archiveArtifacts artifacts: '**/*.zip', fingerprint: true
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'
+                            } else {
+                                zip zipFile: 'studio-x64.zip', archive: true, dir: 'src/bin'
+                            }
+                        }
                     }
                 },
                 macos: {
@@ -177,7 +173,7 @@ pipeline {
                     node('master') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp -o "BatchMode yes" *studio*.AppImage distrib@buildmeister.gams.com:./builds-page/ide'
+                               sh 'scp -o "BatchMode yes" *studio*.AppImage ${ARTIFACT_TARGET}'
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
@@ -186,41 +182,33 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat """
-                            echo 'Setting up environment for putty usage...'
-                            set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            set res=F
-                            if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
-                            )
-                            if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\studio-x86.zip distrib@buildmeister.gams.com:./builds-page/ide
-                            )
-                        """
+                        script {
+                            if (env.BRANCH_NAME=='develop') {
+                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}'
+                            }
+                            if (env.BRANCH_NAME=='master') {
+                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}'
+                            }
+                        }
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat """
-                            echo 'Setting up environment for putty usage...'
-                            set PATH=C:\\Users\\Alex\\Tools\\putty;%PATH%
-                            set res=F
-                            if "${env.BRANCH_NAME}"=="develop" set res=T
-                            if "${env.BRANCH_NAME}"=="master" set res=T
-                            if "${env.BRANCH_NAME}"=="develop" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
-                            )
-                            if "${env.BRANCH_NAME}"=="master" (
-                                pscp -i C:\\Users\\Alex\\Tools\\putty\\jwindeploy.ppk -hostkey 3e:2d:02:0c:74:70:42:f1:3f:0f:9c:4e:5f:ae:d7:9d -batch src\\bin\\studio-x64.zip distrib@buildmeister.gams.com:./builds-page/ide
-                            )
-                        """
+                        script {
+                            if (env.BRANCH_NAME=='develop') {
+                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}'
+                            }
+                            if (env.BRANCH_NAME=='master') {
+                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x64.zip ${ARTIFACT_TARGET}'
+                            }
+                        }
                     }
                 },
                 macos: {
                     node('macos') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp *.dmg distrib@buildmeister.gams.com:./builds-page/ide'
+                                sh 'scp *.dmg ${ARTIFACT_TARGET}'
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
