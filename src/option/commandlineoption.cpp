@@ -4,16 +4,14 @@
 namespace gams {
 namespace studio {
 
-CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
-    QComboBox(parent), mValidated(validateFlag)
+CommandLineOption::CommandLineOption(bool validateFlag, CommandLineTokenizer* tokenizer, QWidget* parent) :
+    QComboBox(parent), mValidated(validateFlag), mCommandLineTokenizer(tokenizer)
 {
     this->setDisabled(true);
     this->setEditable(true);
     this->setCurrentIndex(-1);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->setInsertPolicy(QComboBox::InsertAtTop);
-
-    mCommandLineTokenizer = new CommandLineTokenizer;
 
     connect(this, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &CommandLineOption::updateCurrentOption );

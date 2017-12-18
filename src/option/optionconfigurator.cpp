@@ -1,16 +1,23 @@
 #include "optionconfigurator.h"
+#include "optionparametermodel.h"
 
 namespace gams {
 namespace studio {
 
-OptionConfigurator::OptionConfigurator(QString label, QLineEdit* lineEditText, QWidget *parent):
+OptionConfigurator::OptionConfigurator(const QString& label, const QString& lineEditText, CommandLineTokenizer* tokenizer, QWidget *parent):
      QFrame(parent)
 {
     ui.setupUi(this);
     ui.fileLabel->setText( label );
-    ui.commandLineEdit->setText( lineEditText->text() );
+    ui.commandLineEdit->setText( lineEditText );
     ui.commandLineEdit->setReadOnly( true );
     ui.showOptionDefintionCheckBox->setChecked(true);
+
+    ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui.commandLineTableView->setAutoScroll(true);
+    ui.commandLineTableView->setModel( new OptionParameterModel(lineEditText, tokenizer,  this) );
+
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
 }
 

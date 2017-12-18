@@ -12,7 +12,7 @@ class OptionConfigurator : public QFrame
 {
     Q_OBJECT
 public:
-    OptionConfigurator(QString label, QLineEdit* lineEditText, QWidget *parent);
+    OptionConfigurator(const QString& label, const QString& lineEditText, CommandLineTokenizer* tokenizer, QWidget *parent);
     ~OptionConfigurator();
 
 signals:

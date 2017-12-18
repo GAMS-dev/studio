@@ -623,6 +623,8 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
+    mCommandLineTokenizer = new CommandLineTokenizer;
+
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
     runMenu->addAction(ui->actionRun_with_GDX_Creation);
@@ -636,7 +638,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setDefaultAction(ui->actionRun);
     ui->mainToolBar->addWidget(runToolButton);
 
-    mCommandLineOption = new CommandLineOption(true, this);
+    mCommandLineOption = new CommandLineOption(true, mCommandLineTokenizer, this);
     mCommandLineHistory = new CommandLineHistory(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 
@@ -971,7 +973,8 @@ void MainWindow::on_commandLineHelpTriggered()
         return;
 
 
-    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit(), this), QString("Run - %1").arg(fc->caption()) );
+    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
+                                   QString("Run - %1").arg(fc->caption()) );
     ui->mainTab->setCurrentIndex(idx);
 
 }

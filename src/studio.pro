@@ -113,7 +113,8 @@ SOURCES += \
     option/optionconfigurator.cpp \
     option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
-    option/commandlinetokenizer.cpp
+    option/commandlinetokenizer.cpp \
+    option/optionparametermodel.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -163,7 +164,8 @@ HEADERS += \
     option/optionconfigurator.h \
     option/commandlinehistory.h \
     option/commandlinetokenizer.h \
-    option/commandlineoption.h
+    option/commandlineoption.h \
+    option/optionparametermodel.h
 
 FORMS += \
     welcomepage.ui  \

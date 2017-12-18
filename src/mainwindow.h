@@ -162,6 +162,7 @@ private:
     Ui::MainWindow *ui;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
+    CommandLineTokenizer* mCommandLineTokenizer;
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroup;

@@ -13,7 +13,7 @@ class CommandLineOption : public QComboBox
     Q_OBJECT
 
 public:
-    CommandLineOption(bool validateFlag, QWidget* parent);
+    CommandLineOption(bool validateFlag, CommandLineTokenizer* tokenizer, QWidget* parent);
     ~CommandLineOption();
 
     QString getCurrentOption() const;
