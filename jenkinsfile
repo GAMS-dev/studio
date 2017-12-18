@@ -173,7 +173,7 @@ pipeline {
                     node('master') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp -o "BatchMode yes" *studio*.AppImage ${ARTIFACT_TARGET}'
+                               sh "scp -o "BatchMode yes" *studio*.AppImage ${ARTIFACT_TARGET}"
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
@@ -184,10 +184,10 @@ pipeline {
                     node('windowsX86') {
                         script {
                             if (env.BRANCH_NAME=='develop') {
-                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}'
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}"
                             }
                             if (env.BRANCH_NAME=='master') {
-                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}'
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
@@ -196,10 +196,10 @@ pipeline {
                     node('windowsX64') {
                         script {
                             if (env.BRANCH_NAME=='develop') {
-                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}'
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}"
                             }
                             if (env.BRANCH_NAME=='master') {
-                                bat 'pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x64.zip ${ARTIFACT_TARGET}'
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x64.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
@@ -208,7 +208,7 @@ pipeline {
                     node('macos') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                                sh 'scp *.dmg ${ARTIFACT_TARGET}'
+                                sh "scp *.dmg ${ARTIFACT_TARGET}"
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
