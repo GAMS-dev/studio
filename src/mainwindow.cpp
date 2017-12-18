@@ -1140,7 +1140,10 @@ void MainWindow::on_actionSearch_triggered()
     if (sw->isVisible()) {
         sw->hide();
     } else {
-        QWidget *tmp = ui->mainTab->currentWidget();
+        QPoint p(0,0);
+        QPoint newP(ui->mainTab->currentWidget()->mapTo(this, p));
+        int offset = (ui->mainTab->currentWidget()->width() - sw->width()) / 2;
+        sw->move(newP.x() + offset, newP.y());
         sw->show();
     }
 }
