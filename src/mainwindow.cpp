@@ -1130,11 +1130,21 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    SearchWidget sw(mRecent, this);
-    sw.exec();
+    // create
+    if (sw == nullptr) {
+        qDebug() << "sw created";
+        sw = new SearchWidget(mRecent, this);
+        sw->setGeometry(100, 100, 520, 150);
+        sw->setAutoFillBackground(true);
+    }
+
+    // toggle visibility
+    if (sw->isVisible())
+        sw->hide();
+    else
+        sw->show();
+
 }
 
 }
 }
-
-

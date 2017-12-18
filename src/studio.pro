@@ -163,7 +163,6 @@ HEADERS += \
     syntax/syntaxdeclaration.h \
     textmarklist.h \
     syntax/syntaxvariable.h \
-    searchwindow.h \
     searchwidget.h
 
 FORMS += \

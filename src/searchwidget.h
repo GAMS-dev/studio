@@ -2,9 +2,7 @@
 #define SEARCHWIDGET_H
 
 #include "mainwindow.h"
-
-#include <QAbstractButton>
-#include <QDialog>
+#include <QFrame>
 
 namespace Ui {
 class SearchWidget;
@@ -13,12 +11,12 @@ class SearchWidget;
 namespace gams {
 namespace studio {
 
-class SearchWidget : public QDialog
+class SearchWidget : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit SearchWidget(RecentData rec, QWidget *parent = 0);
+    explicit SearchWidget(RecentData &rec, QWidget *parent = 0);
     ~SearchWidget();
 
 private slots:
@@ -32,7 +30,7 @@ private slots:
 
 private:
     Ui::SearchWidget *ui;
-    RecentData mRecent;
+    RecentData &mRecent;
 
 };
 

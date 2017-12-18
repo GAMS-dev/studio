@@ -41,6 +41,7 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
+class SearchWidget;
 
 struct RecentData {
     int editFileId = -1;
@@ -162,6 +163,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
+    SearchWidget *sw = nullptr;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
