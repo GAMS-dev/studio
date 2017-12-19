@@ -103,6 +103,36 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
     return true;
 }
 
+bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    qDebug() << QString("(%1, %2) : [%3] %4").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role);
+
+    if (role == Qt::EditRole)   {
+       if (index.column() == 0) { // key
+           mOptionItem[index.row()].key = value.toString();
+       } else if (index.column() == 1) { // value
+                 mOptionItem[index.row()].value = value.toString();
+       }
+    }
+    QStringList strList;
+    for (OptionItem item : mOptionItem) {
+        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+            strList.append(item.key+"="+item.value);
+            continue;
+        }
+        QString key = item.key;
+        if (key.startsWith("-") || key.startsWith("/"))
+            key = key.mid(1);
+
+        strList.append(key+"="+item.value);
+    }
+    QString result = strList.join(" ");
+    qDebug() << QString("  result=[%1]").arg(result);
+
+    emit editCompleted( result );
+    return true;
+}
+
 QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))

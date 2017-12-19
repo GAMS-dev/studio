@@ -56,7 +56,6 @@ private:
     void offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length);
 
     void setLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
-
 };
 
 } // namespace studio

@@ -20,8 +20,12 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+
+signals:
+    void editCompleted(const QString &commandLineStr);
 
 private:
     QList<OptionItem> mOptionItem;

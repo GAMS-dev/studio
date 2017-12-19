@@ -22,6 +22,7 @@ signals:
 public slots:
     void toggleActiveOptionItem(int index);
     void toggleOptionDefinition(bool checked);
+    void updateCommandLineStr(const QString &commandLineStr);
 
 private:
     Ui::OptionConfigurator ui;

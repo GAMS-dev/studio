@@ -9,6 +9,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
 {
     QList<OptionItem> optionItem = tokenizer->tokenize(lineEditText);
     QString normalizedText = tokenizer->normalize(optionItem);
+    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, optionItem,  this);
 
     ui.setupUi(this);
     ui.fileLabel->setText( label );
@@ -19,18 +20,26 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.commandLineTableView->setAutoScroll(true);
-    ui.commandLineTableView->setModel( new OptionParameterModel(normalizedText, optionItem,  this) );
+    ui.commandLineTableView->setModel( optionParamModel );
     ui.commandLineTableView->horizontalHeader()->setStretchLastSection(true);
     ui.commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
 //    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-//    ui.commandLineTableView->resizeColumnsToContents();
+    ui.commandLineTableView->resizeColumnsToContents();
 
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
 
+//    QCompleter *completer = new QCompleter(completerModel, ui.table->tbPhoneNumber);
+//    completer->setCompletionColumn(1);
+//    completer->setCaseSensitivity(Qt::CaseInsensitive);
+//    completer->setMaxVisibleItems(10);
+//    completer->setCompletionMode(QCompleter::PopupCompletion);
+
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
             this, &OptionConfigurator::toggleActiveOptionItem);
+    connect(optionParamModel, &OptionParameterModel::editCompleted,
+            this, &OptionConfigurator::updateCommandLineStr);
 }
 
 OptionConfigurator::~OptionConfigurator()
@@ -52,6 +61,11 @@ void OptionConfigurator::toggleOptionDefinition(bool checked)
         ui.splitter->widget(1)->show();
     else
         ui.splitter->widget(1)->hide();
+}
+
+void OptionConfigurator::updateCommandLineStr(const QString &commandLineStr)
+{
+    ui.commandLineEdit->setText( commandLineStr );
 }
 
 } // namespace studio
