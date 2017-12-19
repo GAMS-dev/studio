@@ -49,5 +49,17 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 
 }
 
+void SearchWidget::showEvent(QShowEvent *event)
+{
+    ui->txt_search->setFocus();
+    if (mRecent.editor->textCursor().hasSelection())
+        ui->txt_search->setText(mRecent.editor->textCursor().selection().toPlainText());
+}
+
+void SearchWidget::on_txt_search_returnPressed()
+{
+    on_btn_Find_clicked();
+}
+
 }
 }

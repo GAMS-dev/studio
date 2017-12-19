@@ -28,6 +28,8 @@ private slots:
 
     void on_btn_ReplaceAll_clicked();
 
+    void on_txt_search_returnPressed();
+
 private:
     Ui::SearchWidget *ui;
     RecentData &mRecent;
@@ -36,6 +38,7 @@ private:
     bool mMutliSelection = false; // 'find all' pressed
     QList<QTextCursor> mAllSelections;
 
+    void showEvent(QShowEvent *event);
 };
 
 }
