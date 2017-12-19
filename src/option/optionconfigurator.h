@@ -3,6 +3,7 @@
 
 #include "commandlinetokenizer.h"
 #include "option.h"
+#include "optionparametermodel.h"
 #include "ui_optionconfigurator.h"
 
 namespace gams {
@@ -19,13 +20,13 @@ signals:
     void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
 
 public slots:
+    void toggleActiveOptionItem(int index);
     void toggleOptionDefinition(bool checked);
 
 private:
     Ui::OptionConfigurator ui;
     QLineEdit* searchLineEdit;
     QTreeView* optionDefintionTreeView;
-
 };
 
 } // namespace studio

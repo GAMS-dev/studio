@@ -7,21 +7,35 @@ namespace studio {
 OptionParameterModel::OptionParameterModel(const QString& initCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mCommandLineTokenizer(tokenizer)
 {
-    mHeader.append("Active");
+//    mHeader.append("Active");
     mHeader.append("Key");
     mHeader.append("Value");
 
     mOptionItem = mCommandLineTokenizer->tokenize(initCommandLineStr);
+    for(int idx = 0; idx<mOptionItem.size(); ++idx)
+       mCheckState[idx] = QVariant();
+
 }
 
-QVariant OptionParameterModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole) {
-        if (orientation == Qt::Horizontal) {
-            if (section <= mHeader.size())
-                return mHeader.at(section);
-        }
+    if (orientation == Qt::Horizontal) {
+       if (role == Qt::DisplayRole) {
+          if (index <= mHeader.size())
+              return mHeader.at(index);
+       }
+       return QVariant();
     }
+
+    switch(role) {
+    case Qt::CheckStateRole:
+        return mCheckState[index];
+    case Qt::DecorationRole:
+        QPixmap p{12,12};
+        p.fill(Qt::CheckState(headerData(index, orientation, Qt::CheckStateRole).toUInt()) ? Qt::red : Qt::green);
+        return p;
+    }
+
     return QVariant();
 }
 
@@ -48,26 +62,47 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole:
         if (mOptionItem.isEmpty())
             return QVariant();
-        if (col==1)
+        if (col==0)
             return mOptionItem.at(row).key;
-        else if (col== 2)
+        else if (col== 1)
                  return mOptionItem.at(row).value;
         else
             break;
     case Qt::TextAlignmentRole:
         if (col == 0) //change text alignment only for cell(i,0)
-           return Qt::AlignHCenter;
+           return Qt::AlignLeft;
         break;
-    case Qt::CheckStateRole:
-        if (col == 0) {
-            if (mOptionItem.isEmpty()) {
-                return Qt::Unchecked;
-            } else {
-                   return Qt::Checked;
-                }
-            }
+//    case Qt::CheckStateRole:
+//        if (col == 0) {
+//            if (mCheckState[row] == QVariant()) {
+//                return Qt::Unchecked;
+//            } else {
+//                   return Qt::Checked;
+//                }
+//            }
     }
     return QVariant();
+}
+
+Qt::ItemFlags OptionParameterModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return 0;
+
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+}
+
+bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
+{
+    if (orientation != Qt::Vertical)
+        return false;
+//    if (role != Qt::EditRole )
+//        return false;
+
+    mCheckState[index] = value;
+    emit headerDataChanged(orientation, index, index);
+
+    return true;
 }
 
 QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &parent) const
