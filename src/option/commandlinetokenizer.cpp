@@ -362,5 +362,39 @@ void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &dea
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
+void CommandLineTokenizer::clearLineEditTextFormat(QLineEdit *lineEdit)
+{
+    this->setLineEditTextFormat(lineEdit, "");
+}
+
+void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, QString commandLineStr)
+{
+    QList<OptionError> errList;
+    if (!commandLineStr.isEmpty())
+        errList = this->format( this->tokenize(commandLineStr) );
+
+    QString errorMessage = "";
+    QList<QInputMethodEvent::Attribute> attributes;
+    foreach(const OptionError err, errList)   {
+        QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
+        int start = err.formatRange.start - lineEdit->cursorPosition();
+        int length = err.formatRange.length;
+        QVariant value = err.formatRange.format;
+        attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
+
+        if (errorMessage.isEmpty()) {
+            errorMessage.append("Error: Parameter error(s)");
+        }
+        errorMessage.append("\n    " + err.message);
+    }
+    if (!errorMessage.isEmpty())
+        lineEdit->setToolTip(errorMessage);
+    else
+        lineEdit->setToolTip("");
+
+    QInputMethodEvent event(QString(), attributes);
+    QCoreApplication::sendEvent(lineEdit, &event);
+}
+
 } // namespace studio
 } // namespace gams

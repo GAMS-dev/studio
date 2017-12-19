@@ -37,6 +37,9 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
+    void clearLineEditTextFormat(QLineEdit* lineEdit);
+    void setLineEditTextFormat(QLineEdit* lineEdit, const QString commandLineStr);
+
 private:
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
