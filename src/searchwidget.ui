@@ -17,9 +17,9 @@
    <enum>QFrame::StyledPanel</enum>
   </property>
   <property name="frameShadow">
-   <enum>QFrame::Sunken</enum>
+   <enum>QFrame::Plain</enum>
   </property>
-  <widget class="QPushButton" name="buttonFind">
+  <widget class="QPushButton" name="btn_Find">
    <property name="geometry">
     <rect>
      <x>307</x>
@@ -32,7 +32,7 @@
     <string>Find Next</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonReplaceAll">
+  <widget class="QPushButton" name="btn_ReplaceAll">
    <property name="geometry">
     <rect>
      <x>413</x>
@@ -57,7 +57,7 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="txt_search">
    <property name="geometry">
     <rect>
      <x>59</x>
@@ -93,7 +93,7 @@
     <string>Replace:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_2">
+  <widget class="QLineEdit" name="txt_replace">
    <property name="geometry">
     <rect>
      <x>59</x>
@@ -103,7 +103,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonFindAll">
+  <widget class="QPushButton" name="btn_FindAll">
    <property name="geometry">
     <rect>
      <x>413</x>
@@ -116,7 +116,7 @@
     <string>Find All</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonReplace">
+  <widget class="QPushButton" name="btn_Replace">
    <property name="geometry">
     <rect>
      <x>307</x>
