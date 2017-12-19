@@ -128,7 +128,8 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                 QString value = item.value;
                 if (item.value.startsWith("\"") && item.value.endsWith("\"")) { // peel off double quote
                     value = item.value.mid(1, item.value.length()-2);
-                }  else if (item.value.contains("\"")) { // badly double quoted
+                }
+                if (value.contains("\"")) { // badly double quoted
                     QTextLayout::FormatRange fr;
                     fr.start = item.valuePosition;
                     fr.length = item.value.length();
