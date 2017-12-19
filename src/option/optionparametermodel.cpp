@@ -4,14 +4,12 @@
 namespace gams {
 namespace studio {
 
-OptionParameterModel::OptionParameterModel(const QString& initCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
-    QAbstractTableModel(parent), mCommandLineTokenizer(tokenizer)
+OptionParameterModel::OptionParameterModel(const QString& initCommandLineStr, QList<OptionItem> &optionItem, QObject* parent):
+    QAbstractTableModel(parent), mOptionItem(optionItem)
 {
-//    mHeader.append("Active");
     mHeader.append("Key");
     mHeader.append("Value");
 
-    mOptionItem = mCommandLineTokenizer->tokenize(initCommandLineStr);
     for(int idx = 0; idx<mOptionItem.size(); ++idx)
        mCheckState[idx] = QVariant();
 

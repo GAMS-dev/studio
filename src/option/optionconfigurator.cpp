@@ -7,7 +7,9 @@ namespace studio {
 OptionConfigurator::OptionConfigurator(const QString& label, const QString& lineEditText, CommandLineTokenizer* tokenizer, QWidget *parent):
      QFrame(parent)
 {
-    QString normalizedText = tokenizer->normalize(lineEditText);
+    QList<OptionItem> optionItem = tokenizer->tokenize(lineEditText);
+    QString normalizedText = tokenizer->normalize(optionItem);
+
     ui.setupUi(this);
     ui.fileLabel->setText( label );
     ui.commandLineEdit->setText( normalizedText );
@@ -17,7 +19,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.commandLineTableView->setAutoScroll(true);
-    ui.commandLineTableView->setModel( new OptionParameterModel(normalizedText, tokenizer,  this) );
+    ui.commandLineTableView->setModel( new OptionParameterModel(normalizedText, optionItem,  this) );
     ui.commandLineTableView->horizontalHeader()->setStretchLastSection(true);
     ui.commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
 //    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
