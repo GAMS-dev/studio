@@ -34,11 +34,11 @@ private:
     Ui::SearchWidget *ui;
     RecentData &mRecent;
     QTextCursor mSelection;       // selected with find
-    int mLastSelectionPos;        // last selection, as starting point for find next
+    QTextCursor mLastSelection;   // last selection, as starting point for find next
     bool mMutliSelection = false; // 'find all' pressed
-    QList<QTextCursor> mAllSelections;
 
     void showEvent(QShowEvent *event);
+    QFlags<QTextDocument::FindFlag> getFlags();
 };
 
 }
