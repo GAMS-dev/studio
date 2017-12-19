@@ -29,14 +29,6 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-enum MouseOverLinkType {
-    molNone = 0,
-    molErrIcon = TextMark::error,
-    molLinkIcon = TextMark::link,
-    molBookmarkIcon = TextMark::bookmark,
-    molText = TextMark::all+1,
-};
-
 FileContext::FileContext(int id, QString name, QString location, ContextType type)
     : FileSystemContext(id, name, location, type)
 {
@@ -367,7 +359,30 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     // TODO(JM) use updateLinkDisplay
 
 
-    if (evCheckKey.contains(event->type())) {
+    // TODO(JM) FileType of Log should be set to Log
+    if (event->type() == QEvent::MouseButtonDblClick && mMetrics.fileType() == FileType::None /*FileType::Log*/) {
+        QPlainTextEdit* edit = mEditors.first();
+        QPoint pos = static_cast<QMouseEvent*>(event)->pos();
+        int line = edit->cursorForPosition(pos).blockNumber();
+        TextMark* linkMark = nullptr;
+        for (TextMark *mark: mMarks.marks()) {
+            if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
+                if (mark->line() < line)
+                    linkMark = mark;
+                else if (!linkMark)
+                    linkMark = mark;
+                else if (qAbs(linkMark->line()-line) < qAbs(mark->line()-line))
+                    break;
+                else {
+                    linkMark = mark;
+                    break;
+                }
+            }
+        }
+        if (linkMark) linkMark->jumpToRefMark(true);
+
+    } else if (evCheckKey.contains(event->type())) {
+
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
             mEditors.first()->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
@@ -375,9 +390,9 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
         return FileSystemContext::eventFilter(watched, event);
-    }
 
-    if (evCheckMouse.contains(event->type())) {
+    } else if (evCheckMouse.contains(event->type())) {
+
         QPlainTextEdit* edit = mEditors.first();
         QPoint pos = (event->type() == QEvent::ToolTip) ? static_cast<QHelpEvent*>(event)->pos()
                                                         : static_cast<QMouseEvent*>(event)->pos();
@@ -394,7 +409,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink(true);
         } else {
             Qt::CursorShape shape = Qt::IBeamCursor;
-            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape);
             edit->viewport()->setCursor(shape);
             isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink();
         }

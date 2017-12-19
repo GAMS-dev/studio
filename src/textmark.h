@@ -21,6 +21,7 @@
 #define TEXTMARK_H
 
 #include <QtWidgets>
+#include "filetype.h"
 
 namespace gams {
 namespace studio {
@@ -39,6 +40,9 @@ public:
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
+    QColor color();
+    FileType::Kind fileKind();
+    FileType::Kind refFileKind();
 
     int value() const;
     void setValue(int value);

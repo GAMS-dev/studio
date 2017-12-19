@@ -81,6 +81,28 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
+QColor TextMark::color()
+{
+    if (!mReference) return Qt::black;
+    if (mReference->type() == TextMark::error)
+        return Qt::darkRed;
+    if (mReference->fileKind() == FileType::Lst)
+        return Qt::blue;
+    return Qt::darkGreen;
+}
+
+FileType::Kind TextMark::fileKind()
+{
+    if (!mFileContext) return FileType::None;
+    return mFileContext->metrics().fileType().kind();
+}
+
+FileType::Kind TextMark::refFileKind()
+{
+    if (!mReference) return FileType::None;
+    return mReference->fileKind();
+}
+
 QIcon TextMark::icon()
 {
     switch (mType) { // TODO(JM) hold ref to TextMark instead of icon

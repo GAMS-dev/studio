@@ -395,7 +395,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
         FileSystemContext* fsc = group->childEntry(i);
         if (fsc->type() == FileSystemContext::File) {
             FileContext* fc = static_cast<FileContext*>(fsc);
-            fc->removeTextMarks(QSet<TextMark::Type>()<<TextMark::error<<TextMark::link);
+            fc->removeTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
         }
     }
 }
