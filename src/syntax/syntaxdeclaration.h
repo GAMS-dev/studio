@@ -63,7 +63,7 @@ public:
 
 private:
     inline QStringList swapStringCase(QStringList list);
-    inline bool isWhitechar(const QString& line, int index);
+//    inline bool isWhitechar(const QString& line, int index);
     int findEnd(SyntaxState state, const QString& line, int index);
 
 private:

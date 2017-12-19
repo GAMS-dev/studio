@@ -18,7 +18,9 @@ enum class SyntaxState {
     DeclarationSetType,         // must be followed by Declaration
     DeclarationVariableType,    // must be followed by Declaration
     Declaration,
-    InsideDeclaration,
+    Identifier,
+    IdentifierDescription,
+    IdentifierAssignment,
 
     StateCount
 };
@@ -66,6 +68,11 @@ public:
     virtual QTextCharFormat charFormatError();
     virtual void copyCharFormat(QTextCharFormat charFormat) {
         mCharFormat = charFormat;
+    }
+protected:
+    inline bool isWhitechar(const QString& line, int index) {
+        return index<line.length() && (line.at(index).category()==QChar::Separator_Space
+                                       || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
     }
 protected:
     QTextCharFormat mCharFormat;
