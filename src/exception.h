@@ -37,11 +37,13 @@ public:
 
     template <typename T> Exception& operator<<(const T& value) {
         (*mStream) << value;
+        (*mStream).flush();
         return *this;
     }
+    const char* what();
 
 protected:
-    QString mBuffer;
+    QByteArray mBuffer;
     QTextStream *mStream;
 };
 
@@ -59,11 +61,11 @@ public:
 
 #ifdef QT_DEBUG
 #  ifdef __GNUC__
-#    define EXCEPT() throw gams::studio::Exception() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() throw gams::studio::FatalException() << '[' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '<' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << "> "
+#    define FATAL() throw gams::studio::FatalException() << '<' <<__PRETTY_FUNCTION__ << __FILE__ << __LINE__ << "> "
 #  else
-#    define EXCEPT() throw gams::studio::Exception() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
-#    define FATAL() throw gams::studio::FatalException() << '[' <<__FUNCSIG__ << __FILE__ << __LINE__ << ']'
+#    define EXCEPT() throw gams::studio::Exception() << '<' <<__FUNCSIG__ << __FILE__ << __LINE__ << "> "
+#    define FATAL() throw gams::studio::FatalException() << '<' <<__FUNCSIG__ << __FILE__ << __LINE__ << "> "
 #  endif
 #else
 #  define EXCEPT() throw gams::studio::Exception()
