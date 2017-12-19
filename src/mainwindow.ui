@@ -501,7 +501,7 @@
     <string>Search</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

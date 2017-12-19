@@ -19,9 +19,22 @@ public:
     explicit SearchWidget(RecentData &rec, QWidget *parent = 0);
     ~SearchWidget();
 
+private slots:
+    void on_btn_Find_clicked();
+
+    void on_btn_FindAll_clicked();
+
+    void on_btn_Replace_clicked();
+
+    void on_btn_ReplaceAll_clicked();
+
 private:
     Ui::SearchWidget *ui;
     RecentData &mRecent;
+    QTextCursor mSelection;       // selected with find
+    int mLastSelectionPos;        // last selection, as starting point for find next
+    bool mMutliSelection = false; // 'find all' pressed
+    QList<QTextCursor> mAllSelections;
 
 };
 
