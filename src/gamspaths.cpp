@@ -34,23 +34,27 @@ GAMSPaths::GAMSPaths()
 }
 
 QString GAMSPaths::systemDir() {
+    QString path;
 #if defined(DISTRIB_BUILD) // For the GAMS distribution build
 #ifdef __linux__ // Linux AppImage
-    return QDir::currentPath().append("/..");
+    path = QDir::currentPath().append("/..");
 #elif __APPLE__ // Apple MacOS dmg
-    auto path = QDir::currentPath();
-    QMessageBox::information(nullptr, "Path", path);
-    return path;
+    path = QDir::currentPath();
 #else // Windows
-    return QDir::currentPath().append("/..");
+    path = QDir::currentPath().append("/..");
 #endif
 #else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
-    QString ret = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-        if (ret == "") {
-            EXCEPT() << "GAMS not found in path.";
-        }
-    return QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
 #endif
+    // TODO(JM) check bitness against path
+    if (path == "") EXCEPT() << "GAMS not found in path.";
+
+    int bitness = sizeof(int*);
+    if (bitness == 4 && path.contains("win64"))
+        FATAL() << "GAMS Studio (32bit) can't be executed with " << path;
+    if (bitness == 8 && path.contains("win32"))
+        FATAL() << "GAMS Studio (64bit) can't be executed with " << path;
+    return path;
 }
 
 QString GAMSPaths::defaultWorkingDir()
