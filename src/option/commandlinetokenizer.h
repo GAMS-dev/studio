@@ -25,6 +25,8 @@ public:
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
     QList<OptionError> format(const QList<OptionItem> &items);
+    QString normalize(const QString &commandLineStr);
+    QString normalize(const QList<OptionItem> &items);
 
     QTextCharFormat invalidKeyFormat() const;
     QTextCharFormat invalidValueFormat() const;
@@ -33,11 +35,13 @@ public:
     void setInvalidKeyFormat(const QTextCharFormat &invalidKeyFormat);
     void setInvalidValueFormat(const QTextCharFormat &invalidValueFormat);
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
+    void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
 private:
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
+    QTextCharFormat mDeactivatedOptionFormat;
 
     Option* gamsOption;
 

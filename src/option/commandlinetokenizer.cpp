@@ -19,6 +19,9 @@ CommandLineTokenizer::CommandLineTokenizer()
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);
     mDeprecateOptionFormat.setForeground(Qt::white);
+
+    mDeactivatedOptionFormat.setFontItalic(true);
+    mDeactivatedOptionFormat.setForeground(Qt::lightGray);
 }
 
 CommandLineTokenizer::~CommandLineTokenizer()
@@ -233,6 +236,28 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
     return optionErrorList;
 }
 
+QString CommandLineTokenizer::normalize(const QString &commandLineStr)
+{
+    return normalize( tokenize(commandLineStr) );
+}
+
+QString CommandLineTokenizer::normalize(const QList<OptionItem> &items)
+{
+    QStringList strList;
+    for (OptionItem item : items) {
+        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+            strList.append(item.key+"="+item.value);
+            continue;
+        }
+        QString key = item.key;
+        if (key.startsWith("-") || key.startsWith("/"))
+            key = key.mid(1);
+
+        strList.append(key+"="+item.value);
+    }
+    return strList.join(" ");
+}
+
 void CommandLineTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const int length)
 {
     while( str.mid(offset).startsWith(" ") && (offset < length) ) {
@@ -330,6 +355,11 @@ void CommandLineTokenizer::setInvalidValueFormat(const QTextCharFormat &invalidV
 void CommandLineTokenizer::setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat)
 {
     mDeprecateOptionFormat = deprecateOptionFormat;
+}
+
+void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat)
+{
+    mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
 } // namespace studio
