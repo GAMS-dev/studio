@@ -4,8 +4,8 @@
 namespace gams {
 namespace studio {
 
-CommandLineOption::CommandLineOption(bool validateFlag, CommandLineTokenizer* tokenizer, QWidget* parent) :
-    QComboBox(parent), mValidated(validateFlag), mCommandLineTokenizer(tokenizer)
+CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
+    QComboBox(parent), mValidated(validateFlag)
 {
     this->setDisabled(true);
     this->setEditable(true);
@@ -21,7 +21,6 @@ CommandLineOption::CommandLineOption(bool validateFlag, CommandLineTokenizer* to
 
 CommandLineOption::~CommandLineOption()
 {
-   delete mCommandLineTokenizer;
 }
 
 void CommandLineOption::updateCurrentOption(const QString &text)
@@ -37,10 +36,8 @@ void CommandLineOption::validateChangedOption(const QString &text)
     if (mCurrentOption.isEmpty())
         return;
 
-    if (mValidated)  {
-        mCommandLineTokenizer->clearLineEditTextFormat(this->lineEdit());
-        mCommandLineTokenizer->setLineEditTextFormat(this->lineEdit(), text);
-    }
+    if (mValidated)
+       emit commandLineOptionChanged(this->lineEdit(), text);
 }
 
 QString CommandLineOption::getCurrentOption() const

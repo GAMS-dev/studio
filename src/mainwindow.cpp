@@ -638,7 +638,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setDefaultAction(ui->actionRun);
     ui->mainToolBar->addWidget(runToolButton);
 
-    mCommandLineOption = new CommandLineOption(true, mCommandLineTokenizer, this);
+    mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
     ui->mainToolBar->addWidget(mCommandLineOption);
 
@@ -654,8 +654,9 @@ void MainWindow::createRunAndCommandLineWidgets()
             this, &MainWindow::on_runWithChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
+    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
+            mCommandLineTokenizer, &CommandLineTokenizer::formatLineEditTextFormat);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
-
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()

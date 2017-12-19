@@ -362,12 +362,13 @@ void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &dea
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
-void CommandLineTokenizer::clearLineEditTextFormat(QLineEdit *lineEdit)
+void CommandLineTokenizer::formatLineEditTextFormat(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     this->setLineEditTextFormat(lineEdit, "");
+    this->setLineEditTextFormat(lineEdit, commandLineStr);
 }
 
-void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, QString commandLineStr)
+void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, const QString& commandLineStr)
 {
     QList<OptionError> errList;
     if (!commandLineStr.isEmpty())

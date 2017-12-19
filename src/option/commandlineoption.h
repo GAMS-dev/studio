@@ -13,7 +13,7 @@ class CommandLineOption : public QComboBox
     Q_OBJECT
 
 public:
-    CommandLineOption(bool validateFlag, CommandLineTokenizer* tokenizer, QWidget* parent);
+    CommandLineOption(bool validateFlag, QWidget* parent);
     ~CommandLineOption();
 
     QString getCurrentOption() const;
@@ -29,6 +29,7 @@ public:
 signals:
     void optionRunChanged();
     void optionRunWithParameterChanged(const QString &parameter);
+    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
     void updateCurrentOption(const QString &text);
@@ -41,10 +42,6 @@ private:
     QString mCurrentOption;
     QString mCurrentContext;
     bool mValidated;
-    CommandLineTokenizer* mCommandLineTokenizer;
-
-    void clearLineEditTextFormat(QLineEdit* lineEdit);
-    void setLineEditTextFormat(QLineEdit* lineEdit, const QList<OptionError>& errList);
 };
 
 } // namespace studio

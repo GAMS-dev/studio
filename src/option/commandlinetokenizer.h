@@ -16,8 +16,10 @@ struct OptionError {
     QString message;
 };
 
-class CommandLineTokenizer
+class CommandLineTokenizer : public QObject
 {
+    Q_OBJECT
+
 public:
 
     CommandLineTokenizer();
@@ -37,8 +39,8 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    void clearLineEditTextFormat(QLineEdit* lineEdit);
-    void setLineEditTextFormat(QLineEdit* lineEdit, const QString commandLineStr);
+public slots:
+    void formatLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
 
 private:
     QTextCharFormat mInvalidKeyFormat;
@@ -52,6 +54,9 @@ private:
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
     void offsetAssignment(QStringRef str, int &offset, const int length);
     void offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length);
+
+    void setLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
+
 };
 
 } // namespace studio
