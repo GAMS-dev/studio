@@ -118,6 +118,7 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 
 void GdxViewer::reportIoError(int errNr, QString message)
 {
+    // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 

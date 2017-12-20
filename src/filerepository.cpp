@@ -19,7 +19,7 @@
  */
 #include "filerepository.h"
 #include "exception.h"
-#include "textmark.h"
+#include "syntax.h"
 #include "logger.h"
 
 namespace gams {
@@ -267,7 +267,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
 {
     FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
     if (!parGroup)
-        throw QException();
+        EXCEPT() << "Can't update path node. Group " << fileId << " not found.";
     if (dir.exists()) {
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)

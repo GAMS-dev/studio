@@ -92,7 +92,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
-    textmark.cpp \
     commandlinehistory.cpp \
     commandlineoption.cpp \
     commandlinetokenizer.cpp \
@@ -108,10 +107,11 @@ SOURCES += \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
     syntax.h \
+    syntax/textmark.cpp \
+    syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxdeclaration.cpp \
-    textmarklist.cpp \
     syntax/syntaxidentifier.cpp
 
 HEADERS += \
@@ -142,7 +142,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gamspaths.h \
     filetreemodel.h \
-    textmark.h \
     commandlinehistory.h \
     commandlineoption.h \
     commandlinetokenizer.h \
@@ -157,10 +156,11 @@ HEADERS += \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
+    syntax/textmark.h \
+    syntax/textmarklist.h \
     syntax/syntaxhighlighter.h \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
-    textmarklist.h \
     syntax/syntaxidentifier.h
 
 FORMS += \

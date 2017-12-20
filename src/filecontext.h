@@ -23,7 +23,6 @@
 #include <QtWidgets>
 #include "filesystemcontext.h"
 #include "filemetrics.h"
-#include "textmark.h"
 #include "syntax.h"
 
 namespace gams {
