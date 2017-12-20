@@ -39,6 +39,8 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
+    Option *getGamsOption() const;
+
 public slots:
     void formatLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
 

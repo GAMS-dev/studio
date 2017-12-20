@@ -7,6 +7,8 @@ namespace studio {
 CommandLineTokenizer::CommandLineTokenizer(Option* option) :
     gamsOption(option)
 {
+    gamsOption->dumpAll();
+
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
     mInvalidKeyFormat.setForeground(Qt::red);
@@ -76,7 +78,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         return optionErrorList;
 
     for (OptionItem item : items) {
-        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+        if (gamsOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
             if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
@@ -101,8 +103,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
            optionErrorList.append(OptionError(fr, item.value + QString(" (Option keyword expected for value \"%1\")").arg(item.value)) );
         } else {
 
-            if (!gamsOption->isValid(key) &&
-                !gamsOption->isValid(gamsOption->getSynonym(key))
+            if (!gamsOption->isValid(key) && (!gamsOption->isThereASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
                ) {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
@@ -368,9 +369,14 @@ void CommandLineTokenizer::formatLineEditTextFormat(QLineEdit *lineEdit, const Q
     this->setLineEditTextFormat(lineEdit, commandLineStr);
 }
 
+Option *CommandLineTokenizer::getGamsOption() const
+{
+    return gamsOption;
+}
+
 void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, const QString& commandLineStr)
 {
-qDebug() << QString("formatLineEditTextFormat => %1").arg(commandLineStr);
+//qDebug() << QString("formatLineEditTextFormat => %1").arg(commandLineStr);
     QList<OptionError> errList;
     if (!commandLineStr.isEmpty())
         errList = this->format( this->tokenize(commandLineStr) );
@@ -389,7 +395,7 @@ qDebug() << QString("formatLineEditTextFormat => %1").arg(commandLineStr);
         }
         errorMessage.append("\n    " + err.message);
     }
-qDebug() << QString("formatLineEditTextFormat => errormessage [%1]").arg(errorMessage);
+//qDebug() << QString("formatLineEditTextFormat => errormessage [%1]").arg(errorMessage);
     if (!errorMessage.isEmpty())
         lineEdit->setToolTip(errorMessage);
     else

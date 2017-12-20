@@ -114,7 +114,8 @@ SOURCES += \
     option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
     option/commandlinetokenizer.cpp \
-    option/optionparametermodel.cpp
+    option/optionparametermodel.cpp \
+    option/optioncompleterdelegate.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -165,7 +166,8 @@ HEADERS += \
     option/commandlinehistory.h \
     option/commandlinetokenizer.h \
     option/commandlineoption.h \
-    option/optionparametermodel.h
+    option/optionparametermodel.h \
+    option/optioncompleterdelegate.h
 
 FORMS += \
     welcomepage.ui  \

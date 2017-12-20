@@ -69,12 +69,22 @@ bool Option::isValid(const QString &optionName)
     return mOption.contains(optionName.toUpper());
 }
 
+bool Option::isThereASynonym(const QString &optionName)
+{
+    return mSynonymMap.contains( optionName.toUpper() );
+}
+
 bool Option::isDeprecated(const QString &optionName)
 {
     if (isValid(optionName))
        return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
 
     return false;
+}
+
+bool Option::isDoubleDashedOption(const QString &optionName)
+{
+    return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
 }
 
 QString Option::getSynonym(const QString &optionName) const
@@ -105,6 +115,30 @@ QVariant Option::getLowerBound(const QString &optionName) const
 QList<OptionValue> Option::getValueList(const QString &optionName) const
 {
     return mOption[optionName.toUpper()].valueList;
+}
+
+QStringList Option::getKeyList() const
+{
+    QStringList keyList;
+    for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
+        keyList << it.value().name;
+    }
+    return keyList;
+}
+
+QStringList Option::getKeyAndSynonymList() const
+{
+    // TODO
+    return getKeyList();
+}
+
+QStringList Option::getValuesList(const QString &optionName) const
+{
+   QStringList valueList;
+   foreach( OptionValue value, getValueList(optionName.toUpper()) )
+       valueList << value.value.toString();
+
+   return valueList;
 }
 
 QList<OptionGroup> Option::getOptionGroupList() const

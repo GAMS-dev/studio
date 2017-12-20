@@ -4,15 +4,17 @@
 namespace gams {
 namespace studio {
 
-OptionParameterModel::OptionParameterModel(const QList<OptionItem>& optionItem, CommandLineTokenizer* tokenizer, QObject* parent):
-    QAbstractTableModel(parent), mOptionItem(optionItem), mTokenizer(tokenizer)
+OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
+    QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
 {
     mHeader.append("Key");
     mHeader.append("Value");
 
+    mOptionItem = commandLineTokenizer->tokenize(normalizedCommandLineStr);
     for(int idx = 0; idx<mOptionItem.size(); ++idx)
        mCheckState[idx] = QVariant();
 
+    gamsOption = commandLineTokenizer->getGamsOption();
 }
 
 QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -67,13 +69,19 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
         else
             break;
     case Qt::TextAlignmentRole:
-        if (col == 0) //change text alignment only for cell(i,0)
-           return Qt::AlignLeft;
-        break;
+        return Qt::AlignLeft;
 //    case Qt::BackgroundRole:
     case Qt::TextColorRole:
-        if (col==0)
-           return QVariant::fromValue(QColor(Qt::blue));
+        if (!gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
+           if (gamsOption->isValid(mOptionItem.at(row).key)) { // valid option
+               if (gamsOption->isDeprecated(mOptionItem.at(row).key))
+                   return QVariant::fromValue(QColor(Qt::gray));
+           } else { // invalid option
+                  return QVariant::fromValue(QColor(Qt::red));
+           }
+        }
+        return QVariant::fromValue(QColor(Qt::black));
+     default:
         break;
     }
     return QVariant();
@@ -89,10 +97,8 @@ Qt::ItemFlags OptionParameterModel::flags(const QModelIndex &index) const
 
 bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
 {
-    if (orientation != Qt::Vertical)
+    if (orientation != Qt::Vertical || role != Qt::CheckStateRole)
         return false;
-//    if (role != Qt::EditRole )
-//        return false;
 
     mCheckState[index] = value;
     emit headerDataChanged(orientation, index, index);
@@ -102,8 +108,7 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
 
 bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    qDebug() << QString("(%1, %2) : [%3] %4").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role);
-
+//    qDebug() << QString("(%1, %2) : [%3] %4").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role);
 //    mOptionItem.at(row).key;
 
     if (role == Qt::EditRole)   {
@@ -114,7 +119,7 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
        }
     }
 
-    emit editCompleted(  mTokenizer->normalize( mOptionItem ) );
+    emit editCompleted(  commandLineTokenizer->normalize( mOptionItem ) );
     return true;
 }
 

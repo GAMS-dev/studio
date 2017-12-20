@@ -11,7 +11,7 @@ class OptionParameterModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    OptionParameterModel(const QList<OptionItem>& optionItem, CommandLineTokenizer* tokenizer, QObject *parent = 0);
+    OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject *parent = 0);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -32,7 +32,8 @@ private:
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
-    CommandLineTokenizer* mTokenizer;
+    CommandLineTokenizer* commandLineTokenizer;
+    Option* gamsOption;
 };
 
 } // namespace studio

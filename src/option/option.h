@@ -72,7 +72,10 @@ public:
     void dumpAll();
 
     bool isValid(const QString &optionName);
+    bool isThereASynonym(const QString &optionName);
     bool isDeprecated(const QString &optionName);
+    bool isDoubleDashedOption(const QString &optionName);
+
     QString getSynonym(const QString &optionName) const;
     optOptionType getOptionType(const QString &optionName) const;
     optDataType getDataType(const QString &optionName) const;
@@ -81,6 +84,10 @@ public:
     QVariant getDefaultValue(const QString &optionName) const;
     QString getDescription(const QString &optionName) const;
     QList<OptionValue> getValueList(const QString &optionName) const;
+
+    QStringList getKeyList() const;
+    QStringList getKeyAndSynonymList() const;
+    QStringList getValuesList(const QString &optionName) const;
 
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;

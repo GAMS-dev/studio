@@ -1,4 +1,5 @@
 #include "optionconfigurator.h"
+#include "optioncompleterdelegate.h"
 #include "optionparametermodel.h"
 
 namespace gams {
@@ -9,7 +10,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
 {
     QList<OptionItem> optionItem = tokenizer->tokenize(lineEditText);
     QString normalizedText = tokenizer->normalize(optionItem);
-    OptionParameterModel* optionParamModel = new OptionParameterModel(optionItem, tokenizer,  this);
+    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, tokenizer,  this);
 
     ui.setupUi(this);
     ui.fileLabel->setText( label );
@@ -17,23 +18,19 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineEdit->setReadOnly( true );
     ui.showOptionDefintionCheckBox->setChecked(true);
 
-//    ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui.commandLineTableView->setItemDelegate( new OptionCompleterDelegate(tokenizer, ui.commandLineTableView));
+    ui.commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::EditKeyPressed
+                       | QAbstractItemView::AnyKeyPressed );
     ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.commandLineTableView->setAutoScroll(true);
     ui.commandLineTableView->setModel( optionParamModel );
     ui.commandLineTableView->horizontalHeader()->setStretchLastSection(true);
     ui.commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
-//    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui.commandLineTableView->resizeColumnsToContents();
-
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
-
-//    QCompleter *completer = new QCompleter(completerModel, ui.table->tbPhoneNumber);
-//    completer->setCompletionColumn(1);
-//    completer->setCaseSensitivity(Qt::CaseInsensitive);
-//    completer->setMaxVisibleItems(10);
-//    completer->setCompletionMode(QCompleter::PopupCompletion);
 
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
