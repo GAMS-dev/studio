@@ -15,6 +15,7 @@ pipeline {
                         sh '''
                             qmake src/studio.pro && make -j3
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX86: {
@@ -28,6 +29,7 @@ pipeline {
                             qmake studio.pro
                             mingw32-make
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX64: {
@@ -44,6 +46,7 @@ pipeline {
                             qmake studio.pro "CONFIG+=release"
                             nmake
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 macos: {
