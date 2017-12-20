@@ -18,10 +18,12 @@ SearchWidget::~SearchWidget()
     delete ui;
 }
 
-void SearchWidget::on_btn_Find_clicked()
+void SearchWidget::find(bool backwards)
 {
     QString searchTerm = ui->txt_search->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
+
+    if (backwards) searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
 
     mLastSelection = (!mSelection.isNull() ? mSelection : mRecent.editor->textCursor());
     mSelection = mRecent.editor->document()->find(searchTerm, mLastSelection, searchFlags);
@@ -33,6 +35,11 @@ void SearchWidget::on_btn_Find_clicked()
         mRecent.editor->setTextCursor(mSelection);
         ui->btn_Replace->setEnabled(true);
     }
+}
+
+void SearchWidget::on_btn_Find_clicked()
+{
+    find(false);
 }
 
 void SearchWidget::on_btn_FindAll_clicked()
@@ -67,7 +74,7 @@ void SearchWidget::on_btn_Replace_clicked()
     if (mRecent.editor->textCursor().hasSelection())
         mRecent.editor->textCursor().insertText(replaceTerm);
 
-    on_btn_Find_clicked();
+    find();
 }
 
 void SearchWidget::on_btn_ReplaceAll_clicked()
@@ -114,6 +121,15 @@ void SearchWidget::showEvent(QShowEvent *event)
 void SearchWidget::on_txt_search_returnPressed()
 {
     on_btn_Find_clicked();
+}
+
+void SearchWidget::keyPressEvent(QKeyEvent* event)
+{
+    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        find(true);
+    } else if (event->key() == Qt::Key_F3) {
+        find();
+    }
 }
 
 QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()

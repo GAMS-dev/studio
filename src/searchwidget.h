@@ -21,13 +21,9 @@ public:
 
 private slots:
     void on_btn_Find_clicked();
-
     void on_btn_FindAll_clicked();
-
     void on_btn_Replace_clicked();
-
     void on_btn_ReplaceAll_clicked();
-
     void on_txt_search_returnPressed();
 
 private:
@@ -40,7 +36,9 @@ private:
     bool mMutliSelection = false; // 'find all' pressed
 
     void showEvent(QShowEvent *event);
+    void keyPressEvent(QKeyEvent* event);
     QFlags<QTextDocument::FindFlag> getFlags();
+    void find(bool backwards = false);
 };
 
 }
