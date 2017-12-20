@@ -821,6 +821,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+    if (sw->isVisible() && event->key() == Qt::Key_Escape) {
+        sw->hide();
+        mRecent.editor->setFocus();
+    }
+
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
     } else {

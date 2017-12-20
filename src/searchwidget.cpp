@@ -20,7 +20,6 @@ SearchWidget::~SearchWidget()
 
 void SearchWidget::on_btn_Find_clicked()
 {
-
     QString searchTerm = ui->txt_search->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
@@ -108,6 +107,8 @@ void SearchWidget::showEvent(QShowEvent *event)
     ui->txt_search->setFocus();
     if (mRecent.editor->textCursor().hasSelection())
         ui->txt_search->setText(mRecent.editor->textCursor().selection().toPlainText());
+    else
+        ui->txt_search->setText("");
 }
 
 void SearchWidget::on_txt_search_returnPressed()
