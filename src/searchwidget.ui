@@ -36,6 +36,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="btn_ReplaceAll">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>413</x>
@@ -113,6 +116,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="btn_FindAll">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>413</x>
@@ -126,6 +132,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="btn_Replace">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>307</x>

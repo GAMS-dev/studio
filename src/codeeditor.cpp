@@ -21,7 +21,7 @@
 #include "codeeditor.h"
 #include "studiosettings.h"
 #include "logger.h"
-#include "textmark.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {

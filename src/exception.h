@@ -45,6 +45,7 @@ public:
 protected:
     QByteArray mBuffer;
     QTextStream *mStream;
+    int mInfoStart = 0;
 };
 
 class FatalException : public Exception

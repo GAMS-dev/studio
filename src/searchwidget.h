@@ -16,7 +16,7 @@ class SearchWidget : public QFrame
     Q_OBJECT
 
 public:
-    explicit SearchWidget(RecentData &rec, QWidget *parent = 0);
+    explicit SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent = 0);
     ~SearchWidget();
 
 private slots:
@@ -33,8 +33,10 @@ private slots:
 private:
     Ui::SearchWidget *ui;
     RecentData &mRecent;
+    FileRepository &mRepo;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
+    QList<TextMark*> mAllTextMarks;
     bool mMutliSelection = false; // 'find all' pressed
 
     void showEvent(QShowEvent *event);

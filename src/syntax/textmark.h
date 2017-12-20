@@ -31,7 +31,7 @@ class FileContext;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, all};
+    enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);

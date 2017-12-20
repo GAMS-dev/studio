@@ -1139,7 +1139,7 @@ void MainWindow::on_actionSearch_triggered()
 {
     // create
     if (sw == nullptr) {
-        sw = new SearchWidget(mRecent, this);
+        sw = new SearchWidget(mRecent, mFileRepo, this);
     }
 
     // toggle visibility
