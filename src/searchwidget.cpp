@@ -94,10 +94,11 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
-
+        mRecent.editor->textCursor().beginEditBlock();
         foreach (QTextCursor tc, hits) {
             tc.insertText(replaceTerm);
         }
+        mRecent.editor->textCursor().endEditBlock();
     }
 }
 
