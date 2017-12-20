@@ -112,19 +112,6 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
     *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-void FileRepository::setErrorHint(const int errCode, const QString &hint)
-{
-    if (mErrorHints.contains(errCode) && hint.isEmpty())
-        mErrorHints.remove(errCode);
-    else
-        mErrorHints.insert(errCode, hint);
-}
-
-void FileRepository::getErrorHint(const int errCode, QString &hint)
-{
-    hint = mErrorHints.value(errCode);
-}
-
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
     // TODO(JM) rename this to modifiedFiles()
@@ -197,8 +184,6 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
-    connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
-    connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
     updateActions();
     return fileContext;
 }
@@ -396,8 +381,6 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
         res = new LogContext(mNextId++, "["+group->name()+"]");
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
         connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
-        connect(res, &LogContext::createErrorHint, this, &FileRepository::setErrorHint);
-        connect(res, &LogContext::requestErrorHint, this, &FileRepository::getErrorHint);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;
@@ -412,7 +395,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
         FileSystemContext* fsc = group->childEntry(i);
         if (fsc->type() == FileSystemContext::File) {
             FileContext* fc = static_cast<FileContext*>(fsc);
-            fc->removeTextMarks(QSet<TextMark::Type>()<<TextMark::error<<TextMark::link);
+            fc->removeTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
         }
     }
 }

@@ -55,23 +55,24 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
-TextMark*TextMarkList::findMark(const QTextCursor& cursor)
+QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
 {
+    QList<TextMark*> res;
     for (TextMark* mark: mTextMarks) {
         QTextCursor tc = mark->textCursor();
         if (tc.isNull()) break;
         if (tc.blockNumber() > cursor.blockNumber()) break;
         if (tc.blockNumber() < cursor.blockNumber()) continue;
         if (cursor.atBlockStart())
-            return mark;
+            res << mark;
 
         int a = tc.block().position() + mark->column();
         int b = a + (mark->size() ? mark->size() : tc.block().length());
         if (cursor.position() >= b) continue;
         if (cursor.position() >= a && (cursor.selectionEnd() < b))
-            return mark;
+            res << mark;
     }
-    return nullptr;
+    return res;
 }
 
 TextMark*TextMarkList::firstErrorMark()
@@ -93,6 +94,7 @@ QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block)
     }
     return marks;
 }
+
 
 } // namespace source
 } // namespace gams

@@ -11,8 +11,8 @@ class Application : public QApplication
 public:
     Application(int &argc, char **argv);
     bool notify(QObject *object, QEvent *event) override;
+    static void showBox(QString title, QString message);
 private:
-    void showBox(QString title, QString message);
 };
 
 } // namespace studio

@@ -47,6 +47,7 @@ public:
         Entering,
         Inside,
         Exiting,
+        FollowupError,
     };
 
     ~FileContext() override;
@@ -117,10 +118,11 @@ public:
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const TextMark& mark);
+    void showToolTip(const QList<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void updateMarks();
+    inline void clearMarksEnhanced() {mMarksEnhanced = false;}
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -134,8 +136,6 @@ signals:
     void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void createErrorHint(const int errCode, const QString &errText);
-    void requestErrorHint(const int errCode, QString &errText);
     void openFileContext(FileContext* fileContext, bool focus = true);
 
 protected slots:
@@ -162,10 +162,11 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    TextMark *mMarkAtMouse = nullptr;
+    QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     TextMarkList mMarks;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
+    bool mMarksEnhanced = true;
 
     static const QStringList mDefaulsCodecs;
 

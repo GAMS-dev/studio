@@ -40,6 +40,11 @@ Exception::~Exception()
     delete mStream;
 }
 
+const char*Exception::what()
+{
+    return mBuffer.data();
+}
+
 FatalException* FatalException::clone() const
 {
     return new FatalException(*this);
