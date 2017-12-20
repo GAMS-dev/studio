@@ -73,7 +73,32 @@ void SearchWidget::on_btn_Replace_clicked()
 
 void SearchWidget::on_btn_ReplaceAll_clicked()
 {
+    QString searchTerm = ui->txt_search->text();
+    QString replaceTerm = ui->txt_replace->text();
+    QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
+    QList<QTextCursor> hits;
+    QTextCursor item;
+    QTextCursor lastItem;
+    do {
+        item = mRecent.editor->document()->find(searchTerm, lastItem, searchFlags);
+        lastItem = item;
+        if (!item.isNull()) {
+            hits.append(item);
+        }
+    } while (!item.isNull());
+    QMessageBox msgBox;
+    msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
+                   searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+
+        foreach (QTextCursor tc, hits) {
+            tc.insertText(replaceTerm);
+        }
+    }
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
