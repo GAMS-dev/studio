@@ -51,6 +51,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake src/studio.pro && make -j3'
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 }
             }
