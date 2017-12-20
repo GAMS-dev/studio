@@ -38,10 +38,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     int errNr = 0;
     if (!gdxCreateD(&mGdx, systemDirectory.toLatin1(), msg, sizeof(msg)))
     {
-        //TODO(CW): raise exception wit proper message and remove the cout
-        qDebug() << "**** Could not load GDX library";
-        qDebug() << "**** " << msg;
-        throw Exception();
+        //TODO(CW): raise exception wit proper message
+        EXCEPT() << "Could not load GDX library: " << msg;
     }
 
     gdxOpenRead(mGdx, gdxFile.toLatin1(), &errNr);
@@ -120,9 +118,7 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 
 void GdxViewer::reportIoError(int errNr, QString message)
 {
-    //TODO(CW): proper Exception message and remove qDebug
-    qDebug() << "**** Fatal I/O Error = " << errNr << " when calling " << message;
-    throw Exception();
+    EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
 void GdxViewer::toggleSqueezeDefaults(bool checked)

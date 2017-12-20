@@ -38,7 +38,7 @@ FileGroupContext::~FileGroupContext()
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, value);
 
     // distribute missing flag to child entries
@@ -52,7 +52,7 @@ void FileGroupContext::setFlag(ContextFlag flag, bool value)
 void FileGroupContext::unsetFlag(ContextFlag flag)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, false);
 }
 
