@@ -213,6 +213,7 @@ QTextDocument*FileContext::document()
 
 void FileContext::load(QString codecName)
 {
+//    TRACETIME();
     if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 

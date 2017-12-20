@@ -10,11 +10,11 @@ Application::Application(int& argc, char** argv): QApplication(argc, argv)
 void Application::showBox(QString title, QString message) {
     QMessageBox box;
     box.setWindowTitle(title);
-    QStringList parts = message.split("> ");
-    if (parts.count()>1) {
-        parts.removeAt(0);
-        box.setText(parts.join("> "));
-    } else
+//    QStringList parts = message.split("> ");
+//    if (parts.count()>1) {
+//        parts.removeAt(0);
+//        box.setText(parts.join("> "));
+//    } else
         box.setText(message);
     box.exec();
 }
