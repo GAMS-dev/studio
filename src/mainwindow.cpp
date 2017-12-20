@@ -825,6 +825,11 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         sw->hide();
         mRecent.editor->setFocus();
     }
+    if (sw->isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        sw->find(true);
+    } else if (sw->isVisible() && event->key() == Qt::Key_F3) {
+        sw->find();
+    }
 
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());

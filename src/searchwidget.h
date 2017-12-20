@@ -17,6 +17,7 @@ class SearchWidget : public QFrame
 
 public:
     explicit SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent = 0);
+    void find(bool backwards = false);
     ~SearchWidget();
 
 private slots:
@@ -36,9 +37,7 @@ private:
     bool mMutliSelection = false; // 'find all' pressed
 
     void showEvent(QShowEvent *event);
-    void keyPressEvent(QKeyEvent* event);
     QFlags<QTextDocument::FindFlag> getFlags();
-    void find(bool backwards = false);
 };
 
 }

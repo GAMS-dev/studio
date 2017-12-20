@@ -86,6 +86,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
     QList<QTextCursor> hits;
     QTextCursor item;
     QTextCursor lastItem;
+
     do {
         item = mRecent.editor->document()->find(searchTerm, lastItem, searchFlags);
         lastItem = item;
@@ -93,6 +94,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
             hits.append(item);
         }
     } while (!item.isNull());
+
     QMessageBox msgBox;
     msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
                    searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
@@ -121,15 +123,6 @@ void SearchWidget::showEvent(QShowEvent *event)
 void SearchWidget::on_txt_search_returnPressed()
 {
     on_btn_Find_clicked();
-}
-
-void SearchWidget::keyPressEvent(QKeyEvent* event)
-{
-    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        find(true);
-    } else if (event->key() == Qt::Key_F3) {
-        find();
-    }
 }
 
 QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
