@@ -34,9 +34,14 @@ protected:
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
+    struct ErrorData {
+        int lstLine = 0;
+        int errNr = 0;
+        QString text;
+    };
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
-    QPair<int, QString> mCurrentErrorHint;
+    ErrorData mCurrentErrorHint;
     QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
 

@@ -71,8 +71,8 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             }
         }
         if (mark->type() == TextMark::link) {
-            combinedFormat.setForeground(Qt::blue);
-            combinedFormat.setUnderlineColor(Qt::blue);
+            combinedFormat.setForeground(mark->color());
+            combinedFormat.setUnderlineColor(mark->color());
             combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
             combinedFormat.setAnchor(true);
             combinedFormat.setAnchorName(QString::number(mark->line()));

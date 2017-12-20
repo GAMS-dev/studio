@@ -38,7 +38,7 @@ FileGroupContext::~FileGroupContext()
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, value);
 
     // distribute missing flag to child entries
@@ -52,7 +52,7 @@ void FileGroupContext::setFlag(ContextFlag flag, bool value)
 void FileGroupContext::unsetFlag(ContextFlag flag)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, false);
 }
 
@@ -170,6 +170,31 @@ void FileGroupContext::jumpToMark(bool focus)
         }
         textMark = nullptr;
     }
+}
+
+QString FileGroupContext::lstErrorText(int line)
+{
+    return mLstErrorTexts.value(line);
+}
+
+void FileGroupContext::setLstErrorText(int line, QString text)
+{
+    mLstErrorTexts.insert(line, text);
+}
+
+void FileGroupContext::clearLstErrorTexts()
+{
+    mLstErrorTexts.clear();
+    FileSystemContext *fsc = findFile(lstFileName());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        fc->clearMarksEnhanced();
+    }
+}
+
+bool FileGroupContext::hasLstErrorText(int line)
+{
+    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
 QString FileGroupContext::runableGms()

@@ -12,11 +12,13 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
     case SyntaxState::DeclarationSetType:
         list = QStringList() << "Singleton";
         mKeywords.insert(state, new DictList(list));
+        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     case SyntaxState::DeclarationVariableType:
         list = QStringList() << "free" << "positive" << "nonnegative" << "negative"
                              << "binary" << "integer" << "sos1" << "sos2" << "semicont" << "semiint";
         mKeywords.insert(state, new DictList(list));
+        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     case SyntaxState::Declaration:
         list = QStringList() << "Table" << "Scalar" << "Scalars" << "Acronym" << "Alias" << "Set" << "Sets"
@@ -29,6 +31,7 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
 
         list = QStringList() << "Variable" << "Variables";
         mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
+        mSubStates << SyntaxState::Identifier << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
@@ -66,6 +69,10 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
     if (entryState != state()) {
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType) {
             end = findEnd(entryState, line, start);
+
+//            check syntax coordination;
+
+
             if (end > start)
                 return SyntaxBlock(this, start, end, SyntaxStateShift::out);
             else
@@ -91,11 +98,11 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
     return SyntaxBlock();
 }
 
-bool SyntaxDeclaration::isWhitechar(const QString& line, int index)
-{
-    return index<line.length() && (line.at(index).category()==QChar::Separator_Space
-                                   || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
-}
+//bool SyntaxDeclaration::isWhitechar(const QString& line, int index)
+//{
+//    return index<line.length() && (line.at(index).category()==QChar::Separator_Space
+//                                   || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
+//}
 
 int SyntaxDeclaration::findEnd(SyntaxState state, const QString& line, int index)
 {
