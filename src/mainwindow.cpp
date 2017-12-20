@@ -623,7 +623,8 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    mCommandLineTokenizer = new CommandLineTokenizer;
+    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);

@@ -22,7 +22,7 @@ class CommandLineTokenizer : public QObject
 
 public:
 
-    CommandLineTokenizer();
+    CommandLineTokenizer(Option* gamsOption);
     ~CommandLineTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);

@@ -4,10 +4,9 @@
 namespace gams {
 namespace studio {
 
-CommandLineTokenizer::CommandLineTokenizer()
+CommandLineTokenizer::CommandLineTokenizer(Option* option) :
+    gamsOption(option)
 {
-    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
-
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
     mInvalidKeyFormat.setForeground(Qt::red);

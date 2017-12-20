@@ -160,6 +160,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
+    Option* gamsOption;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;

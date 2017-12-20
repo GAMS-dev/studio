@@ -9,7 +9,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
 {
     QList<OptionItem> optionItem = tokenizer->tokenize(lineEditText);
     QString normalizedText = tokenizer->normalize(optionItem);
-    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, optionItem,  this);
+    OptionParameterModel* optionParamModel = new OptionParameterModel(optionItem, tokenizer,  this);
 
     ui.setupUi(this);
     ui.fileLabel->setText( label );
@@ -17,7 +17,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineEdit->setReadOnly( true );
     ui.showOptionDefintionCheckBox->setChecked(true);
 
-    ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.commandLineTableView->setAutoScroll(true);
     ui.commandLineTableView->setModel( optionParamModel );

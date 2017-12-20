@@ -4,8 +4,8 @@
 namespace gams {
 namespace studio {
 
-OptionParameterModel::OptionParameterModel(const QString& initCommandLineStr, QList<OptionItem> &optionItem, QObject* parent):
-    QAbstractTableModel(parent), mOptionItem(optionItem)
+OptionParameterModel::OptionParameterModel(const QList<OptionItem>& optionItem, CommandLineTokenizer* tokenizer, QObject* parent):
+    QAbstractTableModel(parent), mOptionItem(optionItem), mTokenizer(tokenizer)
 {
     mHeader.append("Key");
     mHeader.append("Value");
@@ -70,14 +70,11 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
         if (col == 0) //change text alignment only for cell(i,0)
            return Qt::AlignLeft;
         break;
-//    case Qt::CheckStateRole:
-//        if (col == 0) {
-//            if (mCheckState[row] == QVariant()) {
-//                return Qt::Unchecked;
-//            } else {
-//                   return Qt::Checked;
-//                }
-//            }
+//    case Qt::BackgroundRole:
+    case Qt::TextColorRole:
+        if (col==0)
+           return QVariant::fromValue(QColor(Qt::blue));
+        break;
     }
     return QVariant();
 }
@@ -107,6 +104,8 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
 {
     qDebug() << QString("(%1, %2) : [%3] %4").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role);
 
+//    mOptionItem.at(row).key;
+
     if (role == Qt::EditRole)   {
        if (index.column() == 0) { // key
            mOptionItem[index.row()].key = value.toString();
@@ -114,22 +113,8 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
                  mOptionItem[index.row()].value = value.toString();
        }
     }
-    QStringList strList;
-    for (OptionItem item : mOptionItem) {
-        if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
-            strList.append(item.key+"="+item.value);
-            continue;
-        }
-        QString key = item.key;
-        if (key.startsWith("-") || key.startsWith("/"))
-            key = key.mid(1);
 
-        strList.append(key+"="+item.value);
-    }
-    QString result = strList.join(" ");
-    qDebug() << QString("  result=[%1]").arg(result);
-
-    emit editCompleted( result );
+    emit editCompleted(  mTokenizer->normalize( mOptionItem ) );
     return true;
 }
 
