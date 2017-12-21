@@ -1,4 +1,5 @@
 #include "optioncompleterdelegate.h"
+//#include "optionparametermodel.h"
 
 namespace gams {
 namespace studio {
@@ -15,14 +16,23 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     if (index.column()==0) {
         completer->setModel(new QStringListModel(gamsOption->getKeyList()) );
     } else {
-
-        completer->setModel(new QStringListModel(gamsOption->getValuesList("action")) );
+        QTableView* tableView = qobject_cast<QTableView *>(this->parent());
+        QVariant key = tableView->model()->data( tableView->model()->index(index.row(), 0) );
+        if (gamsOption->isValid(key.toString())) {
+            completer->setModel(new QStringListModel(gamsOption->getValuesList(key.toString())) );
+        } else {
+            QString keyStr = gamsOption->getSynonym(key.toString());
+            completer->setModel(new QStringListModel(gamsOption->getValuesList(keyStr)) );
+        }
     }
     completer->setCompletionMode(QCompleter::PopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
 //    completer->setMaxVisibleItems(10);
 
     lineEdit->setCompleter(completer);
+
+//    connect(completer,  static_cast<void (QCompleter::*)(const QString &)>(&QCompleter::activated),
+//            this, &OptionCompleterDelegate::activated);
     return lineEdit;
 }
 
@@ -38,6 +48,12 @@ void OptionCompleterDelegate::updateEditorGeometry(QWidget *editor, const QStyle
 {
     QStyledItemDelegate::updateEditorGeometry(editor, option, index);
 }
+
+//void OptionCompleterDelegate::activated(const QString &text)
+//{
+//    qDebug() << QString("activated [%1]").arg(text);
+////    emit qobject_cast<OptionParameterModel *>(this->parent())->editCompleted();
+//}
 
 } // namespace studio
 } // namespace gams

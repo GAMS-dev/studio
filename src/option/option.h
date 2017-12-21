@@ -7,6 +7,15 @@
 namespace gams {
 namespace studio {
 
+enum OptionErrorType {
+    No_Error,
+    Invalid_Key,
+    Incorrect_Value_Type,
+    Value_Out_Of_Range,
+    Deprecated_Option,
+    Unknown_Error
+};
+
 struct OptionItem {
     OptionItem() { }
     OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos) :
@@ -75,6 +84,7 @@ public:
     bool isThereASynonym(const QString &optionName);
     bool isDeprecated(const QString &optionName);
     bool isDoubleDashedOption(const QString &optionName);
+    OptionErrorType getValueErrorType(const QString &optionName, const QString &value);
 
     QString getSynonym(const QString &optionName) const;
     optOptionType getOptionType(const QString &optionName) const;

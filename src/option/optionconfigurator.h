@@ -18,6 +18,7 @@ public:
 
 signals:
     void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
+    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
     void toggleActiveOptionItem(int index);

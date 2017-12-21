@@ -365,7 +365,7 @@ void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &dea
 
 void CommandLineTokenizer::formatLineEditTextFormat(QLineEdit *lineEdit, const QString &commandLineStr)
 {
-    this->setLineEditTextFormat(lineEdit, "");
+//    this->setLineEditTextFormat(lineEdit, "");
     this->setLineEditTextFormat(lineEdit, commandLineStr);
 }
 
@@ -376,7 +376,6 @@ Option *CommandLineTokenizer::getGamsOption() const
 
 void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, const QString& commandLineStr)
 {
-//qDebug() << QString("formatLineEditTextFormat => %1").arg(commandLineStr);
     QList<OptionError> errList;
     if (!commandLineStr.isEmpty())
         errList = this->format( this->tokenize(commandLineStr) );
@@ -395,7 +394,6 @@ void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, const QStr
         }
         errorMessage.append("\n    " + err.message);
     }
-//qDebug() << QString("formatLineEditTextFormat => errormessage [%1]").arg(errorMessage);
     if (!errorMessage.isEmpty())
         lineEdit->setToolTip(errorMessage);
     else

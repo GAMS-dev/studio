@@ -59,7 +59,7 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     int col = index.column();
 
     switch (role) {
-    case Qt::DisplayRole:
+    case Qt::DisplayRole: {
         if (mOptionItem.isEmpty())
             return QVariant();
         if (col==0)
@@ -68,19 +68,44 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
                  return mOptionItem.at(row).value;
         else
             break;
-    case Qt::TextAlignmentRole:
+    }
+    case Qt::TextAlignmentRole: {
         return Qt::AlignLeft;
+    }
+//    case Qt::DecorationRole
 //    case Qt::BackgroundRole:
-    case Qt::TextColorRole:
-        if (!gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
-           if (gamsOption->isValid(mOptionItem.at(row).key)) { // valid option
-               if (gamsOption->isDeprecated(mOptionItem.at(row).key))
-                   return QVariant::fromValue(QColor(Qt::gray));
-           } else { // invalid option
-                  return QVariant::fromValue(QColor(Qt::red));
+    case Qt::TextColorRole: {
+        if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) // double dashed parameter
+            return QVariant::fromValue(QColor(Qt::black));
+
+        if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
+           if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
+               return QVariant::fromValue(QColor(Qt::gray));
+           } else { // valid and not deprected Option
+                if (col==0) {
+                   return  QVariant::fromValue(QColor(Qt::black));
+                } else {
+
+                    switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                     case No_Error:
+                           return QVariant::fromValue(QColor(Qt::black));
+                     case Incorrect_Value_Type:
+                        return QVariant::fromValue(QColor(Qt::green));
+                     case Value_Out_Of_Range:
+                           return QVariant::fromValue(QColor(Qt::blue));
+                     default:
+                          return QVariant::fromValue(QColor(Qt::black));
+                    }
+                }
            }
+        } else { // invalid option
+            if (col == 0)
+               return QVariant::fromValue(QColor(Qt::red));
+            else
+                return QVariant::fromValue(QColor(Qt::black));
         }
-        return QVariant::fromValue(QColor(Qt::black));
+
+     }
      default:
         break;
     }
@@ -108,14 +133,17 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
 
 bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-//    qDebug() << QString("(%1, %2) : [%3] %4").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role);
-//    mOptionItem.at(row).key;
+    QString data = value.toString().simplified();
+//    qDebug() << QString("(%1, %2) : [%3] %4 %5").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role).arg(val.simplified().isEmpty());
+
+    if (data.isEmpty())
+        return false;
 
     if (role == Qt::EditRole)   {
        if (index.column() == 0) { // key
-           mOptionItem[index.row()].key = value.toString();
+           mOptionItem[index.row()].key = data;
        } else if (index.column() == 1) { // value
-                 mOptionItem[index.row()].value = value.toString();
+                 mOptionItem[index.row()].value = data;
        }
     }
 

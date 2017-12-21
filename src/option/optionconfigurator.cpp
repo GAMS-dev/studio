@@ -15,7 +15,8 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.setupUi(this);
     ui.fileLabel->setText( label );
     ui.commandLineEdit->setText( normalizedText );
-    ui.commandLineEdit->setReadOnly( true );
+//    ui.commandLineEdit->setReadOnly( true );
+    ui.commandLineEdit->setClearButtonEnabled(true);
     ui.showOptionDefintionCheckBox->setChecked(true);
 
 //    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -37,6 +38,8 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
             this, &OptionConfigurator::toggleActiveOptionItem);
     connect(optionParamModel, &OptionParameterModel::editCompleted,
             this, &OptionConfigurator::updateCommandLineStr);
+    connect(this, &OptionConfigurator::commandLineOptionChanged,
+            tokenizer, &CommandLineTokenizer::formatLineEditTextFormat);
 }
 
 OptionConfigurator::~OptionConfigurator()
@@ -63,6 +66,8 @@ void OptionConfigurator::toggleOptionDefinition(bool checked)
 void OptionConfigurator::updateCommandLineStr(const QString &commandLineStr)
 {
     ui.commandLineEdit->setText( commandLineStr );
+//    qDebug() << QString("updateCommandLineStr %1").arg(commandLineStr);
+    emit commandLineOptionChanged(ui.commandLineEdit, commandLineStr);
 }
 
 } // namespace studio

@@ -87,6 +87,65 @@ bool Option::isDoubleDashedOption(const QString &optionName)
     return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
 }
 
+OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value)
+{
+    QString key = optionName;
+    if (!isValid(key))
+        key = getSynonym(optionName);
+
+    switch(getOptionType(key)) {
+     case optTypeEnumInt : {
+         bool isCorrectDataType = false;
+         int n = value.toInt(&isCorrectDataType);
+         if (isCorrectDataType) {
+            for (OptionValue optValue: getValueList(key)) {
+               if (optValue.value.toInt() == n) { // && !optValue.hidden) {
+                   return No_Error;
+               }
+            }
+            return Value_Out_Of_Range;
+         } else {
+             return Incorrect_Value_Type;
+         }
+     }
+     case optTypeEnumStr : {
+         for (OptionValue optValue: getValueList(key)) {
+           if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
+               return No_Error;
+           }
+         }
+        return Value_Out_Of_Range;
+     }
+     case optTypeInteger: {
+        bool isCorrectDataType = false;
+        int n = value.toInt(&isCorrectDataType);
+        if (isCorrectDataType) {
+            if ((n < getLowerBound(key).toInt()) || (getUpperBound(key).toInt() < n)) {
+                return Value_Out_Of_Range;
+            }
+            return No_Error;
+        } else {
+             return Incorrect_Value_Type;
+        }
+     }
+     case optTypeDouble: {
+        bool isCorrectDataType = false;
+        double d = value.toDouble(&isCorrectDataType);
+        if (isCorrectDataType) {
+            if ((d < getLowerBound(key).toDouble()) || (getUpperBound(key).toDouble() < d)) {
+                return Value_Out_Of_Range;
+            }
+            return No_Error;
+        } else {
+             return Incorrect_Value_Type;
+        }
+     }
+     default:
+        break;
+    }
+    return Unknown_Error;
+}
+
 QString Option::getSynonym(const QString &optionName) const
 {
     return mSynonymMap[optionName.toUpper()];
