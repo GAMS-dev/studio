@@ -133,9 +133,8 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
-    void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
-
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
 
 protected slots:

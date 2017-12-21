@@ -112,6 +112,23 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
     *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
+void FileRepository::findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
+{
+    // TODO(JM) Before using this method the DirectoryWatcher of the groups needs to be deactivated
+    if (!fileGroup)
+        EXCEPT() << "The group must not be null";
+    FileSystemContext* fsc = findContext(filePath, fileGroup);
+    if (!fsc) {
+        QFileInfo fi(filePath);
+        *resultFile = addFile(fi.fileName(), fi.canonicalFilePath(), fileGroup);
+    } else if (fsc->type() == FileSystemContext::File) {
+        *resultFile = static_cast<FileContext*>(fsc);
+    } else {
+        *resultFile = nullptr;
+    }
+
+}
+
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
     // TODO(JM) rename this to modifiedFiles()
@@ -184,6 +201,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
+    connect(fileContext, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     updateActions();
     return fileContext;
 }
@@ -381,6 +399,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
         res = new LogContext(mNextId++, "["+group->name()+"]");
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
         connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
+        connect(res, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;

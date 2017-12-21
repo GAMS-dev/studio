@@ -228,15 +228,19 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     mark.col = 4;
 //                    result += QString("[%1]").arg(QFileInfo(fName).suffix().toUpper());
                     mark.size = result.length() - mark.col - 1;
+
                     FileContext *fc;
+
+                    // TODO(JM) use this instead ... AFTER alowing individual files in group:
+                    // emit findOrCreateFileContext(fName, &fc, parentEntry());
                     emit findFileContext(fName, &fc, parentEntry());
+
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
                         errFound = false;
                     } else {
-                        result += line;
                         state = Outside;
                         break;
                     }

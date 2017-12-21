@@ -140,6 +140,7 @@ public slots:
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
     void removeGroup(FileGroupContext* fileGroup);
 

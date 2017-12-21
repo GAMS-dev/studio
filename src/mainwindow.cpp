@@ -505,6 +505,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
             groupContext->jumpToMark(doFocus);
 
         FileContext* lstCtx = nullptr;
+        // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
         mFileRepo.findFile(lstFile, &lstCtx, groupContext);
         if (lstCtx) {
             lstCtx->updateMarks();
