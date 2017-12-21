@@ -120,11 +120,7 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat '''
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                        '''
-                        fileOperations([fileDeleteOperation(excludes: '', includes: '*.zip')])
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
@@ -136,11 +132,7 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat '''
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                        '''
-                        fileOperations([fileDeleteOperation(excludes: '', includes: '*.zip')])
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'
