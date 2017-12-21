@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -1086,7 +1087,6 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileType::Gsp) {
@@ -1134,7 +1134,24 @@ void MainWindow::on_actionSettings_triggered()
     sd.exec();
 }
 
-}
+void MainWindow::on_actionSearch_triggered()
+{
+    // create
+    if (sw == nullptr) {
+        sw = new SearchWidget(mRecent, mFileRepo, this);
+    }
+
+    // toggle visibility
+    if (sw->isVisible()) {
+        sw->hide();
+    } else {
+        QPoint p(0,0);
+        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
+        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
+        sw->move(newP.x() + offset, newP.y());
+        sw->show();
+    }
 }
 
-
+}
+}

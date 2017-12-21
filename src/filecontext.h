@@ -122,6 +122,7 @@ public:
     void rehighlightAt(int pos);
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -151,7 +152,6 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
 
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
 

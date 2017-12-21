@@ -54,6 +54,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     end = marksEnd;
 
     for (TextMark* mark: marks) {
+        qDebug() << "checking mark" << mark;
         if (mark->blockStart() >= end || mark->blockEnd() < start)
             continue;
         QTextCharFormat combinedFormat(format);
@@ -77,6 +78,11 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             combinedFormat.setAnchor(true);
             combinedFormat.setAnchorName(QString::number(mark->line()));
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
+        }
+        if (mark->type() == TextMark::result) {
+            qDebug() << "found TextMark::result";
+            combinedFormat.setBackground(mark->color());
+            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
         }
 
     }
@@ -205,7 +211,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
     if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {
         setCurrentBlockState(code);
-        DEB() << "currentBlockState set to " << currentBlockState();
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }

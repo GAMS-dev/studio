@@ -88,6 +88,9 @@ QColor TextMark::color()
         return Qt::darkRed;
     if (mReference->fileKind() == FileType::Lst)
         return Qt::blue;
+    if (mReference->type() == TextMark::result) {
+        return Qt::yellow;
+    }
     return Qt::darkGreen;
 }
 
