@@ -2,7 +2,7 @@
 #define SEARCHWIDGET_H
 
 #include "mainwindow.h"
-#include <QFrame>
+#include <QDialog>
 
 namespace Ui {
 class SearchWidget;
@@ -11,7 +11,7 @@ class SearchWidget;
 namespace gams {
 namespace studio {
 
-class SearchWidget : public QFrame
+class SearchWidget : public QDialog
 {
     Q_OBJECT
 
@@ -37,6 +37,7 @@ private:
     bool mMutliSelection = false; // 'find all' pressed
 
     void showEvent(QShowEvent *event);
+    void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
 };
 

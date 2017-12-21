@@ -821,16 +821,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    if (sw->isVisible() && event->key() == Qt::Key_Escape) {
-        sw->hide();
-        mRecent.editor->setFocus();
-    }
-    if (sw->isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        sw->find(true);
-    } else if (sw->isVisible() && event->key() == Qt::Key_F3) {
-        sw->find();
-    }
-
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
     } else {
@@ -1156,7 +1146,7 @@ void MainWindow::on_actionSearch_triggered()
         sw->hide();
     } else {
         QPoint p(0,0);
-        QPoint newP(ui->mainTab->currentWidget()->mapTo(this, p));
+        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
         int offset = (ui->mainTab->currentWidget()->width() - sw->width());
         sw->move(newP.x() + offset, newP.y());
         sw->show();

@@ -7,7 +7,7 @@ namespace gams {
 namespace studio {
 
 SearchWidget::SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent) :
-    QFrame(parent),
+    QDialog(parent),
     ui(new Ui::SearchWidget), mRecent(rec), mRepo(repo)
 {
     ui->setupUi(this);
@@ -134,6 +134,21 @@ void SearchWidget::showEvent(QShowEvent *event)
     else
         ui->txt_search->setText("");
 }
+
+void SearchWidget::keyPressEvent(QKeyEvent* event)
+{
+    if (isVisible() && ( event->key() == Qt::Key_Escape
+                         || (Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
+        hide();
+        mRecent.editor->setFocus();
+    }
+    if (isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        find(true);
+    } else if (isVisible() && event->key() == Qt::Key_F3) {
+        find();
+    }
+}
+
 
 void SearchWidget::on_txt_search_returnPressed()
 {
