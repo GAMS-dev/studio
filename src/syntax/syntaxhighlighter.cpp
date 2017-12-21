@@ -8,7 +8,7 @@ namespace studio {
 
 
 ErrorHighlighter::ErrorHighlighter(FileContext* context, TextMarkList *marks)
-    : QSyntaxHighlighter(context->document()), mContext(context), mMarks(marks)
+    : QSyntaxHighlighter(context->document()), mMarks(marks), mContext(context)
 {
     if (!document()) return;
     connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
@@ -93,6 +93,8 @@ void ErrorHighlighter::docBlockCountChanged(int newCount)
 
 void ErrorHighlighter::docContentsChange(int from, int removed, int added)
 {
+    Q_UNUSED(removed)
+    Q_UNUSED(added)
     // TODO(JM) check for use of removed and added to remove display
     QList<TextMark*> marks = mMarks->marksForBlock(document()->findBlock(from));
     for (TextMark* mark: marks) {

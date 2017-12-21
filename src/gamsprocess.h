@@ -43,7 +43,7 @@ public:
     QString workingDir() const;
 
     void setContext(FileGroupContext *context);
-    FileGroupContext* context();
+    FileGroupContext* context() override;
     LogContext* logContext() const;
 
     void execute() override;

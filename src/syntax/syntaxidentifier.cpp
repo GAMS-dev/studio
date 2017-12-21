@@ -10,6 +10,7 @@ SyntaxIdentifier::SyntaxIdentifier()
 
 SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, int index)
 {
+    Q_UNUSED(entryState)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
