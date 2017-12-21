@@ -20,17 +20,32 @@ SearchWidget::~SearchWidget()
 
 void SearchWidget::find(bool backwards)
 {
+    bool useRegex = ui->cb_regex->isChecked();
     QString searchTerm = ui->txt_search->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
+    if (backwards)
+        searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
 
-    if (backwards) searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
+    QRegularExpression searchRegex;
+    if (useRegex) searchRegex.setPattern(searchTerm);
 
     mLastSelection = (!mSelection.isNull() ? mSelection : mRecent.editor->textCursor());
-    mSelection = mRecent.editor->document()->find(searchTerm, mLastSelection, searchFlags);
+    if (useRegex) {
+        mSelection = mRecent.editor->document()->find(searchRegex, mLastSelection, searchFlags);
+    } else {
+        mSelection = mRecent.editor->document()->find(searchTerm, mLastSelection, searchFlags);
+    }
 
-    if (mSelection.isNull())
-        mSelection = mRecent.editor->document()->find(searchTerm, 0, searchFlags); // try to start over
+    // nothing found, try to start over
+    if (mSelection.isNull()) {
+        if (useRegex) {
+            mSelection = mRecent.editor->document()->find(searchRegex, 0, searchFlags);
+        } else {
+            mSelection = mRecent.editor->document()->find(searchTerm, 0, searchFlags);
+        }
+    }
 
+    // on hit
     if (!mSelection.isNull()) {
         mRecent.editor->setTextCursor(mSelection);
         ui->btn_Replace->setEnabled(true);
@@ -39,7 +54,7 @@ void SearchWidget::find(bool backwards)
 
 void SearchWidget::on_btn_Find_clicked()
 {
-    find(false);
+    find();
 }
 
 void SearchWidget::on_btn_FindAll_clicked()

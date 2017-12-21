@@ -1097,7 +1097,6 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileType::Gsp) {
