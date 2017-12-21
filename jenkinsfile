@@ -132,6 +132,7 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
+                        bat 'echo %PATH%'
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
