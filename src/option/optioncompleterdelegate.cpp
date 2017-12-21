@@ -1,3 +1,4 @@
+#include "lineeditcompleteevent.h"
 #include "optioncompleterdelegate.h"
 //#include "optionparametermodel.h"
 
@@ -23,13 +24,16 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
         } else {
             QString keyStr = gamsOption->getSynonym(key.toString());
             completer->setModel(new QStringListModel(gamsOption->getValuesList(keyStr)) );
+
         }
     }
-    completer->setCompletionMode(QCompleter::PopupCompletion);
+    completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
-//    completer->setMaxVisibleItems(10);
+    completer->setMaxVisibleItems(10);
 
     lineEdit->setCompleter(completer);
+
+    connect(lineEdit, &QLineEdit::textChanged, this, &OptionCompleterDelegate::on_lineEdit_textChanged);
 
 //    connect(completer,  static_cast<void (QCompleter::*)(const QString &)>(&QCompleter::activated),
 //            this, &OptionCompleterDelegate::activated);
@@ -46,7 +50,16 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 }
 void OptionCompleterDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyledItemDelegate::updateEditorGeometry(editor, option, index);
+     QStyledItemDelegate::updateEditorGeometry(editor, option, index);
+}
+
+void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
+{
+    if (text.simplified().isEmpty()) {
+        foreach(QWidget* widget, qApp->topLevelWidgets())
+            if (QMainWindow*  mainWindow = qobject_cast<QMainWindow *>(widget))
+                QApplication::postEvent(mainWindow, new LineEditCompleteEvent((QLineEdit*)sender()));
+    }
 }
 
 //void OptionCompleterDelegate::activated(const QString &text)

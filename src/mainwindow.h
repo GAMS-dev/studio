@@ -26,6 +26,7 @@
 #include "modeldialog/libraryitem.h"
 #include "option/commandlinehistory.h"
 #include "option/commandlineoption.h"
+#include "option/lineeditcompleteevent.h"
 #include "option/optionconfigurator.h"
 #include "projectcontextmenu.h"
 
@@ -142,6 +143,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     void mouseMoveEvent(QMouseEvent *event);
+    void customEvent(QEvent * event);
 
 private:
     void initTabs();

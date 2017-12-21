@@ -874,6 +874,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
     QMainWindow::mouseMoveEvent(event);
 }
 
+void MainWindow::customEvent(QEvent *event)
+{
+    QMainWindow::customEvent(event);
+    if (event->type() == LineEditCompleteEvent::type())
+        ((LineEditCompleteEvent*)event)->complete();
+}
+
 void MainWindow::execute(QString commandLineStr)
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);

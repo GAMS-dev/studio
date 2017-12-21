@@ -23,6 +23,9 @@ public:
 //public slots:
 //    void activated(const QString &text);
 
+private slots:
+    void on_lineEdit_textChanged(const QString &text);
+
 private:
     CommandLineTokenizer* commandLineTokenizer;
     Option* gamsOption;
