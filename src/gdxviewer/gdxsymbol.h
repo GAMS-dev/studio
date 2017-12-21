@@ -55,7 +55,7 @@ public:
 
     int subType() const;
 
-    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
     void filterRows();
     int sortColumn() const;

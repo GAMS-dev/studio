@@ -137,6 +137,7 @@ void FileGroupContext::setLogContext(LogContext* logContext)
 
 void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
 {
+    Q_UNUSED(state)
     // TODO(JM) visualize if a state is running
 }
 

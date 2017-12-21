@@ -80,7 +80,6 @@ private:
     int mSize = 0;
     int mValue = 0;
     QTextCursor mCursor;
-    Qt::CursorShape *mCursorShape = nullptr;
     TextMark* mReference = nullptr;
 };
 

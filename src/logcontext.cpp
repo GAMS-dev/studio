@@ -80,6 +80,7 @@ TextMark*LogContext::firstErrorMark()
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
+    Q_UNUSED(channel)
     bool debugTheLog = false;
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)

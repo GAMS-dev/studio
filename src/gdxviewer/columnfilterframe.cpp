@@ -35,11 +35,13 @@ ColumnFilterFrame::~ColumnFilterFrame()
 
 void ColumnFilterFrame::mousePressEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
 }
 
 
 void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
 }
 
 
@@ -98,6 +100,7 @@ void ColumnFilterFrame::toggleHideUnselected(bool checked)
 
 void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
+    Q_UNUSED(roles)
     if (ui.cbToggleHideUnselected->isChecked())
     {
         for(int row=topLeft.row(); row<=bottomRight.row(); row++)

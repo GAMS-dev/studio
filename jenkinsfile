@@ -15,6 +15,7 @@ pipeline {
                         sh '''
                             qmake src/studio.pro && make -j3
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX86: {
@@ -22,12 +23,11 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.3\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
                             qmake studio.pro
                             mingw32-make
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX64: {
@@ -44,6 +44,7 @@ pipeline {
                             qmake studio.pro "CONFIG+=release"
                             nmake
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 macos: {
@@ -51,6 +52,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake src/studio.pro && make -j3'
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 }
             }
@@ -116,11 +118,8 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat """
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
-                        """
+                        bat 'echo %PATH%'
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
@@ -132,11 +131,8 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat """
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
-                        """
+                        bat 'echo %PATH%'
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'

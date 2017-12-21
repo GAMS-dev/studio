@@ -91,7 +91,6 @@ QColor TextMark::color()
     if (mReference->type() == TextMark::result) {
         return Qt::yellow;
     }
-
     return Qt::darkGreen;
 }
 

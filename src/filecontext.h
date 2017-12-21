@@ -61,17 +61,17 @@ public:
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
-    virtual const QString caption();
+    virtual const QString caption() override;
 
     bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
-    void setLocation(const QString &_location);
+    void setLocation(const QString &_location) override;
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    QIcon icon();
+    QIcon icon() override;
 
     /// Saves the file, if it is changed.
     void save();
@@ -149,7 +149,7 @@ protected:
     FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
 
     QList<QPlainTextEdit*>& editorList();
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
 
     void removeTextMarks(TextMark::Type tmType);

@@ -27,6 +27,8 @@ FilterUelModel::~FilterUelModel()
 
 QVariant FilterUelModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(section)
+    Q_UNUSED(role)
     return QVariant();
 }
 
