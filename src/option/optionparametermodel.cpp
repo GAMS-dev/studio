@@ -32,7 +32,7 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
         return mCheckState[index];
     case Qt::DecorationRole:
         QPixmap p{12,12};
-        p.fill(Qt::CheckState(headerData(index, orientation, Qt::CheckStateRole).toUInt()) ? Qt::red : Qt::green);
+        p.fill(Qt::CheckState(headerData(index, orientation, Qt::CheckStateRole).toUInt()) ? Qt::gray : Qt::green);
         return p;
     }
 
@@ -134,7 +134,6 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
 bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     QString data = value.toString().simplified();
-//    qDebug() << QString("(%1, %2) : [%3] %4 %5").arg(index.row()).arg(index.column()).arg(value.toString()).arg(role).arg(val.simplified().isEmpty());
 
     if (data.isEmpty())
         return false;
