@@ -123,8 +123,8 @@ pipeline {
                         bat """
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
                         """
+                        fileOperations([fileDeleteOperation(excludes: '', includes: '*.zip')])
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
@@ -139,8 +139,8 @@ pipeline {
                         bat """
                             cd src\\bin
                             windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
                         """
+                        fileOperations([fileDeleteOperation(excludes: '', includes: '*.zip')])
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'
