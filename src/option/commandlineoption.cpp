@@ -12,6 +12,7 @@ CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
     this->setCurrentIndex(-1);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->setInsertPolicy(QComboBox::InsertAtTop);
+    this->lineEdit()->setClearButtonEnabled(true);
 
     connect(this, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &CommandLineOption::updateCurrentOption );
