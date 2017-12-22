@@ -75,6 +75,9 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 //    case Qt::ToolTipRole: {
 //    case Qt::DecorationRole
     case Qt::TextColorRole: {
+        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
+            return QVariant::fromValue(QColor(Qt::gray));
+
         if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) // double dashed parameter
             return QVariant::fromValue(QColor(Qt::black));
         if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
