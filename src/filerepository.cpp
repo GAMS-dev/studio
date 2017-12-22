@@ -19,7 +19,7 @@
  */
 #include "filerepository.h"
 #include "exception.h"
-#include "textmark.h"
+#include "syntax.h"
 #include "logger.h"
 
 namespace gams {
@@ -112,17 +112,21 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
     *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-void FileRepository::setErrorHint(const int errCode, const QString &hint)
+void FileRepository::findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
 {
-    if (mErrorHints.contains(errCode) && hint.isEmpty())
-        mErrorHints.remove(errCode);
-    else
-        mErrorHints.insert(errCode, hint);
-}
+    // TODO(JM) Before using this method the DirectoryWatcher of the groups needs to be deactivated
+    if (!fileGroup)
+        EXCEPT() << "The group must not be null";
+    FileSystemContext* fsc = findContext(filePath, fileGroup);
+    if (!fsc) {
+        QFileInfo fi(filePath);
+        *resultFile = addFile(fi.fileName(), fi.canonicalFilePath(), fileGroup);
+    } else if (fsc->type() == FileSystemContext::File) {
+        *resultFile = static_cast<FileContext*>(fsc);
+    } else {
+        *resultFile = nullptr;
+    }
 
-void FileRepository::getErrorHint(const int errCode, QString &hint)
-{
-    hint = mErrorHints.value(errCode);
 }
 
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
@@ -197,8 +201,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
-    connect(fileContext, &FileContext::createErrorHint, this, &FileRepository::setErrorHint);
-    connect(fileContext, &FileContext::requestErrorHint, this, &FileRepository::getErrorHint);
+    connect(fileContext, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     updateActions();
     return fileContext;
 }
@@ -282,7 +285,7 @@ void FileRepository::updatePathNode(int fileId, QDir dir)
 {
     FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
     if (!parGroup)
-        throw QException();
+        EXCEPT() << "Can't update path node. Group " << fileId << " not found.";
     if (dir.exists()) {
         QStringList fileFilter;
         for (QString suff: mSuffixFilter)
@@ -396,8 +399,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
         res = new LogContext(mNextId++, "["+group->name()+"]");
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
         connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
-        connect(res, &LogContext::createErrorHint, this, &FileRepository::setErrorHint);
-        connect(res, &LogContext::requestErrorHint, this, &FileRepository::getErrorHint);
+        connect(res, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;
@@ -412,7 +414,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
         FileSystemContext* fsc = group->childEntry(i);
         if (fsc->type() == FileSystemContext::File) {
             FileContext* fc = static_cast<FileContext*>(fsc);
-            fc->removeTextMarks(QSet<TextMark::Type>()<<TextMark::error<<TextMark::link);
+            fc->removeTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
         }
     }
 }

@@ -19,6 +19,7 @@
  */
 #include "mainwindow.h"
 #include "application.h"
+#include "exception.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,9 +27,26 @@ int main(int argc, char *argv[])
     a.setOrganizationName("GAMS");
     a.setOrganizationDomain("www.gams.com");
     a.setApplicationName("Studio");
+    try {
+        gams::studio::MainWindow w;
+        w.show();
+        return a.exec();
+    } catch (gams::studio::FatalException &e) {
+        gams::studio::Application::showBox(QObject::tr("fatal exception"), e.what());
+        return -1;
+    } catch (gams::studio::Exception &e) {
+        gams::studio::Application::showBox(QObject::tr("error"), e.what());
+    } catch (QException &e) {
+        gams::studio::Application::showBox(QObject::tr("external exception"), e.what());
+        e.raise();
+    } catch (std::exception &e) {
+        QString title(QObject::tr("standard exception"));
+        gams::studio::Application::showBox(title, e.what());
+        FATAL() << title << " - " << e.what();
+    } catch (...) {
+        QString msg(QObject::tr("An exception occured. Due to its unknown type the message can't be shown"));
+        gams::studio::Application::showBox(QObject::tr("unknown exception"), msg);
+        FATAL() << msg;
+    }
 
-    gams::studio::MainWindow w;
-    w.show();
-
-    return a.exec();
 }

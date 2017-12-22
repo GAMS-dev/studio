@@ -29,18 +29,15 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-enum MouseOverLinkType {
-    molNone = 0,
-    molErrIcon = TextMark::error,
-    molLinkIcon = TextMark::link,
-    molBookmarkIcon = TextMark::bookmark,
-    molText = TextMark::all+1,
-};
-
 FileContext::FileContext(int id, QString name, QString location, ContextType type)
     : FileSystemContext(id, name, location, type)
 {
     mMetrics = FileMetrics(QFileInfo(location));
+    if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
+        mSyntaxHighlighter = new SyntaxHighlighter(this, &mMarks);
+    else if (mMetrics.fileType() != FileType::Gdx) {
+        mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
+    }
 }
 
 QList<QPlainTextEdit*>&FileContext::editorList()
@@ -142,6 +139,8 @@ void FileContext::addEditor(QPlainTextEdit* edit)
     if (mEditors.size() == 1) {
         document()->setParent(this);
         connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+        if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
+            mSyntaxHighlighter->setDocAndConnect(document());
         QTimer::singleShot(50, this, &FileContext::updateMarks);
     } else {
         edit->setDocument(document());
@@ -159,8 +158,8 @@ void FileContext::addEditor(QPlainTextEdit* edit)
 void FileContext::addEditor(CodeEditor* edit)
 {
     addEditor(static_cast<QPlainTextEdit*>(edit));
-    connect(edit, &CodeEditor::requestMarkHash, this, &FileContext::shareMarkHash);
-    connect(edit, &CodeEditor::requestMarksEmpty, this, &FileContext::textMarksEmpty);
+    connect(edit, &CodeEditor::requestMarkHash, &mMarks, &TextMarkList::shareMarkHash);
+    connect(edit, &CodeEditor::requestMarksEmpty, &mMarks, &TextMarkList::textMarksEmpty);
 }
 
 void FileContext::editToTop(QPlainTextEdit* edit)
@@ -176,6 +175,9 @@ void FileContext::removeEditor(QPlainTextEdit* edit)
     bool wasModified = isModified();
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
+        if (mSyntaxHighlighter && !document()) {
+            mSyntaxHighlighter->setDocAndConnect(nullptr);
+        }
         // After removing last editor: paste document-parency back to editor
         edit->document()->setParent(edit);
         disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
@@ -211,6 +213,7 @@ QTextDocument*FileContext::document()
 
 void FileContext::load(QString codecName)
 {
+//    TRACETIME();
     if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 
@@ -244,7 +247,7 @@ void FileContext::load(QString codecName)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
-        QTimer::singleShot(100, this, &FileContext::updateMarks);
+        QTimer::singleShot(50, this, &FileContext::updateMarks);
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
@@ -253,25 +256,15 @@ void FileContext::load(QString codecName)
     }
 }
 
-void FileContext::setSyntaxHighlight(bool on)
+void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
 {
-    if (!document() && on)
-        EXCEPT() << "No document to highlight the syntax";
-
-    if (on && !mSyntaxHighlighter)
-        mSyntaxHighlighter = new SyntaxHighlighter(document());
-    else if (!on && mSyntaxHighlighter)
-        delete mSyntaxHighlighter;
-}
-
-void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
-{
+    emit openFileContext(this, focus);
     if (mEditors.size()) {
         QPlainTextEdit* edit = mEditors.first();
-        QTextCursor tc(cursor);
+        QTextCursor tc(cursor.isNull() ? QTextCursor(edit->document()->findBlockByNumber(altLine)) : cursor);
+        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
         tc.clearSelection();
         edit->setTextCursor(tc);
-        emit openFileContext(this, focus);
         // center line vertically
         int lines = edit->rect().bottom() / edit->cursorRect().height();
         int line = edit->cursorRect().bottom() / edit->cursorRect().height();
@@ -280,66 +273,60 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus)
     }
 }
 
-void FileContext::showToolTip(const TextMark& mark)
+void FileContext::showToolTip(const QList<TextMark*> marks)
 {
-    if (mEditors.size() && !mark.textCursor().isNull()) {
+    if (mEditors.size() && marks.size() > 0 &&  !marks.first()->textCursor().isNull()) {
         QPlainTextEdit* edit = mEditors.first();
-        QTextCursor cursor(mark.textCursor());
+        QTextCursor cursor(marks.first()->textCursor());
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
-        QString tip;
-        emit requestErrorHint(mark.value(), tip);
-
+        QString tip = parentEntry()->lstErrorText(marks.first()->value());
         QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
+    }
+}
+
+void FileContext::rehighlightAt(int pos)
+{
+    if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
+}
+
+void FileContext::updateMarks()
+{
+    // TODO(JM) Perform a large-file-test if this should have an own thread
+    mMarks.updateMarks();
+    if (mMarksEnhanced) return;
+    QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
+    if (mMetrics.fileType() == FileType::Lst && document()) {
+        for (TextMark* mark: mMarks.marks()) {
+            QList<int> errNrs;
+            int lineNr = mark->line();
+            QTextBlock block = document()->findBlockByNumber(lineNr).next();
+            QStringList errText;
+            while (block.isValid()) {
+                QRegularExpressionMatch match = rex.match(block.text());
+                if (!match.hasMatch()) break;
+                if (match.capturedLength(3)) { // first line with error numbers and indent
+                    for (QString nrText: match.captured(3).split(",")) errNrs << nrText.toInt();
+                    if (match.capturedLength(4)) errText << match.captured(4);
+                } else if (match.capturedLength(5)) { // line with error number and description
+                    errText << match.captured(5)+"\t"+match.captured(6);
+                } else if (match.capturedLength(7)) { // indented follow-up line for error description
+                    errText << "\t"+match.captured(7);
+                } else if (match.capturedLength(8)) { // non-indented line for additional error description
+                    errText << match.captured(8);
+                }
+                block = block.next();
+            }
+            parentEntry()->setLstErrorText(lineNr, errText.join("\n"));
+        }
+        mMarksEnhanced = true;
     }
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
-    TextMark* res = new TextMark(tmType);
-    res->setPosition(this, line, column, size);
-    res->setValue(value);
-    mTextMarks << res;
-    markLink(res);
-    if (!res->icon().isNull()) {
-        // TODO(JM) to early
-        emit setLineIcon(line, res->icon());
-    }
-    return res;
-}
-
-void FileContext::markLink(TextMark* mark)
-{
-    // TODO(JM) process marking in TextMark
-    if (!mEditors.size() || !mark || mark->textCursor().isNull()) return;
-    bool mod = document()->isModified();
-    QPlainTextEdit *edit = mEditors.first();
-    QTextCursor oldCur = QTextCursor(edit->document());
-    QTextCursor cur = mark->textCursor();
-    QTextCharFormat oldFormat = cur.charFormat();
-    QTextCharFormat newFormat = oldFormat;
-    if (mark->type() == TextMark::error) {
-        newFormat.setUnderlineColor(Qt::red);
-        newFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-        cur.setCharFormat(newFormat);
-        cur.setPosition(mark->textCursor().selectionEnd());
-        cur.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-        newFormat.setBackground(QColor(225,200,255));
-        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        newFormat.setAnchorName(QString::number(mark->line()));
-        cur.setCharFormat(newFormat);
-    }
-    if (mark->type() == TextMark::link) {
-        newFormat.setForeground(Qt::blue);
-        newFormat.setUnderlineColor(Qt::blue);
-        newFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        newFormat.setToolTip(QString::number(mark->value()));
-        newFormat.setAnchor(true);
-        newFormat.setAnchorName(QString::number(mark->line()));
-        cur.setCharFormat(newFormat);
-    }
-    edit->setTextCursor(oldCur);
-    document()->setModified(mod);
+    TextMark* mark = mMarks.generateTextMark(this, tmType, value, line, column, size);
+    return mark;
 }
 
 void FileContext::removeTextMarks(TextMark::Type tmType)
@@ -349,36 +336,11 @@ void FileContext::removeTextMarks(TextMark::Type tmType)
 
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
-    int i = mTextMarks.size();
-    while (i > 0) {
-        --i;
-        TextMark* tm = mTextMarks.at(i);
-        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all))
-            delete mTextMarks.takeAt(i);
-    }
-
+    mMarks.removeTextMarks(tmTypes);
+    if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
     for (QPlainTextEdit* ed: mEditors) {
         ed->update(); // trigger delayed repaint
     }
-}
-
-TextMark* FileContext::findMark(const QTextCursor &cursor)
-{
-    for (TextMark* mark: mTextMarks) {
-        QTextCursor tc = mark->textCursor();
-        if (tc.isNull()) break;
-        if (tc.blockNumber() > cursor.blockNumber()) break;
-        if (tc.blockNumber() < cursor.blockNumber()) continue;
-        if (cursor.atBlockStart())
-            return mark;
-
-        int a = tc.block().position() + mark->column();
-        int b = a + (mark->size() ? mark->size() : tc.block().length());
-        if (cursor.position() >= b) continue;
-        if (cursor.position() >= a && (cursor.selectionEnd() < b))
-            return mark;
-    }
-    return nullptr;
 }
 
 bool FileContext::eventFilter(QObject* watched, QEvent* event)
@@ -398,48 +360,71 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     // TODO(JM) use updateLinkDisplay
 
 
-    if (evCheckKey.contains(event->type())) {
+    // TODO(JM) FileType of Log should be set to Log
+    if (event->type() == QEvent::MouseButtonDblClick && mMetrics.fileType() == FileType::None /*FileType::Log*/) {
+        QPlainTextEdit* edit = mEditors.first();
+        QPoint pos = static_cast<QMouseEvent*>(event)->pos();
+        int line = edit->cursorForPosition(pos).blockNumber();
+        TextMark* linkMark = nullptr;
+        for (TextMark *mark: mMarks.marks()) {
+            if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
+                if (mark->line() < line)
+                    linkMark = mark;
+                else if (!linkMark)
+                    linkMark = mark;
+                else if (qAbs(linkMark->line()-line) < qAbs(mark->line()-line))
+                    break;
+                else {
+                    linkMark = mark;
+                    break;
+                }
+            }
+        }
+        if (linkMark) linkMark->jumpToRefMark(true);
+
+    } else if (evCheckKey.contains(event->type())) {
+
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMarkAtMouse ? Qt::PointingHandCursor : Qt::IBeamCursor);
+            mEditors.first()->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
         } else {
             mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
         }
         return FileSystemContext::eventFilter(watched, event);
-    }
 
-    if (evCheckMouse.contains(event->type())) {
+    } else if (evCheckMouse.contains(event->type())) {
+
         QPlainTextEdit* edit = mEditors.first();
         QPoint pos = (event->type() == QEvent::ToolTip) ? static_cast<QHelpEvent*>(event)->pos()
                                                         : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
-        mMarkAtMouse = findMark(cursor);
+        mMarksAtMouse = mMarks.findMarks(cursor);
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea
         if (codeEdit && watched == codeEdit && event->type() != QEvent::ToolTip) {
             Qt::CursorShape shape = Qt::ArrowCursor;
-            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape, true);
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
             codeEdit->lineNumberArea()->setCursor(shape);
-            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink(true) : false;
+            isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink(true);
         } else {
             Qt::CursorShape shape = Qt::IBeamCursor;
-            if (mMarkAtMouse) mMarkAtMouse->cursorShape(&shape);
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape);
             edit->viewport()->setCursor(shape);
-            isValidLink = mMarkAtMouse ? mMarkAtMouse->isValidLink() : false;
+            isValidLink = mMarksAtMouse.isEmpty() ? false : mMarksAtMouse.first()->isValidLink();
         }
 
-        if (mMarkAtMouse && event->type() == QEvent::MouseButtonPress) {
+        if (!mMarksAtMouse.isEmpty() && event->type() == QEvent::MouseButtonPress) {
             mClickPos = pos;
-        } else if (mMarkAtMouse && event->type() == QEvent::MouseButtonRelease) {
+        } else if (!mMarksAtMouse.isEmpty() && event->type() == QEvent::MouseButtonRelease) {
             if ((mClickPos-pos).manhattanLength() < 4 && isValidLink) {
-                if (mMarkAtMouse) mMarkAtMouse->jumpToRefMark();
-                return mMarkAtMouse;
+                if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->jumpToRefMark();
+                return !mMarksAtMouse.isEmpty();
             }
         } else if (event->type() == QEvent::ToolTip) {
-            if (mMarkAtMouse) mMarkAtMouse->showToolTip();
-            return mMarkAtMouse;
+            if (!mMarksAtMouse.isEmpty()) showToolTip(mMarksAtMouse);
+            return !mMarksAtMouse.isEmpty();
         }
     }
     return FileSystemContext::eventFilter(watched, event);
@@ -447,33 +432,13 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
 bool FileContext::mouseOverLink()
 {
-    return mMarkAtMouse;
+    return !mMarksAtMouse.isEmpty();
 }
 
 void FileContext::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
     emit changed(id());
-}
-
-void FileContext::updateMarks()
-{
-    for (TextMark* mark: mTextMarks) {
-        mark->updateCursor();
-        markLink(mark);
-    }
-}
-
-void FileContext::shareMarkHash(QHash<int, TextMark*>* marks)
-{
-    for (TextMark* mark: mTextMarks) {
-        marks->insert(mark->line(), mark);
-    }
-}
-
-void FileContext::textMarksEmpty(bool* empty)
-{
-    *empty = mTextMarks.isEmpty();
 }
 
 void FileContext::onFileChangedExtern(QString filepath)
@@ -491,6 +456,7 @@ void FileContext::onFileChangedExtern(QString filepath)
         // file changed externally
         emit modifiedExtern(id());
     }
+    mWatcher->addPath(location());
 }
 
 } // namespace studio

@@ -21,7 +21,7 @@
 #include "codeeditor.h"
 #include "studiosettings.h"
 #include "logger.h"
-#include "textmark.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -82,9 +82,9 @@ LineNumberArea* CodeEditor::lineNumberArea()
 
 QMimeData* CodeEditor::createMimeDataFromSelection() const
 {
-    QMimeData* mimeData = new QMimeData;
+    QMimeData* mimeData = new QMimeData();
     QTextCursor c = textCursor();
-    QString plainTextStr = c.selectedText();
+    QString plainTextStr = c.selection().toPlainText();
     mimeData->setText( plainTextStr );
 
     return mimeData;

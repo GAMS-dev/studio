@@ -38,7 +38,7 @@ FileGroupContext::~FileGroupContext()
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, value);
 
     // distribute missing flag to child entries
@@ -52,7 +52,7 @@ void FileGroupContext::setFlag(ContextFlag flag, bool value)
 void FileGroupContext::unsetFlag(ContextFlag flag)
 {
     if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        throw QException();
+        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
     FileSystemContext::setFlag(flag, false);
 }
 
@@ -137,6 +137,7 @@ void FileGroupContext::setLogContext(LogContext* logContext)
 
 void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
 {
+    Q_UNUSED(state)
     // TODO(JM) visualize if a state is running
 }
 
@@ -172,6 +173,31 @@ void FileGroupContext::jumpToMark(bool focus)
     }
 }
 
+QString FileGroupContext::lstErrorText(int line)
+{
+    return mLstErrorTexts.value(line);
+}
+
+void FileGroupContext::setLstErrorText(int line, QString text)
+{
+    mLstErrorTexts.insert(line, text);
+}
+
+void FileGroupContext::clearLstErrorTexts()
+{
+    mLstErrorTexts.clear();
+    FileSystemContext *fsc = findFile(lstFileName());
+    if (fsc && fsc->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(fsc);
+        fc->clearMarksEnhanced();
+    }
+}
+
+bool FileGroupContext::hasLstErrorText(int line)
+{
+    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
@@ -189,13 +215,6 @@ QString FileGroupContext::lstFileName()
 LogContext*FileGroupContext::logContext()
 {
     return mLogContext;
-//    for (FileSystemContext *fsc: mChildList) {
-//        if (fsc->type() == FileSystemContext::Log) {
-//            LogContext* fc = static_cast<LogContext*>(fsc);
-//            return fc;
-//        }
-//    }
-    //    return nullptr;
 }
 
 GamsProcess*FileGroupContext::newGamsProcess()

@@ -15,10 +15,12 @@ public:
     void removeEditor(QPlainTextEdit *edit) override;
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
-
+    void clearLog();
+    bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void clearRecentMarks();
+    void setJumpToLogEnd(bool state);
 
 protected:
     friend class FileRepository;
@@ -32,9 +34,14 @@ protected:
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
+    struct ErrorData {
+        int lstLine = 0;
+        int errNr = 0;
+        QString text;
+    };
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
-    QPair<int, QString> mCurrentErrorHint;
+    ErrorData mCurrentErrorHint;
     QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
 

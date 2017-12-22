@@ -71,14 +71,13 @@ LogContext*GamsProcess::logContext() const
 
 void GamsProcess::execute()
 {
-    qDebug() << "GAMSProcess::execute()";
     mProcess.setWorkingDirectory(mWorkingDir);
     QString gms = QDir::toNativeSeparators(mInputFile);
 
     //TODO(CW)
     // we need this at least on windows in order to write explicitly to stdout.
     // As soon as we allow user input for options, this needs to be adjusted
-    QStringList args({gms, "lo=3", "ide=1", "er=99"});
+    QStringList args({gms, "lo=3", "ide=1", "er=99", "errmsg=1"});
     if (!mCommandLineStr.isEmpty()) {
        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
        args.append(paramList);

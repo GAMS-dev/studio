@@ -21,6 +21,7 @@
 #define TEXTMARK_H
 
 #include <QtWidgets>
+#include "filetype.h"
 
 namespace gams {
 namespace studio {
@@ -30,33 +31,46 @@ class FileContext;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, all};
+    enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void updateCursor();
-    void setRefMark(TextMark* refMark);
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
-    bool isErrorRef();
-
-    void showToolTip();
+    void setRefMark(TextMark* refMark);
+    inline bool isErrorRef() {return mReference && mReference->type() == error;}
+    QColor color();
+    FileType::Kind fileKind();
+    FileType::Kind refFileKind();
 
     int value() const;
     void setValue(int value);
 
     QIcon icon();
-    Type type() const;
+    inline Type type() const {return mType;}
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
-    bool isValid();
-    bool isValidLink(bool inIconRegion = false);
-    QTextBlock textBlock();
+    inline bool isValid() {return mFileContext && (mLine>=0) && (mColumn>=0);}
+    inline bool isValidLink(bool inIconRegion = false)
+    { return mReference && ((mType == error && inIconRegion) || mType == link); }
+    inline QTextBlock textBlock();
     QTextCursor textCursor() const;
+    inline int in(int pos, int len) {
+        if (mCursor.isNull()) return -2;
+        return (mCursor.position() < pos) ? -1 : (mCursor.position() >= pos+len) ? 1 : 0;
+    }
 
-    int line() const;
-    int column() const;
-    int size() const;
-    bool inColumn(int col) const;
+    inline int line() const {return (mCursor.isNull()) ? mLine : mCursor.block().blockNumber();}
+    inline int column() const {return mColumn;}
+    inline int size() const {return mSize;}
+    inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
+    inline int position() const {return (mCursor.isNull()) ? -1 : mCursor.position();}
+    inline int blockStart() const {return (mCursor.isNull()) ? -1 : mCursor.selectionStart()-mCursor.block().position();}
+    inline int blockEnd() const {return (mCursor.isNull()) ? -1 : mCursor.selectionEnd()-mCursor.block().position();}
+    void rehighlight();
+    void modified();
+
+    QString dump();
 
 private:
     FileContext* mFileContext = nullptr;
@@ -66,7 +80,6 @@ private:
     int mSize = 0;
     int mValue = 0;
     QTextCursor mCursor;
-    Qt::CursorShape *mCursorShape = nullptr;
     TextMark* mReference = nullptr;
 };
 

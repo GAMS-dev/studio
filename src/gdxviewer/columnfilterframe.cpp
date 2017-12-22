@@ -3,6 +3,7 @@
 #include <QSet>
 #include <QDebug>
 #include <QMenu>
+#include <QMouseEvent>
 
 namespace gams {
 namespace studio {
@@ -12,6 +13,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     :QFrame(parent), mSymbol(symbol), mColumn(column)
 {
     ui.setupUi(this);
+
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
@@ -29,6 +31,19 @@ ColumnFilterFrame::~ColumnFilterFrame()
 {
     delete mModel;
 }
+
+
+void ColumnFilterFrame::mousePressEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+}
+
+
+void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+}
+
 
 void ColumnFilterFrame::apply()
 {
@@ -62,6 +77,8 @@ void ColumnFilterFrame::deselectAll()
 void ColumnFilterFrame::filterLabels()
 {
     QString filterString = ui.leSearch->text();
+    if(filterString.isEmpty())
+        filterString = "*";
     mModel->filterLabels(filterString);
 }
 
@@ -83,6 +100,7 @@ void ColumnFilterFrame::toggleHideUnselected(bool checked)
 
 void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
+    Q_UNUSED(roles)
     if (ui.cbToggleHideUnselected->isChecked())
     {
         for(int row=topLeft.row(); row<=bottomRight.row(); row++)

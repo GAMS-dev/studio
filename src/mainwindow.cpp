@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -46,15 +47,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
 
+    int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(16,16));
-    ui->mainToolBar->setIconSize(QSize(21,21));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont)); // TODO: move to settings
+    ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
+    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
+    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -83,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ensureCodecMenu("System");
     mSettings->loadSettings();
+    mRecent.path = mSettings->defaultWorkspace();
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -130,10 +133,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
             fc->load(codecName);
-            if (fc->metrics().fileType() == FileType::Gms
-                || fc->metrics().fileType() == FileType::Txt) {
-                fc->setSyntaxHighlight(true);
-            }
 
             if (fc->metrics().fileType() == FileType::Log ||
                     fc->metrics().fileType() == FileType::Lst ||
@@ -246,15 +245,18 @@ void MainWindow::on_actionNew_triggered()
                                                        "Text files (*.txt);;"
                                                        "All files (*)"));
 
+    if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
         filePath += ".gms";
     QFile file(filePath);
 
-    if (!file.exists()) { // which should be the default!
+    if (!file.exists()) { // new
         file.open(QIODevice::WriteOnly);
         file.close();
-    } // TODO: else, ask for overwrite
+    } else { // replace old
+        file.resize(0);
+    }
 
     if (FileContext *fc = addContext("", filePath, true)) {
         fc->save();
@@ -501,6 +503,13 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         if (mSettings->jumpToError())
             groupContext->jumpToMark(doFocus);
+
+        FileContext* lstCtx = nullptr;
+        // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
+        mFileRepo.findFile(lstFile, &lstCtx, groupContext);
+        if (lstCtx) {
+            lstCtx->updateMarks();
+        }
 
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
@@ -765,6 +774,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             QPlainTextEdit* logEdit = new QPlainTextEdit();
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
+            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -846,13 +856,14 @@ void MainWindow::dropEvent(QDropEvent* e)
             msgBox.setInformativeText("Do you want to continue?");
             msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             answer = msgBox.exec();
+
+            if(answer != QMessageBox::Ok) return;
         }
-        if(answer == QMessageBox::Ok) {
-            for (QString fName: pathList) {
-                QFileInfo fi(fName);
-                if (QFileInfo(fName).isFile()) {
-                    openFilePath(fi.canonicalFilePath(), nullptr, true, true);
-                }
+
+        for (QString fName: pathList) {
+            QFileInfo fi(fName);
+            if (QFileInfo(fName).isFile()) {
+                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
             }
         }
     }
@@ -869,11 +880,12 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 
 void MainWindow::execute(QString commandLineStr)
 {
-    // TODO: add option to clear output view before running next job
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
     if (!fgc)
         return;
+
+    fgc->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         fc->save();
@@ -904,12 +916,20 @@ void MainWindow::execute(QString commandLineStr)
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+        logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     } else {
         logProc->clearRecentMarks();
     }
-    logProc->markOld();
+
+    if (!mSettings->clearLog()) {
+        logProc->markOld();
+    } else {
+        logProc->clearLog();
+    }
+
+
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
@@ -917,6 +937,7 @@ void MainWindow::execute(QString commandLineStr)
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
+    logProc->setJumpToLogEnd(true);
     GamsProcess* process = fgc->newGamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
@@ -942,7 +963,11 @@ void MainWindow::on_runWithChangedOptions()
 void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption().append(" ").append(parameter) );
+
+    if (mCommandLineOption->getCurrentOption() != "")
+        execute(mCommandLineOption->getCurrentOption().append(" ").append(parameter));
+    else
+        execute(parameter);
 }
 
 void MainWindow::on_commandLineHelpTriggered()
@@ -1063,7 +1088,6 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileType::Gsp) {
@@ -1111,7 +1135,24 @@ void MainWindow::on_actionSettings_triggered()
     sd.exec();
 }
 
-}
+void MainWindow::on_actionSearch_triggered()
+{
+    // create
+    if (sw == nullptr) {
+        sw = new SearchWidget(mRecent, mFileRepo, this);
+    }
+
+    // toggle visibility
+    if (sw->isVisible()) {
+        sw->hide();
+    } else {
+        QPoint p(0,0);
+        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
+        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
+        sw->move(newP.x() + offset, newP.y());
+        sw->show();
+    }
 }
 
-
+}
+}

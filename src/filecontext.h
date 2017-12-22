@@ -23,8 +23,7 @@
 #include <QtWidgets>
 #include "filesystemcontext.h"
 #include "filemetrics.h"
-#include "textmark.h"
-#include "syntaxhighlighter.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -47,6 +46,7 @@ public:
         Entering,
         Inside,
         Exiting,
+        FollowupError,
     };
 
     ~FileContext() override;
@@ -61,17 +61,17 @@ public:
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
-    virtual const QString caption();
+    virtual const QString caption() override;
 
     bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
-    void setLocation(const QString &_location);
+    void setLocation(const QString &_location) override;
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    QIcon icon();
+    QIcon icon() override;
 
     /// Saves the file, if it is changed.
     void save();
@@ -83,8 +83,6 @@ public:
     /// Loads the file into the current QTextDocument.
     /// \param codecName The text-codec to use.
     void load(QString codecName = QString());
-
-    void setSyntaxHighlight(bool on);
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
@@ -118,8 +116,13 @@ public:
     virtual QTextDocument* document();
 
     const FileMetrics& metrics();
-    void jumpTo(const QTextCursor& cursor, bool focus);
-    void showToolTip(const TextMark& mark);
+    void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
+    void showToolTip(const QList<TextMark*> marks);
+
+    void rehighlightAt(int pos);
+    void updateMarks();
+    inline void clearMarksEnhanced() {mMarksEnhanced = false;}
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -130,23 +133,14 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
-    void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
-
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void createErrorHint(const int errCode, const QString &errText);
-    void requestErrorHint(const int errCode, QString &errText);
+    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
-    void setLineIcon(int line, const QIcon& icon);
 
 protected slots:
     void onFileChangedExtern(QString filepath);
-
     /// Slot to handle a change of the assigned Document
     void modificationChanged(bool modiState);
-
-    void updateMarks();
-    void shareMarkHash(QHash<int, TextMark*>* marks);
-    void textMarksEmpty(bool *empty);
 
 protected:
     friend class LogContext;
@@ -154,13 +148,11 @@ protected:
     FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
 
     QList<QPlainTextEdit*>& editorList();
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
-    void markLink(TextMark* mark);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    bool mouseOverLink();
+
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
-    bool eventFilter(QObject *watched, QEvent *event);
-    bool mouseOverLink();
-    TextMark* findMark(const QTextCursor& cursor);
 
 private:
     FileMetrics mMetrics;
@@ -168,10 +160,11 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QList<TextMark*> mTextMarks;
-    TextMark *mMarkAtMouse = nullptr;
+    QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
-    SyntaxHighlighter* mSyntaxHighlighter = nullptr;
+    TextMarkList mMarks;
+    ErrorHighlighter* mSyntaxHighlighter = nullptr;
+    bool mMarksEnhanced = true;
 
     static const QStringList mDefaulsCodecs;
 

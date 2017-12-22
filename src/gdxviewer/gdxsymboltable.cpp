@@ -143,9 +143,7 @@ void GdxSymbolTable::loadStringPool()
 
 void GdxSymbolTable::reportIoError(int errNr, QString message)
 {
-    //TODO(CW): proper Exception message and remove qDebug
-    qDebug() << "**** Fatal I/O Error = " << errNr << " when calling " << message;
-    throw Exception();
+    EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
 int *GdxSymbolTable::labelCompIdx()

@@ -9,11 +9,18 @@ namespace studio {
 enum class SyntaxState {
     Standard,
     Directive,
+    Title,
     CommentLine,
     CommentBlock,
     CommentEndline,
     CommentInline,
     CommentMargin,
+    DeclarationSetType,         // must be followed by Declaration
+    DeclarationVariableType,    // must be followed by Declaration
+    Declaration,
+    Identifier,
+    IdentifierDescription,
+    IdentifierAssignment,
 
     StateCount
 };
@@ -63,6 +70,11 @@ public:
         mCharFormat = charFormat;
     }
 protected:
+    inline bool isWhitechar(const QString& line, int index) {
+        return index<line.length() && (line.at(index).category()==QChar::Separator_Space
+                                       || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
+    }
+protected:
     QTextCharFormat mCharFormat;
     SyntaxStates mSubStates;
 };
@@ -73,7 +85,7 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    SyntaxState state() override { return SyntaxState::Standard; }
+    inline SyntaxState state() override { return SyntaxState::Standard; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 
@@ -83,7 +95,7 @@ class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    SyntaxState state() override { return SyntaxState::Directive; }
+    inline SyntaxState state() override { return SyntaxState::Directive; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 private:
     QRegularExpression mRex;
@@ -93,22 +105,31 @@ private:
 
 
 /// \brief Defines the syntax for a single comment line.
+class SyntaxTitle: public SyntaxAbstract
+{
+public:
+    SyntaxTitle();
+    inline SyntaxState state() override { return SyntaxState::Title; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+};
+
+/// \brief Defines the syntax for a single comment line.
 class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    SyntaxState state() override { return SyntaxState::CommentLine; }
+    inline SyntaxState state() override { return SyntaxState::CommentLine; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 private:
     QChar mCommentChar;
 };
 
-/// \brief Defines the syntax for a single comment line.
+/// \brief Defines the syntax for a multi-line comment block.
 class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    SyntaxState state() override { return SyntaxState::CommentBlock; }
+    inline SyntaxState state() override { return SyntaxState::CommentBlock; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 

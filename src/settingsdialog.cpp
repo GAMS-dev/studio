@@ -27,6 +27,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_clearlog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -47,6 +48,7 @@ void SettingsDialog::loadSettings()
 //    ui->sb_tabsize->setValue(mSettings->tabSize());
     ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
     ui->cb_linewrap_process->setChecked(mSettings->lineWrapProcess());
+    ui->cb_clearlog->setChecked(mSettings->clearLog());
 }
 
 void SettingsDialog::setModified()
@@ -78,6 +80,7 @@ void SettingsDialog::saveSettings()
 //    mSettings->setTabSize(ui->sb_tabsize->value());
     mSettings->setLineWrapEditor(ui->cb_linewrap_editor->isChecked());
     mSettings->setLineWrapProcess(ui->cb_linewrap_process->isChecked());
+    mSettings->setClearLog(ui->cb_clearlog->isChecked());
 
     // done
     mSettings->saveSettings();
