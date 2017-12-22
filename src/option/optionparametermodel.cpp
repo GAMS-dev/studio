@@ -72,12 +72,11 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     case Qt::TextAlignmentRole: {
         return Qt::AlignLeft;
     }
+//    case Qt::ToolTipRole: {
 //    case Qt::DecorationRole
-//    case Qt::BackgroundRole:
     case Qt::TextColorRole: {
         if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) // double dashed parameter
             return QVariant::fromValue(QColor(Qt::black));
-
         if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
            if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                return QVariant::fromValue(QColor(Qt::gray));

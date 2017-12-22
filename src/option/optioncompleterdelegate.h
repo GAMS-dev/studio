@@ -18,13 +18,17 @@ public:
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
     void setEditorData(QWidget *editor, const QModelIndex &index) const;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
-    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+//    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelInd*/ex &index) const;
+
+protected:
+    virtual bool eventFilter(QObject * editor, QEvent * event) override;
 
 //public slots:
 //    void activated(const QString &text);
 
 private slots:
     void on_lineEdit_textChanged(const QString &text);
+    void commitAndCloseEditor();
 
 private:
     CommandLineTokenizer* commandLineTokenizer;
