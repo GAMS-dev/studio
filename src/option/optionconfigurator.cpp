@@ -20,7 +20,9 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     updateCommandLineStr( normalizedText );
 //    ui.commandLineEdit->setReadOnly( true );
     ui.commandLineEdit->setClearButtonEnabled(true);
-    ui.showOptionDefintionCheckBox->setChecked(true);
+
+    ui.showOptionDefintionCheckBox->setChecked(false);
+    ui.splitter->widget(1)->hide();
 
 //    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui.commandLineTableView->setItemDelegate( new OptionCompleterDelegate(tokenizer, ui.commandLineTableView));

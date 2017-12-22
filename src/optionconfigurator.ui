@@ -79,6 +79,9 @@
     <layout class="QHBoxLayout" name="button_HLayout">
      <item>
       <widget class="QCheckBox" name="showOptionDefintionCheckBox">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="text">
         <string>Opton Definition</string>
        </property>

@@ -27,9 +27,13 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
        return QVariant();
     }
 
+
     switch(role) {
     case Qt::CheckStateRole:
-        return mCheckState[index];
+        if (mOptionItem.isEmpty())
+            return QVariant();
+        else
+            return mCheckState[index];
     case Qt::DecorationRole:
         QPixmap p{12,12};
         p.fill(Qt::CheckState(headerData(index, orientation, Qt::CheckStateRole).toUInt()) ? Qt::gray : Qt::green);
@@ -55,13 +59,14 @@ int OptionParameterModel::columnCount(const QModelIndex &parent) const
 
 QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 {
+    if (mOptionItem.isEmpty())
+        return QVariant();
+
     int row = index.row();
     int col = index.column();
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (mOptionItem.isEmpty())
-            return QVariant();
         if (col==0)
             return mOptionItem.at(row).key;
         else if (col== 1)
