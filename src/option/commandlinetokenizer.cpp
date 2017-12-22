@@ -78,6 +78,16 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
         return optionErrorList;
 
     for (OptionItem item : items) {
+        if (item.disabled) {
+            QTextLayout::FormatRange fr;
+            fr.start = item.keyPosition;
+            if (item.value.isEmpty())
+                fr.length = item.key.length();
+            else
+               fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
+            fr.format = mDeactivatedOptionFormat;
+            continue;
+        }
         if (gamsOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
             if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
                 QTextLayout::FormatRange fr;
