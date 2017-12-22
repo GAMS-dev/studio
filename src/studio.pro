@@ -179,7 +179,7 @@ FORMS += \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
     settingsdialog.ui \
-    optionconfigurator.ui
+    option/optionconfigurator.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API
