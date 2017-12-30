@@ -7,7 +7,7 @@ OptionDefinitionModel::OptionDefinitionModel(Option* data, QObject* parent)
     : QAbstractItemModel(parent)
 {
     QList<QVariant> rootData;
-    rootData << "Option" << "Synonym" << "DefValue" << "Description";
+    rootData << "Option" << "Synonym" << "DefValue" << "Type" << "Description";
     rootItem = new OptionDefinitionItem(rootData);
 
     setupTreeItemModelData(data, rootItem);
@@ -117,6 +117,41 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         columnData.append(optdef.name);
         columnData.append(optdef.synonym);
         columnData.append(optdef.defaultValue);
+        switch(optdef.type){
+        case optTypeInteger :
+            columnData.append("Integer");
+            break;
+        case optTypeDouble :
+            columnData.append("Double");
+            break;
+        case optTypeString :
+            columnData.append("String");
+            break;
+        case optTypeBoolean :
+            columnData.append("Boolean");
+            break;
+        case optTypeEnumStr :
+            columnData.append("EnumStr");
+            break;
+        case optTypeEnumInt :
+            columnData.append("EnumInt");
+            break;
+        case optTypeMultiList :
+            columnData.append("MultiList");
+            break;
+        case optTypeStrList   :
+            columnData.append("StrList");
+            break;
+        case optTypeMacro     :
+            columnData.append("Macro");
+            break;
+        case optTypeImmediate :
+            columnData.append("Immediate");
+            break;
+        default:
+            columnData.append("");
+            break;
+        }
         columnData.append(optdef.description);
         parents.last()->appendChild(new OptionDefinitionItem(columnData, parents.last()));
     }
