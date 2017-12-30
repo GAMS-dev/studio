@@ -215,6 +215,11 @@ bool Option::available() const
     return mAvailable;
 }
 
+QMap<QString, OptionDefinition> Option::getOption() const
+{
+    return mOption;
+}
+
 OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 {
     return mOption[optionName.toUpper()];

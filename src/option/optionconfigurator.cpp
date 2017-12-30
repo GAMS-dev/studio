@@ -1,5 +1,6 @@
 #include "optionconfigurator.h"
 #include "optioncompleterdelegate.h"
+#include "optiondefinitionmodel.h"
 #include "optionparametermodel.h"
 
 namespace gams {
@@ -37,6 +38,10 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineTableView->resizeColumnsToContents();
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
+
+    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(tokenizer->getGamsOption(), this);
+    ui.optionDefintionTreeView->setItemsExpandable(true);
+    ui.optionDefintionTreeView->setModel( optdefmodel );
 
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,

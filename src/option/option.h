@@ -105,6 +105,8 @@ public:
 
     bool available() const;
 
+    QMap<QString, OptionDefinition> getOption() const;
+
 private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
