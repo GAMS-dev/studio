@@ -27,8 +27,7 @@ public slots:
 
 private:
     Ui::OptionConfigurator ui;
-    QLineEdit* searchLineEdit;
-    QTreeView* optionDefintionTreeView;
+//    QLineEdit* searchLineEdit;
 };
 
 } // namespace studio

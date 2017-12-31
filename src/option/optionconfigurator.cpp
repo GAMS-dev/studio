@@ -39,10 +39,20 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
 
+    QSortFilterProxyModel* proxymodel = new QSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(tokenizer->getGamsOption(), this);
-    ui.optionDefintionTreeView->setItemsExpandable(true);
-    ui.optionDefintionTreeView->setModel( optdefmodel );
+    proxymodel->setFilterKeyColumn(0);
+    proxymodel->setSourceModel( optdefmodel );
+    proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
+    ui.optionDefintionTreeView->setItemsExpandable(true);
+    ui.optionDefintionTreeView->setSortingEnabled(true);
+    ui.optionDefintionTreeView->setModel( proxymodel );
+
+    ui.searchLineEdit->setPlaceholderText("Search Option...");
+    connect(ui.searchLineEdit, &QLineEdit::textChanged,
+            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
             this, &OptionConfigurator::toggleActiveOptionItem);

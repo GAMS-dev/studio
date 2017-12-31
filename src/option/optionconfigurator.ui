@@ -64,7 +64,7 @@
        <item>
         <widget class="QLineEdit" name="searchLineEdit">
          <property name="text">
-          <string>Search...</string>
+          <string/>
          </property>
         </widget>
        </item>
