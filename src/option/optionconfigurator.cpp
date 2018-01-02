@@ -22,9 +22,7 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
 //    ui.commandLineEdit->setReadOnly( true );
     ui.commandLineEdit->setClearButtonEnabled(true);
 
-    ui.showOptionDefintionCheckBox->setChecked(false);
-    ui.splitter->widget(1)->hide();
-
+    ui.showOptionDefintionCheckBox->setChecked(true);
 //    ui.commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui.commandLineTableView->setItemDelegate( new OptionCompleterDelegate(tokenizer, ui.commandLineTableView));
     ui.commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -49,6 +47,10 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.optionDefintionTreeView->setItemsExpandable(true);
     ui.optionDefintionTreeView->setSortingEnabled(true);
     ui.optionDefintionTreeView->setModel( proxymodel );
+    ui.optionDefintionTreeView->resizeColumnToContents(0);
+    ui.optionDefintionTreeView->resizeColumnToContents(1);
+    ui.optionDefintionTreeView->resizeColumnToContents(2);
+    ui.optionDefintionTreeView->resizeColumnToContents(3);
 
     ui.searchLineEdit->setPlaceholderText("Search Option...");
     connect(ui.searchLineEdit, &QLineEdit::textChanged,

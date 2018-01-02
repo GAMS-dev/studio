@@ -83,7 +83,7 @@
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Opton Definition</string>
+        <string>Option Definition</string>
        </property>
       </widget>
      </item>
