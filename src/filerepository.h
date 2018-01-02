@@ -140,6 +140,7 @@ public slots:
     void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
     void removeGroup(FileGroupContext* fileGroup);
 
@@ -147,8 +148,6 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
-    void setErrorHint(const int errCode, const QString& hint);
-    void getErrorHint(const int errCode, QString& hint);
 
 private:
     void updateActions();
@@ -160,7 +159,6 @@ private:
     QList<int> mChangedIds;
     QList<int> mDeletedIds;
     QList<FileActionContext*> mFileActions;
-    QHash<int, QString> mErrorHints;
 };
 
 } // namespace studio

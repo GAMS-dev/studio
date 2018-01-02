@@ -42,6 +42,7 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
+class SearchWidget;
 
 struct RecentData {
     int editFileId = -1;
@@ -137,6 +138,8 @@ private slots:
 
     void on_actionSettings_triggered();
 
+    void on_actionSearch_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -162,6 +165,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
+    SearchWidget *sw = nullptr;
     Option* gamsOption;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;

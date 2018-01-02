@@ -15,6 +15,7 @@ pipeline {
                         sh '''
                             qmake src/studio.pro && make -j3
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX86: {
@@ -22,19 +23,17 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
-                            echo 'Setting up environment for Qt usage...'
-                            set PATH=C:\\Qt\\5.9.3\\mingw53_32\\bin;C:\\Qt\\Tools\\mingw530_32\\bin;%PATH%
                             cd src
                             qmake studio.pro
                             mingw32-make
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
                         step([$class: 'WsCleanup'])
                         checkout scm
-                        bat 'set'
                         bat '''
                             @echo off
                             echo Setting up environment for VS2014 usage...
@@ -45,6 +44,7 @@ pipeline {
                             qmake studio.pro "CONFIG+=release"
                             nmake
                         '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 macos: {
@@ -52,6 +52,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake src/studio.pro && make -j3'
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 }
             }
@@ -117,11 +118,8 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat """
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
-                        """
+                        bat 'echo %PATH%'
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
@@ -133,11 +131,8 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat """
-                            cd src\\bin
-                            windeployqt --release --compiler-runtime --force studio.exe
-                            del *.zip
-                        """
+                        bat 'echo %PATH%'
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'
@@ -173,7 +168,7 @@ pipeline {
                     node('master') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh "scp -o \\"BatchMode yes\\" *studio*.AppImage ${ARTIFACT_TARGET}"
+                               sh 'scp -B *studio*.AppImage ${ARTIFACT_TARGET}'
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }
@@ -184,10 +179,10 @@ pipeline {
                     node('windowsX86') {
                         script {
                             if (env.BRANCH_NAME=='develop') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}"
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch ${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}"
                             }
                             if (env.BRANCH_NAME=='master') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x86.zip ${ARTIFACT_TARGET}"
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch studio-x86.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
@@ -196,10 +191,10 @@ pipeline {
                     node('windowsX64') {
                         script {
                             if (env.BRANCH_NAME=='develop') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}"
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch ${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}"
                             }
                             if (env.BRANCH_NAME=='master') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -batch src\\bin\\studio-x64.zip ${ARTIFACT_TARGET}"
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch studio-x64.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
@@ -208,7 +203,9 @@ pipeline {
                     node('macos') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                                sh "scp *.dmg ${ARTIFACT_TARGET}"
+                                sh """
+                                    scp *.dmg ${ARTIFACT_TARGET}
+                                """
                             } else {
                                 echo "${env.BRANCH_NAME}"
                             }

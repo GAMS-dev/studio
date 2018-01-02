@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -503,6 +504,13 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->jumpToError())
             groupContext->jumpToMark(doFocus);
 
+        FileContext* lstCtx = nullptr;
+        // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
+        mFileRepo.findFile(lstFile, &lstCtx, groupContext);
+        if (lstCtx) {
+            lstCtx->updateMarks();
+        }
+
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
@@ -888,6 +896,8 @@ void MainWindow::execute(QString commandLineStr)
     if (!fgc)
         return;
 
+    fgc->clearLstErrorTexts();
+
     if (mSettings->autosaveOnRun())
         fc->save();
 
@@ -1021,7 +1031,6 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
     } else {
         createEdit(tabWidget, focus, fileContext->id());
     }
-    fileContext->updateMarks();
     if (tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {
@@ -1101,7 +1110,6 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
 
-
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileType::Gsp) {
@@ -1149,7 +1157,24 @@ void MainWindow::on_actionSettings_triggered()
     sd.exec();
 }
 
-}
+void MainWindow::on_actionSearch_triggered()
+{
+    // create
+    if (sw == nullptr) {
+        sw = new SearchWidget(mRecent, mFileRepo, this);
+    }
+
+    // toggle visibility
+    if (sw->isVisible()) {
+        sw->hide();
+    } else {
+        QPoint p(0,0);
+        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
+        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
+        sw->move(newP.x() + offset, newP.y());
+        sw->show();
+    }
 }
 
-
+}
+}

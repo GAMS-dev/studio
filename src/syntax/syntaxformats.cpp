@@ -13,6 +13,7 @@ QTextCharFormat SyntaxAbstract::charFormatError()
     return errorFormat;
 }
 
+
 SyntaxStandard::SyntaxStandard()
 {
     mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::Declaration

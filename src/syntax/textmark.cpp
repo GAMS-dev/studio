@@ -81,10 +81,29 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
 }
 
-void TextMark::showToolTip()
+QColor TextMark::color()
 {
-    if (mFileContext)
-        mFileContext->showToolTip(*this);
+    if (!mReference) return Qt::black;
+    if (mReference->type() == TextMark::error)
+        return Qt::darkRed;
+    if (mReference->fileKind() == FileType::Lst)
+        return Qt::blue;
+    if (mReference->type() == TextMark::result) {
+        return Qt::yellow;
+    }
+    return Qt::darkGreen;
+}
+
+FileType::Kind TextMark::fileKind()
+{
+    if (!mFileContext) return FileType::None;
+    return mFileContext->metrics().fileType().kind();
+}
+
+FileType::Kind TextMark::refFileKind()
+{
+    if (!mReference) return FileType::None;
+    return mReference->fileKind();
 }
 
 QIcon TextMark::icon()

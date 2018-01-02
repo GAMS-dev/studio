@@ -21,6 +21,7 @@
 #define TEXTMARK_H
 
 #include <QtWidgets>
+#include "filetype.h"
 
 namespace gams {
 namespace studio {
@@ -30,7 +31,7 @@ class FileContext;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, all};
+    enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
@@ -39,8 +40,9 @@ public:
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
-
-    void showToolTip();
+    QColor color();
+    FileType::Kind fileKind();
+    FileType::Kind refFileKind();
 
     int value() const;
     void setValue(int value);
@@ -78,7 +80,6 @@ private:
     int mSize = 0;
     int mValue = 0;
     QTextCursor mCursor;
-    Qt::CursorShape *mCursorShape = nullptr;
     TextMark* mReference = nullptr;
 };
 

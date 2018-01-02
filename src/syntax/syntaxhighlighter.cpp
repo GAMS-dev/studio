@@ -8,7 +8,7 @@ namespace studio {
 
 
 ErrorHighlighter::ErrorHighlighter(FileContext* context, TextMarkList *marks)
-    : QSyntaxHighlighter(context->document()), mContext(context), mMarks(marks)
+    : QSyntaxHighlighter(context->document()), mMarks(marks), mContext(context)
 {
     if (!document()) return;
     connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
@@ -54,6 +54,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     end = marksEnd;
 
     for (TextMark* mark: marks) {
+        qDebug() << "checking mark" << mark;
         if (mark->blockStart() >= end || mark->blockEnd() < start)
             continue;
         QTextCharFormat combinedFormat(format);
@@ -71,12 +72,17 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             }
         }
         if (mark->type() == TextMark::link) {
-            combinedFormat.setForeground(Qt::blue);
-            combinedFormat.setUnderlineColor(Qt::blue);
+            combinedFormat.setForeground(mark->color());
+            combinedFormat.setUnderlineColor(mark->color());
             combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
             combinedFormat.setAnchor(true);
             combinedFormat.setAnchorName(QString::number(mark->line()));
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
+        }
+        if (mark->type() == TextMark::result) {
+            qDebug() << "found TextMark::result";
+            combinedFormat.setBackground(mark->color());
+            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
         }
 
     }
@@ -93,6 +99,8 @@ void ErrorHighlighter::docBlockCountChanged(int newCount)
 
 void ErrorHighlighter::docContentsChange(int from, int removed, int added)
 {
+    Q_UNUSED(removed)
+    Q_UNUSED(added)
     // TODO(JM) check for use of removed and added to remove display
     QList<TextMark*> marks = mMarks->marksForBlock(document()->findBlock(from));
     for (TextMark* mark: marks) {
@@ -203,7 +211,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
     if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {
         setCurrentBlockState(code);
-        DEB() << "currentBlockState set to " << currentBlockState();
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }

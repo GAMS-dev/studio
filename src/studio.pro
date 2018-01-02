@@ -92,7 +92,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
-    textmark.cpp \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
@@ -103,12 +102,6 @@ SOURCES += \
     application.cpp \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    syntax.h \
-    syntax/syntaxhighlighter.cpp \
-    syntax/syntaxformats.cpp \
-    syntax/syntaxdeclaration.cpp \
-    textmarklist.cpp \
-    syntax/syntaxvariable.cpp \
     option/option.cpp \
     option/optionconfigurator.cpp \
     option/commandlinehistory.cpp \
@@ -118,7 +111,16 @@ SOURCES += \
     option/optioncompleterdelegate.cpp \
     option/lineeditcompleteevent.cpp \
     option/optiondefinitionitem.cpp \
-    option/optiondefinitionmodel.cpp
+    option/optiondefinitionmodel.cpp \
+    syntax.h \
+    syntax/textmark.cpp \
+    syntax/textmarklist.cpp \
+    syntax/syntaxhighlighter.cpp \
+    syntax/syntaxformats.cpp \
+    syntax/syntaxdeclaration.cpp \
+    syntax/syntaxidentifier.cpp \
+    searchwidget.cpp
+
 
 HEADERS += \
     codeeditor.h \
@@ -148,7 +150,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gamspaths.h \
     filetreemodel.h \
-    textmark.h \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
@@ -159,11 +160,6 @@ HEADERS += \
     application.h \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolheaderview.h \
-    syntax/syntaxhighlighter.h \
-    syntax/syntaxformats.h \
-    syntax/syntaxdeclaration.h \
-    textmarklist.h \
-    syntax/syntaxvariable.h \
     option/option.h \
     option/optionconfigurator.h \
     option/commandlinehistory.h \
@@ -173,7 +169,14 @@ HEADERS += \
     option/optioncompleterdelegate.h \
     option/lineeditcompleteevent.h \
     option/optiondefinitionitem.h \
-    option/optiondefinitionmodel.h
+    option/optiondefinitionmodel.h \
+    syntax/textmark.h \
+    syntax/textmarklist.h \
+    syntax/syntaxhighlighter.h \
+    syntax/syntaxformats.h \
+    syntax/syntaxdeclaration.h \
+    syntax/syntaxidentifier.h \
+    searchwidget.h
 
 FORMS += \
     welcomepage.ui  \
@@ -183,7 +186,8 @@ FORMS += \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
     settingsdialog.ui \
-    option/optionconfigurator.ui
+    option/optionconfigurator.ui \
+    searchwidget.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

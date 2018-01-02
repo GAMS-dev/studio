@@ -62,6 +62,11 @@ public:
     void addAdditionalFile(const QString &additionalFile);
     void jumpToMark(bool focus);
 
+    QString lstErrorText(int line);
+    void setLstErrorText(int line, QString text);
+    void clearLstErrorTexts();
+    bool hasLstErrorText( int line = -1);
+
 signals:
     void contentChanged(int id, QDir fileInfo);
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -94,6 +99,7 @@ private:
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
     QStringList mAdditionalFiles;
+    QHash<int, QString> mLstErrorTexts;
 };
 
 } // namespace studio

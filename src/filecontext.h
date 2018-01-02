@@ -23,7 +23,6 @@
 #include <QtWidgets>
 #include "filesystemcontext.h"
 #include "filemetrics.h"
-#include "textmark.h"
 #include "syntax.h"
 
 namespace gams {
@@ -47,6 +46,7 @@ public:
         Entering,
         Inside,
         Exiting,
+        FollowupError,
     };
 
     ~FileContext() override;
@@ -61,17 +61,17 @@ public:
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
-    virtual const QString caption();
+    virtual const QString caption() override;
 
     bool isModified();
 
     /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
     /// \param location The new location
-    void setLocation(const QString &_location);
+    void setLocation(const QString &_location) override;
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    QIcon icon();
+    QIcon icon() override;
 
     /// Saves the file, if it is changed.
     void save();
@@ -117,10 +117,12 @@ public:
 
     const FileMetrics& metrics();
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const TextMark& mark);
+    void showToolTip(const QList<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void updateMarks();
+    inline void clearMarksEnhanced() {mMarksEnhanced = false;}
+    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -131,11 +133,8 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(int fileId);
 
-    void requestContext(const QString &filePath, FileContext *&fileContext, FileGroupContext *group = nullptr);
-
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void createErrorHint(const int errCode, const QString &errText);
-    void requestErrorHint(const int errCode, QString &errText);
+    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
 
 protected slots:
@@ -149,10 +148,9 @@ protected:
     FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
 
     QList<QPlainTextEdit*>& editorList();
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
 
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
@@ -162,10 +160,11 @@ private:
     FileContext *mLinkFile = nullptr;
     QList<QPlainTextEdit*> mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    TextMark *mMarkAtMouse = nullptr;
+    QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     TextMarkList mMarks;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
+    bool mMarksEnhanced = true;
 
     static const QStringList mDefaulsCodecs;
 

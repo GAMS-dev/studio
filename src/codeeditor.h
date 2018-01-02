@@ -45,7 +45,7 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    QMimeData* createMimeDataFromSelection() const;
+    QMimeData* createMimeDataFromSelection() const override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -54,8 +54,8 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
-    void dragEnterEvent(QDragEnterEvent *e);
-    void wheelEvent(QWheelEvent *e);
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void wheelEvent(QWheelEvent *e) override;
 
 signals:
     void updateBlockSelection();
