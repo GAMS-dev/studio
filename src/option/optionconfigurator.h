@@ -3,6 +3,7 @@
 
 #include "commandlinetokenizer.h"
 #include "option.h"
+#include "optionsortfilterproxymodel.h"
 #include "optionparametermodel.h"
 #include "ui_optionconfigurator.h"
 

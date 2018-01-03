@@ -7,7 +7,8 @@ OptionDefinitionModel::OptionDefinitionModel(Option* data, QObject* parent)
     : QAbstractItemModel(parent)
 {
     QList<QVariant> rootData;
-    rootData << "Option" << "Synonym" << "DefValue" << "Type" << "Description";
+    rootData << "Option" << "Synonym" << "DefValue" // << "Range"
+             << "Type" << "Description";
     rootItem = new OptionDefinitionItem(rootData);
 
     setupTreeItemModelData(data, rootItem);
@@ -120,36 +121,49 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         columnData.append(optdef.defaultValue);
         switch(optdef.type){
         case optTypeInteger :
+//            columnData.append( QString("[%1,%2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
+//                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
             columnData.append("Integer");
             break;
         case optTypeDouble :
+//            columnData.append( QString("[%1,%2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
+//                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
             columnData.append("Double");
             break;
         case optTypeString :
+//            columnData.append("");
             columnData.append("String");
             break;
         case optTypeBoolean :
+//            columnData.append("");
             columnData.append("Boolean");
             break;
         case optTypeEnumStr :
+//            columnData.append("");
             columnData.append("EnumStr");
             break;
         case optTypeEnumInt :
+//            columnData.append("");
             columnData.append("EnumInt");
             break;
         case optTypeMultiList :
+//            columnData.append("");
             columnData.append("MultiList");
             break;
         case optTypeStrList   :
+//            columnData.append("");
             columnData.append("StrList");
             break;
         case optTypeMacro     :
+//            columnData.append("");
             columnData.append("Macro");
             break;
         case optTypeImmediate :
+//            columnData.append("");
             columnData.append("Immediate");
             break;
         default:
+//            columnData.append("");
             columnData.append("");
             break;
         }
@@ -167,6 +181,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                 enumData << "";
                 enumData << "";
                 enumData << "";
+//                enumData << "";
                 enumData << enumValue.description;
                 parents.last()->appendChild(new OptionDefinitionItem(enumData, parents.last()));
             }

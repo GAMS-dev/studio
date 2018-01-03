@@ -37,20 +37,21 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.splitter->setStretchFactor(0,1);
     ui.splitter->setStretchFactor(1,2);
 
-    QSortFilterProxyModel* proxymodel = new QSortFilterProxyModel(this);
+    QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(tokenizer->getGamsOption(), this);
     proxymodel->setFilterKeyColumn(0);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    proxymodel->sort(0, Qt::DescendingOrder);
 
     ui.optionDefintionTreeView->setItemsExpandable(true);
     ui.optionDefintionTreeView->setSortingEnabled(true);
     ui.optionDefintionTreeView->setModel( proxymodel );
     ui.optionDefintionTreeView->resizeColumnToContents(0);
-    ui.optionDefintionTreeView->resizeColumnToContents(1);
     ui.optionDefintionTreeView->resizeColumnToContents(2);
     ui.optionDefintionTreeView->resizeColumnToContents(3);
+    ui.optionDefintionTreeView->setAlternatingRowColors(true);
 
     ui.searchLineEdit->setPlaceholderText("Search Option...");
     connect(ui.searchLineEdit, &QLineEdit::textChanged,
