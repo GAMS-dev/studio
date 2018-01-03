@@ -290,11 +290,14 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
                      int helpContextNr;
                      optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
                      opt.groupNumber = group;
+                     opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
 
                      if (synonym.contains(nameStr)) {
                          opt.synonym = synonym[nameStr];
                          mSynonymMap[opt.synonym] = nameStr;
                      }
+
+
                      char optTypeName[GMS_SSSIZE];
                      optGetTypeName(mOPTHandle, opt.type, optTypeName);
                      mOptionTypeNameMap[opt.type] = optTypeName;

@@ -110,8 +110,8 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 
     for(auto it = option->getOption().cbegin(); it != option->getOption().cend(); ++it)  {
         OptionDefinition optdef =  it.value();
-//        if (optdef.deprecated)
-//            continue;
+        if (optdef.deprecated)
+            continue;
         QList<QVariant> columnData;
 
         QString optionStr = optdef.name
