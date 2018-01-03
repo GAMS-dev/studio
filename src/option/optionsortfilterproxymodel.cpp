@@ -24,11 +24,17 @@ bool OptionSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
     }
 }
 
-//bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
-//{
-//    QVariant leftData = sourceModel()->data(left);
-//    QVariant rightData = sourceModel()->data(right);
-//}
+bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+{
+    QVariant leftData = sourceModel()->data(left);
+    QVariant rightData = sourceModel()->data(right);
+
+    if (leftData.type() == QVariant::String) {
+        return QString::localeAwareCompare(leftData.toString(), rightData.toString()) < 0;
+    } else {
+        return QSortFilterProxyModel::lessThan(left, right);
+    }
+}
 
 } // namespace studio
 } // namespace gams

@@ -69,7 +69,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="optionDefintionTreeView"/>
+        <widget class="QTreeView" name="optionDefinitionTreeView"/>
        </item>
       </layout>
      </widget>

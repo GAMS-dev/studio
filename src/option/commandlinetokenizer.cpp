@@ -7,8 +7,6 @@ namespace studio {
 CommandLineTokenizer::CommandLineTokenizer(Option* option) :
     gamsOption(option)
 {
-    gamsOption->dumpAll();
-
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
     mInvalidKeyFormat.setForeground(Qt::red);
