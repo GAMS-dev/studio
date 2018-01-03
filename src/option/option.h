@@ -98,6 +98,7 @@ public:
     QStringList getKeyList() const;
     QStringList getKeyAndSynonymList() const;
     QStringList getValuesList(const QString &optionName) const;
+    QStringList getNonHiddenValuesList(const QString &optionName) const;
 
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;

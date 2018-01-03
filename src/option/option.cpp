@@ -200,6 +200,18 @@ QStringList Option::getValuesList(const QString &optionName) const
    return valueList;
 }
 
+QStringList Option::getNonHiddenValuesList(const QString &optionName) const
+{
+    QStringList valueList;
+    foreach( OptionValue value, getValueList(optionName.toUpper()) ) {
+        if (!value.hidden)
+           valueList << value.value.toString();
+    }
+
+    return valueList;
+
+}
+
 QList<OptionGroup> Option::getOptionGroupList() const
 {
     return mOptionGroupList;

@@ -22,10 +22,10 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     } else {
         QVariant key = index.model()->data( index.model()->index(index.row(), 0) );
         if (gamsOption->isValid(key.toString())) {
-            completer->setModel(new QStringListModel(gamsOption->getValuesList(key.toString())) );
+            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(key.toString())) );
         } else {
             QString keyStr = gamsOption->getSynonym(key.toString());
-            completer->setModel(new QStringListModel(gamsOption->getValuesList(keyStr)) );
+            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(keyStr)) );
         }
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
