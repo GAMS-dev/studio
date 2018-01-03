@@ -231,7 +231,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 
                     FileContext *fc;
 
-                    // TODO(JM) use this instead ... AFTER alowing individual files in group:
+                    // TODO(JM) use this instead ... AFTER allowing individual files in group:
                     // emit findOrCreateFileContext(fName, &fc, parentEntry());
                     emit findFileContext(fName, &fc, parentEntry());
 
