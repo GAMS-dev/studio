@@ -127,11 +127,11 @@ public:
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
-    void modifiedExtern(int fileId);
+    void modifiedExtern(FileId fileId);
 
     /// Signal is emitted when the file has been deleted (or renamed) externally.
     /// \param fileId The file identifier
-    void deletedExtern(int fileId);
+    void deletedExtern(FileId fileId);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
@@ -145,7 +145,7 @@ protected slots:
 protected:
     friend class LogContext;
     friend class FileRepository;
-    FileContext(int id, QString name, QString location, ContextType type = FileSystemContext::File);
+    FileContext(FileId fileId, QString name, QString location, ContextType type = FileSystemContext::File);
 
     QList<QPlainTextEdit*>& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;

@@ -47,8 +47,6 @@ public:
     FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
-    bool isWatched();
-    void setWatched(bool watch = true);
     QString runableGms();
     QString lstFileName();
     LogContext* logContext();
@@ -57,7 +55,6 @@ public:
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
 
-//    QStringList additionalFiles() const;
     void attachFile(const QString &filepath);
     void detachFile(const QString &filepath);
     void updateChildNodes();
@@ -69,13 +66,9 @@ public:
     bool hasLstErrorText( int line = -1);
 
 signals:
-//    void contentChanged(int id, QDir fileInfo);
     void gamsProcessStateChanged(FileGroupContext* group);
     void removeNode(FileSystemContext *node);
     void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
-
-public slots:
-//    void directoryChanged(const QString &path);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -86,7 +79,7 @@ protected:
     friend class FileSystemContext;
     friend class LogContext;
 
-    FileGroupContext(int id, QString name, QString location, QString runInfo);
+    FileGroupContext(FileId id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);

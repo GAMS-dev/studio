@@ -25,6 +25,8 @@
 namespace gams {
 namespace studio {
 
+typedef unsigned int FileId;
+
 class FileGroupContext;
 
 class FileSystemContext : public QObject
@@ -60,7 +62,7 @@ public:
 
     virtual ~FileSystemContext();
 
-    int id() const;
+    FileId id() const;
 
     /// \brief File context type.
     /// \return Returns the file context type as <c>int</c>.
@@ -106,17 +108,17 @@ public:
 
     FileSystemContext *findFile(QString filePath);
 signals:
-    void changed(int fileId);
+    void changed(FileId fileId);
 
 protected:
     friend class LogContext;
 
-    FileSystemContext(int id, QString name, QString location);
-    FileSystemContext(int id, QString name, QString location, ContextType type);
+    FileSystemContext(FileId fileId, QString name, QString location);
+    FileSystemContext(FileId fileId, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
 private:
-    int mId;
+    FileId mId;
     FileGroupContext* mParent;
     QString mName;
     QString mLocation;

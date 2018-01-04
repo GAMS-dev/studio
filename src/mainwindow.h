@@ -44,7 +44,7 @@ class StudioSettings;
 class SearchWidget;
 
 struct RecentData {
-    int editFileId = -1;
+    FileId editFileId = -1;
     QPlainTextEdit* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
@@ -85,10 +85,10 @@ public:
 private slots:
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
-    void fileChanged(int fileId);
-    void fileChangedExtern(int fileId);
-    void fileDeletedExtern(int fileId);
-    void fileClosed(int fileId);
+    void fileChanged(FileId fileId);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
+    void fileClosed(FileId fileId);
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);

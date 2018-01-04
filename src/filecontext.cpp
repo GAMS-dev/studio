@@ -29,8 +29,8 @@ namespace studio {
 const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
                                                               << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(int id, QString name, QString location, ContextType type)
-    : FileSystemContext(id, name, location, type)
+FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
+    : FileSystemContext(fileId, name, location, type)
 {
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)

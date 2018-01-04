@@ -23,12 +23,12 @@
 namespace gams {
 namespace studio {
 
-FileSystemContext::FileSystemContext(int id, QString name, QString location)
-    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
+FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location)
+    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
 {}
 
-FileSystemContext::FileSystemContext(int id, QString name, QString location, ContextType type)
-    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
+FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location, ContextType type)
+    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
 {}
 
 void FileSystemContext::checkFlags()
@@ -44,7 +44,7 @@ FileSystemContext::~FileSystemContext()
     }
 }
 
-int FileSystemContext::id() const
+FileId FileSystemContext::id() const
 {
     return mId;
 }

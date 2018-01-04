@@ -363,9 +363,8 @@ void MainWindow::activeTabChanged(int index)
     QPlainTextEdit* edit = static_cast<QPlainTextEdit*>(editWidget);
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
-        int fileId = (fc ? fc->id() : -1);
-        if (fileId >= 0) {
-            mRecent.editFileId = fileId;
+        if (fc) {
+            mRecent.editFileId = fc->id();
             mRecent.editor = edit;
             mRecent.group = fc->parentEntry();
         }
@@ -388,7 +387,7 @@ void MainWindow::activeTabChanged(int index)
     }
 }
 
-void MainWindow::fileChanged(int fileId)
+void MainWindow::fileChanged(FileId fileId)
 {
     QList<QPlainTextEdit*> editors = mFileRepo.editors(fileId);
     for (QWidget *edit: editors) {
@@ -400,7 +399,7 @@ void MainWindow::fileChanged(int fileId)
     }
 }
 
-void MainWindow::fileChangedExtern(int fileId)
+void MainWindow::fileChangedExtern(FileId fileId)
 {
     FileContext *fc = mFileRepo.fileContext(fileId);
 
@@ -442,7 +441,7 @@ void MainWindow::fileChangedExtern(int fileId)
     }
 }
 
-void MainWindow::fileDeletedExtern(int fileId)
+void MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileContext *fc = mFileRepo.fileContext(fileId);
     // file has not been loaded: nothing to do
@@ -462,7 +461,7 @@ void MainWindow::fileDeletedExtern(int fileId)
     }
 }
 
-void MainWindow::fileClosed(int fileId)
+void MainWindow::fileClosed(FileId fileId)
 {
     FileContext* fc = mFileRepo.fileContext(fileId);
     if (!fc)
@@ -496,7 +495,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
 
-        // TODO(JM)
         bool doFocus = groupContext == mRecent.group;
         if (mSettings->openLst())
             openFilePath(lstFile, groupContext, doFocus);
@@ -1057,21 +1055,16 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
 
     if (!fc) { // not yet opened by user, open file in new tab
         FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
-
-//        fsc = mFileRepo.findContext(filePath, group);
         mFileRepo.findOrCreateFileContext(filePath, &fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
         }
         QTabWidget* tabWidget = fc->location().isEmpty() ? ui->logTab : ui->mainTab;
-//        fc = static_cast<FileContext*>(fsc);
         createEdit(tabWidget, focus, fc->id());
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
-//        if (fsc->type() == FileSystemContext::File) {
-//        }
     } else if (fc) {
         openFileContext(fc, focus);
     }

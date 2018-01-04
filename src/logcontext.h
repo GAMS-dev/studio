@@ -24,7 +24,7 @@ public slots:
 
 protected:
     friend class FileRepository;
-    LogContext(int id, QString name);
+    LogContext(FileId fileId, QString name);
 
     struct LinkData {
         TextMark* textMark = nullptr;

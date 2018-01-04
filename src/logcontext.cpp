@@ -6,8 +6,8 @@
 namespace gams {
 namespace studio {
 
-LogContext::LogContext(int id, QString name)
-    : FileContext(id, name, "", FileSystemContext::Log)
+LogContext::LogContext(FileId fileId, QString name)
+    : FileContext(fileId, name, "", FileSystemContext::Log)
 {
     mDocument = new QTextDocument(this);
     mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
@@ -230,11 +230,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     mark.size = result.length() - mark.col - 1;
 
                     FileContext *fc;
-
-                    // TODO(JM) use this instead ... AFTER allowing individual files in group:
                     emit findOrCreateFileContext(fName, &fc, parentEntry());
-//                    emit findFileContext(fName, &fc, parentEntry());
-
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, line, 0, col);

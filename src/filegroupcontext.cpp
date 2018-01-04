@@ -62,18 +62,11 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
         FileSystemContext *child = childEntry(i);
         if (child->location() == filePath)
             return child;
+        // TODO(JM) discuss if it is necessary to find the file with QFileInfo
         if (child->type() == FileSystemContext::FileGroup) {
             FileGroupContext *group = static_cast<FileGroupContext*>(child);
             return group->findFile(filePath);
         }
-//        if (child->childCount() > 0) {
-//            for (int j = 0; j < child->childCount(); j++) {
-//                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
-//                if (element != nullptr) {
-//                    return element;
-//                }
-//            }
-//        }
     }
     return nullptr;
 }
@@ -140,11 +133,6 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     Q_UNUSED(state)
     // TODO(JM) visualize if a state is running
 }
-
-//QStringList FileGroupContext::additionalFiles() const
-//{
-//    return mAttachedFiles;
-//}
 
 void FileGroupContext::attachFile(const QString &filepath)
 {
@@ -308,41 +296,6 @@ QIcon FileGroupContext::icon()
     return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
 }
 
-bool FileGroupContext::isWatched()
-{
-    return mDirWatcher;
-}
-
-void FileGroupContext::setWatched(bool watch)
-{
-//    if (!watch) {
-//        if (mDirWatcher) {
-//            mDirWatcher->deleteLater();
-//            mDirWatcher = nullptr;
-//        }
-//        return;
-//    }
-//    if (!mDirWatcher) {
-//        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-//        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
-//    }
-//    mDirWatcher->addPath(location());
-}
-
-//void FileGroupContext::directoryChanged(const QString& path)
-//{
-//    QDir dir(path);
-//    if (dir.exists()) {
-//        emit contentChanged(id(), dir);
-//        return;
-//    }
-//    if (testFlag(cfActive)) {
-//        setFlag(cfMissing);
-//        return;
-//    }
-//    deleteLater();
-//}
-
 void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState);
@@ -357,7 +310,7 @@ void FileGroupContext::processDeleted()
     emit gamsProcessStateChanged(this);
 }
 
-FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
+FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
     : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
     if (runInfo == "") return;

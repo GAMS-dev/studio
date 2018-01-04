@@ -24,15 +24,13 @@
 #include "filetreemodel.h"
 #include "fileactioncontext.h"
 #include "logcontext.h"
+#include "filesystemcontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "filetype.h"
 
 namespace gams {
 namespace studio {
-
-
-typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
 
 ///
 /// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
@@ -55,7 +53,7 @@ public:
     /// \param fileId The file Id related to a <c>FileSystemContext</c>.
     /// \param startNode The node where the search starts.
     /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
+    FileSystemContext* context(FileId fileId, FileSystemContext* startNode = nullptr);
 
     /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
@@ -66,7 +64,7 @@ public:
     /// \param fileId The file Id related to a <c>FileContext</c>.
     /// \param startNode The node where the search starts.
     /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
+    FileContext* fileContext(FileId fileId, FileSystemContext* startNode = nullptr);
 
     /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileContext</c>.
@@ -82,7 +80,7 @@ public:
     /// \param fileId The file Id related to a <c>FileGroupContext</c>.
     /// \param startNode The node where the search starts.
     /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
-    FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+    FileGroupContext* groupContext(FileId fileId, FileSystemContext* startNode = nullptr);
 
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
@@ -94,7 +92,7 @@ public:
     /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
     FileActionContext* actionContext(const QModelIndex& index) const;
 
-    QList<QPlainTextEdit*> editors(int fileId = -1);
+    QList<QPlainTextEdit*> editors(FileId fileId = -1);
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
@@ -112,7 +110,7 @@ public:
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
     FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
-    void close(int fileId);
+    void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
@@ -128,15 +126,14 @@ public:
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
 
 signals:
-    void fileClosed(int fileId, QPrivateSignal);
-    void fileChangedExtern(int fileId);
-    void fileDeletedExtern(int fileId);
+    void fileClosed(FileId fileId, QPrivateSignal);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void gamsProcessStateChanged(FileGroupContext* group);
 
 public slots:
-    void nodeChanged(int fileId);
-//    void updatePathNode(int fileId, QDir dir);
+    void nodeChanged(FileId fileId);
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
@@ -144,8 +141,8 @@ public slots:
     void removeGroup(FileGroupContext* fileGroup);
 
 private slots:
-    void onFileChangedExtern(int fileId);
-    void onFileDeletedExtern(int fileId);
+    void onFileChangedExtern(FileId fileId);
+    void onFileDeletedExtern(FileId fileId);
     void processExternFileEvents();
     void addNode(QString name, QString location, FileGroupContext* parent = nullptr);
     void removeNode(FileSystemContext *node);
@@ -157,8 +154,8 @@ private:
     int mNextId;
     FileTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
-    QList<int> mChangedIds;
-    QList<int> mDeletedIds;
+    QList<FileId> mChangedIds;
+    QList<FileId> mDeletedIds;
     QList<FileActionContext*> mFileActions;
 };
 
