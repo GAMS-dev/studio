@@ -111,7 +111,6 @@ public:
     /// \return a <c>QModelIndex</c> to the new node.
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
-    void removeNode(FileSystemContext *node);
     FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
     void close(int fileId);
     void setSuffixFilter(QStringList filter);
@@ -137,7 +136,7 @@ signals:
 
 public slots:
     void nodeChanged(int fileId);
-    void updatePathNode(int fileId, QDir dir);
+//    void updatePathNode(int fileId, QDir dir);
     void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
@@ -148,6 +147,8 @@ private slots:
     void onFileChangedExtern(int fileId);
     void onFileDeletedExtern(int fileId);
     void processExternFileEvents();
+    void addNode(QString name, QString location, FileGroupContext* parent = nullptr);
+    void removeNode(FileSystemContext *node);
 
 private:
     void updateActions();

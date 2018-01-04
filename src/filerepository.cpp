@@ -178,10 +178,16 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     FileGroupContext* fgContext = new FileGroupContext(mNextId++, name, location, runInfo);
     mTreeModel->insertChild(offset, groupContext(parentIndex), fgContext);
     connect(fgContext, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
-    connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
+//    connect(fgContext, &FileGroupContext::contentChanged, this, &FileRepository::updatePathNode);
     connect(fgContext, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
-    fgContext->setWatched();
+    connect(fgContext, &FileGroupContext::removeNode, this, &FileRepository::removeNode);
+    connect(fgContext, &FileGroupContext::requestNode, this, &FileRepository::addNode);
+//    fgContext->setWatched();
     updateActions();
+    for (QString suff: mSuffixFilter) {
+        QFileInfo fi(location, fgContext->name() + suff);
+        fgContext->attachFile(fi.filePath());
+    }
     return fgContext;
 }
 
@@ -200,7 +206,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
     connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
 //    connect(fileContext, &FileContext::requestContext, this, &FileRepository::findFile);
-    connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
+//    connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     updateActions();
     return fileContext;
@@ -224,8 +230,10 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath, const QSt
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
             group = static_cast<FileGroupContext*>(fsc);
             if (di == QFileInfo(group->location())) {
-                group->addAdditionalFile(additionalFile);
-                updatePathNode(group->id(), fi.path());
+//                group->attachFile(additionalFile);
+                group->attachFile(fi.filePath());
+                group->updateChildNodes();
+//                updatePathNode(group->id(), fi.path());
                 return group;
             } else {
                 extendedCaption = true;
@@ -234,10 +242,12 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath, const QSt
         }
     }
     group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
-    group->addAdditionalFile(additionalFile);
     if (extendedCaption)
         group->setFlag(FileSystemContext::cfExtendCaption);
-    updatePathNode(group->id(), fi.path());
+//    group->attachFile(additionalFile);
+    group->attachFile(fi.filePath());
+    group->updateChildNodes();
+//    updatePathNode(group->id(), fi.path());
     return group;
 }
 
@@ -281,54 +291,54 @@ void FileRepository::nodeChanged(int fileId)
 
 typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
-void FileRepository::updatePathNode(int fileId, QDir dir)
-{
-    FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
-    if (!parGroup)
-        EXCEPT() << "Can't update path node. Group " << fileId << " not found.";
-    if (dir.exists()) {
-        QStringList fileFilter;
-        for (QString suff: mSuffixFilter)
-            fileFilter << parGroup->name() + suff;
+//void FileRepository::updatePathNode(int fileId, QDir dir)
+//{
+//    FileGroupContext *parGroup = groupContext(fileId, mTreeModel->rootContext());
+//    if (!parGroup)
+//        EXCEPT() << "Can't update path node. Group " << fileId << " not found.";
+//    if (dir.exists()) {
+//        QStringList fileFilter;
+//        for (QString suff: mSuffixFilter)
+//            fileFilter << parGroup->name() + suff;
 
-        fileFilter << parGroup->additionalFiles();
-        QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
+//        fileFilter << parGroup->additionalFiles();
+//        QFileInfoList addList = dir.entryInfoList(fileFilter, QDir::Files, QDir::Name);
 
-        // remove known entries from fileList and remember vanished entries
-        QList<IndexedFSContext> vanishedEntries;
-        for (int i = 0; i < parGroup->childCount(); ++i) {
-            FileSystemContext *entry = parGroup->childEntry(i);
-            if (entry->location().isEmpty())
-                continue;
-            QFileInfo fi(entry->location());
-            int pos = addList.indexOf(fi);
-            if (pos >= 0) {
-                // keep existing entries and remove them from addList
-                addList.removeAt(pos);
-                entry->unsetFlag(FileSystemContext::cfMissing);
-            } else {
-                // prepare indicees in reverse order (highest index first)
-                vanishedEntries.insert(0, IndexedFSContext(i, entry));
-            }
-        }
-        // check for vanished files and directories
-        for (IndexedFSContext childIndex: vanishedEntries) {
-            FileSystemContext* entry = childIndex.second;
-            if (entry->testFlag(FileSystemContext::cfActive)) {
-                // mark active files as missing (directories recursively)
-                entry->setFlag(FileSystemContext::cfMissing);
-                qDebug() << "Missing node: " << entry->name();
-            } else {
-                // inactive files can be removed (directories recursively)
-                removeNode(entry);
-            }
-        }
-        // add newly appeared files and directories
-        for (QFileInfo fi: addList) {
-            addFile(fi.fileName(), fi.canonicalFilePath(), parGroup);
-        }
-    }
-}
+//        // remove known entries from fileList and remember vanished entries
+//        QList<IndexedFSContext> vanishedEntries;
+//        for (int i = 0; i < parGroup->childCount(); ++i) {
+//            FileSystemContext *entry = parGroup->childEntry(i);
+//            if (entry->location().isEmpty())
+//                continue;
+//            QFileInfo fi(entry->location());
+//            int pos = addList.indexOf(fi);
+//            if (pos >= 0) {
+//                // keep existing entries and remove them from addList
+//                addList.removeAt(pos);
+//                entry->unsetFlag(FileSystemContext::cfMissing);
+//            } else {
+//                // prepare indicees in reverse order (highest index first)
+//                vanishedEntries.insert(0, IndexedFSContext(i, entry));
+//            }
+//        }
+//        // check for vanished files and directories
+//        for (IndexedFSContext childIndex: vanishedEntries) {
+//            FileSystemContext* entry = childIndex.second;
+//            if (entry->testFlag(FileSystemContext::cfActive)) {
+//                // mark active files as missing (directories recursively)
+//                entry->setFlag(FileSystemContext::cfMissing);
+//                qDebug() << "Missing node: " << entry->name();
+//            } else {
+//                // inactive files can be removed (directories recursively)
+//                removeNode(entry);
+//            }
+//        }
+//        // add newly appeared files and directories
+//        for (QFileInfo fi: addList) {
+//            addFile(fi.fileName(), fi.canonicalFilePath(), parGroup);
+//        }
+//    }
+//}
 
 void FileRepository::nodeClicked(QModelIndex index)
 {
@@ -337,11 +347,6 @@ void FileRepository::nodeClicked(QModelIndex index)
         emit act->trigger();
         return;
     }
-//    FileContext* fc = FileContext(index);
-//    if (fc && fc->location().isEmpty()) {
-//        FileContext* lc = logContext(fc);
-//        if ()
-//    }
 }
 
 void FileRepository::editorActivated(QPlainTextEdit* edit)
@@ -398,7 +403,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
     if (!res) {
         res = new LogContext(mNextId++, "["+group->name()+"]");
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
-        connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
+//        connect(res, &LogContext::findFileContext, this, &FileRepository::findFile);
         connect(res, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
@@ -452,6 +457,11 @@ void FileRepository::processExternFileEvents()
         int fileId = mChangedIds.takeFirst();
         emit fileChangedExtern(fileId);
     }
+}
+
+void FileRepository::addNode(QString name, QString location, FileGroupContext* parent)
+{
+    addFile(name, location, parent);
 }
 
 void FileRepository::updateActions()

@@ -57,9 +57,10 @@ public:
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
 
-    QStringList additionalFiles() const;
-    void setAdditionalFiles(const QStringList &additionalFiles);
-    void addAdditionalFile(const QString &additionalFile);
+//    QStringList additionalFiles() const;
+    void attachFile(const QString &filepath);
+    void detachFile(const QString &filepath);
+    void updateChildNodes();
     void jumpToMark(bool focus);
 
     QString lstErrorText(int line);
@@ -68,11 +69,13 @@ public:
     bool hasLstErrorText( int line = -1);
 
 signals:
-    void contentChanged(int id, QDir fileInfo);
+//    void contentChanged(int id, QDir fileInfo);
     void gamsProcessStateChanged(FileGroupContext* group);
+    void removeNode(FileSystemContext *node);
+    void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
 
 public slots:
-    void directoryChanged(const QString &path);
+//    void directoryChanged(const QString &path);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -98,7 +101,7 @@ private:
     LogContext* mLogContext = nullptr;
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
-    QStringList mAdditionalFiles;
+    QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
 };
 

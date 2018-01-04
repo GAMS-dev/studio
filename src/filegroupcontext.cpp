@@ -141,22 +141,72 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     // TODO(JM) visualize if a state is running
 }
 
-QStringList FileGroupContext::additionalFiles() const
+//QStringList FileGroupContext::additionalFiles() const
+//{
+//    return mAttachedFiles;
+//}
+
+void FileGroupContext::attachFile(const QString &filepath)
 {
-    return mAdditionalFiles;
+    if(filepath == "") return;
+    QFileInfo fi(filepath);
+    if(!mAttachedFiles.contains(fi)) {
+        mAttachedFiles << fi;
+        FileSystemContext* fsc = findFile(filepath);
+        if (!fsc && fi.exists()) {
+            // TODO(JM) create node
+        }
+    }
 }
 
-void FileGroupContext::setAdditionalFiles(const QStringList &additionalFiles)
+void FileGroupContext::detachFile(const QString& filepath)
 {
-    mAdditionalFiles = additionalFiles;
+    QFileInfo fi(filepath);
+    if (mAttachedFiles.contains(fi)) {
+        FileSystemContext* fsc = findFile(filepath);
+        FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+        if (!fc || fc->editors().isEmpty()) {
+            mAttachedFiles.removeOne(fi);
+        }
+    }
 }
 
-void FileGroupContext::addAdditionalFile(const QString &additionalFile)
-{
-    if(additionalFile == "") return;
+typedef QPair<int, FileSystemContext*> IndexedFSContext;
 
-    if(!mAdditionalFiles.contains(additionalFile)) {
-        mAdditionalFiles << additionalFile;
+void FileGroupContext::updateChildNodes()
+{
+    QFileInfoList addList = mAttachedFiles;
+    QList<IndexedFSContext> vanishedEntries;
+    for (int i = 0; i < childCount(); ++i) {
+        FileSystemContext *entry = childEntry(i);
+        if (entry->location().isEmpty())
+            continue;
+        QFileInfo fi(entry->location());
+        int pos = addList.indexOf(fi);
+        if (pos >= 0) {
+            // keep existing entries and remove them from addList
+            addList.removeAt(pos);
+            entry->unsetFlag(FileSystemContext::cfMissing);
+        } else {
+            // prepare indicees in reverse order (highest index first)
+            vanishedEntries.insert(0, IndexedFSContext(i, entry));
+        }
+    }
+    // check for vanished files and directories
+    for (IndexedFSContext childIndex: vanishedEntries) {
+        FileSystemContext* entry = childIndex.second;
+        if (entry->testFlag(FileSystemContext::cfActive)) {
+            // mark active files as missing (directories recursively)
+            entry->setFlag(FileSystemContext::cfMissing);
+            qDebug() << "Missing node: " << entry->name();
+        } else {
+            // inactive files can be removed (directories recursively)
+            emit removeNode(entry);
+        }
+    }
+    // add newly appeared files and directories
+    for (QFileInfo fi: addList) {
+        emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
     }
 }
 
@@ -265,33 +315,33 @@ bool FileGroupContext::isWatched()
 
 void FileGroupContext::setWatched(bool watch)
 {
-    if (!watch) {
-        if (mDirWatcher) {
-            mDirWatcher->deleteLater();
-            mDirWatcher = nullptr;
-        }
-        return;
-    }
-    if (!mDirWatcher) {
-        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
-    }
-    mDirWatcher->addPath(location());
+//    if (!watch) {
+//        if (mDirWatcher) {
+//            mDirWatcher->deleteLater();
+//            mDirWatcher = nullptr;
+//        }
+//        return;
+//    }
+//    if (!mDirWatcher) {
+//        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
+//        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
+//    }
+//    mDirWatcher->addPath(location());
 }
 
-void FileGroupContext::directoryChanged(const QString& path)
-{
-    QDir dir(path);
-    if (dir.exists()) {
-        emit contentChanged(id(), dir);
-        return;
-    }
-    if (testFlag(cfActive)) {
-        setFlag(cfMissing);
-        return;
-    }
-    deleteLater();
-}
+//void FileGroupContext::directoryChanged(const QString& path)
+//{
+//    QDir dir(path);
+//    if (dir.exists()) {
+//        emit contentChanged(id(), dir);
+//        return;
+//    }
+//    if (testFlag(cfActive)) {
+//        setFlag(cfMissing);
+//        return;
+//    }
+//    deleteLater();
+//}
 
 void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {

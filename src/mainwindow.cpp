@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
-    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".inc" << ".log" << ".lst" << ".txt" << ".gdx");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".lst");
     mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
@@ -1055,23 +1055,23 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
-    if (!fsc) { // not yet opened by user, open file in new tab
-        QString additionalFile = openedManually ? fileInfo.fileName() : "";
-        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath(), additionalFile);
+    if (!fc) { // not yet opened by user, open file in new tab
+        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
 
-        fsc = mFileRepo.findContext(filePath, group);
-        if (!fsc) {
+//        fsc = mFileRepo.findContext(filePath, group);
+        mFileRepo.findOrCreateFileContext(filePath, &fc, group);
+        if (!fc) {
             EXCEPT() << "File not found: " << filePath;
         }
-        if (fsc->type() == FileSystemContext::File) {
-            QTabWidget* tabWidget = fsc->location().isEmpty() ? ui->logTab : ui->mainTab;
-            fc = static_cast<FileContext*>(fsc);
-            createEdit(tabWidget, focus, fc->id());
-            if (tabWidget->currentWidget())
-                if (focus) tabWidget->currentWidget()->setFocus();
-            ui->projectView->expand(mFileRepo.treeModel()->index(group));
-            addToOpenedFiles(filePath);
-        }
+        QTabWidget* tabWidget = fc->location().isEmpty() ? ui->logTab : ui->mainTab;
+//        fc = static_cast<FileContext*>(fsc);
+        createEdit(tabWidget, focus, fc->id());
+        if (tabWidget->currentWidget())
+            if (focus) tabWidget->currentWidget()->setFocus();
+        ui->projectView->expand(mFileRepo.treeModel()->index(group));
+        addToOpenedFiles(filePath);
+//        if (fsc->type() == FileSystemContext::File) {
+//        }
     } else if (fc) {
         openFileContext(fc, focus);
     }

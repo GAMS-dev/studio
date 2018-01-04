@@ -184,7 +184,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     result += " ";
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
@@ -202,7 +202,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 //                    result += QString("[LST:%1]").arg(lineNr+1);
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
@@ -232,8 +232,8 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     FileContext *fc;
 
                     // TODO(JM) use this instead ... AFTER allowing individual files in group:
-                    // emit findOrCreateFileContext(fName, &fc, parentEntry());
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
+//                    emit findFileContext(fName, &fc, parentEntry());
 
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
