@@ -38,7 +38,7 @@
      <item>
       <widget class="QLabel" name="commandLineLabel">
        <property name="text">
-        <string>Option :  </string>
+        <string>Command Line Options :  </string>
        </property>
       </widget>
      </item>

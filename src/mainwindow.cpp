@@ -664,7 +664,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-            mCommandLineTokenizer, &CommandLineTokenizer::formatLineEditTextFormat);
+            mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
 }
 

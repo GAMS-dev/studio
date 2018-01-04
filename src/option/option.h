@@ -20,12 +20,15 @@ struct OptionItem {
     OptionItem() { }
     OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
+    OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos, bool disabledFlag) :
+          key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     QString key;
     QString value;
-    bool disabled = false;
     int keyPosition;
     int valuePosition;
+    bool disabled = false;
+    OptionErrorType error = No_Error;
 };
 
 struct OptionGroup {

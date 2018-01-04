@@ -26,6 +26,7 @@ public:
     ~CommandLineTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
+    QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
     QList<OptionError> format(const QList<OptionItem> &items);
     QString normalize(const QString &commandLineStr);
     QString normalize(const QList<OptionItem> &items);
@@ -42,7 +43,8 @@ public:
     Option *getGamsOption() const;
 
 public slots:
-    void formatLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
+    void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
+    void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 private:
     QTextCharFormat mInvalidKeyFormat;
@@ -57,7 +59,7 @@ private:
     void offsetAssignment(QStringRef str, int &offset, const int length);
     void offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length);
 
-    void setLineEditTextFormat(QLineEdit* lineEdit, const QString &commandLineStr);
+    void formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList);
 };
 
 } // namespace studio

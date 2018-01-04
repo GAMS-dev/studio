@@ -15,6 +15,7 @@ OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineSt
        mCheckState[idx] = QVariant();
 
     gamsOption = commandLineTokenizer->getGamsOption();
+    validateOption();
 }
 
 QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -140,20 +141,25 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
 
 bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    QString data = value.toString().simplified();
-
-    if (data.isEmpty())
-        return false;
-
     if (role == Qt::EditRole)   {
-       if (index.column() == 0) { // key
-           mOptionItem[index.row()].key = data;
-       } else if (index.column() == 1) { // value
-                 mOptionItem[index.row()].value = data;
-       }
-    }
+        QString data = value.toString().simplified();
 
-    emit editCompleted(  commandLineTokenizer->normalize( mOptionItem ) );
+        if (data.isEmpty())
+            return false;
+
+        if (index.column() == 0) { // key
+            mOptionItem[index.row()].key = data;
+        } else if (index.column() == 1) { // value
+                  mOptionItem[index.row()].value = data;
+        }
+        emit optionModelChanged(  mOptionItem );
+    } else if (role == Qt::CheckStateRole) {
+        if (index.row() > mOptionItem.size())
+            return false;
+
+        mOptionItem[index.row()].disabled = value.toBool();
+        emit optionModelChanged(  mOptionItem );
+    }
     return true;
 }
 
@@ -162,6 +168,36 @@ QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
     return QModelIndex();
+}
+
+void OptionParameterModel::toggleActiveOptionItem(int index)
+{
+    bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
+    setHeaderData( index,
+                          Qt::Vertical,
+                          Qt::CheckState(checked ? Qt::Checked : Qt::Unchecked),
+                          Qt::CheckStateRole );
+    setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
+    emit optionModelChanged(mOptionItem);
+}
+
+void OptionParameterModel::validateOption()
+{
+   for(OptionItem item : mOptionItem) {
+       if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
+           item.error = OptionErrorType::No_Error;
+           continue;
+       }
+       if (gamsOption->isValid(item.key) || gamsOption->isThereASynonym(item.key)) { // valid option
+           if (gamsOption->isDeprecated(item.key)) { // deprecated option
+               item.error = OptionErrorType::Deprecated_Option;
+           } else { // valid and not deprected Option
+               item.error = gamsOption->getValueErrorType(item.key, item.value);
+           }
+       } else { // invalid option
+           item.error = OptionErrorType::Invalid_Key;
+       }
+   }
 }
 
 } // namespace studio

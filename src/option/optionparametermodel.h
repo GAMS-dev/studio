@@ -25,7 +25,10 @@ public:
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 
 signals:
-    void editCompleted(const QString &commandLineStr);
+    void optionModelChanged(const QList<OptionItem> &optionItem);
+
+public slots:
+    void toggleActiveOptionItem(int index);
 
 private:
     QList<OptionItem> mOptionItem;
@@ -34,6 +37,8 @@ private:
 
     CommandLineTokenizer* commandLineTokenizer;
     Option* gamsOption;
+
+    void validateOption();
 };
 
 } // namespace studio

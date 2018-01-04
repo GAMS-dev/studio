@@ -69,6 +69,46 @@ QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
     return commandLineList;
 }
 
+QList<OptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr, const QList<QString> &disabledOption)
+{
+    QList<OptionItem> commandLineList;
+    if (!commandLineStr.isEmpty()) {
+        int offset = 0;
+        int length = commandLineStr.length();
+        QStringRef str = commandLineStr.midRef(0);
+        offsetWhiteSpaces(str, offset, length);
+        while( offset < commandLineStr.length() ) {
+            QString key = "";
+            QString value = "";
+            int keyPosition = -1;
+            int valuePosition = -1;
+
+            offsetKey(str, key, keyPosition, offset, length);
+            bool disabled = (disabledOption.contains(key));
+            if (offset >= commandLineStr.length()) {
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
+                break;
+            }
+
+            offsetAssignment(str, offset, length);
+            if (offset >= commandLineStr.length()) {
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
+                break;
+            }
+
+            offsetValue(str, value, valuePosition, offset, length);
+
+            commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
+
+            offsetWhiteSpaces(str, offset, length);
+            if (offset >= commandLineStr.length()) {
+                break;
+            }
+        }
+    }
+    return commandLineList;
+}
+
 QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
 {
     QList<OptionError> optionErrorList;
@@ -84,6 +124,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
             else
                fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
             fr.format = mDeactivatedOptionFormat;
+            optionErrorList.append(OptionError(fr, "")); //item.key + QString(" (Option will be disabled in the next run)")) );
             continue;
         }
         if (gamsOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
@@ -371,10 +412,27 @@ void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &dea
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
-void CommandLineTokenizer::formatLineEditTextFormat(QLineEdit *lineEdit, const QString &commandLineStr)
+void CommandLineTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr)
 {
 //    this->setLineEditTextFormat(lineEdit, "");
-    this->setLineEditTextFormat(lineEdit, commandLineStr);
+    QList<OptionError> errList;
+    if (!commandLineStr.isEmpty())
+        errList = this->format( this->tokenize(commandLineStr) );
+
+    this->formatLineEdit(lineEdit, errList);
+}
+
+void CommandLineTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems)
+{
+    QString commandLineStr = this->normalize(optionItems);
+    lineEdit->setText(commandLineStr );
+
+    QList<OptionItem> tokenizedItems = this->tokenize(commandLineStr);
+    for(int i=0; i<optionItems.size(); ++i) {
+         tokenizedItems[i].disabled = optionItems[i].disabled;
+    }
+    QList<OptionError> errList = this->format( tokenizedItems );
+    this->formatLineEdit(lineEdit, errList);
 }
 
 Option *CommandLineTokenizer::getGamsOption() const
@@ -382,31 +440,26 @@ Option *CommandLineTokenizer::getGamsOption() const
     return gamsOption;
 }
 
-void CommandLineTokenizer::setLineEditTextFormat(QLineEdit* lineEdit, const QString& commandLineStr)
-{
-    QList<OptionError> errList;
-    if (!commandLineStr.isEmpty())
-        errList = this->format( this->tokenize(commandLineStr) );
-
+void CommandLineTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
     QString errorMessage = "";
     QList<QInputMethodEvent::Attribute> attributes;
-    foreach(const OptionError err, errList)   {
+    foreach(const OptionError err, errorList)   {
         QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
         int start = err.formatRange.start - lineEdit->cursorPosition();
         int length = err.formatRange.length;
         QVariant value = err.formatRange.format;
         attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
 
-        if (errorMessage.isEmpty()) {
-            errorMessage.append("Error: Parameter error(s)");
-        }
-        errorMessage.append("\n    " + err.message);
+        if (!err.message.isEmpty())
+            errorMessage.append("\n    " + err.message);
     }
-    if (!errorMessage.isEmpty())
-        lineEdit->setToolTip(errorMessage);
-    else
-        lineEdit->setToolTip("");
 
+    if (!errorMessage.isEmpty()) {
+        errorMessage.prepend("Error: Parameter error(s)");
+        lineEdit->setToolTip(errorMessage);
+    } else {
+        lineEdit->setToolTip("");
+    }
     QInputMethodEvent event(QString(), attributes);
     QCoreApplication::sendEvent(lineEdit, &event);
 }

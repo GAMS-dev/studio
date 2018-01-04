@@ -9,8 +9,8 @@ namespace studio {
 OptionConfigurator::OptionConfigurator(const QString& label, const QString& lineEditText, CommandLineTokenizer* tokenizer, QWidget *parent):
      QFrame(parent)
 {
-    connect(this, &OptionConfigurator::commandLineOptionChanged,
-            tokenizer, &CommandLineTokenizer::formatLineEditTextFormat);
+    connect(this, static_cast<void(OptionConfigurator::*)(QLineEdit*, const QString &)>(&OptionConfigurator::commandLineOptionChanged),
+            tokenizer, &CommandLineTokenizer::formatTextLineEdit);
 
     QList<OptionItem> optionItem = tokenizer->tokenize(lineEditText);
     QString normalizedText = tokenizer->normalize(optionItem);
@@ -57,22 +57,15 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
-            this, &OptionConfigurator::toggleActiveOptionItem);
-    connect(optionParamModel, &OptionParameterModel::editCompleted,
-            this, &OptionConfigurator::updateCommandLineStr);
+            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
+            this, static_cast<void(OptionConfigurator::*)(const QList<OptionItem> &)> (&OptionConfigurator::updateCommandLineStr));
+    connect(this, static_cast<void(OptionConfigurator::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionConfigurator::commandLineOptionChanged),
+            tokenizer, &CommandLineTokenizer::formatItemLineEdit);
 }
 
 OptionConfigurator::~OptionConfigurator()
 {
-}
-
-void OptionConfigurator::toggleActiveOptionItem(int index)
-{
-    QAbstractItemModel* model = ui.commandLineTableView->model();
-    model->setHeaderData( index,
-                          Qt::Vertical,
-                          Qt::CheckState(model->headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt()) != Qt::Checked ? Qt::Checked : Qt::Unchecked,
-                          Qt::CheckStateRole );
 }
 
 void OptionConfigurator::toggleOptionDefinition(bool checked)
@@ -87,6 +80,11 @@ void OptionConfigurator::updateCommandLineStr(const QString &commandLineStr)
 {
     ui.commandLineEdit->setText( commandLineStr );
     emit commandLineOptionChanged(ui.commandLineEdit, commandLineStr);
+}
+
+void OptionConfigurator::updateCommandLineStr(const QList<OptionItem> &optionItems)
+{
+    emit commandLineOptionChanged(ui.commandLineEdit, optionItems);
 }
 
 } // namespace studio

@@ -20,15 +20,15 @@ public:
 signals:
     void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
+    void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &opionItems);
 
 public slots:
-    void toggleActiveOptionItem(int index);
     void toggleOptionDefinition(bool checked);
     void updateCommandLineStr(const QString &commandLineStr);
+    void updateCommandLineStr(const QList<OptionItem> &opionItems);
 
 private:
     Ui::OptionConfigurator ui;
-//    QLineEdit* searchLineEdit;
 };
 
 } // namespace studio
