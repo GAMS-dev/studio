@@ -20,12 +20,14 @@
 #ifndef FILESYSTEMCONTEXT_H
 #define FILESYSTEMCONTEXT_H
 
-#include <QtGui>
+#include <QtWidgets>
+#include "codeeditor.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
 
-typedef unsigned int FileId;
+typedef int FileId;
 
 class FileGroupContext;
 
@@ -56,6 +58,17 @@ public:
         FileGroup,
         FileSystem,
         Log
+    };
+
+    enum EditorType {
+        etUndefined = 0,
+        etPlainText = 1,
+        etSourceCode = 2,
+        etLastTextType = 4,
+
+        etLxiLst = 5,
+        etGdx = 6,
+        etLastKomplexType = 9,
     };
 
     typedef QFlags<ContextFlag> ContextFlags;
@@ -107,6 +120,30 @@ public:
     virtual int childCount();
 
     FileSystemContext *findFile(QString filePath);
+
+    inline static void initEditorType(CodeEditor* w) {
+        if(w) w->setProperty("EditorType", etSourceCode);
+    }
+    inline static void initEditorType(QPlainTextEdit* w) {
+        if(w) w->setProperty("EditorType", etPlainText);
+    }
+    inline static void initEditorType(gdxviewer::GdxViewer* w) {
+        if(w) w->setProperty("EditorType", etGdx);
+    }
+    inline static int editorType(QWidget* w) {
+        QVariant v = w ? w->property("EditorType") : QVariant();
+        return (v.isValid() ? v.toInt() : etUndefined);
+    }
+    inline static QPlainTextEdit* toPlainEdit(QWidget* w) {
+        int t = editorType(w);
+        return (t > etUndefined && t <= etLastTextType) ? static_cast<QPlainTextEdit*>(w) : nullptr;
+    }
+    inline static CodeEditor* toCodeEdit(QWidget* w) {
+        return (editorType(w) == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
+    }
+    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
+        return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
+    }
 signals:
     void changed(FileId fileId);
 

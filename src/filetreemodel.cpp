@@ -188,7 +188,7 @@ void FileTreeModel::setCurrent(const QModelIndex& ind)
         mCurrent = ind;
         if (mi.isValid()) {
             dataChanged(mi, mi);                        // invalidate old
-            QModelIndex par = index(mFileRepo->context(ind)->parentEntry());
+            QModelIndex par = index(mFileRepo->context(mi)->parentEntry());
             if (par.isValid()) dataChanged(par, par);
         }
         if (mCurrent.isValid()) {

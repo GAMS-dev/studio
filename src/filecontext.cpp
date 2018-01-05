@@ -40,7 +40,7 @@ FileContext::FileContext(FileId fileId, QString name, QString location, ContextT
     }
 }
 
-QList<QPlainTextEdit*>&FileContext::editorList()
+QWidgetList& FileContext::editorList()
 {
     return mEditors;
 }
@@ -99,7 +99,7 @@ const FileMetrics& FileContext::metrics()
     return mMetrics;
 }
 
-const QList<QPlainTextEdit*> FileContext::editors() const
+const QWidgetList FileContext::editors() const
 {
     return mEditors;
 }
@@ -126,68 +126,76 @@ QIcon FileContext::icon()
     return QIcon(":/img/file-alt");
 }
 
-void FileContext::addEditor(QPlainTextEdit* edit)
+void FileContext::addEditor(QWidget* edit)
 {
-    if (!edit)
-        return;
+    if (!edit) return;
     if (mEditors.contains(edit)) {
         mEditors.move(mEditors.indexOf(edit), 0);
         return;
     }
-
+    if (FileSystemContext::editorType(edit) == FileSystemContext::etUndefined)
+        EXCEPT() << "Type assignment missing for this editor/viewer";
     mEditors.prepend(edit);
+    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
+
     if (mEditors.size() == 1) {
-        document()->setParent(this);
-        connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-        if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
-            mSyntaxHighlighter->setDocAndConnect(document());
-        QTimer::singleShot(50, this, &FileContext::updateMarks);
-    } else {
-        edit->setDocument(document());
+        if (ptEdit) {
+            ptEdit->document()->setParent(this);
+            connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+            if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
+                mSyntaxHighlighter->setDocAndConnect(document());
+            QTimer::singleShot(50, this, &FileContext::updateMarks);
+        }
+    } else if (ptEdit) {
+        ptEdit->setDocument(document());
     }
     // TODO(JM) getMouseMove and -click for editor to enable link-clicking
-    if (!edit->viewport()->hasMouseTracking()) {
-        edit->viewport()->setMouseTracking(true);
+    if (ptEdit) {
+        if (!ptEdit->viewport()->hasMouseTracking()) {
+            ptEdit->viewport()->setMouseTracking(true);
+        }
+        ptEdit->viewport()->installEventFilter(this);
+        ptEdit->installEventFilter(this);
     }
-    edit->viewport()->installEventFilter(this);
-    edit->installEventFilter(this);
-
+    if (scEdit) {
+        connect(scEdit, &CodeEditor::requestMarkHash, &mMarks, &TextMarkList::shareMarkHash);
+        connect(scEdit, &CodeEditor::requestMarksEmpty, &mMarks, &TextMarkList::textMarksEmpty);
+    }
     setFlag(FileSystemContext::cfActive);
 }
 
-void FileContext::addEditor(CodeEditor* edit)
-{
-    addEditor(static_cast<QPlainTextEdit*>(edit));
-    connect(edit, &CodeEditor::requestMarkHash, &mMarks, &TextMarkList::shareMarkHash);
-    connect(edit, &CodeEditor::requestMarksEmpty, &mMarks, &TextMarkList::textMarksEmpty);
-}
-
-void FileContext::editToTop(QPlainTextEdit* edit)
+void FileContext::editToTop(QWidget* edit)
 {
     addEditor(edit);
 }
 
-void FileContext::removeEditor(QPlainTextEdit* edit)
+void FileContext::removeEditor(QWidget* edit)
 {
     int i = mEditors.indexOf(edit);
     if (i < 0)
         return;
     bool wasModified = isModified();
+    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
         if (mSyntaxHighlighter && !document()) {
             mSyntaxHighlighter->setDocAndConnect(nullptr);
         }
         // After removing last editor: paste document-parency back to editor
-        edit->document()->setParent(edit);
-        disconnect(edit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        if (ptEdit) {
+            ptEdit->document()->setParent(ptEdit);
+            disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        }
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
-    } else {
-        edit->setDocument(document()->clone(edit));
+    } else if (ptEdit) {
+        ptEdit->setDocument(document()->clone(ptEdit));
     }
-    edit->viewport()->removeEventFilter(this);
-    edit->removeEventFilter(this);
+    if (ptEdit) {
+        ptEdit->viewport()->removeEventFilter(this);
+        ptEdit->removeEventFilter(this);
+    }
 }
 
 void FileContext::removeAllEditors()
@@ -199,7 +207,7 @@ void FileContext::removeAllEditors()
     mEditors = editors;
 }
 
-bool FileContext::hasEditor(QPlainTextEdit* edit)
+bool FileContext::hasEditor(QWidget* edit)
 {
     return mEditors.contains(edit);
 }
@@ -208,7 +216,8 @@ QTextDocument*FileContext::document()
 {
     if (mEditors.isEmpty())
         return nullptr;
-    return mEditors.first()->document();
+    QPlainTextEdit* ed = FileSystemContext::toPlainEdit(mEditors.first());
+    return ed ? ed->document() : nullptr;
 }
 
 void FileContext::load(QString codecName)
@@ -260,7 +269,8 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
 {
     emit openFileContext(this, focus);
     if (mEditors.size()) {
-        QPlainTextEdit* edit = mEditors.first();
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+        if (!edit) return;
         QTextCursor tc(cursor.isNull() ? QTextCursor(edit->document()->findBlockByNumber(altLine)) : cursor);
         if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
         tc.clearSelection();
@@ -276,7 +286,8 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
 void FileContext::showToolTip(const QList<TextMark*> marks)
 {
     if (mEditors.size() && marks.size() > 0 &&  !marks.first()->textCursor().isNull()) {
-        QPlainTextEdit* edit = mEditors.first();
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+        if (!edit) return;
         QTextCursor cursor(marks.first()->textCursor());
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
@@ -338,7 +349,7 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     mMarks.removeTextMarks(tmTypes);
     if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
-    for (QPlainTextEdit* ed: mEditors) {
+    for (QWidget* ed: mEditors) {
         ed->update(); // trigger delayed repaint
     }
 }
@@ -359,10 +370,11 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
     // TODO(JM) use updateLinkDisplay
 
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+    if (!edit) FileSystemContext::eventFilter(watched, event);
 
     // TODO(JM) FileType of Log should be set to Log
     if (event->type() == QEvent::MouseButtonDblClick && mMetrics.fileType() == FileType::None /*FileType::Log*/) {
-        QPlainTextEdit* edit = mEditors.first();
         QPoint pos = static_cast<QMouseEvent*>(event)->pos();
         int line = edit->cursorForPosition(pos).blockNumber();
         TextMark* linkMark = nullptr;
@@ -386,19 +398,18 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
         if (keyEv->modifiers() & Qt::ControlModifier) {
-            mEditors.first()->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
+            edit->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
         } else {
-            mEditors.first()->viewport()->setCursor(Qt::IBeamCursor);
+            edit->viewport()->setCursor(Qt::IBeamCursor);
         }
         return FileSystemContext::eventFilter(watched, event);
 
     } else if (evCheckMouse.contains(event->type())) {
 
-        QPlainTextEdit* edit = mEditors.first();
         QPoint pos = (event->type() == QEvent::ToolTip) ? static_cast<QHelpEvent*>(event)->pos()
                                                         : static_cast<QMouseEvent*>(event)->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        CodeEditor* codeEdit = dynamic_cast<CodeEditor*>(edit);
+        CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
         mMarksAtMouse = mMarks.findMarks(cursor);
         bool isValidLink = false;
 

@@ -194,7 +194,8 @@ void FileGroupContext::updateChildNodes()
     }
     // add newly appeared files and directories
     for (QFileInfo fi: addList) {
-        emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
+        if (fi.exists())
+            emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
     }
 }
 

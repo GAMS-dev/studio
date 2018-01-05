@@ -125,6 +125,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         if (fc->metrics().fileType() != FileType::Gdx) {
 
             CodeEditor *codeEdit = new CodeEditor(mSettings, this);
+            FileSystemContext::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
@@ -145,7 +146,11 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             }
 
         } else {
-            tabIndex = ui->mainTab->addTab(new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir()), fc->caption());
+            // TODO(JM) also use addEditor for GdxViewer
+            gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
+            FileSystemContext::initEditorType(gdxView);
+            fc->addEditor(gdxView);
+            tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -200,7 +205,7 @@ FileRepository *MainWindow::fileRepository()
     return &mFileRepo;
 }
 
-QList<QPlainTextEdit*> MainWindow::openEditors()
+QWidgetList MainWindow::openEditors()
 {
     return mFileRepo.editors();
 }
@@ -209,7 +214,8 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
 {
     QList<QPlainTextEdit*> resList;
     for (int i = 0; i < ui->logTab->count(); i++) {
-        resList << dynamic_cast<QPlainTextEdit*>(ui->logTab->widget(i));
+        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(ui->logTab->widget(i));
+        if (ed) resList << ed;
     }
     return resList;
 }
@@ -358,9 +364,8 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
         mCommandLineOption->resetCurrentValue();
     }
-
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    QPlainTextEdit* edit = static_cast<QPlainTextEdit*>(editWidget);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
         if (fc) {
@@ -389,7 +394,7 @@ void MainWindow::activeTabChanged(int index)
 
 void MainWindow::fileChanged(FileId fileId)
 {
-    QList<QPlainTextEdit*> editors = mFileRepo.editors(fileId);
+    QWidgetList editors = mFileRepo.editors(fileId);
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
@@ -467,7 +472,7 @@ void MainWindow::fileClosed(FileId fileId)
     if (!fc)
         FATAL() << "FileId " << fileId << " is not of class FileContext.";
     while (!fc->editors().isEmpty()) {
-        QPlainTextEdit *edit = fc->editors().first();
+        QWidget *edit = fc->editors().first();
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         fc->removeEditor(edit);
         edit->deleteLater();
@@ -571,14 +576,13 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     //TODO(CW): a closed tabWidget does not delte the underlying widget object. therefore we need to delete in manually. This needs review
-    gdxviewer::GdxViewer* gdxViewer = dynamic_cast<gdxviewer::GdxViewer*>(ui->mainTab->widget(index));
-    if(gdxViewer)
-    {
+    gdxviewer::GdxViewer* gdxViewer = FileSystemContext::toGdxViewer(ui->mainTab->widget(index));
+    if(gdxViewer) {
         delete gdxViewer;
         return;
     }
 
-    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
+    QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
         ui->mainTab->removeTab(index);
@@ -612,10 +616,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
 void MainWindow::on_logTab_tabCloseRequested(int index)
 {
-    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->logTab->widget(index));
+    QWidget* edit = ui->logTab->widget(index);
     if (edit) {
         LogContext* log = mFileRepo.logContext(edit);
-        log->removeEditor(edit);
+        if (log) log->removeEditor(edit);
         ui->logTab->removeTab(index);
     }
 }
@@ -700,7 +704,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true, true);
+    openFilePath(filePath, nullptr, true);
 }
 
 HistoryData *MainWindow::history()
@@ -770,6 +774,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
             QPlainTextEdit* logEdit = new QPlainTextEdit();
+            FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
             logEdit->setReadOnly(true);
@@ -861,7 +866,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         for (QString fName: pathList) {
             QFileInfo fi(fName);
             if (QFileInfo(fName).isFile()) {
-                openFilePath(fi.canonicalFilePath(), nullptr, true, true);
+                openFilePath(fi.canonicalFilePath(), nullptr, true);
             }
         }
     }
@@ -913,6 +918,7 @@ void MainWindow::execute(QString commandLineStr)
 
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
+        FileSystemContext::initEditorType(logEdit);
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
@@ -997,8 +1003,8 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::openFileContext(FileContext* fileContext, bool focus)
 {
     if (!fileContext) return;
-    QPlainTextEdit* edit = nullptr;
-    QTabWidget* tabWidget = fileContext->location().isEmpty() ? ui->logTab : ui->mainTab;
+    QWidget* edit = nullptr;
+    QTabWidget* tabWidget = fileContext->type() == FileSystemContext::Log ? ui->logTab : ui->mainTab;
     if (!fileContext->editors().empty()) {
         edit = fileContext->editors().first();
     }
@@ -1013,8 +1019,8 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         // if there is already a log -> show it
         FileContext* logContext = mFileRepo.logContext(fileContext);
         if (logContext && !logContext->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = logContext->editors().first();
-            if (ui->logTab->currentWidget() != logEdit) {
+            QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
+            if (logEdit && ui->logTab->currentWidget() != logEdit) {
                 if (focus) ui->logTab->setCurrentWidget(logEdit);
             }
         }
@@ -1047,7 +1053,7 @@ void MainWindow::closeGroup(FileGroupContext* group)
 
 }
 
-void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually)
+void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus)
 {
     QFileInfo fileInfo(filePath);
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
@@ -1086,7 +1092,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            openFilePath(fInfo.filePath(), nullptr, true, openedManually); // open all sorts of files
+            openFilePath(fInfo.filePath(), nullptr, true); // open all sorts of files
         }
     }
     return fc;
@@ -1103,7 +1109,7 @@ void MainWindow::openContext(const QModelIndex& index)
 
 void MainWindow::on_mainTab_currentChanged(int index)
 {
-    QPlainTextEdit* edit = qobject_cast<QPlainTextEdit*>(ui->mainTab->widget(index));
+    QWidget* edit = ui->mainTab->widget(index);
     if (edit) {
         mFileRepo.editorActivated(edit);
         // if there is already a log -> show it
@@ -1114,8 +1120,8 @@ void MainWindow::on_mainTab_currentChanged(int index)
         }
         LogContext* logContext = mFileRepo.logContext(fc);
         if (logContext && !logContext->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = logContext->editors().first();
-            if (ui->logTab->currentWidget() != logEdit) {
+            QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
+            if (logEdit && ui->logTab->currentWidget() != logEdit) {
                 ui->logTab->setCurrentWidget(logEdit);
             }
         }

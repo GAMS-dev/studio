@@ -52,7 +52,7 @@ void StudioSettings::saveSettings()
     mAppSettings->endArray();
 
     mAppSettings->beginWriteArray("openedTabs");
-    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    QWidgetList editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
         mAppSettings->setArrayIndex(i);
         FileContext *fc = mMain->fileRepository()->fileContext(editList.at(i));
@@ -307,7 +307,7 @@ void StudioSettings::setFontFamily(const QString &value)
 void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
-    foreach (QPlainTextEdit* edit, mMain->openEditors()) {
+    foreach (QWidget* edit, mMain->openEditors()) {
         edit->setFont(font);
     }
 }
@@ -320,10 +320,13 @@ void StudioSettings::redrawEditors()
     else
         wrapModeEditor = QPlainTextEdit::NoWrap;
 
-    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    QWidgetList editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
-        editList.at(i)->blockCountChanged(0); // force redraw for line number area
-        editList.at(i)->setLineWrapMode(wrapModeEditor);
+        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(editList.at(i));
+        if (ed) {
+            ed->blockCountChanged(0); // force redraw for line number area
+            ed->setLineWrapMode(wrapModeEditor);
+        }
     }
 
     QPlainTextEdit::LineWrapMode wrapModeProcess;

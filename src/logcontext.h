@@ -11,8 +11,8 @@ class LogContext : public FileContext
 public:
     void markOld();
     QTextDocument* document() override;
-    void addEditor(QPlainTextEdit *edit) override;
-    void removeEditor(QPlainTextEdit *edit) override;
+    void addEditor(QWidget* edit) override;
+    void removeEditor(QWidget* edit) override;
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
     void clearLog();

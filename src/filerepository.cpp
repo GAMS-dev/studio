@@ -114,7 +114,6 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
 
 void FileRepository::findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
 {
-    // TODO(JM) Before using this method the DirectoryWatcher of the groups needs to be deactivated
     if (!fileGroup)
         EXCEPT() << "The group must not be null";
     FileSystemContext* fsc = findContext(filePath, fileGroup);
@@ -131,7 +130,6 @@ void FileRepository::findOrCreateFileContext(QString filePath, FileContext** res
 
 QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
 {
-    // TODO(JM) rename this to modifiedFiles()
     if (!fileGroup)
         fileGroup = mTreeModel->rootContext();
     QList<FileContext*> res;
@@ -290,7 +288,7 @@ void FileRepository::nodeClicked(QModelIndex index)
     }
 }
 
-void FileRepository::editorActivated(QPlainTextEdit* edit)
+void FileRepository::editorActivated(QWidget* edit)
 {
     FileContext *fc = fileContext(edit);
     QModelIndex mi = mTreeModel->index(fc);
@@ -318,7 +316,7 @@ FileTreeModel*FileRepository::treeModel() const
     return mTreeModel;
 }
 
-LogContext*FileRepository::logContext(QPlainTextEdit* edit)
+LogContext*FileRepository::logContext(QWidget* edit)
 {
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
@@ -334,6 +332,7 @@ LogContext*FileRepository::logContext(QPlainTextEdit* edit)
 
 LogContext*FileRepository::logContext(FileSystemContext* node)
 {
+    if (!node) return nullptr;
     FileGroupContext* group = nullptr;
     if (node->type() != FileSystemContext::FileGroup)
         group = node->parentEntry();
@@ -441,7 +440,7 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
     return static_cast<FileContext*>(fsc);
 }
 
-FileContext* FileRepository::fileContext(QPlainTextEdit* edit)
+FileContext* FileRepository::fileContext(QWidget* edit)
 {
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
         FileSystemContext *group = mTreeModel->rootContext()->childEntry(i);
@@ -471,18 +470,18 @@ FileActionContext*FileRepository::actionContext(const QModelIndex& index) const
     return static_cast<FileActionContext*>(fsc);
 }
 
-QList<QPlainTextEdit*> FileRepository::editors(FileId fileId)
+QWidgetList FileRepository::editors(FileId fileId)
 {
     FileSystemContext* fsc = (fileId < 0 ? mTreeModel->rootContext() : context(fileId, mTreeModel->rootContext()));
-    if (!fsc) return QList<QPlainTextEdit*>();
+    if (!fsc) return QWidgetList();
 
     if (fsc->type() == FileSystemContext::FileGroup) {
         // TODO(JM) gather all editors of the group
-        QList<QPlainTextEdit*> allEdits;
+        QWidgetList allEdits;
         FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
         for (int i = 0; i < group->childCount(); ++i) {
-            QList<QPlainTextEdit*> groupEdits = editors(group->childEntry(i)->id());
-            for (QPlainTextEdit* ed: groupEdits) {
+            QWidgetList groupEdits = editors(group->childEntry(i)->id());
+            for (QWidget* ed: groupEdits) {
                 if (!allEdits.contains(ed))
                     allEdits << ed;
             }
@@ -492,7 +491,7 @@ QList<QPlainTextEdit*> FileRepository::editors(FileId fileId)
     if (fsc->type() == FileSystemContext::File) {
         return static_cast<FileContext*>(fsc)->editors();
     }
-    return QList<QPlainTextEdit*>();
+    return QWidgetList();
 }
 
 } // namespace studio

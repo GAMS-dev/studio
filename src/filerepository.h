@@ -74,7 +74,7 @@ public:
     /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
     /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(QPlainTextEdit* edit);
+    FileContext* fileContext(QWidget* edit);
 
     /// \brief Get the <c>FileGroupContext</c> related to a file Id.
     /// \param fileId The file Id related to a <c>FileGroupContext</c>.
@@ -92,7 +92,7 @@ public:
     /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
     FileActionContext* actionContext(const QModelIndex& index) const;
 
-    QList<QPlainTextEdit*> editors(FileId fileId = -1);
+    QWidgetList editors(FileId fileId = -1);
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
@@ -117,9 +117,9 @@ public:
     FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
     QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
     int saveAll();
-    void editorActivated(QPlainTextEdit* edit);
+    void editorActivated(QWidget* edit);
     FileTreeModel* treeModel() const;
-    LogContext* logContext(QPlainTextEdit* edit);
+    LogContext* logContext(QWidget* edit);
     LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 

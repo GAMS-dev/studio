@@ -42,7 +42,7 @@ QTextDocument* LogContext::document()
     return mDocument;
 }
 
-void LogContext::addEditor(QPlainTextEdit* edit)
+void LogContext::addEditor(QWidget* edit)
 {
     if (!edit) return;
 
@@ -50,13 +50,16 @@ void LogContext::addEditor(QPlainTextEdit* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    edit->setDocument(mDocument);
+    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    if (!ptEdit) return;
+    ptEdit->setDocument(mDocument);
     FileContext::addEditor(edit);
 }
 
-void LogContext::removeEditor(QPlainTextEdit* edit)
+void LogContext::removeEditor(QWidget* edit)
 {
     if (!edit) return;
+    if (!editorList().contains(edit)) return;
 
     editorList().append(nullptr);
     FileContext::removeEditor(edit);
@@ -109,7 +112,9 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         if (true || state != FileContext::Inside) {
             QList<int> scrollVal;
             QList<QTextCursor> cursors;
-            for (QPlainTextEdit* ed: editors()) {
+            for (QWidget* w: editors()) {
+                QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+                if (!ed) continue;
                 if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                     scrollVal << 0;
                     cursors << QTextCursor();
@@ -138,7 +143,9 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             }
 
             int i = 0;
-            for (QPlainTextEdit* ed: editors()) {
+            for (QWidget* w: editors()) {
+                QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+                if (!ed) continue;
                 if (mJumpToLogEnd || scrollVal[i] == 0) {
                     mJumpToLogEnd = false;
                     ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());

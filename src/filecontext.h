@@ -24,6 +24,7 @@
 #include "filesystemcontext.h"
 #include "filemetrics.h"
 #include "syntax.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
@@ -86,21 +87,20 @@ public:
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
-    const QList<QPlainTextEdit*> editors() const;
+    const QWidgetList editors() const;
 
     /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
     /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
-    virtual void addEditor(QPlainTextEdit *edit);
-    virtual void addEditor(CodeEditor *edit);
+    virtual void addEditor(QWidget* edit);
 
     /// Moves the <c>CodeEditor</c> to the top of the editors-list of this file. (same behavior as <c>addEditor()</c>)
     /// \param edit The <c>CodeEditor</c> to be moved to top.
-    void editToTop(QPlainTextEdit *edit);
+    void editToTop(QWidget* edit);
 
     /// Removes an <c>CodeEditor</c> from the list.
     /// \param edit The <c>CodeEditor</c> to be removed.
-    virtual void removeEditor(QPlainTextEdit *edit);
+    virtual void removeEditor(QWidget* edit);
 
     /// Removes all <c>CodeEditor</c>s from the list.
     /// \param edit The <c>CodeEditor</c> to be removed.
@@ -109,7 +109,7 @@ public:
     /// Tests, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
     /// \param edit The <c>QPlainTextEdit</c> to be find.
     /// \return TRUE, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
-    bool hasEditor(QPlainTextEdit* edit);
+    bool hasEditor(QWidget* edit);
 
     /// The current QTextDocument assigned to this file.
     /// \return The current QTextDocument
@@ -147,7 +147,7 @@ protected:
     friend class FileRepository;
     FileContext(FileId fileId, QString name, QString location, ContextType type = FileSystemContext::File);
 
-    QList<QPlainTextEdit*>& editorList();
+    QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
 
@@ -158,7 +158,8 @@ private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     FileContext *mLinkFile = nullptr;
-    QList<QPlainTextEdit*> mEditors;
+//    QList<QPlainTextEdit*> mEditors;
+    QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;

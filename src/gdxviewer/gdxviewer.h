@@ -17,7 +17,7 @@ class GdxViewer : public QFrame
     Q_OBJECT
 
 public:
-    explicit GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
+    GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();

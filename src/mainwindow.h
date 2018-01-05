@@ -45,7 +45,7 @@ class SearchWidget;
 
 struct RecentData {
     FileId editFileId = -1;
-    QPlainTextEdit* editor = nullptr;
+    QWidget* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
 };
@@ -79,7 +79,7 @@ public:
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
-    QList<QPlainTextEdit*> openEditors();
+    QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
 
 private slots:
@@ -148,7 +148,7 @@ protected:
 
 private:
     void initTabs();
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually = false);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
