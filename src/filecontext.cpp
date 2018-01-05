@@ -340,6 +340,11 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int li
     return mark;
 }
 
+ErrorHighlighter *FileContext::highlighter()
+{
+    return mSyntaxHighlighter;
+}
+
 void FileContext::removeTextMarks(TextMark::Type tmType)
 {
     removeTextMarks(QSet<TextMark::Type>() << tmType);

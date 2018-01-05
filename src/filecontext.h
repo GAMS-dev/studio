@@ -123,6 +123,10 @@ public:
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
     TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    ErrorHighlighter* highlighter();
+
+    void removeTextMarks(TextMark::Type tmType);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -150,9 +154,6 @@ protected:
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
-
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
 private:
     FileMetrics mMetrics;
