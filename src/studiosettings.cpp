@@ -25,10 +25,11 @@ void StudioSettings::saveSettings()
     mAppSettings->setValue("pos", mMain->pos());
     mAppSettings->setValue("windowState", mMain->saveState());
 
-    mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
-    mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
-    mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
-
+    if (mMain->searchWidget()) {
+        mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
+        mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
+        mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
+    }
     mAppSettings->endGroup();
 
     // tool-/menubar
