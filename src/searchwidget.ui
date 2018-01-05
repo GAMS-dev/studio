@@ -147,7 +147,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>8</x>
      <y>70</y>
      <width>181</width>
      <height>25</height>
@@ -166,7 +166,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>231</x>
+     <x>189</x>
      <y>70</y>
      <width>131</width>
      <height>25</height>
@@ -185,9 +185,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>362</x>
+     <x>320</x>
      <y>70</y>
-     <width>111</width>
+     <width>121</width>
      <height>25</height>
     </rect>
    </property>
@@ -196,6 +196,19 @@
    </property>
    <property name="checkable">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_nrResults">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>70</y>
+     <width>71</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

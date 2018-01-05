@@ -62,6 +62,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     QTextCursor item;
     QTextCursor lastItem;
     QString searchTerm = ui->txt_search->text();
+    int hits = 0;
 
     FileContext *fc = mRepo.fileContext(mRecent.editor);
     fc->removeTextMarks(TextMark::result);
@@ -76,10 +77,16 @@ void SearchWidget::on_btn_FindAll_clicked()
             int length = item.selectionEnd() - item.selectionStart();
             mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                       item.columnNumber() - length, length));
+            hits++;
         }
     } while (!item.isNull());
 
     if (fc->highlighter()) fc->highlighter()->rehighlight();
+    if (hits == 1)
+        ui->lbl_nrResults->setText(QString::number(hits) + " result");
+    else
+        ui->lbl_nrResults->setText(QString::number(hits) + " results");
+
 }
 
 void SearchWidget::on_btn_Replace_clicked()
@@ -152,6 +159,7 @@ void SearchWidget::closeEvent(QCloseEvent *event) {
     Q_UNUSED(event);
     FileContext *fc = mRepo.fileContext(mRecent.editor);
     fc->removeTextMarks(TextMark::result);
+    ui->lbl_nrResults->setText("");
 }
 
 
