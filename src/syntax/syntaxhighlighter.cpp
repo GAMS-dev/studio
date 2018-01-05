@@ -79,7 +79,6 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
         }
         if (mark->type() == TextMark::result) {
-            qDebug() << "found TextMark::result";
             combinedFormat.setBackground(mark->color());
             setFormat(marksStart, marksEnd - marksStart, combinedFormat);
         }

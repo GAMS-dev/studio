@@ -125,6 +125,9 @@ public:
     TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     ErrorHighlighter* highlighter();
 
+    void removeTextMarks(TextMark::Type tmType);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
@@ -151,9 +154,6 @@ protected:
     QList<QPlainTextEdit*>& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
-
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
 private:
     FileMetrics mMetrics;

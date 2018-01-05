@@ -325,7 +325,6 @@ void FileContext::updateMarks()
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
-    qDebug() << "generateTextMark" << tmType << value << line << column << size;
     TextMark* mark = mMarks.generateTextMark(this, tmType, value, line, column, size);
     return mark;
 }

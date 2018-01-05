@@ -39,6 +39,7 @@ private:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
+    void closeEvent(QCloseEvent *event);
 };
 
 }

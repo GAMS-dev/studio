@@ -59,27 +59,25 @@ void SearchWidget::on_btn_Find_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
-    return; // TODO: work in progress
-    QString searchTerm = ui->txt_search->text();
-    QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
-
     QTextCursor item;
     QTextCursor lastItem;
+    QString searchTerm = ui->txt_search->text();
+
     FileContext *fc = mRepo.fileContext(mRecent.editor);
+    fc->removeTextMarks(TextMark::result);
+    QTextCursor tmpCurs = mRecent.editor->textCursor();
+    tmpCurs.clearSelection();
+    mRecent.editor->setTextCursor(tmpCurs);
+
     do {
-        item = mRecent.editor->document()->find(searchTerm, lastItem, searchFlags);
+        item = mRecent.editor->document()->find(searchTerm, lastItem, getFlags());
         lastItem = item;
         if (!item.isNull()) {
             int length = item.selectionEnd() - item.selectionStart();
-            qDebug() << "generating hit for lineNr" << item.blockNumber()-1
-                     << "col" << item.columnNumber() - length
-                     << "size" << length;
-
-            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber()-1,
+            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                       item.columnNumber() - length, length));
         }
     } while (!item.isNull());
-    mRecent.editor->textCursor().clearSelection();
 
     if (fc->highlighter()) fc->highlighter()->rehighlight();
 }
@@ -139,7 +137,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 void SearchWidget::keyPressEvent(QKeyEvent* event)
 {
     if (isVisible() && ( event->key() == Qt::Key_Escape
-                         || (Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
+                         || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
         hide();
         mRecent.editor->setFocus();
     }
@@ -148,6 +146,12 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
     } else if (isVisible() && event->key() == Qt::Key_F3) {
         find();
     }
+}
+
+void SearchWidget::closeEvent(QCloseEvent *event) {
+    Q_UNUSED(event);
+    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    fc->removeTextMarks(TextMark::result);
 }
 
 
