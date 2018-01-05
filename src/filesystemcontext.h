@@ -116,11 +116,13 @@ public:
 
     FileGroupContext* parentEntry() const;
     virtual void setParentEntry(FileGroupContext *parent);
-    virtual FileSystemContext* childEntry(int index);
-    virtual int childCount();
+    virtual FileSystemContext* childEntry(int index) const;
+    virtual int childCount() const;
 
     FileSystemContext *findFile(QString filePath);
 
+
+public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
@@ -144,6 +146,7 @@ public:
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
     }
+
 signals:
     void changed(FileId fileId);
 

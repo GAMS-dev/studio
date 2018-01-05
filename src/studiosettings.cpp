@@ -57,7 +57,10 @@ void StudioSettings::saveSettings()
     }
     mAppSettings->endArray();
 
-//    mAppSettings->beginGroup("projects");
+    QJsonObject json;
+    mMain->fileRepository()->write(json);
+    QJsonDocument saveDoc(json);
+    mAppSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
 //    FileSystemContext* root = mMain->fileRepository()->treeModel()->serialize();
 //    mAppSettings->endGroup();
 
@@ -141,6 +144,10 @@ void StudioSettings::loadSettings()
     }
     mAppSettings->endArray();
     mMain->commandLineHistory()->setAllHistory(map);
+
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    mMain->fileRepository()->read(loadDoc.object());
 
     mAppSettings->endGroup();
 

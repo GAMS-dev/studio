@@ -372,6 +372,58 @@ void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
     }
 }
 
+void FileRepository::read(const QJsonObject &json)
+{
+    if (json.contains("projects") && json["projects"].isArray()) {
+        QJsonArray gprArray = json["projects"].toArray();
+        readGroup(mTreeModel->rootContext(), gprArray);
+    }
+}
+
+void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonArray)
+{
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        QJsonObject node = jsonArray[i].toObject();
+        if (node.contains("nodes")) {
+            if (node.contains("file") && node["file"].isString()) {
+                ensureGroup(node["file"].toString());
+            }
+        } else {
+            if (node.contains("name") && node["name"].isString() && node.contains("file") && node["file"].isString()) {
+                addFile(node["name"].toString(), node["file"].toString(), group);
+            }
+        }
+    }
+}
+
+void FileRepository::write(QJsonObject& json) const
+{
+    QJsonArray gprArray;
+    writeGroup(mTreeModel->rootContext(), gprArray);
+    json["projects"] = gprArray;
+}
+
+void FileRepository::writeGroup(const FileGroupContext* group, QJsonArray& jsonArray) const
+{
+    for (int i = 0; i < group->childCount(); ++i) {
+        FileSystemContext *node = group->childEntry(i);
+        QJsonObject nodeObject;
+        if (node->type() == FileSystemContext::FileGroup) {
+            FileGroupContext *subGroup = static_cast<FileGroupContext*>(node);
+            nodeObject["file"] = subGroup->runableGms();
+            nodeObject["name"] = node->name();
+            QJsonArray subArray;
+            writeGroup(subGroup, subArray);
+            nodeObject["nodes"] = subArray;
+        } else {
+            nodeObject["file"] = node->location();
+            nodeObject["name"] = node->name();
+        }
+        jsonArray.append(nodeObject);
+    }
+}
+
+
 void FileRepository::onFileChangedExtern(FileId fileId)
 {
     if (!mChangedIds.contains(fileId)) mChangedIds << fileId;

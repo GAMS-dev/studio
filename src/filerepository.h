@@ -124,6 +124,8 @@ public:
     void removeMarks(FileGroupContext* group);
 
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
 signals:
     void fileClosed(FileId fileId, QPrivateSignal);
@@ -149,6 +151,9 @@ private slots:
 
 private:
     void updateActions();
+    void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
+    void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
+
 
 private:
     int mNextId;

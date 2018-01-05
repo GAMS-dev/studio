@@ -74,13 +74,13 @@ void FileSystemContext::setParentEntry(FileGroupContext* parent)
     }
 }
 
-FileSystemContext* FileSystemContext::childEntry(int index)
+FileSystemContext* FileSystemContext::childEntry(int index) const
 {
     Q_UNUSED(index);
     return nullptr;
 }
 
-int FileSystemContext::childCount()
+int FileSystemContext::childCount() const
 {
     return 0;
 }

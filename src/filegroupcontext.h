@@ -41,9 +41,9 @@ public:
 
     void setLocation(const QString &location);
 
-    int childCount();
+    int childCount() const;
     int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index);
+    FileSystemContext* childEntry(int index) const;
     FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
