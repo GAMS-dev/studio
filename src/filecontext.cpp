@@ -181,12 +181,10 @@ void FileContext::removeEditor(QWidget* edit)
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
         disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        if (mSyntaxHighlighter && type() != FileSystemContext::Log) mSyntaxHighlighter->setDocAndConnect(nullptr);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
-        if (mSyntaxHighlighter && !document()) {
-            mSyntaxHighlighter->setDocAndConnect(nullptr);
-        }
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {

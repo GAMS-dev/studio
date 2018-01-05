@@ -57,10 +57,9 @@ void StudioSettings::saveSettings()
     }
     mAppSettings->endArray();
 
-//    mAppSettings->beginWriteArray("groups");
-//    FileSystemContext* root = mMain->fileRepository()->treeModel()->rootContext();
-
-//    mAppSettings->endArray();
+//    mAppSettings->beginGroup("projects");
+//    FileSystemContext* root = mMain->fileRepository()->treeModel()->serialize();
+//    mAppSettings->endGroup();
 
     mAppSettings->beginWriteArray("openedTabs");
     QWidgetList editList = mMain->fileRepository()->editors();
