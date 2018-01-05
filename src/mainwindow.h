@@ -81,6 +81,7 @@ public:
     FileRepository* fileRepository();
     QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
+    SearchWidget* searchWidget() const;
 
 private slots:
     void codecChanged(QAction *action);

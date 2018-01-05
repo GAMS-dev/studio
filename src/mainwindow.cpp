@@ -220,6 +220,11 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
     return resList;
 }
 
+SearchWidget* MainWindow::searchWidget() const
+{
+    return sw;
+}
+
 bool MainWindow::projectViewVisibility()
 {
     return ui->actionProject_View->isChecked();
@@ -1131,7 +1136,7 @@ void MainWindow::on_actionSearch_triggered()
 {
     // create
     if (sw == nullptr) {
-        sw = new SearchWidget(mRecent, mFileRepo, this);
+        sw = new SearchWidget(mSettings, mRecent, mFileRepo, this);
     }
 
     // toggle visibility

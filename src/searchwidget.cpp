@@ -1,4 +1,5 @@
 #include "searchwidget.h"
+#include "studiosettings.h"
 #include "syntax.h"
 #include "ui_searchwidget.h"
 #include <QDebug>
@@ -6,16 +7,34 @@
 namespace gams {
 namespace studio {
 
-SearchWidget::SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent) :
+SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SearchWidget), mRecent(rec), mRepo(repo)
+    ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo)
 {
     ui->setupUi(this);
+    ui->cb_regex->setChecked(mSettings->searchUseRegex());
+    ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
+    ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
 }
 
 SearchWidget::~SearchWidget()
 {
     delete ui;
+}
+
+bool SearchWidget::regex()
+{
+    return ui->cb_regex->isChecked();
+}
+
+bool SearchWidget::caseSens()
+{
+    return ui->cb_caseSens->isChecked();
+}
+
+bool SearchWidget::wholeWords()
+{
+    return ui->cb_wholeWords->isChecked();
 }
 
 void SearchWidget::find(bool backwards)

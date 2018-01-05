@@ -1,6 +1,7 @@
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "gamspaths.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -23,6 +24,10 @@ void StudioSettings::saveSettings()
     mAppSettings->setValue("size", mMain->size());
     mAppSettings->setValue("pos", mMain->pos());
     mAppSettings->setValue("windowState", mMain->saveState());
+
+    mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
+    mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
+    mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
 
     mAppSettings->endGroup();
 
@@ -104,6 +109,10 @@ void StudioSettings::loadSettings()
     mMain->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     mMain->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     mMain->restoreState(mAppSettings->value("windowState").toByteArray());
+
+    setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
+    setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
+    setSearchWholeWords(mAppSettings->value("searchWholeWords", false).toBool());
 
     mAppSettings->endGroup();
 
@@ -356,6 +365,36 @@ bool StudioSettings::clearLog() const
 void StudioSettings::setClearLog(bool value)
 {
     mClearLog = value;
+}
+
+bool StudioSettings::searchUseRegex() const
+{
+    return mSearchUseRegex;
+}
+
+void StudioSettings::setSearchUseRegex(bool searchUseRegex)
+{
+    mSearchUseRegex = searchUseRegex;
+}
+
+bool StudioSettings::searchCaseSens() const
+{
+    return mSearchCaseSens;
+}
+
+void StudioSettings::setSearchCaseSens(bool searchCaseSens)
+{
+    mSearchCaseSens = searchCaseSens;
+}
+
+bool StudioSettings::searchWholeWords() const
+{
+    return mSearchWholeWords;
+}
+
+void StudioSettings::setSearchWholeWords(bool searchWholeWords)
+{
+    mSearchWholeWords = searchWholeWords;
 }
 
 }
