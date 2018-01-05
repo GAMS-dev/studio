@@ -575,13 +575,6 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    //TODO(CW): a closed tabWidget does not delte the underlying widget object. therefore we need to delete in manually. This needs review
-    gdxviewer::GdxViewer* gdxViewer = FileSystemContext::toGdxViewer(ui->mainTab->widget(index));
-    if(gdxViewer) {
-        delete gdxViewer;
-        return;
-    }
-
     QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {

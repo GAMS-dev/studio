@@ -177,15 +177,15 @@ void FileContext::removeEditor(QWidget* edit)
         return;
     bool wasModified = isModified();
     QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    if (ptEdit && mEditors.size() == 1) {
+        // On removing last editor: paste document-parency back to editor
+        ptEdit->document()->setParent(ptEdit);
+        disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+    }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
         if (mSyntaxHighlighter && !document()) {
             mSyntaxHighlighter->setDocAndConnect(nullptr);
-        }
-        // After removing last editor: paste document-parency back to editor
-        if (ptEdit) {
-            ptEdit->document()->setParent(ptEdit);
-            disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
         }
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
