@@ -183,9 +183,11 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     mark.col = result.indexOf(" ")+1;
                     result += " ";
                     mark.size = result.length() - mark.col - 1;
+                    qDebug() << "mark.col/size" << mark.col << mark.size;
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
+                        qDebug() << "lstline/line/col" << mCurrentErrorHint.lstLine << line << col;
                         mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
                     }

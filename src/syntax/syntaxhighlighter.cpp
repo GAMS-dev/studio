@@ -54,7 +54,6 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     end = marksEnd;
 
     for (TextMark* mark: marks) {
-        qDebug() << "checking mark" << mark;
         if (mark->blockStart() >= end || mark->blockEnd() < start)
             continue;
         QTextCharFormat combinedFormat(format);

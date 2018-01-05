@@ -80,7 +80,8 @@ void SearchWidget::on_btn_FindAll_clicked()
         }
     } while (!item.isNull());
     mRecent.editor->textCursor().clearSelection();
-    qDebug() << "marks" << mAllTextMarks;
+
+    if (fc->highlighter()) fc->highlighter()->rehighlight();
 }
 
 void SearchWidget::on_btn_Replace_clicked()

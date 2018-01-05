@@ -123,6 +123,7 @@ public:
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
     TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    ErrorHighlighter* highlighter();
 
 signals:
     /// Signal is emitted when the file has been modified externally.
