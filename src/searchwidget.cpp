@@ -193,7 +193,9 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 void SearchWidget::closeEvent(QCloseEvent *event) {
     Q_UNUSED(event);
     FileContext *fc = mRepo.fileContext(mRecent.editor);
-    fc->removeTextMarks(TextMark::result);
+    if (fc)
+        fc->removeTextMarks(TextMark::result);
+
     ui->lbl_nrResults->setText("");
 }
 
