@@ -133,6 +133,8 @@ signals:
     void fileDeletedExtern(FileId fileId);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void gamsProcessStateChanged(FileGroupContext* group);
+    void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
+    void getNodeExpanded(const QModelIndex &mi, bool *expanded);
 
 public slots:
     void nodeChanged(FileId fileId);

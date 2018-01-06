@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
+    connect(&mFileRepo, &FileRepository::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
@@ -242,6 +243,11 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     mProjectContextMenu.setNode(mFileRepo.context(index));
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 
+}
+
+void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
+{
+    ui->projectView->setExpanded(mi, expanded);
 }
 
 void MainWindow::on_actionNew_triggered()

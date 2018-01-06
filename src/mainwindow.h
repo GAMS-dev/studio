@@ -98,6 +98,7 @@ private slots:
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
 
 private slots:
     // File

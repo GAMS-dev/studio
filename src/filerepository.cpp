@@ -386,11 +386,19 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
         QJsonObject node = jsonArray[i].toObject();
         if (node.contains("nodes")) {
             if (node.contains("file") && node["file"].isString()) {
-                ensureGroup(node["file"].toString());
+                // TODO(JM) later, groups of deeper level need to be created, too
+                FileGroupContext* subGroup = ensureGroup(node["file"].toString());
+                if (subGroup) {
+                    QJsonArray gprArray = node["nodes"].toArray();
+                    readGroup(subGroup, gprArray);
+                    // TODO(JM) restore expanded-state
+                    emit setNodeExpanded(mTreeModel->index(group));
+                }
             }
         } else {
             if (node.contains("name") && node["name"].isString() && node.contains("file") && node["file"].isString()) {
-                addFile(node["name"].toString(), node["file"].toString(), group);
+                if (!group->findFile(node["file"].toString()))
+                    addFile(node["name"].toString(), node["file"].toString(), group);
             }
         }
     }
