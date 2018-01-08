@@ -47,7 +47,7 @@ Exception&Exception::operator =(const Exception& other)
     return *this;
 }
 
-const char* Exception::what() const
+const char* Exception::what() const noexcept
 {
     return mBuffer.isEmpty() ? QException::what()
                              : (mInfoStart <= 0 || mInfoStart >= mBuffer.length()) ? mBuffer.data()
