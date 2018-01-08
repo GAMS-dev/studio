@@ -31,6 +31,8 @@ private slots:
     void on_btn_ReplaceAll_clicked();
     void on_txt_search_returnPressed();
 
+    void on_btn_close_clicked();
+
 private:
     Ui::SearchWidget *ui;
     RecentData &mRecent;
@@ -44,6 +46,7 @@ private:
     void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
+    void findInThisFile();
 };
 
 }

@@ -37,6 +37,66 @@ bool SearchWidget::wholeWords()
     return ui->cb_wholeWords->isChecked();
 }
 
+void SearchWidget::on_btn_Find_clicked()
+{
+    find();
+}
+
+void SearchWidget::on_btn_FindAll_clicked()
+{
+    switch (ui->combo_scope->currentIndex()) {
+    case 0: // this file
+        findInThisFile();
+        break;
+    case 1: // this group
+
+        break;
+    case 2: // open files
+
+        break;
+    case 3: // all files/groups
+
+        break;
+    default:
+        break;
+    }
+}
+
+void SearchWidget::findInThisFile()
+{
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
+    QString searchTerm = ui->txt_search->text();
+
+    QTextCursor item;
+    QTextCursor lastItem;
+    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    int hits = 0;
+
+    fc->removeTextMarks(TextMark::result);
+    QTextCursor tmpCurs = edit->textCursor();
+    tmpCurs.clearSelection();
+    edit->setTextCursor(tmpCurs);
+
+    do {
+        item = edit->document()->find(searchTerm, lastItem, getFlags());
+        lastItem = item;
+        if (!item.isNull()) {
+            int length = item.selectionEnd() - item.selectionStart();
+            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
+                                                      item.columnNumber() - length, length));
+            hits++;
+        }
+    } while (!item.isNull());
+
+    if (fc->highlighter()) fc->highlighter()->rehighlight();
+    if (hits == 1)
+        ui->lbl_nrResults->setText(QString::number(hits) + " match");
+    else
+        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+}
+
 void SearchWidget::find(bool backwards)
 {
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
@@ -72,47 +132,6 @@ void SearchWidget::find(bool backwards)
         edit->setTextCursor(mSelection);
         ui->btn_Replace->setEnabled(true);
     }
-}
-
-void SearchWidget::on_btn_Find_clicked()
-{
-    find();
-}
-
-void SearchWidget::on_btn_FindAll_clicked()
-{
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
-    if (!edit) return;
-
-    QString searchTerm = ui->txt_search->text();
-
-    QTextCursor item;
-    QTextCursor lastItem;
-    FileContext *fc = mRepo.fileContext(mRecent.editor);
-    int hits = 0;
-
-    fc->removeTextMarks(TextMark::result);
-    QTextCursor tmpCurs = edit->textCursor();
-    tmpCurs.clearSelection();
-    edit->setTextCursor(tmpCurs);
-
-    do {
-        item = edit->document()->find(searchTerm, lastItem, getFlags());
-        lastItem = item;
-        if (!item.isNull()) {
-            int length = item.selectionEnd() - item.selectionStart();
-            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
-                                                      item.columnNumber() - length, length));
-            hits++;
-        }
-    } while (!item.isNull());
-
-    if (fc->highlighter()) fc->highlighter()->rehighlight();
-    if (hits == 1)
-        ui->lbl_nrResults->setText(QString::number(hits) + " match");
-    else
-        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
-
 }
 
 void SearchWidget::on_btn_Replace_clicked()
@@ -212,6 +231,11 @@ QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
     searchFlags.setFlag(QTextDocument::FindWholeWords, ui->cb_wholeWords->isChecked());
 
     return searchFlags;
+}
+
+void SearchWidget::on_btn_close_clicked()
+{
+    SearchWidget::close();
 }
 
 }
