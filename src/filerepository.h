@@ -109,7 +109,7 @@ public:
     /// \return a <c>QModelIndex</c> to the new node.
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
-    FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
+    FileGroupContext* ensureGroup(const QString& filePath);
     void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);

@@ -151,7 +151,7 @@ protected:
 private:
     void initTabs();
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
-    FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
+    FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);

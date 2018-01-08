@@ -61,7 +61,7 @@ public:
         (*mStream).flush();
         return *this;
     }
-    const char* what();
+    const char* what() const;
     virtual QByteArray where();
 
 protected:

@@ -275,7 +275,7 @@ void MainWindow::on_actionNew_triggered()
         file.resize(0);
     }
 
-    if (FileContext *fc = addContext("", filePath, true)) {
+    if (FileContext *fc = addContext("", filePath)) {
         fc->save();
     }
 }
@@ -289,7 +289,7 @@ void MainWindow::on_actionOpen_triggered()
     QStringList fNames = openDialog.getOpenFileNames();
 
     foreach (QString item, fNames) {
-        addContext("", item, true);
+        addContext("", item);
     }
 }
 
@@ -1085,7 +1085,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     mRecent.group = fc->parentEntry();
 }
 
-FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
+FileContext* MainWindow::addContext(const QString &path, const QString &fileName)
 {
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {

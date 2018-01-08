@@ -212,7 +212,7 @@ void FileRepository::removeNode(FileSystemContext* node)
     delete node;
 }
 
-FileGroupContext* FileRepository::ensureGroup(const QString &filePath, const QString &additionalFile)
+FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
 {
     bool extendedCaption = false;
     FileGroupContext* group = nullptr;
