@@ -142,7 +142,8 @@ void FileGroupContext::attachFile(const QString &filepath)
         mAttachedFiles << fi;
         FileSystemContext* fsc = findFile(filepath);
         if (!fsc && fi.exists()) {
-            // TODO(JM) create node
+            // TODO(JM) create individual node?
+            updateChildNodes();
         }
     }
 }

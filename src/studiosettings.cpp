@@ -178,8 +178,6 @@ void StudioSettings::loadSettings()
 
     mUserSettings->endGroup();
 
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
-
     if(!restoreTabs())
         return;
 

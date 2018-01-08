@@ -2,6 +2,7 @@
     <qresource prefix="/img">
         <file alias="bookmark">bookmark.svg</file>
         <file alias="bug-r">bug-r.svg</file>
+        <file alias="database">database.svg</file>
         <file alias="err-ref">err-ref.svg</file>
         <file alias="err-ref-missing">err-ref-missing.svg</file>
         <file alias="exclam-circle-r">exclam-circle-r.svg</file>

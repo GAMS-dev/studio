@@ -123,6 +123,8 @@ QIcon FileContext::icon()
 {
     if (mMetrics.fileType() == FileType::Gms)
         return QIcon(":/img/gams-w");
+    if (mMetrics.fileType() == FileType::Gdx)
+        return QIcon(":/img/database");
     return QIcon(":/img/file-alt");
 }
 

@@ -392,13 +392,14 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
                     QJsonArray gprArray = node["nodes"].toArray();
                     readGroup(subGroup, gprArray);
                     // TODO(JM) restore expanded-state
-                    emit setNodeExpanded(mTreeModel->index(group));
+                    emit setNodeExpanded(mTreeModel->index(subGroup));
                 }
             }
         } else {
             if (node.contains("name") && node["name"].isString() && node.contains("file") && node["file"].isString()) {
                 if (!group->findFile(node["file"].toString()))
-                    addFile(node["name"].toString(), node["file"].toString(), group);
+                    group->attachFile(node["file"].toString());
+//                    addFile(node["name"].toString(), node["file"].toString(), group);
             }
         }
     }
