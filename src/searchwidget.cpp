@@ -109,9 +109,9 @@ void SearchWidget::on_btn_FindAll_clicked()
 
     if (fc->highlighter()) fc->highlighter()->rehighlight();
     if (hits == 1)
-        ui->lbl_nrResults->setText(QString::number(hits) + " result");
+        ui->lbl_nrResults->setText(QString::number(hits) + " match");
     else
-        ui->lbl_nrResults->setText(QString::number(hits) + " results");
+        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
 
 }
 
