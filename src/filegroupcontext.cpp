@@ -277,7 +277,7 @@ QProcess::ProcessState FileGroupContext::gamsProcessState() const
     return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
-int FileGroupContext::childCount()
+int FileGroupContext::childCount() const
 {
     return mChildList.count();
 }
@@ -287,7 +287,7 @@ int FileGroupContext::indexOf(FileSystemContext* child)
     return mChildList.indexOf(child);
 }
 
-FileSystemContext*FileGroupContext::childEntry(int index)
+FileSystemContext*FileGroupContext::childEntry(int index) const
 {
     return mChildList.at(index);
 }

@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
+    connect(&mFileRepo, &FileRepository::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
@@ -244,6 +245,11 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 
 }
 
+void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
+{
+    ui->projectView->setExpanded(mi, expanded);
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -269,7 +275,7 @@ void MainWindow::on_actionNew_triggered()
         file.resize(0);
     }
 
-    if (FileContext *fc = addContext("", filePath, true)) {
+    if (FileContext *fc = addContext("", filePath)) {
         fc->save();
     }
 }
@@ -283,7 +289,7 @@ void MainWindow::on_actionOpen_triggered()
     QStringList fNames = openDialog.getOpenFileNames();
 
     foreach (QString item, fNames) {
-        addContext("", item, true);
+        addContext("", item);
     }
 }
 
@@ -1079,7 +1085,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     mRecent.group = fc->parentEntry();
 }
 
-FileContext* MainWindow::addContext(const QString &path, const QString &fileName, bool openedManually)
+FileContext* MainWindow::addContext(const QString &path, const QString &fileName)
 {
     FileContext *fc = nullptr;
     if (!fileName.isEmpty()) {

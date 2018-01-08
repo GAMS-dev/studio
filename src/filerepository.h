@@ -109,7 +109,7 @@ public:
     /// \return a <c>QModelIndex</c> to the new node.
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
-    FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
+    FileGroupContext* ensureGroup(const QString& filePath);
     void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
@@ -124,6 +124,8 @@ public:
     void removeMarks(FileGroupContext* group);
 
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
 signals:
     void fileClosed(FileId fileId, QPrivateSignal);
@@ -131,6 +133,8 @@ signals:
     void fileDeletedExtern(FileId fileId);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void gamsProcessStateChanged(FileGroupContext* group);
+    void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
+    void getNodeExpanded(const QModelIndex &mi, bool *expanded);
 
 public slots:
     void nodeChanged(FileId fileId);
@@ -149,6 +153,9 @@ private slots:
 
 private:
     void updateActions();
+    void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
+    void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
+
 
 private:
     int mNextId;
