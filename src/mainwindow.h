@@ -42,6 +42,7 @@ class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
 class SearchWidget;
+class Result;
 
 struct RecentData {
     FileId editFileId = -1;
@@ -82,6 +83,7 @@ public:
     QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
+    void showResults(QList<Result> results);
 
 private slots:
     void codecChanged(QAction *action);

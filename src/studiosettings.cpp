@@ -29,6 +29,7 @@ void StudioSettings::saveSettings()
         mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
         mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
         mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
+        mAppSettings->setValue("selectedScope", mMain->searchWidget()->selectedScope());
     }
     mAppSettings->endGroup();
 
@@ -116,6 +117,7 @@ void StudioSettings::loadSettings()
     setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
     setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
     setSearchWholeWords(mAppSettings->value("searchWholeWords", false).toBool());
+    setSelectedScopeIndex(mAppSettings->value("selectedScope", 0).toInt());
 
     mAppSettings->endGroup();
 
@@ -402,6 +404,16 @@ bool StudioSettings::searchWholeWords() const
 void StudioSettings::setSearchWholeWords(bool searchWholeWords)
 {
     mSearchWholeWords = searchWholeWords;
+}
+
+int StudioSettings::selectedScopeIndex() const
+{
+    return mSelectedScopeIndex;
+}
+
+void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
+{
+    mSelectedScopeIndex = selectedScopeIndex;
 }
 
 }

@@ -201,14 +201,14 @@
   <widget class="QLabel" name="lbl_nrResults">
    <property name="geometry">
     <rect>
-     <x>310</x>
+     <x>307</x>
      <y>100</y>
-     <width>101</width>
+     <width>100</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string/>
+    <string>[ X matches ]</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

@@ -33,6 +33,7 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
+#include "resultsview.h"
 
 namespace gams {
 namespace studio {
@@ -1157,5 +1158,15 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
+void MainWindow::showResults(QList<Result> results)
+{
+    ResultsView *res = new ResultsView(this);
+    foreach (Result r, results) {
+        res->addItem(r);
+    }
+    QString title("Results: " + sw->searchTerm());
+    int index = ui->logTab->addTab(res, title);
+    ui->logTab->setCurrentIndex(index);
+}
 }
 }

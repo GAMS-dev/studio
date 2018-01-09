@@ -7,14 +7,16 @@
 namespace gams {
 namespace studio {
 
-SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, QWidget *parent) :
+SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, MainWindow *parent) :
     QDialog(parent),
-    ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo)
+    ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo), mMain(parent)
 {
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());
     ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
+    ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
+    ui->lbl_nrResults->setText("");
 }
 
 SearchWidget::~SearchWidget()
@@ -37,6 +39,21 @@ bool SearchWidget::wholeWords()
     return ui->cb_wholeWords->isChecked();
 }
 
+QString SearchWidget::searchTerm()
+{
+    return ui->txt_search->text();
+}
+
+int SearchWidget::selectedScope()
+{
+    return ui->combo_scope->currentIndex();
+}
+
+void SearchWidget::setSelectedScope(int index)
+{
+    ui->combo_scope->setCurrentIndex(index);
+}
+
 void SearchWidget::on_btn_Find_clicked()
 {
     find();
@@ -49,7 +66,7 @@ void SearchWidget::on_btn_FindAll_clicked()
         findInThisFile();
         break;
     case 1: // this group
-
+        findInGroup();
         break;
     case 2: // open files
 
@@ -60,6 +77,21 @@ void SearchWidget::on_btn_FindAll_clicked()
     default:
         break;
     }
+}
+
+void SearchWidget::findInGroup()
+{
+    // dummy content
+    Result r1(11, "somefile.gms", "Full Line of Text with some extra words added at the");
+    Result r2(5, "readme.txt", "this is a readme file");
+    Result r3(1001, "extrafile.gms", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.");
+
+    QList<Result> ll;
+    ll.append(r1);
+    ll.append(r2);
+    ll.append(r3);
+
+    mMain->showResults(ll);
 }
 
 void SearchWidget::findInThisFile()
@@ -236,6 +268,27 @@ QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
 void SearchWidget::on_btn_close_clicked()
 {
     SearchWidget::close();
+}
+
+int Result::locLineNr() const
+{
+    return mLocLineNr;
+}
+
+QString Result::locFile() const
+{
+    return mLocFile;
+}
+
+QString Result::context() const
+{
+    return mContext;
+}
+
+Result::Result(int locLineNr, QString locFile, QString context) :
+    mLocLineNr(locLineNr), mLocFile(locFile), mContext(context)
+{
+    qDebug() << "created result at" << mLocFile << ":" << locLineNr;
 }
 
 }
