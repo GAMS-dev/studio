@@ -317,11 +317,11 @@ void CommandLineTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const 
 
 void CommandLineTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, int &offset, const int length)
 {
+    if (keyPosition == -1)
+       keyPosition = offset;
     while( offset < length ) {
         if  (str.mid(offset).startsWith(" ") || str.mid(offset).startsWith("="))
             break;
-        if (keyPosition == -1)
-            keyPosition = offset;
         key += str.mid(offset, 1);
         ++offset;
     }
