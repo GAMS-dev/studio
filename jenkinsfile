@@ -147,6 +147,7 @@ pipeline {
                     node('macos') {
                         sh '''
                             cd bin
+                            security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                             zip -r studio.zip studio.app
                         '''
