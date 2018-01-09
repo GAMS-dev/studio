@@ -50,7 +50,7 @@ private:
     void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
-    void findAndHighlight(QPlainTextEdit *edit = nullptr);
+    void simpleFindAndHighlight(QPlainTextEdit *edit = nullptr);
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInFile(FileSystemContext *fsc);
 };

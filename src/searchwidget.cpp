@@ -2,6 +2,7 @@
 #include "studiosettings.h"
 #include "syntax.h"
 #include "ui_searchwidget.h"
+#include "exception.h"
 #include <QDebug>
 
 namespace gams {
@@ -65,7 +66,7 @@ void SearchWidget::on_btn_FindAll_clicked()
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        findAndHighlight();
+        simpleFindAndHighlight();
         break;
     case 1: // this group
         res = findInGroup();
@@ -80,6 +81,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     default:
         break;
     }
+    mMain->showResults(res);
 }
 
 QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
@@ -99,41 +101,45 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
         matches.append(findInFile(fgc->childEntry(i)));
     }
     return matches;
-
-    // dummy content
-    Result r1(11, "somefile.gms", "Full Line of Text with some extra words added at the");
-    Result r2(5, "readme.txt", "this is a readme file");
-    Result r3(1001, "extrafile.gms", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.");
-
-    QList<Result> ll;
-    ll.append(r1);
-    ll.append(r2);
-    ll.append(r3);
-
 }
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
-    if (fsc->type()) // is group
-        findInGroup(fsc); // TESTME studio does not support this case yet
+    QList<Result> res;
+
+    if (fsc->type() == FileSystemContext::ContextType::FileGroup)
+        res.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
 
     FileContext *fc(static_cast<FileContext*>(fsc));
+    QString searchTerm = ui->txt_search->text();
 
-    qDebug() << "fsc->name():" << fsc->name() << "type():" << fsc->type();
+    QTextCursor item;
+    QTextCursor lastItem;
 
-    Result r(0, fc->location(), "hi");
+    if (fc->document() == nullptr) {
+        // TODO stream reading
+        return res;
+    }
 
-    return QList<Result>() << r;
+    do {
+        item = fc->document()->find(searchTerm, lastItem, getFlags());
+        lastItem = item;
+        if (!item.isNull()) {
+            Result r(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+            res << r;
+        }
+    } while (!item.isNull());
+
+    return res;
 }
 
-void SearchWidget::findAndHighlight(QPlainTextEdit* edit)
+void SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
 {
     if (edit == nullptr)
         edit = FileSystemContext::toPlainEdit(mRecent.editor);
     if (!edit) return;
 
     QString searchTerm = ui->txt_search->text();
-
     QTextCursor item;
     QTextCursor lastItem;
     FileContext *fc = mRepo.fileContext(mRecent.editor);

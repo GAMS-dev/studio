@@ -1165,8 +1165,11 @@ void MainWindow::showResults(QList<Result> results)
         res->addItem(r);
     }
     QString title("Results: " + sw->searchTerm());
+
+    res->resizeColumnsToContent();
     int index = ui->logTab->addTab(res, title);
     ui->logTab->setCurrentIndex(index);
 }
+
 }
 }

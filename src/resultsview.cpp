@@ -26,5 +26,10 @@ void ResultsView::addItem(Result r)
     ui->tableWidget->setItem(row, 2, new QTableWidgetItem(r.context()));
 }
 
+void ResultsView::resizeColumnsToContent()
+{
+    ui->tableWidget->resizeColumnsToContents();
+}
+
 }
 }

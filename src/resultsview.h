@@ -19,6 +19,7 @@ public:
     explicit ResultsView(QWidget *parent = 0);
     ~ResultsView();
     void addItem(Result r);
+    void resizeColumnsToContent();
 
 private:
     Ui::ResultsView *ui;
