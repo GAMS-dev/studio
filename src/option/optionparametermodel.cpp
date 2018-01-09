@@ -68,6 +68,9 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
+        if (row == mOptionItem.size())
+            break;
+
         if (col==0)
             return mOptionItem.at(row).key;
         else if (col== 1)
@@ -146,6 +149,9 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
 
         if (data.isEmpty())
             return false;
+
+        if (index.row() == mOptionItem.size())
+            mOptionItem.append(OptionItem());
 
         if (index.column() == 0) { // key
             mOptionItem[index.row()].key = data;
