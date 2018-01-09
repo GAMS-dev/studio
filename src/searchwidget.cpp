@@ -61,12 +61,15 @@ void SearchWidget::on_btn_Find_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
+    QList<Result> res;
+
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        findInThisFile();
+        findAndHighlight();
         break;
     case 1: // this group
-        findInGroup();
+        res = findInGroup();
+        mMain->showResults(res);
         break;
     case 2: // open files
 
@@ -79,8 +82,24 @@ void SearchWidget::on_btn_FindAll_clicked()
     }
 }
 
-void SearchWidget::findInGroup()
+QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 {
+    QList<Result> matches;
+
+    FileGroupContext *fgc;
+    if (fsc == nullptr) {
+        FileContext* fc = mMain->fileRepository()->fileContext(mRecent.editor);
+        fgc = (fc ? fc->parentEntry() : nullptr);
+
+        if (!fgc)
+            return QList<Result>();
+    }
+
+    for (int i = 0; i < fgc->childCount(); i++) {
+        matches.append(findInFile(fgc->childEntry(i)));
+    }
+    return matches;
+
     // dummy content
     Result r1(11, "somefile.gms", "Full Line of Text with some extra words added at the");
     Result r2(5, "readme.txt", "this is a readme file");
@@ -91,12 +110,26 @@ void SearchWidget::findInGroup()
     ll.append(r2);
     ll.append(r3);
 
-    mMain->showResults(ll);
 }
 
-void SearchWidget::findInThisFile()
+QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (fsc->type()) // is group
+        findInGroup(fsc); // TESTME studio does not support this case yet
+
+    FileContext *fc(static_cast<FileContext*>(fsc));
+
+    qDebug() << "fsc->name():" << fsc->name() << "type():" << fsc->type();
+
+    Result r(0, fc->location(), "hi");
+
+    return QList<Result>() << r;
+}
+
+void SearchWidget::findAndHighlight(QPlainTextEdit* edit)
+{
+    if (edit == nullptr)
+        edit = FileSystemContext::toPlainEdit(mRecent.editor);
     if (!edit) return;
 
     QString searchTerm = ui->txt_search->text();
