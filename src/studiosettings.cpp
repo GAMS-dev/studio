@@ -1,6 +1,7 @@
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "gamspaths.h"
+#include "searchwidget.h"
 
 namespace gams {
 namespace studio {
@@ -24,6 +25,11 @@ void StudioSettings::saveSettings()
     mAppSettings->setValue("pos", mMain->pos());
     mAppSettings->setValue("windowState", mMain->saveState());
 
+    if (mMain->searchWidget()) {
+        mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
+        mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
+        mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
+    }
     mAppSettings->endGroup();
 
     // tool-/menubar
@@ -51,8 +57,15 @@ void StudioSettings::saveSettings()
     }
     mAppSettings->endArray();
 
+    QJsonObject json;
+    mMain->fileRepository()->write(json);
+    QJsonDocument saveDoc(json);
+    mAppSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
+//    FileSystemContext* root = mMain->fileRepository()->treeModel()->serialize();
+//    mAppSettings->endGroup();
+
     mAppSettings->beginWriteArray("openedTabs");
-    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    QWidgetList editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
         mAppSettings->setArrayIndex(i);
         FileContext *fc = mMain->fileRepository()->fileContext(editList.at(i));
@@ -100,6 +113,10 @@ void StudioSettings::loadSettings()
     mMain->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     mMain->restoreState(mAppSettings->value("windowState").toByteArray());
 
+    setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
+    setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
+    setSearchWholeWords(mAppSettings->value("searchWholeWords", false).toBool());
+
     mAppSettings->endGroup();
 
     // tool-/menubar
@@ -127,6 +144,10 @@ void StudioSettings::loadSettings()
     }
     mAppSettings->endArray();
     mMain->commandLineHistory()->setAllHistory(map);
+
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    mMain->fileRepository()->read(loadDoc.object());
 
     mAppSettings->endGroup();
 
@@ -156,8 +177,6 @@ void StudioSettings::loadSettings()
     setClearLog(mUserSettings->value("clearLog", false).toBool());
 
     mUserSettings->endGroup();
-
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
 
     if(!restoreTabs())
         return;
@@ -307,7 +326,7 @@ void StudioSettings::setFontFamily(const QString &value)
 void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
-    foreach (QPlainTextEdit* edit, mMain->openEditors()) {
+    foreach (QWidget* edit, mMain->openEditors()) {
         edit->setFont(font);
     }
 }
@@ -320,10 +339,13 @@ void StudioSettings::redrawEditors()
     else
         wrapModeEditor = QPlainTextEdit::NoWrap;
 
-    QList<QPlainTextEdit*> editList = mMain->fileRepository()->editors();
+    QWidgetList editList = mMain->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
-        editList.at(i)->blockCountChanged(0); // force redraw for line number area
-        editList.at(i)->setLineWrapMode(wrapModeEditor);
+        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(editList.at(i));
+        if (ed) {
+            ed->blockCountChanged(0); // force redraw for line number area
+            ed->setLineWrapMode(wrapModeEditor);
+        }
     }
 
     QPlainTextEdit::LineWrapMode wrapModeProcess;
@@ -348,6 +370,36 @@ bool StudioSettings::clearLog() const
 void StudioSettings::setClearLog(bool value)
 {
     mClearLog = value;
+}
+
+bool StudioSettings::searchUseRegex() const
+{
+    return mSearchUseRegex;
+}
+
+void StudioSettings::setSearchUseRegex(bool searchUseRegex)
+{
+    mSearchUseRegex = searchUseRegex;
+}
+
+bool StudioSettings::searchCaseSens() const
+{
+    return mSearchCaseSens;
+}
+
+void StudioSettings::setSearchCaseSens(bool searchCaseSens)
+{
+    mSearchCaseSens = searchCaseSens;
+}
+
+bool StudioSettings::searchWholeWords() const
+{
+    return mSearchWholeWords;
+}
+
+void StudioSettings::setSearchWholeWords(bool searchWholeWords)
+{
+    mSearchWholeWords = searchWholeWords;
 }
 
 }

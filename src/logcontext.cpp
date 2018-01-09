@@ -6,8 +6,8 @@
 namespace gams {
 namespace studio {
 
-LogContext::LogContext(int id, QString name)
-    : FileContext(id, name, "", FileSystemContext::Log)
+LogContext::LogContext(FileId fileId, QString name)
+    : FileContext(fileId, name, "", FileSystemContext::Log)
 {
     mDocument = new QTextDocument(this);
     mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
@@ -42,7 +42,7 @@ QTextDocument* LogContext::document()
     return mDocument;
 }
 
-void LogContext::addEditor(QPlainTextEdit* edit)
+void LogContext::addEditor(QWidget* edit)
 {
     if (!edit) return;
 
@@ -50,13 +50,16 @@ void LogContext::addEditor(QPlainTextEdit* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    edit->setDocument(mDocument);
+    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    if (!ptEdit) return;
+    ptEdit->setDocument(mDocument);
     FileContext::addEditor(edit);
 }
 
-void LogContext::removeEditor(QPlainTextEdit* edit)
+void LogContext::removeEditor(QWidget* edit)
 {
     if (!edit) return;
+    if (!editorList().contains(edit)) return;
 
     editorList().append(nullptr);
     FileContext::removeEditor(edit);
@@ -109,7 +112,9 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         if (true || state != FileContext::Inside) {
             QList<int> scrollVal;
             QList<QTextCursor> cursors;
-            for (QPlainTextEdit* ed: editors()) {
+            for (QWidget* w: editors()) {
+                QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+                if (!ed) continue;
                 if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                     scrollVal << 0;
                     cursors << QTextCursor();
@@ -138,7 +143,9 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             }
 
             int i = 0;
-            for (QPlainTextEdit* ed: editors()) {
+            for (QWidget* w: editors()) {
+                QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+                if (!ed) continue;
                 if (mJumpToLogEnd || scrollVal[i] == 0) {
                     mJumpToLogEnd = false;
                     ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
@@ -184,7 +191,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     result += " ";
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
                         mMarkedContextList << fc;
@@ -202,7 +209,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 //                    result += QString("[LST:%1]").arg(lineNr+1);
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
@@ -230,11 +237,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     mark.size = result.length() - mark.col - 1;
 
                     FileContext *fc;
-
-                    // TODO(JM) use this instead ... AFTER alowing individual files in group:
-                    // emit findOrCreateFileContext(fName, &fc, parentEntry());
-                    emit findFileContext(fName, &fc, parentEntry());
-
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, line, 0, col);

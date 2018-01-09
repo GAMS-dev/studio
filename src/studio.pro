@@ -113,7 +113,6 @@ SOURCES += \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
-    syntax.h \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -172,6 +171,7 @@ HEADERS += \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
+    syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
     syntax/syntaxhighlighter.h \

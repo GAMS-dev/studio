@@ -29,7 +29,7 @@ SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, in
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar)
 {
-    mRex.setPattern(QString("(^%1|%1%1)([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
+    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
     mDirectives << "dollar" << "ontext" << "title" << "hidden";
     mSpecialStates.insert("title", SyntaxState::Title);
     mSpecialStates.insert("ontext", SyntaxState::CommentBlock);

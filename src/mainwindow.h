@@ -45,8 +45,8 @@ class StudioSettings;
 class SearchWidget;
 
 struct RecentData {
-    int editFileId = -1;
-    QPlainTextEdit* editor = nullptr;
+    FileId editFileId = -1;
+    QWidget* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
 };
@@ -80,16 +80,17 @@ public:
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
-    QList<QPlainTextEdit*> openEditors();
+    QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
+    SearchWidget* searchWidget() const;
 
 private slots:
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
-    void fileChanged(int fileId);
-    void fileChangedExtern(int fileId);
-    void fileDeletedExtern(int fileId);
-    void fileClosed(int fileId);
+    void fileChanged(FileId fileId);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
+    void fileClosed(FileId fileId);
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
@@ -98,6 +99,7 @@ private slots:
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
 
 private slots:
     // File
@@ -150,8 +152,8 @@ protected:
 
 private:
     void initTabs();
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool openedManually = false);
-    FileContext* addContext(const QString &path, const QString &fileName, bool openedManually = false);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+    FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);

@@ -41,14 +41,12 @@ public:
 
     void setLocation(const QString &location);
 
-    int childCount();
+    int childCount() const;
     int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index);
+    FileSystemContext* childEntry(int index) const;
     FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
-    bool isWatched();
-    void setWatched(bool watch = true);
     QString runableGms();
     QString lstFileName();
     LogContext* logContext();
@@ -57,9 +55,9 @@ public:
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
 
-    QStringList additionalFiles() const;
-    void setAdditionalFiles(const QStringList &additionalFiles);
-    void addAdditionalFile(const QString &additionalFile);
+    void attachFile(const QString &filepath);
+    void detachFile(const QString &filepath);
+    void updateChildNodes();
     void jumpToMark(bool focus);
 
     QString lstErrorText(int line);
@@ -68,11 +66,9 @@ public:
     bool hasLstErrorText( int line = -1);
 
 signals:
-    void contentChanged(int id, QDir fileInfo);
     void gamsProcessStateChanged(FileGroupContext* group);
-
-public slots:
-    void directoryChanged(const QString &path);
+    void removeNode(FileSystemContext *node);
+    void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -83,7 +79,7 @@ protected:
     friend class FileSystemContext;
     friend class LogContext;
 
-    FileGroupContext(int id, QString name, QString location, QString runInfo);
+    FileGroupContext(FileId id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
@@ -98,7 +94,7 @@ private:
     LogContext* mLogContext = nullptr;
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
-    QStringList mAdditionalFiles;
+    QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
 };
 

@@ -16,9 +16,13 @@ class SearchWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent = 0);
+    explicit SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, QWidget *parent = 0);
     void find(bool backwards = false);
     ~SearchWidget();
+
+    bool regex();
+    bool caseSens();
+    bool wholeWords();
 
 private slots:
     void on_btn_Find_clicked();
@@ -34,11 +38,12 @@ private:
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     QList<TextMark*> mAllTextMarks;
-    bool mMutliSelection = false; // 'find all' pressed
+    StudioSettings *mSettings;
 
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
+    void closeEvent(QCloseEvent *event);
 };
 
 }

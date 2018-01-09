@@ -82,6 +82,15 @@ public:
     bool clearLog() const;
     void setClearLog(bool value);
 
+    bool searchUseRegex() const;
+    void setSearchUseRegex(bool searchUseRegex);
+
+    bool searchCaseSens() const;
+    void setSearchCaseSens(bool searchCaseSens);
+
+    bool searchWholeWords() const;
+    void setSearchWholeWords(bool searchWholeWords);
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
@@ -104,6 +113,10 @@ private:
     bool mLineWrapEditor;
     bool mLineWrapProcess;
     bool mClearLog;
+
+    bool mSearchUseRegex;
+    bool mSearchCaseSens;
+    bool mSearchWholeWords;
 
 };
 
