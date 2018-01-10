@@ -151,19 +151,16 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            cd bin
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
-                            macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                            macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                         '''
                         sh 'ls -al bin'
                         sh 'ls -al bin/studio.app'
-                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin/studio.app'
+                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                                sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
                                 sh "mv studio-mac.zip ${env.BRANCH_NAME}-studio-mac.zip"
-                            } else {
-                                sh "mv bin/studio.dmg studio.dmg"
                             }
                         }
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
