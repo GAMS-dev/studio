@@ -31,25 +31,25 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
 GdxSymbol::~GdxSymbol()
 {
     if(mKeys)
-        delete mKeys;
+        delete[] mKeys;
     if (mValues)
-        delete mValues;
+        delete[] mValues;
     if (mRecSortIdx)
-        delete mRecSortIdx;
+        delete[] mRecSortIdx;
     if (mRecFilterIdx)
-        delete mRecFilterIdx;
+        delete[] mRecFilterIdx;
     if (mMinUel)
-        delete mMinUel;
+        delete[] mMinUel;
     if (mMaxUel)
-        delete mMaxUel;
+        delete[] mMaxUel;
     if(mFilterActive)
-        delete mFilterActive;
+        delete[] mFilterActive;
     for(auto v : mUelsInColumn)
         delete v;
     for(auto a: mShowUelInColumn)
     {
         if(a)
-            delete a;
+            delete[] a;
     }
 }
 
@@ -194,8 +194,8 @@ void GdxSymbol::loadData()
             {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete keys;
-                delete values;
+                delete[] keys;
+                delete[] values;
                 return;
             }
         }
@@ -238,8 +238,8 @@ void GdxSymbol::loadData()
             {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete keys;
-                delete values;
+                delete[] keys;
+                delete[] values;
                 return;
             }
         }
@@ -251,8 +251,8 @@ void GdxSymbol::loadData()
         calcUelsInColumn();
         mIsLoaded = true;
 
-        delete keys;
-        delete values;
+        delete[] keys;
+        delete[] values;
 
         qDebug() << "loadData: " << t.elapsed();
     }
