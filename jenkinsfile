@@ -108,6 +108,8 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
                             mv appdir studio
                         '''
+                        sh 'ls -al'
+                        sh 'ls -al studio'
                         zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
                         script {
                             if (env.BRANCH_NAME != 'master') {
@@ -153,6 +155,8 @@ pipeline {
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                         '''
+                        sh 'ls -al bin'
+                        sh 'ls -al bin/studio.app'
                         zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin/studio.app'
                         script {
                             if (env.BRANCH_NAME != 'master') {
