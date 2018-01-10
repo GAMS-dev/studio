@@ -66,22 +66,35 @@ void SearchWidget::on_btn_FindAll_clicked()
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        simpleFindAndHighlight();
+        res = simpleFindAndHighlight();
         break;
     case 1: // this group
         res = findInGroup();
-        mMain->showResults(res);
         break;
     case 2: // open files
-
+        res = findInOpenFiles();
         break;
     case 3: // all files/groups
-
+        EXCEPT() << "Not implemented yet";
         break;
     default:
         break;
     }
     mMain->showResults(res);
+
+}
+
+QList<Result> SearchWidget::findInOpenFiles()
+{
+    QList<Result> res;
+    QWidgetList editList = mMain->fileRepository()->editors();
+    FileContext *fc;
+    for (int i = 0; i < editList.size(); i++) {
+        fc = mMain->fileRepository()->fileContext(editList.at(i));
+        if (fc == nullptr) break;
+        res.append(findInFile(fc));
+    }
+    return res;
 }
 
 QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
@@ -107,39 +120,72 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
     QList<Result> res;
 
-    if (fsc->type() == FileSystemContext::ContextType::FileGroup)
+    if (fsc->type() == FileSystemContext::ContextType::FileGroup) {
         res.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
+    } else { // some file
+        FileContext *fc(static_cast<FileContext*>(fsc));
+        if (fc == nullptr) FATAL();
 
-    FileContext *fc(static_cast<FileContext*>(fsc));
-    QString searchTerm = ui->txt_search->text();
+        QString searchTerm = ui->txt_search->text();
+        QRegularExpression searchRegex = QRegularExpression(searchTerm);
+        QTextCursor item;
+        QTextCursor lastItem;
 
-    QTextCursor item;
-    QTextCursor lastItem;
+        if (fc->document() == nullptr) { // not opened in editor
 
-    if (fc->document() == nullptr) {
-        // TODO stream reading
-        return res;
-    }
+            int lineCounter = 0;
+            Qt::CaseSensitivity cs = (ui->cb_caseSens->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive);
 
-    do {
-        item = fc->document()->find(searchTerm, lastItem, getFlags());
-        lastItem = item;
-        if (!item.isNull()) {
-            Result r(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
-            res << r;
+            if (regex()) {
+                if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+            }
+
+            QFile file(fc->location());
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream in(&file);
+                while (!in.atEnd()) {
+                    lineCounter++;
+                    QString line = in.readLine();
+
+                    if (regex() && line.contains(searchRegex)) {
+                        res << Result(lineCounter, file.fileName(), line.trimmed());
+                    } else if (line.contains(searchTerm, cs)){
+                        res << Result(lineCounter, file.fileName(), line.trimmed());
+                    }
+                }
+                file.close();
+            }
+
+        } else { // read from editor document(s)
+            lastItem = QTextCursor(fc->document());
+            do {
+                if (regex())
+                    item = fc->document()->find(searchRegex, lastItem, getFlags());
+                else
+                    item = fc->document()->find(searchTerm, lastItem, getFlags());
+
+                if (item != lastItem) lastItem = item;
+                else break;
+
+                if (!item.isNull())
+                    res << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+
+            } while (!item.isNull());
         }
-    } while (!item.isNull());
+    }
 
     return res;
 }
 
-void SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
+QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
 {
+    QList<Result> res;
     if (edit == nullptr)
         edit = FileSystemContext::toPlainEdit(mRecent.editor);
-    if (!edit) return;
+    if (!edit) return res;
 
     QString searchTerm = ui->txt_search->text();
+    QRegularExpression searchRegex(searchTerm);
     QTextCursor item;
     QTextCursor lastItem;
     FileContext *fc = mRepo.fileContext(mRecent.editor);
@@ -151,12 +197,15 @@ void SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
     edit->setTextCursor(tmpCurs);
 
     do {
-        item = edit->document()->find(searchTerm, lastItem, getFlags());
+        if (regex()) item = edit->document()->find(searchRegex, lastItem, getFlags());
+        else  item = edit->document()->find(searchTerm, lastItem, getFlags());
+
         lastItem = item;
         if (!item.isNull()) {
             int length = item.selectionEnd() - item.selectionStart();
             mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                       item.columnNumber() - length, length));
+            res << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
             hits++;
         }
     } while (!item.isNull());
@@ -166,6 +215,8 @@ void SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
         ui->lbl_nrResults->setText(QString::number(hits) + " match");
     else
         ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+
+    return res;
 }
 
 void SearchWidget::find(bool backwards)
@@ -274,9 +325,9 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
         mRecent.editor->setFocus();
     }
     if (isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        find(true);
+        find(true); // Shift + F3
     } else if (isVisible() && event->key() == Qt::Key_F3) {
-        find();
+        find(); // F3
     }
 }
 
@@ -327,7 +378,6 @@ QString Result::context() const
 Result::Result(int locLineNr, QString locFile, QString context) :
     mLocLineNr(locLineNr), mLocFile(locFile), mContext(context)
 {
-    qDebug() << "created result at" << mLocFile << ":" << locLineNr;
 }
 
 }

@@ -53,7 +53,7 @@
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <property name="textElideMode">
-      <enum>Qt::ElideLeft</enum>
+      <enum>Qt::ElideMiddle</enum>
      </property>
      <property name="sortingEnabled">
       <bool>false</bool>
