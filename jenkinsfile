@@ -106,15 +106,18 @@ pipeline {
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
+                            mv appdir studio
                         '''
+                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
+                                sh 'mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage'
+                                sh 'mv studio-nix.zip ${env.BRANCH_NAME}-studio-nix.zip'
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage, *.zip', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -171,6 +174,7 @@ pipeline {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp -B *studio*.AppImage ${ARTIFACT_TARGET}'
+                               sh 'scp -B *studio*.zip ${ARTIFACT_TARGET}'
                             }
                         }
                     }
