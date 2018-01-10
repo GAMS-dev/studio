@@ -27,7 +27,6 @@ public:
 
     int selectedScope();
     void setSelectedScope(int index);
-    void simpleReplaceAll();
 
 private slots:
     void on_btn_Find_clicked();
@@ -53,9 +52,11 @@ private:
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
     QList<Result> simpleFindAndHighlight(QPlainTextEdit *edit = nullptr);
+    void simpleReplaceAll();
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInFile(FileSystemContext *fsc);
     QList<Result> findInOpenFiles();
+    void updateMatchAmount(int hits, bool clear = false);
 };
 
 class Result

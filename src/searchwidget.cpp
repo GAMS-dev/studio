@@ -104,8 +104,8 @@ void SearchWidget::on_btn_FindAll_clicked()
     default:
         break;
     }
+    updateMatchAmount(res.size());
     mMain->showResults(res);
-
 }
 
 QList<Result> SearchWidget::findInOpenFiles()
@@ -201,6 +201,18 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     return res;
 }
 
+void SearchWidget::updateMatchAmount(int hits, bool clear)
+{
+    if (clear) {
+        ui->lbl_nrResults->setText("");
+        return;
+    }
+    if (hits == 1)
+        ui->lbl_nrResults->setText(QString::number(hits) + " match");
+    else
+        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+}
+
 QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
 {
     QList<Result> res;
@@ -235,10 +247,7 @@ QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
     } while (!item.isNull());
 
     if (fc->highlighter()) fc->highlighter()->rehighlight();
-    if (hits == 1)
-        ui->lbl_nrResults->setText(QString::number(hits) + " match");
-    else
-        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+    updateMatchAmount(hits);
 
     return res;
 }
