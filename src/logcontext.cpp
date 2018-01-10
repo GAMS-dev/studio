@@ -137,11 +137,11 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             QTextCharFormat fmt;
             cursor.insertText("\n", fmt);
         }
-        int line = mDocument->lineCount()-1;
+        int lineNr = mDocument->lineCount()-1;
         cursor.insertText(newLine+"\n");
         int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
         for (LinkData mark: marks) {
-            TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, line, mark.col, size);
+            TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
             tm->setRefMark(mark.textMark);
             if (mark.textMark) {
                 qDebug() << mark.textMark->refType() << "-type: line " << mark.textMark->line() << ", col " << mark.textMark->column() << ", size " << mark.textMark->size();
