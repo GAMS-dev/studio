@@ -115,7 +115,7 @@ public:
     /// \return The current QTextDocument
     virtual QTextDocument* document();
 
-    const FileMetrics& metrics();
+    const FileMetrics& metrics() const;
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
     void showToolTip(const QList<TextMark*> marks);
 

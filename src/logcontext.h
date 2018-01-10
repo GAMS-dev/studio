@@ -44,6 +44,7 @@ private:
     ErrorData mCurrentErrorHint;
     QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
+    TextMark* mLastLstLink = nullptr;
 
 };
 
