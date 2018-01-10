@@ -153,7 +153,7 @@ pipeline {
                         sh '''
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
-                            mv bin/studio.app studio.app
+                            mv bin/studio.dmg studio.dmg
                         '''
                         sh 'ls -al bin'
                         zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
