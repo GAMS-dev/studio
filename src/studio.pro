@@ -163,7 +163,8 @@ HEADERS += \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
-    searchwidget.h
+    searchwidget.h \
+    syntax/syntaxdata.h
 
 FORMS += \
     welcomepage.ui  \
