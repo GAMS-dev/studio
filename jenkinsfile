@@ -117,7 +117,7 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage, *.zip', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -162,7 +162,7 @@ pipeline {
                                 sh "mv bin/studio.dmg studio.dmg"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
             }
