@@ -66,6 +66,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attention: This search &lt;span style=&quot; font-weight:600;&quot;&gt;does&lt;/span&gt; currently &lt;span style=&quot; font-weight:600;&quot;&gt;not support &lt;/span&gt;regular expression matches that span over multiple lines [\n\r].&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="clearButtonEnabled">
     <bool>true</bool>
    </property>

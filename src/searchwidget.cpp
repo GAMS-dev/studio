@@ -60,6 +60,30 @@ void SearchWidget::on_btn_Find_clicked()
     find();
 }
 
+
+void SearchWidget::on_btn_ReplaceAll_clicked()
+{
+    switch (ui->combo_scope->currentIndex()) {
+    case 0: // this file
+        simpleReplaceAll();
+        break;
+    case 1: // this group
+        EXCEPT() << "Not implemented yet";
+//        replaceInGroup();
+        break;
+    case 2: // open files
+        EXCEPT() << "Not implemented yet";
+//        replaceInOpenFiles();
+        break;
+    case 3: // all files/groups
+        EXCEPT() << "Not implemented yet";
+        break;
+    default:
+        break;
+    }
+
+}
+
 void SearchWidget::on_btn_FindAll_clicked()
 {
     QList<Result> res;
@@ -219,6 +243,42 @@ QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
     return res;
 }
 
+void SearchWidget::simpleReplaceAll()
+{
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
+    QString searchTerm = ui->txt_search->text();
+    QString replaceTerm = ui->txt_replace->text();
+    QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
+
+    QList<QTextCursor> hits;
+    QTextCursor item;
+    QTextCursor lastItem;
+
+    do {
+        item = edit->document()->find(searchTerm, lastItem, searchFlags);
+        lastItem = item;
+        if (!item.isNull()) {
+            hits.append(item);
+        }
+    } while (!item.isNull());
+
+    QMessageBox msgBox;
+    msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
+                   searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+        edit->textCursor().beginEditBlock();
+        foreach (QTextCursor tc, hits) {
+            tc.insertText(replaceTerm);
+        }
+        edit->textCursor().endEditBlock();
+    }
+}
+
 void SearchWidget::find(bool backwards)
 {
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
@@ -266,42 +326,6 @@ void SearchWidget::on_btn_Replace_clicked()
         edit->textCursor().insertText(replaceTerm);
 
     find();
-}
-
-void SearchWidget::on_btn_ReplaceAll_clicked()
-{
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
-    if (!edit) return;
-
-    QString searchTerm = ui->txt_search->text();
-    QString replaceTerm = ui->txt_replace->text();
-    QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
-
-    QList<QTextCursor> hits;
-    QTextCursor item;
-    QTextCursor lastItem;
-
-    do {
-        item = edit->document()->find(searchTerm, lastItem, searchFlags);
-        lastItem = item;
-        if (!item.isNull()) {
-            hits.append(item);
-        }
-    } while (!item.isNull());
-
-    QMessageBox msgBox;
-    msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
-                   searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    int answer = msgBox.exec();
-
-    if (answer == QMessageBox::Ok) {
-        edit->textCursor().beginEditBlock();
-        foreach (QTextCursor tc, hits) {
-            tc.insertText(replaceTerm);
-        }
-        edit->textCursor().endEditBlock();
-    }
 }
 
 void SearchWidget::showEvent(QShowEvent *event)

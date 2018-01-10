@@ -27,6 +27,8 @@ public:
 
     int selectedScope();
     void setSelectedScope(int index);
+    void simpleReplaceAll();
+
 private slots:
     void on_btn_Find_clicked();
     void on_btn_FindAll_clicked();
