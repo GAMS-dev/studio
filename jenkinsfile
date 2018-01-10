@@ -150,7 +150,7 @@ pipeline {
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                         '''
-                        zip zipFile: 'studio.zip', archive: true, dir: 'bin/stduio.app'
+                        zip zipFile: 'studio.zip', archive: true, dir: 'bin/studio.app'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
