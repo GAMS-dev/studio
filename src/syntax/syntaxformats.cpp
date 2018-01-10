@@ -1,5 +1,6 @@
 #include "syntaxformats.h"
 #include "logger.h"
+#include "syntaxdata.h"
 
 namespace gams {
 namespace studio {
@@ -31,29 +32,21 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar)
     mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
     // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
-
-    mDirectives << "ontext" << "dollar" << "onDelim" << "offDelim" << "onDigit" << "offDigit" << "onEmbedded" << "offEmbedded"
-                << "onEmpty" << "offEmpty" << "onEnd" << "offEnd" << "onEps" << "offEps" << "onGlobal" << "offGlobal"
-                << "onUNDEF" << "offUNDEF" << "onUni" << "offUni" << "onWarning" << "offWarning" << "onDollar" << "offDollar"
-                << "onEcho" << "onEchoS" << "onEchoV" << "offEcho" << "onInclude" << "offInclude" << "onListing" << "offListing"
-                << "onLog" << "offLog" << "onPut" << "onPutS" << "onPutV" << "offPut" << "onVerbatim" << "offVerbatim";
-
-    mDirectives << "double" << "echo" << "echoN" << "eject" << "hidden" << "lines" << "log" << "include" << "remark" << "single"
-                << "stars" << "sTitle" << "title" << "echo" << "echoN" << "eject" << "hidden" << "lines" << "log" << "remark";
-
-    mDirectives << "abort" << "abort.noError" << "batinclude" << "call" << "call.Async" << "call.AsyncNC" << "clear"
-                << "clearError" << "clearErrors" << "else" << "elseIf" << "elseIfE" << "elseIfI" << "endif" << "error"
-                << "exit" << "funcLibIn" << "goto" << "hiddenCall" << "hiddenCall.Async" << "hiddenCall.AsyncNC"
-                << "if" << "ifE" << "ifI" << "ifThen" << "ifThenE" << "ifThenI" << "include" << "kill" << "label"
-                << "libInclude" << "onEmbeddedCode" << "onEmbeddedCodeS" << "onEmbeddedCodeV" << "offEmbeddedCode"
-                << "onMulti" << "offMulti" << "onOrder" << "offOrder" << "onRecurse" << "offRecurse"
-                << "onStrictSingleton" << "offStrictSingleton" << "maxGoTo" << "phantom" << "shift" << "stop"
-                << "sysInclude" << "terminate" << "warning";
-
+    QList<QStringList> data = SyntaxData::directives();
+    for (const QStringList &list: data) {
+        mDirectives << list.first();
+        mDescription << list.last();
+    }
+    // offtext is checked separately, so remove it here
+    int i = mDirectives.indexOf(QRegExp("offText", Qt::CaseInsensitive));
+    if (i>0) {
+        mDirectives.removeAt(i);
+        mDescription.removeAt(i);
+    }
     // !!! Enter special states always in lowercase
-    mSpecialStates.insert("title", SyntaxState::Title);
-    mSpecialStates.insert("ontext", SyntaxState::CommentBlock);
-    mSpecialStates.insert("hidden", SyntaxState::CommentLine);
+    mSpecialStates.insert(QString("title").toLower(), SyntaxState::Title);
+    mSpecialStates.insert(QString("onText").toLower(), SyntaxState::CommentBlock);
+    mSpecialStates.insert(QString("hidden").toLower(), SyntaxState::CommentLine);
 }
 
 SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, int index)
