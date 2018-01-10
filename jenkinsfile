@@ -149,8 +149,8 @@ pipeline {
                             cd bin
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
-                            zip -r studio.zip studio.app
                         '''
+                        zip zipFile: 'studio.zip', archive: true, dir: 'bin/stduio.app'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
@@ -205,11 +205,8 @@ pipeline {
                     node('macos') {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                                sh """
-                                    scp *.dmg ${ARTIFACT_TARGET}
-                                """
-                            } else {
-                                echo "${env.BRANCH_NAME}"
+                                sh 'scp *.dmg ${ARTIFACT_TARGET}'
+                                sh 'scp *.zip ${ARTIFACT_TARGET}'
                             }
                         }
                     }
