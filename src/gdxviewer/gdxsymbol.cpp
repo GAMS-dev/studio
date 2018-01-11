@@ -25,7 +25,8 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive = new bool[mRecordCount] {false};
+    if(mRecordCount>0)
+        mFilterActive = new bool[mRecordCount] {false};
 }
 
 GdxSymbol::~GdxSymbol()
