@@ -89,7 +89,8 @@ void SearchWidget::on_btn_FindAll_clicked()
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        matches = simpleFindAndHighlight();
+        if (mRecent.editor)
+            matches = findInFile(mRepo.fileContext(mRecent.editor));
         break;
     case 1: // this group
         matches = findInGroup();
@@ -112,7 +113,6 @@ QList<Result> SearchWidget::findInAllFiles()
     QList<Result> matches;
     FileGroupContext *root = mMain->fileRepository()->treeModel()->rootContext();
     FileSystemContext *fsc;
-    qDebug() << "root->childCount()" << root->childCount();
     for (int i = 0; i < root->childCount(); i++) {
         fsc = root->childEntry(i);
         if (fsc->type() == FileSystemContext::ContextType::FileGroup)
@@ -163,11 +163,13 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
     QList<Result> matches;
 
-    if (fsc->type() == FileSystemContext::FileGroup) {
+    if (fsc->type() == FileSystemContext::FileGroup) { // or is it a group?
         matches.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
-    } else { // some file
+    } else { // it's a file
         FileContext *fc(static_cast<FileContext*>(fsc));
         if (fc == nullptr) FATAL();
+
+
 
         QString searchTerm = ui->txt_search->text();
         QRegularExpression searchRegex = QRegularExpression(searchTerm);
@@ -200,6 +202,10 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
             }
 
         } else { // read from editor document(s)
+
+            // currently in foreground
+            bool highlightMatch = (fc == mRepo.fileContext(mRecent.editor));
+
             lastItem = QTextCursor(fc->document());
             do {
                 if (regex())
@@ -210,10 +216,17 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 if (item != lastItem) lastItem = item;
                 else break;
 
-                if (!item.isNull())
+                if (!item.isNull()) {
                     matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+                    if (highlightMatch) {
+                        int length = item.selectionEnd() - item.selectionStart();
+                        mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
+                                                                  item.columnNumber() - length, length));
+                    }
+                }
 
             } while (!item.isNull());
+            if (fc->highlighter()) fc->highlighter()->rehighlight();
         }
     }
 
@@ -232,6 +245,7 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
         ui->lbl_nrResults->setText(QString::number(hits) + " matches");
 }
 
+// TODO: DEPRECATED, DELETEME
 QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
 {
     QList<Result> matches;
