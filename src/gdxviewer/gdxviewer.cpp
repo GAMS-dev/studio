@@ -61,27 +61,32 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 {
     if (selected.indexes().size()>0)
     {
+        int selectedIdx = selected.indexes().at(0).row();
         if (deselected.indexes().size()>0)
         {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(deselected.indexes().at(0).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
-        GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selected.indexes().at(0).row());
+        GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
+
+        //aliases are also aliases in the sense of the view
+        if(selectedSymbol->type() == GMS_DT_ALIAS)
+        {
+            selectedIdx = selectedSymbol->subType() - 1;
+            selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
+        }
+
         if(!selectedSymbol->isLoaded())
             QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
 
         // create new GdxSymbolView if the symbol is selected for the first time
-        if(!mSymbolViews.at(selected.indexes().at(0).row()))
+        if(!mSymbolViews.at(selectedIdx))
         {
             GdxSymbolView* symView = new GdxSymbolView();
-            mSymbolViews.replace(selected.indexes().at(0).row(), symView);
+            mSymbolViews.replace(selectedIdx, symView);
             symView->setSym(selectedSymbol);
         }
-        ui.splitter->replaceWidget(1, mSymbolViews.at(selected.indexes().at(0).row()));
-    }
-    else
-    {
-        ui.splitter->replaceWidget(1, ui.gdxSymbolView);
+        ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
 }
 
