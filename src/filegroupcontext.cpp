@@ -141,6 +141,17 @@ TextMarkList*FileGroupContext::marks(const QString& fileName)
     return mMarksForFilenames.value(fileName);
 }
 
+void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes, QString fileName)
+{
+    if (fileName.isNull()) {
+        QHash<QString, TextMarkList*>::iterator it;
+        for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
+            TextMarkList(*it.value()).removeTextMarks(tmTypes);
+    } else if (mMarksForFilenames.contains(fileName)) {
+        mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+    }
+}
+
 
 void FileGroupContext::attachFile(const QString &filepath)
 {

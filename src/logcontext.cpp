@@ -203,7 +203,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
-                        mMarkedContextList << fc;
+//                        mMarkedContextList << fc;
                     } else {
                         mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
                     }
@@ -225,7 +225,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, lineNr, 0, 0);
-                        mMarkedContextList << fc;
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
                         result += line;
@@ -252,7 +252,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, lineNr, 0, col);
-                        mMarkedContextList << fc;
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
                         mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
@@ -285,14 +285,6 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
         }
     }
     return result;
-}
-
-void LogContext::clearRecentMarks()
-{
-    for (FileContext* fc: mMarkedContextList) {
-        fc->removeTextMarks(TextMark::all);
-    }
-    removeTextMarks(TextMark::all);
 }
 
 void LogContext::setJumpToLogEnd(bool state)

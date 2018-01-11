@@ -355,13 +355,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
 
 void FileRepository::removeMarks(FileGroupContext* group)
 {
-    for (int i = 0; i < group->childCount(); ++i) {
-        FileSystemContext* fsc = group->childEntry(i);
-        if (fsc->type() == FileSystemContext::File) {
-            FileContext* fc = static_cast<FileContext*>(fsc);
-            fc->removeTextMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
-        }
-    }
+    group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
 }
 
 void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)

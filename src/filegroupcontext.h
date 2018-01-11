@@ -21,6 +21,7 @@
 #define FILEGROUPCONTEXT_H
 
 #include "filesystemcontext.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -28,8 +29,9 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
-class TextMark;
-class TextMarkList;
+//class TextMarkList;
+//class TextMark;
+//enum TextMark::Type;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -90,6 +92,7 @@ protected:
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);
     TextMarkList* marks(const QString &fileName);
+    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>(), QString fileName = QString());
 
 private:
     QList<FileSystemContext*> mChildList;

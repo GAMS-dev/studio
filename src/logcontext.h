@@ -19,7 +19,6 @@ public:
     bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
-    void clearRecentMarks();
     void setJumpToLogEnd(bool state);
 
 protected:

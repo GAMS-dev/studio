@@ -929,8 +929,6 @@ void MainWindow::execute(QString commandLineStr)
         logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
-    } else {
-        logProc->clearRecentMarks();
     }
 
     if (!mSettings->clearLog()) {
