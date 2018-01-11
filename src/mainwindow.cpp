@@ -43,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mHistory = new HistoryData();
     mSettings = new StudioSettings(this);
+    QFile css(":/data/style.css");
+    if (css.open(QFile::ReadOnly | QFile::Text)) {
+        this->setStyleSheet(css.readAll());
+    }
 
     ui->setupUi(this);
     setAcceptDrops(true);
@@ -82,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::removeNode, this, &MainWindow::removeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     ensureCodecMenu("System");
@@ -1055,6 +1060,16 @@ void MainWindow::closeGroup(FileGroupContext* group)
         mSettings->saveSettings();
     }
 
+}
+
+void MainWindow::removeFile(FileContext* file)
+{
+    if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
+        ui->projectView->setCurrentIndex(QModelIndex());
+        fileClosed(file->id());
+        mFileRepo.removeFile(file);
+        mSettings->saveSettings();
+    }
 }
 
 void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus)

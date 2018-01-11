@@ -143,6 +143,7 @@ public slots:
     void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
     void removeGroup(FileGroupContext* fileGroup);
+    void removeFile(FileContext* file);
 
 private slots:
     void onFileChangedExtern(FileId fileId);

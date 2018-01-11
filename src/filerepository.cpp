@@ -312,6 +312,12 @@ void FileRepository::removeGroup(FileGroupContext* fileGroup)
     delete fileGroup;
 }
 
+void FileRepository::removeFile(FileContext* file)
+{
+    mTreeModel->removeChild(file);
+    delete file;
+}
+
 FileTreeModel*FileRepository::treeModel() const
 {
     return mTreeModel;

@@ -1,0 +1,37 @@
+QTabView {
+  background: #c8cfcf;
+}
+QTabBar {
+  margin: 0%;
+  padding: 2% 0% 2% 5%;
+  border: 0;
+  background: #c0c8c8;
+}
+QTabBar::tab {
+  margin: 0%;
+  padding: 2% 0% 2% 5%;
+  border: 0;
+  border-bottom: 5px;
+  background: #dfe8e8;
+}
+QTabBar::tab:selected {
+  background: #f8ffff;
+  border: 1px;
+}
+QTabBar::tab:!selected {
+  margin-top: 1px;
+}
+QTabBar::close-button {
+  image: url(":/img/times");
+  padding: 3%;
+}
+/*
+QTabBar::tab:selected { margin-left: -2%; margin-right: -2%; }
+QTabBar::tab:first:selected { margin-left: 0; }
+QTabBar::tab:last:selected { margin-right: 0; }
+QTabBar::tab:only-one { margin-left: 0; margin-right: 0; } */
+QDockWidget::title {
+  background: #c8cfcf;
+  border: 0;
+  padding: 3%;
+}
