@@ -263,16 +263,6 @@ void GdxSymbol::stopLoadingData()
     stopLoading = true;
 }
 
-bool GdxSymbol::squeezeDefaults() const
-{
-    return mSqueezeDefaults;
-}
-
-void GdxSymbol::setSqueezeDefaults(bool squeezeDefaults)
-{
-    mSqueezeDefaults = squeezeDefaults;
-}
-
 void GdxSymbol::calcDefaultColumns()
 {
     if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)

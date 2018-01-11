@@ -49,36 +49,33 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
     if(mSym)
     {
-        mSym->setSqueezeDefaults(checked);
-        if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
+        ui->tableView->setUpdatesEnabled(false);
+        if(checked)
         {
-            ui->tableView->setUpdatesEnabled(false);
-            if(checked)
+            for(int i=0; i<GMS_VAL_MAX; i++)
             {
-                for(int i=0; i<GMS_VAL_MAX; i++)
-                {
-                    if (mSym->isAllDefault(i))
-                        ui->tableView->setColumnHidden(mSym->dim()+i, true);
-                    else
-                        ui->tableView->setColumnHidden(mSym->dim()+i, false);
-                }
-            }
-            else
-            {
-                for(int i=0; i<GMS_VAL_MAX; i++)
-                {
+                if (mSym->isAllDefault(i))
+                    ui->tableView->setColumnHidden(mSym->dim()+i, true);
+                else
                     ui->tableView->setColumnHidden(mSym->dim()+i, false);
-                }
             }
-            ui->tableView->setUpdatesEnabled(true);
         }
+        else
+        {
+            for(int i=0; i<GMS_VAL_MAX; i++)
+                ui->tableView->setColumnHidden(mSym->dim()+i, false);
+        }
+        ui->tableView->setUpdatesEnabled(true);
     }
 }
 
 void GdxSymbolView::resetSortFilter()
 {
-    mSym->resetSortFilter();
-    ui->tableView->horizontalHeader()->setSortIndicator(mSym->sortColumn(), mSym->sortOrder());
+    if(mSym)
+    {
+        mSym->resetSortFilter();
+        ui->tableView->horizontalHeader()->setSortIndicator(mSym->sortColumn(), mSym->sortOrder());
+    }
 }
 
 void GdxSymbolView::refreshView()
@@ -93,7 +90,6 @@ void GdxSymbolView::refreshView()
     {
         ui->cbSqueezeDefaults->setEnabled(false);
     }
-    ui->cbSqueezeDefaults->setChecked(mSym->squeezeDefaults());
     ui->tableView->horizontalHeader()->setSortIndicator(mSym->sortColumn(), mSym->sortOrder());
 }
 
