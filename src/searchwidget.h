@@ -37,6 +37,8 @@ private slots:
 
     void on_btn_close_clicked();
 
+    void on_combo_scope_currentIndexChanged(int index);
+
 private:
     Ui::SearchWidget *ui;
     StudioSettings *mSettings;

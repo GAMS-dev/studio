@@ -448,3 +448,8 @@ Result::Result(int locLineNr, QString locFile, QString context) :
 
 }
 }
+
+void gams::studio::SearchWidget::on_combo_scope_currentIndexChanged(int index)
+{
+    ui->txt_filePattern->setEnabled(index != 0);
+}
