@@ -56,6 +56,7 @@ private:
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInFile(FileSystemContext *fsc);
     QList<Result> findInOpenFiles();
+    QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, bool clear = false);
 };
 

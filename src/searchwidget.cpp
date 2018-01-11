@@ -81,44 +81,57 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
     default:
         break;
     }
-
 }
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
-    QList<Result> res;
+    QList<Result> matches;
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        res = simpleFindAndHighlight();
+        matches = simpleFindAndHighlight();
         break;
     case 1: // this group
-        res = findInGroup();
+        matches = findInGroup();
         break;
     case 2: // open files
-        res = findInOpenFiles();
+        matches = findInOpenFiles();
         break;
     case 3: // all files/groups
-        EXCEPT() << "Not implemented yet";
+        matches = findInAllFiles();
         break;
     default:
         break;
     }
-    updateMatchAmount(res.size());
-    mMain->showResults(res);
+    updateMatchAmount(matches.size());
+    mMain->showResults(matches);
+}
+
+QList<Result> SearchWidget::findInAllFiles()
+{
+    QList<Result> matches;
+    FileGroupContext *root = mMain->fileRepository()->treeModel()->rootContext();
+    FileSystemContext *fsc;
+    qDebug() << "root->childCount()" << root->childCount();
+    for (int i = 0; i < root->childCount(); i++) {
+        fsc = root->childEntry(i);
+        if (fsc->type() == FileSystemContext::ContextType::FileGroup)
+            matches.append(findInGroup(fsc));
+    }
+    return matches;
 }
 
 QList<Result> SearchWidget::findInOpenFiles()
 {
-    QList<Result> res;
+    QList<Result> matches;
     QWidgetList editList = mMain->fileRepository()->editors();
     FileContext *fc;
     for (int i = 0; i < editList.size(); i++) {
         fc = mMain->fileRepository()->fileContext(editList.at(i));
         if (fc == nullptr) break;
-        res.append(findInFile(fc));
+        matches.append(findInFile(fc));
     }
-    return res;
+    return matches;
 }
 
 QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
@@ -126,13 +139,19 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
     QList<Result> matches;
 
     FileGroupContext *fgc;
-    if (fsc == nullptr) {
+    if (!fsc) {
         FileContext* fc = mMain->fileRepository()->fileContext(mRecent.editor);
         fgc = (fc ? fc->parentEntry() : nullptr);
 
         if (!fgc)
             return QList<Result>();
+    } else {
+        if (fsc->type() == FileGroupContext::FileGroup)
+            fgc = static_cast<FileGroupContext*>(fsc);
     }
+
+    if (!fgc)
+        return matches;
 
     for (int i = 0; i < fgc->childCount(); i++) {
         matches.append(findInFile(fgc->childEntry(i)));
@@ -142,10 +161,10 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
-    QList<Result> res;
+    QList<Result> matches;
 
-    if (fsc->type() == FileSystemContext::ContextType::FileGroup) {
-        res.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
+    if (fsc->type() == FileSystemContext::FileGroup) {
+        matches.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
     } else { // some file
         FileContext *fc(static_cast<FileContext*>(fsc));
         if (fc == nullptr) FATAL();
@@ -172,9 +191,9 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                     QString line = in.readLine();
 
                     if (regex() && line.contains(searchRegex)) {
-                        res << Result(lineCounter, file.fileName(), line.trimmed());
+                        matches << Result(lineCounter, file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
-                        res << Result(lineCounter, file.fileName(), line.trimmed());
+                        matches << Result(lineCounter, file.fileName(), line.trimmed());
                     }
                 }
                 file.close();
@@ -192,13 +211,13 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 else break;
 
                 if (!item.isNull())
-                    res << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+                    matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
 
             } while (!item.isNull());
         }
     }
 
-    return res;
+    return matches;
 }
 
 void SearchWidget::updateMatchAmount(int hits, bool clear)
@@ -215,10 +234,10 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
 
 QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
 {
-    QList<Result> res;
+    QList<Result> matches;
     if (edit == nullptr)
         edit = FileSystemContext::toPlainEdit(mRecent.editor);
-    if (!edit) return res;
+    if (!edit) return matches;
 
     QString searchTerm = ui->txt_search->text();
     QRegularExpression searchRegex(searchTerm);
@@ -241,7 +260,7 @@ QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
             int length = item.selectionEnd() - item.selectionStart();
             mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                       item.columnNumber() - length, length));
-            res << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+            matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
             hits++;
         }
     } while (!item.isNull());
@@ -249,7 +268,7 @@ QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
     if (fc->highlighter()) fc->highlighter()->rehighlight();
     updateMatchAmount(hits);
 
-    return res;
+    return matches;
 }
 
 void SearchWidget::simpleReplaceAll()
