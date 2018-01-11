@@ -18,12 +18,20 @@ class GdxSymbolView : public QFrame
 
 public:
     explicit GdxSymbolView(QWidget *parent = 0);
-    explicit GdxSymbolView(GdxSymbol *sym, QWidget *parent = 0);
     ~GdxSymbolView();
+
+    GdxSymbol *sym() const;
+    void setSym(GdxSymbol *sym);
 
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
+
+public slots:
+    void refreshView();
+    void toggleSqueezeDefaults(bool checked);
+    void resetSortFilter();
+    void showColumnFilter(QPoint p);
 };
 
 

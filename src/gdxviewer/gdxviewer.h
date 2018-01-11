@@ -7,6 +7,7 @@
 #include "gdxsymboltable.h"
 #include <memory>
 #include <QMutex>
+#include <QVector>
 
 namespace gams {
 namespace studio {
@@ -33,14 +34,11 @@ private:
 
     void loadSymbol(GdxSymbol* selectedSymbol);
 
+    QVector<GdxSymbolView*> mSymbolViews;
+
+
 signals:
     void loadFinished();
-
-public slots:
-    void toggleSqueezeDefaults(bool checked);
-    void refreshView();
-    void resetSortFilter();
-    void showColumnFilter(QPoint p);
 };
 
 } // namespace gdxviewer
