@@ -18,6 +18,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tableView->setHorizontalHeader(headerView);
     ui->tableView->setSortingEnabled(true);
     ui->tableView->horizontalHeader()->setSortIndicatorShown(true);
+    ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
     ui->tableView->horizontalHeader()->setSectionsClickable(true);
     ui->tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -25,8 +26,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
 }
-
-
 
 GdxSymbolView::~GdxSymbolView()
 {
@@ -74,7 +73,7 @@ void GdxSymbolView::resetSortFilter()
     if(mSym)
     {
         mSym->resetSortFilter();
-        ui->tableView->horizontalHeader()->setSortIndicator(mSym->sortColumn(), mSym->sortOrder());
+        ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
     }
 }
 
@@ -90,7 +89,6 @@ void GdxSymbolView::refreshView()
     {
         ui->cbSqueezeDefaults->setEnabled(false);
     }
-    ui->tableView->horizontalHeader()->setSortIndicator(mSym->sortColumn(), mSym->sortOrder());
 }
 
 

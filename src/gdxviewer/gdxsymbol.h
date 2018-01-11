@@ -113,9 +113,6 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
-
-    int mSortColumn = -1;
-    Qt::SortOrder mSortOrder;
 };
 
 } // namespace gdxviewer

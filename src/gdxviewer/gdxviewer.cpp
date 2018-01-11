@@ -53,6 +53,8 @@ GdxViewer::~GdxViewer()
     gdxFree(&mGdx);
     locker.unlock();
     delete mGdxMutex;
+
+    //TODO: delete GdxSymbolViews
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
