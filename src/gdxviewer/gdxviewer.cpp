@@ -15,8 +15,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     QFrame(parent)
 {
     ui.setupUi(this);
-    ui.splitter->setStretchFactor(0,1);
-    ui.splitter->setStretchFactor(1,2);
 
     mGdxMutex = new QMutex();
 

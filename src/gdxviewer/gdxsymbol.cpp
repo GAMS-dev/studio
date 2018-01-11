@@ -327,6 +327,7 @@ void GdxSymbol::loadMetaData()
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
     mName = symName;
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
+    mExplText = explText;
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
