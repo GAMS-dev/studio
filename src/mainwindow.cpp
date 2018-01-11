@@ -835,6 +835,11 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     } else {
         QMainWindow::keyPressEvent(event);
     }
+    if (isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        find(true); // Shift + F3
+    } else if (isVisible() && event->key() == Qt::Key_F3) {
+        find(false); // F3
+    }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)

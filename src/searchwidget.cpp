@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "searchwidget.h"
 #include "studiosettings.h"
 #include "syntax.h"
@@ -54,12 +73,6 @@ void SearchWidget::setSelectedScope(int index)
 {
     ui->combo_scope->setCurrentIndex(index);
 }
-
-void SearchWidget::on_btn_Find_clicked()
-{
-    find();
-}
-
 
 void SearchWidget::on_btn_ReplaceAll_clicked()
 {
@@ -237,52 +250,14 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
 {
     if (clear) {
         ui->lbl_nrResults->setText("");
+        ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
         return;
     }
     if (hits == 1)
         ui->lbl_nrResults->setText(QString::number(hits) + " match");
     else
         ui->lbl_nrResults->setText(QString::number(hits) + " matches");
-}
-
-// TODO: DEPRECATED, DELETEME
-QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
-{
-    QList<Result> matches;
-    if (edit == nullptr)
-        edit = FileSystemContext::toPlainEdit(mRecent.editor);
-    if (!edit) return matches;
-
-    QString searchTerm = ui->txt_search->text();
-    QRegularExpression searchRegex(searchTerm);
-    QTextCursor item;
-    QTextCursor lastItem;
-    FileContext *fc = mRepo.fileContext(mRecent.editor);
-    int hits = 0;
-
-    fc->removeTextMarks(TextMark::result);
-    QTextCursor tmpCurs = edit->textCursor();
-    tmpCurs.clearSelection();
-    edit->setTextCursor(tmpCurs);
-
-    do {
-        if (regex()) item = edit->document()->find(searchRegex, lastItem, getFlags());
-        else  item = edit->document()->find(searchTerm, lastItem, getFlags());
-
-        lastItem = item;
-        if (!item.isNull()) {
-            int length = item.selectionEnd() - item.selectionStart();
-            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
-                                                      item.columnNumber() - length, length));
-            matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
-            hits++;
-        }
-    } while (!item.isNull());
-
-    if (fc->highlighter()) fc->highlighter()->rehighlight();
-    updateMatchAmount(hits);
-
-    return matches;
+    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }
 
 void SearchWidget::simpleReplaceAll()
@@ -390,11 +365,6 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
         hide();
         mRecent.editor->setFocus();
     }
-    if (isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        find(true); // Shift + F3
-    } else if (isVisible() && event->key() == Qt::Key_F3) {
-        find(); // F3
-    }
 }
 
 void SearchWidget::closeEvent(QCloseEvent *event) {
@@ -403,13 +373,13 @@ void SearchWidget::closeEvent(QCloseEvent *event) {
     if (fc)
         fc->removeTextMarks(TextMark::result);
 
-    ui->lbl_nrResults->setText("");
+    updateMatchAmount(0, true);
 }
 
 
 void SearchWidget::on_txt_search_returnPressed()
 {
-    on_btn_Find_clicked();
+    on_btn_forward_clicked();
 }
 
 QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
@@ -419,11 +389,6 @@ QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
     searchFlags.setFlag(QTextDocument::FindWholeWords, ui->cb_wholeWords->isChecked());
 
     return searchFlags;
-}
-
-void SearchWidget::on_btn_close_clicked()
-{
-    SearchWidget::close();
 }
 
 int Result::locLineNr() const
@@ -446,10 +411,75 @@ Result::Result(int locLineNr, QString locFile, QString context) :
 {
 }
 
-}
-}
-
-void gams::studio::SearchWidget::on_combo_scope_currentIndexChanged(int index)
+void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 {
     ui->txt_filePattern->setEnabled(index != 0);
 }
+
+void SearchWidget::on_btn_back_clicked()
+{
+    find(true);
+}
+
+void SearchWidget::on_btn_forward_clicked()
+{
+    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    if (!fc) return;
+
+    if (fc->textMarkCount(QSet<TextMark::Type>() << TextMark::result) == 0) { // if has no results search first
+        on_btn_FindAll_clicked();
+    }
+    find(false);
+}
+
+void SearchWidget::on_btn_clear_clicked()
+{
+    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    if (!fc) return;
+
+    fc->removeTextMarks(TextMark::result);
+    updateMatchAmount(0, true);
+}
+
+}
+}
+
+// TODO: DEPRECATED, DELETEME
+//QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
+//{
+//    QList<Result> matches;
+//    if (edit == nullptr)
+//        edit = FileSystemContext::toPlainEdit(mRecent.editor);
+//    if (!edit) return matches;
+
+//    QString searchTerm = ui->txt_search->text();
+//    QRegularExpression searchRegex(searchTerm);
+//    QTextCursor item;
+//    QTextCursor lastItem;
+//    FileContext *fc = mRepo.fileContext(mRecent.editor);
+//    int hits = 0;
+
+//    fc->removeTextMarks(TextMark::result);
+//    QTextCursor tmpCurs = edit->textCursor();
+//    tmpCurs.clearSelection();
+//    edit->setTextCursor(tmpCurs);
+
+//    do {
+//        if (regex()) item = edit->document()->find(searchRegex, lastItem, getFlags());
+//        else  item = edit->document()->find(searchTerm, lastItem, getFlags());
+
+//        lastItem = item;
+//        if (!item.isNull()) {
+//            int length = item.selectionEnd() - item.selectionStart();
+//            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
+//                                                      item.columnNumber() - length, length));
+//            matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+//            hits++;
+//        }
+//    } while (!item.isNull());
+
+//    if (fc->highlighter()) fc->highlighter()->rehighlight();
+//    updateMatchAmount(hits);
+
+//    return matches;
+//}

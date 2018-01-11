@@ -153,7 +153,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>290</x>
      <y>65</y>
      <width>161</width>
      <height>25</height>
@@ -194,6 +194,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
    <property name="text">
     <string>[ X matches ]</string>
    </property>
@@ -230,34 +233,6 @@
      <string>All Files</string>
     </property>
    </item>
-  </widget>
-  <widget class="QPushButton" name="btn_close">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>100</y>
-     <width>100</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Close</string>
-   </property>
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="default">
-    <bool>false</bool>
-   </property>
-   <property name="flat">
-    <bool>false</bool>
-   </property>
   </widget>
   <widget class="QPushButton" name="btn_back">
    <property name="geometry">
@@ -312,6 +287,34 @@
    </property>
    <property name="placeholderText">
     <string>&lt;not implemented yet&gt;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_clear">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>100</y>
+     <width>100</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="default">
+    <bool>false</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>

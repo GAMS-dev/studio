@@ -43,6 +43,21 @@ TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::
     return res;
 }
 
+int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
+{
+    int i = mTextMarks.size();
+    int res = 0;
+    while (i > 0) {
+        --i;
+        TextMark* tm = mTextMarks.at(i);
+        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
+            res++;
+        }
+    }
+
+    return res;
+}
+
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     int i = mTextMarks.size();

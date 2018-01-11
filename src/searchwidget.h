@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef SEARCHWIDGET_H
 #define SEARCHWIDGET_H
 
@@ -29,15 +48,14 @@ public:
     void setSelectedScope(int index);
 
 private slots:
-    void on_btn_Find_clicked();
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
     void on_btn_ReplaceAll_clicked();
     void on_txt_search_returnPressed();
-
-    void on_btn_close_clicked();
-
     void on_combo_scope_currentIndexChanged(int index);
+    void on_btn_back_clicked();
+    void on_btn_forward_clicked();
+    void on_btn_clear_clicked();
 
 private:
     Ui::SearchWidget *ui;
@@ -53,7 +71,6 @@ private:
     void keyPressEvent(QKeyEvent *event);
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
-    QList<Result> simpleFindAndHighlight(QPlainTextEdit *edit = nullptr);
     void simpleReplaceAll();
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInFile(FileSystemContext *fsc);

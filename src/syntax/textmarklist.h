@@ -18,6 +18,7 @@ public:
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block);
     QList<TextMark*> marks() { return mTextMarks;}
+    int textMarkCount(QSet<TextMark::Type> tmTypes);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
