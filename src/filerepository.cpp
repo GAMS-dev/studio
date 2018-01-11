@@ -66,7 +66,7 @@ FileSystemContext* FileRepository::context(FileId fileId, FileSystemContext* sta
 FileContext* FileRepository::fileContext(FileId fileId, FileSystemContext* startNode)
 {
     auto c = context(fileId, (startNode ? startNode : mTreeModel->rootContext()));
-    if (c->type() == FileSystemContext::File)
+    if (c && c->type() == FileSystemContext::File)
         return static_cast<FileContext*>(c);
     return nullptr;
 }
@@ -74,7 +74,7 @@ FileContext* FileRepository::fileContext(FileId fileId, FileSystemContext* start
 FileGroupContext* FileRepository::groupContext(FileId fileId, FileSystemContext* startNode)
 {
     auto c = context(fileId, startNode ? startNode : mTreeModel->rootContext());
-    if (c->type() == FileSystemContext::FileGroup) {
+    if (c && c->type() == FileSystemContext::FileGroup) {
         return static_cast<FileGroupContext*>(c);
     }
     return c->parentEntry();
@@ -201,6 +201,7 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     connect(fileContext, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
     connect(fileContext, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
     connect(fileContext, &FileContext::openFileContext, this, &FileRepository::openFileContext);
+    connect(fileContext, &FileContext::findFileContext, this, &FileRepository::findFile);
     connect(fileContext, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     updateActions();
     return fileContext;
@@ -342,6 +343,7 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
     if (!res) {
         res = new LogContext(mNextId++, "["+group->name()+"]");
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
+        connect(res, &FileContext::findFileContext, this, &FileRepository::findFile);
         connect(res, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);

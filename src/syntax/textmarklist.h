@@ -14,6 +14,7 @@ class TextMarkList: public QObject
     Q_OBJECT
 public:
     TextMarkList();
+    TextMarkList(const TextMarkList &marks);
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
@@ -26,9 +27,12 @@ public slots:
 protected:
     friend class LogContext;
     friend class FileContext;
+    friend class FileGroupContext;
     TextMark* generateTextMark(FileContext *context, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(QString fileName, FileGroupContext *group, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     QList<TextMark*> findMarks(const QTextCursor& cursor);
+    void merge(const TextMarkList &marks);
     TextMark* firstErrorMark();
 
 private:

@@ -19,6 +19,7 @@
  */
 #include "textmark.h"
 #include "filecontext.h"
+#include "filegroupcontext.h"
 #include "logger.h"
 
 namespace gams {
@@ -28,13 +29,40 @@ TextMark::TextMark(Type tmType): mType(tmType)
 {
 }
 
+void TextMark::ensureFileContext()
+{
+    if (!mFileContext && mGroup) {
+        FileSystemContext *fsc = mGroup->findFile(mFileName);
+        if (!fsc) {
+            mGroup->attachFile(mFileName);
+            fsc = mGroup->findFile(mFileName);
+        }
+        if (fsc && fsc->type() == FileSystemContext::File) {
+            mFileContext = static_cast<FileContext*>(fsc);
+            updateCursor();
+        }
+    }
+}
+
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
     mFileContext = fileContext;
+    mGroup = nullptr;
+    mFileName = "";
     mLine = line;
     mSize = size;
     mColumn = column;
     updateCursor();
+}
+
+void TextMark::setPosition(QString fileName, FileGroupContext* group, int line, int column, int size)
+{
+    mFileContext = nullptr;
+    mGroup = group;
+    mFileName = fileName;
+    mLine = line;
+    mSize = size;
+    mColumn = column;
 }
 
 void TextMark::updateCursor()
@@ -49,10 +77,11 @@ void TextMark::updateCursor()
             if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end+1);
             mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
         } else {
+            QString str = block.text();
+            for (int i = mColumn; i < mColumn+mSize; ++i)
+                if (str.at(i)=='\t') mSize -= (7 - i%8);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mSize);
-            int tabs = mCursor.selectedText().count('\t');
-            mCursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, tabs*7);
         }
     } else {
         mCursor = QTextCursor();
@@ -67,6 +96,7 @@ void TextMark::jumpToRefMark(bool focus)
 
 void TextMark::jumpToMark(bool focus)
 {
+    ensureFileContext();
     if (mFileContext) {
         if (mCursor.isNull()) {
             if (mFileContext->metrics().fileType() == FileType::Gdx)

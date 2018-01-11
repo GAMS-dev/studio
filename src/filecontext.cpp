@@ -33,10 +33,11 @@ FileContext::FileContext(FileId fileId, QString name, QString location, ContextT
     : FileSystemContext(fileId, name, location, type)
 {
     mMetrics = FileMetrics(QFileInfo(location));
+    mMarks = new TextMarkList();
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(this, &mMarks);
+        mSyntaxHighlighter = new SyntaxHighlighter(this, mMarks);
     else if (mMetrics.fileType() != FileType::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
+        mSyntaxHighlighter = new ErrorHighlighter(this, mMarks);
     }
 }
 
@@ -48,6 +49,27 @@ QWidgetList& FileContext::editorList()
 FileContext::~FileContext()
 {
     removeAllEditors();
+}
+
+void FileContext::setParentEntry(FileGroupContext* parent)
+{
+    FileGroupContext* prevParent = parentEntry();
+    FileSystemContext::setParentEntry(parent);
+    if (parent) {
+        if (prevParent) {
+            // parent changed: unbind marks from parent
+            mMarks = new TextMarkList(*mMarks);
+        }
+        // merge marks into new parent
+        TextMarkList *marks = parent->marks(location());
+        marks->merge(*mMarks);
+        delete mMarks;
+        mMarks = marks;
+    } else {
+        // parent lost: we need a unbound copy of the marks
+        mMarks = new TextMarkList(*mMarks);
+    }
+    if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
 }
 
 QString FileContext::codec() const
@@ -161,8 +183,8 @@ void FileContext::addEditor(QWidget* edit)
         ptEdit->installEventFilter(this);
     }
     if (scEdit) {
-        connect(scEdit, &CodeEditor::requestMarkHash, &mMarks, &TextMarkList::shareMarkHash);
-        connect(scEdit, &CodeEditor::requestMarksEmpty, &mMarks, &TextMarkList::textMarksEmpty);
+        connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
+        connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarksEmpty);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -305,11 +327,11 @@ void FileContext::rehighlightAt(int pos)
 void FileContext::updateMarks()
 {
     // TODO(JM) Perform a large-file-test if this should have an own thread
-    mMarks.updateMarks();
+    mMarks->updateMarks();
     if (mMarksEnhanced) return;
     QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
     if (mMetrics.fileType() == FileType::Lst && document()) {
-        for (TextMark* mark: mMarks.marks()) {
+        for (TextMark* mark: mMarks->marks()) {
             QList<int> errNrs;
             int lineNr = mark->line();
             QTextBlock block = document()->findBlockByNumber(lineNr).next();
@@ -337,7 +359,13 @@ void FileContext::updateMarks()
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
-    TextMark* mark = mMarks.generateTextMark(this, tmType, value, line, column, size);
+    TextMark* mark = mMarks->generateTextMark(this, tmType, value, line, column, size);
+    return mark;
+}
+
+TextMark*FileContext::generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size)
+{
+    TextMark* mark = parentEntry()->marks(fileName)->generateTextMark(fileName, parentEntry(), tmType, value, line, column, size);
     return mark;
 }
 
@@ -353,7 +381,7 @@ void FileContext::removeTextMarks(TextMark::Type tmType)
 
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
-    mMarks.removeTextMarks(tmTypes);
+    mMarks->removeTextMarks(tmTypes);
     if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
     for (QWidget* ed: mEditors) {
         ed->update(); // trigger delayed repaint
@@ -389,11 +417,11 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
         QPoint pos = mouseEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        if (mMarks.marksForBlock(cursor.block(), TextMark::error).isEmpty()
+        if (mMarks->marksForBlock(cursor.block(), TextMark::error).isEmpty()
             || mouseEvent->modifiers()==Qt::ControlModifier) {
             int line = cursor.blockNumber();
             TextMark* linkMark = nullptr;
-            for (TextMark *mark: mMarks.marks()) {
+            for (TextMark *mark: mMarks->marks()) {
                 if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
                     if (mark->line() < line)
                         linkMark = mark;
@@ -425,7 +453,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
-        mMarksAtMouse = mMarks.findMarks(cursor);
+        mMarksAtMouse = mMarks->findMarks(cursor);
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea

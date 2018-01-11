@@ -6,6 +6,14 @@ namespace studio {
 TextMarkList::TextMarkList()
 {}
 
+TextMarkList::TextMarkList(const TextMarkList& marks)
+{
+    // deep copy
+    for (TextMark *mark: marks.mTextMarks) {
+        mTextMarks.append(new TextMark(*mark));
+    }
+}
+
 void TextMarkList::updateMarks()
 {
     for (TextMark* mark: mTextMarks) {
@@ -43,6 +51,15 @@ TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::
     return res;
 }
 
+TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* group, TextMark::Type tmType, int value, int line, int column, int size)
+{
+    TextMark* res = new TextMark(tmType);
+    res->setPosition(fileName, group, line, column, size);
+    res->setValue(value);
+    mTextMarks << res;
+    return res;
+}
+
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     int i = mTextMarks.size();
@@ -73,6 +90,14 @@ QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
             res << mark;
     }
     return res;
+}
+
+void TextMarkList::merge(const TextMarkList& marks)
+{
+    for (TextMark *mark: marks.mTextMarks) {
+        if (!mTextMarks.contains(mark))
+            mTextMarks.append(mark);
+    }
 }
 
 TextMark*TextMarkList::firstErrorMark()

@@ -27,6 +27,7 @@ namespace gams {
 namespace studio {
 
 class FileContext;
+class FileGroupContext;
 
 class TextMark
 {
@@ -34,7 +35,9 @@ public:
     enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
+    void ensureFileContext();
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
+    void setPosition(QString fileName, FileGroupContext* group, int line, int column, int size = 0);
     void updateCursor();
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
@@ -77,6 +80,8 @@ public:
 
 private:
     FileContext* mFileContext = nullptr;
+    FileGroupContext* mGroup = nullptr;
+    QString mFileName;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;

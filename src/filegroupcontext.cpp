@@ -134,6 +134,14 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     // TODO(JM) visualize if a state is running
 }
 
+TextMarkList*FileGroupContext::marks(const QString& fileName)
+{
+    if (!mMarksForFilenames.contains(fileName))
+        mMarksForFilenames.insert(fileName, new TextMarkList());
+    return mMarksForFilenames.value(fileName);
+}
+
+
 void FileGroupContext::attachFile(const QString &filepath)
 {
     if(filepath == "") return;

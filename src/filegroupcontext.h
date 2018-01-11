@@ -29,6 +29,7 @@ class LogContext;
 class FileContext;
 class GamsProcess;
 class TextMark;
+class TextMarkList;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -77,6 +78,7 @@ protected slots:
 protected:
     friend class FileRepository;
     friend class FileSystemContext;
+    friend class FileContext;
     friend class LogContext;
 
     FileGroupContext(FileId id, QString name, QString location, QString runInfo);
@@ -86,6 +88,8 @@ protected:
     void checkFlags();
     void setLogContext(LogContext* logContext);
     void updateRunState(const QProcess::ProcessState &state);
+    void addMark(const QString &filePath, TextMark* mark);
+    TextMarkList* marks(const QString &fileName);
 
 private:
     QList<FileSystemContext*> mChildList;
@@ -96,6 +100,7 @@ private:
     QString mLstFileName;
     QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
+    QHash<QString, TextMarkList*> mMarksForFilenames;
 };
 
 } // namespace studio
