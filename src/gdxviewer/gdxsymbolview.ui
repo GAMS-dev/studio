@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>gams::studio::gdxviewer::GdxSymbolView</class>
- <widget class="QFrame" name="gams::studio::gdxviewer::GdxSymbolView">
+ <widget class="QWidget" name="gams::studio::gdxviewer::GdxSymbolView">
   <property name="geometry">
    <rect>
     <x>0</x>

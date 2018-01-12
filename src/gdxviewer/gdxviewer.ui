@@ -66,14 +66,7 @@
        <number>22</number>
       </attribute>
      </widget>
-     <widget class="GdxSymbolView" name="gdxSymbolView">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-     </widget>
+     <widget class="GdxSymbolView" name="widget" native="true"/>
     </widget>
    </item>
   </layout>
@@ -81,7 +74,7 @@
  <customwidgets>
   <customwidget>
    <class>GdxSymbolView</class>
-   <extends>QFrame</extends>
+   <extends>QWidget</extends>
    <header>gdxviewer/gdxsymbolview.h</header>
    <container>1</container>
   </customwidget>

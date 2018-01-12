@@ -9,7 +9,7 @@ namespace studio {
 namespace gdxviewer {
 
 GdxSymbolView::GdxSymbolView(QWidget *parent) :
-    QFrame(parent),
+    QWidget(parent),
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);

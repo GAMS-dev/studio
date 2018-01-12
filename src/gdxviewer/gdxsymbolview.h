@@ -12,7 +12,7 @@ namespace Ui {
 class GdxSymbolView;
 }
 
-class GdxSymbolView : public QFrame
+class GdxSymbolView : public QWidget
 {
     Q_OBJECT
 
