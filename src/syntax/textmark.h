@@ -36,6 +36,7 @@ public:
 
     explicit TextMark(TextMark::Type tmType);
     void ensureFileContext();
+    void unbindFileContext();
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void setPosition(QString fileName, FileGroupContext* group, int line, int column, int size = 0);
     void updateCursor();

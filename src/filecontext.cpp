@@ -48,6 +48,7 @@ QWidgetList& FileContext::editorList()
 
 FileContext::~FileContext()
 {
+    setParentEntry(nullptr);
     removeAllEditors();
 }
 
@@ -58,6 +59,7 @@ void FileContext::setParentEntry(FileGroupContext* parent)
     if (parent) {
         if (prevParent) {
             // parent changed: unbind marks from parent
+            if (mMarks) mMarks->unbindFileContext();
             mMarks = new TextMarkList(*mMarks);
         }
         // merge marks into new parent
@@ -67,6 +69,7 @@ void FileContext::setParentEntry(FileGroupContext* parent)
         mMarks = marks;
     } else {
         // parent lost: we need a unbound copy of the marks
+        if (mMarks) mMarks->unbindFileContext();
         mMarks = new TextMarkList(*mMarks);
     }
     if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);

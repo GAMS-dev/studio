@@ -218,7 +218,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         mBlockStartKey = e->key();
         mBlockStartCursor = textCursor();
         mBlockLastCursor = mBlockStartCursor;
-        qDebug() << "blockEdit START";
+        DEB() << "blockEdit START";
     }
 
     if (!mBlockStartKey) {
@@ -259,7 +259,7 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
             mBlockStartKey = 0;
             mBlockLastCursor = QTextCursor();
             mBlockStartCursor = QTextCursor();
-            qDebug() << "blockEdit END";
+            DEB() << "blockEdit END";
         }
     }
 }

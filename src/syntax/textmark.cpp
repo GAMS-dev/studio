@@ -44,6 +44,12 @@ void TextMark::ensureFileContext()
     }
 }
 
+void TextMark::unbindFileContext()
+{
+    if (mFileContext)
+        mFileContext = nullptr;
+}
+
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
     mFileContext = fileContext;

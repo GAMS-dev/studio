@@ -15,6 +15,7 @@ class TextMarkList: public QObject
 public:
     TextMarkList();
     TextMarkList(const TextMarkList &marks);
+    void unbindFileContext();
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);

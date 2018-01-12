@@ -14,6 +14,13 @@ TextMarkList::TextMarkList(const TextMarkList& marks)
     }
 }
 
+void TextMarkList::unbindFileContext()
+{
+    for (TextMark *mark: mTextMarks) {
+        mark->unbindFileContext();
+    }
+}
+
 void TextMarkList::updateMarks()
 {
     for (TextMark* mark: mTextMarks) {
