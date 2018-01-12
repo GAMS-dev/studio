@@ -120,7 +120,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
             QTextLayout::FormatRange fr;
             fr.start = item.keyPosition;
             if (item.value.isEmpty())
-                fr.length = item.key.length();
+                fr.length = item.key.length()+1;  // also format '='  after the key
             else
                fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
             fr.format = mDeactivatedOptionFormat;
@@ -133,7 +133,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                 fr.start = item.keyPosition;
                 fr.length = item.key.length();
                 fr.format = mInvalidKeyFormat;
-                optionErrorList.append(OptionError(fr, item.key.mid(2) + QString(" (Option keyword expected)")) );
+                optionErrorList.append(OptionError(fr, item.key.mid(2) + QString(" (Expect only alphabetic character, a-z or A-Z, after \"%1\")").arg(item.key.left(2))) );
             }
             continue;
         }
@@ -175,6 +175,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                     key = gamsOption->getSynonym(key);
 
                 QString value = item.value;
+
                 if (item.value.startsWith("\"") && item.value.endsWith("\"")) { // peel off double quote
                     value = item.value.mid(1, item.value.length()-2);
                 }
@@ -268,7 +269,12 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                          }
                          break;
                      default:
-                         foundError = false;  // do nothing for the moment
+                         if (value.startsWith("[") && value.endsWith("]")) {
+                            errorMessage.append(", unknown value for option \""+keyStr+"\")");
+                            foundError = true;
+                         } else {
+                             foundError = false;  // do nothing for the moment
+                         }
                          break;
                      }
 
@@ -295,6 +301,12 @@ QString CommandLineTokenizer::normalize(const QList<OptionItem> &items)
 {
     QStringList strList;
     for (OptionItem item : items) {
+
+        if ( item.key.isEmpty() )
+            item.key = "[KEY]";
+        if ( item.value.isEmpty() )
+            item.value = "[VALUE]";
+
         if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
             strList.append(item.key+"="+item.value);
             continue;

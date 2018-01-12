@@ -23,6 +23,8 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    virtual bool insertRows(int row, int count, const QModelIndex &parent);
+    virtual bool removeRows(int row, int count, const QModelIndex &parent);
 
 signals:
     void optionModelChanged(const QList<OptionItem> &optionItem);

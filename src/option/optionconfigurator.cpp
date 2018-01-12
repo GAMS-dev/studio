@@ -28,8 +28,10 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     ui.commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
+    ui.commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui.commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.commandLineTableView->setAutoScroll(true);
+    ui.commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui.commandLineTableView->setModel( optionParamModel );
     ui.commandLineTableView->horizontalHeader()->setStretchLastSection(true);
     ui.commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
@@ -58,6 +60,8 @@ OptionConfigurator::OptionConfigurator(const QString& label, const QString& line
     connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
     connect(ui.commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
             optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+    connect(ui.commandLineTableView, &QTableView::customContextMenuRequested,
+            this, &OptionConfigurator::showOptionContextMenu);
     connect(optionParamModel, &OptionParameterModel::optionModelChanged,
             this, static_cast<void(OptionConfigurator::*)(const QList<OptionItem> &)> (&OptionConfigurator::updateCommandLineStr));
     connect(this, static_cast<void(OptionConfigurator::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionConfigurator::commandLineOptionChanged),
@@ -85,6 +89,37 @@ void OptionConfigurator::updateCommandLineStr(const QString &commandLineStr)
 void OptionConfigurator::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
     emit commandLineOptionChanged(ui.commandLineEdit, optionItems);
+}
+
+void OptionConfigurator::showOptionContextMenu(const QPoint &pos)
+{
+    QModelIndexList selection = ui.commandLineTableView->selectionModel()->selectedRows();
+
+    QMenu menu(this);
+    QAction* addAction = menu.addAction("add new option");
+    QAction* insertAction = menu.addAction("insert new option");
+    menu.addSeparator();
+    QAction* deleteAction = menu.addAction("delete selected option");
+
+    if (selection.count() <= 0) {
+        insertAction->setVisible(false);
+        deleteAction->setVisible(false);
+    }
+
+    QAction* action = menu.exec(ui.commandLineTableView->viewport()->mapToGlobal(pos));
+    if (action == addAction) {
+         ui.commandLineTableView->model()->insertRows(ui.commandLineTableView->model()->rowCount(), 1, QModelIndex());
+    } else if (action == insertAction) {
+            if (selection.count() > 0) {
+                QModelIndex index = selection.at(0);
+                ui.commandLineTableView->model()->insertRows(index.row(), 1, QModelIndex());
+            }
+   } else if (action == deleteAction) {
+             if (selection.count() > 0) {
+                 QModelIndex index = selection.at(0);
+                 ui.commandLineTableView->model()->removeRow(index.row(), QModelIndex());
+             }
+    }
 }
 
 } // namespace studio

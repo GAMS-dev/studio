@@ -28,7 +28,7 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
        return QVariant();
     }
 
-
+    // orientation == Qt::Vertical
     switch(role) {
     case Qt::CheckStateRole:
         if (mOptionItem.isEmpty())
@@ -37,7 +37,10 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         QPixmap p{12,12};
-        p.fill(Qt::CheckState(headerData(index, orientation, Qt::CheckStateRole).toUInt()) ? Qt::gray : Qt::green);
+        if (mOptionItem.isEmpty())
+            p.fill(Qt::CheckState(Qt::gray));
+        else
+            p.fill(Qt::CheckState(mCheckState[index].toUInt()) ? Qt::gray : Qt::green);
         return p;
     }
 
@@ -48,7 +51,8 @@ int OptionParameterModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return (mOptionItem.size()==0 ) ? 1 : mOptionItem.size();
+
+    return  mOptionItem.size();
 }
 
 int OptionParameterModel::columnCount(const QModelIndex &parent) const
@@ -60,17 +64,14 @@ int OptionParameterModel::columnCount(const QModelIndex &parent) const
 
 QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 {
-    if (mOptionItem.isEmpty())
-        return QVariant();
-
     int row = index.row();
     int col = index.column();
 
+    if (mOptionItem.isEmpty())
+        return QVariant();
+
     switch (role) {
     case Qt::DisplayRole: {
-        if (row == mOptionItem.size())
-            break;
-
         if (col==0)
             return mOptionItem.at(row).key;
         else if (col== 1)
@@ -81,14 +82,18 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     case Qt::TextAlignmentRole: {
         return Qt::AlignLeft;
     }
-//    case Qt::ToolTipRole: {
 //    case Qt::DecorationRole
+//    case Qt::ToolTipRole:
     case Qt::TextColorRole: {
         if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
             return QVariant::fromValue(QColor(Qt::gray));
 
-        if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) // double dashed parameter
-            return QVariant::fromValue(QColor(Qt::black));
+        if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
+           if (mOptionItem.at(row).key.mid(2).contains(QRegExp("^[a-zA-Z]")) )
+                return QVariant::fromValue(QColor(Qt::black));
+           else
+                 return QVariant::fromValue(QColor(Qt::red));
+        }
         if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
            if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                return QVariant::fromValue(QColor(Qt::gray));
@@ -98,12 +103,12 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
                 } else {
 
                     switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-                     case No_Error:
-                           return QVariant::fromValue(QColor(Qt::black));
                      case Incorrect_Value_Type:
-                        return QVariant::fromValue(QColor(Qt::green));
+                           return QVariant::fromValue(QColor(Qt::blue));
                      case Value_Out_Of_Range:
                            return QVariant::fromValue(QColor(Qt::blue));
+                     case No_Error:
+                           return QVariant::fromValue(QColor(Qt::black));
                      default:
                           return QVariant::fromValue(QColor(Qt::black));
                     }
@@ -150,8 +155,8 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
         if (data.isEmpty())
             return false;
 
-        if (index.row() == mOptionItem.size())
-            mOptionItem.append(OptionItem());
+        if (index.row() > mOptionItem.size())
+            return false;
 
         if (index.column() == 0) { // key
             mOptionItem[index.row()].key = data;
@@ -176,8 +181,39 @@ QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &
     return QModelIndex();
 }
 
+bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+{
+    if (count < 1 || row < 0 || row > mOptionItem.size())
+         return false;
+
+     beginInsertRows(QModelIndex(), row, row + count - 1);
+     if (mOptionItem.size() == row)
+         mOptionItem.append(OptionItem("[KEY]", "[VALUE]", -1, -1));
+     else
+         mOptionItem.insert(row, OptionItem(OptionItem("[KEY]", "[VALUE]", -1, -1)));
+
+    endInsertRows();
+    emit optionModelChanged(mOptionItem);
+    return true;
+}
+
+bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
+         return false;
+
+    beginRemoveRows(QModelIndex(), row, row + count - 1);
+    mOptionItem.removeAt(row);
+    endRemoveRows();
+    emit optionModelChanged(mOptionItem);
+    return true;
+}
+
 void OptionParameterModel::toggleActiveOptionItem(int index)
 {
+    if (mOptionItem.isEmpty() || index >= mOptionItem.size())
+        return;
+
     bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
     setHeaderData( index,
                           Qt::Vertical,

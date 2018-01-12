@@ -26,6 +26,7 @@ public slots:
     void toggleOptionDefinition(bool checked);
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &opionItems);
+    void showOptionContextMenu(const QPoint &pos);
 
 private:
     Ui::OptionConfigurator ui;
