@@ -35,10 +35,6 @@ private:
     void loadSymbol(GdxSymbol* selectedSymbol);
 
     QVector<GdxSymbolView*> mSymbolViews;
-
-
-signals:
-    void loadFinished();
 };
 
 } // namespace gdxviewer

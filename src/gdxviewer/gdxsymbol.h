@@ -71,6 +71,9 @@ public:
 
     bool *filterActive() const;
 
+signals:
+    void loadFinished();
+
 private:
     int mNr;
     int mDim;

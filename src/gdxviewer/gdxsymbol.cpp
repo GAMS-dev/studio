@@ -256,6 +256,7 @@ void GdxSymbol::loadData()
         delete[] values;
 
         qDebug() << "loadData: " << t.elapsed();
+        emit loadFinished();
     }
 }
 

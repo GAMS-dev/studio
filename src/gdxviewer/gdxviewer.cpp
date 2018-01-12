@@ -78,9 +78,6 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
 
-        if(!selectedSymbol->isLoaded())
-            QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
-
         // create new GdxSymbolView if the symbol is selected for the first time
         if(!mSymbolViews.at(selectedIdx))
         {
@@ -88,6 +85,10 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             mSymbolViews.replace(selectedIdx, symView);
             symView->setSym(selectedSymbol);
         }
+
+        if(!selectedSymbol->isLoaded())
+            QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
+
         ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
 }
@@ -104,7 +105,6 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
-    emit loadFinished();
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)

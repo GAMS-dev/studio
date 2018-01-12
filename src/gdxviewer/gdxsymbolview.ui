@@ -55,6 +55,9 @@
      </property>
      <item>
       <widget class="QCheckBox" name="cbSqueezeDefaults">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Squeeze Defaults</string>
        </property>
@@ -62,6 +65,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pbResetSortFilter">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Reset</string>
        </property>

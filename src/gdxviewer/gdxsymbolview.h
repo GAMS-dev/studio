@@ -28,6 +28,7 @@ private:
     GdxSymbol *mSym = nullptr;
 
 public slots:
+    void enableControls();
     void refreshView();
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();

@@ -82,13 +82,7 @@ void GdxSymbolView::refreshView()
     if(!mSym)
         return;
     if(mSym->isLoaded())
-    {
         mSym->filterRows();
-    }
-    else
-    {
-        ui->cbSqueezeDefaults->setEnabled(false);
-    }
 }
 
 
@@ -100,13 +94,18 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym)
 {
     mSym = sym;
+    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
+    refreshView();
+}
+
+void GdxSymbolView::enableControls()
+{
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
         ui->cbSqueezeDefaults->setEnabled(true);
     else
         ui->cbSqueezeDefaults->setEnabled(false);
-
-    refreshView();
+    ui->pbResetSortFilter->setEnabled(true);
 }
 
 } // namespace gdxviewer
