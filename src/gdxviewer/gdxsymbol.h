@@ -48,9 +48,6 @@ public:
     void loadData();
     void stopLoadingData();
 
-    bool squeezeDefaults() const;
-    void setSqueezeDefaults(bool squeezeDefaults);
-
     bool isAllDefault(int valColIdx);
 
     int subType() const;
@@ -103,8 +100,6 @@ private:
 
     QStringList mDomains;
 
-    bool mSqueezeDefaults = false;
-
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
     void calcDefaultColumns();
@@ -118,9 +113,6 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
-
-    int mSortColumn = -1;
-    Qt::SortOrder mSortOrder;
 };
 
 } // namespace gdxviewer

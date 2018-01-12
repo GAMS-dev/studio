@@ -25,7 +25,8 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive = new bool[mRecordCount] {false};
+    if(mRecordCount>0)
+        mFilterActive = new bool[mRecordCount] {false};
 }
 
 GdxSymbol::~GdxSymbol()
@@ -263,16 +264,6 @@ void GdxSymbol::stopLoadingData()
     stopLoading = true;
 }
 
-bool GdxSymbol::squeezeDefaults() const
-{
-    return mSqueezeDefaults;
-}
-
-void GdxSymbol::setSqueezeDefaults(bool squeezeDefaults)
-{
-    mSqueezeDefaults = squeezeDefaults;
-}
-
 void GdxSymbol::calcDefaultColumns()
 {
     if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
@@ -336,6 +327,7 @@ void GdxSymbol::loadMetaData()
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
     mName = symName;
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
+    mExplText = explText;
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -372,11 +364,6 @@ QVector<QVector<int> *> GdxSymbol::uelsInColumn() const
     return mUelsInColumn;
 }
 
-Qt::SortOrder GdxSymbol::sortOrder() const
-{
-    return mSortOrder;
-}
-
 void GdxSymbol::resetSortFilter()
 {
     for(int i=0; i<mRecordCount; i++)
@@ -394,13 +381,7 @@ void GdxSymbol::resetSortFilter()
     }
 
     mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
-    mSortColumn = -1;
     layoutChanged();
-}
-
-int GdxSymbol::sortColumn() const
-{
-    return mSortColumn;
 }
 
 bool GdxSymbol::isAllDefault(int valColIdx)
@@ -429,8 +410,8 @@ int GdxSymbol::subType() const
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
     //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
-    if(column == mSortColumn && order == mSortOrder)
-        return;
+    //if(column == mSortColumn && order == mSortOrder)
+    //    return;
 
     QTime t;
     t.start();
@@ -493,9 +474,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         for(int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
-
-    mSortColumn = column;
-    mSortOrder = order;
     layoutChanged();
     filterRows();
 }

@@ -117,6 +117,11 @@ void GdxSymbolTable::createSortIndex()
     }
 }
 
+int GdxSymbolTable::symbolCount() const
+{
+    return mSymbolCount;
+}
+
 void GdxSymbolTable::loadUel2Label()
 {
     char label[GMS_UEL_IDENT_SIZE];

@@ -155,7 +155,6 @@ pipeline {
                             macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                             mv bin/studio.dmg studio.dmg
                         '''
-                        sh 'ls -al bin'
                         zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {

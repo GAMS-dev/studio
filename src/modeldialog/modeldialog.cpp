@@ -130,6 +130,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     tableView->verticalHeader()->hide();
     tableView->setSortingEnabled(true);
     tableView->horizontalHeader()->setHighlightSections(false);
+    tableView->setAlternatingRowColors(true);
 
     proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setFilterKeyColumn(-1);
