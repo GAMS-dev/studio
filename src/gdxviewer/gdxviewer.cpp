@@ -12,7 +12,7 @@ namespace studio {
 namespace gdxviewer {
 
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
-    QFrame(parent)
+    QWidget(parent)
 {
     ui.setupUi(this);
 

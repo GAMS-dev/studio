@@ -13,7 +13,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class GdxViewer : public QFrame
+class GdxViewer : public QWidget
 {
     Q_OBJECT
 
