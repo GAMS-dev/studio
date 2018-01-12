@@ -186,6 +186,11 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
+    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
+        // ignore enter/return key
+        e->accept();
+        return;
+    }
     QSet<int> moveKeys;
     QKeyEvent ev(*e);
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
@@ -238,12 +243,63 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
 
 void CodeEditor::keyReleaseEvent(QKeyEvent* e)
 {
-    QPlainTextEdit::keyReleaseEvent(e);
-    if (mBlockStartKey && e->key() == mBlockStartKey) {
-        mBlockStartKey = 0;
-        mBlockLastCursor = QTextCursor();
-        mBlockStartCursor = QTextCursor();
-        qDebug() << "blockEdit END";
+    // return pressed, check if current block consists of whitespaces only
+    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
+        QTextCursor cursor = textCursor();
+        cursor.beginEditBlock();
+        cursor.insertText("\n");
+        if (cursor.block().previous().isValid())
+            truncate(cursor.block().previous());
+        adjustIndent(cursor);
+        cursor.endEditBlock();
+        e->accept();
+    } else {
+        QPlainTextEdit::keyReleaseEvent(e);
+        if (mBlockStartKey && e->key() == mBlockStartKey) {
+            mBlockStartKey = 0;
+            mBlockLastCursor = QTextCursor();
+            mBlockStartCursor = QTextCursor();
+            qDebug() << "blockEdit END";
+        }
+    }
+}
+
+void CodeEditor::adjustIndent(QTextCursor cursor)
+{
+    QRegularExpression rex("^(\\s*).*$");
+    QRegularExpressionMatch match = rex.match(cursor.block().text());
+    if (match.hasMatch()) {
+        QTextBlock prev = cursor.block().previous();
+        QRegularExpression pRex("^((\\s+)|([^\\s]+))");
+        QRegularExpressionMatch pMatch = pRex.match(prev.text());
+        while (true) {
+            if (pMatch.hasMatch()) {
+                if (pMatch.capturedLength(2) < 1)
+                    break;
+                QString spaces = pMatch.captured(2);
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, match.capturedLength(1));
+                cursor.removeSelectedText();
+                cursor.insertText(spaces);
+                setTextCursor(cursor);
+                break;
+            }
+            prev = prev.previous();
+            if (!prev.isValid() || prev.blockNumber() < cursor.blockNumber()-50)
+                break;
+            pMatch = pRex.match(prev.text());
+        }
+    }
+}
+
+void CodeEditor::truncate(QTextBlock block)
+{
+    QRegularExpression pRex("(^.*[^\\s]|^)(\\s+)$");
+    QRegularExpressionMatch match = pRex.match(block.text());
+    if (match.hasMatch()) {
+        QTextCursor cursor(block);
+        cursor.movePosition(QTextCursor::EndOfBlock);
+        cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, match.capturedLength(2));
+        cursor.removeSelectedText();
     }
 }
 

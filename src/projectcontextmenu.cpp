@@ -7,8 +7,8 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("&Close group",  this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(1, addAction("&Remove",  this, &ProjectContextMenu::onRemoveNode));
+    mActions.insert(0, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(1, addAction("Close &file",  this, &ProjectContextMenu::onRemoveNode));
 //    mActions.insert(0, addAction("&Run group",  this, &ProjectContextMenu::onRunGroup));
 
 //    mActions.insert(1, addSeparator());
