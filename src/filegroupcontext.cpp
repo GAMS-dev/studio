@@ -22,6 +22,7 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "gamsprocess.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -134,21 +135,35 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     // TODO(JM) visualize if a state is running
 }
 
-TextMarkList*FileGroupContext::marks(const QString& fileName)
+TextMarkList* FileGroupContext::marks(const QString& fileName)
 {
     if (!mMarksForFilenames.contains(fileName))
         mMarksForFilenames.insert(fileName, new TextMarkList());
     return mMarksForFilenames.value(fileName);
 }
 
-void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes, QString fileName)
+void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 {
-    if (fileName.isNull()) {
-        QHash<QString, TextMarkList*>::iterator it;
-        for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
-            TextMarkList(*it.value()).removeTextMarks(tmTypes);
-    } else if (mMarksForFilenames.contains(fileName)) {
-        mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+    // TODO(JM) this operates on a copy !!! prevent it !!!
+    QHash<QString, TextMarkList*>::iterator it;
+    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
+        it.value()->removeTextMarks(tmTypes);
+}
+
+void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
+{
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+}
+
+void FileGroupContext::dumpMarks()
+{
+    foreach (QString file, mMarksForFilenames.keys()) {
+        QString res = file+":";
+        TextMarkList* list = marks(file);
+        foreach (TextMark* mark, list->marks()) {
+            res.append(QString(" [%1,%2]").arg(mark->line()).arg(mark->column()));
+        }
+        DEB() << res;
     }
 }
 
@@ -245,11 +260,12 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    FileSystemContext *fsc = findFile(lstFileName());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        fc->clearMarksEnhanced();
-    }
+    removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
+//    FileSystemContext *fsc = findFile(lstFileName());
+//    if (fsc && fsc->type() == FileSystemContext::File) {
+//        FileContext *fc = static_cast<FileContext*>(fsc);
+//        fc->clearMarksEnhanced();
+//    }
 }
 
 bool FileGroupContext::hasLstErrorText(int line)

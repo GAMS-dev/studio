@@ -21,6 +21,7 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "logger.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -41,13 +42,20 @@ void TextMark::ensureFileContext()
             mFileContext = static_cast<FileContext*>(fsc);
             updateCursor();
         }
+    } else if (!mFileContext) {
+        EXCEPT() << "Invalid TextMark found: neither linked to FileContext nor FileName";
     }
 }
 
 void TextMark::unbindFileContext()
 {
-    if (mFileContext)
+    if (mFileContext) {
+        if (!mGroup) {
+            mGroup = mFileContext->parentEntry();
+            mFileName = mFileContext->location();
+        }
         mFileContext = nullptr;
+    }
 }
 
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)

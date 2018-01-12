@@ -76,6 +76,7 @@ public:
     inline int spread() const {return mSpread;}
     void rehighlight();
     void modified();
+    inline FileContext* fileContext() {return mFileContext;}
 
     QString dump();
 

@@ -895,11 +895,11 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 void MainWindow::execute(QString commandLineStr)
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    if (!fgc)
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
         return;
 
-    fgc->clearLstErrorTexts();
+    group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         fc->save();
@@ -924,8 +924,8 @@ void MainWindow::execute(QString commandLineStr)
     }
 
     ui->actionRun->setEnabled(false);
-    mFileRepo.removeMarks(fgc);
-    LogContext* logProc = mFileRepo.logContext(fgc);
+    mFileRepo.removeMarks(group);
+    LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
@@ -946,12 +946,12 @@ void MainWindow::execute(QString commandLineStr)
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = fgc->runableGms();
+    QString gmsFilePath = group->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
-    GamsProcess* process = fgc->newGamsProcess();
+    GamsProcess* process = group->newGamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);

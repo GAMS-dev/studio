@@ -41,7 +41,7 @@ private:
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-    QSet<FileContext*> mMarkedContextList;
+//    QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
 

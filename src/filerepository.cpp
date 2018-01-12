@@ -351,17 +351,18 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
         connect(res, &LogContext::openFileContext, this, &FileRepository::openFileContext);
         connect(res, &FileContext::findFileContext, this, &FileRepository::findFile);
         connect(res, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
+        res->setParentEntry(group);
         bool hit;
         int offset = group->peekIndex(res->name(), &hit);
         if (hit) offset++;
-        mTreeModel->insertChild(offset, group, res);
+//        mTreeModel->insertChild(offset, group, res);
     }
     return res;
 }
 
 void FileRepository::removeMarks(FileGroupContext* group)
 {
-    group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link);
+    group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
 void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)

@@ -19,7 +19,7 @@ public:
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
-    QList<TextMark*> marks() { return mTextMarks;}
+    QList<TextMark*> marks() { return mMarks;}
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
@@ -37,7 +37,7 @@ protected:
     TextMark* firstErrorMark();
 
 private:
-    QList<TextMark*> mTextMarks;
+    QList<TextMark*> mMarks;
 };
 
 } // namespace studio

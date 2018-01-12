@@ -69,16 +69,20 @@ void LogContext::removeEditor(QWidget* edit)
 
 void LogContext::setParentEntry(FileGroupContext* parent)
 {
-    if (parent){
+    if (parent) {
         parent->setLogContext(this);
+        mMarks = parent->marks(location());
+        if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
     } else {
         mParent->setLogContext(nullptr);
+        mMarks = nullptr;
     }
     mParent = parent;
 }
 
 TextMark*LogContext::firstErrorMark()
 {
+    if (!mMarks) return nullptr;
     return mMarks->firstErrorMark();
 }
 
@@ -142,8 +146,8 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
         for (LinkData mark: marks) {
             TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
-            tm->setRefMark(mark.textMark);
             if (mark.textMark) {
+                tm->setRefMark(mark.textMark);
                 if (mark.textMark->fileKind() == FileType::Lst)
                     mLastLstLink = mark.textMark;
                 mark.textMark->rehighlight();

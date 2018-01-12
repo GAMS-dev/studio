@@ -68,6 +68,8 @@ public:
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
 
+    void dumpMarks();
+
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
     void removeNode(FileSystemContext *node);
@@ -92,7 +94,8 @@ protected:
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);
     TextMarkList* marks(const QString &fileName);
-    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>(), QString fileName = QString());
+    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
     QList<FileSystemContext*> mChildList;
