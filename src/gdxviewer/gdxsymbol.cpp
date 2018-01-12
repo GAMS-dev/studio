@@ -115,7 +115,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             return mGdxSymbolTable->uel2Label().at(mKeys[row*mDim + index.column()]);
         else
         {
-            double val;
+            double val = 0.0;
             if (mType == GMS_DT_PAR)
                 val = mValues[row];
             else if (mType == GMS_DT_SET)
