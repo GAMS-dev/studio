@@ -75,7 +75,9 @@ signals:
     void loadFinished();
 
 private:
+    gdxHandle_t mGdx;
     int mNr;
+    QMutex* mGdxMutex;
     int mDim;
     int mType;
     int mSubType;
@@ -88,7 +90,7 @@ private:
 
     GdxSymbolTable* mGdxSymbolTable;
 
-    gdxHandle_t mGdx;
+
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
@@ -99,7 +101,7 @@ private:
     int* mKeys = nullptr;
     double* mValues = nullptr;
 
-    QMutex* mGdxMutex;
+
 
     QStringList mDomains;
 
