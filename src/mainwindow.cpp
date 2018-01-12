@@ -224,7 +224,7 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
 
 SearchWidget* MainWindow::searchWidget() const
 {
-    return sw;
+    return mSearchWidget;
 }
 
 bool MainWindow::projectViewVisibility()
@@ -818,6 +818,11 @@ bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
     return true;
 }
 
+RecentData MainWindow::recent() const
+{
+    return mRecent;
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
@@ -835,10 +840,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     } else {
         QMainWindow::keyPressEvent(event);
     }
-    if (isVisible() && event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        find(true); // Shift + F3
-    } else if (isVisible() && event->key() == Qt::Key_F3) {
-        find(false); // F3
+
+    if (mSearchWidget) {
+        if (event->key() == Qt::Key_F3) {
+            mSearchWidget->find(false); // F3
+        } else if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+            mSearchWidget->find(true); // Shift + F3
+        }
     }
 }
 
@@ -1147,19 +1155,21 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::on_actionSearch_triggered()
 {
     // create
-    if (sw == nullptr) {
-        sw = new SearchWidget(mSettings, mRecent, mFileRepo, this);
+    if (mSearchWidget == nullptr) {
+        mSearchWidget = new SearchWidget(mSettings, mRecent, mFileRepo, this);
+    } else {
+        qDebug() << "mSearchWidget->mRecent.path" << mSearchWidget->getRecent().path;
     }
 
     // toggle visibility
-    if (sw->isVisible()) {
-        sw->hide();
+    if (mSearchWidget->isVisible()) {
+        mSearchWidget->hide();
     } else {
         QPoint p(0,0);
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
-        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
-        sw->move(newP.x() + offset, newP.y());
-        sw->show();
+        int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
+        mSearchWidget->move(newP.x() + offset, newP.y());
+        mSearchWidget->show();
     }
 }
 
@@ -1169,7 +1179,7 @@ void MainWindow::showResults(QList<Result> results)
     foreach (Result r, results) {
         res->addItem(r);
     }
-    QString title("Results: " + sw->searchTerm());
+    QString title("Results: " + mSearchWidget->searchTerm());
 
     res->resizeColumnsToContent();
     int index = ui->logTab->addTab(res, title);

@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include "codeeditor.h"
 #include "studiosettings.h"
+#include "searchwidget.h"
 #include "logger.h"
 #include "syntax.h"
 
@@ -206,6 +207,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             moveCursor(QTextCursor::NextCharacter);
 
         t.endEditBlock();
+        e->accept();
+        return;
     }
 
     // TODO(JM) get definition from studio key-config
@@ -233,7 +236,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         ev.setModifiers(0);
         emit updateBlockSelection();
     }
-    QPlainTextEdit::keyPressEvent(&ev);
+    QPlainTextEdit::keyPressEvent(e);
 }
 
 void CodeEditor::keyReleaseEvent(QKeyEvent* e)

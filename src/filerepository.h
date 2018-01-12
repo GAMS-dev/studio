@@ -156,7 +156,6 @@ private:
     void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
     void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
 
-
 private:
     int mNextId;
     FileTreeModel* mTreeModel = nullptr;

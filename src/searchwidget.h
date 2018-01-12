@@ -35,7 +35,7 @@ class SearchWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, MainWindow *parent = 0);
+    explicit SearchWidget(StudioSettings *settings, RecentData rec, FileRepository &repo, MainWindow *parent = 0);
     void find(bool backwards = false);
     ~SearchWidget();
 
@@ -46,6 +46,8 @@ public:
 
     int selectedScope();
     void setSelectedScope(int index);
+
+    RecentData getRecent() const;
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -60,7 +62,7 @@ private slots:
 private:
     Ui::SearchWidget *ui;
     StudioSettings *mSettings;
-    RecentData &mRecent;
+    RecentData mRecent;
     FileRepository &mRepo;
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find

@@ -27,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, MainWindow *parent) :
+SearchWidget::SearchWidget(StudioSettings *settings, RecentData rec, FileRepository &repo, MainWindow *parent) :
     QDialog(parent),
     ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo), mMain(parent)
 {
@@ -368,12 +368,9 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 }
 
 void SearchWidget::closeEvent(QCloseEvent *event) {
-    Q_UNUSED(event);
-    FileContext *fc = mRepo.fileContext(mRecent.editor);
-    if (fc)
-        fc->removeTextMarks(TextMark::result);
-
     updateMatchAmount(0, true);
+
+    QDialog::closeEvent(event);
 }
 
 
@@ -439,6 +436,11 @@ void SearchWidget::on_btn_clear_clicked()
 
     fc->removeTextMarks(TextMark::result);
     updateMatchAmount(0, true);
+}
+
+RecentData SearchWidget::getRecent() const
+{
+    return mRecent;
 }
 
 }

@@ -84,6 +84,7 @@ public:
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(QList<Result> results);
+    RecentData recent() const;
 
 private slots:
     void codecChanged(QAction *action);
@@ -167,7 +168,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
-    SearchWidget *sw = nullptr;
+    SearchWidget *mSearchWidget = nullptr;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     GAMSProcess *mProcess = nullptr;
