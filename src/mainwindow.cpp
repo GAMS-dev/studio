@@ -88,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
     ensureCodecMenu("System");
     mSettings->loadSettings();
     mRecent.path = mSettings->defaultWorkspace();
+    mSearchWidget = new SearchWidget(this);
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -818,9 +819,14 @@ bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
     return true;
 }
 
-RecentData MainWindow::recent() const
+StudioSettings *MainWindow::settings() const
 {
-    return mRecent;
+    return mSettings;
+}
+
+RecentData *MainWindow::recent()
+{
+    return &mRecent;
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -842,10 +848,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }
 
     if (mSearchWidget) {
-        if (event->key() == Qt::Key_F3) {
-            mSearchWidget->find(false); // F3
-        } else if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
             mSearchWidget->find(true); // Shift + F3
+        } else if (event->key() == Qt::Key_F3) {
+            mSearchWidget->find(false); // F3
         }
     }
 }
@@ -1154,13 +1160,6 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    // create
-    if (mSearchWidget == nullptr) {
-        mSearchWidget = new SearchWidget(mSettings, mRecent, mFileRepo, this);
-    } else {
-        qDebug() << "mSearchWidget->mRecent.path" << mSearchWidget->getRecent().path;
-    }
-
     // toggle visibility
     if (mSearchWidget->isVisible()) {
         mSearchWidget->hide();

@@ -27,10 +27,12 @@
 namespace gams {
 namespace studio {
 
-SearchWidget::SearchWidget(StudioSettings *settings, RecentData rec, FileRepository &repo, MainWindow *parent) :
+SearchWidget::SearchWidget(MainWindow *parent) :
     QDialog(parent),
-    ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo), mMain(parent)
+    ui(new Ui::SearchWidget), mMain(parent)
 {
+    StudioSettings *mSettings = mMain->settings();
+
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());
     ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
@@ -102,8 +104,8 @@ void SearchWidget::on_btn_FindAll_clicked()
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
-        if (mRecent.editor)
-            matches = findInFile(mRepo.fileContext(mRecent.editor));
+        if (mMain->recent()->editor)
+            matches = findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor));
         break;
     case 1: // this group
         matches = findInGroup();
@@ -153,7 +155,7 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
     FileGroupContext *fgc;
     if (!fsc) {
-        FileContext* fc = mMain->fileRepository()->fileContext(mRecent.editor);
+        FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
         fgc = (fc ? fc->parentEntry() : nullptr);
 
         if (!fgc)
@@ -217,7 +219,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         } else { // read from editor document(s)
 
             // currently in foreground
-            bool highlightMatch = (fc == mRepo.fileContext(mRecent.editor));
+            bool highlightMatch = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor));
 
             lastItem = QTextCursor(fc->document());
             do {
@@ -262,7 +264,7 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
 
 void SearchWidget::simpleReplaceAll()
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     QString searchTerm = ui->txt_search->text();
@@ -298,7 +300,7 @@ void SearchWidget::simpleReplaceAll()
 
 void SearchWidget::find(bool backwards)
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     bool useRegex = ui->cb_regex->isChecked();
@@ -335,7 +337,7 @@ void SearchWidget::find(bool backwards)
 
 void SearchWidget::on_btn_Replace_clicked()
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -348,7 +350,7 @@ void SearchWidget::on_btn_Replace_clicked()
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     ui->txt_search->setFocus();
@@ -363,7 +365,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
     if (isVisible() && ( event->key() == Qt::Key_Escape
                          || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
         hide();
-        mRecent.editor->setFocus();
+        mMain->recent()->editor->setFocus();
     }
 }
 
@@ -420,7 +422,7 @@ void SearchWidget::on_btn_back_clicked()
 
 void SearchWidget::on_btn_forward_clicked()
 {
-    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
 
     if (fc->textMarkCount(QSet<TextMark::Type>() << TextMark::result) == 0) { // if has no results search first
@@ -431,57 +433,12 @@ void SearchWidget::on_btn_forward_clicked()
 
 void SearchWidget::on_btn_clear_clicked()
 {
-    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
 
     fc->removeTextMarks(TextMark::result);
     updateMatchAmount(0, true);
 }
 
-RecentData SearchWidget::getRecent() const
-{
-    return mRecent;
-}
-
 }
 }
-
-// TODO: DEPRECATED, DELETEME
-//QList<Result> SearchWidget::simpleFindAndHighlight(QPlainTextEdit* edit)
-//{
-//    QList<Result> matches;
-//    if (edit == nullptr)
-//        edit = FileSystemContext::toPlainEdit(mRecent.editor);
-//    if (!edit) return matches;
-
-//    QString searchTerm = ui->txt_search->text();
-//    QRegularExpression searchRegex(searchTerm);
-//    QTextCursor item;
-//    QTextCursor lastItem;
-//    FileContext *fc = mRepo.fileContext(mRecent.editor);
-//    int hits = 0;
-
-//    fc->removeTextMarks(TextMark::result);
-//    QTextCursor tmpCurs = edit->textCursor();
-//    tmpCurs.clearSelection();
-//    edit->setTextCursor(tmpCurs);
-
-//    do {
-//        if (regex()) item = edit->document()->find(searchRegex, lastItem, getFlags());
-//        else  item = edit->document()->find(searchTerm, lastItem, getFlags());
-
-//        lastItem = item;
-//        if (!item.isNull()) {
-//            int length = item.selectionEnd() - item.selectionStart();
-//            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
-//                                                      item.columnNumber() - length, length));
-//            matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
-//            hits++;
-//        }
-//    } while (!item.isNull());
-
-//    if (fc->highlighter()) fc->highlighter()->rehighlight();
-//    updateMatchAmount(hits);
-
-//    return matches;
-//}

@@ -84,7 +84,8 @@ public:
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(QList<Result> results);
-    RecentData recent() const;
+    RecentData *recent();
+    StudioSettings *settings() const;
 
 private slots:
     void codecChanged(QAction *action);
