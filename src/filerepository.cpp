@@ -66,6 +66,8 @@ FileSystemContext* FileRepository::context(FileId fileId, FileSystemContext* sta
 FileContext* FileRepository::fileContext(FileId fileId, FileSystemContext* startNode)
 {
     auto c = context(fileId, (startNode ? startNode : mTreeModel->rootContext()));
+    if (!c) return nullptr;
+
     if (c->type() == FileSystemContext::File)
         return static_cast<FileContext*>(c);
     return nullptr;

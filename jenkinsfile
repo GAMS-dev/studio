@@ -106,10 +106,15 @@ pipeline {
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
+                            mv appdir studio
                         '''
+                        sh 'ls -al'
+                        sh 'ls -al studio'
+                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
+                                sh "mv studio-nix.zip ${env.BRANCH_NAME}-studio-nix.zip"
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
@@ -146,20 +151,18 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            cd bin
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
-                            macdeployqt studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                            macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                            mv bin/studio.dmg studio.dmg
                         '''
-                        zip zipFile: 'studio.zip', archive: true, dir: 'bin/studio.app'
+                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv bin/studio.dmg ${env.BRANCH_NAME}-studio.dmg"
-                                sh "mv studio.zip ${env.BRANCH_NAME}-studio-mac.zip"
-                            } else {
-                                sh "mv bin/studio.dmg studio.dmg"
+                                sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                                sh "mv studio-mac.zip ${env.BRANCH_NAME}-studio-mac.zip"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
             }
@@ -171,8 +174,7 @@ pipeline {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp -B *studio*.AppImage ${ARTIFACT_TARGET}'
-                            } else {
-                                echo "${env.BRANCH_NAME}"
+                               sh 'scp -B *studio*.zip ${ARTIFACT_TARGET}'
                             }
                         }
                     }
@@ -180,11 +182,8 @@ pipeline {
                 windowsX86: {
                     node('windowsX86') {
                         script {
-                            if (env.BRANCH_NAME=='develop') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch ${env.BRANCH_NAME}-studio-x86.zip ${ARTIFACT_TARGET}"
-                            }
-                            if (env.BRANCH_NAME=='master') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch studio-x86.zip ${ARTIFACT_TARGET}"
+                            if ((env.BRANCH_NAME=='master')|(env.BRANCH_NAME=='develop')) {
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch *studio-x86.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
@@ -192,11 +191,8 @@ pipeline {
                 windowsX64: {
                     node('windowsX64') {
                         script {
-                            if (env.BRANCH_NAME=='develop') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch ${env.BRANCH_NAME}-studio-x64.zip ${ARTIFACT_TARGET}"
-                            }
-                            if (env.BRANCH_NAME=='master') {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch studio-x64.zip ${ARTIFACT_TARGET}"
+                            if ((env.BRANCH_NAME=='master')|(env.BRANCH_NAME=='develop')) {
+                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch *studio-x64.zip ${ARTIFACT_TARGET}"
                             }
                         }
                     }
