@@ -252,6 +252,7 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
             truncate(cursor.block().previous());
         adjustIndent(cursor);
         cursor.endEditBlock();
+        setTextCursor(cursor);
         e->accept();
     } else {
         QPlainTextEdit::keyReleaseEvent(e);
