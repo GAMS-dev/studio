@@ -14,6 +14,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 {
     ui->setupUi(this);
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
+    headerView->setEnabled(false);
 
     ui->tableView->setHorizontalHeader(headerView);
     ui->tableView->setSortingEnabled(true);
@@ -106,6 +107,7 @@ void GdxSymbolView::enableControls()
     else
         ui->cbSqueezeDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
+    ui->tableView->horizontalHeader()->setEnabled(true);
 }
 
 } // namespace gdxviewer
