@@ -22,12 +22,13 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
 FilterUelModel::~FilterUelModel()
 {
     if (mChecked)
-        delete mChecked;
+        delete[] mChecked;
 }
 
 QVariant FilterUelModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(section)
+    Q_UNUSED(orientation)
     Q_UNUSED(role)
     return QVariant();
 }

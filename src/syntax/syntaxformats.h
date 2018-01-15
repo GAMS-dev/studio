@@ -100,6 +100,7 @@ public:
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
+    QStringList mDescription;
     QHash<QString, SyntaxState> mSpecialStates;
 };
 

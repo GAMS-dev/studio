@@ -49,6 +49,7 @@ public:
 
     QIcon icon();
     inline Type type() const {return mType;}
+    inline Type refType() const {return (!mReference) ? none : mReference->type();}
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
     inline bool isValid() {return mFileContext && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
@@ -67,6 +68,8 @@ public:
     inline int position() const {return (mCursor.isNull()) ? -1 : mCursor.position();}
     inline int blockStart() const {return (mCursor.isNull()) ? -1 : mCursor.selectionStart()-mCursor.block().position();}
     inline int blockEnd() const {return (mCursor.isNull()) ? -1 : mCursor.selectionEnd()-mCursor.block().position();}
+    inline void incSpread() {mSpread++;}
+    inline int spread() const {return mSpread;}
     void rehighlight();
     void modified();
 
@@ -79,6 +82,7 @@ private:
     int mColumn = 0;
     int mSize = 0;
     int mValue = 0;
+    int mSpread = 0;
     QTextCursor mCursor;
     TextMark* mReference = nullptr;
 };

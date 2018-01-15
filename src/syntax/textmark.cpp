@@ -43,13 +43,16 @@ void TextMark::updateCursor()
         QTextBlock block = mFileContext->document()->findBlockByNumber(mLine);
         mCursor = QTextCursor(block);
         if (mSize <= 0) {
-            int end = block.next().text().indexOf('$')+1;
+            int end = block.next().text().indexOf('$');
             if (end == 0) end = block.next().length();
-            if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end);
+            if (end < 0) end = 0;
+            if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end+1);
             mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
         } else {
             mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mSize);
+            int tabs = mCursor.selectedText().count('\t');
+            mCursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, tabs*7);
         }
     } else {
         mCursor = QTextCursor();
@@ -97,14 +100,12 @@ QColor TextMark::color()
 
 FileType::Kind TextMark::fileKind()
 {
-    if (!mFileContext) return FileType::None;
-    return mFileContext->metrics().fileType().kind();
+    return (!mFileContext) ? FileType::None : mFileContext->metrics().fileType().kind();
 }
 
 FileType::Kind TextMark::refFileKind()
 {
-    if (!mReference) return FileType::None;
-    return mReference->fileKind();
+    return !mReference ? FileType::None : mReference->fileKind();
 }
 
 QIcon TextMark::icon()

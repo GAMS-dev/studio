@@ -119,7 +119,8 @@ SOURCES += \
     syntax/syntaxformats.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxidentifier.cpp \
-    searchwidget.cpp
+    searchwidget.cpp \
+    gdxviewer/gdxsymbolview.cpp
 
 
 HEADERS += \
@@ -178,7 +179,9 @@ HEADERS += \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
-    searchwidget.h
+    searchwidget.h \
+    syntax/syntaxdata.h \
+    gdxviewer/gdxsymbolview.h
 
 FORMS += \
     welcomepage.ui  \
@@ -189,7 +192,8 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     settingsdialog.ui \
     option/optionconfigurator.ui \
-    searchwidget.ui
+    searchwidget.ui \
+    gdxviewer/gdxsymbolview.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

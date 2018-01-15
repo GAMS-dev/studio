@@ -94,7 +94,7 @@ void FileContext::save(QString filePath)
     document()->setModified(false);
 }
 
-const FileMetrics& FileContext::metrics()
+const FileMetrics& FileContext::metrics() const
 {
     return mMetrics;
 }
@@ -276,10 +276,11 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
         tc.clearSelection();
         edit->setTextCursor(tc);
         // center line vertically
-        int lines = edit->rect().bottom() / edit->cursorRect().height();
-        int line = edit->cursorRect().bottom() / edit->cursorRect().height();
+        qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
+        qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
         int mv = line - lines/2;
-        edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+        if (qAbs(mv) > lines/3)
+            edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
     }
 }
 
@@ -361,7 +362,7 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
 
 bool FileContext::eventFilter(QObject* watched, QEvent* event)
 {
-    static QSet<QEvent::Type> evCheckMouse {QEvent::MouseButtonPress, QEvent::MouseButtonRelease, QEvent::MouseMove, QEvent::ToolTip};
+    static QSet<QEvent::Type> evCheckMouse {QEvent::MouseButtonDblClick, QEvent::MouseButtonPress, QEvent::MouseButtonRelease, QEvent::MouseMove};
     static QSet<QEvent::Type> evCheckKey {QEvent::KeyPress, QEvent::KeyRelease};
 
 //    if (!mEditors.size() || (watched != mEditors.first() && watched != mEditors.first()->viewport()))
@@ -378,41 +379,50 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
     if (!edit) FileSystemContext::eventFilter(watched, event);
 
+    QMouseEvent* mouseEvent = (evCheckMouse.contains(event->type())) ? static_cast<QMouseEvent*>(event) : nullptr;
+    QHelpEvent* helpEvent = (event->type() == QEvent::ToolTip)  ? static_cast<QHelpEvent*>(event) : nullptr;
+    QKeyEvent *keyEvent = (evCheckKey.contains(event->type())) ? static_cast<QKeyEvent*>(event) : nullptr;
+
     // TODO(JM) FileType of Log should be set to Log
-    if (event->type() == QEvent::MouseButtonDblClick && mMetrics.fileType() == FileType::None /*FileType::Log*/) {
-        QPoint pos = static_cast<QMouseEvent*>(event)->pos();
-        int line = edit->cursorForPosition(pos).blockNumber();
-        TextMark* linkMark = nullptr;
-        for (TextMark *mark: mMarks.marks()) {
-            if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
-                if (mark->line() < line)
-                    linkMark = mark;
-                else if (!linkMark)
-                    linkMark = mark;
-                else if (qAbs(linkMark->line()-line) < qAbs(mark->line()-line))
-                    break;
-                else {
-                    linkMark = mark;
-                    break;
+    if (mMetrics.fileType() == FileType::Log
+        && (event->type() == QEvent::MouseButtonDblClick
+            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
+        QPoint pos = mouseEvent->pos();
+        QTextCursor cursor = edit->cursorForPosition(pos);
+        if (mMarks.marksForBlock(cursor.block(), TextMark::error).isEmpty()
+            || mouseEvent->modifiers()==Qt::ControlModifier) {
+            int line = cursor.blockNumber();
+            TextMark* linkMark = nullptr;
+            for (TextMark *mark: mMarks.marks()) {
+                if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
+                    if (mark->line() < line)
+                        linkMark = mark;
+                    else if (!linkMark)
+                        linkMark = mark;
+                    else if (line+1 < mark->line()+mark->spread())
+                        break;
+                    else if (qAbs(linkMark->line()-line) < qAbs(line-mark->line()))
+                        break;
+                    else {
+                        linkMark = mark;
+                        break;
+                    }
                 }
             }
+            if (linkMark) linkMark->jumpToRefMark(true);
         }
-        if (linkMark) linkMark->jumpToRefMark(true);
 
-    } else if (evCheckKey.contains(event->type())) {
-
-        QKeyEvent *keyEv = static_cast<QKeyEvent*>(event);
-        if (keyEv->modifiers() & Qt::ControlModifier) {
+    } else if (keyEvent) {
+        if (keyEvent->modifiers() & Qt::ControlModifier) {
             edit->viewport()->setCursor(mMarksAtMouse.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
         } else {
             edit->viewport()->setCursor(Qt::IBeamCursor);
         }
         return FileSystemContext::eventFilter(watched, event);
 
-    } else if (evCheckMouse.contains(event->type())) {
+    } else if (mouseEvent || helpEvent) {
 
-        QPoint pos = (event->type() == QEvent::ToolTip) ? static_cast<QHelpEvent*>(event)->pos()
-                                                        : static_cast<QMouseEvent*>(event)->pos();
+        QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
         mMarksAtMouse = mMarks.findMarks(cursor);

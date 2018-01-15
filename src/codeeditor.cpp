@@ -295,6 +295,11 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
     QPlainTextEdit::wheelEvent(e);
 }
 
+void CodeEditor::paintEvent(QPaintEvent* e)
+{
+    QPlainTextEdit::paintEvent(e);
+}
+
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
 {
     if (e->mimeData()->hasUrls()) {

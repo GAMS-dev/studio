@@ -160,7 +160,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
     int code = previousBlockState();
     int index = 0;
-    while (index < text.length()-1) {
+    while (index < text.length()) {
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
 
