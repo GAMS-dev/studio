@@ -69,7 +69,8 @@ public:
 
     void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
 
-    bool *filterActive() const;
+    QVector<bool> filterActive() const;
+    void setFilterActive(const QVector<bool> &filterActive);
 
 signals:
     void loadFinished();
@@ -112,7 +113,7 @@ private:
 
     QVector<QVector<int>*> mUelsInColumn;
     QVector<bool*> mShowUelInColumn;
-    bool* mFilterActive = nullptr;
+    QVector<bool> mFilterActive;
 
     QVector<int> mRecSortIdx;
     QVector<int> mRecFilterIdx;

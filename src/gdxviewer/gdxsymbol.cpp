@@ -25,14 +25,13 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    if(mRecordCount>0)
-        mFilterActive = new bool[mRecordCount] {false};
+    mFilterActive.resize(mRecordCount);
+    mFilterActive.fill(false);
 }
 
 GdxSymbol::~GdxSymbol()
 {
-    if(mFilterActive)
-        delete[] mFilterActive;
+
     for(auto v : mUelsInColumn)
         delete v;
     for(auto a: mShowUelInColumn)
@@ -335,9 +334,14 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
-bool *GdxSymbol::filterActive() const
+QVector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
+}
+
+void GdxSymbol::setFilterActive(const QVector<bool> &filterActive)
+{
+    mFilterActive = filterActive;
 }
 
 void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
@@ -361,8 +365,8 @@ void GdxSymbol::resetSortFilter()
     {
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
-        mFilterActive[i] = false;
     }
+    mFilterActive.fill(false);
     for(int dim=0; dim<mDim; dim++)
     {
         for(int uel : *mUelsInColumn.at(dim))
