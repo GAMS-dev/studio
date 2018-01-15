@@ -21,6 +21,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tableView->horizontalHeader()->setSortIndicatorShown(true);
     ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
     ui->tableView->horizontalHeader()->setSectionsClickable(true);
+    ui->tableView->horizontalHeader()->setSectionsMovable(true);
     ui->tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
@@ -74,7 +75,7 @@ void GdxSymbolView::resetSortFilter()
     if(mSym)
     {
         mSym->resetSortFilter();
-        ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
+        ui->tableView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
 }
 
@@ -102,12 +103,13 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
 
 void GdxSymbolView::enableControls()
 {
+    ui->tableView->horizontalHeader()->setEnabled(true);
+    mInitialHeaderState = ui->tableView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
         ui->cbSqueezeDefaults->setEnabled(true);
     else
         ui->cbSqueezeDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
-    ui->tableView->horizontalHeader()->setEnabled(true);
 }
 
 } // namespace gdxviewer
