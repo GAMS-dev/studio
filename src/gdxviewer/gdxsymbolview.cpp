@@ -96,7 +96,8 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym)
 {
     mSym = sym;
-    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
+    if(mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
+        connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
     refreshView();
 }

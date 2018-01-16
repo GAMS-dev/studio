@@ -156,7 +156,6 @@ void GdxSymbol::loadData()
     mMinUel.fill(INT_MAX);
     mMaxUel.resize(mDim);
     mMaxUel.fill(INT_MIN);
-
     if(!mIsLoaded)
     {
         beginResetModel();
@@ -173,7 +172,7 @@ void GdxSymbol::loadData()
         }
 
         int dummy;
-        int* keys = new int[mDim];
+        int* keys = new int[GMS_MAX_INDEX_DIM];
         double* values = new double[GMS_VAL_MAX];
         gdxDataReadRawStart(mGdx, mNr, &dummy);
 
@@ -189,7 +188,6 @@ void GdxSymbol::loadData()
                 return;
             }
         }
-
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
@@ -239,12 +237,12 @@ void GdxSymbol::loadData()
         endResetModel();
         calcDefaultColumns();
         calcUelsInColumn();
+
         mIsLoaded = true;
 
         delete[] keys;
         delete[] values;
 
-        qDebug() << "loadData: " << t.elapsed();
         emit loadFinished();
     }
 }
@@ -283,7 +281,7 @@ void GdxSymbol::calcUelsInColumn()
     for(int dim=0; dim<mDim; dim++)
     {
         QVector<int>* uels = new QVector<int>();
-        bool* sawUel = new bool[mMaxUel[dim]+1] {false}; //TODO(CW): squeeze using mMinUel
+        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
         int currentUel = - 1;
