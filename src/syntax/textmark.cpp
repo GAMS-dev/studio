@@ -43,7 +43,7 @@ void TextMark::ensureFileContext()
             updateCursor();
         }
     } else if (!mFileContext) {
-        EXCEPT() << "Invalid TextMark found: neither linked to FileContext nor FileName";
+        EXCEPT() << "Invalid TextMark found: neither linked to FileContext nor FileName " << static_cast<void*>(this);
     }
 }
 
@@ -60,6 +60,8 @@ void TextMark::unbindFileContext()
 
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
+    if (!fileContext)
+        EXCEPT() << "FileContext must not be null.";
     mFileContext = fileContext;
     mGroup = nullptr;
     mFileName = "";
@@ -71,6 +73,8 @@ void TextMark::setPosition(FileContext* fileContext, int line, int column, int s
 
 void TextMark::setPosition(QString fileName, FileGroupContext* group, int line, int column, int size)
 {
+    if (!group)
+        EXCEPT() << "FileGroupContext must not be null.";
     mFileContext = nullptr;
     mGroup = group;
     mFileName = fileName;

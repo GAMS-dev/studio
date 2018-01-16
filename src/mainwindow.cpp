@@ -55,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".lst");
-    mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
@@ -82,11 +81,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
-    connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::removeNode, this, &MainWindow::removeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     ensureCodecMenu("System");
@@ -523,7 +521,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
             openFilePath(lstFile, groupContext, doFocus);
 
         if (mSettings->jumpToError())
-            groupContext->jumpToMark(doFocus);
+            groupContext->jumpToFirstError(doFocus);
 
         FileContext* lstCtx = nullptr;
         // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
@@ -1062,7 +1060,7 @@ void MainWindow::closeGroup(FileGroupContext* group)
 
 }
 
-void MainWindow::removeFile(FileContext* file)
+void MainWindow::closeFile(FileContext* file)
 {
     if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
         ui->projectView->setCurrentIndex(QModelIndex());
@@ -1119,11 +1117,8 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
 void MainWindow::openContext(const QModelIndex& index)
 {
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        openFileContext(fc);
-    }
+    FileContext *file = mFileRepo.fileContext(index);
+    if (file) openFileContext(file);
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)

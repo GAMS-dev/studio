@@ -29,11 +29,8 @@ namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    setParentEntry(nullptr);
-    while (mChildList.size()) {
-        FileSystemContext* fsc = mChildList.takeFirst();
-        delete fsc;
-    }
+    if (mChildList.size())
+        DEB() << "Group must be empty before deletion";
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
@@ -96,11 +93,13 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
 
 void FileGroupContext::insertChild(FileSystemContext* child)
 {
-    if (!child) return;
+    if (!child || mChildList.contains(child)) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
     if (hit) pos++;
     mChildList.insert(pos, child);
+    if (!mAttachedFiles.contains(child->location()))
+        mAttachedFiles << child->location();
     if (child->testFlag(cfActive))
         setFlag(cfActive);
 }
@@ -108,6 +107,7 @@ void FileGroupContext::insertChild(FileSystemContext* child)
 void FileGroupContext::removeChild(FileSystemContext* child)
 {
     mChildList.removeOne(child);
+    detachFile(child->location());
 }
 
 void FileGroupContext::checkFlags()
@@ -144,7 +144,6 @@ TextMarkList* FileGroupContext::marks(const QString& fileName)
 
 void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 {
-    // TODO(JM) this operates on a copy !!! prevent it !!!
     QHash<QString, TextMarkList*>::iterator it;
     for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
         it.value()->removeTextMarks(tmTypes);
@@ -234,7 +233,7 @@ void FileGroupContext::updateChildNodes()
     }
 }
 
-void FileGroupContext::jumpToMark(bool focus)
+void FileGroupContext::jumpToFirstError(bool focus)
 {
     if (!mLogContext) return;
     TextMark* textMark = mLogContext->firstErrorMark();

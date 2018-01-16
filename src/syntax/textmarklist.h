@@ -14,7 +14,7 @@ class TextMarkList: public QObject
     Q_OBJECT
 public:
     TextMarkList();
-    TextMarkList(const TextMarkList &marks);
+    explicit TextMarkList(const TextMarkList &marks);
     void unbindFileContext();
     void updateMarks();
     void rehighlight();

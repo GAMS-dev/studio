@@ -20,12 +20,12 @@ public:
 signals:
     void closeGroup(FileGroupContext* group);
     void runGroup(FileGroupContext* group);
-    void removeNode(FileContext* file);
+    void closeFile(FileContext* file);
 
 private slots:
     void onCloseGroup();
     void onRunGroup();
-    void onRemoveNode();
+    void onCloseFile();
 
 private:
     FileSystemContext* mNode;

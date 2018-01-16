@@ -43,6 +43,7 @@ public:
     QModelIndex rootModelIndex() const;
     FileGroupContext* rootContext() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
+    void dump(QString pre = QString(), const QModelIndex& ind = QModelIndex());
 
 protected:
     friend class FileRepository;

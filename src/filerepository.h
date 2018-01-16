@@ -44,27 +44,10 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
-    /// Defines actions for the <c>FileRepository</c>. For each action a <c>FileActionContext</c>-node is generated
-    /// that is shown only, if there are no other nodes in the tree.
-    /// \param directActions A list of actions to be triggered directly.
-    void setDefaultActions(QList<QAction*> directActions);
-
-    /// \brief Get the <c>FileSystemContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileSystemContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileSystemContext* context(FileId fileId, FileSystemContext* startNode = nullptr);
-
     /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
     /// \return The associated <c>FileSystemContext</c>.
     FileSystemContext* context(const QModelIndex& index) const;
-
-    /// \brief Get the <c>FileContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileContext* fileContext(FileId fileId, FileSystemContext* startNode = nullptr);
 
     /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileContext</c>.
@@ -76,21 +59,10 @@ public:
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
     FileContext* fileContext(QWidget* edit);
 
-    /// \brief Get the <c>FileGroupContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileGroupContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
-    FileGroupContext* groupContext(FileId fileId, FileSystemContext* startNode = nullptr);
-
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
     /// \return The associated <c>FileGroupContext</c>, otherwise <c>nullptr</c>.
     FileGroupContext* groupContext(const QModelIndex& index) const;
-
-    /// \brief Get the <c>FileActionContext</c> related to a <c>QModelIndex</c>.
-    /// \param index The QModelIndex pointing to the <c>FileActionContext</c>.
-    /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
-    FileActionContext* actionContext(const QModelIndex& index) const;
 
     QWidgetList editors(FileId fileId = -1);
 
@@ -127,6 +99,22 @@ public:
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 
+    inline FileSystemContext* context(FileId id) const {
+        return mContext.value(id, nullptr);
+    }
+    inline FileGroupContext* groupContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(res) : nullptr;
+    }
+    inline FileContext* fileContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::File) ? static_cast<FileContext*>(res) : nullptr;
+    }
+    inline LogContext* logContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::Log) ? static_cast<LogContext*>(res) : nullptr;
+    }
+
 signals:
     void fileClosed(FileId fileId, QPrivateSignal);
     void fileChangedExtern(FileId fileId);
@@ -138,7 +126,6 @@ signals:
 
 public slots:
     void nodeChanged(FileId fileId);
-    void nodeClicked(QModelIndex index);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
@@ -153,18 +140,24 @@ private slots:
     void removeNode(FileSystemContext *node);
 
 private:
-    void updateActions();
     void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
     void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
-
+    inline void storeContext(FileSystemContext* context) {
+        mContext.insert(context->id(), context);
+    }
+    inline void deleteContext(FileSystemContext* context) {
+        context->setParentEntry(nullptr);
+        mContext.remove(context->id());
+        delete context;
+    }
 
 private:
-    int mNextId;
+    FileId mNextId;
     FileTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
     QList<FileId> mChangedIds;
     QList<FileId> mDeletedIds;
-    QList<FileActionContext*> mFileActions;
+    QHash<FileId, FileSystemContext*> mContext;
 };
 
 } // namespace studio

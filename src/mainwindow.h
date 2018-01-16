@@ -95,7 +95,7 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void openFileContext(FileContext *fileContext, bool focus = true);
     void closeGroup(FileGroupContext* group);
-    void removeFile(FileContext* file);
+    void closeFile(FileContext* file);
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);

@@ -47,7 +47,7 @@ QWidgetList& FileContext::editorList()
 
 FileContext::~FileContext()
 {
-    setParentEntry(nullptr);
+//    setParentEntry(nullptr);
     removeAllEditors();
 }
 
@@ -57,6 +57,7 @@ void FileContext::setParentEntry(FileGroupContext* parent)
     if (parent) {
         mMarks = parent->marks(location());
     } else {
+        if (mMarks) mMarks->unbindFileContext();
         mMarks = nullptr;
     }
     if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);

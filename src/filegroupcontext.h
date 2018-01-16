@@ -61,7 +61,7 @@ public:
     void attachFile(const QString &filepath);
     void detachFile(const QString &filepath);
     void updateChildNodes();
-    void jumpToMark(bool focus);
+    void jumpToFirstError(bool focus);
 
     QString lstErrorText(int line);
     void setLstErrorText(int line, QString text);
