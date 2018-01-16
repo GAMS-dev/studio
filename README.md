@@ -39,4 +39,4 @@ GAMS_DISTRIB=$$(HOME)/gams/gams24.9_linux_x64_64_sfx
 GAMS_DISTRIB_API=$$GAMS_DISTRIB/apifiles/C/api
 ```
 
-Then perform a 'Build All' operation (Build->Build All) to build the project. Finally, the GAMS Studio can be executed by triggering the Run button or by pressing 'Ctrl+R'.
+Then perform a 'Build All' operation (Build->Build All) to build the project. Finally, the GAMS Studio can be executed by triggering Run button or pressing 'Ctrl+R'.
