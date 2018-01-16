@@ -1,14 +1,32 @@
 #include "textmarklist.h"
+#include "filecontext.h"
 
 namespace gams {
 namespace studio {
 
 TextMarkList::TextMarkList()
+    : QObject()
 {}
+
+TextMarkList::TextMarkList(const TextMarkList& marks)
+    : QObject()
+{
+    // deep copy
+    for (TextMark *mark: marks.mMarks) {
+        mMarks.append(new TextMark(*mark));
+    }
+}
+
+void TextMarkList::unbindFileContext()
+{
+    for (TextMark *mark: mMarks) {
+        mark->unbindFileContext();
+    }
+}
 
 void TextMarkList::updateMarks()
 {
-    for (TextMark* mark: mTextMarks) {
+    for (TextMark* mark: mMarks) {
         mark->updateCursor();
         // TODO(JM) Read the more specific error message from lst-file
         mark->rehighlight();
@@ -17,21 +35,21 @@ void TextMarkList::updateMarks()
 
 void TextMarkList::rehighlight()
 {
-    for (TextMark* mark: mTextMarks) {
+    for (TextMark* mark: mMarks) {
         mark->rehighlight();
     }
 }
 
 void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks)
 {
-    for (TextMark* mark: mTextMarks) {
+    for (TextMark* mark: mMarks) {
         marks->insert(mark->line(), mark);
     }
 }
 
 void TextMarkList::textMarksEmpty(bool* empty)
 {
-    *empty = mTextMarks.isEmpty();
+    *empty = mMarks.isEmpty();
 }
 
 TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::Type tmType, int value, int line, int column, int size)
@@ -39,18 +57,30 @@ TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::
     TextMark* res = new TextMark(tmType);
     res->setPosition(context, line, column, size);
     res->setValue(value);
-    mTextMarks << res;
+    mMarks << res;
+    return res;
+}
+
+TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* group, TextMark::Type tmType, int value, int line, int column, int size)
+{
+    TextMark* res = new TextMark(tmType);
+    res->setPosition(fileName, group, line, column, size);
+    res->setValue(value);
+    mMarks << res;
     return res;
 }
 
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
-    int i = mTextMarks.size();
+    int i = mMarks.size();
     while (i > 0) {
         --i;
-        TextMark* tm = mTextMarks.at(i);
-        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
-            delete mTextMarks.takeAt(i);
+        TextMark* tm = mMarks.at(i);
+        if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
+            int pos = tm->position();
+            FileContext* file = tm->fileContext();
+            delete mMarks.takeAt(i);
+            if (file) file->rehighlightAt(pos);
         }
     }
 }
@@ -58,7 +88,7 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
 {
     QList<TextMark*> res;
-    for (TextMark* mark: mTextMarks) {
+    for (TextMark* mark: mMarks) {
         QTextCursor tc = mark->textCursor();
         if (tc.isNull()) break;
         if (tc.blockNumber() > cursor.blockNumber()) break;
@@ -75,9 +105,17 @@ QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
     return res;
 }
 
+void TextMarkList::merge(const TextMarkList& marks)
+{
+    for (TextMark *mark: marks.mMarks) {
+        if (!mMarks.contains(mark))
+            mMarks.append(mark);
+    }
+}
+
 TextMark*TextMarkList::firstErrorMark()
 {
-    for (TextMark* mark: mTextMarks)
+    for (TextMark* mark: mMarks)
         if (mark->isErrorRef()) return mark;
     return nullptr;
 }
@@ -85,7 +123,7 @@ TextMark*TextMarkList::firstErrorMark()
 QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
 {
     QList<TextMark *> marks;
-    for (TextMark* tm: mTextMarks) {
+    for (TextMark* tm: mMarks) {
         int hit = tm->in(block.position(), block.length());
         if (hit > 0) break;
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {

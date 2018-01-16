@@ -17,6 +17,7 @@ public:
     ErrorHighlighter(FileContext *context, TextMarkList* marks);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
+    void setMarks(TextMarkList* marks) {mMarks = marks;}
 
 protected:
     void setCombiFormat(int start, int len, const QTextCharFormat& format, QList<TextMark*> marks);

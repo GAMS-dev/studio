@@ -14,10 +14,12 @@ class TextMarkList: public QObject
     Q_OBJECT
 public:
     TextMarkList();
+    explicit TextMarkList(const TextMarkList &marks);
+    void unbindFileContext();
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
-    QList<TextMark*> marks() { return mTextMarks;}
+    QList<TextMark*> marks() { return mMarks;}
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
@@ -26,13 +28,16 @@ public slots:
 protected:
     friend class LogContext;
     friend class FileContext;
+    friend class FileGroupContext;
     TextMark* generateTextMark(FileContext *context, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(QString fileName, FileGroupContext *group, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     QList<TextMark*> findMarks(const QTextCursor& cursor);
+    void merge(const TextMarkList &marks);
     TextMark* firstErrorMark();
 
 private:
-    QList<TextMark*> mTextMarks;
+    QList<TextMark*> mMarks;
 };
 
 } // namespace studio

@@ -72,6 +72,10 @@ private slots:
     void onUpdateBlockEdit();
 
 private:
+    void adjustIndent(QTextCursor cursor);
+    void truncate(QTextBlock block);
+
+private:
     LineNumberArea *mLineNumberArea;
     int mBlockStartKey = 0;
     int mCurrentCol;

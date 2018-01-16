@@ -69,23 +69,27 @@ void LogContext::removeEditor(QWidget* edit)
 
 void LogContext::setParentEntry(FileGroupContext* parent)
 {
-    if (parent){
+    if (parent) {
         parent->setLogContext(this);
+        mMarks = parent->marks(location());
+        if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
     } else {
         mParent->setLogContext(nullptr);
+        mMarks = nullptr;
     }
     mParent = parent;
 }
 
 TextMark*LogContext::firstErrorMark()
 {
-    return mMarks.firstErrorMark();
+    if (!mMarks) return nullptr;
+    return mMarks->firstErrorMark();
 }
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     Q_UNUSED(channel)
-    bool debugTheLog = true;
+    bool debugTheLog = false;
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
@@ -142,9 +146,8 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
         for (LinkData mark: marks) {
             TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
-            tm->setRefMark(mark.textMark);
             if (mark.textMark) {
-                qDebug() << mark.textMark->refType() << "-type: line " << mark.textMark->line() << ", col " << mark.textMark->column() << ", size " << mark.textMark->size();
+                tm->setRefMark(mark.textMark);
                 if (mark.textMark->fileKind() == FileType::Lst)
                     mLastLstLink = mark.textMark;
                 mark.textMark->rehighlight();
@@ -194,17 +197,19 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 
                 } else if (part.startsWith("ERR")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(4));
-                    int line = match.captured(5).toInt()-1;
+                    int lineNr = match.captured(5).toInt()-1;
                     int col = match.captured(6).toInt()-1;
                     LinkData mark;
                     mark.col = result.indexOf(" ")+1;
                     result += " ";
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findOrCreateFileContext(fName, &fc, parentEntry());
+                    emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
-                        mMarkedContextList << fc;
+                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
+//                        mMarkedContextList << fc;
+                    } else {
+                        mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
                     }
                     errMark = mark.textMark;
                     marks << mark;
@@ -224,7 +229,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, lineNr, 0, 0);
-                        mMarkedContextList << fc;
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
                         result += line;
@@ -240,22 +245,23 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                 } else if (part.startsWith("FIL") || part.startsWith("REF")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(8));
                     LinkData mark;
-                    int line = match.captured(9).toInt()-1;
+                    int lineNr = match.captured(9).toInt()-1;
                     int col = match.captured(10).toInt()-1;
                     mark.col = 4;
 //                    result += QString("[%1]").arg(QFileInfo(fName).suffix().toUpper());
                     mark.size = result.length() - mark.col - 1;
 
                     FileContext *fc;
-                    emit findOrCreateFileContext(fName, &fc, parentEntry());
+                    emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                             , mCurrentErrorHint.lstLine, line, 0, col);
-                        mMarkedContextList << fc;
+                                                             , mCurrentErrorHint.lstLine, lineNr, 0, col);
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
+                        mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
+                                                         , mCurrentErrorHint.lstLine, lineNr, 0, col);
                         state = Outside;
-                        break;
                     }
                     marks << mark;
                 }
@@ -283,14 +289,6 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
         }
     }
     return result;
-}
-
-void LogContext::clearRecentMarks()
-{
-    for (FileContext* fc: mMarkedContextList) {
-        fc->removeTextMarks(TextMark::all);
-    }
-    removeTextMarks(TextMark::all);
 }
 
 void LogContext::setJumpToLogEnd(bool state)

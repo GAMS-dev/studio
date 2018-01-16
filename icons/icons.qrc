@@ -18,5 +18,9 @@
         <file alias="stop">stop.svg</file>
         <file alias="filter">filter.svg</file>
         <file alias="filter-off">filter-off.svg</file>
+        <file alias="times">times.svg</file>
+    </qresource>
+    <qresource prefix="/data">
+        <file>style.css</file>
     </qresource>
 </RCC>

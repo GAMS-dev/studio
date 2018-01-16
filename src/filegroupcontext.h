@@ -21,6 +21,7 @@
 #define FILEGROUPCONTEXT_H
 
 #include "filesystemcontext.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -28,7 +29,9 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
-class TextMark;
+//class TextMarkList;
+//class TextMark;
+//enum TextMark::Type;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -58,12 +61,14 @@ public:
     void attachFile(const QString &filepath);
     void detachFile(const QString &filepath);
     void updateChildNodes();
-    void jumpToMark(bool focus);
+    void jumpToFirstError(bool focus);
 
     QString lstErrorText(int line);
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
+
+    void dumpMarks();
 
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -77,6 +82,7 @@ protected slots:
 protected:
     friend class FileRepository;
     friend class FileSystemContext;
+    friend class FileContext;
     friend class LogContext;
 
     FileGroupContext(FileId id, QString name, QString location, QString runInfo);
@@ -86,6 +92,10 @@ protected:
     void checkFlags();
     void setLogContext(LogContext* logContext);
     void updateRunState(const QProcess::ProcessState &state);
+    void addMark(const QString &filePath, TextMark* mark);
+    TextMarkList* marks(const QString &fileName);
+    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
     QList<FileSystemContext*> mChildList;
@@ -96,6 +106,7 @@ private:
     QString mLstFileName;
     QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
+    QHash<QString, TextMarkList*> mMarksForFilenames;
 };
 
 } // namespace studio

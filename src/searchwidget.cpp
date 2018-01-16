@@ -8,8 +8,7 @@ namespace gams {
 namespace studio {
 
 SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SearchWidget), mSettings(settings), mRecent(rec), mRepo(repo)
+    QDialog(parent), ui(new Ui::SearchWidget), mRecent(rec), mRepo(repo), mSettings(settings)
 {
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());
