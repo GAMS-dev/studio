@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,21 +34,16 @@ GAMSPaths::GAMSPaths()
 }
 
 QString GAMSPaths::systemDir() {
-    QString path;
-#if defined(DISTRIB_BUILD) // For the GAMS distribution build
-#ifdef __linux__ // Linux AppImage
-    path = QDir::currentPath().append("/..");
-#elif __APPLE__ // Apple MacOS dmg
-    path = QDir::currentPath();
-#else // Windows
-    path = QDir::currentPath().append("/..");
-#endif
-#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
-    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-#endif
-    // TODO(JM) check bitness against path
-    if (path == "") EXCEPT() << "GAMS not found in path.";
+    // TODO(AF) macOS stuff
+    QStringList paths = { QDir::currentPath().append("/..") };
+    QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
+    if (!path.isEmpty())
+        return path;
 
+    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    if (path.isEmpty()) EXCEPT() << "GAMS not found in path.";
+
+    // TODO(AF) this does not work in all cases, e.g. compressed gams archive, custom installation, distrib build => use GAMS API call
     int bitness = sizeof(int*);
     if (bitness == 4 && path.contains("win64"))
         FATAL() << "GAMS Studio (32bit) can't be executed with " << path;
