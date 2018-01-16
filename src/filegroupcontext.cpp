@@ -56,14 +56,15 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
 
 FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
+    QFileInfo fi(filePath);
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if (child->location() == filePath)
+        if (QFileInfo(child->location()) == fi)
             return child;
-        // TODO(JM) discuss if it is necessary to find the file with QFileInfo
         if (child->type() == FileSystemContext::FileGroup) {
             FileGroupContext *group = static_cast<FileGroupContext*>(child);
-            return group->findFile(filePath);
+            FileSystemContext *subChild = group->findFile(filePath);
+            if (subChild) return subChild;
         }
     }
     return nullptr;
