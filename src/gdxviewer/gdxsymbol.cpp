@@ -17,34 +17,21 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     loadMetaData();
     loadDomains();
 
-    mRecSortIdx = new int[mRecordCount];
+    mRecSortIdx.resize(mRecordCount);
     for(int i=0; i<mRecordCount; i++)
         mRecSortIdx[i] = i;
 
-    mRecFilterIdx = new int[mRecordCount];
+    mRecFilterIdx.resize(mRecordCount);
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    if(mRecordCount>0)
-        mFilterActive = new bool[mRecordCount] {false};
+    mFilterActive.resize(mRecordCount);
+    mFilterActive.fill(false);
 }
 
 GdxSymbol::~GdxSymbol()
 {
-    if(mKeys)
-        delete[] mKeys;
-    if (mValues)
-        delete[] mValues;
-    if (mRecSortIdx)
-        delete[] mRecSortIdx;
-    if (mRecFilterIdx)
-        delete[] mRecFilterIdx;
-    if (mMinUel)
-        delete[] mMinUel;
-    if (mMaxUel)
-        delete[] mMaxUel;
-    if(mFilterActive)
-        delete[] mFilterActive;
+
     for(auto v : mUelsInColumn)
         delete v;
     for(auto a: mShowUelInColumn)
@@ -165,26 +152,27 @@ void GdxSymbol::loadData()
     QTime t;
     t.start();
     QMutexLocker locker(mGdxMutex);
-    mMinUel = new int[mDim] {INT_MAX};
-    mMaxUel = new int[mDim] {INT_MIN};
-
+    mMinUel.resize(mDim);
+    mMinUel.fill(INT_MAX);
+    mMaxUel.resize(mDim);
+    mMaxUel.fill(INT_MIN);
     if(!mIsLoaded)
     {
         beginResetModel();
         endResetModel();
 
-        if(!mKeys)
-            mKeys = new int[mRecordCount*mDim];
-        if(!mValues)
+        if(mKeys.empty())
+            mKeys.resize(mRecordCount*mDim);
+        if(mValues.empty())
         {
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-                mValues = new double[mRecordCount];
+                mValues.resize(mRecordCount);
             else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                mValues = new double[mRecordCount*GMS_DT_MAX];
+                 mValues.resize(mRecordCount*GMS_DT_MAX);
         }
 
         int dummy;
-        int* keys = new int[mDim];
+        int* keys = new int[GMS_MAX_INDEX_DIM];
         double* values = new double[GMS_VAL_MAX];
         gdxDataReadRawStart(mGdx, mNr, &dummy);
 
@@ -200,7 +188,6 @@ void GdxSymbol::loadData()
                 return;
             }
         }
-
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
@@ -250,12 +237,12 @@ void GdxSymbol::loadData()
         endResetModel();
         calcDefaultColumns();
         calcUelsInColumn();
+
         mIsLoaded = true;
 
         delete[] keys;
         delete[] values;
 
-        qDebug() << "loadData: " << t.elapsed();
         emit loadFinished();
     }
 }
@@ -294,7 +281,7 @@ void GdxSymbol::calcUelsInColumn()
     for(int dim=0; dim<mDim; dim++)
     {
         QVector<int>* uels = new QVector<int>();
-        bool* sawUel = new bool[mMaxUel[dim]+1] {false}; //TODO(CW): squeeze using mMinUel
+        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
         int currentUel = - 1;
@@ -345,9 +332,14 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
-bool *GdxSymbol::filterActive() const
+QVector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
+}
+
+void GdxSymbol::setFilterActive(const QVector<bool> &filterActive)
+{
+    mFilterActive = filterActive;
 }
 
 void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
@@ -371,8 +363,8 @@ void GdxSymbol::resetSortFilter()
     {
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
-        mFilterActive[i] = false;
     }
+    mFilterActive.fill(false);
     for(int dim=0; dim<mDim; dim++)
     {
         for(int uel : *mUelsInColumn.at(dim))
@@ -417,11 +409,10 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     QTime t;
     t.start();
 
-    int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
-
     // sort by key column
     if(column<mDim)
     {
+        int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
             l.append(QPair<int, int>(labelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
