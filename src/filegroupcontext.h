@@ -21,6 +21,7 @@
 #define FILEGROUPCONTEXT_H
 
 #include "filesystemcontext.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -28,7 +29,9 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
-class TextMark;
+//class TextMarkList;
+//class TextMark;
+//enum TextMark::Type;
 
 class FileGroupContext : public FileSystemContext
 {
@@ -41,14 +44,12 @@ public:
 
     void setLocation(const QString &location);
 
-    int childCount();
+    int childCount() const;
     int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index);
+    FileSystemContext* childEntry(int index) const;
     FileSystemContext* findFile(QString filePath);
     QIcon icon();
 
-    bool isWatched();
-    void setWatched(bool watch = true);
     QString runableGms();
     QString lstFileName();
     LogContext* logContext();
@@ -57,22 +58,22 @@ public:
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
 
-    QStringList additionalFiles() const;
-    void setAdditionalFiles(const QStringList &additionalFiles);
-    void addAdditionalFile(const QString &additionalFile);
-    void jumpToMark(bool focus);
+    void attachFile(const QString &filepath);
+    void detachFile(const QString &filepath);
+    void updateChildNodes();
+    void jumpToFirstError(bool focus);
 
     QString lstErrorText(int line);
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
 
-signals:
-    void contentChanged(int id, QDir fileInfo);
-    void gamsProcessStateChanged(FileGroupContext* group);
+    void dumpMarks();
 
-public slots:
-    void directoryChanged(const QString &path);
+signals:
+    void gamsProcessStateChanged(FileGroupContext* group);
+    void removeNode(FileSystemContext *node);
+    void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -81,15 +82,20 @@ protected slots:
 protected:
     friend class FileRepository;
     friend class FileSystemContext;
+    friend class FileContext;
     friend class LogContext;
 
-    FileGroupContext(int id, QString name, QString location, QString runInfo);
+    FileGroupContext(FileId id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
     void checkFlags();
     void setLogContext(LogContext* logContext);
     void updateRunState(const QProcess::ProcessState &state);
+    void addMark(const QString &filePath, TextMark* mark);
+    TextMarkList* marks(const QString &fileName);
+    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
     QList<FileSystemContext*> mChildList;
@@ -98,8 +104,9 @@ private:
     LogContext* mLogContext = nullptr;
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
-    QStringList mAdditionalFiles;
+    QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
+    QHash<QString, TextMarkList*> mMarksForFilenames;
 };
 
 } // namespace studio

@@ -1,4 +1,5 @@
 #include "searchwidget.h"
+#include "studiosettings.h"
 #include "syntax.h"
 #include "ui_searchwidget.h"
 #include <QDebug>
@@ -6,11 +7,13 @@
 namespace gams {
 namespace studio {
 
-SearchWidget::SearchWidget(RecentData &rec, FileRepository &repo, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SearchWidget), mRecent(rec), mRepo(repo)
+SearchWidget::SearchWidget(StudioSettings *settings, RecentData &rec, FileRepository &repo, QWidget *parent) :
+    QDialog(parent), ui(new Ui::SearchWidget), mRecent(rec), mRepo(repo), mSettings(settings)
 {
     ui->setupUi(this);
+    ui->cb_regex->setChecked(mSettings->searchUseRegex());
+    ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
+    ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
 }
 
 SearchWidget::~SearchWidget()
@@ -18,8 +21,26 @@ SearchWidget::~SearchWidget()
     delete ui;
 }
 
+bool SearchWidget::regex()
+{
+    return ui->cb_regex->isChecked();
+}
+
+bool SearchWidget::caseSens()
+{
+    return ui->cb_caseSens->isChecked();
+}
+
+bool SearchWidget::wholeWords()
+{
+    return ui->cb_wholeWords->isChecked();
+}
+
 void SearchWidget::find(bool backwards)
 {
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
     bool useRegex = ui->cb_regex->isChecked();
     QString searchTerm = ui->txt_search->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
@@ -29,25 +50,25 @@ void SearchWidget::find(bool backwards)
     QRegularExpression searchRegex;
     if (useRegex) searchRegex.setPattern(searchTerm);
 
-    mLastSelection = (!mSelection.isNull() ? mSelection : mRecent.editor->textCursor());
+    mLastSelection = (!mSelection.isNull() ? mSelection : edit->textCursor());
     if (useRegex) {
-        mSelection = mRecent.editor->document()->find(searchRegex, mLastSelection, searchFlags);
+        mSelection = edit->document()->find(searchRegex, mLastSelection, searchFlags);
     } else {
-        mSelection = mRecent.editor->document()->find(searchTerm, mLastSelection, searchFlags);
+        mSelection = edit->document()->find(searchTerm, mLastSelection, searchFlags);
     }
 
     // nothing found, try to start over
     if (mSelection.isNull()) {
         if (useRegex) {
-            mSelection = mRecent.editor->document()->find(searchRegex, 0, searchFlags);
+            mSelection = edit->document()->find(searchRegex, 0, searchFlags);
         } else {
-            mSelection = mRecent.editor->document()->find(searchTerm, 0, searchFlags);
+            mSelection = edit->document()->find(searchTerm, 0, searchFlags);
         }
     }
 
     // on hit
     if (!mSelection.isNull()) {
-        mRecent.editor->setTextCursor(mSelection);
+        edit->setTextCursor(mSelection);
         ui->btn_Replace->setEnabled(true);
     }
 }
@@ -59,41 +80,57 @@ void SearchWidget::on_btn_Find_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
-    return; // TODO: work in progress
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
     QString searchTerm = ui->txt_search->text();
-    QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
     QTextCursor item;
     QTextCursor lastItem;
     FileContext *fc = mRepo.fileContext(mRecent.editor);
+    int hits = 0;
+
+    fc->removeTextMarks(TextMark::result);
+    QTextCursor tmpCurs = edit->textCursor();
+    tmpCurs.clearSelection();
+    edit->setTextCursor(tmpCurs);
+
     do {
-        item = mRecent.editor->document()->find(searchTerm, lastItem, searchFlags);
+        item = edit->document()->find(searchTerm, lastItem, getFlags());
         lastItem = item;
         if (!item.isNull()) {
             int length = item.selectionEnd() - item.selectionStart();
-            qDebug() << "generating hit for lineNr" << item.blockNumber()-1
-                     << "col" << item.columnNumber() - length
-                     << "size" << length;
-
-            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber()-1,
+            mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                       item.columnNumber() - length, length));
+            hits++;
         }
     } while (!item.isNull());
-    mRecent.editor->textCursor().clearSelection();
-    qDebug() << "marks" << mAllTextMarks;
+
+    if (fc->highlighter()) fc->highlighter()->rehighlight();
+    if (hits == 1)
+        ui->lbl_nrResults->setText(QString::number(hits) + " result");
+    else
+        ui->lbl_nrResults->setText(QString::number(hits) + " results");
+
 }
 
 void SearchWidget::on_btn_Replace_clicked()
 {
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
     QString replaceTerm = ui->txt_replace->text();
-    if (mRecent.editor->textCursor().hasSelection())
-        mRecent.editor->textCursor().insertText(replaceTerm);
+    if (edit->textCursor().hasSelection())
+        edit->textCursor().insertText(replaceTerm);
 
     find();
 }
 
 void SearchWidget::on_btn_ReplaceAll_clicked()
 {
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
     QString searchTerm = ui->txt_search->text();
     QString replaceTerm = ui->txt_replace->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
@@ -103,7 +140,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
     QTextCursor lastItem;
 
     do {
-        item = mRecent.editor->document()->find(searchTerm, lastItem, searchFlags);
+        item = edit->document()->find(searchTerm, lastItem, searchFlags);
         lastItem = item;
         if (!item.isNull()) {
             hits.append(item);
@@ -117,20 +154,23 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
-        mRecent.editor->textCursor().beginEditBlock();
+        edit->textCursor().beginEditBlock();
         foreach (QTextCursor tc, hits) {
             tc.insertText(replaceTerm);
         }
-        mRecent.editor->textCursor().endEditBlock();
+        edit->textCursor().endEditBlock();
     }
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) return;
+
     ui->txt_search->setFocus();
-    if (mRecent.editor->textCursor().hasSelection())
-        ui->txt_search->setText(mRecent.editor->textCursor().selection().toPlainText());
+    if (edit->textCursor().hasSelection())
+        ui->txt_search->setText(edit->textCursor().selection().toPlainText());
     else
         ui->txt_search->setText("");
 }
@@ -138,7 +178,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 void SearchWidget::keyPressEvent(QKeyEvent* event)
 {
     if (isVisible() && ( event->key() == Qt::Key_Escape
-                         || (Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
+                         || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
         hide();
         mRecent.editor->setFocus();
     }
@@ -147,6 +187,15 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
     } else if (isVisible() && event->key() == Qt::Key_F3) {
         find();
     }
+}
+
+void SearchWidget::closeEvent(QCloseEvent *event) {
+    Q_UNUSED(event);
+    FileContext *fc = mRepo.fileContext(mRecent.editor);
+    if (fc)
+        fc->removeTextMarks(TextMark::result);
+
+    ui->lbl_nrResults->setText("");
 }
 
 

@@ -56,6 +56,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
+    void paintEvent(QPaintEvent *e) override;
 
 signals:
     void updateBlockSelection();
@@ -69,6 +70,10 @@ private slots:
     void updateLineNumberArea(const QRect &, int);
     void onUpdateBlockSelection();
     void onUpdateBlockEdit();
+
+private:
+    void adjustIndent(QTextCursor cursor);
+    void truncate(QTextBlock block);
 
 private:
     LineNumberArea *mLineNumberArea;

@@ -6,13 +6,13 @@
 namespace gams {
 namespace studio {
 
-LogContext::LogContext(int id, QString name)
-    : FileContext(id, name, "", FileSystemContext::Log)
+LogContext::LogContext(FileId fileId, QString name)
+    : FileContext(fileId, name, "", FileSystemContext::Log)
 {
+    mMetrics = FileMetrics(QFileInfo(name+".log"));
     mDocument = new QTextDocument(this);
     mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
     mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    mSyntaxHighlighter = new ErrorHighlighter(this, &mMarks);
 }
 
 void LogContext::clearLog()
@@ -34,6 +34,7 @@ void LogContext::markOld()
         cur.setCharFormat(newFormat);
         cur.movePosition(QTextCursor::End);
         cur.setBlockCharFormat(oldFormat);
+        mLastLstLink = nullptr;
     }
 }
 
@@ -42,7 +43,7 @@ QTextDocument* LogContext::document()
     return mDocument;
 }
 
-void LogContext::addEditor(QPlainTextEdit* edit)
+void LogContext::addEditor(QWidget* edit)
 {
     if (!edit) return;
 
@@ -50,13 +51,16 @@ void LogContext::addEditor(QPlainTextEdit* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    edit->setDocument(mDocument);
+    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    if (!ptEdit) return;
+    ptEdit->setDocument(mDocument);
     FileContext::addEditor(edit);
 }
 
-void LogContext::removeEditor(QPlainTextEdit* edit)
+void LogContext::removeEditor(QWidget* edit)
 {
     if (!edit) return;
+    if (!editorList().contains(edit)) return;
 
     editorList().append(nullptr);
     FileContext::removeEditor(edit);
@@ -65,17 +69,21 @@ void LogContext::removeEditor(QPlainTextEdit* edit)
 
 void LogContext::setParentEntry(FileGroupContext* parent)
 {
-    if (parent){
+    if (parent) {
         parent->setLogContext(this);
+        mMarks = parent->marks(location());
+        if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
     } else {
         mParent->setLogContext(nullptr);
+        mMarks = nullptr;
     }
     mParent = parent;
 }
 
 TextMark*LogContext::firstErrorMark()
 {
-    return mMarks.firstErrorMark();
+    if (!mMarks) return nullptr;
+    return mMarks->firstErrorMark();
 }
 
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
@@ -87,7 +95,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
     if (text.contains("compilation")) {
-        qDebug() << "start";
+        qDebug() << "start parsing LOG";
     }
     ExtractionState state;
     QRegularExpression rEx("(\\r?\\n|\\r\\n?)");
@@ -100,53 +108,65 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     for (QString line: lines) {
         QList<LinkData> marks;
         QString newLine = extractError(line, state, marks);
+        // store count of followup lines
+        if (mLastLstLink && state == FileContext::Inside) {
+            mLastLstLink->incSpread();
+        } else {
+            mLastLstLink = nullptr;
+        }
         // TODO(JM) cleanup usage of createErrorHint
         if (state >= FileContext::Exiting)
             parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
 //            emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
         if (state == FileContext::FollowupError)
             newLine = extractError(line, state, marks);
-        if (true || state != FileContext::Inside) {
-            QList<int> scrollVal;
-            QList<QTextCursor> cursors;
-            for (QPlainTextEdit* ed: editors()) {
-                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
-                    scrollVal << 0;
-                    cursors << QTextCursor();
-                } else {
-                    scrollVal << ed->verticalScrollBar()->value();
-                    cursors << ed->textCursor();
-                }
+        QList<int> scrollVal;
+        QList<QTextCursor> cursors;
+        for (QWidget* w: editors()) {
+            QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+            if (!ed) continue;
+            if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
+                scrollVal << 0;
+                cursors << QTextCursor();
+            } else {
+                scrollVal << ed->verticalScrollBar()->value();
+                cursors << ed->textCursor();
             }
-            QTextCursor cursor(mDocument);
-            cursor.movePosition(QTextCursor::End);
-            if (debugTheLog) {
-                QTextCharFormat fmtk; fmtk.setForeground(QColor(120,150,100));
-                cursor.insertText(line, fmtk);
-                QTextCharFormat fmt;
-                cursor.insertText("\n", fmt);
-            }
-            int line = mDocument->lineCount()-1;
-            cursor.insertText(newLine+"\n");
-            int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
-            for (LinkData mark: marks) {
-                TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, line, mark.col, size);
-                tm->setRefMark(mark.textMark);
-                if (mark.textMark) mark.textMark->rehighlight();
-                tm->rehighlight();
-                size = 0;
-            }
-
-            int i = 0;
-            for (QPlainTextEdit* ed: editors()) {
-                if (mJumpToLogEnd || scrollVal[i] == 0) {
-                    mJumpToLogEnd = false;
-                    ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
-                }
-                ++i;
-            }
-            mDocument->setModified(false);
         }
+        QTextCursor cursor(mDocument);
+        cursor.movePosition(QTextCursor::End);
+        if (debugTheLog) {
+            QTextCharFormat fmtk; fmtk.setForeground(QColor(120,150,100));
+            cursor.insertText(line, fmtk);
+            QTextCharFormat fmt;
+            cursor.insertText("\n", fmt);
+        }
+        int lineNr = mDocument->lineCount()-1;
+        cursor.insertText(newLine+"\n");
+        int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
+        for (LinkData mark: marks) {
+            TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
+            if (mark.textMark) {
+                tm->setRefMark(mark.textMark);
+                if (mark.textMark->fileKind() == FileType::Lst)
+                    mLastLstLink = mark.textMark;
+                mark.textMark->rehighlight();
+            }
+            tm->rehighlight();
+            size = 0;
+        }
+
+        int i = 0;
+        for (QWidget* w: editors()) {
+            QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+            if (!ed) continue;
+            if (mJumpToLogEnd || scrollVal[i] == 0) {
+                mJumpToLogEnd = false;
+                ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
+            }
+            ++i;
+        }
+        mDocument->setModified(false);
     }
 }
 
@@ -177,7 +197,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 
                 } else if (part.startsWith("ERR")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(4));
-                    int line = match.captured(5).toInt()-1;
+                    int lineNr = match.captured(5).toInt()-1;
                     int col = match.captured(6).toInt()-1;
                     LinkData mark;
                     mark.col = result.indexOf(" ")+1;
@@ -186,8 +206,10 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     FileContext *fc;
                     emit findFileContext(fName, &fc, parentEntry());
                     if (fc) {
-                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, line, 0, col);
-                        mMarkedContextList << fc;
+                        mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
+//                        mMarkedContextList << fc;
+                    } else {
+                        mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
                     }
                     errMark = mark.textMark;
                     marks << mark;
@@ -202,12 +224,12 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 //                    result += QString("[LST:%1]").arg(lineNr+1);
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, &fc, parentEntry());
                     if (fc) {
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                              , mCurrentErrorHint.lstLine, lineNr, 0, 0);
-                        mMarkedContextList << fc;
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
                         result += line;
@@ -223,26 +245,23 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                 } else if (part.startsWith("FIL") || part.startsWith("REF")) {
                     QString fName = QDir::fromNativeSeparators(match.captured(8));
                     LinkData mark;
-                    int line = match.captured(9).toInt()-1;
+                    int lineNr = match.captured(9).toInt()-1;
                     int col = match.captured(10).toInt()-1;
                     mark.col = 4;
 //                    result += QString("[%1]").arg(QFileInfo(fName).suffix().toUpper());
                     mark.size = result.length() - mark.col - 1;
 
                     FileContext *fc;
-
-                    // TODO(JM) use this instead ... AFTER alowing individual files in group:
-                    // emit findOrCreateFileContext(fName, &fc, parentEntry());
                     emit findFileContext(fName, &fc, parentEntry());
-
                     if (fc) {
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                             , mCurrentErrorHint.lstLine, line, 0, col);
-                        mMarkedContextList << fc;
+                                                             , mCurrentErrorHint.lstLine, lineNr, 0, col);
+//                        mMarkedContextList << fc;
                         errFound = false;
                     } else {
+                        mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
+                                                         , mCurrentErrorHint.lstLine, lineNr, 0, col);
                         state = Outside;
-                        break;
                     }
                     marks << mark;
                 }
@@ -254,7 +273,6 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
         }
     } else {
         if (line.startsWith(" ")) {
-            // TODO(JM) get description from LST-file instead (-> there are more details)
             if (mCurrentErrorHint.text.isEmpty()) {
                 if (mCurrentErrorHint.errNr)
                     mCurrentErrorHint.text += QString("%1\t").arg(mCurrentErrorHint.errNr)+line.trimmed();
@@ -271,14 +289,6 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
         }
     }
     return result;
-}
-
-void LogContext::clearRecentMarks()
-{
-    for (FileContext* fc: mMarkedContextList) {
-        fc->removeTextMarks(TextMark::all);
-    }
-    removeTextMarks(TextMark::all);
 }
 
 void LogContext::setJumpToLogEnd(bool state)

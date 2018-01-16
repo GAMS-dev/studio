@@ -24,15 +24,13 @@
 #include "filetreemodel.h"
 #include "fileactioncontext.h"
 #include "logcontext.h"
+#include "filesystemcontext.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "filetype.h"
 
 namespace gams {
 namespace studio {
-
-
-typedef unsigned int FileId; // TODO(JM) always use this type for fileIds
 
 ///
 /// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
@@ -46,27 +44,10 @@ public:
     explicit FileRepository(QObject *parent = nullptr);
     ~FileRepository();
 
-    /// Defines actions for the <c>FileRepository</c>. For each action a <c>FileActionContext</c>-node is generated
-    /// that is shown only, if there are no other nodes in the tree.
-    /// \param directActions A list of actions to be triggered directly.
-    void setDefaultActions(QList<QAction*> directActions);
-
-    /// \brief Get the <c>FileSystemContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileSystemContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileSystemContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileSystemContext* context(int fileId, FileSystemContext* startNode = nullptr);
-
     /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
     /// \return The associated <c>FileSystemContext</c>.
     FileSystemContext* context(const QModelIndex& index) const;
-
-    /// \brief Get the <c>FileContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileContext</c> pointer related to a file Id; otherwise <c>nullptr</c>.
-    FileContext* fileContext(int fileId, FileSystemContext* startNode = nullptr);
 
     /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileContext</c>.
@@ -76,25 +57,14 @@ public:
     /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
     /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(QPlainTextEdit* edit);
-
-    /// \brief Get the <c>FileGroupContext</c> related to a file Id.
-    /// \param fileId The file Id related to a <c>FileGroupContext</c>.
-    /// \param startNode The node where the search starts.
-    /// \return Returns the <c>FileGroupContext</c> pointer related to the file Id; otherwise <c>nullptr</c>.
-    FileGroupContext* groupContext(int fileId, FileSystemContext* startNode = nullptr);
+    FileContext* fileContext(QWidget* edit);
 
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
     /// \return The associated <c>FileGroupContext</c>, otherwise <c>nullptr</c>.
     FileGroupContext* groupContext(const QModelIndex& index) const;
 
-    /// \brief Get the <c>FileActionContext</c> related to a <c>QModelIndex</c>.
-    /// \param index The QModelIndex pointing to the <c>FileActionContext</c>.
-    /// \return The associated <c>FileActionContext</c>, otherwise <c>nullptr</c>.
-    FileActionContext* actionContext(const QModelIndex& index) const;
-
-    QList<QPlainTextEdit*> editors(int fileId = -1);
+    QWidgetList editors(FileId fileId = -1);
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
@@ -111,54 +81,83 @@ public:
     /// \return a <c>QModelIndex</c> to the new node.
     FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
 
-    void removeNode(FileSystemContext *node);
-    FileGroupContext* ensureGroup(const QString& filePath, const QString& additionalFile = "");
-    void close(int fileId);
+    FileGroupContext* ensureGroup(const QString& filePath);
+    void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
     FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
     QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
     int saveAll();
-    void editorActivated(QPlainTextEdit* edit);
+    void editorActivated(QWidget* edit);
     FileTreeModel* treeModel() const;
-    LogContext* logContext(QPlainTextEdit* edit);
+    LogContext* logContext(QWidget* edit);
     LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
     void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
+
+    inline FileSystemContext* context(FileId id) const {
+        return mContext.value(id, nullptr);
+    }
+    inline FileGroupContext* groupContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(res) : nullptr;
+    }
+    inline FileContext* fileContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::File) ? static_cast<FileContext*>(res) : nullptr;
+    }
+    inline LogContext* logContext(FileId id) const {
+        FileSystemContext* res = mContext.value(id, nullptr);
+        return (res && res->type() == FileSystemContext::Log) ? static_cast<LogContext*>(res) : nullptr;
+    }
 
 signals:
-    void fileClosed(int fileId, QPrivateSignal);
-    void fileChangedExtern(int fileId);
-    void fileDeletedExtern(int fileId);
+    void fileClosed(FileId fileId, QPrivateSignal);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void gamsProcessStateChanged(FileGroupContext* group);
+    void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
+    void getNodeExpanded(const QModelIndex &mi, bool *expanded);
 
 public slots:
-    void nodeChanged(int fileId);
-    void updatePathNode(int fileId, QDir dir);
-    void nodeClicked(QModelIndex index);
+    void nodeChanged(FileId fileId);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
     void removeGroup(FileGroupContext* fileGroup);
+    void removeFile(FileContext* file);
 
 private slots:
-    void onFileChangedExtern(int fileId);
-    void onFileDeletedExtern(int fileId);
+    void onFileChangedExtern(FileId fileId);
+    void onFileDeletedExtern(FileId fileId);
     void processExternFileEvents();
+    void addNode(QString name, QString location, FileGroupContext* parent = nullptr);
+    void removeNode(FileSystemContext *node);
 
 private:
-    void updateActions();
+    void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
+    void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
+    inline void storeContext(FileSystemContext* context) {
+        mContext.insert(context->id(), context);
+    }
+    inline void deleteContext(FileSystemContext* context) {
+        context->setParentEntry(nullptr);
+        mContext.remove(context->id());
+        delete context;
+    }
 
 private:
-    int mNextId;
+    FileId mNextId;
     FileTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
-    QList<int> mChangedIds;
-    QList<int> mDeletedIds;
-    QList<FileActionContext*> mFileActions;
+    QList<FileId> mChangedIds;
+    QList<FileId> mDeletedIds;
+    QHash<FileId, FileSystemContext*> mContext;
 };
 
 } // namespace studio

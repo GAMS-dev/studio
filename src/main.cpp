@@ -48,5 +48,5 @@ int main(int argc, char *argv[])
         gams::studio::Application::showBox(QObject::tr("unknown exception"), msg);
         FATAL() << msg;
     }
-
+    return -2;
 }

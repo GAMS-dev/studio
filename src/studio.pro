@@ -106,7 +106,6 @@ SOURCES += \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
-    syntax.h \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -157,13 +156,15 @@ HEADERS += \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
+    syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
     syntax/syntaxhighlighter.h \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
-    searchwidget.h
+    searchwidget.h \
+    syntax/syntaxdata.h
 
 FORMS += \
     welcomepage.ui  \

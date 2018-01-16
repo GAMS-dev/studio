@@ -23,12 +23,12 @@
 namespace gams {
 namespace studio {
 
-FileSystemContext::FileSystemContext(int id, QString name, QString location)
-    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
+FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location)
+    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
 {}
 
-FileSystemContext::FileSystemContext(int id, QString name, QString location, ContextType type)
-    : QObject(), mId(id), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
+FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location, ContextType type)
+    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
 {}
 
 void FileSystemContext::checkFlags()
@@ -38,13 +38,13 @@ void FileSystemContext::checkFlags()
 FileSystemContext::~FileSystemContext()
 {
     if (mParent) {
-        FileGroupContext* fg = mParent;
+        FileGroupContext* group = mParent;
         mParent = nullptr;
-        if (fg) fg->removeChild(this);
+        if (group) group->removeChild(this);
     }
 }
 
-int FileSystemContext::id() const
+FileId FileSystemContext::id() const
 {
     return mId;
 }
@@ -74,13 +74,13 @@ void FileSystemContext::setParentEntry(FileGroupContext* parent)
     }
 }
 
-FileSystemContext* FileSystemContext::childEntry(int index)
+FileSystemContext* FileSystemContext::childEntry(int index) const
 {
     Q_UNUSED(index);
     return nullptr;
 }
 
-int FileSystemContext::childCount()
+int FileSystemContext::childCount() const
 {
     return 0;
 }

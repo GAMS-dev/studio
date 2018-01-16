@@ -109,10 +109,12 @@ int SyntaxDeclaration::findEnd(SyntaxState state, const QString& line, int index
     int iKey = 0;
     int iChar = 0;
     while (true) {
-        if ((isWhitechar(line, iChar+index) || (iChar > 0 && line.length() <= iChar+index))) {
+
+        // TODO(JM) capture line-end
+        if (iChar+index >= line.length() || isWhitechar(line, iChar+index)) {
             if (mKeywords.value(state)->at(iKey).length() > iChar) return -1;
             return iChar+index; // reached an valid end
-        } else if (mKeywords.value(state)->at(iKey).length() > iChar
+        } else if (iChar < mKeywords.value(state)->at(iKey).length()
                    &&  mKeywords.value(state)->at(iKey).is(line.at(iChar+index), iChar) ) {
             // character equals
             iChar++;

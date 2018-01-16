@@ -22,17 +22,15 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "gamsprocess.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    setParentEntry(nullptr);
-    while (mChildList.size()) {
-        FileSystemContext* fsc = mChildList.takeFirst();
-        delete fsc;
-    }
+    if (mChildList.size())
+        DEB() << "Group must be empty before deletion";
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
@@ -58,22 +56,16 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
 
 FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
+    QFileInfo fi(filePath);
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if (child->location() == filePath)
+        if (QFileInfo(child->location()) == fi)
             return child;
         if (child->type() == FileSystemContext::FileGroup) {
             FileGroupContext *group = static_cast<FileGroupContext*>(child);
-            return group->findFile(filePath);
+            FileSystemContext *subChild = group->findFile(filePath);
+            if (subChild) return subChild;
         }
-//        if (child->childCount() > 0) {
-//            for (int j = 0; j < child->childCount(); j++) {
-//                FileSystemContext *element = child->childEntry(j)->findFile(filePath);
-//                if (element != nullptr) {
-//                    return element;
-//                }
-//            }
-//        }
     }
     return nullptr;
 }
@@ -102,11 +94,13 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
 
 void FileGroupContext::insertChild(FileSystemContext* child)
 {
-    if (!child) return;
+    if (!child || mChildList.contains(child)) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
     if (hit) pos++;
     mChildList.insert(pos, child);
+    if (!mAttachedFiles.contains(child->location()))
+        mAttachedFiles << child->location();
     if (child->testFlag(cfActive))
         setFlag(cfActive);
 }
@@ -114,6 +108,7 @@ void FileGroupContext::insertChild(FileSystemContext* child)
 void FileGroupContext::removeChild(FileSystemContext* child)
 {
     mChildList.removeOne(child);
+    detachFile(child->location());
 }
 
 void FileGroupContext::checkFlags()
@@ -141,26 +136,105 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     // TODO(JM) visualize if a state is running
 }
 
-QStringList FileGroupContext::additionalFiles() const
+TextMarkList* FileGroupContext::marks(const QString& fileName)
 {
-    return mAdditionalFiles;
+    if (!mMarksForFilenames.contains(fileName))
+        mMarksForFilenames.insert(fileName, new TextMarkList());
+    return mMarksForFilenames.value(fileName);
 }
 
-void FileGroupContext::setAdditionalFiles(const QStringList &additionalFiles)
+void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 {
-    mAdditionalFiles = additionalFiles;
+    QHash<QString, TextMarkList*>::iterator it;
+    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
+        it.value()->removeTextMarks(tmTypes);
 }
 
-void FileGroupContext::addAdditionalFile(const QString &additionalFile)
+void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    if(additionalFile == "") return;
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+}
 
-    if(!mAdditionalFiles.contains(additionalFile)) {
-        mAdditionalFiles << additionalFile;
+void FileGroupContext::dumpMarks()
+{
+    foreach (QString file, mMarksForFilenames.keys()) {
+        QString res = file+":";
+        TextMarkList* list = marks(file);
+        foreach (TextMark* mark, list->marks()) {
+            res.append(QString(" [%1,%2]").arg(mark->line()).arg(mark->column()));
+        }
+        DEB() << res;
     }
 }
 
-void FileGroupContext::jumpToMark(bool focus)
+
+void FileGroupContext::attachFile(const QString &filepath)
+{
+    if(filepath == "") return;
+    QFileInfo fi(filepath);
+    if(!mAttachedFiles.contains(fi)) {
+        mAttachedFiles << fi;
+        FileSystemContext* fsc = findFile(filepath);
+        if (!fsc && fi.exists()) {
+            // TODO(JM) create individual node?
+            updateChildNodes();
+        }
+    }
+}
+
+void FileGroupContext::detachFile(const QString& filepath)
+{
+    QFileInfo fi(filepath);
+    if (mAttachedFiles.contains(fi)) {
+        FileSystemContext* fsc = findFile(filepath);
+        FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+        if (!fc || fc->editors().isEmpty()) {
+            mAttachedFiles.removeOne(fi);
+        }
+    }
+}
+
+typedef QPair<int, FileSystemContext*> IndexedFSContext;
+
+void FileGroupContext::updateChildNodes()
+{
+    QFileInfoList addList = mAttachedFiles;
+    QList<IndexedFSContext> vanishedEntries;
+    for (int i = 0; i < childCount(); ++i) {
+        FileSystemContext *entry = childEntry(i);
+        if (entry->location().isEmpty())
+            continue;
+        QFileInfo fi(entry->location());
+        int pos = addList.indexOf(fi);
+        if (pos >= 0) {
+            // keep existing entries and remove them from addList
+            addList.removeAt(pos);
+            entry->unsetFlag(FileSystemContext::cfMissing);
+        } else {
+            // prepare indicees in reverse order (highest index first)
+            vanishedEntries.insert(0, IndexedFSContext(i, entry));
+        }
+    }
+    // check for vanished files and directories
+    for (IndexedFSContext childIndex: vanishedEntries) {
+        FileSystemContext* entry = childIndex.second;
+        if (entry->testFlag(FileSystemContext::cfActive)) {
+            // mark active files as missing (directories recursively)
+            entry->setFlag(FileSystemContext::cfMissing);
+            qDebug() << "Missing node: " << entry->name();
+        } else {
+            // inactive files can be removed (directories recursively)
+            emit removeNode(entry);
+        }
+    }
+    // add newly appeared files and directories
+    for (QFileInfo fi: addList) {
+        if (fi.exists())
+            emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
+    }
+}
+
+void FileGroupContext::jumpToFirstError(bool focus)
 {
     if (!mLogContext) return;
     TextMark* textMark = mLogContext->firstErrorMark();
@@ -186,11 +260,12 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    FileSystemContext *fsc = findFile(lstFileName());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        fc->clearMarksEnhanced();
-    }
+    removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
+//    FileSystemContext *fsc = findFile(lstFileName());
+//    if (fsc && fsc->type() == FileSystemContext::File) {
+//        FileContext *fc = static_cast<FileContext*>(fsc);
+//        fc->clearMarksEnhanced();
+//    }
 }
 
 bool FileGroupContext::hasLstErrorText(int line)
@@ -238,7 +313,7 @@ QProcess::ProcessState FileGroupContext::gamsProcessState() const
     return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
-int FileGroupContext::childCount()
+int FileGroupContext::childCount() const
 {
     return mChildList.count();
 }
@@ -248,7 +323,7 @@ int FileGroupContext::indexOf(FileSystemContext* child)
     return mChildList.indexOf(child);
 }
 
-FileSystemContext*FileGroupContext::childEntry(int index)
+FileSystemContext*FileGroupContext::childEntry(int index) const
 {
     return mChildList.at(index);
 }
@@ -256,41 +331,6 @@ FileSystemContext*FileGroupContext::childEntry(int index)
 QIcon FileGroupContext::icon()
 {
     return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
-}
-
-bool FileGroupContext::isWatched()
-{
-    return mDirWatcher;
-}
-
-void FileGroupContext::setWatched(bool watch)
-{
-    if (!watch) {
-        if (mDirWatcher) {
-            mDirWatcher->deleteLater();
-            mDirWatcher = nullptr;
-        }
-        return;
-    }
-    if (!mDirWatcher) {
-        mDirWatcher = new QFileSystemWatcher(QStringList()<<location(), this);
-        connect(mDirWatcher, &QFileSystemWatcher::directoryChanged, this, &FileGroupContext::directoryChanged);
-    }
-    mDirWatcher->addPath(location());
-}
-
-void FileGroupContext::directoryChanged(const QString& path)
-{
-    QDir dir(path);
-    if (dir.exists()) {
-        emit contentChanged(id(), dir);
-        return;
-    }
-    if (testFlag(cfActive)) {
-        setFlag(cfMissing);
-        return;
-    }
-    deleteLater();
 }
 
 void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
@@ -307,7 +347,7 @@ void FileGroupContext::processDeleted()
     emit gamsProcessStateChanged(this);
 }
 
-FileGroupContext::FileGroupContext(int id, QString name, QString location, QString runInfo)
+FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
     : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
 {
     if (runInfo == "") return;

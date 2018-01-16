@@ -28,7 +28,7 @@ GdxSymbolTable::~GdxSymbolTable()
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
     if(mLabelCompIdx)
-        delete mLabelCompIdx;
+        delete[] mLabelCompIdx;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const

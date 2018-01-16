@@ -11,20 +11,19 @@ class LogContext : public FileContext
 public:
     void markOld();
     QTextDocument* document() override;
-    void addEditor(QPlainTextEdit *edit) override;
-    void removeEditor(QPlainTextEdit *edit) override;
+    void addEditor(QWidget* edit) override;
+    void removeEditor(QWidget* edit) override;
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
     void clearLog();
     bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
-    void clearRecentMarks();
     void setJumpToLogEnd(bool state);
 
 protected:
     friend class FileRepository;
-    LogContext(int id, QString name);
+    LogContext(FileId fileId, QString name);
 
     struct LinkData {
         TextMark* textMark = nullptr;
@@ -42,8 +41,9 @@ private:
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-    QSet<FileContext*> mMarkedContextList;
+//    QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
+    TextMark* mLastLstLink = nullptr;
 
 };
 

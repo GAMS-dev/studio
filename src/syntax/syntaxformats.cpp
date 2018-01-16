@@ -1,5 +1,6 @@
 #include "syntaxformats.h"
 #include "logger.h"
+#include "syntaxdata.h"
 
 namespace gams {
 namespace studio {
@@ -26,14 +27,26 @@ SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, in
     return SyntaxBlock(this, index, line.length());
 }
 
-
 SyntaxDirective::SyntaxDirective(QChar directiveChar)
 {
-    mRex.setPattern(QString("(^%1|%1%1)([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
-    mDirectives << "dollar" << "ontext" << "title" << "hidden";
-    mSpecialStates.insert("title", SyntaxState::Title);
-    mSpecialStates.insert("ontext", SyntaxState::CommentBlock);
-    mSpecialStates.insert("hidden", SyntaxState::CommentLine);
+    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
+
+    // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
+    QList<QStringList> data = SyntaxData::directives();
+    for (const QStringList &list: data) {
+        mDirectives << list.first();
+        mDescription << list.last();
+    }
+    // offtext is checked separately, so remove it here
+    int i = mDirectives.indexOf(QRegExp("offText", Qt::CaseInsensitive));
+    if (i>0) {
+        mDirectives.removeAt(i);
+        mDescription.removeAt(i);
+    }
+    // !!! Enter special states always in lowercase
+    mSpecialStates.insert(QString("title").toLower(), SyntaxState::Title);
+    mSpecialStates.insert(QString("onText").toLower(), SyntaxState::CommentBlock);
+    mSpecialStates.insert(QString("hidden").toLower(), SyntaxState::CommentLine);
 }
 
 SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, int index)
@@ -41,13 +54,11 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock();
     if (entryState == SyntaxState::CommentBlock) {
-//        DEB() << "Directive from CommentBlock";
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
         return SyntaxBlock();
     }
     SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::Standard);
-//    DEB() << match.captured(2) << " cap-end 2: " << match.capturedEnd(2) << "  cap-end 0: " << match.capturedEnd(0);
     return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next
                        , !mDirectives.contains(match.captured(2), Qt::CaseInsensitive));
 }
