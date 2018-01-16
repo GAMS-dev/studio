@@ -5,9 +5,11 @@ namespace gams {
 namespace studio {
 
 TextMarkList::TextMarkList()
+    : QObject()
 {}
 
 TextMarkList::TextMarkList(const TextMarkList& marks)
+    : QObject()
 {
     // deep copy
     for (TextMark *mark: marks.mMarks) {

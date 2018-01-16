@@ -159,15 +159,6 @@ bool FileTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     return false;
 }
 
-void FileTreeModel::dump(QString pre, const QModelIndex &ind)
-{
-    if (!ind.isValid()) return;
-    FileSystemContext *fsc = mFileRepo->context(ind);
-    if (!fsc)
-        return;
-    if (fsc->type() != FileSystemContext::FileGroup) return;
-}
-
 bool FileTreeModel::insertChild(int row, FileGroupContext* parent, FileSystemContext* child)
 {
     QModelIndex parMi = index(parent);
@@ -216,7 +207,7 @@ bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         FileSystemContext* fsc = mFileRepo->context(mCurrent);
-        if (fsc->parentEntry()->id() == ind.internalId()) {
+        if (fsc->parentEntry()->id() == static_cast<FileId>(ind.internalId())) {
             return true;
         }
     }

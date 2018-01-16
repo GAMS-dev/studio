@@ -414,8 +414,8 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
         QPoint pos = mouseEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        if (mMarks && mMarks->marksForBlock(cursor.block(), TextMark::error).isEmpty()
-            || mouseEvent->modifiers()==Qt::ControlModifier) {
+        if (mMarks && (mMarks->marksForBlock(cursor.block(), TextMark::error).isEmpty()
+                       || mouseEvent->modifiers()==Qt::ControlModifier)) {
             int line = cursor.blockNumber();
             TextMark* linkMark = nullptr;
             for (TextMark *mark: mMarks->marks()) {
