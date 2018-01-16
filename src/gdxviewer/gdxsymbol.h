@@ -48,9 +48,6 @@ public:
     void loadData();
     void stopLoadingData();
 
-    bool squeezeDefaults() const;
-    void setSqueezeDefaults(bool squeezeDefaults);
-
     bool isAllDefault(int valColIdx);
 
     int subType() const;
@@ -74,8 +71,13 @@ public:
 
     bool *filterActive() const;
 
+signals:
+    void loadFinished();
+
 private:
+    gdxHandle_t mGdx;
     int mNr;
+    QMutex* mGdxMutex;
     int mDim;
     int mType;
     int mSubType;
@@ -88,7 +90,7 @@ private:
 
     GdxSymbolTable* mGdxSymbolTable;
 
-    gdxHandle_t mGdx;
+
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
@@ -99,11 +101,9 @@ private:
     int* mKeys = nullptr;
     double* mValues = nullptr;
 
-    QMutex* mGdxMutex;
+
 
     QStringList mDomains;
-
-    bool mSqueezeDefaults = false;
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
@@ -118,9 +118,6 @@ private:
 
     int* mRecSortIdx = nullptr;
     int* mRecFilterIdx = nullptr;
-
-    int mSortColumn = -1;
-    Qt::SortOrder mSortOrder;
 };
 
 } // namespace gdxviewer

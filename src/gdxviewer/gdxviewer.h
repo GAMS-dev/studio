@@ -7,12 +7,13 @@
 #include "gdxsymboltable.h"
 #include <memory>
 #include <QMutex>
+#include <QVector>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class GdxViewer : public QFrame
+class GdxViewer : public QWidget
 {
     Q_OBJECT
 
@@ -33,14 +34,7 @@ private:
 
     void loadSymbol(GdxSymbol* selectedSymbol);
 
-signals:
-    void loadFinished();
-
-public slots:
-    void toggleSqueezeDefaults(bool checked);
-    void refreshView();
-    void resetSortFilter();
-    void showColumnFilter(QPoint p);
+    QVector<GdxSymbolView*> mSymbolViews;
 };
 
 } // namespace gdxviewer

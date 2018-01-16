@@ -37,7 +37,6 @@ FileRepository::~FileRepository()
     delete mTreeModel;
 }
 
-
 QModelIndex FileRepository::findEntry(QString name, QString location, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
