@@ -29,6 +29,7 @@ class GAMSPaths
 {
 public:
     static QString systemDir();
+
     static QString defaultWorkingDir();
 
 private:
