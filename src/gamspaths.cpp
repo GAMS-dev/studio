@@ -46,9 +46,9 @@ QString GAMSPaths::systemDir() {
     QFileInfo joat64(path + QDir::separator() + "joatdclib64.dll");
     bool is64 = (sizeof(int*) == 8) ? true : false;
     if (!is64 && joat64.exists())
-        EXCEPT() << "Expected GAMS system to be 32 bit but found 64 bit instead. System directory: " << systemDir;
+        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << path;
     if (is64 && !joat64.exists())
-        EXCEPT() << "Expected GAMS system to be 64 bit but found 32 bit instead. System directory: " << systemDir;
+        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << path;
 #endif
 
     return path;
