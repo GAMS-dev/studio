@@ -113,7 +113,8 @@ SOURCES += \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxidentifier.cpp \
     searchwidget.cpp \
-    resultsview.cpp
+    resultsview.cpp \
+    searchresultlist.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -165,7 +166,8 @@ HEADERS += \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
     searchwidget.h \
-    resultsview.h
+    resultsview.h \
+    searchresultlist.h
 
 FORMS += \
     welcomepage.ui  \

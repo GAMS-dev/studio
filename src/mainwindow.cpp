@@ -33,6 +33,7 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
+#include "searchresultlist.h"
 #include "resultsview.h"
 
 namespace gams {
@@ -847,12 +848,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         QMainWindow::keyPressEvent(event);
     }
 
-    if (mSearchWidget) {
-        if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-            mSearchWidget->find(true); // Shift + F3
-        } else if (event->key() == Qt::Key_F3) {
-            mSearchWidget->find(false); // F3
-        }
+    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        mSearchWidget->find(true); // Shift + F3
+    } else if (event->key() == Qt::Key_F3) {
+        mSearchWidget->find(false); // F3
     }
 }
 
@@ -1172,12 +1171,9 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
-void MainWindow::showResults(QList<Result> results)
+void MainWindow::showResults(SearchResultList results)
 {
-    ResultsView *res = new ResultsView(this);
-    foreach (Result r, results) {
-        res->addItem(r);
-    }
+    ResultsView *res = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());
 
     res->resizeColumnsToContent();

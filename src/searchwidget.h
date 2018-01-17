@@ -76,20 +76,6 @@ private:
     void updateMatchAmount(int hits, bool clear = false);
 };
 
-class Result
-{
-private:
-    int mLocLineNr;
-    QString mLocFile;
-    QString mContext;
-
-public:
-    explicit Result(int locLineNr, QString locFile, QString context = "");
-    int locLineNr() const;
-    QString locFile() const;
-    QString context() const;
-};
-
 }
 }
 #endif // SEARCHWIDGET_H

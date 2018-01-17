@@ -22,6 +22,7 @@
 #include "syntax.h"
 #include "ui_searchwidget.h"
 #include "exception.h"
+#include "searchresultlist.h"
 #include <QDebug>
 
 namespace gams {
@@ -100,21 +101,21 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
-    QList<Result> matches;
+    SearchResultList matches(searchTerm());
 
     switch (ui->combo_scope->currentIndex()) {
     case 0: // this file
         if (mMain->recent()->editor)
-            matches = findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor));
+            matches.addResultList(findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor)));
         break;
     case 1: // this group
-        matches = findInGroup();
+        matches.addResultList(findInGroup());
         break;
     case 2: // open files
-        matches = findInOpenFiles();
+        matches.addResultList(findInOpenFiles());
         break;
     case 3: // all files/groups
-        matches = findInAllFiles();
+        matches.addResultList(findInAllFiles());
         break;
     default:
         break;
@@ -176,17 +177,16 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
-    QList<Result> matches;
+    QString searchTerm = ui->txt_search->text();
+    SearchResultList matches(searchTerm);
+    if (regex()) matches.useRegex(true);
 
     if (fsc->type() == FileSystemContext::FileGroup) { // or is it a group?
-        matches.append(findInGroup(fsc)); // TESTME studio does not support this case as of yet
+        matches.addResultList(findInGroup(fsc)); // TESTME studio does not support this case as of yet
     } else { // it's a file
         FileContext *fc(static_cast<FileContext*>(fsc));
         if (fc == nullptr) FATAL();
 
-
-
-        QString searchTerm = ui->txt_search->text();
         QRegularExpression searchRegex = QRegularExpression(searchTerm);
         QTextCursor item;
         QTextCursor lastItem;
@@ -208,9 +208,9 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                     QString line = in.readLine();
 
                     if (regex() && line.contains(searchRegex)) {
-                        matches << Result(lineCounter, file.fileName(), line.trimmed());
+                        matches.addResult(lineCounter, file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
-                        matches << Result(lineCounter, file.fileName(), line.trimmed());
+                        matches.addResult(lineCounter, file.fileName(), line.trimmed());
                     }
                 }
                 file.close();
@@ -232,7 +232,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 else break;
 
                 if (!item.isNull()) {
-                    matches << Result(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+                    matches.addResult(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
                     if (highlightMatch) {
                         int length = item.selectionEnd() - item.selectionStart();
                         mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
@@ -245,7 +245,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         }
     }
 
-    return matches;
+    return matches.resultList();
 }
 
 void SearchWidget::updateMatchAmount(int hits, bool clear)
@@ -331,7 +331,6 @@ void SearchWidget::find(bool backwards)
     // on hit
     if (!mSelection.isNull()) {
         edit->setTextCursor(mSelection);
-        ui->btn_Replace->setEnabled(true);
     }
 }
 
@@ -442,3 +441,4 @@ void SearchWidget::on_btn_clear_clicked()
 
 }
 }
+

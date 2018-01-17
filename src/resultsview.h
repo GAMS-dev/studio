@@ -30,14 +30,14 @@ namespace gams {
 namespace studio {
 
 class Result;
+class SearchResultList;
 class ResultsView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ResultsView(QWidget *parent = 0);
+    explicit ResultsView(SearchResultList resultList, QWidget *parent = 0);
     ~ResultsView();
-    void addItem(Result r);
     void resizeColumnsToContent();
 
 private:

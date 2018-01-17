@@ -42,6 +42,7 @@ class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
 class SearchWidget;
+class SearchResultList;
 class Result;
 
 struct RecentData {
@@ -83,7 +84,7 @@ public:
     QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
-    void showResults(QList<Result> results);
+    void showResults(SearchResultList results);
     RecentData *recent();
     StudioSettings *settings() const;
 
