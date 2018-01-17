@@ -38,9 +38,9 @@ void FileSystemContext::checkFlags()
 FileSystemContext::~FileSystemContext()
 {
     if (mParent) {
-        FileGroupContext* fg = mParent;
+        FileGroupContext* group = mParent;
         mParent = nullptr;
-        if (fg) fg->removeChild(this);
+        if (group) group->removeChild(this);
     }
 }
 

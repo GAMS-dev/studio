@@ -22,17 +22,15 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "gamsprocess.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    setParentEntry(nullptr);
-    while (mChildList.size()) {
-        FileSystemContext* fsc = mChildList.takeFirst();
-        delete fsc;
-    }
+    if (mChildList.size())
+        DEB() << "Group must be empty before deletion";
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
@@ -58,14 +56,15 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
 
 FileSystemContext* FileGroupContext::findFile(QString filePath)
 {
+    QFileInfo fi(filePath);
     for (int i = 0; i < childCount(); i++) {
         FileSystemContext *child = childEntry(i);
-        if (child->location() == filePath)
+        if (QFileInfo(child->location()) == fi)
             return child;
-        // TODO(JM) discuss if it is necessary to find the file with QFileInfo
         if (child->type() == FileSystemContext::FileGroup) {
             FileGroupContext *group = static_cast<FileGroupContext*>(child);
-            return group->findFile(filePath);
+            FileSystemContext *subChild = group->findFile(filePath);
+            if (subChild) return subChild;
         }
     }
     return nullptr;
@@ -95,11 +94,13 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
 
 void FileGroupContext::insertChild(FileSystemContext* child)
 {
-    if (!child) return;
+    if (!child || mChildList.contains(child)) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
     if (hit) pos++;
     mChildList.insert(pos, child);
+    if (!mAttachedFiles.contains(child->location()))
+        mAttachedFiles << child->location();
     if (child->testFlag(cfActive))
         setFlag(cfActive);
 }
@@ -107,6 +108,7 @@ void FileGroupContext::insertChild(FileSystemContext* child)
 void FileGroupContext::removeChild(FileSystemContext* child)
 {
     mChildList.removeOne(child);
+    detachFile(child->location());
 }
 
 void FileGroupContext::checkFlags()
@@ -134,6 +136,38 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
     // TODO(JM) visualize if a state is running
 }
 
+TextMarkList* FileGroupContext::marks(const QString& fileName)
+{
+    if (!mMarksForFilenames.contains(fileName))
+        mMarksForFilenames.insert(fileName, new TextMarkList());
+    return mMarksForFilenames.value(fileName);
+}
+
+void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
+{
+    QHash<QString, TextMarkList*>::iterator it;
+    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
+        it.value()->removeTextMarks(tmTypes);
+}
+
+void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
+{
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+}
+
+void FileGroupContext::dumpMarks()
+{
+    foreach (QString file, mMarksForFilenames.keys()) {
+        QString res = file+":";
+        TextMarkList* list = marks(file);
+        foreach (TextMark* mark, list->marks()) {
+            res.append(QString(" [%1,%2]").arg(mark->line()).arg(mark->column()));
+        }
+        DEB() << res;
+    }
+}
+
+
 void FileGroupContext::attachFile(const QString &filepath)
 {
     if(filepath == "") return;
@@ -142,7 +176,8 @@ void FileGroupContext::attachFile(const QString &filepath)
         mAttachedFiles << fi;
         FileSystemContext* fsc = findFile(filepath);
         if (!fsc && fi.exists()) {
-            // TODO(JM) create node
+            // TODO(JM) create individual node?
+            updateChildNodes();
         }
     }
 }
@@ -199,7 +234,7 @@ void FileGroupContext::updateChildNodes()
     }
 }
 
-void FileGroupContext::jumpToMark(bool focus)
+void FileGroupContext::jumpToFirstError(bool focus)
 {
     if (!mLogContext) return;
     TextMark* textMark = mLogContext->firstErrorMark();
@@ -225,11 +260,12 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    FileSystemContext *fsc = findFile(lstFileName());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        fc->clearMarksEnhanced();
-    }
+    removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
+//    FileSystemContext *fsc = findFile(lstFileName());
+//    if (fsc && fsc->type() == FileSystemContext::File) {
+//        FileContext *fc = static_cast<FileContext*>(fsc);
+//        fc->clearMarksEnhanced();
+//    }
 }
 
 bool FileGroupContext::hasLstErrorText(int line)

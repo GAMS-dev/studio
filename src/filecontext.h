@@ -52,6 +52,8 @@ public:
 
     ~FileContext() override;
 
+    void setParentEntry(FileGroupContext *parent) override;
+
     /// The name of the current codec for this file.
     /// \return The name of the codec.
     QString codec() const;
@@ -115,14 +117,15 @@ public:
     /// \return The current QTextDocument
     virtual QTextDocument* document();
 
-    const FileMetrics& metrics();
+    const FileMetrics& metrics() const;
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
     void showToolTip(const QList<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size = 0);
     int textMarkCount(QSet<TextMark::Type> tmTypes);
     ErrorHighlighter* highlighter();
 
@@ -160,12 +163,11 @@ private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     FileContext *mLinkFile = nullptr;
-//    QList<QPlainTextEdit*> mEditors;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
-    TextMarkList mMarks;
+    TextMarkList *mMarks = nullptr;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
     bool mMarksEnhanced = true;
 

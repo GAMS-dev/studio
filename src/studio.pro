@@ -104,6 +104,7 @@ SOURCES += \
     studiosettings.cpp \
     application.cpp \
     projectcontextmenu.cpp \
+    gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     option.cpp \
     syntax/textmark.cpp \
@@ -156,6 +157,7 @@ HEADERS += \
     studiosettings.h \
     application.h \
     projectcontextmenu.h \
+    gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolheaderview.h \
     option.h \
     syntax.h \
@@ -165,6 +167,7 @@ HEADERS += \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
+    syntax/syntaxdata.h \
     searchwidget.h \
     resultsview.h \
     searchresultlist.h
@@ -176,6 +179,7 @@ FORMS += \
     modeldialog/modeldialog.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
+    gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
     searchwidget.ui \
     resultsview.ui

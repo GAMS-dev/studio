@@ -19,7 +19,6 @@ public:
     bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
-    void clearRecentMarks();
     void setJumpToLogEnd(bool state);
 
 protected:
@@ -42,8 +41,9 @@ private:
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-    QSet<FileContext*> mMarkedContextList;
+//    QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
+    TextMark* mLastLstLink = nullptr;
 
 };
 

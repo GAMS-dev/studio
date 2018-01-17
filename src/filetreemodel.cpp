@@ -22,6 +22,7 @@
 #include "exception.h"
 #include "filerepository.h"
 #include "filecontext.h"
+#include "filesystemcontext.h"
 #include "filegroupcontext.h"
 #include "fileactioncontext.h"
 #include "logger.h"
@@ -38,16 +39,16 @@ FileTreeModel::FileTreeModel(FileRepository* parent, FileGroupContext* root)
 
 QModelIndex FileTreeModel::index(FileSystemContext *entry) const
 {
-     if (!entry)
-         return QModelIndex();
-     if (!entry->parentEntry())
-         return createIndex(0, 0, entry);
-     for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
-         if (entry->parentEntry()->childEntry(i) == entry) {
-             return createIndex(i, 0, entry);
-         }
-     }
-     return QModelIndex();
+    if (!entry)
+        return QModelIndex();
+    if (!entry->parentEntry())
+        return createIndex(0, 0, entry->id());
+    for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
+        if (entry->parentEntry()->childEntry(i) == entry) {
+            return createIndex(i, 0, entry->id());
+        }
+    }
+    return QModelIndex();
 }
 
 QModelIndex FileTreeModel::index(int row, int column, const QModelIndex& parent) const
@@ -57,23 +58,25 @@ QModelIndex FileTreeModel::index(int row, int column, const QModelIndex& parent)
     FileSystemContext *fc = mFileRepo->context(parent)->childEntry(row);
     if (!fc)
         FATAL() << "invalid child for row " << row;
-    return createIndex(row, column, fc);
+    return createIndex(row, column, fc->id());
 }
 
 QModelIndex FileTreeModel::parent(const QModelIndex& child) const
 {
+    if (!child.isValid()) return QModelIndex();
     FileSystemContext* eChild = mFileRepo->context(child);
-    if (eChild == mRoot)
+    if (!eChild || eChild == mRoot)
         return QModelIndex();
     FileGroupContext* eParent = eChild->parentEntry();
     if (!eParent)
         return QModelIndex();
     if (eParent == mRoot)
-        return createIndex(0, child.column(), eParent);
-    int row = eParent->indexOf(eChild);
+        return createIndex(0, child.column(), eParent->id());
+    FileGroupContext* parParent = eParent->parentEntry();
+    int row = parParent ? parParent->indexOf(eParent) : -1;
     if (row < 0)
         FATAL() << "could not find child in parent";
-    return createIndex(row, child.column(), eParent);
+    return createIndex(row, child.column(), eParent->id());
 }
 
 int FileTreeModel::rowCount(const QModelIndex& parent) const
@@ -139,7 +142,7 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
 
 QModelIndex FileTreeModel::rootModelIndex() const
 {
-    return createIndex(0, 0, mRoot);
+    return createIndex(0, 0, mRoot->id());
 }
 
 FileGroupContext* FileTreeModel::rootContext() const
@@ -170,7 +173,8 @@ bool FileTreeModel::removeChild(FileSystemContext* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
-    beginRemoveRows(index(child->parentEntry()), mi.row(), mi.row());
+    QModelIndex parMi = index(child->parentEntry());
+    beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentEntry(nullptr);
     endRemoveRows();
     return true;
@@ -203,7 +207,7 @@ bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         FileSystemContext* fsc = mFileRepo->context(mCurrent);
-        if (fsc->parentEntry() == ind.internalPointer()) {
+        if (fsc->parentEntry()->id() == static_cast<FileId>(ind.internalId())) {
             return true;
         }
     }

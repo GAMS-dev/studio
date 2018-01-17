@@ -149,6 +149,7 @@ void StudioSettings::loadSettings()
 
     // history
     mAppSettings->beginGroup("fileHistory");
+
     mAppSettings->beginReadArray("lastOpenedFiles");
     for (int i = 0; i < mMain->history()->MAX_FILE_HISTORY; i++) {
         mAppSettings->setArrayIndex(i);
@@ -198,8 +199,6 @@ void StudioSettings::loadSettings()
     setClearLog(mUserSettings->value("clearLog", false).toBool());
 
     mUserSettings->endGroup();
-
-    // TODO: before adding list of open tabs/files, add functionality to remove them from ui
 
     if(!restoreTabs())
         return;

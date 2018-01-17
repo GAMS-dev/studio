@@ -23,11 +23,11 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *p
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
 {
     if(mFilterIconWidth)
-        delete mFilterIconWidth;
+        delete[] mFilterIconWidth;
     if(mFilterIconX)
-        delete mFilterIconX;
+        delete[] mFilterIconX;
     if(mFilterIconY)
-        delete mFilterIconY;
+        delete[] mFilterIconY;
 }
 
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
