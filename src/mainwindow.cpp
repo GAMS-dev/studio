@@ -33,6 +33,7 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
+#include "option/optioneditor.h"
 
 namespace gams {
 namespace studio {
@@ -78,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
+    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
     connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -99,6 +101,12 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete mOptionEditor;
+    delete mDockOptionView;
+    delete mCommandLineHistory;
+    delete mCommandLineOption;
+    delete gamsOption;
+//    delete mCommandLineTokenizer;
 }
 
 void MainWindow::initTabs()
@@ -189,6 +197,11 @@ bool MainWindow::outputViewVisibility()
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility);
+}
+
+void MainWindow::setOptionEditorVisibility(bool visibility)
+{
+    ui->actionOption_View->setChecked(visibility);
 }
 
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
@@ -531,6 +544,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
     if (process) {
         process->deleteLater();
     }
+    ui->dockLogView->raise();
 //    ui->actionRun->setEnabled(true);
 }
 
@@ -574,6 +588,15 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
         ui->dockLogView->show();
     else
         ui->dockLogView->hide();
+}
+
+void MainWindow::on_actionOption_View_triggered(bool checked)
+{
+    if(checked)
+        mDockOptionView->show();
+    else
+        mDockOptionView->hide();
+    mDockOptionView->raise();
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -640,6 +663,15 @@ void MainWindow::createRunAndCommandLineWidgets()
     gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
     mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
 
+    mDockOptionView = new QDockWidget(this);
+    mDockOptionView->setObjectName(QStringLiteral("mDockOptionView"));
+    mDockOptionView->setEnabled(true);
+    mDockOptionView->setFloating(false);
+
+    QWidget* commandLineOptionWidget = new QWidget(ui->mainToolBar);
+    QHBoxLayout* commandHLayout = new QHBoxLayout(commandLineOptionWidget);
+    commandHLayout->setContentsMargins(0, 0, 0, 0);
+
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
     runMenu->addAction(ui->actionRun_with_GDX_Creation);
@@ -651,19 +683,36 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     runToolButton->setMenu(runMenu);
     runToolButton->setDefaultAction(ui->actionRun);
-    ui->mainToolBar->addWidget(runToolButton);
+    commandHLayout->addWidget(runToolButton);
 
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
-    ui->mainToolBar->addWidget(mCommandLineOption);
+    commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
     QPixmap pixmap(":/img/gams");
     QIcon ButtonIcon(pixmap);
     helpButton->setIcon(ButtonIcon);
     helpButton->setToolTip("Help on Command Line Option");
+    commandHLayout->addWidget(helpButton);
+    ui->mainToolBar->insertWidget(ui->actionGAMS_Library, commandLineOptionWidget);
+    ui->mainToolBar->insertSeparator(ui->actionGAMS_Library);
 
-    ui->mainToolBar->addWidget(helpButton);
+    mOptionEditor = new OptionEditor(mCommandLineOption->lineEdit(),
+                                                  mCommandLineTokenizer,  mDockOptionView);
+    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea);
+    mDockOptionView->setWindowTitle("Command Line Option");
+
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+    sizePolicy.setHeightForWidth(mOptionEditor->sizePolicy().hasHeightForWidth());
+    mDockOptionView->setSizePolicy(sizePolicy);
+    mDockOptionView->hide();
+    ui->actionOption_View->setChecked(false);
+
+    mDockOptionView->setWidget( static_cast<QWidget*>(mOptionEditor) );
+    this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
 
     connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
             this, &MainWindow::on_runWithChangedOptions);
@@ -672,6 +721,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
+
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1004,6 +1054,9 @@ void MainWindow::on_commandLineHelpTriggered()
                                    QString("Run - %1").arg(fc->caption()) );
     ui->mainTab->setCurrentIndex(idx);
 
+    if (!ui->actionOption_View->isChecked()) {
+        mDockOptionView->show();
+    }
 }
 
 void MainWindow::on_actionRun_triggered()

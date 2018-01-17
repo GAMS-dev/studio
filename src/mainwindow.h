@@ -28,6 +28,7 @@
 #include "option/commandlineoption.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionconfigurator.h"
+#include "option/optioneditor.h"
 #include "projectcontextmenu.h"
 
 namespace Ui {
@@ -77,6 +78,7 @@ public:
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
+    void setOptionEditorVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
@@ -125,6 +127,7 @@ private slots:
     void on_actionAbout_Qt_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
+    void on_actionOption_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
@@ -168,10 +171,14 @@ private:
 
     Ui::MainWindow *ui;
     SearchWidget *sw = nullptr;
+
     Option* gamsOption;
+    OptionEditor* mOptionEditor;
+    QDockWidget* mDockOptionView;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
+
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroup;

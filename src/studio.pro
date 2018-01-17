@@ -112,6 +112,7 @@ SOURCES += \
     option/lineeditcompleteevent.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
+    option/optioneditor.cpp \
     option/optionsortfilterproxymodel.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
@@ -171,6 +172,7 @@ HEADERS += \
     option/lineeditcompleteevent.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
+    option/optioneditor.h \
     option/optionsortfilterproxymodel.h \
     syntax.h \
     syntax/textmark.h \
