@@ -37,14 +37,13 @@ QString GAMSPaths::systemDir() {
     // TODO(AF) macOS stuff
     QStringList paths = { QDir::currentPath().append("/..") };
     QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
-    if (!path.isEmpty())
-        return path;
-
-    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-    if (path.isEmpty()) EXCEPT() << "GAMS not found in path.";
+    if (path.isEmpty()) {
+        path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (path.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+    }
 
 #ifdef _WIN32
-    QFileInfo joat64 = systemDir + QDir::separator() +  "joatdclib64.dll";
+    QFileInfo joat64(path + QDir::separator() + "joatdclib64.dll");
     bool is64 = (sizeof(int*) == 8) ? true : false;
     if (!is64 && joat64.exists())
         EXCEPT() << "Expected GAMS system to be 32 bit but found 64 bit instead. System directory: " << systemDir;
