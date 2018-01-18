@@ -108,7 +108,7 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
                             mv appdir studio
                         '''
-                        zip zipFile: 'studio-nix.zip', archive: true, dir: 'studio'
+                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
@@ -117,7 +117,7 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage, *.zip', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -153,14 +153,14 @@ pipeline {
                             macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                             mv bin/studio.dmg studio.dmg
                         '''
-                        zip zipFile: 'studio-mac.zip', archive: true, dir: 'bin'
+                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
                                 sh "mv studio-mac.zip ${env.BRANCH_NAME}-studio-mac.zip"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
                     }
                 }
             }
