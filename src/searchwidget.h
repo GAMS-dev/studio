@@ -57,6 +57,8 @@ private slots:
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
 
+    void on_txt_search_textChanged(const QString &arg1);
+
 private:
     Ui::SearchWidget *ui;
     MainWindow *mMain;

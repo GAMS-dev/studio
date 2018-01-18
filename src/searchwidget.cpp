@@ -29,8 +29,7 @@ namespace gams {
 namespace studio {
 
 SearchWidget::SearchWidget(MainWindow *parent) :
-    QDialog(parent),
-    ui(new Ui::SearchWidget), mMain(parent)
+    QDialog(parent), ui(new Ui::SearchWidget), mMain(parent)
 {
     StudioSettings *mSettings = mMain->settings();
 
@@ -218,8 +217,8 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 
         } else { // read from editor document(s)
 
-            // currently in foreground
-            bool highlightMatch = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor));
+            // if currently in foreground
+            bool isOpenFile = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor));
 
             lastItem = QTextCursor(fc->document());
             do {
@@ -233,7 +232,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 
                 if (!item.isNull()) {
                     matches.addResult(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
-                    if (highlightMatch) {
+                    if (isOpenFile) {
                         int length = item.selectionEnd() - item.selectionStart();
                         mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
                                                                   item.columnNumber() - length, length));
@@ -439,6 +438,14 @@ void SearchWidget::on_btn_clear_clicked()
     updateMatchAmount(0, true);
 }
 
+void SearchWidget::on_txt_search_textChanged(const QString &arg1)
+{
+    Q_UNUSED(arg1);
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    fc->removeTextMarks(TextMark::result);
+}
+
 }
 }
+
 

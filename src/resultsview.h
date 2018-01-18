@@ -20,7 +20,10 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
+#include <QTableWidget>
 #include <QWidget>
+#include "mainwindow.h"
+#include "searchresultlist.h"
 
 namespace Ui {
 class ResultsView;
@@ -30,18 +33,22 @@ namespace gams {
 namespace studio {
 
 class Result;
-class SearchResultList;
 class ResultsView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList resultList, QWidget *parent = 0);
+    explicit ResultsView(SearchResultList resultList, MainWindow *parent = 0);
     ~ResultsView();
     void resizeColumnsToContent();
 
+private slots:
+    void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+
 private:
     Ui::ResultsView *ui;
+    MainWindow mMain;
+    SearchResultList mResultList;
 };
 
 }

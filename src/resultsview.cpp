@@ -19,15 +19,14 @@
  */
 #include "resultsview.h"
 #include "searchwidget.h"
-#include "searchresultlist.h"
 #include "ui_resultsview.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-ResultsView::ResultsView(SearchResultList resultList, QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ResultsView)
+ResultsView::ResultsView(SearchResultList resultList, MainWindow *parent) :
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList)
 {
     ui->setupUi(this);
     foreach (Result item, resultList.resultList()) {
@@ -47,6 +46,21 @@ ResultsView::~ResultsView()
 void ResultsView::resizeColumnsToContent()
 {
     ui->tableWidget->resizeColumnsToContents();
+}
+
+void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+{
+    FileSystemContext *fsc = mMain.fileRepository()->findContext(item->data(0).toString());
+    FileContext *jmpFc = nullptr;
+    if (!fsc) EXCEPT() << "File not found:" << item->data(0).toString();
+
+    if (fsc->type() == FileSystemContext::File)
+        jmpFc = static_cast<FileContext*>(fsc);
+
+    if (!jmpFc) EXCEPT() << "Not a file:" << item->data(0).toString();
+
+    mMain.openFileContext(jmpFc, true);
+    jmpFc->jumpTo(QTextCursor(), true, item->data(1).toInt(), 0);
 }
 
 }

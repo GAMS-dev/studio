@@ -70,9 +70,9 @@ public:
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
-    void addToOpenedFiles(QString filePath);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFileContext(FileContext *fileContext, bool focus = true);
     bool outputViewVisibility();
     bool projectViewVisibility();
     HistoryData* history();
@@ -98,7 +98,6 @@ private slots:
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
-    void openFileContext(FileContext *fileContext, bool focus = true);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
     // View
@@ -159,6 +158,7 @@ private:
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
+    void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
