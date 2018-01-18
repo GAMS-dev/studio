@@ -108,7 +108,7 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
                             mv appdir studio
                         '''
-                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
+                        zip zipFile: 'studio-nix.zip', archive: true, dir: 'studio'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
@@ -153,7 +153,7 @@ pipeline {
                             macdeployqt bin/studio.app -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                             mv bin/studio.dmg studio.dmg
                         '''
-                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
+                        zip zipFile: 'studio-mac.zip', archive: true, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
