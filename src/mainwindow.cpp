@@ -44,6 +44,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mHistory = new HistoryData();
     mSettings = new StudioSettings(this);
+    QFile css(":/data/style.css");
+    if (css.open(QFile::ReadOnly | QFile::Text)) {
+        this->setStyleSheet(css.readAll());
+    }
 
     ui->setupUi(this);
     setAcceptDrops(true);
@@ -52,7 +56,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
     mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".lst");
-    mFileRepo.setDefaultActions(QList<QAction*>() << ui->actionNew << ui->actionOpen);
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
@@ -79,11 +82,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
-    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
-    connect(ui->projectView, &QTreeView::clicked, &mFileRepo, &FileRepository::nodeClicked);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
+    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     ensureCodecMenu("System");
@@ -136,6 +139,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             CodeEditor *codeEdit = new CodeEditor(mSettings, this);
             FileSystemContext::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            QFontMetrics metric(codeEdit->font());
+            codeEdit->setTabStopWidth(8*metric.width(' '));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
@@ -529,7 +534,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
             openFilePath(lstFile, groupContext, doFocus);
 
         if (mSettings->jumpToError())
-            groupContext->jumpToMark(doFocus);
+            groupContext->jumpToFirstError(doFocus);
 
         FileContext* lstCtx = nullptr;
         // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
@@ -949,11 +954,11 @@ void MainWindow::customEvent(QEvent *event)
 void MainWindow::execute(QString commandLineStr)
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    if (!fgc)
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
         return;
 
-    fgc->clearLstErrorTexts();
+    group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         fc->save();
@@ -978,8 +983,8 @@ void MainWindow::execute(QString commandLineStr)
     }
 
     ui->actionRun->setEnabled(false);
-    mFileRepo.removeMarks(fgc);
-    LogContext* logProc = mFileRepo.logContext(fgc);
+    mFileRepo.removeMarks(group);
+    LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
         QPlainTextEdit* logEdit = new QPlainTextEdit();
@@ -988,8 +993,6 @@ void MainWindow::execute(QString commandLineStr)
         logEdit->setReadOnly(true);
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
-    } else {
-        logProc->clearRecentMarks();
     }
 
     if (!mSettings->clearLog()) {
@@ -1002,12 +1005,12 @@ void MainWindow::execute(QString commandLineStr)
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = fgc->runableGms();
+    QString gmsFilePath = group->runableGms();
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
-    GamsProcess* process = fgc->newGamsProcess();
+    GamsProcess* process = group->newGamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
@@ -1132,6 +1135,16 @@ void MainWindow::closeGroup(FileGroupContext* group)
 
 }
 
+void MainWindow::closeFile(FileContext* file)
+{
+    if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
+        ui->projectView->setCurrentIndex(QModelIndex());
+        fileClosed(file->id());
+        mFileRepo.removeFile(file);
+        mSettings->saveSettings();
+    }
+}
+
 void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus)
 {
     QFileInfo fileInfo(filePath);
@@ -1179,11 +1192,8 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
 
 void MainWindow::openContext(const QModelIndex& index)
 {
-    FileSystemContext *fsc = static_cast<FileSystemContext*>(index.internalPointer());
-    if (fsc && fsc->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(fsc);
-        openFileContext(fc);
-    }
+    FileContext *file = mFileRepo.fileContext(index);
+    if (file) openFileContext(file);
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)

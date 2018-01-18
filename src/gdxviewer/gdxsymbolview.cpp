@@ -14,12 +14,14 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 {
     ui->setupUi(this);
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
+    headerView->setEnabled(false);
 
     ui->tableView->setHorizontalHeader(headerView);
     ui->tableView->setSortingEnabled(true);
     ui->tableView->horizontalHeader()->setSortIndicatorShown(true);
     ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
     ui->tableView->horizontalHeader()->setSectionsClickable(true);
+    ui->tableView->horizontalHeader()->setSectionsMovable(true);
     ui->tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
@@ -73,7 +75,7 @@ void GdxSymbolView::resetSortFilter()
     if(mSym)
     {
         mSym->resetSortFilter();
-        ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
+        ui->tableView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
 }
 
@@ -94,13 +96,16 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym)
 {
     mSym = sym;
-    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
+    if(mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
+        connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
     refreshView();
 }
 
 void GdxSymbolView::enableControls()
 {
+    ui->tableView->horizontalHeader()->setEnabled(true);
+    mInitialHeaderState = ui->tableView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
         ui->cbSqueezeDefaults->setEnabled(true);
     else

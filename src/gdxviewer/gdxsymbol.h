@@ -69,7 +69,8 @@ public:
 
     void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
 
-    bool *filterActive() const;
+    QVector<bool> filterActive() const;
+    void setFilterActive(const QVector<bool> &filterActive);
 
 signals:
     void loadFinished();
@@ -85,8 +86,8 @@ private:
     QString mExplText;
     QString mName;
 
-    int* mMinUel = nullptr;
-    int* mMaxUel = nullptr;
+    QVector<int> mMinUel;
+    QVector<int> mMaxUel;
 
     GdxSymbolTable* mGdxSymbolTable;
 
@@ -98,10 +99,8 @@ private:
 
     bool stopLoading = false;
 
-    int* mKeys = nullptr;
-    double* mValues = nullptr;
-
-
+    QVector<int> mKeys;
+    QVector<double> mValues;
 
     QStringList mDomains;
 
@@ -114,10 +113,10 @@ private:
 
     QVector<QVector<int>*> mUelsInColumn;
     QVector<bool*> mShowUelInColumn;
-    bool* mFilterActive = nullptr;
+    QVector<bool> mFilterActive;
 
-    int* mRecSortIdx = nullptr;
-    int* mRecFilterIdx = nullptr;
+    QVector<int> mRecSortIdx;
+    QVector<int> mRecFilterIdx;
 };
 
 } // namespace gdxviewer

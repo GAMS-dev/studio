@@ -52,7 +52,7 @@
     <item row="0" column="0">
      <layout class="QGridLayout" name="mainLayout">
       <property name="topMargin">
-       <number>13</number>
+       <number>0</number>
       </property>
       <property name="horizontalSpacing">
        <number>6</number>
@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

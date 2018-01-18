@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,26 +34,23 @@ GAMSPaths::GAMSPaths()
 }
 
 QString GAMSPaths::systemDir() {
-    QString path;
-#if defined(DISTRIB_BUILD) // For the GAMS distribution build
-#ifdef __linux__ // Linux AppImage
-    path = QDir::currentPath().append("/..");
-#elif __APPLE__ // Apple MacOS dmg
-    path = QDir::currentPath();
-#else // Windows
-    path = QDir::currentPath().append("/..");
-#endif
-#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
-    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-#endif
-    // TODO(JM) check bitness against path
-    if (path == "") EXCEPT() << "GAMS not found in path.";
+    // TODO(AF) macOS stuff
+    QStringList paths = { QDir::currentPath().append("/..") };
+    QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
+    if (path.isEmpty()) {
+        path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (path.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+    }
 
-    int bitness = sizeof(int*);
-    if (bitness == 4 && path.contains("win64"))
-        FATAL() << "GAMS Studio (32bit) can't be executed with " << path;
-    if (bitness == 8 && path.contains("win32"))
-        FATAL() << "GAMS Studio (64bit) can't be executed with " << path;
+#ifdef _WIN32
+    QFileInfo joat64(path + QDir::separator() + "joatdclib64.dll");
+    bool is64 = (sizeof(int*) == 8) ? true : false;
+    if (!is64 && joat64.exists())
+        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << path;
+    if (is64 && !joat64.exists())
+        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << path;
+#endif
+
     return path;
 }
 

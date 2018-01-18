@@ -52,6 +52,8 @@ public:
 
     ~FileContext() override;
 
+    void setParentEntry(FileGroupContext *parent) override;
+
     /// The name of the current codec for this file.
     /// \return The name of the codec.
     QString codec() const;
@@ -122,7 +124,8 @@ public:
     void rehighlightAt(int pos);
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
-    TextMark* generateTextMark(gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size = 0);
     ErrorHighlighter* highlighter();
 
     void removeTextMarks(TextMark::Type tmType);
@@ -159,12 +162,11 @@ private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     FileContext *mLinkFile = nullptr;
-//    QList<QPlainTextEdit*> mEditors;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
-    TextMarkList mMarks;
+    TextMarkList *mMarks = nullptr;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
     bool mMarksEnhanced = true;
 
