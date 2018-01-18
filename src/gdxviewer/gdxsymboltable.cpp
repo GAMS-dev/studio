@@ -86,6 +86,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
         case 4: aFlag = Qt::AlignRight; break;
         case 5: aFlag = Qt::AlignLeft; break;
         case 6: aFlag = Qt::AlignLeft; break;
+        default: aFlag = Qt::AlignLeft; break;
         }
         return QVariant(aFlag | Qt::AlignVCenter);
     }
@@ -115,6 +116,11 @@ void GdxSymbolTable::createSortIndex()
         mLabelCompIdx[p.second] = idx;
         idx++;
     }
+}
+
+int GdxSymbolTable::symbolCount() const
+{
+    return mSymbolCount;
 }
 
 void GdxSymbolTable::loadUel2Label()
@@ -177,6 +183,7 @@ QString GdxSymbolTable::typeAsString(int type) const
         case GMS_DT_VAR: return "Variable"; break;
         case GMS_DT_EQU: return "Equation"; break;
         case GMS_DT_ALIAS: return "Alias"; break;
+        default: return ""; break;
     }
 }
 

@@ -48,9 +48,6 @@ public:
     void loadData();
     void stopLoadingData();
 
-    bool squeezeDefaults() const;
-    void setSqueezeDefaults(bool squeezeDefaults);
-
     bool isAllDefault(int valColIdx);
 
     int subType() const;
@@ -72,10 +69,16 @@ public:
 
     void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
 
-    bool *filterActive() const;
+    QVector<bool> filterActive() const;
+    void setFilterActive(const QVector<bool> &filterActive);
+
+signals:
+    void loadFinished();
 
 private:
+    gdxHandle_t mGdx;
     int mNr;
+    QMutex* mGdxMutex;
     int mDim;
     int mType;
     int mSubType;
@@ -83,12 +86,12 @@ private:
     QString mExplText;
     QString mName;
 
-    int* mMinUel = nullptr;
-    int* mMaxUel = nullptr;
+    QVector<int> mMinUel;
+    QVector<int> mMaxUel;
 
     GdxSymbolTable* mGdxSymbolTable;
 
-    gdxHandle_t mGdx;
+
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
@@ -96,14 +99,10 @@ private:
 
     bool stopLoading = false;
 
-    int* mKeys = nullptr;
-    double* mValues = nullptr;
-
-    QMutex* mGdxMutex;
+    QVector<int> mKeys;
+    QVector<double> mValues;
 
     QStringList mDomains;
-
-    bool mSqueezeDefaults = false;
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
@@ -114,13 +113,10 @@ private:
 
     QVector<QVector<int>*> mUelsInColumn;
     QVector<bool*> mShowUelInColumn;
-    bool* mFilterActive = nullptr;
+    QVector<bool> mFilterActive;
 
-    int* mRecSortIdx = nullptr;
-    int* mRecFilterIdx = nullptr;
-
-    int mSortColumn = -1;
-    Qt::SortOrder mSortOrder;
+    QVector<int> mRecSortIdx;
+    QVector<int> mRecFilterIdx;
 };
 
 } // namespace gdxviewer

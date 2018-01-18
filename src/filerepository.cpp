@@ -37,7 +37,6 @@ FileRepository::~FileRepository()
     delete mTreeModel;
 }
 
-
 QModelIndex FileRepository::findEntry(QString name, QString location, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
@@ -278,6 +277,8 @@ LogContext*FileRepository::logContext(QWidget* edit)
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
         if (fsc->type() == FileSystemContext::FileGroup) {
             FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+
+            if (!group->logContext()) return nullptr;
             if (group->logContext()->editors().contains(edit)) {
                 return group->logContext();
             }
