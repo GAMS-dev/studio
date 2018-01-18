@@ -363,7 +363,9 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
     if (isVisible() && ( event->key() == Qt::Key_Escape
                          || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
         hide();
-        mMain->recent()->editor->setFocus();
+
+        if (mMain->recent()->editor)
+            mMain->recent()->editor->setFocus();
     }
 }
 
@@ -442,7 +444,8 @@ void SearchWidget::on_txt_search_textChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    fc->removeTextMarks(TextMark::result);
+    if (fc)
+        fc->removeTextMarks(TextMark::result);
 }
 
 }

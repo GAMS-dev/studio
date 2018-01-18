@@ -1175,8 +1175,11 @@ void MainWindow::on_actionSearch_triggered()
     } else {
         QPoint p(0,0);
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
-        int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
-        mSearchWidget->move(newP.x() + offset, newP.y());
+
+        if (ui->mainTab->currentWidget()) {
+            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
+            mSearchWidget->move(newP.x() + offset, newP.y());
+        }
         mSearchWidget->show();
     }
 }

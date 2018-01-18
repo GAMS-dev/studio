@@ -47,7 +47,7 @@ private slots:
 
 private:
     Ui::ResultsView *ui;
-    MainWindow mMain;
+    MainWindow *mMain;
     SearchResultList mResultList;
 };
 

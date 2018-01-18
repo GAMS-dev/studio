@@ -50,7 +50,7 @@ void ResultsView::resizeColumnsToContent()
 
 void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
 {
-    FileSystemContext *fsc = mMain.fileRepository()->findContext(item->data(0).toString());
+    FileSystemContext *fsc = mMain->fileRepository()->findContext(item->data(0).toString());
     FileContext *jmpFc = nullptr;
     if (!fsc) EXCEPT() << "File not found:" << item->data(0).toString();
 
@@ -59,8 +59,13 @@ void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
 
     if (!jmpFc) EXCEPT() << "Not a file:" << item->data(0).toString();
 
-    mMain.openFileContext(jmpFc, true);
-    jmpFc->jumpTo(QTextCursor(), true, item->data(1).toInt(), 0);
+    mMain->openFile(item->data(0).toString());
+
+//    QTextCursor tc(jmpFc->document()->findBlockByLineNumber(item->data(1).toInt()));
+//    qDebug() << "data 0" << item->data(0);
+//    qDebug() << "data 1" << item->data(1);
+//    qDebug() << "data 2" << item->data(2);
+//    jmpFc->jumpTo(tc, false);
 }
 
 }
