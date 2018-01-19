@@ -117,6 +117,9 @@ private:
 
     QVector<int> mRecSortIdx;
     QVector<int> mRecFilterIdx;
+
+    std::vector<double> mSpecValSortVal;
+
 };
 
 } // namespace gdxviewer
