@@ -78,24 +78,24 @@ void SearchWidget::setSelectedScope(int index)
 
 void SearchWidget::on_btn_ReplaceAll_clicked()
 {
-    switch (ui->combo_scope->currentIndex()) {
-    case 0: // this file
-        simpleReplaceAll();
-        break;
-    case 1: // this group
-        EXCEPT() << "Not implemented yet";
-//        replaceInGroup();
-        break;
-    case 2: // open files
-        EXCEPT() << "Not implemented yet";
-//        replaceInOpenFiles();
-        break;
-    case 3: // all files/groups
-        EXCEPT() << "Not implemented yet";
-        break;
-    default:
-        break;
-    }
+//    switch (ui->combo_scope->currentIndex()) {
+    simpleReplaceAll();
+//    case 0: // this file
+//        break;
+//    case 1: // this group
+//        EXCEPT() << "Not implemented yet";
+////        replaceInGroup();
+//        break;
+//    case 2: // open files
+//        EXCEPT() << "Not implemented yet";
+////        replaceInOpenFiles();
+//        break;
+//    case 3: // all files/groups
+//        EXCEPT() << "Not implemented yet";
+//        break;
+//    default:
+//        break;
+//    }
 }
 
 void SearchWidget::on_btn_FindAll_clicked()
