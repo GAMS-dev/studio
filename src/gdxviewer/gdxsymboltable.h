@@ -37,6 +37,8 @@ public:
 
     int *labelCompIdx();
 
+    int symbolCount() const;
+
 private:
     QStringList mHeaderText;
 

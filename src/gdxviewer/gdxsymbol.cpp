@@ -17,33 +17,21 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     loadMetaData();
     loadDomains();
 
-    mRecSortIdx = new int[mRecordCount];
+    mRecSortIdx.resize(mRecordCount);
     for(int i=0; i<mRecordCount; i++)
         mRecSortIdx[i] = i;
 
-    mRecFilterIdx = new int[mRecordCount];
+    mRecFilterIdx.resize(mRecordCount);
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive = new bool[mRecordCount] {false};
+    mFilterActive.resize(mRecordCount);
+    mFilterActive.fill(false);
 }
 
 GdxSymbol::~GdxSymbol()
 {
-    if(mKeys)
-        delete[] mKeys;
-    if (mValues)
-        delete[] mValues;
-    if (mRecSortIdx)
-        delete[] mRecSortIdx;
-    if (mRecFilterIdx)
-        delete[] mRecFilterIdx;
-    if (mMinUel)
-        delete[] mMinUel;
-    if (mMaxUel)
-        delete[] mMaxUel;
-    if(mFilterActive)
-        delete[] mFilterActive;
+
     for(auto v : mUelsInColumn)
         delete v;
     for(auto a: mShowUelInColumn)
@@ -114,7 +102,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             return mGdxSymbolTable->uel2Label().at(mKeys[row*mDim + index.column()]);
         else
         {
-            double val;
+            double val = 0.0;
             if (mType == GMS_DT_PAR)
                 val = mValues[row];
             else if (mType == GMS_DT_SET)
@@ -164,26 +152,27 @@ void GdxSymbol::loadData()
     QTime t;
     t.start();
     QMutexLocker locker(mGdxMutex);
-    mMinUel = new int[mDim] {INT_MAX};
-    mMaxUel = new int[mDim] {INT_MIN};
-
+    mMinUel.resize(mDim);
+    mMinUel.fill(INT_MAX);
+    mMaxUel.resize(mDim);
+    mMaxUel.fill(INT_MIN);
     if(!mIsLoaded)
     {
         beginResetModel();
         endResetModel();
 
-        if(!mKeys)
-            mKeys = new int[mRecordCount*mDim];
-        if(!mValues)
+        if(mKeys.empty())
+            mKeys.resize(mRecordCount*mDim);
+        if(mValues.empty())
         {
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
-                mValues = new double[mRecordCount];
+                mValues.resize(mRecordCount);
             else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-                mValues = new double[mRecordCount*GMS_DT_MAX];
+                 mValues.resize(mRecordCount*GMS_DT_MAX);
         }
 
         int dummy;
-        int* keys = new int[mDim];
+        int* keys = new int[GMS_MAX_INDEX_DIM];
         double* values = new double[GMS_VAL_MAX];
         gdxDataReadRawStart(mGdx, mNr, &dummy);
 
@@ -199,7 +188,6 @@ void GdxSymbol::loadData()
                 return;
             }
         }
-
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
@@ -249,28 +237,19 @@ void GdxSymbol::loadData()
         endResetModel();
         calcDefaultColumns();
         calcUelsInColumn();
+
         mIsLoaded = true;
 
         delete[] keys;
         delete[] values;
 
-        qDebug() << "loadData: " << t.elapsed();
+        emit loadFinished();
     }
 }
 
 void GdxSymbol::stopLoadingData()
 {
     stopLoading = true;
-}
-
-bool GdxSymbol::squeezeDefaults() const
-{
-    return mSqueezeDefaults;
-}
-
-void GdxSymbol::setSqueezeDefaults(bool squeezeDefaults)
-{
-    mSqueezeDefaults = squeezeDefaults;
 }
 
 void GdxSymbol::calcDefaultColumns()
@@ -302,7 +281,7 @@ void GdxSymbol::calcUelsInColumn()
     for(int dim=0; dim<mDim; dim++)
     {
         QVector<int>* uels = new QVector<int>();
-        bool* sawUel = new bool[mMaxUel[dim]+1] {false}; //TODO(CW): squeeze using mMinUel
+        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
         int currentUel = - 1;
@@ -336,6 +315,7 @@ void GdxSymbol::loadMetaData()
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
     mName = symName;
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
+    mExplText = explText;
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -352,9 +332,14 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
-bool *GdxSymbol::filterActive() const
+QVector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
+}
+
+void GdxSymbol::setFilterActive(const QVector<bool> &filterActive)
+{
+    mFilterActive = filterActive;
 }
 
 void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
@@ -372,19 +357,14 @@ QVector<QVector<int> *> GdxSymbol::uelsInColumn() const
     return mUelsInColumn;
 }
 
-Qt::SortOrder GdxSymbol::sortOrder() const
-{
-    return mSortOrder;
-}
-
 void GdxSymbol::resetSortFilter()
 {
     for(int i=0; i<mRecordCount; i++)
     {
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
-        mFilterActive[i] = false;
     }
+    mFilterActive.fill(false);
     for(int dim=0; dim<mDim; dim++)
     {
         for(int uel : *mUelsInColumn.at(dim))
@@ -394,13 +374,7 @@ void GdxSymbol::resetSortFilter()
     }
 
     mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
-    mSortColumn = -1;
     layoutChanged();
-}
-
-int GdxSymbol::sortColumn() const
-{
-    return mSortColumn;
 }
 
 bool GdxSymbol::isAllDefault(int valColIdx)
@@ -429,17 +403,16 @@ int GdxSymbol::subType() const
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
     //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
-    if(column == mSortColumn && order == mSortOrder)
-        return;
+    //if(column == mSortColumn && order == mSortOrder)
+    //    return;
 
     QTime t;
     t.start();
 
-    int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
-
     // sort by key column
     if(column<mDim)
     {
+        int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
             l.append(QPair<int, int>(labelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
@@ -493,9 +466,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         for(int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
-
-    mSortColumn = column;
-    mSortOrder = order;
     layoutChanged();
     filterRows();
 }
