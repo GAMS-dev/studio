@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 
+#include "commandlineoption.h"
 #include "commandlinetokenizer.h"
 #include "option.h"
 #include "optionsortfilterproxymodel.h"
@@ -16,7 +17,7 @@ class OptionEditor : public QWidget
 {
     Q_OBJECT
 public:
-    explicit OptionEditor(QLineEdit* lineEdit, CommandLineTokenizer* tokenizer, QWidget *parent = nullptr);
+    explicit OptionEditor(CommandLineOption* option, CommandLineTokenizer* tokenizer, QWidget *parent = nullptr);
     ~OptionEditor();
 
     void setupUi(QWidget* parent);
@@ -39,8 +40,10 @@ public slots:
 //    void toggleOptionDefinition(bool checked);
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &opionItems);
-//    void showOptionContextMenu(const QPoint &pos);
+    void showOptionContextMenu(const QPoint &pos);
 
+private:
+    CommandLineOption* mCommandLineOption;
 };
 
 } // namespace studio

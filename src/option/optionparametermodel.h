@@ -31,6 +31,8 @@ signals:
 
 public slots:
     void toggleActiveOptionItem(int index);
+    void updateCurrentOption(const QString &text);
+    void validateChangedOption(const QString &text);
 
 private:
     QList<OptionItem> mOptionItem;
@@ -40,6 +42,8 @@ private:
     CommandLineTokenizer* commandLineTokenizer;
     Option* gamsOption;
 
+    void setRowCount(int rows);
+    void itemizeOptionFromCommandLineStr(const QString text);
     void validateOption();
 };
 

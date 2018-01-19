@@ -103,6 +103,7 @@ private slots:
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
+    void toggleOptionDefinition(bool checked);
 
 private slots:
     // File
@@ -166,6 +167,7 @@ private:
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<FileContext*> changedFiles);
+    void connectCommandLineWidgets();
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -179,6 +181,7 @@ private:
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
+    QSplitter* mOptionSplitter;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

@@ -68,7 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    ui->mainToolBar->addSeparator();
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
@@ -99,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
+    connectCommandLineWidgets();
 }
 
 MainWindow::~MainWindow()
@@ -108,8 +108,7 @@ MainWindow::~MainWindow()
     delete mDockOptionView;
     delete mCommandLineHistory;
     delete mCommandLineOption;
-    delete gamsOption;
-//    delete mCommandLineTokenizer;
+    delete mCommandLineTokenizer;
 }
 
 void MainWindow::initTabs()
@@ -268,6 +267,14 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
     ui->projectView->setExpanded(mi, expanded);
 }
 
+void MainWindow::toggleOptionDefinition(bool checked)
+{
+    if (checked)
+        mOptionSplitter->widget(1)->show();
+    else
+        mOptionSplitter->widget(1)->hide();
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -409,7 +416,7 @@ void MainWindow::activeTabChanged(int index)
                 mCommandLineOption->insertItem(0, str );
             }
             mCommandLineOption->setCurrentIndex(0);
-            mCommandLineOption->setDisabled(false);
+            mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
         } else {
             mCommandLineOption->setCurrentIndex(-1);
@@ -667,15 +674,17 @@ void MainWindow::createRunAndCommandLineWidgets()
 {
     gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
     mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
+    mCommandLineOption = new CommandLineOption(true, this);
+    mCommandLineHistory = new CommandLineHistory(this);
 
     mDockOptionView = new QDockWidget(this);
     mDockOptionView->setObjectName(QStringLiteral("mDockOptionView"));
     mDockOptionView->setEnabled(true);
     mDockOptionView->setFloating(false);
 
-    QWidget* commandLineOptionWidget = new QWidget(ui->mainToolBar);
-    QHBoxLayout* commandHLayout = new QHBoxLayout(commandLineOptionWidget);
-    commandHLayout->setContentsMargins(0, 0, 0, 0);
+    QWidget* optionWidget = new QWidget(mDockOptionView);
+    QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
+    commandHLayout->setContentsMargins(10, 10, 10, 5);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -683,32 +692,54 @@ void MainWindow::createRunAndCommandLineWidgets()
     runMenu->addSeparator();
     runMenu->addAction(ui->actionCompile);
     runMenu->addAction(ui->actionCompile_with_GDX_Creation);
+    ui->actionRun->setShortcutVisibleInContextMenu(true);
+    ui->actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
+    ui->actionCompile->setShortcutVisibleInContextMenu(true);
+    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
 
     QToolButton* runToolButton = new QToolButton(this);
     runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     runToolButton->setMenu(runMenu);
     runToolButton->setDefaultAction(ui->actionRun);
     commandHLayout->addWidget(runToolButton);
-
-    mCommandLineOption = new CommandLineOption(true, this);
-    mCommandLineHistory = new CommandLineHistory(this);
     commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
-    QPixmap pixmap(":/img/gams");
-    QIcon ButtonIcon(pixmap);
-    helpButton->setIcon(ButtonIcon);
-    helpButton->setToolTip("Help on Command Line Option");
+//    QPixmap pixmap(":/img/gams");
+//    QIcon ButtonIcon(pixmap);
+//    helpButton->setIcon(ButtonIcon);
+    helpButton->setText("Help");
+    helpButton->setToolTip("Help on The GAMS Call and Command Line Parameters");
     commandHLayout->addWidget(helpButton);
-    ui->mainToolBar->insertWidget(ui->actionGAMS_Library, commandLineOptionWidget);
-    ui->mainToolBar->insertSeparator(ui->actionGAMS_Library);
 
-    mOptionEditor = new OptionEditor(mCommandLineOption->lineEdit(),
-                                                  mCommandLineTokenizer,  mDockOptionView);
-    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea);
-    mDockOptionView->setWindowTitle("Command Line Option");
+    QHBoxLayout* button_HLayout = new QHBoxLayout();
+    button_HLayout->setObjectName(QStringLiteral("button_HLayout"));
 
-    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
+    showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
+    showOptionDefintionCheckBox->setEnabled(true);
+    showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
+    commandHLayout->addWidget(showOptionDefintionCheckBox);
+
+    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    sizePolicy.setHeightForWidth(optionWidget->sizePolicy().hasHeightForWidth());
+    optionWidget->setSizePolicy(sizePolicy);
+    optionWidget->setLayout(commandHLayout);
+
+    mOptionSplitter = new QSplitter(mDockOptionView);
+    sizePolicy.setHeightForWidth(mOptionSplitter->sizePolicy().hasHeightForWidth());
+    mOptionSplitter->setSizePolicy(sizePolicy);
+    mOptionSplitter->setOrientation(Qt::Vertical);
+    mOptionSplitter->setStretchFactor(0, 0);
+    mOptionSplitter->setStretchFactor(1, 1);
+    mOptionSplitter->addWidget(optionWidget);
+
+    mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer,  mDockOptionView);
+    mOptionSplitter->addWidget(mOptionEditor);
+    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+    mDockOptionView->setWindowTitle("Option");
+    mOptionSplitter->widget(1)->hide();
+
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(mOptionEditor->sizePolicy().hasHeightForWidth());
@@ -716,17 +747,26 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->hide();
     ui->actionOption_View->setChecked(false);
 
-    mDockOptionView->setWidget( static_cast<QWidget*>(mOptionEditor) );
+    mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
 
+    connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
+    connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
+}
+
+void MainWindow::connectCommandLineWidgets()
+{
     connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
             this, &MainWindow::on_runWithChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-    connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
 
+    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+            mCommandLineOption, &CommandLineOption::updateCurrentOption );
+    connect(mCommandLineOption, &QComboBox::editTextChanged,
+            mCommandLineOption, &CommandLineOption::validateChangedOption );
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1044,22 +1084,22 @@ void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-//    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-//    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-    if (!fgc)
-        return;
+//    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+//    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
+//    if (!fgc)
+//        return;
+//    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
+//                                   QString("Run - %1").arg(fc->caption()) );
+//    ui->mainTab->setCurrentIndex(idx);
 
-
-    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
-                                   QString("Run - %1").arg(fc->caption()) );
-    ui->mainTab->setCurrentIndex(idx);
-
-    if (!ui->actionOption_View->isChecked()) {
-        mDockOptionView->show();
-    }
+//    if (!ui->actionOption_View->isChecked()) {
+//        mDockOptionView->show();
+//    } else {
+//        mDockOptionView->hide();
+//    }
 }
 
 void MainWindow::on_actionRun_triggered()

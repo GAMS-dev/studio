@@ -10,11 +10,9 @@ OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineSt
     mHeader.append("Key");
     mHeader.append("Value");
 
-    mOptionItem = commandLineTokenizer->tokenize(normalizedCommandLineStr);
-    for(int idx = 0; idx<mOptionItem.size(); ++idx)
-       mCheckState[idx] = QVariant();
-
     gamsOption = commandLineTokenizer->getGamsOption();
+
+    itemizeOptionFromCommandLineStr(normalizedCommandLineStr);
     validateOption();
 }
 
@@ -151,7 +149,6 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
 {
     if (role == Qt::EditRole)   {
         QString data = value.toString().simplified();
-
         if (data.isEmpty())
             return false;
 
@@ -171,6 +168,7 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
         mOptionItem[index.row()].disabled = value.toBool();
         emit optionModelChanged(  mOptionItem );
     }
+    emit dataChanged(index, index);
     return true;
 }
 
@@ -194,10 +192,11 @@ bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &par
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);
+//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
     return true;
 }
 
-bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent)
+bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
@@ -206,6 +205,7 @@ bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &par
     mOptionItem.removeAt(row);
     endRemoveRows();
     emit optionModelChanged(mOptionItem);
+//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
     return true;
 }
 
@@ -221,6 +221,45 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
                           Qt::CheckStateRole );
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
     emit optionModelChanged(mOptionItem);
+//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
+}
+
+void OptionParameterModel::updateCurrentOption(const QString &text)
+{
+    itemizeOptionFromCommandLineStr(text);
+    validateOption();
+
+    setRowCount(mOptionItem.size());
+    for (int i=0; i<mOptionItem.size(); ++i) {
+        setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+    }
+    emit dataChanged(QModelIndex(), QModelIndex());
+}
+
+void OptionParameterModel::validateChangedOption(const QString &text)
+{
+    qDebug() << "OptionParameterModel::validateChangedOption(" << text << ") " << rowCount()  ;
+}
+
+void OptionParameterModel::setRowCount(int rows)
+{
+   int rc = mOptionItem.size();
+   if (rows < 0 || rc == rows)
+      return;
+
+   if (rc < rows)
+      insertRows(qMax(rc, 0), rows - rc);
+   else
+      removeRows(qMax(rows, 0), rc - rows);
+}
+
+void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
+{
+    mOptionItem.clear();
+    mOptionItem = commandLineTokenizer->tokenize(text);
+    for(int idx = 0; idx<mOptionItem.size(); ++idx)
+       mCheckState[idx] = QVariant();
 }
 
 void OptionParameterModel::validateOption()

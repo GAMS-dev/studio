@@ -7,17 +7,16 @@
 namespace gams {
 namespace studio {
 
-OptionEditor::OptionEditor(QLineEdit* lineEdit, CommandLineTokenizer* tokenizer, QWidget *parent) :
-    QWidget(parent)
+OptionEditor::OptionEditor(CommandLineOption* option, CommandLineTokenizer* tokenizer, QWidget *parent) :
+    mCommandLineOption(option), QWidget(parent)
 {
-    QList<OptionItem> optionItem = tokenizer->tokenize(lineEdit->text());
+    QList<OptionItem> optionItem = tokenizer->tokenize(mCommandLineOption->lineEdit()->text());
     QString normalizedText = tokenizer->normalize(optionItem);
     OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, tokenizer,  this);
 
     setupUi(this);
     updateCommandLineStr( normalizedText );
 
-//    showOptionDefintionCheckBox->setChecked(true);
     commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     commandLineTableView->setItemDelegate( new OptionCompleterDelegate(tokenizer, commandLineTableView));
     commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -51,18 +50,21 @@ OptionEditor::OptionEditor(QLineEdit* lineEdit, CommandLineTokenizer* tokenizer,
 
     searchLineEdit->setPlaceholderText("Search Option...");
 
-    connect(searchLineEdit, &QLineEdit::textChanged,
-            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
-//    connect(ui.showOptionDefintionCheckBox, &QCheckBox::clicked, this, &OptionConfigurator::toggleOptionDefinition);
-    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
-            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+//    connect(searchLineEdit, &QLineEdit::textChanged,
+//            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
+//    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
+//            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
 //    connect(commandLineTableView, &QTableView::customContextMenuRequested,
-//            this, &OptionConfigurator::showOptionContextMenu);
-    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
-            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
-    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
-            tokenizer, &CommandLineTokenizer::formatItemLineEdit);
+//            this, &OptionEditor::showOptionContextMenu);
+//    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
+//            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
+//    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
+//            tokenizer, &CommandLineTokenizer::formatItemLineEdit);
 
+//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+//            optionParamModel, &OptionParameterModel::updateCurrentOption );
+//    connect(mCommandLineOption, &QComboBox::editTextChanged,
+//            optionParamModel, &OptionParameterModel::validateChangedOption );
 }
 
 OptionEditor::~OptionEditor()
@@ -117,16 +119,45 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
 void OptionEditor::updateCommandLineStr(const QString &commandLineStr)
 {
-    searchLineEdit->setText( commandLineStr );
-    emit commandLineOptionChanged(searchLineEdit, commandLineStr);
+    mCommandLineOption->lineEdit()->setText( commandLineStr );
+    emit commandLineOptionChanged(mCommandLineOption->lineEdit(), commandLineStr);
 }
 
 void OptionEditor::updateCommandLineStr(const QList<OptionItem> &opionItems)
 {
-    emit commandLineOptionChanged(searchLineEdit, opionItems);
+    emit commandLineOptionChanged(mCommandLineOption->lineEdit(), opionItems);
 }
 
+void OptionEditor::showOptionContextMenu(const QPoint &pos)
+{
+    QModelIndexList selection = commandLineTableView->selectionModel()->selectedRows();
 
+    QMenu menu(this);
+    QAction* addAction = menu.addAction("add new option");
+    QAction* insertAction = menu.addAction("insert new option");
+    menu.addSeparator();
+    QAction* deleteAction = menu.addAction("delete selected option");
+
+    if (selection.count() <= 0) {
+        insertAction->setVisible(false);
+        deleteAction->setVisible(false);
+    }
+
+    QAction* action = menu.exec(commandLineTableView->viewport()->mapToGlobal(pos));
+    if (action == addAction) {
+         commandLineTableView->model()->insertRows(commandLineTableView->model()->rowCount(), 1, QModelIndex());
+    } else if (action == insertAction) {
+            if (selection.count() > 0) {
+                QModelIndex index = selection.at(0);
+                commandLineTableView->model()->insertRows(index.row(), 1, QModelIndex());
+            }
+   } else if (action == deleteAction) {
+             if (selection.count() > 0) {
+                 QModelIndex index = selection.at(0);
+                 commandLineTableView->model()->removeRow(index.row(), QModelIndex());
+             }
+    }
+}
 
 } // namespace studio
 } // namespace gams
