@@ -383,6 +383,11 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
         mCommandLineOption->resetCurrentValue();
     }
+
+    // remove highlights from old tab
+    FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
+    if (oldTab) oldTab->removeTextMarks(TextMark::result);
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {

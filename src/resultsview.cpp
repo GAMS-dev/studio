@@ -60,10 +60,11 @@ void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
     if (!jmpFc) EXCEPT() << "Not a file:" << item->data(0).toString();
     int selectedRow = item->row();
 
+    // open and highlight
     mMain->openFile(ui->tableWidget->item(selectedRow, 0)->text());
-
     mMain->searchWidget()->findInFile(jmpFc);
 
+    // jump to line
     QTextCursor tc(jmpFc->document()->findBlockByNumber(ui->tableWidget->item(selectedRow, 1)->text().toInt() - 1));
     jmpFc->jumpTo(tc, false);
 }
