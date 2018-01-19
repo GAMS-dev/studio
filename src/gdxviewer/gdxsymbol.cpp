@@ -339,6 +339,20 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
+double GdxSymbol::specVal2SortVal(double val)
+{
+    if (val == GMS_SV_UNDEF)
+        return mSpecValSortVal[GMS_SVIDX_UNDEF];
+    else if (val == GMS_SV_NA)
+        return  mSpecValSortVal[GMS_SVIDX_NA];
+    else if (val == GMS_SV_MINF)
+        return  mSpecValSortVal[GMS_SVIDX_MINF];
+    else if (val == GMS_SV_EPS)
+        return  mSpecValSortVal[GMS_SVIDX_EPS];
+    else
+        return val;
+}
+
 QVector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
@@ -461,16 +475,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             {
                 val = mValues[mRecSortIdx[rec]];
                 if (val>=GMS_SV_UNDEF)
-                {
-                    if (val == GMS_SV_UNDEF)
-                        val = mSpecValSortVal[GMS_SVIDX_UNDEF];
-                    else if (val == GMS_SV_NA)
-                        val = mSpecValSortVal[GMS_SVIDX_NA];
-                    else if (val == GMS_SV_MINF)
-                        val = mSpecValSortVal[GMS_SVIDX_MINF];
-                    else if (val == GMS_SV_EPS)
-                        val = mSpecValSortVal[GMS_SVIDX_EPS];
-                }
+                    val = specVal2SortVal(val);
                 l.append(QPair<double, int>(val, mRecSortIdx[rec]));
             }
         }
@@ -480,16 +485,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             {
                 val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
                 if (val>=GMS_SV_UNDEF)
-                {
-                    if (val == GMS_SV_UNDEF)
-                        val = mSpecValSortVal[GMS_SVIDX_UNDEF];
-                    else if (val == GMS_SV_NA)
-                        val = mSpecValSortVal[GMS_SVIDX_NA];
-                    else if (val == GMS_SV_MINF)
-                        val = mSpecValSortVal[GMS_SVIDX_MINF];
-                    else if (val == GMS_SV_EPS)
-                        val = mSpecValSortVal[GMS_SVIDX_EPS];
-                }
+                    val = specVal2SortVal(val);
                 l.append(QPair<double, int>(val, mRecSortIdx[rec]));
             }
         }

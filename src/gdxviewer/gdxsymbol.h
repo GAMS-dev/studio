@@ -111,6 +111,8 @@ private:
     void loadMetaData();
     void loadDomains();
 
+    double specVal2SortVal(double val);
+
     QVector<QVector<int>*> mUelsInColumn;
     QVector<bool*> mShowUelInColumn;
     QVector<bool> mFilterActive;
