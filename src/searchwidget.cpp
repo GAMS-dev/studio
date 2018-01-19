@@ -267,6 +267,7 @@ void SearchWidget::simpleReplaceAll()
     if (!edit) return;
 
     QString searchTerm = ui->txt_search->text();
+    QRegularExpression searchRegex(ui->txt_search->text());
     QString replaceTerm = ui->txt_replace->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
@@ -275,7 +276,10 @@ void SearchWidget::simpleReplaceAll()
     QTextCursor lastItem;
 
     do {
-        item = edit->document()->find(searchTerm, lastItem, searchFlags);
+        if (regex())
+            item = edit->document()->find(searchRegex, lastItem, searchFlags);
+        else
+            item = edit->document()->find(searchTerm, lastItem, searchFlags);
         lastItem = item;
         if (!item.isNull()) {
             hits.append(item);
