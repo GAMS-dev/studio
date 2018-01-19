@@ -47,6 +47,8 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
+    QList<Result> findInFile(FileSystemContext *fsc);
+
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
@@ -72,7 +74,6 @@ private:
     void closeEvent(QCloseEvent *event);
     void simpleReplaceAll();
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
-    QList<Result> findInFile(FileSystemContext *fsc);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, bool clear = false);

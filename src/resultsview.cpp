@@ -58,14 +58,14 @@ void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
         jmpFc = static_cast<FileContext*>(fsc);
 
     if (!jmpFc) EXCEPT() << "Not a file:" << item->data(0).toString();
+    int selectedRow = item->row();
 
-    mMain->openFile(item->data(0).toString());
+    mMain->openFile(ui->tableWidget->item(selectedRow, 0)->text());
 
-//    QTextCursor tc(jmpFc->document()->findBlockByLineNumber(item->data(1).toInt()));
-//    qDebug() << "data 0" << item->data(0);
-//    qDebug() << "data 1" << item->data(1);
-//    qDebug() << "data 2" << item->data(2);
-//    jmpFc->jumpTo(tc, false);
+    mMain->searchWidget()->findInFile(jmpFc);
+
+    QTextCursor tc(jmpFc->document()->findBlockByNumber(ui->tableWidget->item(selectedRow, 1)->text().toInt() - 1));
+    jmpFc->jumpTo(tc, false);
 }
 
 }

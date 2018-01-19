@@ -94,11 +94,6 @@
      </column>
      <column>
       <property name="text">
-       <string>Column</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
        <string>Context</string>
       </property>
      </column>
