@@ -20,6 +20,7 @@
 #include "gamspaths.h"
 #include "exception.h"
 
+#include <QApplication>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
@@ -35,7 +36,7 @@ GAMSPaths::GAMSPaths()
 
 QString GAMSPaths::systemDir() {
     // TODO(AF) macOS stuff
-    QStringList paths = { QDir::currentPath().append("/..") };
+    QStringList paths = { QApplication::applicationDirPath() + QDir::separator() + ".." };
     QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
     if (path.isEmpty()) {
         path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
