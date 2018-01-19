@@ -63,7 +63,7 @@ bool SearchWidget::wholeWords()
 
 QString SearchWidget::searchTerm()
 {
-    return ui->txt_search->text();
+    return ui->cmb_search->currentData(Qt::DisplayRole).toString();
 }
 
 int SearchWidget::selectedScope()
@@ -176,7 +176,7 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
-    QString searchTerm = ui->txt_search->text();
+    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
@@ -266,8 +266,8 @@ void SearchWidget::simpleReplaceAll()
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
-    QString searchTerm = ui->txt_search->text();
-    QRegularExpression searchRegex(ui->txt_search->text());
+    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
+    QRegularExpression searchRegex(ui->cmb_search->currentData(Qt::DisplayRole).toString());
     QString replaceTerm = ui->txt_replace->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
@@ -307,7 +307,8 @@ void SearchWidget::find(bool backwards)
     if (!edit) return;
 
     bool useRegex = ui->cb_regex->isChecked();
-    QString searchTerm = ui->txt_search->text();
+    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
+    qDebug() << "searching for" << searchTerm;
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
     if (backwards)
         searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
@@ -355,11 +356,11 @@ void SearchWidget::showEvent(QShowEvent *event)
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
-    ui->txt_search->setFocus();
+    ui->cmb_search->setFocus();
     if (edit->textCursor().hasSelection())
-        ui->txt_search->setText(edit->textCursor().selection().toPlainText());
+        ui->cmb_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
-        ui->txt_search->setText("");
+        ui->cmb_search->setCurrentText("");
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* event)
@@ -370,6 +371,8 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 
         if (mMain->recent()->editor)
             mMain->recent()->editor->setFocus();
+    } else if (event->key() == Qt::Key_Return) {
+        on_btn_forward_clicked();
     }
 }
 
@@ -377,12 +380,6 @@ void SearchWidget::closeEvent(QCloseEvent *event) {
     updateMatchAmount(0, true);
 
     QDialog::closeEvent(event);
-}
-
-
-void SearchWidget::on_txt_search_returnPressed()
-{
-    on_btn_forward_clicked();
 }
 
 QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()

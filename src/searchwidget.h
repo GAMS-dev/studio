@@ -53,7 +53,6 @@ private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
     void on_btn_ReplaceAll_clicked();
-    void on_txt_search_returnPressed();
     void on_combo_scope_currentIndexChanged(int index);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();

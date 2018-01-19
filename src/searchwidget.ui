@@ -44,22 +44,6 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QLineEdit" name="txt_search">
-   <property name="geometry">
-    <rect>
-     <x>65</x>
-     <y>5</y>
-     <width>240</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attention: This search &lt;span style=&quot; font-weight:600;&quot;&gt;does&lt;/span&gt; currently &lt;span style=&quot; font-weight:600;&quot;&gt;not support &lt;/span&gt;regular expression matches that span over multiple lines [\n\r].&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="clearButtonEnabled">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -336,6 +320,22 @@
    </property>
    <property name="flat">
     <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmb_search">
+   <property name="geometry">
+    <rect>
+     <x>65</x>
+     <y>5</y>
+     <width>240</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="insertPolicy">
+    <enum>QComboBox::InsertAtTop</enum>
    </property>
   </widget>
  </widget>
