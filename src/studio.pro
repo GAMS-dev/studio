@@ -113,7 +113,8 @@ SOURCES += \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxidentifier.cpp \
     searchwidget.cpp \
-    gdxviewer/gdxsymbolview.cpp
+    gdxviewer/gdxsymbolview.cpp \
+    keys.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -166,7 +167,8 @@ HEADERS += \
     syntax/syntaxidentifier.h \
     searchwidget.h \
     syntax/syntaxdata.h \
-    gdxviewer/gdxsymbolview.h
+    gdxviewer/gdxsymbolview.h \
+    keys.h
 
 FORMS += \
     welcomepage.ui  \

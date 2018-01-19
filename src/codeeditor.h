@@ -77,13 +77,36 @@ private:
 
 private:
     LineNumberArea *mLineNumberArea;
-    int mBlockStartKey = 0;
     int mCurrentCol;
-    QTextCursor mBlockStartCursor;
-    QTextCursor mBlockLastCursor;
-    QRect mBlockCursorRect;
     StudioSettings *mSettings;
+
+private:
+    class BlockEdit
+    {
+    public:
+        explicit BlockEdit(CodeEditor* edit);
+        void keyPressEvent(QKeyEvent *e);
+        void keyReleaseEvent(QKeyEvent *e);
+        void mouseMoveEvent(QMouseEvent *e);
+        void mousePressEvent(QMouseEvent *e);
+        void mouseReleaseEvent(QMouseEvent *e);
+        void onUpdateBlockSelection();
+        int lineFrom() { return mBlockStartCursor.blockNumber(); }
+        int lineTo() { return mBlockLastCursor.blockNumber(); }
+        int colFrom() { return 0; }
+        int colTo() { return 0; }
+
+    private:
+        CodeEditor* mEdit;
+        int mBlockStartKey = 0;
+        QTextCursor mBlockStartCursor;
+        QTextCursor mBlockLastCursor;
+        QRect mBlockCursorRect;
+    };
+    BlockEdit* mBlockEdit = nullptr;
+
 };
+
 
 
 class LineNumberArea : public QWidget
