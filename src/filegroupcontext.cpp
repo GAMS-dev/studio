@@ -146,8 +146,10 @@ TextMarkList* FileGroupContext::marks(const QString& fileName)
 void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 {
     QHash<QString, TextMarkList*>::iterator it;
-    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
+    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it) {
+
         it.value()->removeTextMarks(tmTypes);
+    }
 }
 
 void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
@@ -260,6 +262,7 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
+    dumpMarks();
     removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 //    FileSystemContext *fsc = findFile(lstFileName());
 //    if (fsc && fsc->type() == FileSystemContext::File) {

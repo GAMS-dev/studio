@@ -32,6 +32,7 @@ TextMark::TextMark(Type tmType): mType(tmType)
 
 void TextMark::ensureFileContext()
 {
+    TRACE();
     if (!mFileContext && mGroup) {
         FileSystemContext *fsc = mGroup->findFile(mFileName);
         if (!fsc) {
@@ -40,6 +41,7 @@ void TextMark::ensureFileContext()
         }
         if (fsc && fsc->type() == FileSystemContext::File) {
             mFileContext = static_cast<FileContext*>(fsc);
+            DEB() << "mFileContext set to " << mFileContext;
             updateCursor();
         }
     } else if (!mFileContext) {
@@ -60,9 +62,11 @@ void TextMark::unbindFileContext()
 
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
+    TRACE();
     if (!fileContext)
         EXCEPT() << "FileContext must not be null.";
     mFileContext = fileContext;
+    DEB() << "mFileContext set to " << mFileContext;
     mGroup = nullptr;
     mFileName = "";
     mLine = line;
@@ -130,6 +134,15 @@ void TextMark::jumpToMark(bool focus)
 void TextMark::setRefMark(TextMark* refMark)
 {
     mReference = refMark;
+    if (mReference)
+        mReference->mBackRefs << this;
+}
+
+void TextMark::clearBackRefs()
+{
+    foreach (TextMark* backRef, mBackRefs) {
+        backRef->mReference = nullptr;
+    }
 }
 
 QColor TextMark::color()

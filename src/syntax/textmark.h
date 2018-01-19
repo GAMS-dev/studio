@@ -43,6 +43,7 @@ public:
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
+    void clearBackRefs();
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
     QColor color();
     FileType::Kind fileKind();
@@ -92,6 +93,7 @@ private:
     int mSpread = 0;
     QTextCursor mCursor;
     TextMark* mReference = nullptr;
+    QVector<TextMark*> mBackRefs;
 };
 
 } // namespace studio

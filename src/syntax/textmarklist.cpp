@@ -1,5 +1,6 @@
 #include "textmarklist.h"
 #include "filecontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -79,7 +80,10 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
         if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             int pos = tm->position();
             FileContext* file = tm->fileContext();
-            delete mMarks.takeAt(i);
+            TextMark* mark = mMarks.takeAt(i);
+            mark->clearBackRefs();
+            // TODO(JM) Somehow this cannot be deleted, as if it's already done
+//            delete mark;
             if (file) file->rehighlightAt(pos);
         }
     }
