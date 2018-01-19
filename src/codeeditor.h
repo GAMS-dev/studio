@@ -33,6 +33,7 @@ namespace studio {
 class TextMark;
 class StudioSettings;
 class LineNumberArea;
+class SearchWidget;
 
 class CodeEditor : public QPlainTextEdit
 {

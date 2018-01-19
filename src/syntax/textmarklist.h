@@ -20,6 +20,7 @@ public:
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
     QList<TextMark*> marks() { return mMarks;}
+    int textMarkCount(QSet<TextMark::Type> tmTypes);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
