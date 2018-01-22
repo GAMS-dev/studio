@@ -25,8 +25,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive.resize(mRecordCount);
-    mFilterActive.fill(false);
+    mFilterActive.resize(mDim);
+    for(int i=0; i<mDim; i++)
+        mFilterActive[i] = false;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -153,9 +154,11 @@ void GdxSymbol::loadData()
     t.start();
     QMutexLocker locker(mGdxMutex);
     mMinUel.resize(mDim);
-    mMinUel.fill(INT_MAX);
+    for(int i=0; i<mDim; i++)
+        mMinUel[i] = INT_MAX;
     mMaxUel.resize(mDim);
-    mMaxUel.fill(INT_MIN);
+    for(int i=0; i<mDim; i++)
+        mMaxUel[i] = INT_MIN;
     if(!mIsLoaded)
     {
         beginResetModel();
@@ -188,6 +191,7 @@ void GdxSymbol::loadData()
                 return;
             }
         }
+
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
@@ -280,7 +284,7 @@ void GdxSymbol::calcUelsInColumn()
 {
     for(int dim=0; dim<mDim; dim++)
     {
-        QVector<int>* uels = new QVector<int>();
+        std::vector<int>* uels = new std::vector<int>();
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
@@ -294,12 +298,12 @@ void GdxSymbol::calcUelsInColumn()
                 if(!sawUel[currentUel])
                 {
                     sawUel[currentUel] = true;
-                    uels->append(currentUel);
+                    uels->push_back(currentUel);
                 }
             }
         }
-        mUelsInColumn.append(uels);
-        mShowUelInColumn.append(sawUel);
+        mUelsInColumn.push_back(uels);
+        mShowUelInColumn.push_back(sawUel);
     }
 }
 
@@ -332,27 +336,27 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
-QVector<bool> GdxSymbol::filterActive() const
+std::vector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
 }
 
-void GdxSymbol::setFilterActive(const QVector<bool> &filterActive)
+void GdxSymbol::setFilterActive(const std::vector<bool> &filterActive)
 {
     mFilterActive = filterActive;
 }
 
-void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
+void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
 {
     mShowUelInColumn = showUelInColumn;
 }
 
-QVector<bool *> GdxSymbol::showUelInColumn() const
+std::vector<bool *> GdxSymbol::showUelInColumn() const
 {
     return mShowUelInColumn;
 }
 
-QVector<QVector<int> *> GdxSymbol::uelsInColumn() const
+std::vector<std::vector<int> *> GdxSymbol::uelsInColumn() const
 {
     return mUelsInColumn;
 }
@@ -364,9 +368,9 @@ void GdxSymbol::resetSortFilter()
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
     }
-    mFilterActive.fill(false);
     for(int dim=0; dim<mDim; dim++)
     {
+        mFilterActive[dim] = false;
         for(int uel : *mUelsInColumn.at(dim))
         {
             mShowUelInColumn.at(dim)[uel] = true;
