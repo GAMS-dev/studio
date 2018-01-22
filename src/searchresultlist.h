@@ -2,6 +2,7 @@
 #define SEARCHRESULTLIST_H
 
 #include <QtWidgets>
+#include <QAbstractTableModel>
 
 namespace gams {
 namespace studio {
@@ -21,10 +22,14 @@ private:
     explicit Result(int locLineNr, QString locFile, QString context = "");
 };
 
-class SearchResultList
+class SearchResultList : public QAbstractTableModel
 {
+    Q_OBJECT
 public:
-    SearchResultList(const QString &searchTerm);
+    SearchResultList(QObject *parent = nullptr);
+    SearchResultList(const SearchResultList& searchResultList);
+    SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
+    virtual ~SearchResultList();
     QList<Result> resultList();
     void addResult(int locLineNr, QString locFile, QString context = "");
     void addResultList(QList<Result> resList);
@@ -32,6 +37,10 @@ public:
     bool isRegex() const;
     void useRegex(bool regex);
     int size();
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 private:
     QString mSearchTerm;

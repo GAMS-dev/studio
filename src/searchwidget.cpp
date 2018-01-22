@@ -188,7 +188,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     }
 
     QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
-    SearchResultList matches(searchTerm);
+    SearchResultList matches/*(searchTerm)*/;
     if (regex()) matches.useRegex(true);
 
     if (fsc->type() == FileSystemContext::FileGroup) { // or is it a group?
@@ -455,7 +455,7 @@ void SearchWidget::on_btn_clear_clicked()
     updateMatchAmount(0, true);
 }
 
-void gams::studio::SearchWidget::on_cmb_search_currentTextChanged(const QString &arg1)
+void SearchWidget::on_cmb_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);

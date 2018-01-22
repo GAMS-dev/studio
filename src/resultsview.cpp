@@ -25,17 +25,19 @@
 namespace gams {
 namespace studio {
 
-ResultsView::ResultsView(SearchResultList resultList, MainWindow *parent) :
+ResultsView::ResultsView(const SearchResultList &resultList, MainWindow *parent) :
     QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList)
 {
     ui->setupUi(this);
-    foreach (Result item, resultList.resultList()) {
-        int row = ui->tableWidget->rowCount();
-        ui->tableWidget->insertRow(row);
-        ui->tableWidget->setItem(row, 0, new QTableWidgetItem(item.locFile()));
-        ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(item.locLineNr())));
-        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(item.context()));
-    }
+
+//    ui->tableWidget->setModel(mResultList);
+//    foreach (Result item, resultList.resultList()) {
+//        int row = ui->tableWidget->rowCount();
+//        ui->tableWidget->insertRow(row);
+//        ui->tableWidget->setItem(row, 0, new QTableWidgetItem(item.locFile()));
+//        ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(item.locLineNr())));
+//        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(item.context()));
+//    }
 }
 
 ResultsView::~ResultsView()
