@@ -19,6 +19,7 @@
  */
 #include "filesystemcontext.h"
 #include "filegroupcontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -37,6 +38,8 @@ void FileSystemContext::checkFlags()
 
 FileSystemContext::~FileSystemContext()
 {
+    DEB() << "deleting FileSystemContext "<<mId;
+
     if (mParent) {
         FileGroupContext* group = mParent;
         mParent = nullptr;

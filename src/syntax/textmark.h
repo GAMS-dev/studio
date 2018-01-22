@@ -35,8 +35,7 @@ public:
     enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
-    void clearRefs();
-    void ensureFileContext();
+    virtual ~TextMark();
     void unbindFileContext();
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);
     void setPosition(QString fileName, FileGroupContext* group, int line, int column, int size = 0);
@@ -44,14 +43,14 @@ public:
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
-    void clearBackRefs();
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
     QColor color();
     FileType::Kind fileKind();
     FileType::Kind refFileKind();
-
     int value() const;
     void setValue(int value);
+
+    void clearBackRefs();
 
     QIcon icon();
     inline Type type() const {return mType;}
@@ -83,6 +82,12 @@ public:
     QString dump();
 
 private:
+    void ensureFileContext();
+
+private:
+    static int mNextId;
+    int mId;
+
     FileContext* mFileContext = nullptr;
     FileGroupContext* mGroup = nullptr;
     QString mFileName;

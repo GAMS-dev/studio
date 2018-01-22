@@ -83,7 +83,7 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, FileContext* fi
             TextMark* mark = mMarks.takeAt(i);
             mark->clearBackRefs();
             // TODO(JM) Somehow this cannot be deleted, as if it's already done
-//            delete mark;
+            delete mark;
             if (file) file->rehighlightAt(pos);
         }
     }

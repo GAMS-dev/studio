@@ -26,15 +26,14 @@
 namespace gams {
 namespace studio {
 
-TextMark::TextMark(Type tmType): mType(tmType)
-{
-}
+int TextMark::mNextId = 0;
 
-void TextMark::clearRefs()
+TextMark::TextMark(Type tmType): mId(mNextId++), mType(tmType)
+{}
+
+TextMark::~TextMark()
 {
-    for (TextMark *backRef: mBackRefs) {
-        backRef->mReference = nullptr;
-    }
+    DEB() << "deleting TextMark "<<mId;
 }
 
 void TextMark::ensureFileContext()
@@ -148,6 +147,7 @@ void TextMark::setRefMark(TextMark* refMark)
 void TextMark::clearBackRefs()
 {
     foreach (TextMark* backRef, mBackRefs) {
+        DEB() << "decouple reference in " << backRef->mId;
         backRef->mReference = nullptr;
     }
 }
