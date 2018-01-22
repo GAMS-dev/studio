@@ -38,8 +38,6 @@ void FileSystemContext::checkFlags()
 
 FileSystemContext::~FileSystemContext()
 {
-    DEB() << "deleting FileSystemContext "<<mId;
-
     if (mParent) {
         FileGroupContext* group = mParent;
         mParent = nullptr;

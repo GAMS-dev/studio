@@ -32,9 +32,7 @@ TextMark::TextMark(Type tmType): mId(mNextId++), mType(tmType)
 {}
 
 TextMark::~TextMark()
-{
-    DEB() << "deleting TextMark "<<mId;
-}
+{}
 
 void TextMark::ensureFileContext()
 {
@@ -47,7 +45,6 @@ void TextMark::ensureFileContext()
         }
         if (fsc && fsc->type() == FileSystemContext::File) {
             mFileContext = static_cast<FileContext*>(fsc);
-            DEB() << "mFileContext set to " << mFileContext;
             updateCursor();
         }
     } else if (!mFileContext) {
@@ -72,7 +69,6 @@ void TextMark::setPosition(FileContext* fileContext, int line, int column, int s
     if (!fileContext)
         EXCEPT() << "FileContext must not be null.";
     mFileContext = fileContext;
-    DEB() << "mFileContext set to " << mFileContext;
     mGroup = nullptr;
     mFileName = "";
     mLine = line;
@@ -144,11 +140,17 @@ void TextMark::setRefMark(TextMark* refMark)
         mReference->mBackRefs << this;
 }
 
+void TextMark::unsetRefMark(TextMark* refMark)
+{
+    if (mReference == refMark) mReference = nullptr;
+    mBackRefs.removeAll(refMark);
+}
+
 void TextMark::clearBackRefs()
 {
+    if (mReference) mReference->unsetRefMark(this);
     foreach (TextMark* backRef, mBackRefs) {
-        DEB() << "decouple reference in " << backRef->mId;
-        backRef->mReference = nullptr;
+        backRef->unsetRefMark(this);
     }
 }
 
@@ -231,8 +233,11 @@ void TextMark::modified()
 
 QString TextMark::dump()
 {
-    return QString("Line %1 [c%2 l%3]  (in type %7)").arg(line()).arg(column()).arg(size())
-            .arg(mFileContext->type());
+    QStringList refs;
+    for (TextMark* mark: mBackRefs) {
+        refs << QString::number(mark->mId);
+    }
+    return QString("[%1->%2]  %3").arg(mId).arg(mReference?QString::number(mReference->mId):"#").arg(refs.join(", "));
 }
 
 int TextMark::value() const

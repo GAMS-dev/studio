@@ -43,6 +43,7 @@ public:
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
+    void unsetRefMark(TextMark* refMark);
     inline bool isErrorRef() {return mReference && mReference->type() == error;}
     QColor color();
     FileType::Kind fileKind();

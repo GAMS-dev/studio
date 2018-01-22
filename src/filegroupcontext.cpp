@@ -171,10 +171,10 @@ void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmType
 void FileGroupContext::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
-        QString res = file+":";
+        QString res = file+":\n";
         TextMarkList* list = marks(file);
         foreach (TextMark* mark, list->marks()) {
-            res.append(QString(" [%1,%2]").arg(mark->line()).arg(mark->column()));
+            res.append(QString("  %1\n").arg(mark->dump()));
         }
         DEB() << res;
     }

@@ -311,7 +311,6 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
 
 void FileRepository::removeMarks(FileGroupContext* group)
 {
-    group->dumpMarks();
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
