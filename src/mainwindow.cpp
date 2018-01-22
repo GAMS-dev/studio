@@ -848,6 +848,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     } else {
         mSettings->saveSettings();
     }
+    on_actionClose_All_triggered();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
