@@ -31,7 +31,7 @@ protected:
     friend class FileGroupContext;
     TextMark* generateTextMark(FileContext *context, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
     TextMark* generateTextMark(QString fileName, FileGroupContext *group, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes, FileContext* file = nullptr);
     QList<TextMark*> findMarks(const QTextCursor& cursor);
     void merge(const TextMarkList &marks);
     TextMark* firstErrorMark();

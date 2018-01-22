@@ -35,6 +35,7 @@ public:
     enum Type {none, error, link, bookmark, result, all};
 
     explicit TextMark(TextMark::Type tmType);
+    void clearRefs();
     void ensureFileContext();
     void unbindFileContext();
     void setPosition(FileContext* fileContext, int line, int column, int size = 0);

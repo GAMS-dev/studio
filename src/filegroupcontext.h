@@ -47,7 +47,8 @@ public:
     int childCount() const;
     int indexOf(FileSystemContext *child);
     FileSystemContext* childEntry(int index) const;
-    FileSystemContext* findFile(QString filePath);
+    FileSystemContext* findContext(QString filePath);
+    FileContext* findFile(QString filePath);
     QIcon icon();
 
     QString runableGms();

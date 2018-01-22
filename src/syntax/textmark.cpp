@@ -30,6 +30,13 @@ TextMark::TextMark(Type tmType): mType(tmType)
 {
 }
 
+void TextMark::clearRefs()
+{
+    for (TextMark *backRef: mBackRefs) {
+        backRef->mReference = nullptr;
+    }
+}
+
 void TextMark::ensureFileContext()
 {
     TRACE();
