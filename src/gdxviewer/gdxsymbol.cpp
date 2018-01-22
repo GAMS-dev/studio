@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QVarLengthArray>
 #include <algorithm>
+#include "float.h"
 
 namespace gams {
 namespace studio {
