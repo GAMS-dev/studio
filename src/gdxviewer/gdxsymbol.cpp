@@ -136,6 +136,12 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "-INF";
                 if (val == GMS_SV_EPS)
                     return "EPS";
+                else if (val>=GMS_SV_ACR)
+                {
+                    char acr[GMS_SSSIZE];
+                    gdxAcronymName(mGdx, val, acr);
+                    return QString(acr);
+                }
                 //TODO(CW): check special values
             }
         }
