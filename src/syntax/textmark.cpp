@@ -36,7 +36,6 @@ TextMark::~TextMark()
 
 void TextMark::ensureFileContext()
 {
-    TRACE();
     if (!mFileContext && mGroup) {
         FileSystemContext *fsc = mGroup->findFile(mFileName);
         if (!fsc) {
@@ -65,7 +64,6 @@ void TextMark::unbindFileContext()
 
 void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
 {
-    TRACE();
     if (!fileContext)
         EXCEPT() << "FileContext must not be null.";
     mFileContext = fileContext;

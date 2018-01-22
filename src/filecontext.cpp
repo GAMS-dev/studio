@@ -32,7 +32,6 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
     : FileSystemContext(fileId, name, location, type)
 {
-    TRACE();
     DEB() << "Path: " << location;
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
@@ -49,7 +48,6 @@ QWidgetList& FileContext::editorList()
 
 FileContext::~FileContext()
 {
-    TRACE();
     if (mMarks) mMarks->unbindFileContext();
 
 //    setParentEntry(nullptr);

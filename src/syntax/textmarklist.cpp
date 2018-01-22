@@ -71,7 +71,7 @@ TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* grou
     return res;
 }
 
-  int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
+int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
 {
     int i = mMarks.size();
     int res = 0;
@@ -86,7 +86,7 @@ TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* grou
     return res;
 }
 
-void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, FileContext* file)
+void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     int i = mMarks.size();
     while (i > 0) {
