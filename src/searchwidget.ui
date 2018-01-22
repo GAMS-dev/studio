@@ -207,7 +207,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scope of where to search.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scope of where to search.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This File:&lt;/span&gt; Searches only the file which is currently opened in the editor.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This Group:&lt;/span&gt; Searches files related to the group which is currently active.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Open Tabs:&lt;/span&gt; Searches all files that have open editors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;All Files:&lt;/span&gt; Searches all files that appear in the project explorer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <item>
     <property name="text">
@@ -288,7 +288,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets a filter for filenames using wildcard syntax.&lt;/p&gt;&lt;p&gt;Examples: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;trnsport&lt;/span&gt;&amp;quot; to search in all files with that name including any extension, &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms&lt;/span&gt;&amp;quot; to search in all gms files.&lt;/p&gt;&lt;p&gt;Does &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; support list of filters yet (like &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms, *.lst&lt;/span&gt;&amp;quot;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets a filter for filenames using wildcard syntax.&lt;/p&gt;&lt;p&gt;Examples: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;trnsport&lt;/span&gt;&amp;quot; to search in all files with that name including any extension, &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms&lt;/span&gt;&amp;quot; to search in all gms files.&lt;/p&gt;&lt;p&gt;Does &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; support list of filters yet (like &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms, *.lst&lt;/span&gt;&amp;quot;).&lt;/p&gt;&lt;p&gt;Note: GDX files are always excluded and cannot be searched.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="placeholderText">
     <string/>

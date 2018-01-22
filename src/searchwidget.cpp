@@ -39,6 +39,8 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
+
+    setFixedSize(size());
 }
 
 SearchWidget::~SearchWidget()
@@ -179,8 +181,9 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     QRegExp rx(ui->txt_filePattern->text());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
-    // scope not current file && wildcard not matching
-    if ((ui->combo_scope->currentIndex() != 1) && (rx.indexIn(fsc->location()) == -1)) {
+    // (scope not current file && wildcard not matching) || has gdx extension
+    if (((ui->combo_scope->currentIndex() != 1) && (rx.indexIn(fsc->location()) == -1))
+            || fsc->location().endsWith("gdx")) {
         return QList<Result>();
     }
 
