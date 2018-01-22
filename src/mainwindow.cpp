@@ -33,6 +33,8 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
+#include "searchresultlist.h"
+#include "resultsview.h"
 
 namespace gams {
 namespace studio {
@@ -90,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     ensureCodecMenu("System");
     mSettings->loadSettings();
     mRecent.path = mSettings->defaultWorkspace();
+    mSearchWidget = new SearchWidget(this);
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -228,7 +231,7 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
 
 SearchWidget* MainWindow::searchWidget() const
 {
-    return sw;
+    return mSearchWidget;
 }
 
 bool MainWindow::projectViewVisibility()
@@ -380,6 +383,11 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
         mCommandLineOption->resetCurrentValue();
     }
+
+    // remove highlights from old tab
+    FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
+    if (oldTab) oldTab->removeTextMarks(TextMark::result);
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
@@ -822,6 +830,16 @@ bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
     return true;
 }
 
+StudioSettings *MainWindow::settings() const
+{
+    return mSettings;
+}
+
+RecentData *MainWindow::recent()
+{
+    return &mRecent;
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     QList<FileContext*> oFiles = mFileRepo.modifiedFiles();
@@ -839,6 +857,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         openContext(ui->projectView->currentIndex());
     } else {
         QMainWindow::keyPressEvent(event);
+    }
+
+    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+        mSearchWidget->find(true); // Shift + F3
+    } else if (event->key() == Qt::Key_F3) {
+        mSearchWidget->find(false); // F3
     }
 }
 
@@ -1151,21 +1175,29 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    // create
-    if (sw == nullptr) {
-        sw = new SearchWidget(mSettings, mRecent, mFileRepo, this);
-    }
-
     // toggle visibility
-    if (sw->isVisible()) {
-        sw->hide();
+    if (mSearchWidget->isVisible()) {
+        mSearchWidget->hide();
     } else {
         QPoint p(0,0);
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
-        int offset = (ui->mainTab->currentWidget()->width() - sw->width());
-        sw->move(newP.x() + offset, newP.y());
-        sw->show();
+
+        if (ui->mainTab->currentWidget()) {
+            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
+            mSearchWidget->move(newP.x() + offset, newP.y());
+        }
+        mSearchWidget->show();
     }
+}
+
+void MainWindow::showResults(SearchResultList results)
+{
+    ResultsView *res = new ResultsView(results, this);
+    QString title("Results: " + mSearchWidget->searchTerm());
+
+    res->resizeColumnsToContent();
+    int index = ui->logTab->addTab(res, title);
+    ui->logTab->setCurrentIndex(index);
 }
 
 }

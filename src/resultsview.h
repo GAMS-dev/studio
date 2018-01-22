@@ -17,46 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#ifndef RESULTSVIEW_H
+#define RESULTSVIEW_H
 
-#include <QDialog>
-#include "studiosettings.h"
+#include <QTableWidget>
+#include <QWidget>
+#include "mainwindow.h"
+#include "searchresultlist.h"
 
 namespace Ui {
-class SettingsDialog;
+class ResultsView;
 }
 
 namespace gams {
 namespace studio {
 
-
-class SettingsDialog : public QDialog
+class Result;
+class ResultsView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(StudioSettings* settings, QWidget *parent = 0);
-    ~SettingsDialog();
+    explicit ResultsView(SearchResultList resultList, MainWindow *parent = 0);
+    ~ResultsView();
+    void resizeColumnsToContent();
 
-protected:
-    void closeEvent(QCloseEvent *event);
 private slots:
-    void on_buttonBox_clicked(QAbstractButton *button);
-    void on_fontComboBox_currentIndexChanged(const QString &arg1);
-    void on_sb_fontsize_valueChanged(int arg1);
-    void setModified();
+    void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
 
 private:
-    StudioSettings *mSettings;
-    Ui::SettingsDialog *ui;
-    void saveSettings();
-    void loadSettings();
-    void setModifiedStatus(bool status);
-    bool isModified = false;
+    Ui::ResultsView *ui;
+    MainWindow *mMain;
+    SearchResultList mResultList;
 };
 
 }
 }
 
-#endif // SETTINGSDIALOG_H
+#endif // RESULTSVIEW_H

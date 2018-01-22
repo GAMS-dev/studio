@@ -390,6 +390,11 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
+int FileContext::textMarkCount(QSet<TextMark::Type> tmTypes)
+{
+    return mMarks->textMarkCount(tmTypes);
+}
+
 bool FileContext::eventFilter(QObject* watched, QEvent* event)
 {
     static QSet<QEvent::Type> evCheckMouse {QEvent::MouseButtonDblClick, QEvent::MouseButtonPress, QEvent::MouseButtonRelease, QEvent::MouseMove};
