@@ -378,6 +378,10 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 
         if (mMain->recent()->editor)
             mMain->recent()->editor->setFocus();
+    } else if (event->modifiers() & Qt::ShiftModifier && (event->key() == Qt::Key_F3)) {
+        find(true);
+    } else if (event->key() == Qt::Key_F3) {
+        find();
     } else if (event->key() == Qt::Key_Return) {
         on_btn_forward_clicked();
     }
@@ -448,7 +452,7 @@ void SearchWidget::on_btn_clear_clicked()
     updateMatchAmount(0, true);
 }
 
-void SearchWidget::on_txt_search_textChanged(const QString &arg1)
+void gams::studio::SearchWidget::on_cmb_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
@@ -458,5 +462,3 @@ void SearchWidget::on_txt_search_textChanged(const QString &arg1)
 
 }
 }
-
-

@@ -57,8 +57,7 @@ private slots:
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
-
-    void on_txt_search_textChanged(const QString &arg1);
+    void on_cmb_search_currentTextChanged(const QString &arg1);
 
 private:
     Ui::SearchWidget *ui;
