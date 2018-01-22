@@ -96,7 +96,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;Return&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>Find</string>
@@ -256,7 +256,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search forward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search forward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;Return&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>&gt;</string>
@@ -287,8 +287,11 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets a filter for filenames using wildcard syntax.&lt;/p&gt;&lt;p&gt;Examples: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;trnsport&lt;/span&gt;&amp;quot; to search in all files with that name including any extension, &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms&lt;/span&gt;&amp;quot; to search in all gms files.&lt;/p&gt;&lt;p&gt;Does &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; support list of filters yet (like &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms, *.lst&lt;/span&gt;&amp;quot;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="placeholderText">
-    <string>&lt;not implemented yet&gt;</string>
+    <string/>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_clear">

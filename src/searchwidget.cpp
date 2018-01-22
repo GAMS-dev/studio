@@ -176,6 +176,14 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
+    QRegExp rx(ui->txt_filePattern->text());
+    rx.setPatternSyntax(QRegExp::Wildcard);
+
+    // scope not current file && wildcard not matching
+    if ((ui->combo_scope->currentIndex() != 1) && (rx.indexIn(fsc->location()) == -1)) {
+        return QList<Result>();
+    }
+
     QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
@@ -308,7 +316,6 @@ void SearchWidget::find(bool backwards)
 
     bool useRegex = ui->cb_regex->isChecked();
     QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
-    qDebug() << "searching for" << searchTerm;
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
     if (backwards)
         searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
