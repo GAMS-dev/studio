@@ -30,7 +30,7 @@ ResultsView::ResultsView(SearchResultList &resultList, MainWindow *parent) :
 {
     ui->setupUi(this);
     ui->tableView->setModel(&mResultList);
-
+    searchTermLength = resultList.searchTerm().length();
 }
 
 ResultsView::~ResultsView()
@@ -46,23 +46,27 @@ void ResultsView::resizeColumnsToContent()
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
+    Result item = mResultList.resultList().at(selectedRow);
 
-    FileSystemContext *fsc = mMain->fileRepository()->findContext(mResultList.resultList().at(selectedRow).locFile());
+    FileSystemContext *fsc = mMain->fileRepository()->findContext(item.locFile());
     FileContext *jmpFc = nullptr;
-    if (!fsc) EXCEPT() << "File not found:" << mResultList.resultList().at(selectedRow).locFile();
+    if (!fsc) EXCEPT() << "File not found:" << item.locFile();
 
     if (fsc->type() == FileSystemContext::File)
         jmpFc = static_cast<FileContext*>(fsc);
 
-    if (!jmpFc) EXCEPT() << "Not a file:" << mResultList.resultList().at(selectedRow).locFile();
+    if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->openFile(mResultList.resultList().at(selectedRow).locFile());
+    mMain->openFile(item.locFile());
     mMain->searchWidget()->findInFile(jmpFc);
 
     // jump to line
-    QTextCursor tc(jmpFc->document()->findBlockByNumber(mResultList.resultList().at(selectedRow).locLineNr() - 1));
+    QTextCursor tc(jmpFc->document());
+    tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
+                   + item.locCol() - searchTermLength);
     jmpFc->jumpTo(tc, false);
+    jmpFc->editors().first()->setFocus();
 }
 
 }

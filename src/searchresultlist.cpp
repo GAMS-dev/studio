@@ -16,7 +16,6 @@ SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
 
 SearchResultList::~SearchResultList()
 {
-    // todo
 }
 
 QList<Result> SearchResultList::resultList()
@@ -24,9 +23,9 @@ QList<Result> SearchResultList::resultList()
     return mResultList;
 }
 
-void SearchResultList::addResult(int locLineNr, QString locFile, QString context)
+void SearchResultList::addResult(int locLineNr, int locCol, QString locFile, QString context)
 {
-    mResultList.append(Result(locLineNr, locFile, context));
+    mResultList.append(Result(locLineNr, locCol, locFile, context));
 }
 
 void SearchResultList::addResultList(QList<Result> resList)

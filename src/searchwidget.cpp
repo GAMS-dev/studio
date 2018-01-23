@@ -216,11 +216,12 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 while (!in.atEnd()) {
                     lineCounter++;
                     QString line = in.readLine();
+                    QRegularExpressionMatch match;
 
-                    if (regex() && line.contains(searchRegex)) {
-                        matches.addResult(lineCounter, file.fileName(), line.trimmed());
+                    if (regex() && line.contains(searchRegex, &match)) {
+                        matches.addResult(lineCounter, match.capturedStart(), file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
-                        matches.addResult(lineCounter, file.fileName(), line.trimmed());
+                        matches.addResult(lineCounter, line.indexOf(searchTerm, cs), file.fileName(), line.trimmed());
                     }
                 }
                 file.close();
@@ -242,7 +243,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 else break;
 
                 if (!item.isNull()) {
-                    matches.addResult(item.blockNumber()+1, fc->location(), item.block().text().trimmed());
+                    matches.addResult(item.blockNumber()+1, item.columnNumber(), fc->location(), item.block().text().trimmed());
                     if (isOpenFile) {
                         int length = item.selectionEnd() - item.selectionStart();
                         mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
@@ -410,6 +411,11 @@ int Result::locLineNr() const
     return mLocLineNr;
 }
 
+int Result::locCol() const
+{
+    return mLocCol;
+}
+
 QString Result::locFile() const
 {
     return mLocFile;
@@ -420,8 +426,8 @@ QString Result::context() const
     return mContext;
 }
 
-Result::Result(int locLineNr, QString locFile, QString context) :
-    mLocLineNr(locLineNr), mLocFile(locFile), mContext(context)
+Result::Result(int locLineNr, int locCol, QString locFile, QString context) :
+    mLocLineNr(locLineNr), mLocCol(locCol), mLocFile(locFile), mContext(context)
 {
 }
 

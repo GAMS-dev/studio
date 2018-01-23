@@ -49,6 +49,7 @@ private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
     SearchResultList mResultList;
+    int searchTermLength = 0;
 };
 
 }

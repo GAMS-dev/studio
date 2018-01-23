@@ -12,14 +12,16 @@ class Result
     friend class SearchResultList;
 public:
     int locLineNr() const;
+    int locCol() const;
     QString locFile() const;
     QString context() const;
 
 private:
     int mLocLineNr;
+    int mLocCol;
     QString mLocFile;
     QString mContext;
-    explicit Result(int locLineNr, QString locFile, QString context = "");
+    explicit Result(int locLineNr, int locCol, QString locFile, QString context = "");
 };
 
 class SearchResultList : public QAbstractTableModel
@@ -30,7 +32,7 @@ public:
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList();
     QList<Result> resultList();
-    void addResult(int locLineNr, QString locFile, QString context = "");
+    void addResult(int locLineNr, int locCol, QString locFile, QString context = "");
     void addResultList(QList<Result> resList);
     QString searchTerm() const;
     bool isRegex() const;
