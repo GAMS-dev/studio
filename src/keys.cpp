@@ -1,11 +1,35 @@
 #include "keys.h"
 
+
 namespace gams {
 namespace studio {
 
+Keys *Keys::mInstance = nullptr;
+
+Keys::Keys()
+{
+
+}
+
+Keys&Keys::instance()
+{
+    if (!mInstance) {
+        mInstance = new Keys();
+        mInstance->reset();
+    }
+    return *mInstance;
+}
+
 KeySeqList::KeySeqList(const QKeySequence& seq, QString title)
+    : mTitle(title)
 {
     mSequence << seq;
+}
+
+KeySeqList::KeySeqList(const char* seq, QString title)
+    : mTitle(title)
+{
+    mSequence << QKeySequence(seq);
 }
 
 KeySeqList& KeySeqList::operator=(const KeySeqList& other)
@@ -40,6 +64,15 @@ bool KeySeqList::matches(QKeyEvent* e)
     return mSequence.contains(QKeySequence(searchkey));
 }
 
+void Keys::reset()
+{
+    KeySeqList *seq = new KeySeqList("Shift+Alt+Up","start block edit");
+    *seq << QKeySequence("Shift+Alt+Down");
+    setHotkey(Hotkey::BlockEdit, seq);
+    seq = new KeySeqList("Ctrl-L","duplicate line");
+    setHotkey(Hotkey::DuplicateLine, seq);
+}
+
 void Keys::read(const QJsonObject& json)
 {
 
@@ -55,10 +88,6 @@ void Keys::setHotkey(Hotkey key, KeySeqList* keySeqList)
     mHotkeyDefs.insert(key, keySeqList);
 }
 
-Keys::Keys()
-{
-
-}
 
 } // namespace studio
 } // namespace gams
