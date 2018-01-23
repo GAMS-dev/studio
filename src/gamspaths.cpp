@@ -44,7 +44,7 @@ QString GAMSPaths::systemDir() {
         gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
     }
 #else
-    appDirPath.append(QDir::separator() + "..");
+    appDirPath.append(QDir::separator()).append("..");
 #endif
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
