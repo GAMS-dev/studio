@@ -38,12 +38,12 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(const SearchResultList &resultList, MainWindow *parent = 0);
+    explicit ResultsView(SearchResultList &resultList, MainWindow *parent = 0);
     ~ResultsView();
     void resizeColumnsToContent();
 
 private slots:
-    void on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+    void on_tableView_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::ResultsView *ui;

@@ -188,7 +188,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     }
 
     QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
-    SearchResultList matches/*(searchTerm)*/;
+    SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
     if (fsc->type() == FileSystemContext::FileGroup) { // or is it a group?

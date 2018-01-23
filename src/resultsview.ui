@@ -13,10 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
-   <property name="spacing">
-    <number>0</number>
-   </property>
+  <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -29,8 +26,11 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item>
-    <widget class="QTableWidget" name="tableWidget">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QTableView" name="tableView">
      <property name="sizeAdjustPolicy">
       <enum>QAbstractScrollArea::AdjustToContents</enum>
      </property>
@@ -61,42 +61,24 @@
      <property name="cornerButtonEnabled">
       <bool>false</bool>
      </property>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="horizontalHeaderStretchLastSection">
+     <attribute name="horizontalHeaderHighlightSections">
       <bool>true</bool>
      </attribute>
      <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderCascadingSectionResizes">
       <bool>true</bool>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
+      <number>1</number>
      </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
-      <number>15</number>
+      <number>20</number>
      </attribute>
      <attribute name="verticalHeaderStretchLastSection">
-      <bool>false</bool>
+      <bool>true</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>File</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>LineNr</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Context</string>
-      </property>
-     </column>
     </widget>
    </item>
   </layout>

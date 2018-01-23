@@ -3,14 +3,9 @@
 namespace gams {
 namespace studio {
 
-SearchResultList::SearchResultList(QObject *parent) : QAbstractTableModel(parent)
+SearchResultList::SearchResultList(SearchResultList &searchResultList) :
+    QAbstractTableModel(searchResultList.parent()), mResultList(searchResultList.resultList())
 {
-
-}
-
-SearchResultList::SearchResultList(const SearchResultList &searchResultList)/* : QAbstractTableModel(searchResultList.parent())*/
-{
-
 }
 
 SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
@@ -56,31 +51,55 @@ int SearchResultList::size()
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return mResultList.size();
 }
 
 int SearchResultList::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return 3;
 }
 
 QVariant SearchResultList::data(const QModelIndex &index, int role) const
 {
+    if (!index.isValid())
+        return QVariant();
+
     if (role == Qt::DisplayRole) {
         int row = index.row();
-        int col = index.column();
 
         Result item = mResultList.at(row);
 
-        return QString("Filename%1, LineNr%2, Context%3")
-                .arg(item.locFile())
-                .arg(item.locLineNr())
-                .arg(item.context());
-    } else {
-        return QVariant();
+        switch(index.column())
+        {
+        case 0: return item.locFile(); break;
+        case 1: return item.locLineNr(); break;
+        case 2: return item.context(); break;
+        }
     }
+    return QVariant();
+}
+
+QVariant SearchResultList::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole)
+    {
+        if (orientation == Qt::Horizontal) {
+            switch (section)
+            {
+            case 0:
+                return QString("Filename");
+            case 1:
+                return QString("LineNr");
+            case 2:
+                return QString("Context");
+            }
+        }
+    }
+    return QVariant();
 }
 
 bool SearchResultList::isRegex() const
