@@ -84,7 +84,7 @@ public:
     QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
-    void showResults(SearchResultList results);
+    void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
 

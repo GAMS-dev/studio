@@ -25,17 +25,12 @@
 namespace gams {
 namespace studio {
 
-ResultsView::ResultsView(SearchResultList resultList, MainWindow *parent) :
+ResultsView::ResultsView(SearchResultList &resultList, MainWindow *parent) :
     QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList)
 {
     ui->setupUi(this);
-    foreach (Result item, resultList.resultList()) {
-        int row = ui->tableWidget->rowCount();
-        ui->tableWidget->insertRow(row);
-        ui->tableWidget->setItem(row, 0, new QTableWidgetItem(item.locFile()));
-        ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(item.locLineNr())));
-        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(item.context()));
-    }
+    ui->tableView->setModel(&mResultList);
+    searchTermLength = resultList.searchTerm().length();
 }
 
 ResultsView::~ResultsView()
@@ -45,28 +40,34 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableWidget->resizeColumnsToContents();
+    ui->tableView->resizeColumnsToContents();
+    ui->tableView->resizeRowsToContents();
 }
 
-void ResultsView::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
-    FileSystemContext *fsc = mMain->fileRepository()->findContext(item->data(0).toString());
+    int selectedRow = index.row();
+    Result item = mResultList.resultList().at(selectedRow);
+
+    FileSystemContext *fsc = mMain->fileRepository()->findContext(item.locFile());
     FileContext *jmpFc = nullptr;
-    if (!fsc) EXCEPT() << "File not found:" << item->data(0).toString();
+    if (!fsc) EXCEPT() << "File not found:" << item.locFile();
 
     if (fsc->type() == FileSystemContext::File)
         jmpFc = static_cast<FileContext*>(fsc);
 
-    if (!jmpFc) EXCEPT() << "Not a file:" << item->data(0).toString();
-    int selectedRow = item->row();
+    if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->openFile(ui->tableWidget->item(selectedRow, 0)->text());
+    mMain->openFile(item.locFile());
     mMain->searchWidget()->findInFile(jmpFc);
 
     // jump to line
-    QTextCursor tc(jmpFc->document()->findBlockByNumber(ui->tableWidget->item(selectedRow, 1)->text().toInt() - 1));
+    QTextCursor tc(jmpFc->document());
+    tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
+                   + item.locCol() - searchTermLength);
     jmpFc->jumpTo(tc, false);
+    jmpFc->editors().first()->setFocus();
 }
 
 }
