@@ -219,7 +219,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                     QRegularExpressionMatch match;
 
                     if (regex() && line.contains(searchRegex, &match)) {
-                        matches.addResult(lineCounter, match.capturedStart(), file.fileName(), line.trimmed());
+                        matches.addResult(lineCounter, match.capturedEnd(), file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
                         matches.addResult(lineCounter, line.indexOf(searchTerm, cs), file.fileName(), line.trimmed());
                     }
