@@ -34,13 +34,22 @@ GAMSPaths::GAMSPaths()
 
 }
 
+// TODO(AF) linux
 QString GAMSPaths::systemDir() {
-    // TODO(AF) macOS stuff
-    QStringList paths = { QApplication::applicationDirPath() + QDir::separator() + ".." };
-    QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
+    QString gamsPath;
+    QString appDirPath = QApplication::applicationDirPath();
+#if __APPLE__
+    QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
+    if (pathRegExp.indexIn(appDirPath) != -1) {
+        gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
+    }
+#else
+    appDirPath.append(QDir::separator() + "..");
+#endif
+    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
-        path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-        if (path.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
     }
 
 #ifdef _WIN32
@@ -52,7 +61,7 @@ QString GAMSPaths::systemDir() {
         EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << path;
 #endif
 
-    return path;
+    return gamsPath;
 }
 
 QString GAMSPaths::defaultWorkingDir()
