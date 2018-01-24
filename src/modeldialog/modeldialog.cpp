@@ -27,6 +27,8 @@
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include <QFileDialog>
+#include <QSettings>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
@@ -34,7 +36,7 @@
 namespace gams {
 namespace studio {
 
-ModelDialog::ModelDialog(QWidget *parent) :
+ModelDialog::ModelDialog(QWidget *parent):
     QDialog(parent)
 {
     ui.setupUi(this);
@@ -70,8 +72,6 @@ ModelDialog::ModelDialog(QWidget *parent) :
     items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
-
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
@@ -151,6 +151,9 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
 
     connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
 
+    connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
+    connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
+
     tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
     tableView->resizeColumnsToContents();
 }
@@ -171,7 +174,6 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
-    disconnect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     if(checked)
     {
         for(auto proxy : proxyModelList)
@@ -188,7 +190,6 @@ void ModelDialog::on_cbRegEx_toggled(bool checked)
             connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
         }
     }
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     emit ui.lineEdit->textChanged(ui.lineEdit->text());
 }
 
