@@ -19,6 +19,7 @@
  */
 #include "filesystemcontext.h"
 #include "filegroupcontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {

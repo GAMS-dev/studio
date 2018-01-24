@@ -44,22 +44,6 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QLineEdit" name="txt_search">
-   <property name="geometry">
-    <rect>
-     <x>65</x>
-     <y>5</y>
-     <width>240</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attention: This search &lt;span style=&quot; font-weight:600;&quot;&gt;does&lt;/span&gt; currently &lt;span style=&quot; font-weight:600;&quot;&gt;not support &lt;/span&gt;regular expression matches that span over multiple lines [\n\r].&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="clearButtonEnabled">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -112,7 +96,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;Return&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>Find</string>
@@ -223,7 +207,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scope of where to search.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scope of where to search.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This File:&lt;/span&gt; Searches only the file which is currently opened in the editor.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This Group:&lt;/span&gt; Searches files related to the group which is currently active.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Open Tabs:&lt;/span&gt; Searches all files that have open editors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;All Files:&lt;/span&gt; Searches all files that appear in the project explorer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <item>
     <property name="text">
@@ -272,7 +256,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search forward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search forward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;Return&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>&gt;</string>
@@ -303,8 +287,11 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets a filter for filenames using wildcard syntax.&lt;/p&gt;&lt;p&gt;Examples: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;trnsport&lt;/span&gt;&amp;quot; to search in all files with that name including any extension, &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms&lt;/span&gt;&amp;quot; to search in all gms files.&lt;/p&gt;&lt;p&gt;Does &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; support list of filters yet (like &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms, *.lst&lt;/span&gt;&amp;quot;).&lt;/p&gt;&lt;p&gt;Note: GDX files are always excluded and cannot be searched.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="placeholderText">
-    <string>&lt;not implemented yet&gt;</string>
+    <string/>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_clear">
@@ -336,6 +323,22 @@
    </property>
    <property name="flat">
     <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmb_search">
+   <property name="geometry">
+    <rect>
+     <x>65</x>
+     <y>5</y>
+     <width>240</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="insertPolicy">
+    <enum>QComboBox::InsertAtTop</enum>
    </property>
   </widget>
  </widget>

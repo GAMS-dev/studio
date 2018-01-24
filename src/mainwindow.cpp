@@ -848,6 +848,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     } else {
         mSettings->saveSettings();
     }
+    on_actionClose_All_triggered();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1189,7 +1190,7 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
-void MainWindow::showResults(SearchResultList results)
+void MainWindow::showResults(SearchResultList &results)
 {
     ResultsView *res = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());

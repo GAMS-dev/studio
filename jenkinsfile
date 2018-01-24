@@ -174,7 +174,6 @@ pipeline {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                sh 'scp -B *studio*.AppImage ${ARTIFACT_TARGET}'
-                               sh 'scp -B *studio*.zip ${ARTIFACT_TARGET}'
                             }
                         }
                     }
@@ -202,7 +201,6 @@ pipeline {
                         script {
                             if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
                                 sh 'scp *.dmg ${ARTIFACT_TARGET}'
-                                sh 'scp *.zip ${ARTIFACT_TARGET}'
                             }
                         }
                     }
