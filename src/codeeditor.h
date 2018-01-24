@@ -33,6 +33,7 @@ namespace studio {
 class TextMark;
 class StudioSettings;
 class LineNumberArea;
+class SearchWidget;
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -60,7 +61,6 @@ protected:
 
 signals:
     void updateBlockSelection();
-    void updateBlockEdit();
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
 
@@ -68,40 +68,43 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
-    void onUpdateBlockSelection();
-    void onUpdateBlockEdit();
 
 private:
+    friend class BlockEdit;
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
+    void duplicateLine();
+
+    void startBlockEdit(int blockNr, int colNr);
+    void endBlockEdit();
 
 private:
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
     StudioSettings *mSettings;
+    QPoint mDragStart;
 
 private:
     class BlockEdit
     {
     public:
-        explicit BlockEdit(CodeEditor* edit);
+        BlockEdit(CodeEditor* edit, int blockNr, int colNr);
+        virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
         void keyReleaseEvent(QKeyEvent *e);
         void mouseMoveEvent(QMouseEvent *e);
         void mousePressEvent(QMouseEvent *e);
         void mouseReleaseEvent(QMouseEvent *e);
-        void onUpdateBlockSelection();
-        int lineFrom() { return mBlockStartCursor.blockNumber(); }
-        int lineTo() { return mBlockLastCursor.blockNumber(); }
+        int hasBlock(int blockNr) { return mLines.contains(blockNr); }
         int colFrom() { return 0; }
         int colTo() { return 0; }
 
     private:
+    private:
         CodeEditor* mEdit;
-        int mBlockStartKey = 0;
-        QTextCursor mBlockStartCursor;
-        QTextCursor mBlockLastCursor;
-        QRect mBlockCursorRect;
+        QVector<int> mLines;
+        int mColumn = 0;
+        int mSize = 0;
     };
     BlockEdit* mBlockEdit = nullptr;
 

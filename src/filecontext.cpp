@@ -32,6 +32,7 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
     : FileSystemContext(fileId, name, location, type)
 {
+    DEB() << "Path: " << location;
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
         mSyntaxHighlighter = new SyntaxHighlighter(this, mMarks);
@@ -47,6 +48,8 @@ QWidgetList& FileContext::editorList()
 
 FileContext::~FileContext()
 {
+    if (mMarks) mMarks->unbindFileContext();
+
 //    setParentEntry(nullptr);
     removeAllEditors();
 }
@@ -383,6 +386,11 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
     for (QWidget* ed: mEditors) {
         ed->update(); // trigger delayed repaint
     }
+}
+
+int FileContext::textMarkCount(QSet<TextMark::Type> tmTypes)
+{
+    return mMarks->textMarkCount(tmTypes);
 }
 
 bool FileContext::eventFilter(QObject* watched, QEvent* event)

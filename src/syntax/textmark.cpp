@@ -26,9 +26,13 @@
 namespace gams {
 namespace studio {
 
-TextMark::TextMark(Type tmType): mType(tmType)
-{
-}
+int TextMark::mNextId = 0;
+
+TextMark::TextMark(Type tmType): mId(mNextId++), mType(tmType)
+{}
+
+TextMark::~TextMark()
+{}
 
 void TextMark::ensureFileContext()
 {
@@ -130,6 +134,22 @@ void TextMark::jumpToMark(bool focus)
 void TextMark::setRefMark(TextMark* refMark)
 {
     mReference = refMark;
+    if (mReference)
+        mReference->mBackRefs << this;
+}
+
+void TextMark::unsetRefMark(TextMark* refMark)
+{
+    if (mReference == refMark) mReference = nullptr;
+    mBackRefs.removeAll(refMark);
+}
+
+void TextMark::clearBackRefs()
+{
+    if (mReference) mReference->unsetRefMark(this);
+    foreach (TextMark* backRef, mBackRefs) {
+        backRef->unsetRefMark(this);
+    }
 }
 
 QColor TextMark::color()
@@ -211,8 +231,11 @@ void TextMark::modified()
 
 QString TextMark::dump()
 {
-    return QString("Line %1 [c%2 l%3]  (in type %7)").arg(line()).arg(column()).arg(size())
-            .arg(mFileContext->type());
+    QStringList refs;
+    for (TextMark* mark: mBackRefs) {
+        refs << QString::number(mark->mId);
+    }
+    return QString("[%1->%2]  %3").arg(mId).arg(mReference?QString::number(mReference->mId):"#").arg(refs.join(", "));
 }
 
 int TextMark::value() const

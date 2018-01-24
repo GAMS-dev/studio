@@ -20,12 +20,16 @@
 #include <QtWidgets>
 #include "codeeditor.h"
 #include "studiosettings.h"
+#include "searchwidget.h"
 #include "exception.h"
 #include "logger.h"
 #include "syntax.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
+
+inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
 CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
@@ -36,8 +40,6 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
-    connect(this, &CodeEditor::updateBlockSelection, this, &CodeEditor::onUpdateBlockSelection, Qt::QueuedConnection);
-    connect(this, &CodeEditor::updateBlockEdit, this, &CodeEditor::onUpdateBlockEdit, Qt::QueuedConnection);
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
@@ -121,36 +123,6 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-void CodeEditor::onUpdateBlockSelection()
-{
-    if (mBlockEdit) mBlockEdit->onUpdateBlockSelection();
-}
-
-void CodeEditor::onUpdateBlockEdit()
-{
-    qDebug() << "Enter onUpdateBlockEdit()   /extraSelections: " << extraSelections().size();
-    if (extraSelections().count() < 2)
-        return;
-    qDebug() << "Process onUpdateBlockEdit()";
-    // Get the inserted Text
-    QTextCursor cursor = textCursor();
-    int diff = cursor.columnNumber() - mCurrentCol;
-    cursor.setPosition(cursor.position()-diff);
-    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
-    QString text = cursor.selectedText();
-    qDebug() << "Found inserted Text: " << text << " ... " << diff;
-    cursor = textCursor();
-    // TODO(JM) repeat selection-remove and insertion
-    for (QTextEdit::ExtraSelection sel: extraSelections()) {
-        if (sel.cursor == cursor) continue;
-        sel.cursor.removeSelectedText();
-        sel.cursor.insertText(text);
-        setTextCursor(sel.cursor);
-    }
-    setTextCursor(cursor);
-    mCurrentCol = cursor.columnNumber();
-}
-
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
     QPlainTextEdit::resizeEvent(e);
@@ -161,44 +133,39 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-    if (e->isAccepted())
-        return;
-    if (mBlockEdit) {
-        mBlockEdit->keyPressEvent(e);
-        if (!e->isAccepted()) QPlainTextEdit::keyPressEvent(e);
-        return;
+    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
+        QTextCursor c = textCursor();
+        startBlockEdit(c.blockNumber(), c.columnNumber());
     }
-    // TODO(JM) define and use QKeySequence-class instead of capture
 
-    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
-        // ignore enter/return key
+    if (mBlockEdit) {
+        if (e == Hotkey::BlockEditEnd) {
+            endBlockEdit();
+        } else {
+            mBlockEdit->keyPressEvent(e);
+            return;
+        }
+    }
+
+    if (!isReadOnly() && e->key() == Hotkey::NewLine) {
+        QTextCursor cursor = textCursor();
+        cursor.beginEditBlock();
+        cursor.insertText("\n");
+        if (cursor.block().previous().isValid())
+            truncate(cursor.block().previous());
+        adjustIndent(cursor);
+        cursor.endEditBlock();
+        setTextCursor(cursor);
         e->accept();
         return;
     }
 
-    if (e->modifiers() & Qt::ControlModifier && e->modifiers() & Qt::ShiftModifier && e->key() == Qt::Key_L) {
-        int blockNr = textCursor().blockNumber();
-        int colNr = textCursor().columnNumber();
-        QTextBlock blockFound = document()->findBlockByNumber(blockNr);
-        QTextCursor t(blockFound);
-        t.beginEditBlock();
-        t.movePosition(QTextCursor::NextBlock);
-        t.insertText(blockFound.text());
-        t.insertBlock();
-        moveCursor(QTextCursor::NextBlock);
-
-        for(int i = 0; i < colNr; i++)
-            moveCursor(QTextCursor::NextCharacter);
-
-        t.endEditBlock();
+    if (e == Hotkey::DuplicateLine) {
+        duplicateLine();
+        e->accept();
+        return;
     }
 
-    // TODO(JM) get definition from studio key-config
-    // TODO(JM) start when moving with Alt+Shift
-
-    if (!mBlockEdit && e->modifiers() & Qt::AltModifier && e->modifiers() & Qt::ShiftModifier) {
-        mBlockEdit = new BlockEdit(this);
-    }
 
     QPlainTextEdit::keyPressEvent(e);
 }
@@ -211,19 +178,12 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
     }
     if (mBlockEdit) {
         mBlockEdit->keyReleaseEvent(e);
-        if (e->isAccepted()) return;
+        return;
     }
     // return pressed, check if current block consists of whitespaces only
-    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
-        QTextCursor cursor = textCursor();
-        cursor.beginEditBlock();
-        cursor.insertText("\n");
-        if (cursor.block().previous().isValid())
-            truncate(cursor.block().previous());
-        adjustIndent(cursor);
-        cursor.endEditBlock();
-        setTextCursor(cursor);
+    if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
+        return;
     } else {
         QPlainTextEdit::keyReleaseEvent(e);
     }
@@ -256,6 +216,7 @@ void CodeEditor::adjustIndent(QTextCursor cursor)
     }
 }
 
+
 void CodeEditor::truncate(QTextBlock block)
 {
     QRegularExpression pRex("(^.*[^\\s]|^)(\\s+)$");
@@ -270,20 +231,40 @@ void CodeEditor::truncate(QTextBlock block)
 
 void CodeEditor::mouseMoveEvent(QMouseEvent* e)
 {
-    QPlainTextEdit::mouseMoveEvent(e);
-    if (mBlockEdit) mBlockEdit->mouseMoveEvent(e);
+    if (!mBlockEdit && (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        if (!mDragStart.isNull() && (e->pos() - mDragStart).manhattanLength() > 3) {
+        }
+    }
+    if (mBlockEdit)
+        mBlockEdit->mouseMoveEvent(e);
+    else
+        QPlainTextEdit::mouseMoveEvent(e);
 }
 
 void CodeEditor::mousePressEvent(QMouseEvent* e)
 {
-    QPlainTextEdit::mousePressEvent(e);
-    if (mBlockEdit) mBlockEdit->mousePressEvent(e);
+    if (mBlockEdit)
+        endBlockEdit();
+
+    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
+        mDragStart = e->pos();
+        QTextCursor cursor = cursorForPosition(e->pos());
+        int col = cursor.columnNumber();
+        int addX = e->pos().x()-cursorRect(cursor).right();
+        if (addX > 0) {
+            QFontMetrics metric(font());
+            col += addX / metric.width(' ');
+        }
+        startBlockEdit(cursor.blockNumber(), col);
+    } else {
+        QPlainTextEdit::mousePressEvent(e);
+    }
 }
 
 void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
-    if (mBlockEdit) mBlockEdit->mouseReleaseEvent(e);
+    mDragStart = QPoint();
 }
 
 void CodeEditor::wheelEvent(QWheelEvent *e) {
@@ -300,7 +281,56 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
 
 void CodeEditor::paintEvent(QPaintEvent* e)
 {
+    int cw = mBlockEdit ? 0 : 2;
+    if (cursorWidth()!=cw) setCursorWidth(cw);
+//    DEB() << "cursor info: " << cursorRect().width();
     QPlainTextEdit::paintEvent(e);
+    if (mBlockEdit) {
+        QPainter painter(viewport());
+        QPointF offset(contentOffset()); //
+        QRect er = e->rect();
+        QRect viewportRect = viewport()->rect();
+        bool editable = !isReadOnly();
+        QTextBlock block = firstVisibleBlock();
+        qreal maximumWidth = document()->documentLayout()->documentSize().width();
+        int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth) - document()->documentMargin();
+        er.setRight(qMin(er.right(), maxX));
+        painter.setClipRect(er);
+        QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
+
+        while (block.isValid()) {
+            QRectF r = blockBoundingRect(block).translated(offset);
+            QTextLayout *layout = block.layout();
+
+            if (!block.isVisible()) {
+                offset.ry() += r.height();
+                block = block.next();
+                continue;
+            }
+
+            if (r.bottom() >= er.top() && r.top() <= er.bottom()) {
+                int blpos = block.position();
+                int bllen = block.length();
+                bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard))
+                                   && context.cursorPosition >= blpos
+                                   && context.cursorPosition < blpos + bllen);
+                if (drawCursor || (editable && context.cursorPosition < -1
+                                   && !layout->preeditAreaText().isEmpty())) {
+                    int cpos = context.cursorPosition;
+                    if (cpos < -1)
+                        cpos = layout->preeditAreaPosition() - (cpos + 2);
+                    else
+                        cpos -= blpos;
+                    layout->drawCursor(&painter, offset, cpos, 4);
+                }
+            }
+
+            offset.ry() += r.height();
+            if (offset.y() > viewportRect.height())
+                break;
+            block = block.next();
+        }
+    }
 }
 
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
@@ -310,6 +340,37 @@ void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
     } else {
         QPlainTextEdit::dragEnterEvent(e);
     }
+}
+
+void CodeEditor::duplicateLine()
+{
+    int blockNr = textCursor().blockNumber();
+    int colNr = textCursor().columnNumber();
+    QTextBlock blockFound = document()->findBlockByNumber(blockNr);
+    QTextCursor t(blockFound);
+    t.beginEditBlock();
+    t.movePosition(QTextCursor::NextBlock);
+    t.insertText(blockFound.text());
+    t.insertBlock();
+    moveCursor(QTextCursor::NextBlock);
+
+    for(int i = 0; i < colNr; i++)
+        moveCursor(QTextCursor::NextCharacter);
+
+    t.endEditBlock();
+}
+
+void CodeEditor::startBlockEdit(int blockNr, int colNr)
+{
+    if (mBlockEdit) endBlockEdit();
+    mBlockEdit = new BlockEdit(this, blockNr, colNr);
+}
+
+void CodeEditor::endBlockEdit()
+{
+    // TODO(JM) remove BlockEdit's selection and place cursor
+    delete mBlockEdit;
+    mBlockEdit = nullptr;
 }
 
 void CodeEditor::highlightCurrentLine()
@@ -343,8 +404,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
     int bottom = top + static_cast<int>(blockBoundingRect(block).height());
-    int markFrom = mBlockEdit ? mBlockEdit->lineFrom() : textCursor().blockNumber();
-    int markTo = mBlockEdit ? mBlockEdit->lineTo() : textCursor().blockNumber();
+    int markFrom = textCursor().blockNumber();
+    int markTo = textCursor().blockNumber();
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
     QRect paintRect(event->rect());
@@ -353,7 +414,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(blockBoundingRect(block).height())+1);
     while (block.isValid() && top <= paintRect.bottom()) {
         if (block.isVisible() && bottom >= paintRect.top()) {
-            bool mark = blockNumber >= markFrom && blockNumber <= markTo;
+            bool mark = mBlockEdit ? mBlockEdit->hasBlock(block.blockNumber())
+                                   : blockNumber >= markFrom && blockNumber <= markTo;
             if (mark) {
                 markRect.moveTop(top);
                 markRect.setHeight(bottom-top);
@@ -382,14 +444,19 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     }
 }
 
-CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit)
+CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit, int blockNr, int colNr)
     : mEdit(edit)
 {
     if (!edit) FATAL() << "BlockEdit needs a valid editor";
-//    mBlockStartKey = e->key();
-    mBlockStartCursor = edit->textCursor();
-    mBlockLastCursor = mBlockStartCursor;
     DEB() << "blockEdit START";
+    mLines << blockNr;
+    mColumn = colNr;
+    mSize = 0;
+}
+
+CodeEditor::BlockEdit::~BlockEdit()
+{
+    DEB() << "blockEdit END";
 }
 
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
@@ -397,97 +464,26 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
-//    if (!mBlockStartKey) {
-//        if (moveKeys.contains(e->key())) {
-//            setExtraSelections(QList<QTextEdit::ExtraSelection>());
-//            mBlockStartCursor = QTextCursor();
-//        } else if (extraSelections().size() > 1) {
-//            if (mBlockStartCursor.blockNumber() > mBlockLastCursor.blockNumber()) {
-//                setTextCursor(extraSelections().first().cursor);
-//            } else {
-//                setTextCursor(extraSelections().last().cursor);
-//            }
-//            emit updateBlockEdit();
-//        }
-//    }
-//    if (mBlockStartKey) {
-//        e->setModifiers(0);
-//        emit updateBlockSelection();
-//    }
+
 }
 
 void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
 {
-    if (mBlockStartKey && e->key() == mBlockStartKey) {
-        mBlockStartKey = 0;
-        mBlockLastCursor = QTextCursor();
-        mBlockStartCursor = QTextCursor();
-        DEB() << "blockEdit END";
-    }
+    QSet<int> moveKeys;
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
+             << Qt::Key_PageUp << Qt::Key_PageDown;
 }
 
 void CodeEditor::BlockEdit::mouseMoveEvent(QMouseEvent* e)
 {
-    if (mBlockStartKey)
-        emit mEdit->updateBlockSelection();
-    else if (!mBlockStartCursor.isNull()) {
-        mEdit->setExtraSelections(QList<QTextEdit::ExtraSelection>());
-//        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
-        mBlockStartCursor = QTextCursor();
-    }
 }
 
 void CodeEditor::BlockEdit::mousePressEvent(QMouseEvent* e)
 {
-//    if (mBlockStartKey)
-//        emit updateBlockSelection();
-//    else if (!mBlockStartCursor.isNull()) {
-//        setExtraSelections(QList<QTextEdit::ExtraSelection>());
-//        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
-//        mBlockStartCursor = QTextCursor();
-//    }
 }
 
 void CodeEditor::BlockEdit::mouseReleaseEvent(QMouseEvent* e)
 {
-//    if (mBlockStartKey)
-//        emit updateBlockSelection();
-//    else if (!mBlockStartCursor.isNull()) {
-//        setExtraSelections(QList<QTextEdit::ExtraSelection>());
-//        qDebug() << "Now we got " << extraSelections().size() << " extraSelections";
-//        mBlockStartCursor = QTextCursor();
-//    }
-}
-
-void CodeEditor::BlockEdit::onUpdateBlockSelection()
-{
-    if (mBlockLastCursor != mEdit->textCursor()) {
-        mBlockLastCursor = mEdit->textCursor();
-
-        int cols = mBlockLastCursor.columnNumber()-mBlockStartCursor.columnNumber();
-        QTextCursor::MoveOperation colMove = (cols > 0) ? QTextCursor::Right : QTextCursor::Left;
-        int rows = mBlockLastCursor.blockNumber()-mBlockStartCursor.blockNumber();
-        QTextCursor::MoveOperation rowMove = (rows > 0) ? QTextCursor::Down : QTextCursor::Up;
-
-        QList<QTextEdit::ExtraSelection> sel = QList<QTextEdit::ExtraSelection>();
-
-        QTextCursor cursor = mBlockStartCursor;
-        for (int r = 0; r <= qAbs(rows); ++r) {
-            QTextEdit::ExtraSelection es;
-            es.format.setBackground(Qt::cyan);
-            es.cursor = cursor;
-
-            if (cols) {
-                es.cursor.movePosition(colMove, QTextCursor::KeepAnchor, qAbs(cols));
-            }
-            int dist = es.cursor.anchor() - es.cursor.position();
-            mEdit->mCurrentCol = es.cursor.columnNumber() + (dist>0 ? 0 : dist);
-            sel << es;
-            cursor.movePosition(rowMove);
-        }
-        mEdit->setExtraSelections(sel);
-        qDebug() << "Now we got " << sel.size() << " extraSelections";
-    }
 }
 
 } // namespace studio

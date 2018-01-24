@@ -11,15 +11,6 @@ Keys::Keys()
 
 }
 
-Keys&Keys::instance()
-{
-    if (!mInstance) {
-        mInstance = new Keys();
-        mInstance->reset();
-    }
-    return *mInstance;
-}
-
 KeySeqList::KeySeqList(const QKeySequence& seq, QString title)
     : mTitle(title)
 {
@@ -58,18 +49,33 @@ KeySeqList&KeySeqList::operator <<(const QKeySequence& other)
     return *this;
 }
 
-bool KeySeqList::matches(QKeyEvent* e)
+bool KeySeqList::operator ==(KeySeqList other) const
 {
-    uint searchkey = (e->modifiers() | e->key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
-    return mSequence.contains(QKeySequence(searchkey));
+    bool res = mSequence.size() == other.mSequence.size();
+    for (QKeySequence seq: mSequence) {
+        if (!res) break;
+        res = other.mSequence.contains(seq);
+    }
+    return res;
 }
 
 void Keys::reset()
 {
-    KeySeqList *seq = new KeySeqList("Shift+Alt+Up","start block edit");
-    *seq << QKeySequence("Shift+Alt+Down");
-    setHotkey(Hotkey::BlockEdit, seq);
-    seq = new KeySeqList("Ctrl-L","duplicate line");
+    KeySeqList *seq;
+    seq = new KeySeqList("Return","new line");
+    *seq << QKeySequence("Enter");
+    setHotkey(Hotkey::NewLine, seq);
+
+    seq = new KeySeqList("Shift+Alt+Up","start block edit");
+    *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
+    setHotkey(Hotkey::BlockEditStart, seq);
+
+    seq = new KeySeqList("Up","end block edit");
+    *seq << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
+         << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
+    setHotkey(Hotkey::BlockEditEnd, seq);
+
+    seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 }
 

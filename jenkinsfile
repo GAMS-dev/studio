@@ -106,11 +106,9 @@ pipeline {
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/bin/studio -appimage -bundle-non-qt-libs -no-translations
-                            mv appdir studio
                         '''
-                        sh 'ls -al'
-                        sh 'ls -al studio'
-                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'studio'
+                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'appdir')])
+                        zip zipFile: 'studio-nix.zip', archive: false, dir: 'tmp'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
@@ -119,18 +117,19 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: '**/*studio*.AppImage, *.zip', fingerprint: true
                     }
                 },
                 windowsX86: {
                     node('windowsX86') {
                         bat 'echo %PATH%'
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
+                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'src/bin'
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'studio-x86.zip', archive: true, dir: 'src/bin'
+                                zip zipFile: 'studio-x86.zip', archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -139,11 +138,12 @@ pipeline {
                     node('windowsX64') {
                         bat 'echo %PATH%'
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
+                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'src/bin'
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'studio-x64.zip', archive: true, dir: 'src/bin'
+                                zip zipFile: 'studio-x64.zip', archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -162,7 +162,7 @@ pipeline {
                                 sh "mv studio-mac.zip ${env.BRANCH_NAME}-studio-mac.zip"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
                     }
                 }
             }
