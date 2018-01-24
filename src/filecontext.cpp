@@ -178,6 +178,7 @@ void FileContext::addEditor(QWidget* edit)
     if (scEdit && mMarks) {
         connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
         connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarksEmpty);
+        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -349,6 +350,19 @@ void FileContext::updateMarks()
         }
         mMarksEnhanced = true;
     }
+}
+
+void FileContext::highlightWordUnderCursor(QString word)
+{
+    removeTextMarks(TextMark::result);
+
+    QTextCursor last;
+    do {
+        last = document()->find(word, last, QTextDocument::FindWholeWords);
+        int length = last.selectionEnd() - last.selectionStart();
+        mMarks->generateTextMark(this, TextMark::result, 0, last.blockNumber(), last.columnNumber() - length, length );
+    } while (!last.isNull());
+    highlighter()->rehighlight();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)

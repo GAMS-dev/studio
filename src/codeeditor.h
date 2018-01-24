@@ -64,20 +64,23 @@ signals:
     void updateBlockEdit();
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
+    void highlightWordUnderCursor(QString word);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
-    void highlightWordUnderCursor();
     void updateLineNumberArea(const QRect &, int);
     void onUpdateBlockSelection();
     void onUpdateBlockEdit();
+    void onCursorIdle();
+    void onCursorPositionChanged();
 
 private:
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
 
 private:
+    const int WORD_UNDER_CURSOR_HIGHLIGHT_TIMER = 600;
     LineNumberArea *mLineNumberArea;
     int mBlockStartKey = 0;
     int mCurrentCol;
@@ -85,6 +88,7 @@ private:
     QTextCursor mBlockLastCursor;
     QRect mBlockCursorRect;
     StudioSettings *mSettings;
+    QTimer mCursorTimer;
 };
 
 

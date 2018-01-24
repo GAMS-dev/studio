@@ -36,7 +36,6 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightWordUnderCursor()));
     connect(this, &CodeEditor::updateBlockSelection, this, &CodeEditor::onUpdateBlockSelection, Qt::QueuedConnection);
     connect(this, &CodeEditor::updateBlockEdit, this, &CodeEditor::onUpdateBlockEdit, Qt::QueuedConnection);
 
@@ -49,6 +48,12 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
         setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         setLineWrapMode(QPlainTextEdit::NoWrap);
+
+    connect(&mCursorTimer, &QTimer::timeout, this, &CodeEditor::onCursorIdle);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+
+    mCursorTimer.setInterval(WORD_UNDER_CURSOR_HIGHLIGHT_TIMER);
+    mCursorTimer.start();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -176,6 +181,26 @@ void CodeEditor::onUpdateBlockEdit()
     }
     setTextCursor(cursor);
     mCurrentCol = cursor.columnNumber();
+}
+
+void CodeEditor::onCursorPositionChanged()
+{
+    emit highlightWordUnderCursor("");
+    mCursorTimer.stop();
+    mCursorTimer.start();
+}
+
+void CodeEditor::onCursorIdle()
+{
+    QTextCursor cursor = textCursor();
+    cursor.select(QTextCursor::WordUnderCursor);
+    QString wordUnderCursor = cursor.selection().toPlainText();
+    QRegularExpression isIdentifier("[\\w\\d]*");
+
+    if (isIdentifier.match(wordUnderCursor).hasMatch()) {
+        emit highlightWordUnderCursor(wordUnderCursor);
+        mCursorTimer.stop();
+    }
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
@@ -389,17 +414,6 @@ void CodeEditor::highlightCurrentLine()
 //    setExtraSelections(extraSelections);
 }
 // _CRT_SECURE_NO_WARNINGS
-
-void CodeEditor::highlightWordUnderCursor()
-{
-    QTextCursor cursor = textCursor();
-    cursor.select(QTextCursor::WordUnderCursor);
-    QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("\\w[\\w\\d]+");
-
-    if (isIdentifier.match(wordUnderCursor).hasMatch())
-        qDebug() << wordUnderCursor;
-}
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
