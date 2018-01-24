@@ -68,6 +68,7 @@ signals:
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
+    void highlightWordUnderCursor();
     void updateLineNumberArea(const QRect &, int);
     void onUpdateBlockSelection();
     void onUpdateBlockEdit();
