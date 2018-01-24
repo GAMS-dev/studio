@@ -30,7 +30,7 @@ namespace studio {
 class Library
 {
 public:
-    Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder);
+    Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder, QString glbFile);
 
     int version() const;
     QString name() const;
@@ -40,6 +40,7 @@ public:
     QStringList toolTips() const;
     QString execName() const;
     void setName(const QString &name);
+    QString glbFile() const;
 
 private:
     QString mName;
@@ -49,6 +50,7 @@ private:
     QStringList mColumns;
     QStringList mtoolTips;
     QList<int> mColOrder;
+    QString mGlbFile;
 };
 
 } // namespace studio

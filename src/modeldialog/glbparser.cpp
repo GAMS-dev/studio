@@ -31,6 +31,7 @@ GlbParser::GlbParser()
 
 QList<LibraryItem> GlbParser::parseFile(QString glbFile)
 {
+    glbFile = QDir::toNativeSeparators(glbFile);
     QFile file(glbFile);
     if(!file.open(QIODevice::ReadOnly))
         throw Exception(); //TODO(CW): exception message
@@ -57,7 +58,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     }
     //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
     QString execName = QFileInfo(file.fileName()).baseName();
-    std::shared_ptr<Library> library = std::make_shared<Library>(name, execName, version, nrColumns, columns, toolTips, colOrder);
+    std::shared_ptr<Library> library = std::make_shared<Library>(name, execName, version, nrColumns, columns, toolTips, colOrder, glbFile);
 
     // read models
     QList<LibraryItem> libraryItems;
