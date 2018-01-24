@@ -54,7 +54,7 @@ void FileGroupContext::unsetFlag(ContextFlag flag)
     FileSystemContext::setFlag(flag, false);
 }
 
-FileSystemContext* FileGroupContext::findFile(QString filePath)
+FileSystemContext* FileGroupContext::findContext(QString filePath)
 {
     QFileInfo fi(filePath);
     for (int i = 0; i < childCount(); i++) {
@@ -63,11 +63,18 @@ FileSystemContext* FileGroupContext::findFile(QString filePath)
             return child;
         if (child->type() == FileSystemContext::FileGroup) {
             FileGroupContext *group = static_cast<FileGroupContext*>(child);
-            FileSystemContext *subChild = group->findFile(filePath);
+            FileSystemContext *subChild = group->findContext(filePath);
             if (subChild) return subChild;
         }
     }
     return nullptr;
+}
+
+FileContext*FileGroupContext::findFile(QString filePath)
+{
+    FileSystemContext* fsc = findContext(filePath);
+    return (fsc && (fsc->type() == FileSystemContext::File || fsc->type() == FileSystemContext::Log))
+            ? static_cast<FileContext*>(fsc) : nullptr;
 }
 
 void FileGroupContext::setLocation(const QString& location)
@@ -146,8 +153,14 @@ TextMarkList* FileGroupContext::marks(const QString& fileName)
 void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 {
     QHash<QString, TextMarkList*>::iterator it;
-    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it)
-        it.value()->removeTextMarks(tmTypes);
+    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it) {
+        FileContext *file = findFile(it.key());
+        if (file) {
+            file->removeTextMarks(tmTypes);
+        } else {
+            it.value()->removeTextMarks(tmTypes);
+        }
+    }
 }
 
 void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
@@ -158,10 +171,10 @@ void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmType
 void FileGroupContext::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
-        QString res = file+":";
+        QString res = file+":\n";
         TextMarkList* list = marks(file);
         foreach (TextMark* mark, list->marks()) {
-            res.append(QString(" [%1,%2]").arg(mark->line()).arg(mark->column()));
+            res.append(QString("  %1\n").arg(mark->dump()));
         }
         DEB() << res;
     }
@@ -174,7 +187,7 @@ void FileGroupContext::attachFile(const QString &filepath)
     QFileInfo fi(filepath);
     if(!mAttachedFiles.contains(fi)) {
         mAttachedFiles << fi;
-        FileSystemContext* fsc = findFile(filepath);
+        FileSystemContext* fsc = findContext(filepath);
         if (!fsc && fi.exists()) {
             // TODO(JM) create individual node?
             updateChildNodes();
@@ -186,7 +199,7 @@ void FileGroupContext::detachFile(const QString& filepath)
 {
     QFileInfo fi(filepath);
     if (mAttachedFiles.contains(fi)) {
-        FileSystemContext* fsc = findFile(filepath);
+        FileSystemContext* fsc = findContext(filepath);
         FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
         if (!fc || fc->editors().isEmpty()) {
             mAttachedFiles.removeOne(fi);
@@ -260,6 +273,7 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
+    dumpMarks();
     removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 //    FileSystemContext *fsc = findFile(lstFileName());
 //    if (fsc && fsc->type() == FileSystemContext::File) {

@@ -1,5 +1,6 @@
 #include "textmarklist.h"
 #include "filecontext.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -70,6 +71,21 @@ TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* grou
     return res;
 }
 
+int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
+{
+    int i = mMarks.size();
+    int res = 0;
+    while (i > 0) {
+        --i;
+        TextMark* tm = mMarks.at(i);
+        if (tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
+            res++;
+        }
+    }
+
+    return res;
+}
+
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     int i = mMarks.size();
@@ -79,7 +95,10 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
         if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             int pos = tm->position();
             FileContext* file = tm->fileContext();
-            delete mMarks.takeAt(i);
+            TextMark* mark = mMarks.takeAt(i);
+            mark->clearBackRefs();
+            // TODO(JM) Somehow this cannot be deleted, as if it's already done
+            delete mark;
             if (file) file->rehighlightAt(pos);
         }
     }

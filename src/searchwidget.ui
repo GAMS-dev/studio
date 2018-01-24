@@ -6,40 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>101</height>
+    <width>525</width>
+    <height>130</height>
    </rect>
   </property>
   <property name="autoFillBackground">
    <bool>true</bool>
   </property>
-  <widget class="QPushButton" name="btn_Find">
-   <property name="geometry">
-    <rect>
-     <x>307</x>
-     <y>7</y>
-     <width>100</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Find Next</string>
-   </property>
-   <property name="default">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QPushButton" name="btn_ReplaceAll">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>413</x>
-     <y>40</y>
+     <x>420</x>
+     <y>35</y>
      <width>100</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Replaces all occurences of the search term &lt;span style=&quot; font-weight:600;&quot;&gt;in this file only&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>Replace All</string>
@@ -57,25 +44,12 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QLineEdit" name="txt_search">
-   <property name="geometry">
-    <rect>
-     <x>59</x>
-     <y>7</y>
-     <width>241</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="clearButtonEnabled">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>8</x>
-     <y>7</y>
-     <width>65</width>
+     <x>10</x>
+     <y>5</y>
+     <width>51</width>
      <height>25</height>
     </rect>
    </property>
@@ -86,9 +60,9 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>8</x>
-     <y>40</y>
-     <width>65</width>
+     <x>10</x>
+     <y>35</y>
+     <width>51</width>
      <height>25</height>
     </rect>
    </property>
@@ -99,9 +73,9 @@
   <widget class="QLineEdit" name="txt_replace">
    <property name="geometry">
     <rect>
-     <x>59</x>
-     <y>40</y>
-     <width>241</width>
+     <x>65</x>
+     <y>35</y>
+     <width>240</width>
      <height>25</height>
     </rect>
    </property>
@@ -115,27 +89,33 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>413</x>
-     <y>7</y>
+     <x>315</x>
+     <y>5</y>
      <width>100</width>
      <height>25</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="text">
-    <string>Find All</string>
+    <string>Find</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_Replace">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>307</x>
-     <y>40</y>
+     <x>315</x>
+     <y>35</y>
      <width>100</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Replaces the currently selected match.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
     <string>Replace</string>
@@ -147,9 +127,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>8</x>
-     <y>70</y>
-     <width>181</width>
+     <x>10</x>
+     <y>65</y>
+     <width>161</width>
      <height>25</height>
     </rect>
    </property>
@@ -166,9 +146,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>189</x>
-     <y>70</y>
-     <width>131</width>
+     <x>290</x>
+     <y>65</y>
+     <width>121</width>
      <height>25</height>
     </rect>
    </property>
@@ -185,9 +165,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>320</x>
-     <y>70</y>
-     <width>121</width>
+     <x>180</x>
+     <y>65</y>
+     <width>111</width>
      <height>25</height>
     </rect>
    </property>
@@ -201,14 +181,164 @@
   <widget class="QLabel" name="lbl_nrResults">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>70</y>
+     <x>420</x>
+     <y>65</y>
+     <width>100</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="text">
+    <string>[ X matches ]</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="combo_scope">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>100</y>
+     <width>91</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scope of where to search.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This File:&lt;/span&gt; Searches only the file which is currently opened in the editor.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;This Group:&lt;/span&gt; Searches files related to the group which is currently active.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Open Tabs:&lt;/span&gt; Searches all files that have open editors.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;All Files:&lt;/span&gt; Searches all files that appear in the project explorer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>This File</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>This Group</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Open Tabs</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>All Files</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QPushButton" name="btn_back">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>5</y>
+     <width>50</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search backwards&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;Shift + F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string>&lt;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_forward">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>5</y>
+     <width>50</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search forward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;F3&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;Return&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string>&gt;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>100</y>
      <width>71</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
+    <string>File Pattern:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="txt_filePattern">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>100</y>
+     <width>171</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets a filter for filenames using wildcard syntax.&lt;/p&gt;&lt;p&gt;Examples: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;trnsport&lt;/span&gt;&amp;quot; to search in all files with that name including any extension, &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms&lt;/span&gt;&amp;quot; to search in all gms files.&lt;/p&gt;&lt;p&gt;Does &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; support list of filters yet (like &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;*.gms, *.lst&lt;/span&gt;&amp;quot;).&lt;/p&gt;&lt;p&gt;Note: GDX files are always excluded and cannot be searched.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="placeholderText">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_clear">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>100</y>
+     <width>100</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clears all marked matches.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="default">
+    <bool>false</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmb_search">
+   <property name="geometry">
+    <rect>
+     <x>65</x>
+     <y>5</y>
+     <width>240</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="insertPolicy">
+    <enum>QComboBox::InsertAtTop</enum>
    </property>
   </widget>
  </widget>

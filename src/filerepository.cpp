@@ -59,7 +59,7 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
 FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
 {
     FileGroupContext *group = fileGroup ? fileGroup : mTreeModel->rootContext();
-    FileSystemContext* fsc = group->findFile(filePath);
+    FileSystemContext* fsc = group->findContext(filePath);
     return fsc;
 }
 
@@ -277,6 +277,8 @@ LogContext*FileRepository::logContext(QWidget* edit)
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
         if (fsc->type() == FileSystemContext::FileGroup) {
             FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+
+            if (!group->logContext()) return nullptr;
             if (group->logContext()->editors().contains(edit)) {
                 return group->logContext();
             }
@@ -349,7 +351,7 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
             }
         } else {
             if (node.contains("name") && node["name"].isString() && node.contains("file") && node["file"].isString()) {
-                if (!group->findFile(node["file"].toString()))
+                if (!group->findContext(node["file"].toString()))
                     group->attachFile(node["file"].toString());
 //                    addFile(node["name"].toString(), node["file"].toString(), group);
             }

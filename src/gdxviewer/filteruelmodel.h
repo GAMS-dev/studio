@@ -35,7 +35,7 @@ public:
 private:
     GdxSymbol* mSymbol;
     int mColumn;
-    QVector<int>* mUels;
+    std::vector<int>* mUels;
     bool* mChecked;
 };
 

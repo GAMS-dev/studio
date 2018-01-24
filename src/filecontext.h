@@ -126,6 +126,7 @@ public:
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
     TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
     TextMark* generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size = 0);
+    int textMarkCount(QSet<TextMark::Type> tmTypes);
     ErrorHighlighter* highlighter();
 
     void removeTextMarks(TextMark::Type tmType);
