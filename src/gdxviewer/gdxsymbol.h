@@ -109,6 +109,10 @@ private:
     void loadMetaData();
     void loadDomains();
 
+
+    double specVal2SortVal(double val);
+    std::vector<double> mSpecValSortVal;
+
     std::vector<std::vector<int>*> mUelsInColumn;
     std::vector<bool*> mShowUelInColumn;
     std::vector<bool> mFilterActive;
