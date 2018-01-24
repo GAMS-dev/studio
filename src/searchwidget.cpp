@@ -178,6 +178,8 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
 QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
+    if (!fsc) return QList<Result>();
+
     QRegExp rx(ui->txt_filePattern->text());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
@@ -364,7 +366,17 @@ void SearchWidget::on_btn_Replace_clicked()
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+
+    QWidget *widget = mMain->recent()->editor;
+    QPlainTextEdit *edit = nullptr;
+    FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
+
+    if (!fsc) {
+        return;
+    }
+
+    if ((fsc->type() != FileSystemContext::etGdx) && (fsc->type() != FileSystemContext::etUndefined))
+        edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     ui->cmb_search->setFocus();
@@ -376,12 +388,12 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (isVisible() && ( event->key() == Qt::Key_Escape
-                         || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F)) )) {
+    if ( isVisible() && (event->key() == Qt::Key_Escape
+                         || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F))) ) {
         hide();
-
-        if (mMain->recent()->editor)
+        if (mMain->fileRepository()->fileContext(mMain->recent()->editor))
             mMain->recent()->editor->setFocus();
+
     } else if (event->modifiers() & Qt::ShiftModifier && (event->key() == Qt::Key_F3)) {
         find(true);
     } else if (event->key() == Qt::Key_F3) {
