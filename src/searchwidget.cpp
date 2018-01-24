@@ -155,7 +155,7 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 {
     QList<Result> matches;
 
-    FileGroupContext *fgc;
+    FileGroupContext *fgc = nullptr;
     if (!fsc) {
         FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
         fgc = (fc ? fc->parentEntry() : nullptr);
