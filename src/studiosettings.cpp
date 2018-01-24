@@ -116,6 +116,7 @@ void StudioSettings::saveSettings()
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
     mUserSettings->setValue("clearLog", clearLog());
+    mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
 
     mUserSettings->endGroup();
 
@@ -197,6 +198,7 @@ void StudioSettings::loadSettings()
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
 
     mUserSettings->endGroup();
 
@@ -432,6 +434,16 @@ int StudioSettings::selectedScopeIndex() const
 void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
 {
     mSelectedScopeIndex = selectedScopeIndex;
+}
+
+bool StudioSettings::wordUnderCursor() const
+{
+    return mWordUnderCursor;
+}
+
+void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
+{
+    mWordUnderCursor = wordUnderCursor;
 }
 
 }

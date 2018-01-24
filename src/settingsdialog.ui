@@ -162,6 +162,9 @@
         <string>Backup and Restore</string>
        </property>
        <widget class="QPushButton" name="btn_export">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -175,6 +178,9 @@
         </property>
        </widget>
        <widget class="QPushButton" name="btn_import">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>110</x>
@@ -495,7 +501,7 @@
        </widget>
        <widget class="QCheckBox" name="cb_highlightUnderCursor">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
