@@ -48,9 +48,9 @@ void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
 void ColumnFilterFrame::apply()
 {
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
-    QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
+    std::vector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
     bool checked;
-    QVector<bool> filterActive = mSymbol->filterActive();
+    std::vector<bool> filterActive = mSymbol->filterActive();
     filterActive[mColumn] = false;
     for (int idx=0; idx<uelsInColumn->size(); idx++)
     {

@@ -63,14 +63,14 @@ public:
 
     GdxSymbolTable *gdxSymbolTable() const;
 
-    QVector<QVector<int> *> uelsInColumn() const;
+    std::vector<std::vector<int> *> uelsInColumn() const;
 
-    QVector<bool *> showUelInColumn() const;
+    std::vector<bool *> showUelInColumn() const;
 
-    void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
+    void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
 
-    QVector<bool> filterActive() const;
-    void setFilterActive(const QVector<bool> &filterActive);
+    std::vector<bool> filterActive() const;
+    void setFilterActive(const std::vector<bool> &filterActive);
 
 signals:
     void loadFinished();
@@ -86,12 +86,10 @@ private:
     QString mExplText;
     QString mName;
 
-    QVector<int> mMinUel;
-    QVector<int> mMaxUel;
+    std::vector<int> mMinUel;
+    std::vector<int> mMaxUel;
 
     GdxSymbolTable* mGdxSymbolTable;
-
-
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
@@ -99,8 +97,8 @@ private:
 
     bool stopLoading = false;
 
-    QVector<int> mKeys;
-    QVector<double> mValues;
+    std::vector<int> mKeys;
+    std::vector<double> mValues;
 
     QStringList mDomains;
 
@@ -111,12 +109,16 @@ private:
     void loadMetaData();
     void loadDomains();
 
-    QVector<QVector<int>*> mUelsInColumn;
-    QVector<bool*> mShowUelInColumn;
-    QVector<bool> mFilterActive;
 
-    QVector<int> mRecSortIdx;
-    QVector<int> mRecFilterIdx;
+    double specVal2SortVal(double val);
+    std::vector<double> mSpecValSortVal;
+
+    std::vector<std::vector<int>*> mUelsInColumn;
+    std::vector<bool*> mShowUelInColumn;
+    std::vector<bool> mFilterActive;
+
+    std::vector<int> mRecSortIdx;
+    std::vector<int> mRecFilterIdx;
 };
 
 } // namespace gdxviewer

@@ -91,6 +91,9 @@ public:
     bool searchWholeWords() const;
     void setSearchWholeWords(bool searchWholeWords);
 
+    int selectedScopeIndex() const;
+    void setSelectedScopeIndex(int selectedScopeIndex);
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
@@ -114,10 +117,11 @@ private:
     bool mLineWrapProcess;
     bool mClearLog;
 
+    // search widget
     bool mSearchUseRegex;
     bool mSearchCaseSens;
     bool mSearchWholeWords;
-
+    int mSelectedScopeIndex;
 };
 
 }

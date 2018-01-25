@@ -44,6 +44,8 @@ class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
 class SearchWidget;
+class SearchResultList;
+class Result;
 
 struct RecentData {
     FileId editFileId = -1;
@@ -70,9 +72,9 @@ public:
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
-    void addToOpenedFiles(QString filePath);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFileContext(FileContext *fileContext, bool focus = true);
     bool outputViewVisibility();
     bool projectViewVisibility();
     HistoryData* history();
@@ -85,6 +87,9 @@ public:
     QWidgetList openEditors();
     QList<QPlainTextEdit*> openLogs();
     SearchWidget* searchWidget() const;
+    void showResults(SearchResultList &results);
+    RecentData *recent();
+    StudioSettings *settings() const;
 
 private slots:
     void codecChanged(QAction *action);
@@ -96,7 +101,6 @@ private slots:
     void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
-    void openFileContext(FileContext *fileContext, bool focus = true);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
     // View
@@ -160,6 +164,7 @@ private:
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
+    void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
@@ -173,7 +178,7 @@ private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
-    SearchWidget *sw = nullptr;
+    SearchWidget *mSearchWidget = nullptr;
 
     Option* gamsOption;
     OptionEditor* mOptionEditor;

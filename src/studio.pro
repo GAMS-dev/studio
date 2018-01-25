@@ -101,6 +101,7 @@ SOURCES += \
     studiosettings.cpp \
     application.cpp \
     projectcontextmenu.cpp \
+    gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     option/option.cpp \
     option/optionconfigurator.cpp \
@@ -121,7 +122,8 @@ SOURCES += \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxidentifier.cpp \
     searchwidget.cpp \
-    gdxviewer/gdxsymbolview.cpp
+    resultsview.cpp \
+    searchresultlist.cpp
 
 
 HEADERS += \
@@ -161,6 +163,7 @@ HEADERS += \
     studiosettings.h \
     application.h \
     projectcontextmenu.h \
+    gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolheaderview.h \
     option/option.h \
     option/optionconfigurator.h \
@@ -181,9 +184,10 @@ HEADERS += \
     syntax/syntaxformats.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxidentifier.h \
-    searchwidget.h \
     syntax/syntaxdata.h \
-    gdxviewer/gdxsymbolview.h
+    searchwidget.h \
+    resultsview.h \
+    searchresultlist.h
 
 FORMS += \
     welcomepage.ui  \
@@ -192,10 +196,11 @@ FORMS += \
     modeldialog/modeldialog.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
+    gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
     option/optionconfigurator.ui \
     searchwidget.ui \
-    gdxviewer/gdxsymbolview.ui
+    resultsview.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

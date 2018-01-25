@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QVarLengthArray>
 #include <algorithm>
+#include <limits>
 
 namespace gams {
 namespace studio {
@@ -25,8 +26,16 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive.resize(mRecordCount);
-    mFilterActive.fill(false);
+    mFilterActive.resize(mDim);
+    for(int i=0; i<mDim; i++)
+        mFilterActive[i] = false;
+
+    mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
+    mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
+    mSpecValSortVal.push_back(GMS_SV_PINF); // GMS_SV_PINF
+    mSpecValSortVal.push_back(std::numeric_limits<double>::min()); // GMS_SV_MINF
+    mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
+    mSpecValSortVal.push_back(0);  //TODO: Acronyms
 }
 
 GdxSymbol::~GdxSymbol()
@@ -129,6 +138,12 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "-INF";
                 if (val == GMS_SV_EPS)
                     return "EPS";
+                else if (val>=GMS_SV_ACR)
+                {
+                    char acr[GMS_SSSIZE];
+                    gdxAcronymName(mGdx, val, acr);
+                    return QString(acr);
+                }
                 //TODO(CW): check special values
             }
         }
@@ -153,9 +168,11 @@ void GdxSymbol::loadData()
     t.start();
     QMutexLocker locker(mGdxMutex);
     mMinUel.resize(mDim);
-    mMinUel.fill(INT_MAX);
+    for(int i=0; i<mDim; i++)
+        mMinUel[i] = INT_MAX;
     mMaxUel.resize(mDim);
-    mMaxUel.fill(INT_MIN);
+    for(int i=0; i<mDim; i++)
+        mMaxUel[i] = INT_MIN;
     if(!mIsLoaded)
     {
         beginResetModel();
@@ -188,6 +205,7 @@ void GdxSymbol::loadData()
                 return;
             }
         }
+
         int updateCount = 1000000;
         int keyOffset;
         int valOffset;
@@ -280,7 +298,7 @@ void GdxSymbol::calcUelsInColumn()
 {
     for(int dim=0; dim<mDim; dim++)
     {
-        QVector<int>* uels = new QVector<int>();
+        std::vector<int>* uels = new std::vector<int>();
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
@@ -294,12 +312,12 @@ void GdxSymbol::calcUelsInColumn()
                 if(!sawUel[currentUel])
                 {
                     sawUel[currentUel] = true;
-                    uels->append(currentUel);
+                    uels->push_back(currentUel);
                 }
             }
         }
-        mUelsInColumn.append(uels);
-        mShowUelInColumn.append(sawUel);
+        mUelsInColumn.push_back(uels);
+        mShowUelInColumn.push_back(sawUel);
     }
 }
 
@@ -332,27 +350,41 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
-QVector<bool> GdxSymbol::filterActive() const
+double GdxSymbol::specVal2SortVal(double val)
+{
+    if (val == GMS_SV_UNDEF)
+        return mSpecValSortVal[GMS_SVIDX_UNDEF];
+    else if (val == GMS_SV_NA)
+        return  mSpecValSortVal[GMS_SVIDX_NA];
+    else if (val == GMS_SV_MINF)
+        return  mSpecValSortVal[GMS_SVIDX_MINF];
+    else if (val == GMS_SV_EPS)
+        return  mSpecValSortVal[GMS_SVIDX_EPS];
+    else
+        return val;
+}
+
+std::vector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
 }
 
-void GdxSymbol::setFilterActive(const QVector<bool> &filterActive)
+void GdxSymbol::setFilterActive(const std::vector<bool> &filterActive)
 {
     mFilterActive = filterActive;
 }
 
-void GdxSymbol::setShowUelInColumn(const QVector<bool *> &showUelInColumn)
+void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
 {
     mShowUelInColumn = showUelInColumn;
 }
 
-QVector<bool *> GdxSymbol::showUelInColumn() const
+std::vector<bool *> GdxSymbol::showUelInColumn() const
 {
     return mShowUelInColumn;
 }
 
-QVector<QVector<int> *> GdxSymbol::uelsInColumn() const
+std::vector<std::vector<int> *> GdxSymbol::uelsInColumn() const
 {
     return mUelsInColumn;
 }
@@ -364,9 +396,9 @@ void GdxSymbol::resetSortFilter()
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
     }
-    mFilterActive.fill(false);
     for(int dim=0; dim<mDim; dim++)
     {
+        mFilterActive[dim] = false;
         for(int uel : *mUelsInColumn.at(dim))
         {
             mShowUelInColumn.at(dim)[uel] = true;
@@ -447,15 +479,26 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     else
     {
         QList<QPair<double, int>> l;
+        double val=0;
         if(mType == GMS_DT_PAR)
         {
             for(int rec=0; rec<mRecordCount; rec++)
-                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]], mRecSortIdx[rec]));
+            {
+                val = mValues[mRecSortIdx[rec]];
+                if (val>=GMS_SV_UNDEF)
+                    val = specVal2SortVal(val);
+                l.append(QPair<double, int>(val, mRecSortIdx[rec]));
+            }
         }
         else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
         {
             for(int rec=0; rec<mRecordCount; rec++)
-                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)], mRecSortIdx[rec]));
+            {
+                val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
+                if (val>=GMS_SV_UNDEF)
+                    val = specVal2SortVal(val);
+                l.append(QPair<double, int>(val, mRecSortIdx[rec]));
+            }
         }
 
         if(order == Qt::SortOrder::AscendingOrder)
