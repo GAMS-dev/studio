@@ -860,7 +860,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }
 
     if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        mSearchWidget->find(true); // Shift + F3
+        mSearchWidget->find(true); // Shift + F3 // TODO: make enum
     } else if (event->key() == Qt::Key_F3) {
         mSearchWidget->find(false); // F3
     }

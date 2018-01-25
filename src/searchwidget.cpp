@@ -66,7 +66,7 @@ bool SearchWidget::wholeWords()
 
 QString SearchWidget::searchTerm()
 {
-    return ui->cmb_search->currentData(Qt::DisplayRole).toString();
+    return ui->cmb_search->currentText();
 }
 
 int SearchWidget::selectedScope()
@@ -144,6 +144,7 @@ QList<Result> SearchWidget::findInOpenFiles()
     QList<Result> matches;
     QWidgetList editList = mMain->fileRepository()->editors();
     FileContext *fc;
+    // TODO: search FCs, because 1 fc can have n editors
     for (int i = 0; i < editList.size(); i++) {
         fc = mMain->fileRepository()->fileContext(editList.at(i));
         if (fc == nullptr) break;
@@ -159,17 +160,15 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
     FileGroupContext *fgc = nullptr;
     if (!fsc) {
         FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-        fgc = (fc ? fc->parentEntry() : nullptr);
+        fgc = (fc ? fc->parentEntry() : nullptr); // TODO: refactor
 
-        if (!fgc)
-            return QList<Result>();
+        if (!fgc) return QList<Result>();
     } else {
         if (fsc->type() == FileGroupContext::FileGroup)
             fgc = static_cast<FileGroupContext*>(fsc);
     }
 
-    if (!fgc)
-        return matches;
+    if (!fgc) return matches;
 
     for (int i = 0; i < fgc->childCount(); i++) {
         matches.append(findInFile(fgc->childEntry(i)));
@@ -184,13 +183,18 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     QRegExp rx(ui->txt_filePattern->text());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
+//    if (fsc->type() == FileSystemContext::File) || filetype log
+    //    FileContext *fc = static_cast<FileContext*>(fsc);
+    //    fc->metrics().fileType()
+
     // (scope not current file && wildcard not matching) || has gdx extension
     if (((ui->combo_scope->currentIndex() != 1) && (rx.indexIn(fsc->location()) == -1))
             || fsc->location().endsWith("gdx")) {
+        // TODO: change to filecontext, check type instead of chekcing extension
         return QList<Result>();
     }
-
-    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
+    // TODO: change to .text()
+    QString searchTerm = ui->cmb_search->currentText();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
@@ -198,31 +202,32 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         matches.addResultList(findInGroup(fsc)); // TESTME studio does not support this case as of yet
     } else { // it's a file
         FileContext *fc(static_cast<FileContext*>(fsc));
-        if (fc == nullptr) FATAL();
+        if (fc == nullptr) FATAL(); // TODO: add error msg
 
         QRegularExpression searchRegex = QRegularExpression(searchTerm);
         QTextCursor item;
         QTextCursor lastItem;
 
-        if (fc->document() == nullptr) { // not opened in editor
+        if (!fc->document()) { // not opened in editor
 
             int lineCounter = 0;
-            Qt::CaseSensitivity cs = (ui->cb_caseSens->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive);
 
+            QFile file(fc->location());
             if (regex()) {
                 if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
             }
 
-            QFile file(fc->location());
             if (file.open(QIODevice::ReadOnly)) {
+                Qt::CaseSensitivity cs = (caseSens() ? Qt::CaseSensitive : Qt::CaseInsensitive);
                 QTextStream in(&file);
                 while (!in.atEnd()) {
                     lineCounter++;
                     QString line = in.readLine();
                     QRegularExpressionMatch match;
 
-                    if (regex() && line.contains(searchRegex, &match)) {
-                        matches.addResult(lineCounter, match.capturedEnd(), file.fileName(), line.trimmed());
+                    if (regex()) {
+                        if (line.contains(searchRegex, &match))
+                            matches.addResult(lineCounter, match.capturedEnd(), file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
                         matches.addResult(lineCounter, line.indexOf(searchTerm, cs), file.fileName(), line.trimmed());
                     }
@@ -269,10 +274,12 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
         ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
         return;
     }
+
     if (hits == 1)
         ui->lbl_nrResults->setText(QString::number(hits) + " match");
     else
         ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }
 
@@ -281,8 +288,8 @@ void SearchWidget::simpleReplaceAll()
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
-    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
-    QRegularExpression searchRegex(ui->cmb_search->currentData(Qt::DisplayRole).toString());
+    QString searchTerm = ui->cmb_search->currentText();
+    QRegularExpression searchRegex(ui->cmb_search->currentText());
     QString replaceTerm = ui->txt_replace->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
@@ -295,10 +302,12 @@ void SearchWidget::simpleReplaceAll()
             item = edit->document()->find(searchRegex, lastItem, searchFlags);
         else
             item = edit->document()->find(searchTerm, lastItem, searchFlags);
+
         lastItem = item;
-        if (!item.isNull()) {
+
+        if (!item.isNull())
             hits.append(item);
-        }
+
     } while (!item.isNull());
 
     QMessageBox msgBox;
@@ -322,7 +331,7 @@ void SearchWidget::find(bool backwards)
     if (!edit) return;
 
     bool useRegex = ui->cb_regex->isChecked();
-    QString searchTerm = ui->cmb_search->currentData(Qt::DisplayRole).toString();
+    QString searchTerm = ui->cmb_search->currentText();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
     if (backwards)
         searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
@@ -330,11 +339,10 @@ void SearchWidget::find(bool backwards)
     QRegularExpression searchRegex;
     if (useRegex) searchRegex.setPattern(searchTerm);
 
-    mLastSelection = (!mSelection.isNull() ? mSelection : edit->textCursor());
     if (useRegex) {
-        mSelection = edit->document()->find(searchRegex, mLastSelection, searchFlags);
+        mSelection = edit->document()->find(searchRegex, edit->textCursor(), searchFlags);
     } else {
-        mSelection = edit->document()->find(searchTerm, mLastSelection, searchFlags);
+        mSelection = edit->document()->find(searchTerm, edit->textCursor(), searchFlags);
     }
 
     // nothing found, try to start over
