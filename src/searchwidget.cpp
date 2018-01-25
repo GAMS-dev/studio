@@ -106,17 +106,17 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
 
     switch (ui->combo_scope->currentIndex()) {
-    case 0: // this file
+    case SearchScope::ThisFile:
         if (mMain->recent()->editor)
             matches.addResultList(findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor)));
         break;
-    case 1: // this group
+    case SearchScope::ThisGroup:
         matches.addResultList(findInGroup());
         break;
-    case 2: // open files
+    case SearchScope::OpenTabs:
         matches.addResultList(findInOpenFiles());
         break;
-    case 3: // all files/groups
+    case SearchScope::AllFiles:
         matches.addResultList(findInAllFiles());
         break;
     default:
@@ -188,7 +188,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     //    fc->metrics().fileType()
 
     // (scope not current file && wildcard not matching) || has gdx extension
-    if (((ui->combo_scope->currentIndex() != 1) && (rx.indexIn(fsc->location()) == -1))
+    if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (rx.indexIn(fsc->location()) == -1))
             || fsc->location().endsWith("gdx")) {
         // TODO: change to filecontext, check type instead of chekcing extension
         return QList<Result>();
@@ -455,7 +455,7 @@ Result::Result(int locLineNr, int locCol, QString locFile, QString context) :
 
 void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 {
-    ui->txt_filePattern->setEnabled(index != 0);
+    ui->txt_filePattern->setEnabled(index != SearchScope::ThisFile);
 }
 
 void SearchWidget::on_btn_back_clicked()
@@ -476,6 +476,8 @@ void SearchWidget::on_btn_forward_clicked()
 
 void SearchWidget::on_btn_clear_clicked()
 {
+    ui->cmb_search->clearEditText();
+
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
 

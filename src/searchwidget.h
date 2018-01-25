@@ -75,6 +75,13 @@ private:
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, bool clear = false);
+
+    enum SearchScope {
+        ThisFile = 0,
+        ThisGroup= 1,
+        OpenTabs = 2,
+        AllFiles = 3
+    };
 };
 
 }

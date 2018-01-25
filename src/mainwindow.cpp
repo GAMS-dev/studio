@@ -1183,7 +1183,8 @@ void MainWindow::on_actionSearch_triggered()
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
 
         if (ui->mainTab->currentWidget()) {
-            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
+            int sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width() - sbs);
             mSearchWidget->move(newP.x() + offset, newP.y());
         }
         mSearchWidget->show();
