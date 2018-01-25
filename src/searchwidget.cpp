@@ -41,6 +41,7 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->lbl_nrResults->setText("");
 
     setFixedSize(size());
+    ui->cmb_search->setFocus();
 }
 
 SearchWidget::~SearchWidget()
@@ -379,11 +380,12 @@ void SearchWidget::showEvent(QShowEvent *event)
         edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
-    ui->cmb_search->setFocus();
     if (edit->textCursor().hasSelection())
         ui->cmb_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
         ui->cmb_search->setCurrentText("");
+
+    ui->cmb_search->setFocus();
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* event)
