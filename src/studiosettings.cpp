@@ -434,5 +434,12 @@ void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
     mSelectedScopeIndex = selectedScopeIndex;
 }
 
+QString StudioSettings::userLibPath() const
+{
+    QFileInfo fInfo( mAppSettings->fileName());
+    QDir settingsDir(fInfo.absoluteDir());
+    return QDir::toNativeSeparators(settingsDir.filePath(mUserLibDir));
+}
+
 }
 }

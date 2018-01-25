@@ -21,6 +21,7 @@
 #include "gamspaths.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QMessageBox>
 #include <QTextStream>
@@ -37,7 +38,13 @@ namespace gams {
 namespace studio {
 
 ModelDialog::ModelDialog(QWidget *parent):
-    QDialog(parent)
+    ModelDialog("", parent)
+{
+
+}
+
+ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
+    QDialog(parent), mUserLibPath(userLibPath)
 {
     ui.setupUi(this);
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -72,6 +79,9 @@ ModelDialog::ModelDialog(QWidget *parent):
     items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
+
+    if(!mUserLibPath.isEmpty())
+        loadUserLibs();
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
@@ -156,6 +166,16 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
 
     tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
     tableView->resizeColumnsToContents();
+}
+
+void ModelDialog::loadUserLibs()
+{
+    QDirIterator iter(mUserLibPath, QDirIterator::Subdirectories);
+    while (!iter.next().isEmpty())
+    {
+        if (QFileInfo(iter.filePath()).suffix() == "glb")
+            addLibrary(GlbParser::parseFile(iter.filePath()));
+    }
 }
 
 LibraryItem *ModelDialog::selectedLibraryItem() const

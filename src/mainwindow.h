@@ -155,6 +155,7 @@ protected:
 
 private:
     void initTabs();
+    void createUserLibPath();
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);

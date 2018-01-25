@@ -34,6 +34,7 @@ class ModelDialog : public QDialog
 
 public:
     explicit ModelDialog(QWidget *parent = 0);
+    explicit ModelDialog(QString userLibPath, QWidget *parent = 0);
     LibraryItem *selectedLibraryItem() const;
 
 public slots:
@@ -50,9 +51,12 @@ private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
     void addLibrary(QList<LibraryItem> items);
+    void loadUserLibs();
 
     QList<QTableView*> tableViewList;
     QList<QSortFilterProxyModel*> proxyModelList;
+
+    QString mUserLibPath;
 };
 
 }
