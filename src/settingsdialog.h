@@ -47,6 +47,8 @@ private slots:
     void on_sb_fontsize_valueChanged(int arg1);
     void setModified();
 
+    void on_btn_openUserLibLocation_clicked();
+
 private:
     StudioSettings *mSettings;
     Ui::SettingsDialog *ui;
