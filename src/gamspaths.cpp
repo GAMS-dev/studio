@@ -20,6 +20,7 @@
 #include "gamspaths.h"
 #include "exception.h"
 
+#include <QApplication>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
@@ -34,27 +35,32 @@ GAMSPaths::GAMSPaths()
 }
 
 QString GAMSPaths::systemDir() {
-    QString path;
-#if defined(DISTRIB_BUILD) // For the GAMS distribution build
-#ifdef __linux__ // Linux AppImage
-    path = QDir::currentPath().append("/..");
-#elif __APPLE__ // Apple MacOS dmg
-    path = QDir::currentPath();
-#else // Windows
-    path = QDir::currentPath().append("/..");
+    QString gamsPath;
+    QString appDirPath = QApplication::applicationDirPath();
+#if __APPLE__
+    QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
+    if (pathRegExp.indexIn(appDirPath) != -1) {
+        gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
+    }
+#else
+    appDirPath.append(QDir::separator()).append("..");
 #endif
-#else // Just a simple way for developers to find a GAMS distribution... if the PATH is set.
-    path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-#endif
-    // TODO(JM) check bitness against path
-    if (path == "") EXCEPT() << "GAMS not found in path.";
+    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
+    if (path.isEmpty()) {
+        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+    }
 
-    int bitness = sizeof(int*);
-    if (bitness == 4 && path.contains("win64"))
-        FATAL() << "GAMS Studio (32bit) can't be executed with " << path;
-    if (bitness == 8 && path.contains("win32"))
-        FATAL() << "GAMS Studio (64bit) can't be executed with " << path;
-    return path;
+#ifdef _WIN32
+    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
+    bool is64 = (sizeof(int*) == 8) ? true : false;
+    if (!is64 && joat64.exists())
+        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << gamsPath;
+    if (is64 && !joat64.exists())
+        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << gamsPath;
+#endif
+
+    return gamsPath;
 }
 
 QString GAMSPaths::defaultWorkingDir()
