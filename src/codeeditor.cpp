@@ -436,6 +436,14 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
+        QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+        QTextCursor cursor(block);
+        if (block.length() > mColumn+mSize)
+            cursor.setPosition(block.position()+mColumn+mSize);
+        else
+            cursor.setPosition(block.position()+block.length()-1);
+        mEdit->setTextCursor(cursor);
+
         startCursorTimer();
     }
 }
@@ -477,10 +485,7 @@ void CodeEditor::BlockEdit::stopCursorTimer()
 
 void CodeEditor::BlockEdit::refreshCursors()
 {
-    // TODO(Jm) generate drawCursor-event for every line
-//    for (int line: mLines) {
-
-//    }
+    // TODO(JM) generate drawCursor-event for every line
     mBlinkStateHidden = !mBlinkStateHidden;
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
 }
@@ -553,6 +558,33 @@ void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
         block = block.next();
     }
 
+}
+
+void CodeEditor::BlockEdit::replaceBlockText(QString text)
+{
+    QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mCurrentLine, mStartLine));
+    int fromCol = qMin(mColumn, mColumn+mSize);
+    int toCol = qMax(mColumn, mColumn+mSize);
+    while (block.blockNumber() <= qMax(mCurrentLine, mStartLine)) {
+        QString addText = text;
+        QTextCursor cursor(block);
+        int offsetFromEnd = fromCol - block.length();
+        if (offsetFromEnd > 0 && !text.isEmpty()) {
+            // line ends before start of mark -> calc additional spaces
+            cursor.movePosition(QTextCursor::EndOfBlock);
+            QString s(' ',offsetFromEnd);
+            addText = s+text;
+        } else if (mSize > 0) {
+            // block-edit contains marking -> remove to end of block/line
+            int pos = block.position()+fromCol;
+            int rmSize = qMin(block.length(), toCol) - pos;
+            cursor.setPosition(block.position()+fromCol);
+            if (rmSize>0) cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, rmSize);
+        }
+        if (!addText.isEmpty()) cursor.insertText(addText);
+    }
+    mColumn += text.length();
+    mSize = 0;
 }
 
 } // namespace studio

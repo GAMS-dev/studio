@@ -98,6 +98,7 @@ private:
         void stopCursorTimer();
         void refreshCursors();
         void drawCursor(QPaintEvent *e);
+        void replaceBlockText(QString text);
 
     private:
     private:
