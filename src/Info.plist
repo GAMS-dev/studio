@@ -5,7 +5,7 @@
         <key>CFBundleExecutable</key>
         <string>studio</string>
         <key>CFBundleGetInfoString</key>
-        <string>Created by Qt/QMake</string>
+        <string>Created by GAMS</string>
         <key>CFBundleIconFile</key>
         <string>studio.icns</string>
         <key>CFBundleIdentifier</key>
