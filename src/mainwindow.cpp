@@ -742,7 +742,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mOptionSplitter->setStretchFactor(1, 1);
     mOptionSplitter->addWidget(optionWidget);
 
-    mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer,  mDockOptionView);
+    mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer, mDockOptionView);
     mOptionSplitter->addWidget(mOptionEditor);
     mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
     mDockOptionView->setWindowTitle("Option");

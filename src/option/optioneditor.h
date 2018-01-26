@@ -44,6 +44,7 @@ public slots:
 
 private:
     CommandLineOption* mCommandLineOption;
+    CommandLineTokenizer* mTokenizer;
 };
 
 } // namespace studio

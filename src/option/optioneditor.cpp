@@ -8,63 +8,9 @@ namespace gams {
 namespace studio {
 
 OptionEditor::OptionEditor(CommandLineOption* option, CommandLineTokenizer* tokenizer, QWidget *parent) :
-    mCommandLineOption(option), QWidget(parent)
+    QWidget(parent), mCommandLineOption(option), mTokenizer(tokenizer)
 {
-    QList<OptionItem> optionItem = tokenizer->tokenize(mCommandLineOption->lineEdit()->text());
-    QString normalizedText = tokenizer->normalize(optionItem);
-    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, tokenizer,  this);
-
     setupUi(this);
-    updateCommandLineStr( normalizedText );
-
-    commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    commandLineTableView->setItemDelegate( new OptionCompleterDelegate(tokenizer, commandLineTableView));
-    commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
-                       | QAbstractItemView::EditKeyPressed
-                       | QAbstractItemView::AnyKeyPressed );
-    commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    commandLineTableView->setAutoScroll(true);
-    commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    commandLineTableView->setModel( optionParamModel );
-    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
-    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
-    commandLineTableView->resizeColumnsToContents();
-    splitter->setStretchFactor(0,1);
-    splitter->setStretchFactor(1,2);
-
-    QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
-    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(tokenizer->getGamsOption(), this);
-    proxymodel->setSourceModel( optdefmodel );
-    proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
-
-    optionDefinitionTreeView->setItemsExpandable(true);
-    optionDefinitionTreeView->setSortingEnabled(true);
-    optionDefinitionTreeView->sortByColumn(0, Qt::AscendingOrder);
-    optionDefinitionTreeView->setModel( proxymodel );
-    optionDefinitionTreeView->resizeColumnToContents(0);
-    optionDefinitionTreeView->resizeColumnToContents(2);
-    optionDefinitionTreeView->resizeColumnToContents(3);
-    optionDefinitionTreeView->setAlternatingRowColors(true);
-
-    searchLineEdit->setPlaceholderText("Search Option...");
-
-//    connect(searchLineEdit, &QLineEdit::textChanged,
-//            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
-//    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
-//            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
-//    connect(commandLineTableView, &QTableView::customContextMenuRequested,
-//            this, &OptionEditor::showOptionContextMenu);
-//    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
-//            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
-//    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
-//            tokenizer, &CommandLineTokenizer::formatItemLineEdit);
-
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//            optionParamModel, &OptionParameterModel::updateCurrentOption );
-//    connect(mCommandLineOption, &QComboBox::editTextChanged,
-//            optionParamModel, &OptionParameterModel::validateChangedOption );
 }
 
 OptionEditor::~OptionEditor()
@@ -74,6 +20,10 @@ OptionEditor::~OptionEditor()
 
 void OptionEditor::setupUi(QWidget* optionEditor)
 {
+    QList<OptionItem> optionItem = mTokenizer->tokenize(mCommandLineOption->lineEdit()->text());
+    QString normalizedText = mTokenizer->normalize(optionItem);
+    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, mTokenizer,  this);
+
     if (optionEditor->objectName().isEmpty())
         optionEditor->setObjectName(QStringLiteral("OptionEditor"));
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -92,7 +42,24 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     splitter->setOrientation(Qt::Horizontal);
     commandLineTableView = new QTableView(splitter);
     commandLineTableView->setObjectName(QStringLiteral("commandLineTableView"));
-    splitter->addWidget(commandLineTableView);
+    commandLineTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    commandLineTableView->setItemDelegate( new OptionCompleterDelegate(mTokenizer, commandLineTableView));
+    commandLineTableView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::EditKeyPressed
+                       | QAbstractItemView::AnyKeyPressed );
+    commandLineTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    commandLineTableView->setAutoScroll(true);
+    commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    commandLineTableView->setModel( optionParamModel );
+    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
+    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
+    commandLineTableView->resizeColumnsToContents();
+
+    splitter->addWidget(commandLineTableView);   
+    splitter->setStretchFactor(0,1);
+    splitter->setStretchFactor(1,2);
+
     verticalLayoutWidget = new QWidget(splitter);
     verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
     optionDefinition_VLayout = new QVBoxLayout(verticalLayoutWidget);
@@ -100,11 +67,26 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     optionDefinition_VLayout->setContentsMargins(0, 0, 0, 0);
     searchLineEdit = new QLineEdit(verticalLayoutWidget);
     searchLineEdit->setObjectName(QStringLiteral("searchLineEdit"));
+    searchLineEdit->setPlaceholderText("Search Option...");
 
     optionDefinition_VLayout->addWidget(searchLineEdit);
 
+    QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
+    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mTokenizer->getGamsOption(), this);
+    proxymodel->setSourceModel( optdefmodel );
+    proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
+
     optionDefinitionTreeView = new QTreeView(verticalLayoutWidget);
     optionDefinitionTreeView->setObjectName(QStringLiteral("optionDefinitionTreeView"));
+    optionDefinitionTreeView->setItemsExpandable(true);
+    optionDefinitionTreeView->setSortingEnabled(true);
+    optionDefinitionTreeView->sortByColumn(0, Qt::AscendingOrder);
+    optionDefinitionTreeView->setModel( proxymodel );
+    optionDefinitionTreeView->resizeColumnToContents(0);
+    optionDefinitionTreeView->resizeColumnToContents(2);
+    optionDefinitionTreeView->resizeColumnToContents(3);
+    optionDefinitionTreeView->setAlternatingRowColors(true);
 
     optionDefinition_VLayout->addWidget(optionDefinitionTreeView);
 
@@ -115,6 +97,25 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     // retranslateUi
     optionEditor->setWindowTitle(QApplication::translate("optionEditor", "Editor", nullptr));
     searchLineEdit->setText(QString());
+
+    updateCommandLineStr( normalizedText );
+
+    connect(searchLineEdit, &QLineEdit::textChanged,
+            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
+//    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
+//            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+//    connect(commandLineTableView, &QTableView::customContextMenuRequested,
+//            this, &OptionEditor::showOptionContextMenu);
+//    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
+//            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
+//    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
+//            mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+
+//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+//            optionParamModel, &OptionParameterModel::updateCurrentOption );
+//    connect(mCommandLineOption, &QComboBox::editTextChanged,
+//            optionParamModel, &OptionParameterModel::validateChangedOption );
+
 }
 
 void OptionEditor::updateCommandLineStr(const QString &commandLineStr)
