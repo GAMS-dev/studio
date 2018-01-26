@@ -68,6 +68,7 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
+    void blockEditBlink();
 
 private:
     friend class BlockEdit;
@@ -77,12 +78,6 @@ private:
 
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
-
-private:
-    LineNumberArea *mLineNumberArea;
-    int mCurrentCol;
-    StudioSettings *mSettings;
-    QPoint mDragStart;
 
 private:
     class BlockEdit
@@ -95,18 +90,32 @@ private:
         void mouseMoveEvent(QMouseEvent *e);
         void mousePressEvent(QMouseEvent *e);
         void mouseReleaseEvent(QMouseEvent *e);
-        int hasBlock(int blockNr) { return mLines.contains(blockNr); }
+        inline int hasBlock(int blockNr) {
+            return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
         int colFrom() { return 0; }
         int colTo() { return 0; }
+        void startCursorTimer();
+        void stopCursorTimer();
+        void refreshCursors();
+        void drawCursor(QPaintEvent *e);
 
     private:
     private:
         CodeEditor* mEdit;
-        QVector<int> mLines;
+        int mStartLine = 0;
+        int mCurrentLine = 0;
         int mColumn = 0;
         int mSize = 0;
+        bool mBlinkStateHidden = false;
     };
+
+private:
+    LineNumberArea *mLineNumberArea;
+    int mCurrentCol;
+    StudioSettings *mSettings;
+    QPoint mDragStart;
     BlockEdit* mBlockEdit = nullptr;
+    QTimer mBlinkBlockEdit;
 
 };
 

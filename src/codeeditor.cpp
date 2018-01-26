@@ -34,9 +34,10 @@ inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySeq
 CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
     mLineNumberArea = new LineNumberArea(this);
-
     mLineNumberArea->setMouseTracking(true);
+    mBlinkBlockEdit.setInterval(500);
 
+    connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEditor::blockEditBlink);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
@@ -121,6 +122,11 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
+}
+
+void CodeEditor::blockEditBlink()
+{
+    if (mBlockEdit) mBlockEdit->refreshCursors();
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
@@ -286,50 +292,7 @@ void CodeEditor::paintEvent(QPaintEvent* e)
 //    DEB() << "cursor info: " << cursorRect().width();
     QPlainTextEdit::paintEvent(e);
     if (mBlockEdit) {
-        QPainter painter(viewport());
-        QPointF offset(contentOffset()); //
-        QRect er = e->rect();
-        QRect viewportRect = viewport()->rect();
-        bool editable = !isReadOnly();
-        QTextBlock block = firstVisibleBlock();
-        qreal maximumWidth = document()->documentLayout()->documentSize().width();
-        int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth) - document()->documentMargin();
-        er.setRight(qMin(er.right(), maxX));
-        painter.setClipRect(er);
-        QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
-
-        while (block.isValid()) {
-            QRectF r = blockBoundingRect(block).translated(offset);
-            QTextLayout *layout = block.layout();
-
-            if (!block.isVisible()) {
-                offset.ry() += r.height();
-                block = block.next();
-                continue;
-            }
-
-            if (r.bottom() >= er.top() && r.top() <= er.bottom()) {
-                int blpos = block.position();
-                int bllen = block.length();
-                bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard))
-                                   && context.cursorPosition >= blpos
-                                   && context.cursorPosition < blpos + bllen);
-                if (drawCursor || (editable && context.cursorPosition < -1
-                                   && !layout->preeditAreaText().isEmpty())) {
-                    int cpos = context.cursorPosition;
-                    if (cpos < -1)
-                        cpos = layout->preeditAreaPosition() - (cpos + 2);
-                    else
-                        cpos -= blpos;
-                    layout->drawCursor(&painter, offset, cpos, 4);
-                }
-            }
-
-            offset.ry() += r.height();
-            if (offset.y() > viewportRect.height())
-                break;
-            block = block.next();
-        }
+        mBlockEdit->drawCursor(e);
     }
 }
 
@@ -364,11 +327,14 @@ void CodeEditor::startBlockEdit(int blockNr, int colNr)
 {
     if (mBlockEdit) endBlockEdit();
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
+    mBlockEdit->startCursorTimer();
+    updateLineNumberAreaWidth(0);
 }
 
 void CodeEditor::endBlockEdit()
 {
     // TODO(JM) remove BlockEdit's selection and place cursor
+    mBlockEdit->stopCursorTimer();
     delete mBlockEdit;
     mBlockEdit = nullptr;
 }
@@ -449,7 +415,8 @@ CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit, int blockNr, int colNr)
 {
     if (!edit) FATAL() << "BlockEdit needs a valid editor";
     DEB() << "blockEdit START";
-    mLines << blockNr;
+    mStartLine = blockNr;
+    mCurrentLine = blockNr;
     mColumn = colNr;
     mSize = 0;
 }
@@ -464,7 +431,13 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
-
+    if (moveKeys.contains(e->key())) {
+        if (e->key() == Qt::Key_Right) mSize++;
+        if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
+        if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
+        if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
+        startCursorTimer();
+    }
 }
 
 void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
@@ -484,6 +457,102 @@ void CodeEditor::BlockEdit::mousePressEvent(QMouseEvent* e)
 
 void CodeEditor::BlockEdit::mouseReleaseEvent(QMouseEvent* e)
 {
+}
+
+void CodeEditor::BlockEdit::startCursorTimer()
+{
+    mEdit->mBlinkBlockEdit.start();
+    mBlinkStateHidden = true;
+    mEdit->lineNumberArea()->update(mEdit->lineNumberArea()->visibleRegion());
+    refreshCursors();
+}
+
+void CodeEditor::BlockEdit::stopCursorTimer()
+{
+    mEdit->mBlinkBlockEdit.stop();
+    mBlinkStateHidden = true;
+    mEdit->lineNumberArea()->update(mEdit->lineNumberArea()->visibleRegion());
+    refreshCursors();
+}
+
+void CodeEditor::BlockEdit::refreshCursors()
+{
+    // TODO(Jm) generate drawCursor-event for every line
+//    for (int line: mLines) {
+
+//    }
+    mBlinkStateHidden = !mBlinkStateHidden;
+    mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
+}
+
+void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
+{
+    if (mBlinkStateHidden) return;
+    QPainter painter(mEdit->viewport());
+    QPointF offset(mEdit->contentOffset()); //
+    QRect evRect = e->rect();
+    bool editable = !mEdit->isReadOnly();
+    painter.setClipRect(evRect);
+
+    QAbstractTextDocumentLayout::PaintContext context = mEdit->getPaintContext();
+
+    QTextBlock block = mEdit->firstVisibleBlock();
+    QTextCursor cursor(mEdit->document());
+    int cursorColumn = mColumn+mSize;
+
+    while (block.isValid()) {
+        QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
+        QTextLayout *layout = block.layout();
+        if (!hasBlock(block.blockNumber()) || !block.isVisible()) {
+            offset.ry() += blockRect.height();
+            block = block.next();
+            continue;
+        }
+
+        cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
+        QRect cursorRect = mEdit->cursorRect(cursor);
+        if (block.length() <= cursorColumn) {
+            QFontMetrics metric(mEdit->font());
+            cursorRect.translate((cursorColumn-block.length()+1) * metric.width(' '), 0);
+        }
+        cursorRect.setWidth(2);
+
+        // TODO(JM) check if current block is in mLines
+
+        if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
+            int blpos = block.position();
+            bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
+            if (drawCursor /*|| (editable && context.cursorPosition < -1
+                               && !layout->preeditAreaText().isEmpty())*/) {
+                int cpos = context.cursorPosition+1;
+                if (cpos < -1)
+                    cpos = layout->preeditAreaPosition() - (cpos + 2);
+                else
+                    cpos -= blpos;
+
+                DEB() << "draw BlockCursor" << cursorRect;
+
+                bool toggleAntialiasing = !(painter.renderHints() & QPainter::Antialiasing)
+                                          && (painter.transform().type() > QTransform::TxTranslate);
+                if (toggleAntialiasing)
+                    painter.setRenderHint(QPainter::Antialiasing);
+                QPainter::CompositionMode origCompositionMode = painter.compositionMode();
+                if (painter.paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
+                    painter.setCompositionMode(QPainter::RasterOp_NotDestination);
+                painter.fillRect(cursorRect, painter.pen().brush());
+                painter.setCompositionMode(origCompositionMode);
+                if (toggleAntialiasing)
+                    painter.setRenderHint(QPainter::Antialiasing, false);
+
+            }
+        }
+
+        offset.ry() += blockRect.height();
+        if (offset.y() > mEdit->viewport()->rect().height())
+            break;
+        block = block.next();
+    }
+
 }
 
 } // namespace studio
