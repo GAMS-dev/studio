@@ -36,7 +36,6 @@ class SearchWidget : public QDialog
 
 public:
     explicit SearchWidget(MainWindow *parent = 0);
-    void find(bool backwards = false);
     ~SearchWidget();
 
     bool regex();
@@ -48,6 +47,12 @@ public:
     void setSelectedScope(int index);
 
     QList<Result> findInFile(FileSystemContext *fsc);
+
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
+    void findNext(SearchWidget::SearchDirection direction);
 
 private slots:
     void on_btn_FindAll_clicked();

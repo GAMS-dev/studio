@@ -325,7 +325,7 @@ void SearchWidget::simpleReplaceAll()
     }
 }
 
-void SearchWidget::find(bool backwards)
+void SearchWidget::findNext(SearchDirection direction)
 {
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
@@ -333,7 +333,8 @@ void SearchWidget::find(bool backwards)
     bool useRegex = ui->cb_regex->isChecked();
     QString searchTerm = ui->cmb_search->currentText();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
-    if (backwards)
+
+    if (direction == SearchWidget::Backward)
         searchFlags.setFlag(QTextDocument::FindFlag::FindBackward);
 
     QRegularExpression searchRegex;
@@ -369,7 +370,7 @@ void SearchWidget::on_btn_Replace_clicked()
     if (edit->textCursor().hasSelection())
         edit->textCursor().insertText(replaceTerm);
 
-    find();
+    findNext(SearchWidget::Forward);
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
@@ -405,9 +406,9 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
             mMain->recent()->editor->setFocus();
 
     } else if (event->modifiers() & Qt::ShiftModifier && (event->key() == Qt::Key_F3)) {
-        find(true);
+        findNext(SearchWidget::Backward);
     } else if (event->key() == Qt::Key_F3) {
-        find();
+        findNext(SearchWidget::Forward);
     } else if (event->key() == Qt::Key_Return) {
         on_btn_forward_clicked();
     }
@@ -460,7 +461,7 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 
 void SearchWidget::on_btn_back_clicked()
 {
-    find(true);
+    findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
@@ -471,7 +472,7 @@ void SearchWidget::on_btn_forward_clicked()
     if (fc->textMarkCount(QSet<TextMark::Type>() << TextMark::result) == 0) { // if has no results search first
         on_btn_FindAll_clicked();
     }
-    find(false);
+    findNext(SearchWidget::Forward);
 }
 
 void SearchWidget::on_btn_clear_clicked()
