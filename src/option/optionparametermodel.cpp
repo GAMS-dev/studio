@@ -81,7 +81,26 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
         return Qt::AlignLeft;
     }
 //    case Qt::DecorationRole
-//    case Qt::ToolTipRole:
+    case Qt::ToolTipRole: {
+        if (col==0) {
+            if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
+                 !gamsOption->isThereASynonym(mOptionItem.at(row).key) )  {
+                return QString("'%1' is an unknown Option Key").arg(mOptionItem.at(row).key);
+            } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
+                      return QString("Option '%1' is deprecated, will be ignored").arg(mOptionItem.at(row).key);
+            }
+        } else if (col==1) {
+            switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+              case Incorrect_Value_Type:
+                   return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
+              case Value_Out_Of_Range:
+                   return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
+              default:
+                   break;
+            }
+        }
+        break;
+    }
     case Qt::TextColorRole: {
         if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
             return QVariant::fromValue(QColor(Qt::gray));
