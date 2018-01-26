@@ -48,9 +48,6 @@ public:
     void loadData();
     void stopLoadingData();
 
-    bool squeezeDefaults() const;
-    void setSqueezeDefaults(bool squeezeDefaults);
-
     bool isAllDefault(int valColIdx);
 
     int subType() const;
@@ -66,16 +63,22 @@ public:
 
     GdxSymbolTable *gdxSymbolTable() const;
 
-    QVector<QVector<int> *> uelsInColumn() const;
+    std::vector<std::vector<int> *> uelsInColumn() const;
 
-    QVector<bool *> showUelInColumn() const;
+    std::vector<bool *> showUelInColumn() const;
 
-    void setShowUelInColumn(const QVector<bool *> &showUelInColumn);
+    void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
 
-    bool *filterActive() const;
+    std::vector<bool> filterActive() const;
+    void setFilterActive(const std::vector<bool> &filterActive);
+
+signals:
+    void loadFinished();
 
 private:
+    gdxHandle_t mGdx;
     int mNr;
+    QMutex* mGdxMutex;
     int mDim;
     int mType;
     int mSubType;
@@ -83,12 +86,10 @@ private:
     QString mExplText;
     QString mName;
 
-    int* mMinUel = nullptr;
-    int* mMaxUel = nullptr;
+    std::vector<int> mMinUel;
+    std::vector<int> mMaxUel;
 
     GdxSymbolTable* mGdxSymbolTable;
-
-    gdxHandle_t mGdx;
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
@@ -96,14 +97,10 @@ private:
 
     bool stopLoading = false;
 
-    int* mKeys = nullptr;
-    double* mValues = nullptr;
-
-    QMutex* mGdxMutex;
+    std::vector<int> mKeys;
+    std::vector<double> mValues;
 
     QStringList mDomains;
-
-    bool mSqueezeDefaults = false;
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
@@ -112,15 +109,12 @@ private:
     void loadMetaData();
     void loadDomains();
 
-    QVector<QVector<int>*> mUelsInColumn;
-    QVector<bool*> mShowUelInColumn;
-    bool* mFilterActive = nullptr;
+    std::vector<std::vector<int>*> mUelsInColumn;
+    std::vector<bool*> mShowUelInColumn;
+    std::vector<bool> mFilterActive;
 
-    int* mRecSortIdx = nullptr;
-    int* mRecFilterIdx = nullptr;
-
-    int mSortColumn = -1;
-    Qt::SortOrder mSortOrder;
+    std::vector<int> mRecSortIdx;
+    std::vector<int> mRecFilterIdx;
 };
 
 } // namespace gdxviewer

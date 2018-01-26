@@ -1,36 +1,20 @@
 #include "gdxviewer.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbol.h"
-#include "columnfilter.h"
+#include "gdxsymbolview.h"
 #include "exception.h"
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QMenu>
-#include "gdxsymbolheaderview.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
-    QFrame(parent)
+    QWidget(parent)
 {
     ui.setupUi(this);
-
-    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
-
-    ui.tableView->setHorizontalHeader(headerView);
-    ui.tableView->setSortingEnabled(true);
-    ui.tableView->horizontalHeader()->setSortIndicatorShown(true);
-    ui.tableView->horizontalHeader()->setSectionsClickable(true);
-
-    ui.splitter->setStretchFactor(0,1);
-    ui.splitter->setStretchFactor(1,2);
-
-    ui.tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    connect(ui.tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxViewer::showColumnFilter);
 
     mGdxMutex = new QMutex();
 
@@ -46,16 +30,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     if (errNr) reportIoError(errNr,"gdxOpenRead");
 
     mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
+    mSymbolViews.resize(mGdxSymbolTable->symbolCount());
 
     ui.tvSymbols->setModel(mGdxSymbolTable);
     ui.tvSymbols->resizeColumnsToContents();
 
-
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    connect(ui.cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxViewer::toggleSqueezeDefaults);
-
-    connect(this, &GdxViewer::loadFinished, this, &GdxViewer::refreshView);
-    connect(ui.pbResetSortFilter, &QPushButton::clicked, this, &GdxViewer::resetSortFilter);
 }
 
 GdxViewer::~GdxViewer()
@@ -71,34 +51,46 @@ GdxViewer::~GdxViewer()
     gdxFree(&mGdx);
     locker.unlock();
     delete mGdxMutex;
+
+    for(GdxSymbolView* view : mSymbolViews)
+    {
+        if(view)
+            delete view;
+    }
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     if (selected.indexes().size()>0)
     {
+        int selectedIdx = selected.indexes().at(0).row();
         if (deselected.indexes().size()>0)
         {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(deselected.indexes().at(0).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
-        GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selected.indexes().at(0).row());
-        if(!selectedSymbol->isLoaded())
-            QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
+        GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
+
+        //aliases are also aliases in the sense of the view
         if(selectedSymbol->type() == GMS_DT_ALIAS)
         {
-            int symNr = selectedSymbol->subType() - 1;
-            GdxSymbol* aliasedSet = mGdxSymbolTable->gdxSymbols().at(symNr);
-            if(!aliasedSet->isLoaded())
-                QtConcurrent::run(this, &GdxViewer::loadSymbol, aliasedSet);
-            ui.tableView->setModel(aliasedSet);
+            selectedIdx = selectedSymbol->subType() - 1;
+            selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
-        else
-            ui.tableView->setModel(selectedSymbol);
-        refreshView();
+
+        // create new GdxSymbolView if the symbol is selected for the first time
+        if(!mSymbolViews.at(selectedIdx))
+        {
+            GdxSymbolView* symView = new GdxSymbolView();
+            mSymbolViews.replace(selectedIdx, symView);
+            symView->setSym(selectedSymbol);
+        }
+
+        if(!selectedSymbol->isLoaded())
+            QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
+
+        ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
-    else
-        ui.tableView->setModel(nullptr);
 }
 
 GdxSymbol *GdxViewer::selectedSymbol()
@@ -113,82 +105,12 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
-    emit loadFinished();
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
 {
     // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
-}
-
-void GdxViewer::toggleSqueezeDefaults(bool checked)
-{
-    GdxSymbol* selected = selectedSymbol();
-    if(selected)
-    {
-        selected->setSqueezeDefaults(checked);
-        if(selected->type() == GMS_DT_VAR || selected->type() == GMS_DT_EQU)
-        {
-            ui.tableView->setUpdatesEnabled(false);
-            if(checked)
-            {
-                for(int i=0; i<GMS_VAL_MAX; i++)
-                {
-                    if (selected->isAllDefault(i))
-                        ui.tableView->setColumnHidden(selected->dim()+i, true);
-                    else
-                        ui.tableView->setColumnHidden(selected->dim()+i, false);
-                }
-            }
-            else
-            {
-                for(int i=0; i<GMS_VAL_MAX; i++)
-                {
-                    ui.tableView->setColumnHidden(selected->dim()+i, false);
-                }
-            }
-            ui.tableView->setUpdatesEnabled(true);
-        }
-    }
-}
-
-void GdxViewer::refreshView()
-{
-    GdxSymbol* selected = selectedSymbol();
-    if(selected->isLoaded())
-    {
-        if(selected->type() == GMS_DT_VAR || selected->type() == GMS_DT_EQU)
-            ui.cbSqueezeDefaults->setEnabled(true);
-        else
-            ui.cbSqueezeDefaults->setEnabled(false);
-        selectedSymbol()->filterRows();
-    }
-    else
-    {
-        ui.cbSqueezeDefaults->setEnabled(false);
-    }
-    ui.cbSqueezeDefaults->setChecked(selected->squeezeDefaults());
-    ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
-}
-
-void GdxViewer::resetSortFilter()
-{
-    GdxSymbol* selected = selectedSymbol();
-    selected->resetSortFilter();
-    ui.tableView->horizontalHeader()->setSortIndicator(selected->sortColumn(), selected->sortOrder());
-}
-
-void GdxViewer::showColumnFilter(QPoint p)
-{
-    int column = ui.tableView->horizontalHeader()->logicalIndexAt(p);
-    GdxSymbol* selected = selectedSymbol();
-    if(selected->isLoaded() && column>=0 && column<selected->dim())
-    {
-        QMenu m(this);
-        m.addAction(new ColumnFilter(selected, column, this));
-        m.exec(ui.tableView->mapToGlobal(p));
-    }
 }
 
 } // namespace gdxviewer

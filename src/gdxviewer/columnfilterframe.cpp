@@ -48,16 +48,18 @@ void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
 void ColumnFilterFrame::apply()
 {
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
-    QVector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
+    std::vector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
     bool checked;
-    mSymbol->filterActive()[mColumn] = false;
+    std::vector<bool> filterActive = mSymbol->filterActive();
+    filterActive[mColumn] = false;
     for (int idx=0; idx<uelsInColumn->size(); idx++)
     {
         checked = mModel->checked()[idx];
         showUelInColumn[uelsInColumn->at(idx)] = checked;
         if(!checked)
-            mSymbol->filterActive()[mColumn] = true; //TODO(CW): set this only once
+            filterActive[mColumn] = true; //TODO(CW): set this only once
     }
+    mSymbol->setFilterActive(filterActive);
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
 }
