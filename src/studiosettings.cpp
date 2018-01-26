@@ -213,6 +213,10 @@ void StudioSettings::loadSettings()
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+
+    // the location for user model libraries is not modifyable right now
+    // anyhow, it is part of StudioSettings since it might become modifyable in the future
+    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 }
 
 QString StudioSettings::defaultWorkspace() const
@@ -434,11 +438,9 @@ void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
     mSelectedScopeIndex = selectedScopeIndex;
 }
 
-QString StudioSettings::userLibPath() const
+QString StudioSettings::userModelLibraryDir() const
 {
-    QFileInfo fInfo( mAppSettings->fileName());
-    QDir settingsDir(fInfo.absoluteDir());
-    return QDir::toNativeSeparators(settingsDir.filePath(mUserLibDir));
+    return mUserModelLibraryDir;
 }
 
 }

@@ -94,7 +94,7 @@ public:
     int selectedScopeIndex() const;
     void setSelectedScopeIndex(int selectedScopeIndex);
 
-    QString userLibPath() const;
+    QString userModelLibraryDir() const;
 
 private:
     MainWindow *mMain = nullptr;
@@ -126,7 +126,7 @@ private:
     int mSelectedScopeIndex;
 
     // user model library directory
-    const QString mUserLibDir = "userlibraries";
+    QString mUserModelLibraryDir;
 };
 
 }

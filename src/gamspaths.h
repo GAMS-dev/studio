@@ -32,6 +32,10 @@ public:
 
     static QString defaultWorkingDir();
 
+    static QString userDocumentsDir();
+
+    static QString userModelLibraryDir();
+
 private:
     GAMSPaths();
 };

@@ -99,7 +99,6 @@ MainWindow::MainWindow(QWidget *parent)
     else
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
-    createUserLibPath();
     initTabs();
 }
 
@@ -117,16 +116,6 @@ void MainWindow::initTabs()
     if (!mSettings->skipWelcomePage()) {
         createWelcomePage();
         ui->mainTab->setCurrentIndex(0);
-    }
-}
-
-void MainWindow::createUserLibPath()
-{
-    if(mSettings)
-    {
-        QDir userLibDir(mSettings->userLibPath());
-        if(!userLibDir.exists())
-            userLibDir.mkpath(".");
     }
 }
 
@@ -756,7 +745,7 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    ModelDialog dialog(mSettings->userLibPath(), this);
+    ModelDialog dialog(mSettings->userModelLibraryDir(), this);
     if(dialog.exec() == QDialog::Accepted)
     {
         QMessageBox msgBox;

@@ -156,5 +156,5 @@ SettingsDialog::~SettingsDialog()
 
 void gams::studio::SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
-    QDesktopServices::openUrl(QUrl("file:///" +  mSettings->userLibPath()));
+    QDesktopServices::openUrl(QUrl("file:///" +  mSettings->userModelLibraryDir()));
 }

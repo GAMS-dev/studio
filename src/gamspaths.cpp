@@ -55,16 +55,31 @@ QString GAMSPaths::systemDir() {
     return path;
 }
 
-QString GAMSPaths::defaultWorkingDir()
+QString GAMSPaths::userDocumentsDir()
 {
-    const QString currentDir = ".";
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
-        return currentDir;
-    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio");
-    if (workingDir.mkpath(workingDir.path()))
-        return QDir::toNativeSeparators(workingDir.path());
-    return currentDir;
+        FATAL() << "Unable to access user documents location";
+    QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
+    if(!userDocumentsDir.exists())
+        userDocumentsDir.mkpath(".");
+    return QDir::toNativeSeparators(userDocumentsDir.path());
+}
+
+QString GAMSPaths::userModelLibraryDir()
+{
+    QDir userModelLibraryDir = QDir::cleanPath(userDocumentsDir() + "/modellibs");
+    if(!userModelLibraryDir.exists())
+        userModelLibraryDir.mkpath(".");
+    return QDir::toNativeSeparators(userModelLibraryDir.path());
+}
+
+QString GAMSPaths::defaultWorkingDir()
+{
+    QDir defWorkingDir = QDir::cleanPath(userDocumentsDir() + "/workspace");
+    if(!defWorkingDir.exists())
+        defWorkingDir.mkpath(".");
+    return QDir::toNativeSeparators(defWorkingDir.path());
 }
 
 }
