@@ -315,6 +315,7 @@ void FileContext::showToolTip(const QList<TextMark*> marks)
 
 void FileContext::rehighlightAt(int pos)
 {
+    if (pos == -1) return;
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
 }
 
@@ -354,13 +355,16 @@ void FileContext::updateMarks()
 
 void FileContext::highlightWordUnderCursor(QString word)
 {
-    removeTextMarks(TextMark::result);
+    removeTextMarks(TextMark::occurence);
 
     QTextCursor last;
     do {
         last = document()->find(word, last, QTextDocument::FindWholeWords);
         int length = last.selectionEnd() - last.selectionStart();
-        mMarks->generateTextMark(this, TextMark::result, 0, last.blockNumber(), last.columnNumber() - length, length );
+
+        if (!last.isNull())
+            mMarks->generateTextMark(this, TextMark::occurence, 0, last.blockNumber(),
+                                     last.columnNumber() - length, length );
     } while (!last.isNull());
     highlighter()->rehighlight();
 }

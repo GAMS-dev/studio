@@ -32,7 +32,7 @@ class FileGroupContext;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, result, all};
+    enum Type {none, error, link, bookmark, result, occurence, all};
 
     explicit TextMark(TextMark::Type tmType);
     virtual ~TextMark();

@@ -157,6 +157,9 @@ QColor TextMark::color()
     if (type() == TextMark::result)
         return Qt::yellow;
 
+    if (type() == TextMark::occurence)
+        return Qt::gray;
+
     if (!mReference) return Qt::white;
     if (mReference->type() == TextMark::error)
         return Qt::darkRed;
