@@ -79,7 +79,7 @@ private:
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
-    void updateMatchAmount(int hits, bool clear = false);
+    void updateMatchAmount(int hits, int current = 0, bool clear = false);
     void selectNextMatch(SearchDirection direction);
 
     enum SearchScope {

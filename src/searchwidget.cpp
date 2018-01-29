@@ -251,7 +251,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     return matches.resultList();
 }
 
-void SearchWidget::updateMatchAmount(int hits, bool clear)
+void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
 {
     if (clear) {
         ui->lbl_nrResults->setText("");
@@ -259,10 +259,14 @@ void SearchWidget::updateMatchAmount(int hits, bool clear)
         return;
     }
 
-    if (hits == 1)
-        ui->lbl_nrResults->setText(QString::number(hits) + " match");
-    else
-        ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+    if (current == 0) {
+        if (hits == 1)
+            ui->lbl_nrResults->setText(QString::number(hits) + " match");
+        else
+            ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+    } else {
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(hits));
+    }
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }
@@ -295,8 +299,12 @@ void SearchWidget::simpleReplaceAll()
     } while (!item.isNull());
 
     QMessageBox msgBox;
-    msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
-                   searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+    if (hits.length() == 1) {
+        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+    } else {
+        msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
+                       searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+    }
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     int answer = msgBox.exec();
 
@@ -323,23 +331,7 @@ void SearchWidget::findNext(SearchDirection direction)
     QTextCursor cursor;
     cursor = edit->textCursor();
 
-
-    if (direction == SearchWidget::Forward) {
-        for (int jumpCounter = 0; jumpCounter < matches.size(); jumpCounter++) {
-            if (matches.at(jumpCounter).locLineNr()-1 > cursor.blockNumber()) { // if match after cursor
-                selectNextMatch(direction);
-                break;
-            }
-        }
-    } else { // backward
-
-        for (int jumpCounter = matches.size()-1; jumpCounter >= 0; jumpCounter--) {
-            if (matches.at(jumpCounter).locLineNr()-1 < cursor.blockNumber()) { // if match above cursor
-                selectNextMatch(direction);
-                break;
-            }
-        }
-    }
+    selectNextMatch(direction);
 }
 
 void SearchWidget::on_btn_Replace_clicked()
