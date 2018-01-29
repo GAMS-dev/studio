@@ -11,9 +11,6 @@ OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineSt
     mHeader.append("Value");
 
     gamsOption = commandLineTokenizer->getGamsOption();
-
-//    itemizeOptionFromCommandLineStr(normalizedCommandLineStr);
-//    validateOption();
 }
 
 QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -168,8 +165,7 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
 {
     if (role == Qt::EditRole)   {
         QString data = value.toString().simplified();
-qDebug() << QString("row %1 col %2 data %3").arg(index.row()).arg(index.column()).arg(data);
-    if (data.isEmpty())
+        if (data.isEmpty())
             return false;
 
         if (index.row() > mOptionItem.size())
@@ -212,7 +208,6 @@ bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &par
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);
-//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
     return true;
 }
 
@@ -225,7 +220,6 @@ bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &par
     mOptionItem.removeAt(row);
     endRemoveRows();
     emit optionModelChanged(mOptionItem);
-//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
     return true;
 }
 
@@ -241,7 +235,6 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
                           Qt::CheckStateRole );
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
     emit optionModelChanged(mOptionItem);
-//    emit dataChanged(createIndex(0,0), createIndex(rowCount()-1, columnCount()-1));
 }
 
 void OptionParameterModel::updateCurrentOption(const QString &text)
@@ -253,7 +246,6 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        qDebug() << QString("    : [%1,%2]").arg(mOptionItem.at(i).key).arg(mOptionItem.at(i).value);
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
     }
@@ -264,7 +256,6 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
 void OptionParameterModel::setRowCount(int rows)
 {
    int rc = mOptionItem.size();
-   qDebug() << QString("setRowCount rc=%1, rows=%2").arg(rc).arg(rows);
    if (rows < 0 ||  rc == rows)
       return;
 
@@ -284,9 +275,9 @@ void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
 
 void OptionParameterModel::validateOption()
 {
-   qDebug() << QString("validateOption() : %1").arg(mOptionItem.size());
+//   qDebug() << QString("validateOption() : %1").arg(mOptionItem.size());
    for(OptionItem item : mOptionItem) {
-       qDebug() << QString("[%1]=%2").arg(item.key).arg(item.value);
+//       qDebug() << QString("[%1]=%2").arg(item.key).arg(item.value);
        if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            item.error = OptionErrorType::No_Error;
            continue;
