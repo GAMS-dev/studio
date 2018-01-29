@@ -102,30 +102,40 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     connect(searchLineEdit, &QLineEdit::textChanged,
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
-//    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
-//            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
-//    connect(commandLineTableView, &QTableView::customContextMenuRequested,
-//            this, &OptionEditor::showOptionContextMenu);
-//    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
-//            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
-//    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
-//            mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
+            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+    connect(commandLineTableView, &QTableView::customContextMenuRequested,
+            this, &OptionEditor::showOptionContextMenu);
 
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//            optionParamModel, &OptionParameterModel::updateCurrentOption );
-//    connect(mCommandLineOption, &QComboBox::editTextChanged,
-//            optionParamModel, &OptionParameterModel::validateChangedOption );
+    connect(this, &OptionEditor::optionTableModelChanged,
+            optionParamModel, &OptionParameterModel::updateCurrentOption);
 
+    connect(optionParamModel, &OptionParameterModel::optionModelChanged,
+            this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
+    connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
+            mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+}
+
+void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
+{
+     emit optionTableModelChanged(commandLineStr);
 }
 
 void OptionEditor::updateCommandLineStr(const QString &commandLineStr)
 {
+    if (isHidden())
+       return;
+
+    qDebug() << "updateCommandLineStr : " << commandLineStr;
     mCommandLineOption->lineEdit()->setText( commandLineStr );
     emit commandLineOptionChanged(mCommandLineOption->lineEdit(), commandLineStr);
 }
 
 void OptionEditor::updateCommandLineStr(const QList<OptionItem> &opionItems)
 {
+    if (isHidden())
+       return;
+
     emit commandLineOptionChanged(mCommandLineOption->lineEdit(), opionItems);
 }
 
@@ -138,7 +148,11 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QAction* insertAction = menu.addAction("insert new option");
     menu.addSeparator();
     QAction* deleteAction = menu.addAction("delete selected option");
+    QAction* deleteAllActions = menu.addAction("delete all options");
 
+    if (commandLineTableView->model()->rowCount() <= 0) {
+        deleteAllActions->setVisible(false);
+    }
     if (selection.count() <= 0) {
         insertAction->setVisible(false);
         deleteAction->setVisible(false);
@@ -157,6 +171,8 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
                  QModelIndex index = selection.at(0);
                  commandLineTableView->model()->removeRow(index.row(), QModelIndex());
              }
+    } if (action == deleteAllActions) {
+        emit optionTableModelChanged("");
     }
 }
 

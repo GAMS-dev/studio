@@ -32,7 +32,6 @@ signals:
 public slots:
     void toggleActiveOptionItem(int index);
     void updateCurrentOption(const QString &text);
-    void validateChangedOption(const QString &text);
 
 private:
     QList<OptionItem> mOptionItem;

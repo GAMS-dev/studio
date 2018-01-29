@@ -33,11 +33,13 @@ public:
 
 signals:
     void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
+    void optionTableModelChanged(const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &opionItems);
 
 public slots:
 //    void toggleOptionDefinition(bool checked);
+    void updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &opionItems);
     void showOptionContextMenu(const QPoint &pos);

@@ -273,10 +273,10 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
 void MainWindow::toggleOptionDefinition(bool checked)
 {
     if (checked) {
-        mCommandLineOption->lineEdit()->setReadOnly( true );
+        mCommandLineOption->lineEdit()->setEnabled( false );
         mOptionSplitter->widget(1)->show();
     } else {
-        mCommandLineOption->lineEdit()->setReadOnly( false );
+        mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
     }
 }
@@ -619,6 +619,7 @@ void MainWindow::on_actionOption_View_triggered(bool checked)
         mDockOptionView->show();
     else
         mDockOptionView->hide();
+
     mDockOptionView->raise();
 }
 
@@ -734,6 +735,7 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     sizePolicy.setHeightForWidth(optionWidget->sizePolicy().hasHeightForWidth());
+    sizePolicy.setVerticalStretch(2);
     optionWidget->setSizePolicy(sizePolicy);
     optionWidget->setLayout(commandHLayout);
 
@@ -771,8 +773,11 @@ void MainWindow::connectCommandLineWidgets()
             this, &MainWindow::on_runWithChangedOptions);
     connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
             this, &MainWindow::on_runWithParamAndChangedOptions);
+
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
+            mOptionEditor, &OptionEditor::updateTableModel );
 
     connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             mCommandLineOption, &CommandLineOption::updateCurrentOption );

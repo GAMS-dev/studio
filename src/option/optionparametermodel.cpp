@@ -180,13 +180,13 @@ qDebug() << QString("row %1 col %2 data %3").arg(index.row()).arg(index.column()
         } else if (index.column() == 1) { // value
                   mOptionItem[index.row()].value = data;
         }
-//        emit optionModelChanged(  mOptionItem );
+        emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
         if (index.row() > mOptionItem.size())
             return false;
 
         mOptionItem[index.row()].disabled = value.toBool();
-//        emit optionModelChanged(  mOptionItem );
+        emit optionModelChanged(  mOptionItem );
     }
     emit dataChanged(index, index);
     return true;
@@ -246,30 +246,26 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
 
 void OptionParameterModel::updateCurrentOption(const QString &text)
 {
+    beginResetModel();
     itemizeOptionFromCommandLineStr(text);
     validateOption();
 
-     qDebug() << QString("updateCurrentOption() : %1").arg(mOptionItem.size());
     setRowCount(mOptionItem.size());
+
     for (int i=0; i<mOptionItem.size(); ++i) {
         qDebug() << QString("    : [%1,%2]").arg(mOptionItem.at(i).key).arg(mOptionItem.at(i).value);
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
     }
-    emit optionModelChanged(  mOptionItem );
-//    emit dataChanged(QModelIndex(), QModelIndex());
-}
-
-void OptionParameterModel::validateChangedOption(const QString &text)
-{
-    qDebug() << "OptionParameterModel::validateChangedOption(" << text << ") " << rowCount()  ;
+    endResetModel();
+     emit optionModelChanged(mOptionItem);
 }
 
 void OptionParameterModel::setRowCount(int rows)
 {
    int rc = mOptionItem.size();
    qDebug() << QString("setRowCount rc=%1, rows=%2").arg(rc).arg(rows);
-   if (rows < 0); // || rc == rows)
+   if (rows < 0 ||  rc == rows)
       return;
 
    if (rc < rows)
