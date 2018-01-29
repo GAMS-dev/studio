@@ -240,41 +240,58 @@ void CodeEditor::truncate(QTextBlock block)
     }
 }
 
-void CodeEditor::mouseMoveEvent(QMouseEvent* e)
+int CodeEditor::textCursorColumn(QPoint mousePos)
 {
-    if (!mBlockEdit && (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
-        if (!mDragStart.isNull() && (e->pos() - mDragStart).manhattanLength() > 3) {
-        }
+    QTextCursor cursor = cursorForPosition(mousePos);
+    int col = cursor.columnNumber();
+    int addX = mousePos.x()-cursorRect(cursor).right();
+    if (addX > 0) {
+        QFontMetrics metric(font());
+        col += addX / metric.width(' ');
     }
-    if (mBlockEdit)
-        mBlockEdit->mouseMoveEvent(e);
-    else
-        QPlainTextEdit::mouseMoveEvent(e);
+    return col;
 }
 
 void CodeEditor::mousePressEvent(QMouseEvent* e)
 {
-    if (mBlockEdit)
-        endBlockEdit();
-
-    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
-        mDragStart = e->pos();
+    if (e->modifiers() & Qt::AltModifier) {
         QTextCursor cursor = cursorForPosition(e->pos());
-        int col = cursor.columnNumber();
-        int addX = e->pos().x()-cursorRect(cursor).right();
-        if (addX > 0) {
-            QFontMetrics metric(font());
-            col += addX / metric.width(' ');
+        if (e->modifiers() == Qt::AltModifier) {
+            if (mBlockEdit) endBlockEdit();
+            startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
+        } else if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
+            if (mBlockEdit) endBlockEdit();
+            startBlockEdit(textCursor().blockNumber(), textCursor().columnNumber());
         }
-        startBlockEdit(cursor.blockNumber(), col);
+        if (mBlockEdit) {
+            mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
+        } else {
+            mDragStart = e->pos();
+            startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
+        }
     } else {
+        if (mBlockEdit) {
+            endBlockEdit();
+        } else {
+        }
         QPlainTextEdit::mousePressEvent(e);
     }
 }
 
+void CodeEditor::mouseMoveEvent(QMouseEvent* e)
+{
+    if (mBlockEdit) {
+        if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
+            mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
+        }
+    } else
+        QPlainTextEdit::mouseMoveEvent(e);
+}
+
 void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
 {
-    QPlainTextEdit::mouseReleaseEvent(e);
+//    if (!mBlockEdit)
+        QPlainTextEdit::mouseReleaseEvent(e);
     mDragStart = QPoint();
 }
 
@@ -432,6 +449,14 @@ CodeEditor::BlockEdit::~BlockEdit()
     DEB() << "blockEdit END";
 }
 
+void CodeEditor::BlockEdit::selectTo(int blockNr, int colNr)
+{
+    mCurrentLine = blockNr;
+    mSize = colNr - mColumn;
+    updateExtraSelections();
+    startCursorTimer();
+}
+
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;
@@ -461,7 +486,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (!mSize) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
         // TODO(JM) process deletion
-    } else {
+    } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
 }
@@ -471,18 +496,6 @@ void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
-}
-
-void CodeEditor::BlockEdit::mouseMoveEvent(QMouseEvent* e)
-{
-}
-
-void CodeEditor::BlockEdit::mousePressEvent(QMouseEvent* e)
-{
-}
-
-void CodeEditor::BlockEdit::mouseReleaseEvent(QMouseEvent* e)
-{
 }
 
 void CodeEditor::BlockEdit::startCursorTimer()

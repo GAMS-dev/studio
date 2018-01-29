@@ -77,6 +77,7 @@ private:
     void truncate(QTextBlock block);
     void duplicateLine();
 
+    int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
 
@@ -88,9 +89,6 @@ private:
         virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
         void keyReleaseEvent(QKeyEvent *e);
-        void mouseMoveEvent(QMouseEvent *e);
-        void mousePressEvent(QMouseEvent *e);
-        void mouseReleaseEvent(QMouseEvent *e);
         inline int hasBlock(int blockNr) {
             return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
         int colFrom() { return 0; }
@@ -102,6 +100,7 @@ private:
         void replaceBlockText(QString text);
         void updateExtraSelections();
         void adjustCursor();
+        void selectTo(int blockNr, int colNr);
 
     private:
     private:
