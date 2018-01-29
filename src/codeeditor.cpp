@@ -141,7 +141,10 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
     if (!mBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
-        startBlockEdit(c.blockNumber(), c.columnNumber());
+        QTextCursor anc(document());
+        anc.setPosition(c.anchor());
+        startBlockEdit(anc.blockNumber(), anc.columnNumber());
+        mBlockEdit->selectTo(c.blockNumber(), c.columnNumber());
     }
 
     if (mBlockEdit) {
