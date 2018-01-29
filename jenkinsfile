@@ -98,13 +98,6 @@ pipeline {
                             curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
                         '''
                         sh '''
-                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage --version
-                        '''
-                        sh '''
-                            tree appdir
-                        '''
-                        sh '''
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
@@ -115,7 +108,8 @@ pipeline {
                             cp icons/gamslogo.svg appdir/usr/share/pixmaps
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations
+                            ./linuxdeployqt-continuous-x86_64.AppImage --version
+                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines
                         '''
                         sh '''
                             tree appdir
