@@ -565,13 +565,14 @@ void CodeEditor::BlockEdit::replaceBlockText(QString text)
     QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
+    QTextCursor cursor(mEdit->document());
+    cursor.beginEditBlock();
     while (block.blockNumber() <= qMax(mCurrentLine, mStartLine)) {
         QString addText = text;
-        QTextCursor cursor(block);
         int offsetFromEnd = fromCol - block.length();
         if (offsetFromEnd > 0 && !text.isEmpty()) {
             // line ends before start of mark -> calc additional spaces
-            cursor.movePosition(QTextCursor::EndOfBlock);
+            cursor.setPosition(block.position()+block.length()-1);
             QString s(' ',offsetFromEnd);
             addText = s+text;
         } else if (mSize > 0) {
@@ -583,6 +584,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QString text)
         }
         if (!addText.isEmpty()) cursor.insertText(addText);
     }
+    cursor.endEditBlock();
     mColumn += text.length();
     mSize = 0;
 }
