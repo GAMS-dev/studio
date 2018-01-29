@@ -58,6 +58,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
+    void privateKeyPressEvent(QKeyEvent *e);
 
 signals:
     void updateBlockSelection();
@@ -100,6 +101,7 @@ private:
         void drawCursor(QPaintEvent *e);
         void replaceBlockText(QString text);
         void updateExtraSelections();
+        void adjustCursor();
 
     private:
     private:
@@ -109,6 +111,7 @@ private:
         int mColumn = 0;
         int mSize = 0;
         bool mBlinkStateHidden = false;
+        bool mBeginBlock = true;
     };
 
 private:

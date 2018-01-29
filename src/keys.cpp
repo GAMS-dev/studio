@@ -66,12 +66,32 @@ void Keys::reset()
     *seq << QKeySequence("Enter");
     setHotkey(Hotkey::NewLine, seq);
 
+    seq = new KeySeqList("Cut","cut selected text");
+    *seq << QKeySequence("Ctrl+X");
+    setHotkey(Hotkey::Cut, seq);
+
+    seq = new KeySeqList("Copy","copy selected text");
+    *seq << QKeySequence("Ctrl+C");
+    setHotkey(Hotkey::Copy, seq);
+
+    seq = new KeySeqList("Paste","paste clipboard content");
+    *seq << QKeySequence("Ctrl+V");
+    setHotkey(Hotkey::Paste, seq);
+
+    seq = new KeySeqList("Undo","undo last modification");
+    *seq << QKeySequence("Ctrl+Z");
+    setHotkey(Hotkey::Undo, seq);
+
+    seq = new KeySeqList("Redo","redo last modification");
+    *seq << QKeySequence("Shift+Ctrl+Z");
+    setHotkey(Hotkey::Redo, seq);
+
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
     setHotkey(Hotkey::BlockEditStart, seq);
 
-    seq = new KeySeqList("Up","end block edit");
-    *seq << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
+    seq = new KeySeqList("Esc","end block edit");
+    *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
     setHotkey(Hotkey::BlockEditEnd, seq);
 

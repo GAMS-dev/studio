@@ -145,7 +145,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     }
 
     if (mBlockEdit) {
-        if (e == Hotkey::BlockEditEnd) {
+        if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
             endBlockEdit();
         } else {
             mBlockEdit->keyPressEvent(e);
@@ -173,6 +173,11 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     }
 
 
+    QPlainTextEdit::keyPressEvent(e);
+}
+
+void CodeEditor::privateKeyPressEvent(QKeyEvent* e)
+{
     QPlainTextEdit::keyPressEvent(e);
 }
 
@@ -289,7 +294,6 @@ void CodeEditor::paintEvent(QPaintEvent* e)
 {
     int cw = mBlockEdit ? 0 : 2;
     if (cursorWidth()!=cw) setCursorWidth(cw);
-//    DEB() << "cursor info: " << cursorRect().width();
     QPlainTextEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->drawCursor(e);
@@ -335,6 +339,7 @@ void CodeEditor::endBlockEdit()
 {
     // TODO(JM) remove BlockEdit's selection and place cursor
     mBlockEdit->stopCursorTimer();
+    mBlockEdit->adjustCursor();
     delete mBlockEdit;
     mBlockEdit = nullptr;
 }
@@ -446,6 +451,18 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
         startCursorTimer();
+    } else if (e == Hotkey::Paste) {
+        QString text = QGuiApplication::clipboard()->mimeData()->text();
+        if (!text.isEmpty()) replaceBlockText(text);
+    } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
+        // TODO(JM) copy selected text to clipboard
+        if (e == Hotkey::Cut) replaceBlockText("");
+    } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
+        if (!mSize) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        replaceBlockText("");
+        // TODO(JM) process deletion
+    } else {
+        replaceBlockText(e->text());
     }
 }
 
@@ -599,29 +616,68 @@ void CodeEditor::BlockEdit::updateExtraSelections()
     mEdit->setExtraSelections(selections);
 }
 
+void CodeEditor::BlockEdit::adjustCursor()
+{
+    // This restores the hidden column-information when moving vertically with the cursor
+    QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine));
+    int len = 0;
+    QTextBlock searchBlock = block;
+    while (block.blockNumber() <= qMax(mStartLine, mCurrentLine)) {
+        if (block.length() > len) {
+            searchBlock = block;
+            len = block.length();
+        }
+        if (len >= mColumn+mSize) {
+            searchBlock = block;
+            break;
+        }
+        block = block.next();
+    }
+    QTextCursor cursor(searchBlock);
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(mColumn, searchBlock.length()-1));
+    mEdit->setTextCursor(cursor);
+    QTextCursor::MoveOperation moveOp = searchBlock.blockNumber() < mCurrentLine ? QTextCursor::Down : QTextCursor::Up;
+    for (int i = 0; i < searchBlock.blockNumber()-mCurrentLine; ++i) {
+        mEdit->moveCursor(moveOp);
+    }
+}
+
 void CodeEditor::BlockEdit::replaceBlockText(QString text)
 {
     QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
     QTextCursor cursor(mEdit->document());
-    cursor.beginEditBlock();
+
+    if (text.length() != 1 || mBeginBlock) {
+        mBeginBlock = false;
+        cursor.beginEditBlock();
+    } else
+        cursor.joinPreviousEditBlock();
+
+
     while (block.blockNumber() <= qMax(mCurrentLine, mStartLine)) {
         QString addText = text;
-        int offsetFromEnd = fromCol - block.length();
+        int offsetFromEnd = fromCol - block.length()+1;
         if (offsetFromEnd > 0 && !text.isEmpty()) {
             // line ends before start of mark -> calc additional spaces
             cursor.setPosition(block.position()+block.length()-1);
-            QString s(' ',offsetFromEnd);
+            QString s(offsetFromEnd, ' ');
             addText = s+text;
-        } else if (mSize > 0) {
+        } else if (mSize) {
             // block-edit contains marking -> remove to end of block/line
             int pos = block.position()+fromCol;
-            int rmSize = qMin(block.length(), toCol) - pos;
-            cursor.setPosition(block.position()+fromCol);
-            if (rmSize>0) cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, rmSize);
+            int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
+            cursor.setPosition(pos);
+            if (rmSize) {
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, rmSize);
+                cursor.removeSelectedText();
+            }
+        } else {
+            cursor.setPosition(block.position() + qMin(block.length()-1, fromCol));
         }
         if (!addText.isEmpty()) cursor.insertText(addText);
+        block = block.next();
     }
     cursor.endEditBlock();
     mColumn += text.length();
