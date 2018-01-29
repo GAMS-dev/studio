@@ -423,6 +423,7 @@ CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit, int blockNr, int colNr)
 
 CodeEditor::BlockEdit::~BlockEdit()
 {
+    mEdit->setExtraSelections(QList<QTextEdit::ExtraSelection>());
     DEB() << "blockEdit END";
 }
 
@@ -443,7 +444,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         else
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
-
+        updateExtraSelections();
         startCursorTimer();
     }
 }
@@ -492,7 +493,6 @@ void CodeEditor::BlockEdit::refreshCursors()
 
 void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
 {
-    if (mBlinkStateHidden) return;
     QPainter painter(mEdit->viewport());
     QPointF offset(mEdit->contentOffset()); //
     QRect evRect = e->rect();
@@ -504,11 +504,34 @@ void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
     QTextBlock block = mEdit->firstVisibleBlock();
     QTextCursor cursor(mEdit->document());
     int cursorColumn = mColumn+mSize;
+    QFontMetrics metric(mEdit->font());
+    int spaceWidth = metric.width(' ');
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
         QTextLayout *layout = block.layout();
+
         if (!hasBlock(block.blockNumber()) || !block.isVisible()) {
+            offset.ry() += blockRect.height();
+            block = block.next();
+            continue;
+        }
+
+        // draw extended extra-selection for lines past line-end
+        int beyondEnd = qMax(mColumn, mColumn+mSize);
+        if (beyondEnd >= block.length()) {
+            cursor.setPosition(block.position()+block.length()-1);
+            // we have to draw selection beyond the line-end
+            int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
+            QRect selRect = mEdit->cursorRect(cursor);
+            if (block.length() <= beyondStart) {
+                selRect.translate((beyondStart-block.length()+1) * spaceWidth, 0);
+            }
+            selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
+            painter.fillRect(selRect, QBrush(Qt::cyan));
+        }
+
+        if (mBlinkStateHidden) {
             offset.ry() += blockRect.height();
             block = block.next();
             continue;
@@ -517,12 +540,9 @@ void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRect cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            QFontMetrics metric(mEdit->font());
-            cursorRect.translate((cursorColumn-block.length()+1) * metric.width(' '), 0);
+            cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
         }
         cursorRect.setWidth(2);
-
-        // TODO(JM) check if current block is in mLines
 
         if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
             int blpos = block.position();
@@ -535,7 +555,6 @@ void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
                 else
                     cpos -= blpos;
 
-                DEB() << "draw BlockCursor" << cursorRect;
 
                 bool toggleAntialiasing = !(painter.renderHints() & QPainter::Antialiasing)
                                           && (painter.transform().type() > QTransform::TxTranslate);
@@ -558,6 +577,26 @@ void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
         block = block.next();
     }
 
+}
+
+void CodeEditor::BlockEdit::updateExtraSelections()
+{
+    QList<QTextEdit::ExtraSelection> selections;
+    QTextCursor cursor(mEdit->document());
+    for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
+        QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
+        QTextEdit::ExtraSelection select;
+        // TODO(JM) Later, this color has to be retrieved from StyleSheet-definitions
+        select.format.setBackground(Qt::cyan);
+
+        int start = qMin(block.length()-1, qMin(mColumn, mColumn+mSize));
+        int end = qMin(block.length()-1, qMax(mColumn, mColumn+mSize));
+        cursor.setPosition(block.position()+start);
+        if (end>start) cursor.setPosition(block.position()+end, QTextCursor::KeepAnchor);
+        select.cursor = cursor;
+        selections << select;
+    }
+    mEdit->setExtraSelections(selections);
 }
 
 void CodeEditor::BlockEdit::replaceBlockText(QString text)
@@ -588,6 +627,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QString text)
     mColumn += text.length();
     mSize = 0;
 }
+
 
 } // namespace studio
 } // namespace gams

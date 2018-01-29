@@ -99,6 +99,7 @@ private:
         void refreshCursors();
         void drawCursor(QPaintEvent *e);
         void replaceBlockText(QString text);
+        void updateExtraSelections();
 
     private:
     private:
