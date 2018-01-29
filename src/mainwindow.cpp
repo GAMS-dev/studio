@@ -272,10 +272,13 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
 
 void MainWindow::toggleOptionDefinition(bool checked)
 {
-    if (checked)
+    if (checked) {
+        mCommandLineOption->lineEdit()->setReadOnly( true );
         mOptionSplitter->widget(1)->show();
-    else
+    } else {
+        mCommandLineOption->lineEdit()->setReadOnly( false );
         mOptionSplitter->widget(1)->hide();
+    }
 }
 
 void MainWindow::on_actionNew_triggered()
