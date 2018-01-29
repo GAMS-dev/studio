@@ -704,7 +704,7 @@ void MainWindow::renameToBackup(QFile *file)
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
     mLibProcess = new GAMSLibProcess(this);
-    mLibProcess->setApp(item->library()->execName());
+    mLibProcess->setGlbFile(item->library()->glbFile());
     mLibProcess->setModelName(item->name());
     mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
@@ -745,7 +745,7 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    ModelDialog dialog(this);
+    ModelDialog dialog(mSettings->userModelLibraryDir(), this);
     if(dialog.exec() == QDialog::Accepted)
     {
         QMessageBox msgBox;

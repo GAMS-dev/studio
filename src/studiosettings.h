@@ -94,6 +94,8 @@ public:
     int selectedScopeIndex() const;
     void setSelectedScopeIndex(int selectedScopeIndex);
 
+    QString userModelLibraryDir() const;
+
 private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
@@ -122,6 +124,9 @@ private:
     bool mSearchCaseSens;
     bool mSearchWholeWords;
     int mSelectedScopeIndex;
+
+    // user model library directory
+    QString mUserModelLibraryDir;
 };
 
 }

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ class ModelDialog : public QDialog
 
 public:
     explicit ModelDialog(QWidget *parent = 0);
+    explicit ModelDialog(QString userLibPath, QWidget *parent = 0);
     LibraryItem *selectedLibraryItem() const;
 
 public slots:
@@ -49,10 +50,14 @@ private slots:
 private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
+    void addLibrary(QList<LibraryItem> items, bool isUserLibrary=false);
+    void loadUserLibs();
 
     QList<QTableView*> tableViewList;
     QList<QSortFilterProxyModel*> proxyModelList;
+
+    QString mUserLibPath;
+    QString mIconUserLib = ":/img/user";
 };
 
 }
