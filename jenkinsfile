@@ -108,6 +108,9 @@ pipeline {
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations
                         '''
+                        sh '''
+                            tree appdir
+                        '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'appdir')])
                         zip zipFile: 'studio-nix.zip', archive: false, dir: 'tmp'
                         script {
