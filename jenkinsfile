@@ -94,7 +94,9 @@ pipeline {
             steps {
                 parallel linux: {
                     node('master') {
-                        sh 'curl "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O'
+                        sh '''
+                            curl "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O
+                        '''
                         sh '''
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage --version
