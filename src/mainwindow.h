@@ -146,6 +146,24 @@ private slots:
 
     void on_actionSearch_triggered();
 
+    void on_actionUndo_2_triggered();
+
+    void on_actionredo_triggered();
+
+    void on_actionGo_To_triggered();
+
+    void on_actionRedo_triggered();
+
+    void on_actionUndo_triggered();
+
+    void on_actionPaste_triggered();
+
+    void on_actionCopy_triggered();
+
+    void on_actionSelect_All_triggered();
+
+    void on_actionCut_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);

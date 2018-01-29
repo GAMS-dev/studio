@@ -1202,3 +1202,57 @@ void MainWindow::showResults(SearchResultList &results)
 
 }
 }
+
+void gams::studio::MainWindow::on_actionUndo_2_triggered()
+{
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->undo();
+}
+
+void gams::studio::MainWindow::on_actionredo_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->redo();
+}
+
+void gams::studio::MainWindow::on_actionGo_To_triggered()
+{
+
+}
+
+void gams::studio::MainWindow::on_actionRedo_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->redo();
+}
+
+void gams::studio::MainWindow::on_actionUndo_triggered()
+{
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->undo();
+}
+
+void gams::studio::MainWindow::on_actionPaste_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->paste();
+}
+
+void gams::studio::MainWindow::on_actionCopy_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->copy();
+}
+
+void gams::studio::MainWindow::on_actionSelect_All_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->selectAll();
+}
+
+void gams::studio::MainWindow::on_actionCut_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    ce->cut();
+}
+

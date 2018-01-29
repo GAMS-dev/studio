@@ -109,6 +109,3 @@ bool SearchResultList::isRegex() const
 }
 }
 
-
-
-
