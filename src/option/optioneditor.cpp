@@ -148,7 +148,8 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QAction* insertAction = menu.addAction("insert new option");
     menu.addSeparator();
     QAction* deleteAction = menu.addAction("delete selected option");
-    QAction* deleteAllActions = menu.addAction("delete all options");
+    menu.addSeparator();
+    QAction* deleteAllActions = menu.addAction("reset all options");
 
     if (commandLineTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);

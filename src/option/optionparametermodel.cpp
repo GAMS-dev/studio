@@ -250,7 +250,7 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
     }
     endResetModel();
-     emit optionModelChanged(mOptionItem);
+    emit optionModelChanged(mOptionItem);
 }
 
 void OptionParameterModel::setRowCount(int rows)
