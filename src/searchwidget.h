@@ -80,7 +80,7 @@ private:
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0, bool clear = false);
-    void selectNextMatch(SearchDirection direction);
+    void selectNextMatch(SearchDirection direction, QList<Result> matches);
 
     enum SearchScope {
         ThisFile = 0,

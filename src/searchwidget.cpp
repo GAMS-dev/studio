@@ -265,7 +265,7 @@ void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
         else
             ui->lbl_nrResults->setText(QString::number(hits) + " matches");
     } else {
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(hits));
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(hits) + " matches");
     }
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
@@ -331,7 +331,7 @@ void SearchWidget::findNext(SearchDirection direction)
     QTextCursor cursor;
     cursor = edit->textCursor();
 
-    selectNextMatch(direction);
+    selectNextMatch(direction, matches);
 }
 
 void SearchWidget::on_btn_Replace_clicked()
@@ -442,7 +442,7 @@ void SearchWidget::on_btn_forward_clicked()
     findNext(SearchWidget::Forward);
 }
 
-void SearchWidget::selectNextMatch(SearchDirection direction)
+void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matches)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex;
@@ -461,7 +461,36 @@ void SearchWidget::selectNextMatch(SearchDirection direction)
     else
         matchSelection = fc->document()->find(searchTerm, edit->textCursor(), flags);
 
-    edit->setTextCursor(matchSelection);
+    if (matches.size() > 0) { // has any matches at all
+
+        if (matchSelection.isNull()) { // empty selection == reached end of document
+            if (direction == SearchDirection::Forward) {
+                edit->setTextCursor(QTextCursor(edit->document())); // start from top
+            } else {
+                QTextCursor tc(edit->document());
+                tc.movePosition(QTextCursor::End); // start from bottom
+                edit->setTextCursor(tc);
+            }
+        } else { // found next match
+            edit->setTextCursor(matchSelection);
+        }
+        updateMatchAmount(matches.size());
+    } else {
+        return; // search had no matches anyway, so do nothing at all
+    }
+
+    // set match and counter
+    int count = 0;
+    foreach (Result match, matches) {
+        if (matches.at(count).locLineNr() == matchSelection.blockNumber()+1
+                && matches.at(count).locCol() == matchSelection.columnNumber()) {
+            updateMatchAmount(matches.size(), count+1);
+            break;
+        } else {
+            count++;
+        }
+    }
+
 }
 
 void SearchWidget::on_btn_clear_clicked()
