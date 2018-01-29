@@ -50,13 +50,14 @@ private slots:
 private:
     Ui::ModelDialog ui;
     LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items);
+    void addLibrary(QList<LibraryItem> items, bool isUserLibrary=false);
     void loadUserLibs();
 
     QList<QTableView*> tableViewList;
     QList<QSortFilterProxyModel*> proxyModelList;
 
     QString mUserLibPath;
+    QString mIconUserLib = ":/img/user";
 };
 
 }

@@ -128,7 +128,7 @@ void ModelDialog::clearSelections()
         tv->clearSelection();
 }
 
-void ModelDialog::addLibrary(QList<LibraryItem> items)
+void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 {
     QTableView* tableView;
     QSortFilterProxyModel* proxyModel;
@@ -151,7 +151,11 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     proxyModelList.append(proxyModel);
 
     tableView->setModel(proxyModel);
-    ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+    QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
+    if(isUserLibrary)
+        ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
+    else
+        ui.tabWidget->addTab(tableView, label);
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
@@ -174,7 +178,7 @@ void ModelDialog::loadUserLibs()
     while (!iter.next().isEmpty())
     {
         if (QFileInfo(iter.filePath()).suffix() == "glb")
-            addLibrary(GlbParser::parseFile(iter.filePath()));
+            addLibrary(GlbParser::parseFile(iter.filePath()), true);
     }
 }
 
