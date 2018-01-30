@@ -21,6 +21,8 @@ public:
 
     ~GoToWidget();
 
+    void focusTextBox();
+
 protected:
    // void closeEvent(QCloseEvent *event);
    // void showEvent(QShowEvent *event);

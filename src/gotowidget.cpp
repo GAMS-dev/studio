@@ -22,13 +22,18 @@ GoToWidget::~GoToWidget()
     delete ui;
 }
 
+void GoToWidget::focusTextBox()
+{
+    ui->lineEdit->setFocus();
+}
+
 
 void GoToWidget::on_GoTo_clicked()
 {
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
     FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    fc->jumpTo(cursor, true,altLine, 1);
+    fc->jumpTo(cursor, true,altLine,0);
 }
 
 void GoToWidget::on_Cancel_clicked()

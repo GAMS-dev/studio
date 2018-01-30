@@ -1217,6 +1217,7 @@ void gams::studio::MainWindow::on_actionGo_To_triggered()
            mGoto->move(newP.x() + offset, newP.y());
         }
         mGoto->show();
+        mGoto->focusTextBox();
     }
 }
 void gams::studio::MainWindow::on_actionRedo_triggered()
