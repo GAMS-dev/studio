@@ -429,13 +429,18 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
+            ui->actionRun->setEnabled( true );
         } else {
             mCommandLineOption->setCurrentIndex(-1);
-            mCommandLineOption->setDisabled(true);
+            mCommandLineOption->setEnabled( false );
+            ui->actionRun->setEnabled( false );
+            emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
         }
     }  else {
         mCommandLineOption->setCurrentIndex(-1);
-        mCommandLineOption->setDisabled(true);
+        mCommandLineOption->setEnabled( false );
+        ui->actionRun->setEnabled( false );
+        emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
     }
 }
 
