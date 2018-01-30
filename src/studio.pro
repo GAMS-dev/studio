@@ -122,7 +122,8 @@ SOURCES += \
     syntax/syntaxidentifier.cpp \
     searchwidget.cpp \
     resultsview.cpp \
-    searchresultlist.cpp
+    searchresultlist.cpp \
+    gotowidget.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -177,7 +178,8 @@ HEADERS += \
     syntax/syntaxdata.h \
     searchwidget.h \
     resultsview.h \
-    searchresultlist.h
+    searchresultlist.h \
+    gotowidget.h
 
 FORMS += \
     welcomepage.ui  \
@@ -189,7 +191,8 @@ FORMS += \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
     searchwidget.ui \
-    resultsview.ui
+    resultsview.ui \
+    gotowidget.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

@@ -35,6 +35,7 @@
 #include "searchwidget.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
+#include "gotowidget.h"
 
 namespace gams {
 namespace studio {
@@ -93,6 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSettings->loadSettings();
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
+    mGoto= new GoToWidget(this);
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -1217,9 +1219,18 @@ void gams::studio::MainWindow::on_actionredo_triggered()
 
 void gams::studio::MainWindow::on_actionGo_To_triggered()
 {
-
+    if (mGoto->isVisible()) {
+        mGoto->hide();
+    } else {
+        QPoint p(-120,20);
+        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
+        if (ui->mainTab->currentWidget()) {
+           int offset = (ui->mainTab->currentWidget()->width() - mGoto->width());
+           mGoto->move(newP.x() + offset, newP.y());
+        }
+        mGoto->show();
+    }
 }
-
 void gams::studio::MainWindow::on_actionRedo_triggered()
 {
     CodeEditor* ce= (CodeEditor*) mRecent.editor;
