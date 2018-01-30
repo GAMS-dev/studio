@@ -1205,18 +1205,6 @@ void MainWindow::showResults(SearchResultList &results)
 }
 }
 
-void gams::studio::MainWindow::on_actionUndo_2_triggered()
-{
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->undo();
-}
-
-void gams::studio::MainWindow::on_actionredo_triggered()
-{
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
-    ce->redo();
-}
-
 void gams::studio::MainWindow::on_actionGo_To_triggered()
 {
     if (mGoto->isVisible()) {

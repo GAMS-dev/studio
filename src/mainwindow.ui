@@ -193,8 +193,6 @@
    </attribute>
    <addaction name="separator"/>
    <addaction name="actionGAMS_Library"/>
-   <addaction name="actionUndo_2"/>
-   <addaction name="actionredo"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
@@ -561,30 +559,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
-   </property>
-  </action>
-  <action name="actionUndo_2">
-   <property name="icon">
-    <iconset>
-     <normaloff>../icons/undo.png</normaloff>../icons/undo.png</iconset>
-   </property>
-   <property name="text">
-    <string>Undo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
-   </property>
-  </action>
-  <action name="actionredo">
-   <property name="icon">
-    <iconset>
-     <normaloff>../icons/redo.png</normaloff>../icons/redo.png</iconset>
-   </property>
-   <property name="text">
-    <string>redo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Y</string>
    </property>
   </action>
   <action name="actionCut">

@@ -145,8 +145,6 @@ private slots:
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
-    void on_actionUndo_2_triggered();
-    void on_actionredo_triggered();
     void on_actionGo_To_triggered();
     void on_actionRedo_triggered();
     void on_actionUndo_triggered();
