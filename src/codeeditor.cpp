@@ -287,8 +287,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* e)
 
 void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
 {
-//    if (!mBlockEdit)
-        QPlainTextEdit::mouseReleaseEvent(e);
+    QPlainTextEdit::mouseReleaseEvent(e);
     mDragStart = QPoint();
 }
 
@@ -659,6 +658,11 @@ void CodeEditor::BlockEdit::updateExtraSelections()
         if (end>start) cursor.setPosition(block.position()+end, QTextCursor::KeepAnchor);
         select.cursor = cursor;
         selections << select;
+        if (cursor.blockNumber() == mCurrentLine) {
+            QTextCursor c = mEdit->textCursor();
+            c.setPosition(cursor.position());
+            mEdit->setTextCursor(c);
+        }
     }
     mEdit->setExtraSelections(selections);
 }
