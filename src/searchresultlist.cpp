@@ -93,9 +93,9 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
 
         switch(index.column())
         {
-        case 0: return item.locFile(); break;
-        case 1: return item.locLineNr(); break;
-        case 2: return item.context(); break;
+        case 0: return item.locFile();
+        case 1: return item.locLineNr();
+        case 2: return item.context();
         }
     }
     return QVariant();

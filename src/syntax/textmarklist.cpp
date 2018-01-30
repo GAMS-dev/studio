@@ -144,7 +144,6 @@ QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type re
     QList<TextMark *> marks;
     for (TextMark* tm: mMarks) {
         int hit = tm->in(block.position(), block.length());
-        if (hit > 0) break;
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
             marks << tm;
         }
