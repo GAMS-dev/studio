@@ -714,7 +714,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
-    QTextCursor cursor(mEdit->document());
+    QTextCursor cursor = mEdit->textCursor();
 
     if (texts.count() < 2 && (texts.at(i).length() != 1 || mBeginBlock || texts.at(i) == " ")) {
         mBeginBlock = false;
