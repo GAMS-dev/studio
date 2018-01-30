@@ -58,7 +58,6 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
-    void privateKeyPressEvent(QKeyEvent *e);
 
 signals:
     void updateBlockSelection();
@@ -80,6 +79,7 @@ private:
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
+    QStringList clipboard(); // on relevant Block-Edit data returns multiple strings
 
 private:
     class BlockEdit
@@ -98,9 +98,11 @@ private:
         void refreshCursors();
         void drawCursor(QPaintEvent *e);
         void replaceBlockText(QString text);
+        void replaceBlockText(QStringList texts);
         void updateExtraSelections();
         void adjustCursor();
         void selectTo(int blockNr, int colNr);
+        QString blockText();
 
     private:
     private:
