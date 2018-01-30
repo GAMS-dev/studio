@@ -22,14 +22,7 @@ public:
 
     void setupUi(QWidget* parent);
 
-    QVBoxLayout *verticalLayout;
-    QSplitter *splitter;
-    QTableView *commandLineTableView;
-    QWidget *verticalLayoutWidget;
-    QVBoxLayout *optionDefinition_VLayout;
-    QLineEdit *searchLineEdit;
-    QTreeView *optionDefinitionTreeView;
-    QHBoxLayout *button_HLayout;
+    QList<OptionItem> getCurrentListOfOptionItems();
 
 signals:
     void optionRunWithParameterChanged(const QString &fileLocation, const QString &parameter);
@@ -47,6 +40,17 @@ public slots:
 private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mTokenizer;
+
+    QVBoxLayout *verticalLayout;
+    QSplitter *splitter;
+    QTableView *commandLineTableView;
+    OptionParameterModel* optionParamModel;
+    QWidget *verticalLayoutWidget;
+    QVBoxLayout *optionDefinition_VLayout;
+    QLineEdit *searchLineEdit;
+    QTreeView *optionDefinitionTreeView;
+    QHBoxLayout *button_HLayout;
+
 };
 
 } // namespace studio

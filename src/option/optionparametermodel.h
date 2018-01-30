@@ -26,6 +26,7 @@ public:
     virtual bool insertRows(int row, int count, const QModelIndex &parent);
     virtual bool removeRows(int row, int count, const QModelIndex &parent);
 
+    QList<OptionItem> getCurrentListOfOptionItems();
 signals:
     void optionModelChanged(const QList<OptionItem> &optionItem);
 

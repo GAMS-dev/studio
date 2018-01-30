@@ -79,6 +79,8 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
+        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
+            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
         if (col==0) {
             if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
                  !gamsOption->isThereASynonym(mOptionItem.at(row).key) )  {
@@ -223,6 +225,11 @@ bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &par
     return true;
 }
 
+QList<OptionItem> OptionParameterModel::getCurrentListOfOptionItems()
+{
+    return mOptionItem;
+}
+
 void OptionParameterModel::toggleActiveOptionItem(int index)
 {
     if (mOptionItem.isEmpty() || index >= mOptionItem.size())
@@ -267,10 +274,12 @@ void OptionParameterModel::setRowCount(int rows)
 
 void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
 {
+    QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();
     mOptionItem = commandLineTokenizer->tokenize(text);
-    for(int idx = 0; idx<mOptionItem.size(); ++idx)
+    for(int idx = 0; idx<mOptionItem.size(); ++idx) {
        mCheckState[idx] = QVariant();
+    }
 }
 
 void OptionParameterModel::validateOption()

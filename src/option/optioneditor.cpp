@@ -22,7 +22,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 {
     QList<OptionItem> optionItem = mTokenizer->tokenize(mCommandLineOption->lineEdit()->text());
     QString normalizedText = mTokenizer->normalize(optionItem);
-    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, mTokenizer,  this);
+    optionParamModel = new OptionParameterModel(normalizedText, mTokenizer,  this);
 
     if (optionEditor->objectName().isEmpty())
         optionEditor->setObjectName(QStringLiteral("OptionEditor"));
@@ -116,6 +116,11 @@ void OptionEditor::setupUi(QWidget* optionEditor)
             mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
 }
 
+QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
+{
+    return optionParamModel->getCurrentListOfOptionItems();
+}
+
 void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
 {
      emit optionTableModelChanged(commandLineStr);
@@ -126,7 +131,6 @@ void OptionEditor::updateCommandLineStr(const QString &commandLineStr)
     if (isHidden())
        return;
 
-    qDebug() << "updateCommandLineStr : " << commandLineStr;
     mCommandLineOption->lineEdit()->setText( commandLineStr );
     emit commandLineOptionChanged(mCommandLineOption->lineEdit(), commandLineStr);
 }

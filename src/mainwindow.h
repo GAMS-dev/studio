@@ -144,7 +144,7 @@ private slots:
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();
-    void on_runWithParamAndChangedOptions(QString parameter);
+    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
     void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
@@ -173,6 +173,8 @@ private:
     void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<FileContext*> changedFiles);
     void connectCommandLineWidgets();
+    void setRunActionsEnabled(bool enable);
+    QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
 
 private:
     const int MAX_FILE_HISTORY = 5;

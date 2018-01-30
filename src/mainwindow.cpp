@@ -429,17 +429,17 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
-            ui->actionRun->setEnabled( true );
+            setRunActionsEnabled( true );
         } else {
             mCommandLineOption->setCurrentIndex(-1);
             mCommandLineOption->setEnabled( false );
-            ui->actionRun->setEnabled( false );
+            setRunActionsEnabled( false );
             emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
         }
     }  else {
         mCommandLineOption->setCurrentIndex(-1);
         mCommandLineOption->setEnabled( false );
-        ui->actionRun->setEnabled( false );
+        setRunActionsEnabled( false );
         emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
     }
 }
@@ -573,7 +573,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         process->deleteLater();
     }
     ui->dockLogView->raise();
-//    ui->actionRun->setEnabled(true);
+//    setRunActionsEnabled(true);
 }
 
 void MainWindow::postGamsLibRun(AbstractProcess* process)
@@ -776,8 +776,6 @@ void MainWindow::connectCommandLineWidgets()
 {
     connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
             this, &MainWindow::on_runWithChangedOptions);
-    connect(mCommandLineOption, &CommandLineOption::optionRunWithParameterChanged,
-            this, &MainWindow::on_runWithParamAndChangedOptions);
 
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
@@ -788,6 +786,55 @@ void MainWindow::connectCommandLineWidgets()
             mCommandLineOption, &CommandLineOption::updateCurrentOption );
     connect(mCommandLineOption, &QComboBox::editTextChanged,
             mCommandLineOption, &CommandLineOption::validateChangedOption );
+}
+
+void MainWindow::setRunActionsEnabled(bool enable)
+{
+    ui->actionRun->setEnabled(enable);
+    ui->actionRun_with_GDX_Creation->setEnabled(enable);
+    ui->actionCompile->setEnabled(enable);
+    ui->actionCompile_with_GDX_Creation->setEnabled(enable);
+}
+
+QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
+{
+    QString commandLineStr;
+    QStringList keyList;
+    for(OptionItem item: optionItems) {
+        if (item.disabled)
+            continue;
+
+        commandLineStr.append(item.key);
+        commandLineStr.append("=");
+        commandLineStr.append(item.value);
+        commandLineStr.append(" ");
+        keyList << item.key;
+    }
+    QString message;
+    for(OptionItem item: forcedOptionItems) {
+        if (item.disabled)
+            continue;
+
+//        if ( keyList.contains(item.key, Qt::CaseInsensitive) ||
+//             keyList.contains(gamsOption->getSynonym(item.key)) ) {
+//            message.append(QString("\n   '%1' with '%1=%2'").arg(item.key).arg(item.value));
+//        }
+
+        commandLineStr.append(item.key);
+        commandLineStr.append("=");
+        commandLineStr.append(item.value);
+        commandLineStr.append(" ");
+    }
+    if (!message.isEmpty()) {
+        int ret = QMessageBox::Cancel;
+        QMessageBox msgBox;
+        msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
+        msgBox.setInformativeText("Do you want to continue ?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        ret = msgBox.exec();
+    }
+    return commandLineStr.simplified();
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1060,7 +1107,8 @@ void MainWindow::execute(QString commandLineStr)
         }
     }
 
-    ui->actionRun->setEnabled(false);
+    setRunActionsEnabled(false);
+
     mFileRepo.removeMarks(group);
     LogContext* logProc = mFileRepo.logContext(group);
 
@@ -1101,23 +1149,22 @@ void MainWindow::execute(QString commandLineStr)
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    ui->actionRun->setEnabled(state != QProcess::Running);
+    setRunActionsEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption() );
+    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems()) );
 }
 
-void MainWindow::on_runWithParamAndChangedOptions( QString parameter)
+void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-
-    if (mCommandLineOption->getCurrentOption() != "")
-        execute(mCommandLineOption->getCurrentOption().append(" ").append(parameter));
-    else
-        execute(parameter);
+   if (mCommandLineOption->getCurrentOption() != "")
+       execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems(), forcedOptionItems) );
+   else
+       execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems()) );
 }
 
 void MainWindow::on_commandLineHelpTriggered()
@@ -1147,17 +1194,24 @@ void MainWindow::on_actionRun_triggered()
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    emit mCommandLineOption->optionRunWithParameterChanged( "GDX=default" );
+    QList<OptionItem> forcedOptionItems;
+    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+    on_runWithParamAndChangedOptions(forcedOptionItems);
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    emit mCommandLineOption->optionRunWithParameterChanged( "A=C" );
+    QList<OptionItem> forcedOptionItems;
+    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+    on_runWithParamAndChangedOptions(forcedOptionItems);
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    emit mCommandLineOption->optionRunWithParameterChanged( "A=C GDX=default" );
+    QList<OptionItem> forcedOptionItems;
+    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+    on_runWithParamAndChangedOptions(forcedOptionItems);
 }
 
 void MainWindow::openFileContext(FileContext* fileContext, bool focus)

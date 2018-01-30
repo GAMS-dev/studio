@@ -28,7 +28,6 @@ public:
 
 signals:
     void optionRunChanged();
-    void optionRunWithParameterChanged(const QString &parameter);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
