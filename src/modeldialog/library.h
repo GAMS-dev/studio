@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ namespace studio {
 class Library
 {
 public:
-    Library(QString name, QString execName, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder);
+    Library(QString name, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder, QString glbFile);
 
     int version() const;
     QString name() const;
@@ -38,17 +38,17 @@ public:
     QStringList columns() const;
     QList<int> colOrder() const;
     QStringList toolTips() const;
-    QString execName() const;
     void setName(const QString &name);
+    QString glbFile() const;
 
 private:
     QString mName;
-    QString mExecName;
     int mVersion;
     int mNrColumns;
     QStringList mColumns;
     QStringList mtoolTips;
     QList<int> mColOrder;
+    QString mGlbFile;
 };
 
 } // namespace studio

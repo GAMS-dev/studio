@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -523,7 +523,7 @@
         </rect>
        </property>
        <property name="title">
-        <string>GroupBox</string>
+        <string>Log Settings</string>
        </property>
        <widget class="QCheckBox" name="cb_linewrap_process">
         <property name="enabled">
@@ -571,21 +571,36 @@
        </widget>
       </widget>
      </widget>
-     <widget class="QWidget" name="tabDisplay">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QWidget" name="tabMisc">
       <attribute name="title">
-       <string>Display</string>
+       <string>Misc.</string>
       </attribute>
-     </widget>
-     <widget class="QWidget" name="tabControls">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <attribute name="title">
-       <string>Controls</string>
-      </attribute>
+      <widget class="QGroupBox" name="gb_userlibraries">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>561</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>User Model Libraries</string>
+       </property>
+       <widget class="QPushButton" name="btn_openUserLibLocation">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>111</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Open Location</string>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </item>

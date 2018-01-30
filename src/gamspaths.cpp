@@ -34,37 +34,61 @@ GAMSPaths::GAMSPaths()
 
 }
 
+// TODO(AF) linux
 QString GAMSPaths::systemDir() {
-    // TODO(AF) macOS stuff
-    QStringList paths = { QApplication::applicationDirPath() + QDir::separator() + ".." };
-    QString path = QFileInfo(QStandardPaths::findExecutable("gams", paths)).absolutePath();
+    QString gamsPath;
+    QString appDirPath = QApplication::applicationDirPath();
+#if __APPLE__
+    QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
+    if (pathRegExp.indexIn(appDirPath) != -1) {
+        gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
+    }
+#else
+    appDirPath.append(QDir::separator()).append("..");
+#endif
+    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
-        path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-        if (path.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
     }
 
 #ifdef _WIN32
-    QFileInfo joat64(path + QDir::separator() + "joatdclib64.dll");
+    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
     bool is64 = (sizeof(int*) == 8) ? true : false;
     if (!is64 && joat64.exists())
-        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << path;
+        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << gamsPath;
     if (is64 && !joat64.exists())
-        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << path;
+        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << gamsPath;
 #endif
 
-    return path;
+    return gamsPath;
+}
+
+QString GAMSPaths::userDocumentsDir()
+{
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (dir.isEmpty())
+        FATAL() << "Unable to access user documents location";
+    QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
+    if(!userDocumentsDir.exists())
+        userDocumentsDir.mkpath(".");
+    return QDir::toNativeSeparators(userDocumentsDir.path());
+}
+
+QString GAMSPaths::userModelLibraryDir()
+{
+    QDir userModelLibraryDir = QDir::cleanPath(userDocumentsDir() + "/modellibs");
+    if(!userModelLibraryDir.exists())
+        userModelLibraryDir.mkpath(".");
+    return QDir::toNativeSeparators(userModelLibraryDir.path());
 }
 
 QString GAMSPaths::defaultWorkingDir()
 {
-    const QString currentDir = ".";
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    if (dir.isEmpty())
-        return currentDir;
-    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio");
-    if (workingDir.mkpath(workingDir.path()))
-        return QDir::toNativeSeparators(workingDir.path());
-    return currentDir;
+    QDir defWorkingDir = QDir::cleanPath(userDocumentsDir() + "/workspace");
+    if(!defWorkingDir.exists())
+        defWorkingDir.mkpath(".");
+    return QDir::toNativeSeparators(defWorkingDir.path());
 }
 
 }
