@@ -40,6 +40,9 @@
    <property name="checked">
     <bool>false</bool>
    </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
    <property name="default">
     <bool>false</bool>
    </property>
@@ -122,6 +125,9 @@
    </property>
    <property name="text">
     <string>Replace</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QCheckBox" name="cb_regex">
@@ -264,6 +270,9 @@
    <property name="text">
     <string>&gt;</string>
    </property>
+   <property name="default">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QLabel" name="label_3">
    <property name="geometry">
@@ -346,6 +355,21 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="9"/>
+ <tabstops>
+  <tabstop>combo_search</tabstop>
+  <tabstop>txt_replace</tabstop>
+  <tabstop>btn_FindAll</tabstop>
+  <tabstop>btn_Replace</tabstop>
+  <tabstop>btn_back</tabstop>
+  <tabstop>btn_forward</tabstop>
+  <tabstop>btn_ReplaceAll</tabstop>
+  <tabstop>cb_regex</tabstop>
+  <tabstop>cb_wholeWords</tabstop>
+  <tabstop>cb_caseSens</tabstop>
+  <tabstop>txt_filePattern</tabstop>
+  <tabstop>combo_scope</tabstop>
+  <tabstop>btn_clear</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

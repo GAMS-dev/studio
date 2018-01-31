@@ -383,8 +383,6 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
         findNext(SearchWidget::Backward);
     } else if (e->key() == Qt::Key_F3) {
         findNext(SearchWidget::Forward);
-    } else if (e->key() == Qt::Key_Return) {
-        on_btn_forward_clicked();
     }
     QDialog::keyPressEvent(e);
 }
