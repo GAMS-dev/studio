@@ -370,6 +370,36 @@ QStringList CodeEditor::clipboard()
     return texts;
 }
 
+CharType CodeEditor::charType(QChar c)
+{
+    switch (c.category()) {
+    case QChar::Number_DecimalDigit:
+        return CharType::Number;
+    case QChar::Separator_Space:
+    case QChar::Separator_Line:
+    case QChar::Separator_Paragraph:
+        return CharType::Seperator;
+    case QChar::Letter_Uppercase:
+        return CharType::LetterUCase;
+    case QChar::Letter_Lowercase:
+        return CharType::LetterLCase;
+    case QChar::Punctuation_Dash:
+    case QChar::Punctuation_Open:
+    case QChar::Punctuation_Close:
+    case QChar::Punctuation_InitialQuote:
+    case QChar::Punctuation_FinalQuote:
+    case QChar::Punctuation_Other:
+    case QChar::Symbol_Math:
+    case QChar::Symbol_Currency:
+    case QChar::Symbol_Modifier:
+    case QChar::Symbol_Other:
+        return CharType::Punctuation;
+    default:
+        break;
+    }
+    return CharType::Other;
+}
+
 void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
@@ -700,8 +730,11 @@ void CodeEditor::BlockEdit::replaceBlockText(QString text)
 
 void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
 {
+    if (texts.isEmpty()) texts << "";
+    CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
+    bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
     // append empty lines if needed
-    int missingLines = (qAbs(mStartLine - mCurrentLine)+1) % texts.count();
+    int missingLines = texts.count() - (qAbs(mStartLine - mCurrentLine) % texts.count()) - 1;
     if (missingLines > 0) {
         QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mStartLine, mCurrentLine));
         QTextCursor cursor(block);
@@ -711,21 +744,17 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
         if (mStartLine > mCurrentLine) mStartLine += missingLines;
         else mCurrentLine += missingLines;
         cursor.endEditBlock();
+        newUndoBlock = false;
     }
 
-    int insertWidth = texts.first().length();
     int i = texts.count()-1;
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
     QTextCursor cursor = mEdit->textCursor();
 
-    if (texts.count() < 2 && (texts.at(i).length() != 1 || mBeginBlock || texts.at(i) == " ")) {
-        mBeginBlock = false;
-        cursor.beginEditBlock();
-    } else {
-        cursor.joinPreviousEditBlock();
-    }
+    if (newUndoBlock)  cursor.beginEditBlock();
+    else cursor.joinPreviousEditBlock();
 
     while (block.blockNumber() >= qMin(mCurrentLine, mStartLine)) {
         QString addText = texts.at(i);
@@ -753,8 +782,13 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     }
     cursor.endEditBlock();
     if (mSize < 0) mColumn += mSize;
+    int insertWidth = 0;
+    for (QStringRef ref: texts.first().splitRef('\n')) {
+        if (insertWidth < ref.length()) insertWidth = ref.length();
+    }
     mColumn += insertWidth;
     mSize = 0;
+    mLastCharType = charType;
 }
 
 

@@ -35,6 +35,17 @@ class StudioSettings;
 class LineNumberArea;
 class SearchWidget;
 
+enum class CharType {
+    None,
+    Ctrl,
+    Seperator,
+    Punctuation,
+    Other,
+    Number,
+    LetterUCase,
+    LetterLCase,
+};
+
 class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
@@ -80,6 +91,7 @@ private:
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
     QStringList clipboard(); // on relevant Block-Edit data returns multiple strings
+    CharType charType(QChar c);
 
 private:
     class BlockEdit
@@ -105,14 +117,13 @@ private:
         QString blockText();
 
     private:
-    private:
         CodeEditor* mEdit;
         int mStartLine = 0;
         int mCurrentLine = 0;
         int mColumn = 0;
         int mSize = 0;
         bool mBlinkStateHidden = false;
-        bool mBeginBlock = true;
+        CharType mLastCharType = CharType::None;
     };
 
 private:
