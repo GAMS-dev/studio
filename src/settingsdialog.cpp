@@ -128,6 +128,13 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
     mSettings->updateEditorFont(ui->fontComboBox->currentFont().family(), arg1);
 }
 
+void SettingsDialog::on_btn_openUserLibLocation_clicked()
+{
+    qDebug() << mSettings->userModelLibraryDir();
+    QDesktopServices::openUrl(QUrl(mSettings->userModelLibraryDir()));
+    //QDesktopServices::openUrl(QUrl("file:///" +  mSettings->userModelLibraryDir()));
+}
+
 void SettingsDialog::closeEvent(QCloseEvent *event) {
     if (isModified) {
         QMessageBox msgBox;
@@ -154,7 +161,3 @@ SettingsDialog::~SettingsDialog()
 }
 }
 
-void gams::studio::SettingsDialog::on_btn_openUserLibLocation_clicked()
-{
-    QDesktopServices::openUrl(QUrl("file:///" +  mSettings->userModelLibraryDir()));
-}
