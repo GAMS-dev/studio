@@ -130,7 +130,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
-    QDesktopServices::openUrl(mSettings->userModelLibraryDir());
+    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->userModelLibraryDir()));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
