@@ -62,7 +62,7 @@ private slots:
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
-    void on_cmb_search_currentTextChanged(const QString &arg1);
+    void on_combo_search_currentTextChanged(const QString &arg1);
 
 private:
     Ui::SearchWidget *ui;
@@ -72,7 +72,7 @@ private:
     QList<TextMark*> mAllTextMarks;
 
     void showEvent(QShowEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *e);
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
     void simpleReplaceAll();
@@ -81,6 +81,7 @@ private:
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0, bool clear = false);
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
+    void insertHistory();
 
     enum SearchScope {
         ThisFile = 0,

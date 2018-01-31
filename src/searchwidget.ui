@@ -328,7 +328,7 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QComboBox" name="cmb_search">
+  <widget class="QComboBox" name="combo_search">
    <property name="geometry">
     <rect>
      <x>65</x>

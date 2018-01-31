@@ -41,7 +41,7 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->lbl_nrResults->setText("");
 
     setFixedSize(size());
-    ui->cmb_search->setFocus();
+    ui->combo_search->setFocus();
 }
 
 SearchWidget::~SearchWidget()
@@ -66,7 +66,7 @@ bool SearchWidget::wholeWords()
 
 QString SearchWidget::searchTerm()
 {
-    return ui->cmb_search->currentText();
+    return ui->combo_search->currentText();
 }
 
 int SearchWidget::selectedScope()
@@ -88,6 +88,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 void SearchWidget::on_btn_FindAll_clicked()
 {
     SearchResultList matches(searchTerm());
+    insertHistory();
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -178,7 +179,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         return QList<Result>();
     }
 
-    QString searchTerm = ui->cmb_search->currentText();
+    QString searchTerm = ui->combo_search->currentText();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
@@ -276,8 +277,8 @@ void SearchWidget::simpleReplaceAll()
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
-    QString searchTerm = ui->cmb_search->currentText();
-    QRegularExpression searchRegex(ui->cmb_search->currentText());
+    QString searchTerm = ui->combo_search->currentText();
+    QRegularExpression searchRegex(ui->combo_search->currentText());
     QString replaceTerm = ui->txt_replace->text();
     QFlags<QTextDocument::FindFlag> searchFlags = getFlags();
 
@@ -363,34 +364,35 @@ void SearchWidget::showEvent(QShowEvent *event)
     if (!edit) return;
 
     if (edit->textCursor().hasSelection())
-        ui->cmb_search->setCurrentText(edit->textCursor().selection().toPlainText());
+        ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
-        ui->cmb_search->setCurrentText("");
+        ui->combo_search->setCurrentText("");
 
-    ui->cmb_search->setFocus();
+    ui->combo_search->setFocus();
 }
 
-void SearchWidget::keyPressEvent(QKeyEvent* event)
+void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && (event->key() == Qt::Key_Escape
-                         || (event->modifiers() & Qt::ControlModifier && (event->key() == Qt::Key_F))) ) {
+    if ( isVisible() && (e->key() == Qt::Key_Escape
+                         || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
         hide();
         if (mMain->fileRepository()->fileContext(mMain->recent()->editor))
             mMain->recent()->editor->setFocus();
 
-    } else if (event->modifiers() & Qt::ShiftModifier && (event->key() == Qt::Key_F3)) {
+    } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
         findNext(SearchWidget::Backward);
-    } else if (event->key() == Qt::Key_F3) {
+    } else if (e->key() == Qt::Key_F3) {
         findNext(SearchWidget::Forward);
-    } else if (event->key() == Qt::Key_Return) {
+    } else if (e->key() == Qt::Key_Return) {
         on_btn_forward_clicked();
     }
+    QDialog::keyPressEvent(e);
 }
 
-void SearchWidget::closeEvent(QCloseEvent *event) {
+void SearchWidget::closeEvent(QCloseEvent *e) {
     updateMatchAmount(0, true);
 
-    QDialog::closeEvent(event);
+    QDialog::closeEvent(e);
 }
 
 QFlags<QTextDocument::FindFlag> SearchWidget::getFlags()
@@ -434,11 +436,13 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 
 void SearchWidget::on_btn_back_clicked()
 {
+    insertHistory();
     findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
 {
+    insertHistory();
     findNext(SearchWidget::Forward);
 }
 
@@ -450,7 +454,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
 
-    QString searchTerm = ui->cmb_search->currentText();
+    QString searchTerm = ui->combo_search->currentText();
     if (regex()) searchRegex.setPattern(searchTerm);
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
@@ -495,7 +499,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
 void SearchWidget::on_btn_clear_clicked()
 {
-    ui->cmb_search->clearEditText();
+    ui->combo_search->clearEditText();
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
@@ -504,12 +508,26 @@ void SearchWidget::on_btn_clear_clicked()
     updateMatchAmount(0, true);
 }
 
-void SearchWidget::on_cmb_search_currentTextChanged(const QString &arg1)
+void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (fc)
         fc->removeTextMarks(TextMark::result);
+}
+
+void SearchWidget::insertHistory()
+{
+    QString current(ui->combo_search->currentText());
+
+    if (ui->combo_search->findText(current) == -1) {
+        ui->combo_search->insertItem(0, current);
+    } else {
+        ui->combo_search->removeItem(ui->combo_search->findText(current));
+        ui->combo_search->insertItem(0, current);
+        ui->combo_search->setCurrentIndex(0);
+    }
+
 }
 
 }
