@@ -102,13 +102,11 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     connect(searchLineEdit, &QLineEdit::textChanged,
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
-    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
-            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
-    connect(commandLineTableView, &QTableView::customContextMenuRequested,
-            this, &OptionEditor::showOptionContextMenu);
+//    connect(commandLineTableView->verticalHeader(), &QHeaderView::sectionClicked,
+//            optionParamModel, &OptionParameterModel::toggleActiveOptionItem);
+    connect(commandLineTableView, &QTableView::customContextMenuRequested,this, &OptionEditor::showOptionContextMenu);
 
-    connect(this, &OptionEditor::optionTableModelChanged,
-            optionParamModel, &OptionParameterModel::updateCurrentOption);
+    connect(this, &OptionEditor::optionTableModelChanged, optionParamModel, &OptionParameterModel::updateCurrentOption);
 
     connect(optionParamModel, &OptionParameterModel::optionModelChanged,
             this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));

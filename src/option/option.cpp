@@ -143,7 +143,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
      default:
         break;
     }
-    return Unknown_Error;
+    return No_Error;  //Unknown_Error;
 }
 
 QString Option::getSynonym(const QString &optionName) const

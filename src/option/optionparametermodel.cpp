@@ -32,10 +32,11 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         QPixmap p{12,12};
-        if (mOptionItem.isEmpty())
-            p.fill(Qt::CheckState(Qt::gray));
-        else
-            p.fill(Qt::CheckState(mCheckState[index].toUInt()) ? Qt::gray : Qt::green);
+        p.fill(Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked ? Qt::red : Qt::darkGreen);
+//        if (mOptionItem.isEmpty())
+//            p.fill(Qt::CheckState(Qt::gray));
+//        else
+//            p.fill(Qt::CheckState(mCheckState[index].toUInt()) ? Qt::gray : Qt::green);
         return p;
     }
 
@@ -79,8 +80,8 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
-        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
-            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
+//        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
+//            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
         if (col==0) {
             if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
                  !gamsOption->isThereASynonym(mOptionItem.at(row).key) )  {
@@ -101,8 +102,8 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::TextColorRole: {
-        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
-            return QVariant::fromValue(QColor(Qt::gray));
+//        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
+//            return QVariant::fromValue(QColor(Qt::gray));
 
         if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
            if (mOptionItem.at(row).key.mid(2).contains(QRegExp("^[a-zA-Z]")) )
@@ -120,9 +121,9 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 
                     switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
                      case Incorrect_Value_Type:
-                           return QVariant::fromValue(QColor(Qt::blue));
+                           return QVariant::fromValue(QColor(Qt::red/*Qt::blue*/));
                      case Value_Out_Of_Range:
-                           return QVariant::fromValue(QColor(Qt::blue));
+                           return QVariant::fromValue(QColor(Qt::red/*Qt::blue*/));
                      case No_Error:
                            return QVariant::fromValue(QColor(Qt::black));
                      default:
@@ -236,8 +237,7 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
         return;
 
     bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
-    setHeaderData( index,
-                          Qt::Vertical,
+    setHeaderData( index, Qt::Vertical,
                           Qt::CheckState(checked ? Qt::Checked : Qt::Unchecked),
                           Qt::CheckStateRole );
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
@@ -253,8 +253,17 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
+        qDebug() << mOptionItem.at(i).key << "," << mOptionItem.at(i).value << "," << mOptionItem.at(i).error;
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        if (mOptionItem.at(i).error == No_Error)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+        else
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Checked),
+                              Qt::CheckStateRole );
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);
@@ -284,11 +293,12 @@ void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
 
 void OptionParameterModel::validateOption()
 {
-//   qDebug() << QString("validateOption() : %1").arg(mOptionItem.size());
-   for(OptionItem item : mOptionItem) {
-//       qDebug() << QString("[%1]=%2").arg(item.key).arg(item.value);
+   for(OptionItem& item : mOptionItem) {
        if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
-           item.error = OptionErrorType::No_Error;
+           if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )
+               item.error = OptionErrorType::Invalid_Key;
+           else
+              item.error = OptionErrorType::No_Error;
            continue;
        }
        if (gamsOption->isValid(item.key) || gamsOption->isThereASynonym(item.key)) { // valid option

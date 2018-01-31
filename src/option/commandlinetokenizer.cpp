@@ -13,7 +13,7 @@ CommandLineTokenizer::CommandLineTokenizer(Option* option) :
 
     mInvalidValueFormat.setFontItalic(true);
     mInvalidValueFormat.setBackground(Qt::lightGray);
-    mInvalidValueFormat.setForeground(Qt::blue);
+    mInvalidValueFormat.setForeground(Qt::red/*Qt::blue*/);
 
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);

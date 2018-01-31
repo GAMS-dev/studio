@@ -14,7 +14,6 @@ OptionCompleterDelegate::OptionCompleterDelegate(CommandLineTokenizer* tokenizer
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
- qDebug() << "CompleterDelegate::createEditor() called for" << parent << index << index.data(Qt::EditRole);
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
     if (index.column()==0) {
@@ -44,8 +43,6 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
 
 void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    qDebug() << "CompleterDelegate::setEditorData() called for" << index << index.data(Qt::EditRole);
-
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
@@ -58,7 +55,6 @@ void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &
 
 void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    qDebug() << "CompleterDelegate::setModelData() called for" << index << index.data(Qt::EditRole);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         model->setData( index, lineEdit->text() ) ;
@@ -75,8 +71,6 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 
 void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
 {
-    qDebug() << QString("on_lineEdit_textChanged(%1)").arg(text);
-
     if (text.simplified().isEmpty()) {
         foreach(QWidget* widget, qApp->topLevelWidgets())
             if (QMainWindow*  mainWindow = qobject_cast<QMainWindow *>(widget))
@@ -91,12 +85,6 @@ void OptionCompleterDelegate::commitAndCloseEditor()
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
 }
-
-//void OptionCompleterDelegate::activated(const QString &text)
-//{
-//    qDebug() << QString("activated [%1]").arg(text);
-////    emit qobject_cast<OptionParameterModel *>(this->parent())->editCompleted();
-//}
 
 bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
 {
