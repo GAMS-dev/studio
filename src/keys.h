@@ -23,6 +23,8 @@ enum class Hotkey {
     MinConfigurable = 100,
     DuplicateLine = 101,
     RemoveLine = 102,
+    Indent = 103,
+    Outdent = 104,
 
 };
 

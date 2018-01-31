@@ -86,6 +86,8 @@ private:
     void truncate(QTextBlock block);
     void duplicateLine();
     void removeLine();
+    int minIndentCount(int fromLine = -1, int toLine = -1);
+    int indent(int size, int fromLine = -1, int toLine = -1);
 
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);

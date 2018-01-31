@@ -156,29 +156,35 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         }
     }
 
-    if (!isReadOnly() && e->key() == Hotkey::NewLine) {
-        QTextCursor cursor = textCursor();
-        cursor.beginEditBlock();
-        cursor.insertText("\n");
-        if (cursor.block().previous().isValid())
-            truncate(cursor.block().previous());
-        adjustIndent(cursor);
-        cursor.endEditBlock();
-        setTextCursor(cursor);
-        e->accept();
-        return;
-    }
-
-    if (e == Hotkey::DuplicateLine) {
-        duplicateLine();
-        e->accept();
-        return;
-    }
-
-    if (e == Hotkey::RemoveLine) {
-        removeLine();
-        e->accept();
-        return;
+    if (!isReadOnly()) {
+        if (e->key() == Hotkey::NewLine) {
+            QTextCursor cursor = textCursor();
+            cursor.beginEditBlock();
+            cursor.insertText("\n");
+            if (cursor.block().previous().isValid())
+                truncate(cursor.block().previous());
+            adjustIndent(cursor);
+            cursor.endEditBlock();
+            setTextCursor(cursor);
+            e->accept();
+            return;
+        } else if (e == Hotkey::Indent) {
+            indent(4);
+            e->accept();
+            return;
+        } else if (e == Hotkey::Outdent) {
+            indent(-4);
+            e->accept();
+            return;
+        } else if (e == Hotkey::DuplicateLine) {
+            duplicateLine();
+            e->accept();
+            return;
+        } else if (e == Hotkey::RemoveLine) {
+            removeLine();
+            e->accept();
+            return;
+        }
     }
 
     QPlainTextEdit::keyPressEvent(e);
@@ -336,6 +342,53 @@ void CodeEditor::removeLine()
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.endEditBlock();
+}
+
+int CodeEditor::minIndentCount(int fromLine, int toLine)
+{
+    QTextCursor cursor = textCursor();
+    QTextBlock block = (fromLine < 0) ? document()->findBlock(cursor.anchor()) : document()->findBlockByNumber(fromLine);
+    QTextBlock last = (toLine < 0) ? document()->findBlock(cursor.position()) : document()->findBlockByNumber(toLine);
+    if (block.blockNumber() > last.blockNumber()) qSwap(block, last);
+    int res = block.text().length();
+    QRegularExpression rex("^(\\s*)");
+    while (true) {
+        QRegularExpressionMatch match = rex.match(block.text());
+        if (res > match.capturedLength(1)) res = match.capturedLength(1);
+        if (block == last) break;
+        block = block.next();
+    }
+    return res;
+}
+
+int CodeEditor::indent(int size, int fromLine, int toLine)
+{
+    int res = 0;
+    QTextCursor cursor = textCursor();
+    QTextBlock block = (fromLine < 0) ? document()->findBlock(cursor.anchor()) : document()->findBlockByNumber(fromLine);
+    QTextBlock last = (toLine < 0) ? document()->findBlock(cursor.position()) : document()->findBlockByNumber(toLine);
+    if (block.blockNumber() > last.blockNumber()) qSwap(block, last);
+    cursor.beginEditBlock();
+    while (true) {
+        QTextCursor editCursor(block);
+        if (size > 0) {
+            editCursor.insertText(QString(size, ' '));
+            res = size;
+        } else {
+            int wchars = 0;
+            for (int i = 0; i < -size; ++i) {
+                if (block.text().startsWith(' ')) {
+                    editCursor.deleteChar();
+                    wchars--;
+                }
+            }
+            if (wchars < res) res = wchars;
+        }
+        if (block == last) break;
+        block = block.next();
+    }
+    cursor.endEditBlock();
+    return res;
 }
 
 void CodeEditor::startBlockEdit(int blockNr, int colNr)
@@ -556,6 +609,12 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         QStringList texts = mEdit->clipboard();
         if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
             replaceBlockText(texts);
+    } else if (e == Hotkey::Indent) {
+        mColumn += mEdit->indent(4, mStartLine, mCurrentLine);
+    } else if (e == Hotkey::Outdent) {
+        int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
+        if (minWhiteCount)
+            mColumn += mEdit->indent(qMax(-minWhiteCount, -4), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
         // TODO(JM) copy selected text to clipboard
         QMimeData *mime = new QMimeData();
@@ -749,6 +808,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QString text)
 
 void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
 {
+    if (mEdit->isReadOnly()) return;
     if (texts.isEmpty()) texts << "";
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
     bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
