@@ -239,7 +239,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                     matches.addResult(item.blockNumber()+1, item.columnNumber(), fc->location(), item.block().text().trimmed());
                     if (isOpenFile) {
                         int length = item.selectionEnd() - item.selectionStart();
-                        mAllTextMarks.append(fc->generateTextMark(TextMark::result, 0, item.blockNumber(),
+                        mAllTextMarks.append(fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
                                                                   item.columnNumber() - length, length));
                     }
                 }
@@ -494,7 +494,6 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
             count++;
         }
     }
-
 }
 
 void SearchWidget::on_btn_clear_clicked()
@@ -504,8 +503,8 @@ void SearchWidget::on_btn_clear_clicked()
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
 
-    fc->removeTextMarks(TextMark::result);
-    updateMatchAmount(0, true);
+    fc->removeTextMarks(TextMark::match);
+    updateMatchAmount(0, 0, true);
 }
 
 void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
@@ -513,7 +512,7 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
     Q_UNUSED(arg1);
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (fc)
-        fc->removeTextMarks(TextMark::result);
+        fc->removeTextMarks(TextMark::match);
 }
 
 void SearchWidget::insertHistory()
@@ -527,7 +526,6 @@ void SearchWidget::insertHistory()
         ui->combo_search->insertItem(0, current);
         ui->combo_search->setCurrentIndex(0);
     }
-
 }
 
 }

@@ -355,7 +355,7 @@ void FileContext::updateMarks()
 
 void FileContext::highlightWordUnderCursor(QString word)
 {
-    removeTextMarks(TextMark::occurence);
+    removeTextMarks(TextMark::wordUnderCursor);
 
     QTextCursor last;
     do {
@@ -363,7 +363,7 @@ void FileContext::highlightWordUnderCursor(QString word)
         int length = last.selectionEnd() - last.selectionStart();
 
         if (!last.isNull())
-            mMarks->generateTextMark(this, TextMark::occurence, 0, last.blockNumber(),
+            mMarks->generateTextMark(this, TextMark::wordUnderCursor, 0, last.blockNumber(),
                                      last.columnNumber() - length, length );
     } while (!last.isNull());
     highlighter()->rehighlight();

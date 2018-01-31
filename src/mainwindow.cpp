@@ -386,7 +386,7 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::result << TextMark::occurence);
+    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
