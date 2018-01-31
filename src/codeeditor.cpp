@@ -174,6 +174,13 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         e->accept();
         return;
     }
+
+    if (e == Hotkey::RemoveLine) {
+        removeLine();
+        e->accept();
+        return;
+    }
+
     QPlainTextEdit::keyPressEvent(e);
 }
 
@@ -253,24 +260,20 @@ void CodeEditor::mousePressEvent(QMouseEvent* e)
 {
     if (e->modifiers() & Qt::AltModifier) {
         QTextCursor cursor = cursorForPosition(e->pos());
+        QTextCursor anchor = textCursor();
+        anchor.setPosition(anchor.anchor());
         if (e->modifiers() == Qt::AltModifier) {
             if (mBlockEdit) endBlockEdit();
             startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
         } else if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
             if (mBlockEdit) mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
-            else startBlockEdit(textCursor().blockNumber(), textCursor().columnNumber());
+            else startBlockEdit(anchor.blockNumber(), anchor.columnNumber());
         }
         if (mBlockEdit) {
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
-        } else {
-            mDragStart = e->pos();
-            startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
         }
     } else {
-        if (mBlockEdit) {
-            endBlockEdit();
-        } else {
-        }
+        if (mBlockEdit) endBlockEdit();
         QPlainTextEdit::mousePressEvent(e);
     }
 }
@@ -283,12 +286,6 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* e)
         }
     } else
         QPlainTextEdit::mouseMoveEvent(e);
-}
-
-void CodeEditor::mouseReleaseEvent(QMouseEvent* e)
-{
-    QPlainTextEdit::mouseReleaseEvent(e);
-    mDragStart = QPoint();
 }
 
 void CodeEditor::wheelEvent(QWheelEvent *e) {
@@ -324,20 +321,21 @@ void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
 
 void CodeEditor::duplicateLine()
 {
-    int blockNr = textCursor().blockNumber();
-    int colNr = textCursor().columnNumber();
-    QTextBlock blockFound = document()->findBlockByNumber(blockNr);
-    QTextCursor t(blockFound);
-    t.beginEditBlock();
-    t.movePosition(QTextCursor::NextBlock);
-    t.insertText(blockFound.text());
-    t.insertBlock();
-    moveCursor(QTextCursor::NextBlock);
+    QTextCursor cursor = textCursor();
+    cursor.beginEditBlock();
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    cursor.insertText(cursor.block().text()+'\n');
+    cursor.endEditBlock();
+}
 
-    for(int i = 0; i < colNr; i++)
-        moveCursor(QTextCursor::NextCharacter);
-
-    t.endEditBlock();
+void CodeEditor::removeLine()
+{
+    QTextCursor cursor = textCursor();
+    cursor.beginEditBlock();
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+    cursor.endEditBlock();
 }
 
 void CodeEditor::startBlockEdit(int blockNr, int colNr)
@@ -357,8 +355,22 @@ void CodeEditor::endBlockEdit()
     mBlockEdit = nullptr;
 }
 
+void dumpClipboard()
+{
+    QClipboard *clip = QGuiApplication::clipboard();
+    const QMimeData * mime = clip->mimeData();
+    DEB() << "----------------- Clipboard --------------------" ;
+    DEB() << "  C " << clip->ownsClipboard()<< "  F " << clip->ownsFindBuffer()<< "  S " << clip->ownsSelection();
+    for (QString fmt: mime->formats()) {
+        DEB() << "   -- " << fmt << "   L:" << mime->data(fmt).length()
+              << "\n" << mime->data(fmt)
+              << "\n" << QString(mime->data(fmt).toHex(' '));
+    }
+}
+
 QStringList CodeEditor::clipboard()
 {
+//    dumpClipboard();
     QString mimes = "|" + QGuiApplication::clipboard()->mimeData()->formats().join("|") + "|";
     bool asBlock = (mimes.indexOf("MSDEVColumnSelect") >= 0) || (mimes.indexOf("Borland IDE Block Type") >= 0);
     QStringList texts = QGuiApplication::clipboard()->mimeData()->text().split("\n");
@@ -449,7 +461,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.fillRect(markRect, QColor(225,255,235));
             }
             QString number = QString::number(blockNumber + 1);
-            QFont f = painter.font();
+            QFont f = font();
             f.setBold(mark);
             painter.setFont(f);
             painter.setPen(mark ? Qt::black : Qt::gray);
@@ -475,20 +487,15 @@ CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit, int blockNr, int colNr)
     : mEdit(edit)
 {
     if (!edit) FATAL() << "BlockEdit needs a valid editor";
-    DEB() << "blockEdit START";
     mStartLine = blockNr;
     mCurrentLine = blockNr;
     mColumn = colNr;
     mSize = 0;
-
-    mEdit->textCursor().beginEditBlock();
-    mEdit->textCursor().endEditBlock();
 }
 
 CodeEditor::BlockEdit::~BlockEdit()
 {
     mEdit->setExtraSelections(QList<QTextEdit::ExtraSelection>());
-    DEB() << "blockEdit END";
 }
 
 void CodeEditor::BlockEdit::selectTo(int blockNr, int colNr)
@@ -497,6 +504,16 @@ void CodeEditor::BlockEdit::selectTo(int blockNr, int colNr)
     mSize = colNr - mColumn;
     updateExtraSelections();
     startCursorTimer();
+}
+
+void CodeEditor::BlockEdit::selectToEnd()
+{
+    int end = 0;
+    for (QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine))
+         ; block.blockNumber() <= qMax(mStartLine, mCurrentLine); block=block.next()) {
+        if (end < block.length()-1) end = block.length()-1;
+    }
+    mSize = end - mColumn;
 }
 
 QString CodeEditor::BlockEdit::blockText()
@@ -525,6 +542,8 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
+        if (e->key() == Qt::Key_Home) mSize = -mColumn;
+        if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
@@ -541,8 +560,8 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         // TODO(JM) copy selected text to clipboard
         QMimeData *mime = new QMimeData();
         mime->setText(blockText());
-        mime->setData("application/x-qt-windows-mime;value=""MSDEVColumnSelect""", QByteArray());
-        mime->setData("application/x-qt-windows-mime;value=""Borland IDE Block Type""", QByteArray());
+        mime->setData("application/x-qt-windows-mime;value=\"MSDEVColumnSelect\"", QByteArray());
+        mime->setData("application/x-qt-windows-mime;value=\"Borland IDE Block Type\"", QByteArray(1,char(2)));
         QApplication::clipboard()->setMimeData(mime);
         if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
@@ -782,9 +801,11 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     }
     cursor.endEditBlock();
     if (mSize < 0) mColumn += mSize;
-    int insertWidth = 0;
-    for (QStringRef ref: texts.first().splitRef('\n')) {
-        if (insertWidth < ref.length()) insertWidth = ref.length();
+    int insertWidth = -1;
+    for (QString s: texts) {
+        for (QStringRef ref: s.splitRef('\n')) {
+            if (insertWidth < ref.length()) insertWidth = ref.length();
+        }
     }
     mColumn += insertWidth;
     mSize = 0;

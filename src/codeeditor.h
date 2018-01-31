@@ -65,7 +65,6 @@ protected:
     void keyReleaseEvent(QKeyEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
-    void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
@@ -86,6 +85,7 @@ private:
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
     void duplicateLine();
+    void removeLine();
 
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
@@ -114,6 +114,7 @@ private:
         void updateExtraSelections();
         void adjustCursor();
         void selectTo(int blockNr, int colNr);
+        void selectToEnd();
         QString blockText();
 
     private:

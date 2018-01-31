@@ -97,6 +97,9 @@ void Keys::reset()
 
     seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
+
+    seq = new KeySeqList("Ctrl+Y","remove line");
+    setHotkey(Hotkey::RemoveLine, seq);
 }
 
 void Keys::read(const QJsonObject& json)

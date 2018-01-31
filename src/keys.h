@@ -22,6 +22,7 @@ enum class Hotkey {
     // configurable key-sequences > 100
     MinConfigurable = 100,
     DuplicateLine = 101,
+    RemoveLine = 102,
 
 };
 
