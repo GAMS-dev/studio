@@ -70,7 +70,6 @@ protected:
     void paintEvent(QPaintEvent *e) override;
 
 signals:
-    void updateBlockSelection();
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
     void highlightWordUnderCursor(QString word);
@@ -79,8 +78,6 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
-    void onUpdateBlockSelection();
-    void onUpdateBlockEdit();
     void onCursorIdle();
     void onCursorPositionChanged();
     void blockEditBlink();
