@@ -446,28 +446,19 @@ void MainWindow::fileChangedExtern(FileId fileId)
         msgBox.setWindowTitle("File modified");
 
         // file is loaded but unchanged: ASK, if it should be reloaded
-        if (fc->document() && !fc->isModified()) {
+        if (fc->document()) {
             msgBox.setText(fc->location()+" has been modified externally.");
             msgBox.setInformativeText("Reload?");
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         }
-
-        // file has been changed in the editor: ASK, if intern or extern version should be kept.
-        if (fc->isModified()) {
-            msgBox.setText(fc->location() + " has been modified concurrently.");
-            msgBox.setInformativeText("Do you want to"
-                                      "\n- <b>Discard</b> your changes and reload the file"
-                                      "\n- <b>Ignore</b> the external changes and keep your changes");
-            msgBox.setStandardButtons(QMessageBox::Discard | QMessageBox::Ignore);
-        }
-
         msgBox.setDefaultButton(QMessageBox::NoButton);
         choice = msgBox.exec();
     }
 
-    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
+    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard)
         fc->load(fc->codec());
-    }
+    else
+        fc->document()->setModified();
 }
 
 void MainWindow::fileDeletedExtern(FileId fileId)
@@ -485,9 +476,11 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::NoButton);
     int ret = msgBox.exec();
-    if (ret == QMessageBox::No) {
+
+    if (ret == QMessageBox::No)
         fileClosed(fileId);
-    }
+    else
+        fc->document()->setModified();
 }
 
 void MainWindow::fileClosed(FileId fileId)
