@@ -7,16 +7,28 @@
 namespace gams {
 namespace studio {
 
+enum OptionErrorType {
+    No_Error,
+    Invalid_Key,
+    Incorrect_Value_Type,
+    Value_Out_Of_Range,
+    Deprecated_Option,
+    Unknown_Error
+};
+
 struct OptionItem {
     OptionItem() { }
     OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
+    OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos, bool disabledFlag) :
+          key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     QString key;
     QString value;
-    bool disabled = false;
     int keyPosition;
     int valuePosition;
+    bool disabled = false;
+    OptionErrorType error = No_Error;
 };
 
 struct OptionGroup {
@@ -72,7 +84,11 @@ public:
     void dumpAll();
 
     bool isValid(const QString &optionName);
+    bool isThereASynonym(const QString &optionName);
     bool isDeprecated(const QString &optionName);
+    bool isDoubleDashedOption(const QString &optionName);
+    OptionErrorType getValueErrorType(const QString &optionName, const QString &value);
+
     QString getSynonym(const QString &optionName) const;
     optOptionType getOptionType(const QString &optionName) const;
     optDataType getDataType(const QString &optionName) const;
@@ -82,11 +98,18 @@ public:
     QString getDescription(const QString &optionName) const;
     QList<OptionValue> getValueList(const QString &optionName) const;
 
+    QStringList getKeyList() const;
+    QStringList getKeyAndSynonymList() const;
+    QStringList getValuesList(const QString &optionName) const;
+    QStringList getNonHiddenValuesList(const QString &optionName) const;
+
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
 
     bool available() const;
+
+    QMap<QString, OptionDefinition> getOption() const;
 
 private:
     QMap<QString, OptionDefinition> mOption;

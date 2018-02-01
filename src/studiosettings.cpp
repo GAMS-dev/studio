@@ -56,6 +56,7 @@ void StudioSettings::saveSettings()
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", mMain->projectViewVisibility());
     mAppSettings->setValue("outputView", mMain->outputViewVisibility());
+    mAppSettings->setValue("optionEditor", mMain->optionEditorVisibility());
 
     mAppSettings->endGroup();
 
@@ -145,6 +146,7 @@ void StudioSettings::loadSettings()
     mAppSettings->beginGroup("viewMenu");
     mMain->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
     mMain->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
+    mMain->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
 
     mAppSettings->endGroup();
 

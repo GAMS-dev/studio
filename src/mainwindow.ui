@@ -133,6 +133,7 @@
     </property>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
+    <addaction name="actionOption_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
    </widget>
@@ -182,7 +183,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="separator"/>
    <addaction name="actionGAMS_Library"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
@@ -502,6 +502,20 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionOption_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Option</string>
+   </property>
+   <property name="toolTip">
+    <string>Option</string>
    </property>
   </action>
  </widget>

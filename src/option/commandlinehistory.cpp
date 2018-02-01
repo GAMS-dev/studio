@@ -25,6 +25,7 @@ void CommandLineHistory::setHistory(QString context, QStringList history)
 
 void CommandLineHistory::addIntoCurrentContextHistory(QString option)
 {
+//  also allow empty option to be added into history ?
 //    if (option.simplified().isEmpty())
 //        return;
 

@@ -99,9 +99,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
-    commandlinehistory.cpp \
-    commandlineoption.cpp \
-    commandlinetokenizer.cpp \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
@@ -113,7 +110,18 @@ SOURCES += \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    option.cpp \
+    option/option.cpp \
+    option/optionconfigurator.cpp \
+    option/commandlinehistory.cpp \
+    option/commandlineoption.cpp \
+    option/commandlinetokenizer.cpp \
+    option/optionparametermodel.cpp \
+    option/optioncompleterdelegate.cpp \
+    option/lineeditcompleteevent.cpp \
+    option/optiondefinitionitem.cpp \
+    option/optiondefinitionmodel.cpp \
+    option/optioneditor.cpp \
+    option/optionsortfilterproxymodel.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -124,6 +132,7 @@ SOURCES += \
     resultsview.cpp \
     searchresultlist.cpp \
     keys.cpp
+
 
 HEADERS += \
     codeeditor.h \
@@ -153,9 +162,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gamspaths.h \
     filetreemodel.h \
-    commandlinehistory.h \
-    commandlineoption.h \
-    commandlinetokenizer.h \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
@@ -167,7 +173,18 @@ HEADERS += \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolheaderview.h \
-    option.h \
+    option/option.h \
+    option/optionconfigurator.h \
+    option/commandlinehistory.h \
+    option/commandlinetokenizer.h \
+    option/commandlineoption.h \
+    option/optionparametermodel.h \
+    option/optioncompleterdelegate.h \
+    option/lineeditcompleteevent.h \
+    option/optiondefinitionitem.h \
+    option/optiondefinitionmodel.h \
+    option/optioneditor.h \
+    option/optionsortfilterproxymodel.h \
     syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
@@ -191,6 +208,7 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
+    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui
 
