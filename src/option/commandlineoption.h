@@ -31,7 +31,6 @@ signals:
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
-    void updateCurrentOption(const QString &text);
     void validateChangedOption(const QString &text);
 
 protected:
@@ -40,6 +39,7 @@ protected:
 private:
     QString mCurrentOption;
     QString mCurrentContext;
+    int mCurrentIndex;
     bool mValidated;
 };
 

@@ -13,15 +13,13 @@ CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->setInsertPolicy(QComboBox::InsertAtTop);
     this->lineEdit()->setClearButtonEnabled(true);
+    this->mCurrentContext = "";
+    this->mCurrentOption = "";
+    this->mCurrentIndex = -1;
 }
 
 CommandLineOption::~CommandLineOption()
 {
-}
-
-void CommandLineOption::updateCurrentOption(const QString &text)
-{
-    mCurrentOption = text.simplified();
 }
 
 void CommandLineOption::validateChangedOption(const QString &text)

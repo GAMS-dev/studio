@@ -428,13 +428,9 @@ void MainWindow::activeTabChanged(int index)
         if (fc && !edit->isReadOnly()) {
             QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
-            qDebug() << "activeTab : " << option.size();
-//            if (option.size() == 0) {
-//                emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
-//            } else {
-                foreach(QString str, option)
-                   mCommandLineOption->insertItem(0, str );
-//            }
+            foreach(QString str, option) {
+               mCommandLineOption->insertItem(0, str );
+            }
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
@@ -443,13 +439,11 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setCurrentIndex(-1);
             mCommandLineOption->setEnabled( false );
             setRunActionsEnabled( false );
-            emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
         }
     }  else {
         mCommandLineOption->setCurrentIndex(-1);
         mCommandLineOption->setEnabled( false );
         setRunActionsEnabled( false );
-        emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
     }
 }
 
@@ -791,10 +785,13 @@ void MainWindow::connectCommandLineWidgets()
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mOptionEditor, &OptionEditor::updateTableModel );
 
-    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-            mCommandLineOption, &CommandLineOption::updateCurrentOption );
-    connect(mCommandLineOption, &QComboBox::editTextChanged,
-            mCommandLineOption, &CommandLineOption::validateChangedOption );
+//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+//            this, &MainWindow::loadCommandLineHistory);
+//            mCommandLineOption, &CommandLineOption::updateCurrentOption );
+//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
+//            mCommandLineHistory, &CommandLineHistory::addIntoCurrentContextHistory );
+    connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
 }
 
 void MainWindow::setRunActionsEnabled(bool enable)
