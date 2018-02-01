@@ -85,10 +85,10 @@ QString GAMSPaths::userModelLibraryDir()
 
 QString GAMSPaths::defaultWorkingDir()
 {
-    QDir defWorkingDir = QDir::cleanPath(userDocumentsDir() + "/workspace");
+    QDir defWorkingDir(userDocumentsDir() + "/workspace");
     if(!defWorkingDir.exists())
         defWorkingDir.mkpath(".");
-    return QDir::toNativeSeparators(defWorkingDir.path());
+    return defWorkingDir.path();
 }
 
 }
