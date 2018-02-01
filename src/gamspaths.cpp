@@ -75,23 +75,23 @@ QString GAMSPaths::userDocumentsDir()
     QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
     if(!userDocumentsDir.exists())
         userDocumentsDir.mkpath(".");
-    return QDir::toNativeSeparators(userDocumentsDir.path());
+    return userDocumentsDir.path();
 }
 
 QString GAMSPaths::userModelLibraryDir()
 {
-    QDir userModelLibraryDir = QDir::cleanPath(userDocumentsDir() + "/modellibs");
+    QDir userModelLibraryDir(userDocumentsDir() + "/modellibs");
     if(!userModelLibraryDir.exists())
         userModelLibraryDir.mkpath(".");
-    return QDir::toNativeSeparators(userModelLibraryDir.path());
+    return userModelLibraryDir.path();
 }
 
 QString GAMSPaths::defaultWorkingDir()
 {
-    QDir defWorkingDir = QDir::cleanPath(userDocumentsDir() + "/workspace");
+    QDir defWorkingDir(userDocumentsDir() + "/workspace");
     if(!defWorkingDir.exists())
         defWorkingDir.mkpath(".");
-    return QDir::toNativeSeparators(defWorkingDir.path());
+    return defWorkingDir.path();
 }
 
 }
