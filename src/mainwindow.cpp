@@ -135,7 +135,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             FileSystemContext::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
-            codeEdit->setTabStopWidth(8*metric.width(' '));
+            codeEdit->setTabStopDistance(8*metric.width(' '));
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
