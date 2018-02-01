@@ -150,7 +150,8 @@ void CodeEditor::onCursorIdle()
     QRegularExpression isIdentifier("[\\w\\d]*");
 
     if (isIdentifier.match(wordUnderCursor).hasMatch()) {
-        emit highlightWordUnderCursor(wordUnderCursor);
+        if (!mBlockEdit)
+            emit highlightWordUnderCursor(wordUnderCursor);
         mCursorTimer.stop();
     }
 }
