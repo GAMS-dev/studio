@@ -53,6 +53,12 @@ void TextMarkList::textMarksEmpty(bool* empty)
     *empty = mMarks.isEmpty();
 }
 
+void TextMarkList::textMarkIconsEmpty(bool* noIcons)
+{
+    int tms = textMarkCount(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::bookmark);
+    *noIcons = !(tms > 0);
+}
+
 TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::Type tmType, int value, int line, int column, int size)
 {
     TextMark* res = new TextMark(tmType);

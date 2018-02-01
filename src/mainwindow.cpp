@@ -865,6 +865,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         mSearchWidget->findNext(SearchWidget::Forward); // F3
     }
     if (event->key() == Qt::Key_Escape) {
+        mSearchWidget->hide();
         mSearchWidget->clearResults();
     }
 }

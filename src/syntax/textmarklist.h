@@ -25,6 +25,7 @@ public:
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
     void textMarksEmpty(bool* empty);
+    void textMarkIconsEmpty(bool* hasIcons);
 
 protected:
     friend class LogContext;
