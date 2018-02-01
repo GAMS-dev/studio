@@ -119,14 +119,12 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context, TextMarkList* marks)
 
     syntax = new SyntaxDirective();
     syntax->charFormat().setForeground(Qt::darkMagenta);
-//    syntax->charFormat().setFontWeight(QFont::Bold);
     addState(syntax);
 
     syntax = new SyntaxTitle();
-    syntax->charFormat().setForeground(Qt::blue);
-    syntax->charFormat().setFontWeight(QFont::Medium);
-    syntax->charFormat().setFont(syntax->charFormat().font());
-    syntax->charFormat().setFontStretch(120);
+    syntax->charFormat().setForeground(Qt::darkBlue);
+    syntax->charFormat().setFontWeight(QFont::Bold);
+    syntax->charFormat().setFontItalic(true);
     addState(syntax);
 
     syntax = new SyntaxCommentLine();

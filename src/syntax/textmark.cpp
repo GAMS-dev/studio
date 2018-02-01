@@ -100,7 +100,7 @@ void TextMark::updateCursor()
             mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
         } else {
             QString str = block.text();
-            for (int i = mColumn; i < mColumn+mSize; ++i)
+            for (int i = mColumn; i < qMin(mColumn+mSize, str.length()); ++i)
                 if (str.at(i)=='\t') mSize -= (7 - i%8);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
             mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mSize);
