@@ -32,7 +32,7 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
     mUels = mSymbol->uelsInColumn().at(mColumn);
     mChecked = new bool[mUels->size()];
     bool* showUelInColumn = mSymbol->showUelInColumn().at(column);
-    for(int idx=0; idx<mUels->size(); idx++)
+    for(unsigned int idx=0; idx<mUels->size(); idx++)
     {
         mChecked[idx] = showUelInColumn[mUels->at(idx)];
     }
@@ -112,7 +112,7 @@ void FilterUelModel::filterLabels(QString filterString)
     QRegExp regExp(filterString);
     regExp.setCaseSensitivity(Qt::CaseInsensitive);
     regExp.setPatternSyntax(QRegExp::Wildcard);
-    for(int idx=0; idx<mUels->size(); idx++)
+    for(unsigned int idx=0; idx<mUels->size(); idx++)
     {
         int uel = mUels->at(idx);
         checkedOld = mChecked[idx];

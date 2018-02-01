@@ -71,7 +71,7 @@ void ColumnFilterFrame::apply()
     bool checked;
     std::vector<bool> filterActive = mSymbol->filterActive();
     filterActive[mColumn] = false;
-    for (int idx=0; idx<uelsInColumn->size(); idx++)
+    for (unsigned int idx=0; idx<uelsInColumn->size(); idx++)
     {
         checked = mModel->checked()[idx];
         showUelInColumn[uelsInColumn->at(idx)] = checked;
