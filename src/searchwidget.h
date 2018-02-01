@@ -53,6 +53,7 @@ public:
         Backward = 1
     };
     void findNext(SearchWidget::SearchDirection direction);
+    void clearResults();
 
 private slots:
     void on_btn_FindAll_clicked();

@@ -168,14 +168,9 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     QRegExp rx(ui->txt_filePattern->text());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
-//    if (fsc->type() == FileSystemContext::File) || filetype log
-    //    FileContext *fc = static_cast<FileContext*>(fsc);
-    //    fc->metrics().fileType()
-
     // (scope not current file && wildcard not matching) || has gdx extension
     if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (rx.indexIn(fsc->location()) == -1))
             || fsc->location().endsWith("gdx")) {
-        // TODO: change to filecontext, check type instead of chekcing extension
         return QList<Result>();
     }
 
@@ -496,6 +491,11 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
 void SearchWidget::on_btn_clear_clicked()
 {
+    clearResults();
+}
+
+void SearchWidget::clearResults()
+{
     ui->combo_search->clearEditText();
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
@@ -504,6 +504,7 @@ void SearchWidget::on_btn_clear_clicked()
     fc->removeTextMarks(TextMark::match);
     updateMatchAmount(0, 0, true);
 }
+
 
 void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {

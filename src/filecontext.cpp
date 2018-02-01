@@ -357,6 +357,10 @@ void FileContext::highlightWordUnderCursor(QString word)
 {
     removeTextMarks(TextMark::wordUnderCursor);
 
+    if (mMarks->textMarkCount(QSet<TextMark::Type>() << TextMark::match) > 0) { // ongoing search
+        return; // no highighting during search
+    }
+
     QTextCursor last;
     do {
         last = document()->find(word, last, QTextDocument::FindWholeWords);

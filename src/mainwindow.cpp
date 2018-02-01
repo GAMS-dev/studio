@@ -864,6 +864,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     } else if (event->key() == Qt::Key_F3) {
         mSearchWidget->findNext(SearchWidget::Forward); // F3
     }
+    if (event->key() == Qt::Key_Escape) {
+        mSearchWidget->clearResults();
+    }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
