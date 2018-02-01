@@ -1,4 +1,4 @@
-/* * This file is part of the GAMS Studio project.
+/* This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
