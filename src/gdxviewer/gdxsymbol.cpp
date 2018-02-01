@@ -534,7 +534,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
-    qDebug() << "filterRows";
     QTime t;
     t.start();
 
@@ -560,7 +559,6 @@ void GdxSymbol::filterRows()
     }
     beginResetModel();
     endResetModel();
-    qDebug() << "filterRows: " << t.elapsed();
 }
 
 bool GdxSymbol::isLoaded() const

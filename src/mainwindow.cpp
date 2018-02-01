@@ -386,7 +386,7 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
-    if (oldTab) oldTab->removeTextMarks(TextMark::result);
+    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
@@ -860,9 +860,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }
 
     if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        mSearchWidget->find(true); // Shift + F3
+        mSearchWidget->findNext(SearchWidget::Backward); // Shift + F3
     } else if (event->key() == Qt::Key_F3) {
-        mSearchWidget->find(false); // F3
+        mSearchWidget->findNext(SearchWidget::Forward); // F3
+    }
+    if (event->key() == Qt::Key_Escape) {
+        mSearchWidget->hide();
+        mSearchWidget->clearResults();
     }
 }
 
@@ -1183,7 +1187,13 @@ void MainWindow::on_actionSearch_triggered()
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
 
         if (ui->mainTab->currentWidget()) {
-            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width());
+            int sbs;
+            if (FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+                sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+            else
+                sbs = 2;
+
+            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width() - sbs);
             mSearchWidget->move(newP.x() + offset, newP.y());
         }
         mSearchWidget->show();

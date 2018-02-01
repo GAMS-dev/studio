@@ -154,8 +154,11 @@ void TextMark::clearBackRefs()
 
 QColor TextMark::color()
 {
-    if (type() == TextMark::result)
+    if (type() == TextMark::match)
         return Qt::yellow;
+
+    if (type() == TextMark::wordUnderCursor)
+        return Qt::gray;
 
     if (!mReference) return Qt::white;
     if (mReference->type() == TextMark::error)

@@ -94,6 +94,8 @@ public:
     int selectedScopeIndex() const;
     void setSelectedScopeIndex(int selectedScopeIndex);
 
+    bool wordUnderCursor() const;
+    void setWordUnderCursor(bool wordUnderCursor);
     QString userModelLibraryDir() const;
 
 private:
@@ -118,6 +120,7 @@ private:
     bool mLineWrapEditor;
     bool mLineWrapProcess;
     bool mClearLog;
+    bool mWordUnderCursor;
 
     // search widget
     bool mSearchUseRegex;

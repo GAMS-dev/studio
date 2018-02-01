@@ -132,6 +132,9 @@ public:
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
+public slots:
+    void highlightWordUnderCursor(QString word);
+
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier

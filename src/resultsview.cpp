@@ -64,8 +64,12 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
     // jump to line
     QTextCursor tc(jmpFc->document());
-    tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                   + item.locCol() - searchTermLength);
+    if (item.locCol() <= 0) {
+        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
+    } else {
+        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
+                       + item.locCol() - searchTermLength);
+    }
     jmpFc->jumpTo(tc, false);
     jmpFc->editors().first()->setFocus();
 }

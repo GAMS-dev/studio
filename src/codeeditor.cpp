@@ -51,6 +51,12 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
         setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         setLineWrapMode(QPlainTextEdit::NoWrap);
+
+    connect(&mCursorTimer, &QTimer::timeout, this, &CodeEditor::onCursorIdle);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+
+    mCursorTimer.setInterval(WORD_UNDER_CURSOR_HIGHLIGHT_TIMER);
+    mCursorTimer.start();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -127,6 +133,26 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 void CodeEditor::blockEditBlink()
 {
     if (mBlockEdit) mBlockEdit->refreshCursors();
+}
+
+void CodeEditor::onCursorPositionChanged()
+{
+    emit highlightWordUnderCursor("");
+    mCursorTimer.stop();
+    mCursorTimer.start();
+}
+
+void CodeEditor::onCursorIdle()
+{
+    QTextCursor cursor = textCursor();
+    cursor.select(QTextCursor::WordUnderCursor);
+    QString wordUnderCursor = cursor.selection().toPlainText();
+    QRegularExpression isIdentifier("[\\w\\d]*");
+
+    if (isIdentifier.match(wordUnderCursor).hasMatch()) {
+        emit highlightWordUnderCursor(wordUnderCursor);
+        mCursorTimer.stop();
+    }
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
@@ -484,7 +510,6 @@ void CodeEditor::highlightCurrentLine()
 //    setExtraSelections(extraSelections);
 }
 // _CRT_SECURE_NO_WARNINGS
-
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
