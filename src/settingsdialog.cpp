@@ -128,6 +128,11 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
     mSettings->updateEditorFont(ui->fontComboBox->currentFont().family(), arg1);
 }
 
+void SettingsDialog::on_btn_openUserLibLocation_clicked()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->userModelLibraryDir()));
+}
+
 void SettingsDialog::closeEvent(QCloseEvent *event) {
     if (isModified) {
         QMessageBox msgBox;
@@ -153,3 +158,4 @@ SettingsDialog::~SettingsDialog()
 
 }
 }
+

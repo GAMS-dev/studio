@@ -28,9 +28,20 @@ namespace studio {
 class GAMSPaths
 {
 public:
+    ///
+    /// \brief Get GAMS system directory.
+    /// \return Returns the GAMS system directory.
+    /// \remark If GAMS Studio is part of the GAMS distribution a relateive
+    ///         path based on the executable location is returned;
+    ///         otherwise the PATH environment variable used to find GAMS.
+    ///
     static QString systemDir();
 
     static QString defaultWorkingDir();
+
+    static QString userDocumentsDir();
+
+    static QString userModelLibraryDir();
 
 private:
     GAMSPaths();

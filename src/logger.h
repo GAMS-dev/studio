@@ -14,6 +14,13 @@ public:
     Logger();
     virtual ~Logger();
 
+    Logger& operator<<(const QRect& value) {
+        if (!mStream)
+            mStream = new QTextStream(&mBuffer);
+        (*mStream) << "Rect(" << value.x() << "," << value.y() << "," << value.width() << "," << value.height() << ")";
+        return *this;
+    }
+
     template <typename T> Logger& operator<<(const T& value) {
         if (!mStream)
             mStream = new QTextStream(&mBuffer);

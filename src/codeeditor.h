@@ -35,6 +35,17 @@ class StudioSettings;
 class LineNumberArea;
 class SearchWidget;
 
+enum class CharType {
+    None,
+    Ctrl,
+    Seperator,
+    Punctuation,
+    Other,
+    Number,
+    LetterUCase,
+    LetterLCase,
+};
+
 class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
@@ -54,14 +65,12 @@ protected:
     void keyReleaseEvent(QKeyEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
-    void mouseReleaseEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
 
 signals:
     void updateBlockSelection();
-    void updateBlockEdit();
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
     void highlightWordUnderCursor(QString word);
@@ -74,22 +83,68 @@ private slots:
     void onUpdateBlockEdit();
     void onCursorIdle();
     void onCursorPositionChanged();
+    void blockEditBlink();
 
 private:
+    friend class BlockEdit;
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
+    void duplicateLine();
+    void removeLine();
+    int minIndentCount(int fromLine = -1, int toLine = -1);
+    int indent(int size, int fromLine = -1, int toLine = -1);
+
+    int textCursorColumn(QPoint mousePos);
+    void startBlockEdit(int blockNr, int colNr);
+    void endBlockEdit();
+    QStringList clipboard(); // on relevant Block-Edit data returns multiple strings
+    CharType charType(QChar c);
+
+private:
+    class BlockEdit
+    {
+    public:
+        BlockEdit(CodeEditor* edit, int blockNr, int colNr);
+        virtual ~BlockEdit();
+        void keyPressEvent(QKeyEvent *e);
+        void keyReleaseEvent(QKeyEvent *e);
+        inline int hasBlock(int blockNr) {
+            return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
+        int colFrom() { return 0; }
+        int colTo() { return 0; }
+        void startCursorTimer();
+        void stopCursorTimer();
+        void refreshCursors();
+        void drawCursor(QPaintEvent *e);
+        void replaceBlockText(QString text);
+        void replaceBlockText(QStringList texts);
+        void updateExtraSelections();
+        void adjustCursor();
+        void selectTo(int blockNr, int colNr);
+        void selectToEnd();
+        QString blockText();
+
+    private:
+        CodeEditor* mEdit;
+        int mStartLine = 0;
+        int mCurrentLine = 0;
+        int mColumn = 0;
+        int mSize = 0;
+        bool mBlinkStateHidden = false;
+        CharType mLastCharType = CharType::None;
+    };
 
 private:
     const int WORD_UNDER_CURSOR_HIGHLIGHT_TIMER = 600;
     LineNumberArea *mLineNumberArea;
-    int mBlockStartKey = 0;
     int mCurrentCol;
-    QTextCursor mBlockStartCursor;
-    QTextCursor mBlockLastCursor;
-    QRect mBlockCursorRect;
     StudioSettings *mSettings;
     QTimer mCursorTimer;
+    QPoint mDragStart;
+    BlockEdit* mBlockEdit = nullptr;
+    QTimer mBlinkBlockEdit;
 };
+
 
 
 class LineNumberArea : public QWidget

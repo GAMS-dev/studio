@@ -215,6 +215,10 @@ void StudioSettings::loadSettings()
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+
+    // the location for user model libraries is not modifyable right now
+    // anyhow, it is part of StudioSettings since it might become modifyable in the future
+    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 }
 
 QString StudioSettings::defaultWorkspace() const
@@ -444,6 +448,11 @@ bool StudioSettings::wordUnderCursor() const
 void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 {
     mWordUnderCursor = wordUnderCursor;
+}
+  
+QString StudioSettings::userModelLibraryDir() const
+{
+    return mUserModelLibraryDir;
 }
 
 }

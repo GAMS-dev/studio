@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "filteruelmodel.h"
 
 #include <QTime>
@@ -13,7 +32,7 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
     mUels = mSymbol->uelsInColumn().at(mColumn);
     mChecked = new bool[mUels->size()];
     bool* showUelInColumn = mSymbol->showUelInColumn().at(column);
-    for(int idx=0; idx<mUels->size(); idx++)
+    for(unsigned int idx=0; idx<mUels->size(); idx++)
     {
         mChecked[idx] = showUelInColumn[mUels->at(idx)];
     }
@@ -93,7 +112,7 @@ void FilterUelModel::filterLabels(QString filterString)
     QRegExp regExp(filterString);
     regExp.setCaseSensitivity(Qt::CaseInsensitive);
     regExp.setPatternSyntax(QRegExp::Wildcard);
-    for(int idx=0; idx<mUels->size(); idx++)
+    for(unsigned int idx=0; idx<mUels->size(); idx++)
     {
         int uel = mUels->at(idx);
         checkedOld = mChecked[idx];

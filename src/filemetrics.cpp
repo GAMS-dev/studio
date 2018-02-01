@@ -51,7 +51,7 @@ FileMetrics::FileMetrics(QFileInfo fileInfo)
 {
     mExists = fileInfo.exists();
     mSize = mExists ? fileInfo.size() : 0;
-    mCreated = mExists ? fileInfo.created() : QDateTime();
+    mCreated = mExists ? fileInfo.birthTime() : QDateTime();
     mModified = mExists ? fileInfo.lastModified() : QDateTime();
 }
 

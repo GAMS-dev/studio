@@ -96,6 +96,7 @@ public:
 
     bool wordUnderCursor() const;
     void setWordUnderCursor(bool wordUnderCursor);
+    QString userModelLibraryDir() const;
 
 private:
     MainWindow *mMain = nullptr;
@@ -126,6 +127,9 @@ private:
     bool mSearchCaseSens;
     bool mSearchWholeWords;
     int mSelectedScopeIndex;
+
+    // user model library directory
+    QString mUserModelLibraryDir;
 };
 
 }

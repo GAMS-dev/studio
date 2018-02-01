@@ -73,7 +73,7 @@ private:
 
 };
 
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(SyntaxState key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+constexpr inline uint qHash(SyntaxState key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 
 } // namespace studio
 } // namespace gans

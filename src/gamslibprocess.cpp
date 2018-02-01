@@ -31,11 +31,6 @@ GAMSLibProcess::GAMSLibProcess(QObject *parent)
 
 }
 
-void GAMSLibProcess::setApp(const QString &app)
-{
-    mApp = app;
-}
-
 QString GAMSLibProcess::app()
 {
     return mApp;
@@ -79,9 +74,16 @@ QString GAMSLibProcess::modelName() const
 void GAMSLibProcess::execute()
 {// TODO(AF) improve the gamslib output messages... currently they don't make sense for the GAMS Studio!
     QStringList args;
+    args << "-lib";
+    args << mGlbFile;
     args << (mModelName.isEmpty() ? QString::number(mModelNumber) : mModelName);
     args << QDir::toNativeSeparators(mTargetDir);
     mProcess.start(nativeAppPath(), args);
+}
+
+void GAMSLibProcess::setGlbFile(const QString &glbFile)
+{
+    mGlbFile = glbFile;
 }
 
 } // namespace studio
