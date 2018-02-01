@@ -13,10 +13,6 @@ CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->setInsertPolicy(QComboBox::InsertAtTop);
     this->lineEdit()->setClearButtonEnabled(true);
-//    connect(this, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//            this, &CommandLineOption::updateCurrentOption );
-//    connect(this, &QComboBox::editTextChanged,
-//            this, &CommandLineOption::validateChangedOption );
 }
 
 CommandLineOption::~CommandLineOption()
@@ -33,8 +29,9 @@ void CommandLineOption::validateChangedOption(const QString &text)
     mCurrentOption = text.simplified();
 
     this->lineEdit()->setToolTip("");
-    if (mCurrentOption.isEmpty())
-        return;
+//  also allow empty option to be validated
+//    if (mCurrentOption.isEmpty())
+//        return;
 
     if (mValidated)
        emit commandLineOptionChanged(this->lineEdit(), text);

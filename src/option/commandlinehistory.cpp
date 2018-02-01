@@ -25,8 +25,9 @@ void CommandLineHistory::setHistory(QString context, QStringList history)
 
 void CommandLineHistory::addIntoCurrentContextHistory(QString option)
 {
-    if (option.simplified().isEmpty())
-        return;
+//  also allow empty option to be added into history
+//    if (option.simplified().isEmpty())
+//        return;
 
     if (mHistory.contains(mCurrentContext)) {
         QStringList list = mHistory[mCurrentContext].filter(option.simplified());

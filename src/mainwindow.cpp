@@ -423,9 +423,13 @@ void MainWindow::activeTabChanged(int index)
         if (fc && !edit->isReadOnly()) {
             QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
-            foreach(QString str, option) {
-                mCommandLineOption->insertItem(0, str );
-            }
+            qDebug() << "activeTab : " << option.size();
+//            if (option.size() == 0) {
+//                emit mCommandLineOption->commandLineOptionChanged(mCommandLineOption->lineEdit(), "");
+//            } else {
+                foreach(QString str, option)
+                   mCommandLineOption->insertItem(0, str );
+//            }
             mCommandLineOption->setCurrentIndex(0);
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());

@@ -253,7 +253,6 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        qDebug() << mOptionItem.at(i).key << "," << mOptionItem.at(i).value << "," << mOptionItem.at(i).error;
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
         if (mOptionItem.at(i).error == No_Error)
