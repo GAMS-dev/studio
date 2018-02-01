@@ -23,10 +23,6 @@ public:
 
     void focusTextBox();
 
-protected:
-   // void closeEvent(QCloseEvent *event);
-   // void showEvent(QShowEvent *event);
-
 private slots:
     void on_GoTo_clicked();
     void on_Cancel_clicked();

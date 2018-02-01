@@ -53,4 +53,3 @@ private:
 }
 }
 #endif // SEARCHRESULTLIST_H
-

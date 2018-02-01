@@ -288,7 +288,7 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
         QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
         if (!edit) return;
         QTextCursor tc(cursor.isNull() ? QTextCursor(edit->document()->findBlockByNumber(altLine)) : cursor);
-        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);   //i commented this line up because it jumps the empty lines in the goto function
+        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
         tc.clearSelection();
         edit->setTextCursor(tc);
         // center line vertically

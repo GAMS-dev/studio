@@ -38,7 +38,7 @@ void GoToWidget::on_GoTo_clicked()
 
 void GoToWidget::on_Cancel_clicked()
 {
-hide();
+    hide();
 }
 
 }

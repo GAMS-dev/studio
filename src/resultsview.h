@@ -25,7 +25,6 @@
 #include "mainwindow.h"
 #include "searchresultlist.h"
 
-
 namespace Ui {
 class ResultsView;
 }
