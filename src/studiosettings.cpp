@@ -126,7 +126,7 @@ void StudioSettings::saveSettings()
 void StudioSettings::loadSettings()
 {
     if (mAppSettings == nullptr)
-        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio");
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -175,7 +175,7 @@ void StudioSettings::loadSettings()
     mAppSettings->endGroup();
 
     if (mUserSettings == nullptr)
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio-User");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
 
     mUserSettings->beginGroup("General");
 
@@ -449,7 +449,7 @@ void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 {
     mWordUnderCursor = wordUnderCursor;
 }
-  
+
 QString StudioSettings::userModelLibraryDir() const
 {
     return mUserModelLibraryDir;
