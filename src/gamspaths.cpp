@@ -37,17 +37,18 @@ GAMSPaths::GAMSPaths()
 // TODO(AF) linux
 QString GAMSPaths::systemDir() {
     QString gamsPath;
-    const QString appDirPath = QApplication::applicationDirPath();
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
+    const QString appDirPath = QApplication::applicationDirPath();
     QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
     if (pathRegExp.indexIn(appDirPath) != -1) {
         gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
     }
 #elif __unix__
-    gamsPath = QString(appDirPath).append(subPath).append(subPath).append(subPath);
+    QFileInfo fileInfo(qgetenv("APPIMAGE"));
+    gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
-    gamsPath = QString(appDirPath).append(subPath);
+    gamsPath = QApplication::applicationDirPath().append(subPath);
 #endif
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
