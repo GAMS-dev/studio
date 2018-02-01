@@ -634,6 +634,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 
 void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
 {
+    Q_UNUSED(e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;

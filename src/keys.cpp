@@ -110,12 +110,12 @@ void Keys::reset()
 
 void Keys::read(const QJsonObject& json)
 {
-
+    Q_UNUSED(json)
 }
 
 void Keys::write(QJsonObject& json) const
 {
-
+    Q_UNUSED(json)
 }
 
 void Keys::setHotkey(Hotkey key, KeySeqList* keySeqList)
