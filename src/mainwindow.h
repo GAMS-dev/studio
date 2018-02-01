@@ -77,6 +77,7 @@ public:
     void openFileContext(FileContext *fileContext, bool focus = true);
     bool outputViewVisibility();
     bool projectViewVisibility();
+    bool optionEditorVisibility();
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);

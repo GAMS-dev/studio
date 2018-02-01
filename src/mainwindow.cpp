@@ -251,6 +251,11 @@ bool MainWindow::projectViewVisibility()
     return ui->actionProject_View->isChecked();
 }
 
+bool MainWindow::optionEditorVisibility()
+{
+    return ui->actionOption_View->isChecked();
+}
+
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
     if (mRecent.group == group) updateRunState();
