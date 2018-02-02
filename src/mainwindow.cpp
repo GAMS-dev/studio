@@ -110,7 +110,7 @@ MainWindow::~MainWindow()
     delete mOptionEditor;
     delete mDockOptionView;
     delete mCommandLineHistory;
-    delete mCommandLineOption;
+//    delete mCommandLineOption;
     delete mCommandLineTokenizer;
 }
 
@@ -765,8 +765,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(mOptionEditor->sizePolicy().hasHeightForWidth());
     mDockOptionView->setSizePolicy(sizePolicy);
-    mDockOptionView->hide();
-    ui->actionOption_View->setChecked(false);
+    mDockOptionView->show();
+    ui->actionOption_View->setChecked(true);
 
     mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
