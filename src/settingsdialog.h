@@ -49,6 +49,8 @@ private slots:
 
     void on_btn_openUserLibLocation_clicked();
 
+    void on_btn_browse_clicked();
+
 private:
     StudioSettings *mSettings;
     Ui::SettingsDialog *ui;

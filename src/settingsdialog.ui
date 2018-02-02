@@ -62,7 +62,7 @@
          <rect>
           <x>10</x>
           <y>50</y>
-          <width>540</width>
+          <width>451</width>
           <height>25</height>
          </rect>
         </property>
@@ -107,6 +107,19 @@
         </property>
         <property name="text">
          <string>Automatically save modified files before running GAMS</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_browse">
+        <property name="geometry">
+         <rect>
+          <x>470</x>
+          <y>50</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Browse</string>
         </property>
        </widget>
       </widget>
@@ -183,7 +196,7 @@
         </property>
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>100</x>
           <y>35</y>
           <width>80</width>
           <height>25</height>
