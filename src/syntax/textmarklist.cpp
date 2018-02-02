@@ -53,6 +53,12 @@ void TextMarkList::textMarksEmpty(bool* empty)
     *empty = mMarks.isEmpty();
 }
 
+void TextMarkList::textMarkIconsEmpty(bool* noIcons)
+{
+    int tms = textMarkCount(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::bookmark);
+    *noIcons = !(tms > 0);
+}
+
 TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::Type tmType, int value, int line, int column, int size)
 {
     TextMark* res = new TextMark(tmType);
@@ -144,7 +150,6 @@ QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type re
     QList<TextMark *> marks;
     for (TextMark* tm: mMarks) {
         int hit = tm->in(block.position(), block.length());
-        if (hit > 0) break;
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
             marks << tm;
         }

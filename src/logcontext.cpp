@@ -94,9 +94,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
-    if (text.contains("compilation")) {
-        qDebug() << "start parsing LOG";
-    }
+
     ExtractionState state;
     QRegularExpression rEx("(\\r?\\n|\\r\\n?)");
     QStringList lines = text.split(rEx);

@@ -34,16 +34,21 @@ GAMSPaths::GAMSPaths()
 
 }
 
+// TODO(AF) linux
 QString GAMSPaths::systemDir() {
     QString gamsPath;
-    QString appDirPath = QApplication::applicationDirPath();
+    const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
+    const QString appDirPath = QApplication::applicationDirPath();
     QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
     if (pathRegExp.indexIn(appDirPath) != -1) {
         gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
     }
+#elif __unix__
+    QFileInfo fileInfo(qgetenv("APPIMAGE"));
+    gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
-    appDirPath.append(QDir::separator()).append("..");
+    gamsPath = QApplication::applicationDirPath().append(subPath);
 #endif
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
@@ -63,16 +68,31 @@ QString GAMSPaths::systemDir() {
     return gamsPath;
 }
 
-QString GAMSPaths::defaultWorkingDir()
+QString GAMSPaths::userDocumentsDir()
 {
-    const QString currentDir = ".";
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
-        return currentDir;
-    QDir workingDir = QDir::cleanPath(dir + "/GAMSStudio");
-    if (workingDir.mkpath(workingDir.path()))
-        return QDir::toNativeSeparators(workingDir.path());
-    return currentDir;
+        FATAL() << "Unable to access user documents location";
+    QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
+    if(!userDocumentsDir.exists())
+        userDocumentsDir.mkpath(".");
+    return userDocumentsDir.path();
+}
+
+QString GAMSPaths::userModelLibraryDir()
+{
+    QDir userModelLibraryDir(userDocumentsDir() + "/modellibs");
+    if(!userModelLibraryDir.exists())
+        userModelLibraryDir.mkpath(".");
+    return userModelLibraryDir.path();
+}
+
+QString GAMSPaths::defaultWorkingDir()
+{
+    QDir defWorkingDir(userDocumentsDir() + "/workspace");
+    if(!defWorkingDir.exists())
+        defWorkingDir.mkpath(".");
+    return defWorkingDir.path();
 }
 
 }

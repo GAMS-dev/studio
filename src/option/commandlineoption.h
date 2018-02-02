@@ -28,10 +28,9 @@ public:
 
 signals:
     void optionRunChanged();
-    void optionRunWithParameterChanged(const QString &parameter);
+    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
-    void updateCurrentOption(const QString &text);
     void validateChangedOption(const QString &text);
 
 protected:
@@ -40,11 +39,8 @@ protected:
 private:
     QString mCurrentOption;
     QString mCurrentContext;
+    int mCurrentIndex;
     bool mValidated;
-    CommandLineTokenizer* mCommandLineTokenizer;
-
-    void clearLineEditTextFormat(QLineEdit* lineEdit);
-    void setLineEditTextFormat(QLineEdit* lineEdit, const QList<OptionError>& errList);
 };
 
 } // namespace studio

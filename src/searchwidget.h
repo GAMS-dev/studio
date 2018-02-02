@@ -36,7 +36,6 @@ class SearchWidget : public QDialog
 
 public:
     explicit SearchWidget(MainWindow *parent = 0);
-    void find(bool backwards = false);
     ~SearchWidget();
 
     bool regex();
@@ -49,6 +48,13 @@ public:
 
     QList<Result> findInFile(FileSystemContext *fsc);
 
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
+    void findNext(SearchWidget::SearchDirection direction);
+    void clearResults();
+
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
@@ -57,7 +63,7 @@ private slots:
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
-    void on_cmb_search_currentTextChanged(const QString &arg1);
+    void on_combo_search_currentTextChanged(const QString &arg1);
 
 private:
     Ui::SearchWidget *ui;
@@ -67,14 +73,23 @@ private:
     QList<TextMark*> mAllTextMarks;
 
     void showEvent(QShowEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *e);
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
     void simpleReplaceAll();
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
-    void updateMatchAmount(int hits, bool clear = false);
+    void updateMatchAmount(int hits, int current = 0, bool clear = false);
+    void selectNextMatch(SearchDirection direction, QList<Result> matches);
+    void insertHistory();
+
+    enum SearchScope {
+        ThisFile = 0,
+        ThisGroup= 1,
+        OpenTabs = 2,
+        AllFiles = 3
+    };
 };
 
 }

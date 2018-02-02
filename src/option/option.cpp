@@ -69,12 +69,81 @@ bool Option::isValid(const QString &optionName)
     return mOption.contains(optionName.toUpper());
 }
 
+bool Option::isThereASynonym(const QString &optionName)
+{
+    return mSynonymMap.contains( optionName.toUpper() );
+}
+
 bool Option::isDeprecated(const QString &optionName)
 {
     if (isValid(optionName))
        return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
 
     return false;
+}
+
+bool Option::isDoubleDashedOption(const QString &optionName)
+{
+    return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
+}
+
+OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value)
+{
+    QString key = optionName;
+    if (!isValid(key))
+        key = getSynonym(optionName);
+
+    switch(getOptionType(key)) {
+     case optTypeEnumInt : {
+         bool isCorrectDataType = false;
+         int n = value.toInt(&isCorrectDataType);
+         if (isCorrectDataType) {
+            for (OptionValue optValue: getValueList(key)) {
+               if (optValue.value.toInt() == n) { // && !optValue.hidden) {
+                   return No_Error;
+               }
+            }
+            return Value_Out_Of_Range;
+         } else {
+             return Incorrect_Value_Type;
+         }
+     }
+     case optTypeEnumStr : {
+         for (OptionValue optValue: getValueList(key)) {
+           if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
+               return No_Error;
+           }
+         }
+        return Value_Out_Of_Range;
+     }
+     case optTypeInteger: {
+        bool isCorrectDataType = false;
+        int n = value.toInt(&isCorrectDataType);
+        if (isCorrectDataType) {
+            if ((n < getLowerBound(key).toInt()) || (getUpperBound(key).toInt() < n)) {
+                return Value_Out_Of_Range;
+            }
+            return No_Error;
+        } else {
+             return Incorrect_Value_Type;
+        }
+     }
+     case optTypeDouble: {
+        bool isCorrectDataType = false;
+        double d = value.toDouble(&isCorrectDataType);
+        if (isCorrectDataType) {
+            if ((d < getLowerBound(key).toDouble()) || (getUpperBound(key).toDouble() < d)) {
+                return Value_Out_Of_Range;
+            }
+            return No_Error;
+        } else {
+             return Incorrect_Value_Type;
+        }
+     }
+     default:
+        break;
+    }
+    return No_Error;  //Unknown_Error;
 }
 
 QString Option::getSynonym(const QString &optionName) const
@@ -107,6 +176,42 @@ QList<OptionValue> Option::getValueList(const QString &optionName) const
     return mOption[optionName.toUpper()].valueList;
 }
 
+QStringList Option::getKeyList() const
+{
+    QStringList keyList;
+    for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
+        keyList << it.value().name;
+    }
+    return keyList;
+}
+
+QStringList Option::getKeyAndSynonymList() const
+{
+    // TODO
+    return getKeyList();
+}
+
+QStringList Option::getValuesList(const QString &optionName) const
+{
+   QStringList valueList;
+   foreach( OptionValue value, getValueList(optionName.toUpper()) )
+       valueList << value.value.toString();
+
+   return valueList;
+}
+
+QStringList Option::getNonHiddenValuesList(const QString &optionName) const
+{
+    QStringList valueList;
+    foreach( OptionValue value, getValueList(optionName.toUpper()) ) {
+        if (!value.hidden)
+           valueList << value.value.toString();
+    }
+
+    return valueList;
+
+}
+
 QList<OptionGroup> Option::getOptionGroupList() const
 {
     return mOptionGroupList;
@@ -120,6 +225,11 @@ QString Option::getOptionTypeName(int type) const
 bool Option::available() const
 {
     return mAvailable;
+}
+
+QMap<QString, OptionDefinition> Option::getOption() const
+{
+    return mOption;
 }
 
 OptionDefinition Option::getOptionDefinition(const QString &optionName) const
@@ -180,11 +290,14 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
                      int helpContextNr;
                      optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
                      opt.groupNumber = group;
+                     opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
 
                      if (synonym.contains(nameStr)) {
                          opt.synonym = synonym[nameStr];
                          mSynonymMap[opt.synonym] = nameStr;
                      }
+
+
                      char optTypeName[GMS_SSSIZE];
                      optGetTypeName(mOPTHandle, opt.type, optTypeName);
                      mOptionTypeNameMap[opt.type] = optTypeName;

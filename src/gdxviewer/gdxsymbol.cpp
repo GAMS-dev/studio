@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "gdxsymbol.h"
 #include <memory>
 #include <QThread>
@@ -6,6 +25,7 @@
 #include <QIcon>
 #include <QVarLengthArray>
 #include <algorithm>
+#include <limits>
 
 namespace gams {
 namespace studio {
@@ -28,6 +48,13 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mFilterActive.resize(mDim);
     for(int i=0; i<mDim; i++)
         mFilterActive[i] = false;
+
+    mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
+    mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
+    mSpecValSortVal.push_back(GMS_SV_PINF); // GMS_SV_PINF
+    mSpecValSortVal.push_back(std::numeric_limits<double>::min()); // GMS_SV_MINF
+    mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
+    mSpecValSortVal.push_back(0);  //TODO: Acronyms
 }
 
 GdxSymbol::~GdxSymbol()
@@ -130,6 +157,12 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "-INF";
                 if (val == GMS_SV_EPS)
                     return "EPS";
+                else if (val>=GMS_SV_ACR)
+                {
+                    char acr[GMS_SSSIZE];
+                    gdxAcronymName(mGdx, val, acr);
+                    return QString(acr);
+                }
                 //TODO(CW): check special values
             }
         }
@@ -336,6 +369,20 @@ void GdxSymbol::loadDomains()
         mDomains.append(domX[i]);
 }
 
+double GdxSymbol::specVal2SortVal(double val)
+{
+    if (val == GMS_SV_UNDEF)
+        return mSpecValSortVal[GMS_SVIDX_UNDEF];
+    else if (val == GMS_SV_NA)
+        return  mSpecValSortVal[GMS_SVIDX_NA];
+    else if (val == GMS_SV_MINF)
+        return  mSpecValSortVal[GMS_SVIDX_MINF];
+    else if (val == GMS_SV_EPS)
+        return  mSpecValSortVal[GMS_SVIDX_EPS];
+    else
+        return val;
+}
+
 std::vector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
@@ -451,15 +498,26 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     else
     {
         QList<QPair<double, int>> l;
+        double val=0;
         if(mType == GMS_DT_PAR)
         {
             for(int rec=0; rec<mRecordCount; rec++)
-                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]], mRecSortIdx[rec]));
+            {
+                val = mValues[mRecSortIdx[rec]];
+                if (val>=GMS_SV_UNDEF)
+                    val = specVal2SortVal(val);
+                l.append(QPair<double, int>(val, mRecSortIdx[rec]));
+            }
         }
         else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
         {
             for(int rec=0; rec<mRecordCount; rec++)
-                l.append(QPair<double, int>(mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)], mRecSortIdx[rec]));
+            {
+                val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
+                if (val>=GMS_SV_UNDEF)
+                    val = specVal2SortVal(val);
+                l.append(QPair<double, int>(val, mRecSortIdx[rec]));
+            }
         }
 
         if(order == Qt::SortOrder::AscendingOrder)
@@ -476,7 +534,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
-    qDebug() << "filterRows";
     QTime t;
     t.start();
 
@@ -502,7 +559,6 @@ void GdxSymbol::filterRows()
     }
     beginResetModel();
     endResetModel();
-    qDebug() << "filterRows: " << t.elapsed();
 }
 
 bool GdxSymbol::isLoaded() const

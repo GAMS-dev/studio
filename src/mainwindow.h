@@ -21,12 +21,14 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "filerepository.h"
 #include "codeeditor.h"
-#include "commandlinehistory.h"
-#include "commandlineoption.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
+#include "option/commandlinehistory.h"
+#include "option/commandlineoption.h"
+#include "option/lineeditcompleteevent.h"
+#include "option/optionconfigurator.h"
+#include "option/optioneditor.h"
 #include "projectcontextmenu.h"
 
 namespace Ui {
@@ -75,9 +77,11 @@ public:
     void openFileContext(FileContext *fileContext, bool focus = true);
     bool outputViewVisibility();
     bool projectViewVisibility();
+    bool optionEditorVisibility();
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
+    void setOptionEditorVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
@@ -104,6 +108,7 @@ private slots:
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
+    void toggleOptionDefinition(bool checked);
 
 private slots:
     // File
@@ -129,6 +134,7 @@ private slots:
     void on_actionAbout_Qt_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
+    void on_actionOption_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
@@ -139,7 +145,7 @@ private slots:
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();
-    void on_runWithParamAndChangedOptions(QString parameter);
+    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
     void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
@@ -149,9 +155,10 @@ private slots:
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
-    void dragEnterEvent(QDragEnterEvent *e);
-    void dropEvent(QDropEvent *e);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void customEvent(QEvent *event);
 
 private:
     void initTabs();
@@ -166,14 +173,24 @@ private:
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<FileContext*> changedFiles);
+    void connectCommandLineWidgets();
+    void setRunActionsEnabled(bool enable);
+    QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
 
 private:
     const int MAX_FILE_HISTORY = 5;
 
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
+
+    Option* gamsOption;
+    OptionEditor* mOptionEditor;
+    QDockWidget* mDockOptionView;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
+    CommandLineTokenizer* mCommandLineTokenizer;
+    QSplitter* mOptionSplitter;
+
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroup;

@@ -32,7 +32,6 @@ const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2
 FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
     : FileSystemContext(fileId, name, location, type)
 {
-    DEB() << "Path: " << location;
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
         mSyntaxHighlighter = new SyntaxHighlighter(this, mMarks);
@@ -178,7 +177,8 @@ void FileContext::addEditor(QWidget* edit)
     }
     if (scEdit && mMarks) {
         connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
-        connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarksEmpty);
+        connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
+        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -315,6 +315,7 @@ void FileContext::showToolTip(const QList<TextMark*> marks)
 
 void FileContext::rehighlightAt(int pos)
 {
+    if (pos == -1) return;
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
 }
 
@@ -350,6 +351,26 @@ void FileContext::updateMarks()
         }
         mMarksEnhanced = true;
     }
+}
+
+void FileContext::highlightWordUnderCursor(QString word)
+{
+    removeTextMarks(TextMark::wordUnderCursor);
+
+    if (mMarks->textMarkCount(QSet<TextMark::Type>() << TextMark::match) > 0) { // ongoing search
+        return; // no highighting during search
+    }
+
+    QTextCursor last;
+    do {
+        last = document()->find(word, last, QTextDocument::FindWholeWords);
+        int length = last.selectionEnd() - last.selectionStart();
+
+        if (!last.isNull())
+            mMarks->generateTextMark(this, TextMark::wordUnderCursor, 0, last.blockNumber(),
+                                     last.columnNumber() - length, length );
+    } while (!last.isNull());
+    highlighter()->rehighlight();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)

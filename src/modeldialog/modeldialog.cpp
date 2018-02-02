@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,15 @@
 #include "gamspaths.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include <QFileDialog>
+#include <QSettings>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
@@ -34,8 +37,14 @@
 namespace gams {
 namespace studio {
 
-ModelDialog::ModelDialog(QWidget *parent) :
-    QDialog(parent)
+ModelDialog::ModelDialog(QWidget *parent):
+    ModelDialog("", parent)
+{
+
+}
+
+ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
+    QDialog(parent), mUserLibPath(userLibPath)
 {
     ui.setupUi(this);
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -71,7 +80,8 @@ ModelDialog::ModelDialog(QWidget *parent) :
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
+    if(!mUserLibPath.isEmpty())
+        loadUserLibs();
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
@@ -118,7 +128,7 @@ void ModelDialog::clearSelections()
         tv->clearSelection();
 }
 
-void ModelDialog::addLibrary(QList<LibraryItem> items)
+void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 {
     QTableView* tableView;
     QSortFilterProxyModel* proxyModel;
@@ -141,7 +151,13 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
     proxyModelList.append(proxyModel);
 
     tableView->setModel(proxyModel);
-    ui.tabWidget->addTab(tableView, items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")");
+    QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
+    int tabIdx=0;
+    if(isUserLibrary)
+        tabIdx = ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
+    else
+        tabIdx = ui.tabWidget->addTab(tableView, label);
+    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->name());
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
@@ -151,8 +167,21 @@ void ModelDialog::addLibrary(QList<LibraryItem> items)
 
     connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
 
+    connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
+    connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
+
     tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
     tableView->resizeColumnsToContents();
+}
+
+void ModelDialog::loadUserLibs()
+{
+    QDirIterator iter(mUserLibPath, QDirIterator::Subdirectories);
+    while (!iter.next().isEmpty())
+    {
+        if (QFileInfo(iter.filePath()).suffix() == "glb")
+            addLibrary(GlbParser::parseFile(iter.filePath()), true);
+    }
 }
 
 LibraryItem *ModelDialog::selectedLibraryItem() const
@@ -171,7 +200,6 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
-    disconnect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     if(checked)
     {
         for(auto proxy : proxyModelList)
@@ -188,7 +216,6 @@ void ModelDialog::on_cbRegEx_toggled(bool checked)
             connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
         }
     }
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::changeHeader);
     emit ui.lineEdit->textChanged(ui.lineEdit->text());
 }
 

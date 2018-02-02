@@ -106,6 +106,18 @@ void SettingsDialog::saveSettings()
     setModifiedStatus(false);
 }
 
+void SettingsDialog::on_btn_browse_clicked()
+{
+    QString workspace = ui->txt_workspace->text();
+    QFileDialog filedialog(this, "Choose default working directory", workspace);
+    filedialog.setFileMode(QFileDialog::DirectoryOnly);
+
+    if (filedialog.exec())
+        workspace = filedialog.selectedFiles().first();
+
+    ui->txt_workspace->setText(workspace);
+}
+
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button == ui->buttonBox->button(QDialogButtonBox::Apply)) {
@@ -126,6 +138,11 @@ void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 {
     mSettings->updateEditorFont(ui->fontComboBox->currentFont().family(), arg1);
+}
+
+void SettingsDialog::on_btn_openUserLibLocation_clicked()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->userModelLibraryDir()));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {

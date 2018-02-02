@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -62,7 +62,7 @@
          <rect>
           <x>10</x>
           <y>50</y>
-          <width>540</width>
+          <width>451</width>
           <height>25</height>
          </rect>
         </property>
@@ -107,6 +107,19 @@
         </property>
         <property name="text">
          <string>Automatically save modified files before running GAMS</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_browse">
+        <property name="geometry">
+         <rect>
+          <x>470</x>
+          <y>50</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Browse</string>
         </property>
        </widget>
       </widget>
@@ -162,6 +175,9 @@
         <string>Backup and Restore</string>
        </property>
        <widget class="QPushButton" name="btn_export">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -175,9 +191,12 @@
         </property>
        </widget>
        <widget class="QPushButton" name="btn_import">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>100</x>
           <y>35</y>
           <width>80</width>
           <height>25</height>
@@ -495,7 +514,7 @@
        </widget>
        <widget class="QCheckBox" name="cb_highlightUnderCursor">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -523,7 +542,7 @@
         </rect>
        </property>
        <property name="title">
-        <string>GroupBox</string>
+        <string>Log Settings</string>
        </property>
        <widget class="QCheckBox" name="cb_linewrap_process">
         <property name="enabled">
@@ -571,21 +590,36 @@
        </widget>
       </widget>
      </widget>
-     <widget class="QWidget" name="tabDisplay">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QWidget" name="tabMisc">
       <attribute name="title">
-       <string>Display</string>
+       <string>Misc.</string>
       </attribute>
-     </widget>
-     <widget class="QWidget" name="tabControls">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <attribute name="title">
-       <string>Controls</string>
-      </attribute>
+      <widget class="QGroupBox" name="gb_userlibraries">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>561</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>User Model Libraries</string>
+       </property>
+       <widget class="QPushButton" name="btn_openUserLibLocation">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>111</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Open Location</string>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </item>

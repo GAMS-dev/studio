@@ -56,6 +56,7 @@ void StudioSettings::saveSettings()
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", mMain->projectViewVisibility());
     mAppSettings->setValue("outputView", mMain->outputViewVisibility());
+    mAppSettings->setValue("optionEditor", mMain->optionEditorVisibility());
 
     mAppSettings->endGroup();
 
@@ -116,6 +117,7 @@ void StudioSettings::saveSettings()
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
     mUserSettings->setValue("clearLog", clearLog());
+    mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
 
     mUserSettings->endGroup();
 
@@ -125,7 +127,7 @@ void StudioSettings::saveSettings()
 void StudioSettings::loadSettings()
 {
     if (mAppSettings == nullptr)
-        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio");
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -144,6 +146,7 @@ void StudioSettings::loadSettings()
     mAppSettings->beginGroup("viewMenu");
     mMain->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
     mMain->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
+    mMain->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
 
     mAppSettings->endGroup();
 
@@ -174,7 +177,7 @@ void StudioSettings::loadSettings()
     mAppSettings->endGroup();
 
     if (mUserSettings == nullptr)
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "Studio-User");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
 
     mUserSettings->beginGroup("General");
 
@@ -197,6 +200,7 @@ void StudioSettings::loadSettings()
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
 
     mUserSettings->endGroup();
 
@@ -213,6 +217,10 @@ void StudioSettings::loadSettings()
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+
+    // the location for user model libraries is not modifyable right now
+    // anyhow, it is part of StudioSettings since it might become modifyable in the future
+    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 }
 
 QString StudioSettings::defaultWorkspace() const
@@ -432,6 +440,21 @@ int StudioSettings::selectedScopeIndex() const
 void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
 {
     mSelectedScopeIndex = selectedScopeIndex;
+}
+
+bool StudioSettings::wordUnderCursor() const
+{
+    return mWordUnderCursor;
+}
+
+void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
+{
+    mWordUnderCursor = wordUnderCursor;
+}
+
+QString StudioSettings::userModelLibraryDir() const
+{
+    return mUserModelLibraryDir;
 }
 
 }

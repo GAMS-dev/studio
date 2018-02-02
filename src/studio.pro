@@ -40,9 +40,21 @@ exists($$PWD/gamsinclude.pri) {
     include($$PWD/gamsinclude.pri)
 }
 
-unix:LIBS += -ldl
-win32:LIBS += -luser32
-
+macx {
+# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
+# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
+    ICON = studio.icns
+    QMAKE_INFO_PLIST=Info.plist
+}
+unix {
+    LIBS += -ldl
+    #VERSION=0.5.0
+}
+win32 {
+    RC_FILE += studio.rc
+    LIBS += -luser32
+    #VERSION=0.5.0.0
+}
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -55,11 +67,6 @@ DEFINES += _CRT_SECURE_NO_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-win32: RC_FILE += studio.rc
-macx: ICON = studio.icns
-# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
-# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
 
 SOURCES += \
     $$GAMS_DISTRIB_API/gclgms.c \
@@ -92,9 +99,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gamspaths.cpp \
     filetreemodel.cpp \
-    commandlinehistory.cpp \
-    commandlineoption.cpp \
-    commandlinetokenizer.cpp \
     logger.cpp \
     logcontext.cpp \
     gdxviewer/columnfilter.cpp \
@@ -106,7 +110,18 @@ SOURCES += \
     projectcontextmenu.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    option.cpp \
+    option/option.cpp \
+    option/optionconfigurator.cpp \
+    option/commandlinehistory.cpp \
+    option/commandlineoption.cpp \
+    option/commandlinetokenizer.cpp \
+    option/optionparametermodel.cpp \
+    option/optioncompleterdelegate.cpp \
+    option/lineeditcompleteevent.cpp \
+    option/optiondefinitionitem.cpp \
+    option/optiondefinitionmodel.cpp \
+    option/optioneditor.cpp \
+    option/optionsortfilterproxymodel.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -115,7 +130,9 @@ SOURCES += \
     syntax/syntaxidentifier.cpp \
     searchwidget.cpp \
     resultsview.cpp \
-    searchresultlist.cpp
+    searchresultlist.cpp \
+    keys.cpp
+
 
 HEADERS += \
     codeeditor.h \
@@ -145,9 +162,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gamspaths.h \
     filetreemodel.h \
-    commandlinehistory.h \
-    commandlineoption.h \
-    commandlinetokenizer.h \
     logger.h \
     logcontext.h \
     gdxviewer/columnfilter.h \
@@ -159,7 +173,18 @@ HEADERS += \
     projectcontextmenu.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolheaderview.h \
-    option.h \
+    option/option.h \
+    option/optionconfigurator.h \
+    option/commandlinehistory.h \
+    option/commandlinetokenizer.h \
+    option/commandlineoption.h \
+    option/optionparametermodel.h \
+    option/optioncompleterdelegate.h \
+    option/lineeditcompleteevent.h \
+    option/optiondefinitionitem.h \
+    option/optiondefinitionmodel.h \
+    option/optioneditor.h \
+    option/optionsortfilterproxymodel.h \
     syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
@@ -170,7 +195,9 @@ HEADERS += \
     syntax/syntaxdata.h \
     searchwidget.h \
     resultsview.h \
-    searchresultlist.h
+    searchresultlist.h \
+    syntax/syntaxdata.h \
+    keys.h
 
 FORMS += \
     welcomepage.ui  \
@@ -181,6 +208,7 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
+    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui
 

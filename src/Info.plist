@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleExecutable</key>
+        <string>studio</string>
+        <key>CFBundleGetInfoString</key>
+        <string>Created by GAMS</string>
+        <key>CFBundleIconFile</key>
+        <string>studio.icns</string>
+        <key>CFBundleIdentifier</key>
+        <string>com.gams.studio</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>NSPrincipalClass</key>
+        <string>NSApplication</string>
+        <key>NSSupportsAutomaticGraphicsSwitching</key>
+        <true/>
+</dict>
+</plist>
