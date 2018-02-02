@@ -152,10 +152,12 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 
     tableView->setModel(proxyModel);
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
+    int tabIdx=0;
     if(isUserLibrary)
-        ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
+        tabIdx = ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
     else
-        ui.tabWidget->addTab(tableView, label);
+        tabIdx = ui.tabWidget->addTab(tableView, label);
+    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->name());
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
