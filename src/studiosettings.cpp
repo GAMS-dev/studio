@@ -26,13 +26,18 @@ namespace gams {
 namespace studio {
 
 
-StudioSettings::StudioSettings(MainWindow *main)
-    : mMain(main)
+StudioSettings::StudioSettings(MainWindow *main, CommandLineParser& clParser)
+    : mMain(main), mClParser(clParser)
 {
+
 }
 
 void StudioSettings::saveSettings()
 {
+    // return directly only if settings are ignored and not resettet
+    if (mClParser.ignoreSettings() && !mClParser.resetSettings())
+        return;
+
     if (mAppSettings == nullptr) {
         qDebug() << "ERROR: settings file missing.";
         return;
@@ -126,8 +131,22 @@ void StudioSettings::saveSettings()
 
 void StudioSettings::loadSettings()
 {
-    if (mAppSettings == nullptr)
+    if (mClParser.ignoreSettings() && !mClParser.resetSettings())
+    {
+        mAppSettings = new QSettings();
+        mUserSettings = new QSettings();
+    }
+    else if (mAppSettings == nullptr)
+    {
         mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    }
+
+    if (mClParser.resetSettings())
+    {
+        mAppSettings->clear();
+        mUserSettings->clear();
+    }
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -176,9 +195,6 @@ void StudioSettings::loadSettings()
 
     mAppSettings->endGroup();
 
-    if (mUserSettings == nullptr)
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
-
     mUserSettings->beginGroup("General");
 
     setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
@@ -221,6 +237,10 @@ void StudioSettings::loadSettings()
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
+
+    // save settings directly after loading in order to reset
+    if (mClParser.resetSettings())
+        saveSettings();
 }
 
 QString StudioSettings::defaultWorkspace() const

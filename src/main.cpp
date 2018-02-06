@@ -29,29 +29,29 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("www.gams.com");
     a.setApplicationName("Studio");
 
-    gams::studio::CommandLineParser parser;
+    gams::studio::CommandLineParser clParser;
 
     QString errorMessage;
-    switch(parser.parseCommandLine(&errorMessage))
+    switch(clParser.parseCommandLine(&errorMessage))
     {
         case gams::studio::CommandLineOk:
             break;
         case gams::studio::CommandLineError:
             fputs(qPrintable(errorMessage), stderr);
             fputs("\n\n", stderr);
-            fputs(qPrintable(parser.helpText()), stderr);
+            fputs(qPrintable(clParser.helpText()), stderr);
             return 1;
         case gams::studio::CommandLineVersionRequested:
             printf("%s %s\n", qPrintable(QCoreApplication::applicationName()),
                    qPrintable(QCoreApplication::applicationVersion()));
             return 0;
         case gams::studio::CommandLineHelpRequested:
-            parser.showHelp();
+            clParser.showHelp();
             Q_UNREACHABLE();
     }
 
     try {
-        gams::studio::MainWindow w;
+        gams::studio::MainWindow w(clParser);
         w.show();
         return a.exec();
     } catch (gams::studio::FatalException &e) {

@@ -42,6 +42,10 @@ public:
 
     QStringList files() const;
 
+    bool ignoreSettings() const;
+
+    bool resetSettings() const;
+
 private:
     QStringList mFiles;
     bool mIgnoreSettings = false;

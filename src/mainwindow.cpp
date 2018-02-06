@@ -40,12 +40,12 @@
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
     mHistory = new HistoryData();
-    mSettings = new StudioSettings(this);
+    mSettings = new StudioSettings(this, clParser);
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
         this->setStyleSheet(css.readAll());

@@ -60,5 +60,15 @@ QStringList CommandLineParser::files() const
     return mFiles;
 }
 
+bool CommandLineParser::ignoreSettings() const
+{
+    return mIgnoreSettings;
+}
+
+bool CommandLineParser::resetSettings() const
+{
+    return mResetSettings;
+}
+
 } // namespace studio
 } // namespace gams

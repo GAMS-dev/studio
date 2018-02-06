@@ -23,6 +23,7 @@
 #include <QSettings>
 #include <QDebug>
 #include "mainwindow.h"
+#include "commandlineparser.h"
 
 namespace gams {
 namespace studio {
@@ -31,7 +32,7 @@ class StudioSettings
 {
 
 public:
-    StudioSettings(MainWindow *main);
+    StudioSettings(MainWindow *main, CommandLineParser& clParser);
     ~StudioSettings();
 
     void loadSettings();
@@ -102,6 +103,7 @@ private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+    CommandLineParser& mClParser;
 
     // general
     QString mDefaultWorkspace;
