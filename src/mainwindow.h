@@ -30,6 +30,7 @@
 #include "option/optionconfigurator.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "commandlineparser.h"
 
 namespace Ui {
 class MainWindow;
@@ -67,7 +68,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(CommandLineParser& clParser, QWidget *parent = 0);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
@@ -176,6 +177,7 @@ private:
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void openFiles(QStringList pathList);
 
 private:
     const int MAX_FILE_HISTORY = 5;

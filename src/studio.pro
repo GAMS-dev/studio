@@ -131,7 +131,8 @@ SOURCES += \
     searchwidget.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
-    keys.cpp
+    keys.cpp \
+    commandlineparser.cpp
 
 
 HEADERS += \
@@ -197,7 +198,8 @@ HEADERS += \
     resultsview.h \
     searchresultlist.h \
     syntax/syntaxdata.h \
-    keys.h
+    keys.h \
+    commandlineparser.h
 
 FORMS += \
     welcomepage.ui  \
