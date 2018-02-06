@@ -145,14 +145,17 @@ void CodeEditor::onCursorPositionChanged()
 void CodeEditor::onCursorIdle()
 {
     QTextCursor cursor = textCursor();
+    if (cursor.hasSelection()) return;
+    if (mBlockEdit) return;
+
     cursor.select(QTextCursor::WordUnderCursor);
     QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("[\\w\\d]*");
+    QRegularExpression isIdentifier("[\\w]+");
 
     if (isIdentifier.match(wordUnderCursor).hasMatch()) {
-        if (!mBlockEdit)
-            emit highlightWordUnderCursor(wordUnderCursor);
         mCursorTimer.stop();
+
+        emit highlightWordUnderCursor(wordUnderCursor);
     }
 }
 
