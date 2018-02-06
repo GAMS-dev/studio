@@ -40,18 +40,19 @@
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
     mHistory = new HistoryData();
-    mSettings = new StudioSettings(this);
+    mSettings = new StudioSettings(this, clParser.ignoreSettings(), clParser.resetSettings());
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
         this->setStyleSheet(css.readAll());
     }
 
     ui->setupUi(this);
+
     setAcceptDrops(true);
 
     int iconSize = fontInfo().pixelSize()*2-1;
@@ -102,6 +103,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     initTabs();
     connectCommandLineWidgets();
+
+    openFiles(clParser.files());
 }
 
 MainWindow::~MainWindow()
@@ -1053,13 +1056,31 @@ void MainWindow::dropEvent(QDropEvent* e)
 
             if(answer != QMessageBox::Ok) return;
         }
+        openFiles(pathList);
+    }
+}
 
-        for (QString fName: pathList) {
-            QFileInfo fi(fName);
-            if (QFileInfo(fName).isFile()) {
-                openFilePath(fi.canonicalFilePath(), nullptr, true);
-            }
-        }
+void MainWindow::openFiles(QStringList pathList)
+{
+    QStringList filesNotFound;
+    for (QString fName: pathList)
+    {
+        QFileInfo fi(fName);
+        if (fi.isFile())
+            openFilePath(fi.canonicalFilePath(), nullptr, true);
+        else
+            filesNotFound.append(fName);
+    }
+    if (!filesNotFound.empty())
+    {
+        QString msgText("The following files could not be opened:");
+        for(QString s : filesNotFound)
+            msgText.append("\n" + s);
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(msgText);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
     }
 }
 

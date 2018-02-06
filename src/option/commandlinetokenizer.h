@@ -1,5 +1,5 @@
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
+#ifndef COMMANDLINETOKENIZER_H
+#define COMMANDLINETOKENIZER_H
 
 #include <QtWidgets>
 #include "option.h"
@@ -65,4 +65,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEPARSER_H
+#endif // COMMANDLINETOKENIZER_H
