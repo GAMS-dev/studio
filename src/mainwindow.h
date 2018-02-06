@@ -177,6 +177,7 @@ private:
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void openFiles(QStringList pathList);
 
 private:
     const int MAX_FILE_HISTORY = 5;
