@@ -20,6 +20,7 @@
 #include "mainwindow.h"
 #include "application.h"
 #include "exception.h"
+#include "commandlineparser.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +28,28 @@ int main(int argc, char *argv[])
     a.setOrganizationName("GAMS");
     a.setOrganizationDomain("www.gams.com");
     a.setApplicationName("Studio");
+
+    gams::studio::CommandLineParser parser;
+
+    QString errorMessage;
+    switch(parser.parseCommandLine(&errorMessage))
+    {
+        case gams::studio::CommandLineOk:
+            break;
+        case gams::studio::CommandLineError:
+            fputs(qPrintable(errorMessage), stderr);
+            fputs("\n\n", stderr);
+            fputs(qPrintable(parser.helpText()), stderr);
+            return 1;
+        case gams::studio::CommandLineVersionRequested:
+            printf("%s %s\n", qPrintable(QCoreApplication::applicationName()),
+                   qPrintable(QCoreApplication::applicationVersion()));
+            return 0;
+        case gams::studio::CommandLineHelpRequested:
+            parser.showHelp();
+            Q_UNREACHABLE();
+    }
+
     try {
         gams::studio::MainWindow w;
         w.show();
