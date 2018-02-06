@@ -145,14 +145,17 @@ void CodeEditor::onCursorPositionChanged()
 void CodeEditor::onCursorIdle()
 {
     QTextCursor cursor = textCursor();
+    if (cursor.hasSelection()) return;
+    if (mBlockEdit) return;
+
     cursor.select(QTextCursor::WordUnderCursor);
     QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("[\\w\\d]*");
+    QRegularExpression isIdentifier("\\w+");
 
     if (isIdentifier.match(wordUnderCursor).hasMatch()) {
-        if (!mBlockEdit)
-            emit highlightWordUnderCursor(wordUnderCursor);
         mCursorTimer.stop();
+
+        emit highlightWordUnderCursor(wordUnderCursor);
     }
 }
 
@@ -817,7 +820,10 @@ void CodeEditor::BlockEdit::adjustCursor()
             searchBlock = block;
             break;
         }
-        block = block.next();
+        if (block.next().isValid())
+            block = block.next();
+        else
+            break;
     }
     QTextCursor cursor(searchBlock);
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(mColumn, searchBlock.length()-1));

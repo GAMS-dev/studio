@@ -349,6 +349,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     QWidget *widget = mMain->recent()->editor;
     QPlainTextEdit *edit = nullptr;
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
+    ui->combo_search->setFocus();
 
     if (!fsc) {
         return;
@@ -363,7 +364,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     else
         ui->combo_search->setCurrentText("");
 
-    ui->combo_search->setFocus();
+
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)

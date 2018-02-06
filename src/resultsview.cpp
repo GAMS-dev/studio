@@ -49,9 +49,12 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     int selectedRow = index.row();
     Result item = mResultList.resultList().at(selectedRow);
 
+    if (QFileInfo(item.locFile()).exists())
+        mMain->openFile(item.locFile());
+
     FileSystemContext *fsc = mMain->fileRepository()->findContext(item.locFile());
     FileContext *jmpFc = nullptr;
-    if (!fsc) EXCEPT() << "File not found:" << item.locFile();
+    if (!fsc) EXCEPT() << "File not found: " << item.locFile();
 
     if (fsc->type() == FileSystemContext::File)
         jmpFc = static_cast<FileContext*>(fsc);

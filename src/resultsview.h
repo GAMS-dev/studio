@@ -22,7 +22,6 @@
 
 #include <QTableWidget>
 #include <QWidget>
-#include "mainwindow.h"
 #include "searchresultlist.h"
 
 namespace Ui {
@@ -33,6 +32,7 @@ namespace gams {
 namespace studio {
 
 class Result;
+class MainWindow;
 class ResultsView : public QWidget
 {
     Q_OBJECT

@@ -1404,12 +1404,18 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    ResultsView *res = new ResultsView(results, this);
+    int index = ui->logTab->indexOf(rv); // did widget exist before?
+
+    rv = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());
 
-    res->resizeColumnsToContent();
-    int index = ui->logTab->addTab(res, title);
-    ui->logTab->setCurrentIndex(index);
+    ui->dockLogView->show();
+    rv->resizeColumnsToContent();
+
+    if (index != -1) ui->logTab->removeTab(index); // remove old result page
+
+    ui->logTab->addTab(rv, title); // add new result page
+    ui->logTab->setCurrentWidget(rv);
 }
 
 }
