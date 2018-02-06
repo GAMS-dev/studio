@@ -45,7 +45,7 @@ MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
       ui(new Ui::MainWindow)
 {
     mHistory = new HistoryData();
-    mSettings = new StudioSettings(this, clParser);
+    mSettings = new StudioSettings(this, clParser.ignoreSettings(), clParser.resetSettings());
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
         this->setStyleSheet(css.readAll());

@@ -26,8 +26,8 @@ namespace gams {
 namespace studio {
 
 
-StudioSettings::StudioSettings(MainWindow *main, CommandLineParser& clParser)
-    : mMain(main), mClParser(clParser)
+StudioSettings::StudioSettings(MainWindow *main, bool ignoreSettings, bool resetSettings)
+    : mMain(main), mIgnoreSettings(ignoreSettings), mResetSettings(resetSettings)
 {
 
 }
@@ -35,7 +35,7 @@ StudioSettings::StudioSettings(MainWindow *main, CommandLineParser& clParser)
 void StudioSettings::saveSettings()
 {
     // return directly only if settings are ignored and not resettet
-    if (mClParser.ignoreSettings() && !mClParser.resetSettings())
+    if (mIgnoreSettings && !mResetSettings)
         return;
 
     if (mAppSettings == nullptr) {
@@ -131,7 +131,7 @@ void StudioSettings::saveSettings()
 
 void StudioSettings::loadSettings()
 {
-    if (mClParser.ignoreSettings() && !mClParser.resetSettings())
+    if (mIgnoreSettings && !mResetSettings)
     {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
@@ -142,7 +142,7 @@ void StudioSettings::loadSettings()
         mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
     }
 
-    if (mClParser.resetSettings())
+    if (mResetSettings)
     {
         mAppSettings->clear();
         mUserSettings->clear();
@@ -239,7 +239,7 @@ void StudioSettings::loadSettings()
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
     // save settings directly after loading in order to reset
-    if (mClParser.resetSettings())
+    if (mResetSettings)
         saveSettings();
 }
 

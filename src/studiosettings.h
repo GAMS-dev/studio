@@ -32,7 +32,7 @@ class StudioSettings
 {
 
 public:
-    StudioSettings(MainWindow *main, CommandLineParser& clParser);
+    StudioSettings(MainWindow *main, bool ignoreSettings = false, bool resetSettings = false);
     ~StudioSettings();
 
     void loadSettings();
@@ -103,7 +103,8 @@ private:
     MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
-    CommandLineParser& mClParser;
+    bool mIgnoreSettings;
+    bool mResetSettings;
 
     // general
     QString mDefaultWorkspace;
