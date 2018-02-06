@@ -47,7 +47,6 @@ void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &
     if (lineEdit) {
         QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
         lineEdit->setText(  data.toString() ) ;
-        qDebug() << QString("    [%1]").arg(data.toString());
         return;
     }
     QStyledItemDelegate::setEditorData(editor, index);
