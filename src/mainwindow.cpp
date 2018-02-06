@@ -1395,7 +1395,6 @@ void MainWindow::showResults(SearchResultList &results)
 
     ui->logTab->addTab(rv, title); // add new result page
     ui->logTab->setCurrentWidget(rv);
-
 }
 
 }

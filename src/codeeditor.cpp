@@ -820,7 +820,10 @@ void CodeEditor::BlockEdit::adjustCursor()
             searchBlock = block;
             break;
         }
-        block = block.next();
+        if (block.next().isValid())
+            block = block.next();
+        else
+            break;
     }
     QTextCursor cursor(searchBlock);
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(mColumn, searchBlock.length()-1));
