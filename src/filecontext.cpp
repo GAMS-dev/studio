@@ -180,7 +180,7 @@ void FileContext::addEditor(QWidget* edit)
     if (scEdit && mMarks) {
         connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
         connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
-//        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
+        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
     }
     setFlag(FileSystemContext::cfActive);
 }

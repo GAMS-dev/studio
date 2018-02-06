@@ -43,7 +43,6 @@ protected:
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     void removeTextMark(TextMark* mark);
     QList<TextMark*> findMarks(const QTextCursor& cursor);
-    void merge(const TextMarkList &marks);
     TextMark* firstErrorMark();
     void connectDoc();
 

@@ -64,7 +64,7 @@ void TextMarkList::documentChanged(int pos, int charsRemoved, int charsAdded)
 {
     int i = mMarks.size()-1;
     while (i >= 0) {
-        TextMark* mark = mMarks[i];
+        TextMark* mark = mMarks.at(i);
         int compare = mark->in(pos, charsRemoved);
         if (!compare) {
             int pos = mark->position();
@@ -168,14 +168,6 @@ QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
             res << mark;
     }
     return res;
-}
-
-void TextMarkList::merge(const TextMarkList& marks)
-{
-    for (TextMark *mark: marks.mMarks) {
-        if (!mMarks.contains(mark))
-            mMarks.append(mark);
-    }
 }
 
 TextMark*TextMarkList::firstErrorMark()
