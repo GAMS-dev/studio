@@ -1204,10 +1204,11 @@ void MainWindow::showResults(SearchResultList &results)
 
 void MainWindow::on_actionGo_To_triggered()
 {
+
     if (mGoto->isVisible()) {
         mGoto->hide();
     } else {
-        QPoint p(-120,20);
+        QPoint p(-600,200);
         QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
         if (ui->mainTab->currentWidget()) {
            int offset = (ui->mainTab->currentWidget()->width() - mGoto->width());
@@ -1215,8 +1216,10 @@ void MainWindow::on_actionGo_To_triggered()
         }
         mGoto->show();
         mGoto->focusTextBox();
-    }
+    }  
 }
+
+
 void MainWindow::on_actionRedo_triggered()
 {
     CodeEditor* ce= (CodeEditor*) mRecent.editor;

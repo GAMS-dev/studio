@@ -25,13 +25,14 @@ public:
 
 private slots:
     void on_GoTo_clicked();
-    void on_Cancel_clicked();
 
 private:
     Ui::GoToWidget *ui;
     MainWindow *mMain;
     QTextCursor mSelection;
     QList<TextMark*> mAllTextMarks;
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *event);
 
 };
 
