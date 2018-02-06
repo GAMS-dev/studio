@@ -1386,6 +1386,7 @@ void MainWindow::showResults(SearchResultList &results)
     ResultsView *res = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());
 
+    ui->dockLogView->show();
     res->resizeColumnsToContent();
     int index = ui->logTab->addTab(res, title);
     ui->logTab->setCurrentIndex(index);
