@@ -36,6 +36,7 @@
 #include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
+#include "helpview.h"
 
 namespace gams {
 namespace studio {
@@ -591,7 +592,10 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionOnline_Help_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
+    HelpView* dockHelpView = new HelpView(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, dockHelpView);
+
+//    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
 void MainWindow::on_actionAbout_triggered()

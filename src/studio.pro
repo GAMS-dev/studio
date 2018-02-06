@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui svg concurrent
+QT       += core gui svg concurrent webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -131,7 +131,8 @@ SOURCES += \
     searchwidget.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
-    keys.cpp
+    keys.cpp \
+    helpview.cpp
 
 
 HEADERS += \
@@ -197,7 +198,8 @@ HEADERS += \
     resultsview.h \
     searchresultlist.h \
     syntax/syntaxdata.h \
-    keys.h
+    keys.h \
+    helpview.h
 
 FORMS += \
     welcomepage.ui  \
