@@ -30,6 +30,7 @@
 #include "option/optionconfigurator.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "resultsview.h"
 
 namespace Ui {
 class MainWindow;
@@ -198,6 +199,7 @@ private:
     HistoryData *mHistory;
     StudioSettings *mSettings;
     WelcomePage *mWp = nullptr;
+    ResultsView *rv = nullptr;
     bool mBeforeErrorExtraction = true;
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
