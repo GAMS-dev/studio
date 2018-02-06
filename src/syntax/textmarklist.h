@@ -13,32 +13,44 @@ class TextMarkList: public QObject
 {
     Q_OBJECT
 public:
-    TextMarkList();
-    explicit TextMarkList(const TextMarkList &marks);
-    void unbindFileContext();
+    TextMarkList(FileGroupContext* group, const QString &fileName);
+    void unbind();
+    void bind(FileContext* fc);
     void updateMarks();
     void rehighlight();
     QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
     QList<TextMark*> marks() { return mMarks;}
     int textMarkCount(QSet<TextMark::Type> tmTypes);
+    FileContext* fileContext();
+    QTextDocument* document() const;
+    FileContext* openFileContext();
+
+signals:
+    void getFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);
-    void textMarksEmpty(bool* empty);
     void textMarkIconsEmpty(bool* hasIcons);
+    void documentOpened();
+    void documentChanged(int pos, int charsRemoved, int charsAdded);
 
 protected:
+    friend class TextMark;
     friend class LogContext;
     friend class FileContext;
     friend class FileGroupContext;
-    TextMark* generateTextMark(FileContext *context, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
-    TextMark* generateTextMark(QString fileName, FileGroupContext *group, gams::studio::TextMark::Type tmType, int value, int line, int column, int size = 0);
+    TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMark(TextMark* mark);
     QList<TextMark*> findMarks(const QTextCursor& cursor);
     void merge(const TextMarkList &marks);
     TextMark* firstErrorMark();
+    void connectDoc();
 
 private:
+    FileGroupContext* mGroupContext = nullptr;
+    FileContext* mFileContext = nullptr;
+    QString mFileName;
     QList<TextMark*> mMarks;
 };
 

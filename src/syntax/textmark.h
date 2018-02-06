@@ -28,18 +28,17 @@ namespace studio {
 
 class FileContext;
 class FileGroupContext;
+class TextMarkList;
 
 class TextMark
 {
 public:
     enum Type {none, error, link, bookmark, match, wordUnderCursor, all};
 
-    explicit TextMark(TextMark::Type tmType);
+    explicit TextMark(TextMarkList* marks, TextMark::Type tmType);
     virtual ~TextMark();
-    void unbindFileContext();
-    void setPosition(FileContext* fileContext, int line, int column, int size = 0);
-    void setPosition(QString fileName, FileGroupContext* group, int line, int column, int size = 0);
-    void updateCursor();
+    QTextDocument* document() const;
+    void setPosition(int line, int column, int size = 0);
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
@@ -57,48 +56,46 @@ public:
     inline Type type() const {return mType;}
     inline Type refType() const {return (!mReference) ? none : mReference->type();}
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
-    inline bool isValid() {return mFileContext && (mLine>=0) && (mColumn>=0);}
+    inline bool isValid() {return mMarks && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
     { return mReference && ((mType == error && inIconRegion) || mType == link); }
     inline QTextBlock textBlock();
-    QTextCursor textCursor() const;
+    QTextCursor textCursor();
     inline int in(int pos, int len) {
-        if (mCursor.isNull()) return -2;
-        return (mCursor.position() < pos) ? -1 : (mCursor.position() >= pos+len) ? 1 : 0;
+        if (mPosition < 0) return -2;
+        return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
     }
 
-    inline int line() const {return (mCursor.isNull()) ? mLine : mCursor.block().blockNumber();}
+    inline int line() const {return mLine;}
     inline int column() const {return mColumn;}
     inline int size() const {return mSize;}
     inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
-    inline int position() const {return (mCursor.isNull()) ? -1 : mCursor.position();}
-    inline int blockStart() const {return (mCursor.isNull()) ? -1 : mCursor.selectionStart()-mCursor.block().position();}
-    inline int blockEnd() const {return (mCursor.isNull()) ? -1 : mCursor.selectionEnd()-mCursor.block().position();}
+    inline int position() const {return mPosition;}
+    inline int blockStart() const {return mColumn;}
+    inline int blockEnd() const {return mColumn+mSize;}
     inline void incSpread() {mSpread++;}
     inline int spread() const {return mSpread;}
     void rehighlight();
-    void modified();
-    inline FileContext* fileContext() {return mFileContext;}
+
+    void move(int delta);
+    void updatePos();
+    void updateLineCol();
+    void flatten();
 
     QString dump();
 
-private:
-    void ensureFileContext();
 
 private:
     static int mNextId;
     int mId;
-
-    FileContext* mFileContext = nullptr;
-    FileGroupContext* mGroup = nullptr;
-    QString mFileName;
+    TextMarkList* mMarks;
+    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
     int mSize = 0;
     int mValue = 0;
     int mSpread = 0;
-    QTextCursor mCursor;
     TextMark* mReference = nullptr;
     QVector<TextMark*> mBackRefs;
 };

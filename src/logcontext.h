@@ -10,7 +10,7 @@ class LogContext : public FileContext
 {
 public:
     void markOld();
-    QTextDocument* document() override;
+    QTextDocument* document() const override;
     void addEditor(QWidget* edit) override;
     void removeEditor(QWidget* edit) override;
     void setParentEntry(FileGroupContext *parent) override;

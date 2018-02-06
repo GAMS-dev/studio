@@ -137,6 +137,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     connect(group, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
     connect(group, &FileGroupContext::removeNode, this, &FileRepository::removeNode);
     connect(group, &FileGroupContext::requestNode, this, &FileRepository::addNode);
+    connect(group, &FileGroupContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     for (QString suff: mSuffixFilter) {
         QFileInfo fi(location, group->name() + suff);
         group->attachFile(fi.filePath());
