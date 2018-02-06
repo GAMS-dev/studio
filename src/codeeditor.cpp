@@ -150,7 +150,7 @@ void CodeEditor::onCursorIdle()
 
     cursor.select(QTextCursor::WordUnderCursor);
     QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("[\\w]+");
+    QRegularExpression isIdentifier("\\w+");
 
     if (isIdentifier.match(wordUnderCursor).hasMatch()) {
         mCursorTimer.stop();
