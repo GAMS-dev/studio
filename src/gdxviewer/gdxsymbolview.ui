@@ -58,6 +58,9 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Hide default values</string>
+       </property>
        <property name="text">
         <string>Squeeze Defaults</string>
        </property>
@@ -67,6 +70,9 @@
       <widget class="QPushButton" name="pbResetSortFilter">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Reset symbol view to default</string>
        </property>
        <property name="text">
         <string>Reset</string>
