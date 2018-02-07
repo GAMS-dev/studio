@@ -340,6 +340,8 @@ void CodeEditor::paintEvent(QPaintEvent* e)
     QPlainTextEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->drawCursor(e);
+    } else {
+        // TODO(JM) if (!mCurrentWord.isEmpty()) markCurrentWord();
     }
 }
 
