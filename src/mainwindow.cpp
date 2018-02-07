@@ -1263,13 +1263,14 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     QClipboard *clipboard = QGuiApplication::clipboard();
     bool a = true;
     QString oldtext = clipboard->text();
+    clipboard->clear();
     if (oldtext!=""){
         a=false;
     }
     ce->copy();
     QString originalText = clipboard->text();
     QString abc= originalText.toUpper();
-    if (abc==originalText) {
+    if ((abc==originalText) || (abc=="")) {
         goto finish;
     }
     clipboard->setText(abc);
@@ -1289,13 +1290,14 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     QClipboard *clipboard = QGuiApplication::clipboard();
     bool a = true;
     QString oldtext = clipboard->text();
+    clipboard->clear();
     if (oldtext!=""){
         a=false;
     }
     ce->copy();
     QString originalText = clipboard->text();
     QString abc= originalText.toLower();
-    if (abc==originalText) {
+    if ((abc==originalText) || (abc=="")){
         goto finish;
     }
     clipboard->setText(abc);
