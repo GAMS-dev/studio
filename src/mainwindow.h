@@ -30,6 +30,7 @@
 #include "option/optionconfigurator.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "helpview.h"
 
 namespace Ui {
 class MainWindow;
@@ -190,6 +191,8 @@ private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+
+    HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

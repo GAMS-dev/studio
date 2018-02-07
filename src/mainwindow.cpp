@@ -36,7 +36,6 @@
 #include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
-#include "helpview.h"
 
 namespace gams {
 namespace studio {
@@ -592,8 +591,11 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionOnline_Help_triggered()
 {
-    HelpView* dockHelpView = new HelpView(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, dockHelpView);
+    if (mDockHelpView == nullptr) {
+        mDockHelpView = new HelpView(this);
+        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    }
+    mDockHelpView->show();
 
 //    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
@@ -725,12 +727,9 @@ void MainWindow::createRunAndCommandLineWidgets()
 //    QPixmap pixmap(":/img/gams");
 //    QIcon ButtonIcon(pixmap);
 //    helpButton->setIcon(ButtonIcon);
-    helpButton->setText("Help");
-    helpButton->setToolTip("Help on The GAMS Call and Command Line Parameters");
+    helpButton->setText(QStringLiteral("?"));
+    helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     commandHLayout->addWidget(helpButton);
-
-    QHBoxLayout* button_HLayout = new QHBoxLayout();
-    button_HLayout->setObjectName(QStringLiteral("button_HLayout"));
 
     QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
@@ -1177,7 +1176,14 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_commandLineHelpTriggered()
 {
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+//    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+
+    if (mDockHelpView == nullptr) {
+        mDockHelpView = new HelpView(this);
+        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    }
+    mDockHelpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->show();
 
 //    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
 //    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
