@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,12 +40,12 @@
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow)
+      ui(new Ui::MainWindow),
+      mSettings(new StudioSettings)
 {
     mHistory = new HistoryData();
-    mSettings = new StudioSettings(this, clParser.ignoreSettings(), clParser.resetSettings());
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
         this->setStyleSheet(css.readAll());
@@ -92,7 +92,6 @@ MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     ensureCodecMenu("System");
-    mSettings->loadSettings();
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
 
@@ -103,8 +102,6 @@ MainWindow::MainWindow(CommandLineParser& clParser, QWidget *parent)
 
     initTabs();
     connectCommandLineWidgets();
-
-    openFiles(clParser.files());
 }
 
 MainWindow::~MainWindow()
@@ -113,7 +110,7 @@ MainWindow::~MainWindow()
     delete mOptionEditor;
     delete mDockOptionView;
     delete mCommandLineHistory;
-//    delete mCommandLineOption;
+//    delete mCommandLineOption; TODO fix crash
     delete mCommandLineTokenizer;
 }
 
@@ -141,7 +138,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEditor *codeEdit = new CodeEditor(mSettings, this);
+            CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
@@ -588,7 +585,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
-    mSettings->saveSettings();
+    mSettings->saveSettings(this);
     QCoreApplication::quit();
 }
 
@@ -988,7 +985,7 @@ bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
 
 StudioSettings *MainWindow::settings() const
 {
-    return mSettings;
+    return mSettings.get();
 }
 
 RecentData *MainWindow::recent()
@@ -1002,7 +999,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (!requestCloseChanged(oFiles)) {
         event->setAccepted(false);
     } else {
-        mSettings->saveSettings();
+        mSettings->saveSettings(this);
     }
     on_actionClose_All_triggered();
 }
@@ -1286,7 +1283,7 @@ void MainWindow::closeGroup(FileGroupContext* group)
             fileClosed(file->id());
         }
         mFileRepo.removeGroup(group);
-        mSettings->saveSettings();
+        mSettings->saveSettings(this);
     }
 
 }
@@ -1297,7 +1294,7 @@ void MainWindow::closeFile(FileContext* file)
         ui->projectView->setCurrentIndex(QModelIndex());
         fileClosed(file->id());
         mFileRepo.removeFile(file);
-        mSettings->saveSettings();
+        mSettings->saveSettings(this);
     }
 }
 
@@ -1375,8 +1372,12 @@ void MainWindow::on_mainTab_currentChanged(int index)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog sd(mSettings, this);
+    SettingsDialog sd(mSettings.get(), this);
+    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateEditorFont);
+    connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
+    sd.disconnect();
+    mSettings->saveSettings(this);
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -1416,6 +1417,44 @@ void MainWindow::showResults(SearchResultList &results)
 
     ui->logTab->addTab(rv, title); // add new result page
     ui->logTab->setCurrentWidget(rv);
+}
+
+void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
+{
+    QFont font(fontFamily, fontSize);
+    foreach (QWidget* edit, openEditors()) {
+        edit->setFont(font);
+    }
+}
+
+void MainWindow::updateEditorLineWrapping()
+{// TODO(AF) split logs and editors
+    QPlainTextEdit::LineWrapMode wrapModeEditor;
+    if(mSettings->lineWrapEditor())
+        wrapModeEditor = QPlainTextEdit::WidgetWidth;
+    else
+        wrapModeEditor = QPlainTextEdit::NoWrap;
+
+    QWidgetList editList = mFileRepo.editors();
+    for (int i = 0; i < editList.size(); i++) {
+        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(editList.at(i));
+        if (ed) {
+            ed->blockCountChanged(0); // force redraw for line number area
+            ed->setLineWrapMode(wrapModeEditor);
+        }
+    }
+
+    QPlainTextEdit::LineWrapMode wrapModeProcess;
+    if(mSettings->lineWrapProcess())
+        wrapModeProcess = QPlainTextEdit::WidgetWidth;
+    else
+        wrapModeProcess = QPlainTextEdit::NoWrap;
+
+    QList<QPlainTextEdit*> logList = openLogs();
+    for (int i = 0; i < logList.size(); i++) {
+        if (logList.at(i))
+            logList.at(i)->setLineWrapMode(wrapModeProcess);
+    }
 }
 
 }

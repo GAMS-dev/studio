@@ -41,6 +41,11 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
+
+signals:
+    void editorFontChanged(const QString &fontFamily, int fontSize);
+    void editorLineWrappingChanged();
+
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_fontComboBox_currentIndexChanged(const QString &arg1);

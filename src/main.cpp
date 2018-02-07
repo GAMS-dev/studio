@@ -24,11 +24,13 @@
 #include "application.h"
 #include "exception.h"
 #include "commandlineparser.h"
+#include "studiosettings.h"
 
 using std::cerr;
 using std::endl;
 using gams::studio::Application;
 using gams::studio::MainWindow;
+using gams::studio::StudioSettings;
 
 int main(int argc, char *argv[])
 {
@@ -53,7 +55,12 @@ int main(int argc, char *argv[])
     }
 
     try {
-        MainWindow w(clParser);
+        MainWindow w;
+        auto* settings = w.settings();
+        settings->setIgnoreSettings(clParser.ignoreSettings());
+        settings->setResetSettings(clParser.resetSettings());
+        settings->loadSettings(&w);
+        w.openFiles(clParser.files());
         w.show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
