@@ -51,14 +51,15 @@ GdxSymbolHeaderView::~GdxSymbolHeaderView()
 
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
+    painter->save();
     GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
+    painter->restore();
 
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
     if(logicalIndex < symbol->dim())
     {
-        painter->restore();
         QString iconRes;
         if(symbol->filterActive()[logicalIndex])
             iconRes = iconFilterOn;
@@ -78,8 +79,6 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         mFilterIconWidth[logicalIndex] = iconWidth;
         mFilterIconX[logicalIndex] = posX;
         mFilterIconY[logicalIndex] = posY;
-
-        painter->save();
     }
 }
 
