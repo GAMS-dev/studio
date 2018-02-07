@@ -100,15 +100,15 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
         QString description("<html><head/><body>");
 
         if (section < mDim)
-            description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting repeatedly will change the the sorting direction.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
+            description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting repeatedly changes the sorting direction.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
         else if (section >= mDim)
         {
             if (mType == GMS_DT_SET)
-                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting repeatedly will change the the sorting direction.</p>";
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting repeatedly changes the sorting direction.</p>";
             else
-                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric value using a stable sort mechanism. Sorting repeatedly will change the sorting direction.</p>";
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting repeatedly changes the sorting direction.</p>";
         }
-            description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop functionality can be used i order to change the order of columns</p>";
+            description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop functionality can be used for changing the order of columns</p>";
         description += "</body></html>";
         return description;
     }
