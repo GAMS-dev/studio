@@ -152,6 +152,9 @@ private slots:
     void on_actionCopy_triggered();
     void on_actionSelect_All_triggered();
     void on_actionCut_triggered();
+    void on_actionSet_to_Uppercase_triggered();
+    void on_actionSet_to_Lowercase_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);

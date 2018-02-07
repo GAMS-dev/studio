@@ -131,6 +131,8 @@
     <addaction name="actionPaste"/>
     <addaction name="actionCut"/>
     <addaction name="actionSelect_All"/>
+    <addaction name="actionSet_to_Uppercase"/>
+    <addaction name="actionSet_to_Lowercase"/>
     <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
@@ -567,6 +569,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionSet_to_Uppercase">
+   <property name="text">
+    <string>Set to Uppercase</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+U</string>
+   </property>
+  </action>
+  <action name="actionSet_to_Lowercase">
+   <property name="text">
+    <string>Set to Lowercase</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+L</string>
    </property>
   </action>
  </widget>

@@ -36,6 +36,7 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
+#include <QClipboard>
 
 namespace gams {
 namespace studio {
@@ -1256,6 +1257,56 @@ void MainWindow::on_actionCut_triggered()
     ce->cut();
 }
 
-}
+void MainWindow::on_actionSet_to_Uppercase_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    bool a = true;
+    QString oldtext = clipboard->text();
+    if (oldtext!=""){
+        a=false;
+    }
+    ce->copy();
+    QString originalText = clipboard->text();
+    QString abc= originalText.toUpper();
+    if (abc==originalText) {
+        goto finish;
+    }
+    clipboard->setText(abc);
+    ce->paste();
+    if (a==true) {
+        clipboard->clear();
+    } else {
+    clipboard->setText(oldtext);
+    }
+    finish:
+    clipboard->setText(oldtext);
 }
 
+void MainWindow::on_actionSet_to_Lowercase_triggered()
+{
+    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    bool a = true;
+    QString oldtext = clipboard->text();
+    if (oldtext!=""){
+        a=false;
+    }
+    ce->copy();
+    QString originalText = clipboard->text();
+    QString abc= originalText.toLower();
+    if (abc==originalText) {
+        goto finish;
+    }
+    clipboard->setText(abc);
+    ce->paste();
+    if (a==true) {
+        clipboard->clear();
+    } else {
+    clipboard->setText(oldtext);
+    }
+    finish:
+    clipboard->setText(oldtext);
+}
+}
+}
