@@ -55,20 +55,20 @@ int main(int argc, char *argv[])
         w.show();
         return a.exec();
     } catch (gams::studio::FatalException &e) {
-        gams::studio::Application::showBox(QObject::tr("fatal exception"), e.what());
+        gams::studio::Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
         return -1;
     } catch (gams::studio::Exception &e) {
-        gams::studio::Application::showBox(QObject::tr("error"), e.what());
+        gams::studio::Application::showExceptionMessage(QObject::tr("error"), e.what());
     } catch (QException &e) {
-        gams::studio::Application::showBox(QObject::tr("external exception"), e.what());
+        gams::studio::Application::showExceptionMessage(QObject::tr("external exception"), e.what());
         e.raise();
     } catch (std::exception &e) {
         QString title(QObject::tr("standard exception"));
-        gams::studio::Application::showBox(title, e.what());
+        gams::studio::Application::showExceptionMessage(title, e.what());
         FATAL() << title << " - " << e.what();
     } catch (...) {
         QString msg(QObject::tr("An exception occured. Due to its unknown type the message can't be shown"));
-        gams::studio::Application::showBox(QObject::tr("unknown exception"), msg);
+        gams::studio::Application::showExceptionMessage(QObject::tr("unknown exception"), msg);
         FATAL() << msg;
     }
     return -2;

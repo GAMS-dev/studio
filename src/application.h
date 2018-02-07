@@ -10,9 +10,21 @@ class Application : public QApplication
 {
 public:
     Application(int &argc, char **argv);
+
     bool notify(QObject *object, QEvent *event) override;
-    static void showBox(QString title, QString message);
-private:
+
+    ///
+    /// \brief Show a <c>QMessageBox::critical</c> message.
+    /// \param title Title of the message.
+    /// \param message The exception/error message.
+    ///
+    static void showExceptionMessage(const QString &title, const QString &message);
+
+    ///
+    /// \brief Gets the GAMS Studio version.
+    /// \return GAMS Studio version.
+    ///
+    static QString version();
 };
 
 } // namespace studio
