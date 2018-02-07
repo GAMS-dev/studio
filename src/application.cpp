@@ -38,9 +38,5 @@ void Application::showExceptionMessage(const QString &title, const QString &mess
     QMessageBox::critical(nullptr, title, message);
 }
 
-QString Application::version() {
-    return STUDIO_VERSION;
-}
-
 } // namespace studio
 } // namespace gams

@@ -19,12 +19,6 @@ public:
     /// \param message The exception/error message.
     ///
     static void showExceptionMessage(const QString &title, const QString &message);
-
-    ///
-    /// \brief Gets the GAMS Studio version.
-    /// \return GAMS Studio version.
-    ///
-    static QString version();
 };
 
 } // namespace studio
