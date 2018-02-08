@@ -72,7 +72,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());

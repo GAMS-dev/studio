@@ -40,10 +40,10 @@
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mSettings(new StudioSettings)
+      mSettings(settings)
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     ensureCodecMenu("System");
+    mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
 
