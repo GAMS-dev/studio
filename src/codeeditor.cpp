@@ -547,7 +547,7 @@ void CodeEditor::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
-    extraSelCurrentWord(selections);
+    if (!mBlockEdit) extraSelCurrentWord(selections);
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
 }
@@ -792,7 +792,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
     QTextCursor cursor(mEdit->document());
     int cursorColumn = mColumn+mSize;
     QFontMetrics metric(mEdit->font());
-    double spaceWidth = metric.width(QString(100,'a')) / 100.0;
+    double spaceWidth = metric.width(QString(100,' ')) / 100.0;
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
@@ -810,11 +810,11 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
             cursor.setPosition(block.position()+block.length()-1);
             // we have to draw selection beyond the line-end
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
-            QRect selRect = mEdit->cursorRect(cursor);
+            QRectF selRect = mEdit->cursorRect(cursor);
             if (block.length() <= beyondStart) {
-                selRect.translate(qRound((beyondStart-block.length()+1) * spaceWidth), 0);
+                selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
             }
-            selRect.setWidth(qRound((beyondEnd-beyondStart) * spaceWidth));
+            selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
             QColor beColor = QColor(Qt::cyan).lighter(150);
             painter.fillRect(selRect, QBrush(beColor));
         }
@@ -826,17 +826,16 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
         }
 
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
-        QRect cursorRect = mEdit->cursorRect(cursor);
+        QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.translate(qRound((cursorColumn-block.length()+1) * spaceWidth), 0);
+            cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
         }
         cursorRect.setWidth(2);
 
         if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
             int blpos = block.position();
             bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
-            if (drawCursor /*|| (editable && context.cursorPosition < -1
-                               && !layout->preeditAreaText().isEmpty())*/) {
+            if (drawCursor) {
                 int cpos = context.cursorPosition+1;
                 if (cpos < -1)
                     cpos = layout->preeditAreaPosition() - (cpos + 2);
