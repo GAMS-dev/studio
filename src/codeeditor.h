@@ -91,6 +91,7 @@ private:
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     int indent(int size, int fromLine = -1, int toLine = -1);
+    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
 
@@ -123,6 +124,8 @@ private:
         void selectTo(int blockNr, int colNr);
         void selectToEnd();
         QString blockText();
+        inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
+
 
     private:
         CodeEditor* mEdit;
@@ -132,6 +135,7 @@ private:
         int mSize = 0;
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
+        QList<QTextEdit::ExtraSelection> mSelections;
     };
 
 private:

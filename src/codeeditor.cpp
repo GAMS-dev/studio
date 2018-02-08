@@ -539,6 +539,7 @@ void CodeEditor::recalcExtraSelections()
         }
         mWordDelay.start(500);
     }
+    extraSelBlockEdit(selections);
     setExtraSelections(selections);
 }
 
@@ -547,7 +548,15 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     extraSelCurrentWord(selections);
+    extraSelBlockEdit(selections);
     setExtraSelections(selections);
+}
+
+void CodeEditor::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
+{
+    if (mBlockEdit) {
+        selections.append(mBlockEdit->extraSelections());
+    }
 }
 
 void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
@@ -653,7 +662,8 @@ CodeEditor::BlockEdit::BlockEdit(CodeEditor* edit, int blockNr, int colNr)
 
 CodeEditor::BlockEdit::~BlockEdit()
 {
-    mEdit->setExtraSelections(QList<QTextEdit::ExtraSelection>());
+    mSelections.clear();
+    mEdit->updateExtraSelections();
 }
 
 void CodeEditor::BlockEdit::selectTo(int blockNr, int colNr)
@@ -805,7 +815,8 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
                 selRect.translate((beyondStart-block.length()+1) * spaceWidth, 0);
             }
             selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
-            painter.fillRect(selRect, QBrush(Qt::cyan));
+            QColor beColor = QColor(Qt::cyan).lighter(150);
+            painter.fillRect(selRect, QBrush(beColor));
         }
 
         if (mBlinkStateHidden) {
@@ -858,27 +869,28 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
 
 void CodeEditor::BlockEdit::updateExtraSelections()
 {
-    QList<QTextEdit::ExtraSelection> selections;
+    mSelections.clear();
     QTextCursor cursor(mEdit->document());
     for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
         QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
         QTextEdit::ExtraSelection select;
         // TODO(JM) Later, this color has to be retrieved from StyleSheet-definitions
-        select.format.setBackground(Qt::cyan);
+        QColor beColor = QColor(Qt::cyan).lighter(150);
+        select.format.setBackground(beColor);
 
         int start = qMin(block.length()-1, qMin(mColumn, mColumn+mSize));
         int end = qMin(block.length()-1, qMax(mColumn, mColumn+mSize));
         cursor.setPosition(block.position()+start);
         if (end>start) cursor.setPosition(block.position()+end, QTextCursor::KeepAnchor);
         select.cursor = cursor;
-        selections << select;
+        mSelections << select;
         if (cursor.blockNumber() == mCurrentLine) {
             QTextCursor c = mEdit->textCursor();
             c.setPosition(cursor.position());
             mEdit->setTextCursor(c);
         }
     }
-    mEdit->setExtraSelections(selections);
+    mEdit->updateExtraSelections();
 }
 
 void CodeEditor::BlockEdit::adjustCursor()
