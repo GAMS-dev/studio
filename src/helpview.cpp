@@ -13,6 +13,7 @@ HelpView::HelpView(QWidget *parent) :
     QDir dir = defaultLocalHelpDir.filePath("index.html");
     helpLocation = QUrl::fromLocalFile(dir.canonicalPath());
 
+    defaultOnlineHelpLocation = "www.gams.com/latest/docs";
     setupUi(parent);
 }
 
@@ -68,7 +69,9 @@ void HelpView::setupUi(QWidget* parent)
     actionOnlineHelp->setText("View this Help Online");
     actionOnlineHelp->setToolTip("View this help page Online");
     actionOnlineHelp->setStatusTip(tr("View this help page Online"));
+    actionOnlineHelp->setCheckable(true);
     helpMenu->addAction(actionOnlineHelp);
+    helpMenu->addSeparator();
 
     actionOpenInBrowser = new QAction(this);
     actionOpenInBrowser->setObjectName(QStringLiteral("actionOpenInBrowser"));
@@ -115,6 +118,11 @@ void HelpView::on_loadFinished(bool ok)
        actionBack->setEnabled( helpView->history()->canGoBack() );
        actionNext->setEnabled( helpView->history()->canGoForward() );
     }
+    if ( helpView->url().toString().startsWith("http") ) {
+        actionOnlineHelp->setChecked( true );
+    } else {
+        actionOnlineHelp->setChecked( false );
+    }
 }
 
 void HelpView::on_actionHome_triggered()
@@ -132,20 +140,27 @@ void HelpView::on_actionNext_triggered()
     helpView->forward();
 }
 
-void HelpView::on_actionOnlineHelp_triggered()
+void HelpView::on_actionOnlineHelp_triggered(bool checked)
 {
     QString urlStr = helpView->url().toString();
-    urlStr.replace( urlStr.indexOf("file"), 4, "https");
-    urlStr.replace( urlStr.indexOf( defaultLocalHelpDir.canonicalPath()),
-                                     defaultLocalHelpDir.canonicalPath().size(),
-                                     "www.gams.com/latest/docs");
-//    qDebug() << "on_actionOnlineHelp_triggered" << helpView->url().toString() << ", " << defaultLocalHelpDir.canonicalPath() << ", " << urlStr;
+    if (checked) {
+        urlStr.replace( urlStr.indexOf("file"), 4, "https");
+        urlStr.replace( urlStr.indexOf( defaultLocalHelpDir.canonicalPath()),
+                        defaultLocalHelpDir.canonicalPath().size(),
+                        defaultOnlineHelpLocation );
+        actionOnlineHelp->setChecked( true );
+    } else {
+        urlStr.replace( urlStr.indexOf("https"), 5, "file");
+        urlStr.replace( urlStr.indexOf( defaultOnlineHelpLocation ),
+                        defaultOnlineHelpLocation.size(),
+                        defaultLocalHelpDir.canonicalPath());
+        actionOnlineHelp->setChecked( false );
+    }
     helpView->load( QUrl(urlStr, QUrl::TolerantMode) );
 }
 
 void HelpView::on_actionOpenInBrowser_triggered()
 {
-//    qDebug() << "on_actionOpenInBrowser_triggered" << helpView->url().toString();
     QDesktopServices::openUrl( helpView->url() );
 }
 

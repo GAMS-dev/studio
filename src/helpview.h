@@ -22,7 +22,7 @@ private slots:
     void on_actionHome_triggered();
     void on_actionBack_triggered();
     void on_actionNext_triggered();
-    void on_actionOnlineHelp_triggered();
+    void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
 private:
@@ -36,7 +36,7 @@ private:
     QWebEngineView* helpView;
     QUrl helpLocation;
     QDir defaultLocalHelpDir;
-    QDir defaulOnlinetLocalHelpDir;
+    QString defaultOnlineHelpLocation;
 };
 
 } // namespace studio
