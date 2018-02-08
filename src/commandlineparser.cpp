@@ -29,7 +29,7 @@ CommandLineParser::CommandLineParser()
 
 }
 
-CommandLineParseResult CommandLineParser::parseCommandLine(QString *errorMessage)
+CommandLineParseResult CommandLineParser::parseCommandLine()
 {
     const QCommandLineOption helpOption = addHelpOption();
     const QCommandLineOption versionOption = addVersionOption();
@@ -38,10 +38,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine(QString *errorMessage
     addOption({"reset-settings", "Reset all settings to default."});
 
     if(!parse(QCoreApplication::arguments()))
-    {
-        *errorMessage = errorText();
         return CommandLineError;
-    }
     if(isSet(versionOption))
         return CommandLineVersionRequested;
     if(isSet(helpOption))

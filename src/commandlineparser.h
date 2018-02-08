@@ -38,7 +38,7 @@ class CommandLineParser  : public QCommandLineParser
 {
 public:
     CommandLineParser();
-    CommandLineParseResult parseCommandLine(QString* errorMessage=nullptr);
+    CommandLineParseResult parseCommandLine();
 
     QStringList files() const;
 

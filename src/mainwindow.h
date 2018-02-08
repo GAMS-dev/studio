@@ -20,7 +20,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
 #include <QtWidgets>
+
 #include "codeeditor.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
@@ -68,14 +70,18 @@ struct HistoryData {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
-    explicit MainWindow(CommandLineParser& clParser, QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
     void ensureCodecMenu(QString codecName);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFiles(QStringList pathList);
+    void openFileContext(FileContext *fileContext, bool focus = true);
+    
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
@@ -177,8 +183,10 @@ private:
     bool requestCloseChanged(QList<FileContext*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
-    QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void openFiles(QStringList pathList);
+    QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
+                                  const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void updateEditorFont(const QString &fontFamily, int fontSize);
+    void updateEditorLineWrapping();
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -199,7 +207,7 @@ private:
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     HistoryData *mHistory;
-    StudioSettings *mSettings;
+    std::unique_ptr<StudioSettings> mSettings;
     WelcomePage *mWp = nullptr;
     ResultsView *rv = nullptr;
     bool mBeforeErrorExtraction = true;

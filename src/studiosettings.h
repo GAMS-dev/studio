@@ -28,15 +28,14 @@
 namespace gams {
 namespace studio {
 
+// TODO(AF) switch to struct for the actual settings?
+// TODO(AF) new class SettingsReaderWriter?
 class StudioSettings
 {
 
 public:
-    StudioSettings(MainWindow *main, bool ignoreSettings = false, bool resetSettings = false);
-    ~StudioSettings();
-
-    void loadSettings();
-    void saveSettings();
+    void loadSettings(MainWindow *main);
+    void saveSettings(MainWindow *main);
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);
@@ -77,9 +76,6 @@ public:
     QString fontFamily() const;
     void setFontFamily(const QString &value);
 
-    void updateEditorFont(QString fontFamily, int fontSize);
-    void redrawEditors();
-
     bool clearLog() const;
     void setClearLog(bool value);
 
@@ -99,12 +95,17 @@ public:
     void setWordUnderCursor(bool wordUnderCursor);
     QString userModelLibraryDir() const;
 
+    bool ignoreSettings() const;
+    void setIgnoreSettings(bool ignoreSettings);
+
+    bool resetSettings() const;
+    void setResetSettings(bool resetSettings);
+
 private:
-    MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
-    bool mIgnoreSettings;
-    bool mResetSettings;
+    bool mIgnoreSettings = false;
+    bool mResetSettings = false;
 
     // general
     QString mDefaultWorkspace;
