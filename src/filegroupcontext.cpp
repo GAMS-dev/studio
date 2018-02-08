@@ -106,8 +106,13 @@ void FileGroupContext::insertChild(FileSystemContext* child)
     int pos = peekIndex(child->name(), &hit);
     if (hit) pos++;
     mChildList.insert(pos, child);
-    if (!mAttachedFiles.contains(child->location()))
+    if (child->type() == FileSystemContext::File) {
+        TextMarkList *markList = marks(child->location());
+        markList->bind(static_cast<FileContext*>(child));
+    }
+    if (!mAttachedFiles.contains(child->location())) {
         mAttachedFiles << child->location();
+    }
     if (child->testFlag(cfActive))
         setFlag(cfActive);
 }
@@ -135,6 +140,10 @@ void FileGroupContext::setLogContext(LogContext* logContext)
     if (mLogContext)
         EXCEPT() << "Reset the log-context is not allowed";
     mLogContext = logContext;
+    if (mLogContext) {
+        TextMarkList *markList = marks(mLogContext->location());
+        markList->bind(mLogContext);
+    }
 }
 
 void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
@@ -145,8 +154,11 @@ void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
 
 TextMarkList* FileGroupContext::marks(const QString& fileName)
 {
-    if (!mMarksForFilenames.contains(fileName))
-        mMarksForFilenames.insert(fileName, new TextMarkList());
+    if (!mMarksForFilenames.contains(fileName)) {
+        TextMarkList* marks = new TextMarkList(this, fileName);
+        connect(marks, &TextMarkList::getFileContext, this, &FileGroupContext::findOrCreateFileContext);
+        mMarksForFilenames.insert(fileName, marks);
+    }
     return mMarksForFilenames.value(fileName);
 }
 

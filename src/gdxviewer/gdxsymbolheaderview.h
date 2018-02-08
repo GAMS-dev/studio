@@ -46,9 +46,9 @@ private:
     const double ICON_SCALE_FACTOR = 0.5;
     const double ICON_MARGIN_FACTOR = 0.1;
 
-    int* mFilterIconWidth;
-    int* mFilterIconX;
-    int* mFilterIconY;
+    mutable std::vector<int> mFilterIconWidth;
+    mutable std::vector<int> mFilterIconX;
+    mutable std::vector<int> mFilterIconY;
 
     bool pointFilterIconCollision(QPoint p);
 };
