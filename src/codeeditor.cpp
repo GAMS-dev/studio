@@ -792,7 +792,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
     QTextCursor cursor(mEdit->document());
     int cursorColumn = mColumn+mSize;
     QFontMetrics metric(mEdit->font());
-    int spaceWidth = metric.width(QString(10,' ')) / 10;
+    double spaceWidth = metric.width(QString(100,'a')) / 100.0;
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
@@ -812,9 +812,9 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRect selRect = mEdit->cursorRect(cursor);
             if (block.length() <= beyondStart) {
-                selRect.translate((beyondStart-block.length()+1) * spaceWidth, 0);
+                selRect.translate(qRound((beyondStart-block.length()+1) * spaceWidth), 0);
             }
-            selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
+            selRect.setWidth(qRound((beyondEnd-beyondStart) * spaceWidth));
             QColor beColor = QColor(Qt::cyan).lighter(150);
             painter.fillRect(selRect, QBrush(beColor));
         }
@@ -828,7 +828,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRect cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
+            cursorRect.translate(qRound((cursorColumn-block.length()+1) * spaceWidth), 0);
         }
         cursorRect.setWidth(2);
 
