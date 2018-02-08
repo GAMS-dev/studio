@@ -1,11 +1,11 @@
 QTabView {
-  background: #c8cfcf;
+  background: #c8cfcf; /*#c8cfcf;*/
 }
 QTabBar {
   margin: 0%;
   padding: 2% 0% 2% 5%;
   border: 0;
-  background: #c0c8c8;
+  background: #c8cfcf;
 }
 QTabBar::tab {
   margin: 0%;

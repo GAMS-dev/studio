@@ -152,7 +152,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             QTextCursor tc = codeEdit->textCursor();
             tc.movePosition(QTextCursor::Start);
             codeEdit->setTextCursor(tc);
-            fc->load(codecName);
+            fc->load(codecName, true);
 
             if (fc->metrics().fileType() == FileType::Log ||
                     fc->metrics().fileType() == FileType::Lst ||

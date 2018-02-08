@@ -76,7 +76,6 @@ public:
     void ensureCodecMenu(QString codecName);
     QStringList openedFiles();
     void openFile(const QString &filePath);
-    void openFileContext(FileContext *fileContext, bool focus = true);
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
@@ -95,6 +94,7 @@ public:
     StudioSettings *settings() const;
 
 private slots:
+    void openFileContext(FileContext *fileContext, bool focus = true);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
@@ -106,6 +106,8 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
@@ -151,7 +153,6 @@ private slots:
     void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
-
     void on_actionSearch_triggered();
 
 protected:
@@ -164,7 +165,6 @@ protected:
 
 private:
     void initTabs();
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
