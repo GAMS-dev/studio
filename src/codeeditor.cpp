@@ -792,7 +792,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
     QTextCursor cursor(mEdit->document());
     int cursorColumn = mColumn+mSize;
     QFontMetrics metric(mEdit->font());
-    int spaceWidth = metric.width(' ');
+    int spaceWidth = metric.width(QString(10,' ')) / 10;
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
