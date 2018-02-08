@@ -589,15 +589,13 @@ void MainWindow::on_actionExit_Application_triggered()
     QCoreApplication::quit();
 }
 
-void MainWindow::on_actionOnline_Help_triggered()
+void MainWindow::on_actionHelp_triggered()
 {
     if (mDockHelpView == nullptr) {
         mDockHelpView = new HelpView(this);
         this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
     }
     mDockHelpView->show();
-
-//    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -1182,7 +1180,7 @@ void MainWindow::on_commandLineHelpTriggered()
         mDockHelpView = new HelpView(this);
         this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
     }
-    mDockHelpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
     mDockHelpView->show();
 
 //    FileContext* fc = mFileRepo.fileContext(mRecent.editor);

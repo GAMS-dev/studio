@@ -15,7 +15,7 @@ public:
     ~HelpView();
 
     void setupUi(QWidget* parent);
-    void load(QUrl locaiton);
+    void openUrl(const QUrl& location);
 
 private slots:
     void on_loadFinished(bool ok);

@@ -43,8 +43,8 @@ void HelpView::setupUi(QWidget* parent)
     actionHome = new QAction(this);
     actionHome->setObjectName(QStringLiteral("actionHome"));
     actionHome->setText("Home");
-    actionHome->setToolTip("Main document page");
-    actionHome->setStatusTip(tr("Main help page"));
+    actionHome->setToolTip("Help start page");
+    actionHome->setStatusTip(tr("Help start page"));
 
     toolbar->addAction(actionHome);
     toolbar->addSeparator();
@@ -94,17 +94,18 @@ void HelpView::setupUi(QWidget* parent)
     connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
 }
 
-void HelpView::load(QUrl location)
+void HelpView::openUrl(const QUrl& location)
 {
     helpView->load(location);
 }
 
 void HelpView::on_loadFinished(bool ok)
 {
-    if ( helpView->url().toString().startsWith("http") ) {
-        actionOnlineHelp->setChecked( true );
-    } else {
-        actionOnlineHelp->setChecked( false );
+    if (ok) {
+       if ( helpView->url().toString().startsWith("http") )
+           actionOnlineHelp->setChecked( true );
+       else
+           actionOnlineHelp->setChecked( false );
     }
 }
 
