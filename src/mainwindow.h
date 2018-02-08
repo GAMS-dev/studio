@@ -80,8 +80,7 @@ public:
     QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
-    void openFileContext(FileContext *fileContext, bool focus = true);
-    
+
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
