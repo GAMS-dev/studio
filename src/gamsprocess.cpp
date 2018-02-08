@@ -78,7 +78,6 @@ void GamsProcess::execute()
        args.append(paramList);
     }
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << QString("o=\"%1.lst\"").arg(QFileInfo(mInputFile).baseName());
-    qDebug() << "args" << args;
     mProcess.start(nativeAppPath(), args);
 }
 
