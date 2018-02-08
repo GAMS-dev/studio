@@ -409,6 +409,15 @@ void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
+void FileContext::addFileWatcherForGdx()
+{
+    if (!mWatcher) {
+        mWatcher = new QFileSystemWatcher(this);
+        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
+        mWatcher->addPath(location());
+    }
+}
+
 int FileContext::textMarkCount(QSet<TextMark::Type> tmTypes)
 {
     return mMarks->textMarkCount(tmTypes);
@@ -523,18 +532,42 @@ void FileContext::modificationChanged(bool modiState)
 
 void FileContext::onFileChangedExtern(QString filepath)
 {
+    if (!mEditors.size())
+        return;
     QFileInfo fi(filepath);
-    FileMetrics::ChangeKind changeKind = mMetrics.check(fi);
-    if (changeKind == FileMetrics::ckSkip) return;
-    if (changeKind == FileMetrics::ckUnchanged) return;
-    if (!fi.exists()) {
-        // file has been renamed or deleted
-        if (document()) document()->setModified();
-        emit deletedExtern(id());
+
+    gdxviewer::GdxViewer* gdxViewer = toGdxViewer(mEditors.first());
+    // we have a GDX Viewer
+    if (gdxViewer)
+    {
+
+        if (!fi.exists())
+        {
+            // file has been renamed or deleted
+            //TODO: implement
+            this->removeEditor(gdxViewer);
+        }
+        else
+        {
+            // file changed externally
+            gdxViewer->reload();
+        }
     }
-    if (changeKind == FileMetrics::ckModified) {
-        // file changed externally
-        emit modifiedExtern(id());
+    // we have a normal document
+    else
+    {
+        FileMetrics::ChangeKind changeKind = mMetrics.check(fi);
+        if (changeKind == FileMetrics::ckSkip) return;
+        if (changeKind == FileMetrics::ckUnchanged) return;
+        if (!fi.exists()) {
+            // file has been renamed or deleted
+            if (document()) document()->setModified();
+            emit deletedExtern(id());
+        }
+        if (changeKind == FileMetrics::ckModified) {
+            // file changed externally
+            emit modifiedExtern(id());
+        }
     }
     mWatcher->addPath(location());
 }

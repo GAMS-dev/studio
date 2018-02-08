@@ -132,6 +132,8 @@ public:
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
 
+    void addFileWatcherForGdx();
+
 public slots:
     void highlightWordUnderCursor(QString word);
 

@@ -121,6 +121,11 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
+void GdxViewer::reload()
+{
+    //TODO
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();

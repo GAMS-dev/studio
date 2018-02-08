@@ -170,6 +170,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            fc->addFileWatcherForGdx();
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());

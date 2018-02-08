@@ -41,6 +41,7 @@ public:
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
+    void reload();
 
 private:
     Ui::GdxViewer ui;
