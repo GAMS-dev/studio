@@ -20,15 +20,11 @@ public:
 private slots:
     void on_loadFinished(bool ok);
     void on_actionHome_triggered();
-    void on_actionBack_triggered();
-    void on_actionNext_triggered();
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
 private:
     QAction* actionHome;
-    QAction* actionBack;
-    QAction* actionNext;
 
     QAction* actionOnlineHelp;
     QAction* actionOpenInBrowser;

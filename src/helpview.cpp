@@ -34,6 +34,10 @@ void HelpView::setupUi(QWidget* parent)
     helpVLayout->setObjectName(QStringLiteral("helpVLayout"));
     helpVLayout->setContentsMargins(0, 0, 0, 0);
 
+    helpView = new QWebEngineView(this);
+    helpView->load(helpLocation);
+    connect(helpView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
+
     QToolBar* toolbar = new QToolBar(this);
 
     actionHome = new QAction(this);
@@ -42,23 +46,15 @@ void HelpView::setupUi(QWidget* parent)
     actionHome->setToolTip("Main document page");
     actionHome->setStatusTip(tr("Main help page"));
 
-    actionBack = new QAction(this);
-    actionBack->setObjectName(QStringLiteral("actionBack"));
-    actionBack->setText("<");
-    actionBack->setToolTip("Go back one page");
-    actionBack->setShortcutVisibleInContextMenu(true);
-
-    actionNext = new QAction(this);
-    actionNext->setObjectName(QStringLiteral("actionNext"));
-    actionNext->setText(">");
-    actionNext->setToolTip("Go forward one page");
-    actionNext->setShortcutVisibleInContextMenu(true);
-
     toolbar->addAction(actionHome);
     toolbar->addSeparator();
-    toolbar->addAction(actionBack);
-    toolbar->addAction(actionNext);
+    toolbar->addAction(helpView->pageAction(QWebEnginePage::Back));
+    toolbar->addAction(helpView->pageAction(QWebEnginePage::Forward));
     toolbar->addSeparator();
+    toolbar->addAction(helpView->pageAction(QWebEnginePage::Reload));
+    toolbar->addSeparator();
+    toolbar->addAction(helpView->pageAction(QWebEnginePage::Stop));
+
     QWidget* spacerWidget = new QWidget();
     spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
     toolbar->addWidget(spacerWidget);
@@ -89,20 +85,11 @@ void HelpView::setupUi(QWidget* parent)
     toolbar->addWidget(helpToolButton);
 
     helpVLayout->addWidget( toolbar );
-
-    helpView = new QWebEngineView(this);
-    helpView->load(helpLocation);
-    helpView->show();
-
     helpVLayout->addWidget( helpView );
 
     this->setWidget( helpWidget );
 
-    connect(helpView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
     connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
-    connect(actionBack, &QAction::triggered, this, &HelpView::on_actionBack_triggered);
-    connect(actionNext, &QAction::triggered, this, &HelpView::on_actionNext_triggered);
-    connect(actionNext, &QAction::triggered, this, &HelpView::on_actionNext_triggered);
     connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
     connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
 }
@@ -114,10 +101,6 @@ void HelpView::load(QUrl location)
 
 void HelpView::on_loadFinished(bool ok)
 {
-    if (ok) {
-       actionBack->setEnabled( helpView->history()->canGoBack() );
-       actionNext->setEnabled( helpView->history()->canGoForward() );
-    }
     if ( helpView->url().toString().startsWith("http") ) {
         actionOnlineHelp->setChecked( true );
     } else {
@@ -128,16 +111,6 @@ void HelpView::on_loadFinished(bool ok)
 void HelpView::on_actionHome_triggered()
 {
     helpView->load(helpLocation);
-}
-
-void HelpView::on_actionBack_triggered()
-{
-    helpView->back();
-}
-
-void HelpView::on_actionNext_triggered()
-{
-    helpView->forward();
 }
 
 void HelpView::on_actionOnlineHelp_triggered(bool checked)
