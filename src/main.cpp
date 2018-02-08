@@ -26,8 +26,6 @@
 #include "commandlineparser.h"
 #include "studiosettings.h"
 
-using std::cerr;
-using std::endl;
 using gams::studio::Application;
 using gams::studio::MainWindow;
 using gams::studio::StudioSettings;
@@ -46,7 +44,7 @@ int main(int argc, char *argv[])
         case gams::studio::CommandLineOk:
             break;
         case gams::studio::CommandLineError:
-            cerr << clParser.errorText().toStdString() << endl;
+            std::cerr << clParser.errorText().toStdString() << std::endl;
             return EXIT_FAILURE;
         case gams::studio::CommandLineVersionRequested:
             clParser.showVersion();

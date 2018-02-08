@@ -28,6 +28,8 @@
 namespace gams {
 namespace studio {
 
+// TODO(AF) switch to struct for the actual settings?
+// TODO(AF) new class SettingsReaderWriter?
 class StudioSettings
 {
 
