@@ -827,13 +827,12 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
         commandLineStr.append(" ");
     }
     if (!message.isEmpty()) {
-        int ret = QMessageBox::Cancel;
         QMessageBox msgBox;
         msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
         msgBox.setInformativeText("Do you want to continue ?");
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
-        ret = msgBox.exec();
+        msgBox.exec();
     }
     return commandLineStr.simplified();
 }
