@@ -41,6 +41,7 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::updateExtraSelections);
+    connect(this, &CodeEditor::textChanged, this, &CodeEditor::updateExtraSelections);
 
     updateLineNumberAreaWidth(0);
     updateExtraSelections();
@@ -504,17 +505,13 @@ inline bool isAlphaNum(QTextCursor cursor, bool back)
 inline int findAlphaNum(QString text, int start, bool back)
 {
     QChar c = ' ';
-    int pos = start;
-    if (back && pos == text.length()) pos--;
+    int pos = (back && start == text.length()) ? start-1 : start;
     while (pos >= 0 && pos < text.length()) {
         c = text.at(pos);
-        if (!c.isLetterOrNumber() && c != '_' && (pos != start || !back)) {
-            break;
-        }
+        if (!c.isLetterOrNumber() && c != '_' && (pos != start || !back)) break;
         pos = pos + (back?-1:1);
     }
     pos = pos - (back?-1:1);
-//    DEB() << text << '\n' << (back?'<':'>') << QString(pos, ' ') << "^ " << pos << "    start:" << start;
     if (pos == start) {
         c = (pos >= 0 && pos < text.length()) ? text.at(pos) : ' ';
         if (!c.isLetterOrNumber() && c != '_') return -1;
@@ -588,7 +585,7 @@ void CodeEditor::gatherWordSelections(QList<QTextEdit::ExtraSelection> &selectio
                 QColor wordColor = QColor(Qt::lightGray).lighter(115);
                 selection.format.setBackground(wordColor);
                 selections << selection;
-                i += match.capturedLength(0);
+                i += match.capturedLength(1) + match.capturedLength(2);
             }
             top += qRound(blockBoundingRect(block).height());
             block = block.next();
