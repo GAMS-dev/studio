@@ -18,9 +18,9 @@ enum OptionErrorType {
 
 struct OptionItem {
     OptionItem() { }
-    OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos) :
+    OptionItem(QString k, QString v, int kpos, int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
-    OptionItem(QString k, QString v, unsigned int kpos, unsigned int vpos, bool disabledFlag) :
+    OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     QString key;

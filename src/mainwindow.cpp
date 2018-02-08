@@ -1184,10 +1184,7 @@ void MainWindow::on_runWithChangedOptions()
 void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-   if (mCommandLineOption->getCurrentOption() != "")
-       execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems(), forcedOptionItems) );
-   else
-       execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems()) );
+    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems(), forcedOptionItems) );
 }
 
 void MainWindow::on_commandLineHelpTriggered()
