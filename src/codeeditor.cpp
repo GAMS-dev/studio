@@ -40,10 +40,10 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEditor::blockEditBlink);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::updateExtraSelections);
 
     updateLineNumberAreaWidth(0);
-    highlightCurrentLine();
+    updateExtraSelections();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
 
@@ -339,9 +339,7 @@ void CodeEditor::paintEvent(QPaintEvent* e)
     if (cursorWidth()!=cw) setCursorWidth(cw);
     QPlainTextEdit::paintEvent(e);
     if (mBlockEdit) {
-        mBlockEdit->drawCursor(e);
-    } else {
-        // TODO(JM) if (!mCurrentWord.isEmpty()) markCurrentWord();
+        mBlockEdit->paintEvent(e);
     }
 }
 
@@ -494,24 +492,110 @@ CharType CodeEditor::charType(QChar c)
     return CharType::Other;
 }
 
-void CodeEditor::highlightCurrentLine()
+inline bool isAlphaNum(QTextCursor cursor, bool back)
+{
+    int pos = qMin(cursor.position(), cursor.anchor()) - cursor.block().position() - (back ? 1 : 0);
+    if ((back && cursor.atBlockStart()) || (!back && cursor.atBlockEnd())) return false;
+    QChar c = cursor.block().text().at(pos);
+//    DEB() << (back ? "left: " : "right: ") << c << "   " << (c.isLetterOrNumber() || c == '_' ? "isLetter" : "noLetter");
+    return (c.isLetterOrNumber() || c == '_');
+}
+
+inline int findAlphaNum(QString text, int start, bool back)
+{
+    QChar c = ' ';
+    int pos = start;
+    if (back && pos == text.length()) pos--;
+    while (pos >= 0 && pos < text.length()) {
+        c = text.at(pos);
+        if (!c.isLetterOrNumber() && c != '_' && (pos != start || !back)) {
+            break;
+        }
+        pos = pos + (back?-1:1);
+    }
+    pos = pos - (back?-1:1);
+//    DEB() << text << '\n' << (back?'<':'>') << QString(pos, ' ') << "^ " << pos << "    start:" << start;
+    if (pos == start) {
+        c = (pos >= 0 && pos < text.length()) ? text.at(pos) : ' ';
+        if (!c.isLetterOrNumber() && c != '_') return -1;
+    }
+    if (pos >= 0 && pos < text.length()) { // must not start with number
+        c = text.at(pos);
+        if (!c.isLetter() && c != '_') return -1;
+    }
+    return pos;
+}
+
+void CodeEditor::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
-    if (!isReadOnly()) {
-        QTextEdit::ExtraSelection selection;
+    if (!isReadOnly() && !mBlockEdit) {
+        if (true) { // mark current line
+            QTextEdit::ExtraSelection selection;
+            QColor lineColor = QColor(Qt::cyan).lighter(190);
+            selection.format.setBackground(lineColor);
+            selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+            selection.cursor = textCursor();
+            selection.cursor.movePosition(QTextCursor::StartOfBlock);
+            selection.cursor.clearSelection();
+            extraSelections.append(selection);
+        }
+        if (true) { // re-validate word under cursor
+            mWordUnderCursor = "";
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = textCursor();
 
-        QColor lineColor = QColor(Qt::yellow).lighter(160);
+            QString text = selection.cursor.block().text();
+            int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
+            int from = findAlphaNum(text, start, true);
+            int to = findAlphaNum(text, from, false);
+            if (from >= 0 && from <= to) {
+//                DEB() << text << "\n " << QString(from, ' ') << QString(to-from+1, '^');
+                selection.cursor.setPosition(selection.cursor.block().position() + from);
+                selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, to-from+1);
+                if (!textCursor().hasSelection() || selection.cursor.selectedText() == textCursor().selectedText()) {
+                    mWordUnderCursor = selection.cursor.selectedText();
+                }
+            }
 
-        selection.format.setBackground(lineColor);
-        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-        selection.cursor = textCursor();
-        selection.cursor.clearSelection();
-        extraSelections.append(selection);
+            if (!mWordUnderCursor.isEmpty()) {
+                gatherWordSelections(extraSelections);
+            }
+        }
     }
-
-//    setExtraSelections(extraSelections);
+    setExtraSelections(extraSelections);
 }
+
+void CodeEditor::gatherWordSelections(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!mWordUnderCursor.isEmpty()) {
+        QTextBlock block = firstVisibleBlock();
+        QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
+        QRegularExpressionMatch match;
+        int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+        while (block.isValid() && top < viewport()->height()) {
+            int i = 0;
+            while (true) {
+                i = block.text().indexOf(rex, i, &match);
+                if (i < 0) break;
+                QTextEdit::ExtraSelection selection;
+                selection.cursor = textCursor();
+                selection.cursor.setPosition(block.position()+match.capturedStart(2));
+                selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
+//                QPen outlinePen( Qt::lightGray, 1);
+//                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
+                QColor wordColor = QColor(Qt::lightGray).lighter(115);
+                selection.format.setBackground(wordColor);
+                selections << selection;
+                i += match.capturedLength(0);
+            }
+            top += qRound(blockBoundingRect(block).height());
+            block = block.next();
+        }
+    }
+}
+
 // _CRT_SECURE_NO_WARNINGS
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
@@ -691,7 +775,7 @@ void CodeEditor::BlockEdit::refreshCursors()
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
 }
 
-void CodeEditor::BlockEdit::drawCursor(QPaintEvent *e)
+void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
 {
     QPainter painter(mEdit->viewport());
     QPointF offset(mEdit->contentOffset()); //
