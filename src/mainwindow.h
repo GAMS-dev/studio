@@ -208,10 +208,11 @@ private:
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
     WelcomePage *mWp = nullptr;
-    ResultsView *rv = nullptr;
+    ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
+    void changeToLog(FileContext* fileContext);
 };
 
 }

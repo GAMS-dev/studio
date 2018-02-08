@@ -1233,6 +1233,18 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     on_runWithParamAndChangedOptions(forcedOptionItems);
 }
 
+void MainWindow::changeToLog(FileContext* fileContext)
+{
+    FileContext* logContext = mFileRepo.logContext(fileContext);
+    if (logContext && !logContext->editors().isEmpty()) {
+        QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
+        if (logEdit && ui->logTab->currentWidget() != logEdit) {
+            if (ui->logTab->currentWidget() != mResultsView)
+                ui->logTab->setCurrentWidget(logEdit);
+        }
+    }
+}
+
 void MainWindow::openFileContext(FileContext* fileContext, bool focus)
 {
     if (!fileContext) return;
@@ -1250,13 +1262,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         if (focus) tabWidget->currentWidget()->setFocus();
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
-        FileContext* logContext = mFileRepo.logContext(fileContext);
-        if (logContext && !logContext->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
-            if (logEdit && ui->logTab->currentWidget() != logEdit) {
-                if (focus) ui->logTab->setCurrentWidget(logEdit);
-            }
-        }
+        changeToLog(fileContext);
     }
     addToOpenedFiles(fileContext->location());
 }
@@ -1352,19 +1358,12 @@ void MainWindow::on_mainTab_currentChanged(int index)
     QWidget* edit = ui->mainTab->widget(index);
     if (edit) {
         mFileRepo.editorActivated(edit);
-        // if there is already a log -> show it
         FileContext* fc = mFileRepo.fileContext(edit);
         if (fc && mRecent.group != fc->parentEntry()) {
             mRecent.group = fc->parentEntry();
             updateRunState();
         }
-        LogContext* logContext = mFileRepo.logContext(fc);
-        if (logContext && !logContext->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
-            if (logEdit && ui->logTab->currentWidget() != logEdit) {
-                ui->logTab->setCurrentWidget(logEdit);
-            }
-        }
+        changeToLog(fc);
     }
 }
 
@@ -1403,18 +1402,18 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTab->indexOf(rv); // did widget exist before?
+    int index = ui->logTab->indexOf(mResultsView); // did widget exist before?
 
-    rv = new ResultsView(results, this);
+    mResultsView = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());
 
     ui->dockLogView->show();
-    rv->resizeColumnsToContent();
+    mResultsView->resizeColumnsToContent();
 
     if (index != -1) ui->logTab->removeTab(index); // remove old result page
 
-    ui->logTab->addTab(rv, title); // add new result page
-    ui->logTab->setCurrentWidget(rv);
+    ui->logTab->addTab(mResultsView, title); // add new result page
+    ui->logTab->setCurrentWidget(mResultsView);
 }
 
 void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
