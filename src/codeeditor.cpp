@@ -38,13 +38,15 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
     mBlinkBlockEdit.setInterval(500);
 
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEditor::blockEditBlink);
+    connect(&mWordDelay, &QTimer::timeout, this, &CodeEditor::updateExtraSelections);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::updateExtraSelections);
-    connect(this, &CodeEditor::textChanged, this, &CodeEditor::updateExtraSelections);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::recalcExtraSelections);
+    connect(this, &CodeEditor::textChanged, this, &CodeEditor::recalcExtraSelections);
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::updateExtraSelections);
 
     updateLineNumberAreaWidth(0);
-    updateExtraSelections();
+    recalcExtraSelections();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
 
@@ -163,6 +165,7 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    updateExtraSelections();
 }
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
@@ -429,7 +432,6 @@ void CodeEditor::startBlockEdit(int blockNr, int colNr)
 
 void CodeEditor::endBlockEdit()
 {
-    // TODO(JM) remove BlockEdit's selection and place cursor
     mBlockEdit->stopCursorTimer();
     mBlockEdit->adjustCursor();
     delete mBlockEdit;
@@ -493,15 +495,6 @@ CharType CodeEditor::charType(QChar c)
     return CharType::Other;
 }
 
-inline bool isAlphaNum(QTextCursor cursor, bool back)
-{
-    int pos = qMin(cursor.position(), cursor.anchor()) - cursor.block().position() - (back ? 1 : 0);
-    if ((back && cursor.atBlockStart()) || (!back && cursor.atBlockEnd())) return false;
-    QChar c = cursor.block().text().at(pos);
-//    DEB() << (back ? "left: " : "right: ") << c << "   " << (c.isLetterOrNumber() || c == '_' ? "isLetter" : "noLetter");
-    return (c.isLetterOrNumber() || c == '_');
-}
-
 inline int findAlphaNum(QString text, int start, bool back)
 {
     QChar c = ' ';
@@ -523,48 +516,50 @@ inline int findAlphaNum(QString text, int start, bool back)
     return pos;
 }
 
-void CodeEditor::updateExtraSelections()
+void CodeEditor::recalcExtraSelections()
 {
-    QList<QTextEdit::ExtraSelection> extraSelections;
+    QList<QTextEdit::ExtraSelection> selections;
 
     if (!isReadOnly() && !mBlockEdit) {
-        if (true) { // mark current line
-            QTextEdit::ExtraSelection selection;
-            QColor lineColor = QColor(Qt::cyan).lighter(190);
-            selection.format.setBackground(lineColor);
-            selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-            selection.cursor = textCursor();
-            selection.cursor.movePosition(QTextCursor::StartOfBlock);
-            selection.cursor.clearSelection();
-            extraSelections.append(selection);
-        }
-        if (true) { // re-validate word under cursor
-            mWordUnderCursor = "";
-            QTextEdit::ExtraSelection selection;
-            selection.cursor = textCursor();
+        extraSelCurrentLine(selections);
 
-            QString text = selection.cursor.block().text();
-            int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
-            int from = findAlphaNum(text, start, true);
-            int to = findAlphaNum(text, from, false);
-            if (from >= 0 && from <= to) {
-//                DEB() << text << "\n " << QString(from, ' ') << QString(to-from+1, '^');
-                selection.cursor.setPosition(selection.cursor.block().position() + from);
-                selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, to-from+1);
-                if (!textCursor().hasSelection() || selection.cursor.selectedText() == textCursor().selectedText()) {
-                    mWordUnderCursor = selection.cursor.selectedText();
-                }
-            }
-
-            if (!mWordUnderCursor.isEmpty()) {
-                gatherWordSelections(extraSelections);
-            }
+        mWordUnderCursor = "";
+        QTextEdit::ExtraSelection selection;
+        selection.cursor = textCursor();
+        QString text = selection.cursor.block().text();
+        int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
+        int from = findAlphaNum(text, start, true);
+        int to = findAlphaNum(text, from, false);
+        if (from >= 0 && from <= to) {
+            if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
+                mWordUnderCursor = text.mid(from, to-from+1);
         }
+        mWordDelay.start(500);
     }
-    setExtraSelections(extraSelections);
+    setExtraSelections(selections);
 }
 
-void CodeEditor::gatherWordSelections(QList<QTextEdit::ExtraSelection> &selections)
+void CodeEditor::updateExtraSelections()
+{
+    QList<QTextEdit::ExtraSelection> selections;
+    extraSelCurrentLine(selections);
+    extraSelCurrentWord(selections);
+    setExtraSelections(selections);
+}
+
+void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
+{
+    QTextEdit::ExtraSelection selection;
+    QColor lineColor = QColor(Qt::cyan).lighter(190);
+    selection.format.setBackground(lineColor);
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = textCursor();
+    selection.cursor.movePosition(QTextCursor::StartOfBlock);
+    selection.cursor.clearSelection();
+    selections.append(selection);
+}
+
+void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
@@ -592,8 +587,6 @@ void CodeEditor::gatherWordSelections(QList<QTextEdit::ExtraSelection> &selectio
         }
     }
 }
-
-// _CRT_SECURE_NO_WARNINGS
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {

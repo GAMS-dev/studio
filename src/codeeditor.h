@@ -76,6 +76,7 @@ signals:
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
+    void recalcExtraSelections();
     void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void onCursorIdle();
@@ -90,7 +91,8 @@ private:
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     int indent(int size, int fromLine = -1, int toLine = -1);
-    void gatherWordSelections(QList<QTextEdit::ExtraSelection>& selections);
+    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
 
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
@@ -142,6 +144,7 @@ private:
     BlockEdit* mBlockEdit = nullptr;
     QTimer mBlinkBlockEdit;
     QString mWordUnderCursor;
+    QTimer mWordDelay;
 };
 
 
