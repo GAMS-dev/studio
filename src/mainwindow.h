@@ -72,7 +72,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    ///
+    /// \brief Constructs the GAMS Stuido main windows based on the given settings.
+    /// \param settings The GAMS Studio settings.
+    /// \param parent The parent widget.
+    /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
+    ///
+    explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
