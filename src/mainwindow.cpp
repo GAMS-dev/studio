@@ -723,11 +723,11 @@ void MainWindow::createRunAndCommandLineWidgets()
     commandHLayout->addWidget(runToolButton);
     commandHLayout->addWidget(mCommandLineOption);
 
+
     QPushButton* helpButton = new QPushButton(this);
-//    QPixmap pixmap(":/img/gams");
-//    QIcon ButtonIcon(pixmap);
-//    helpButton->setIcon(ButtonIcon);
-    helpButton->setText(QStringLiteral("?"));
+    QPixmap helpPixmap(":/img/question");
+    QIcon helpButtonIcon(helpPixmap);
+    helpButton->setIcon(helpButtonIcon);
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     commandHLayout->addWidget(helpButton);
 
