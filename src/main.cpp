@@ -44,12 +44,17 @@ int main(int argc, char *argv[])
         case gams::studio::CommandLineOk:
             break;
         case gams::studio::CommandLineError:
-            std::cerr << clParser.errorText().toStdString() << std::endl;
-            return EXIT_FAILURE;
+            fputs(qPrintable(clParser.errorText()), stderr);
+            fputs("\n\n", stderr);
+            fputs(qPrintable(clParser.helpText()), stderr);
+            return 1;
         case gams::studio::CommandLineVersionRequested:
-            clParser.showVersion();
+            printf("%s %s\n", qPrintable(QCoreApplication::applicationName()),
+                   qPrintable(QCoreApplication::applicationVersion()));
+            return 0;
         case gams::studio::CommandLineHelpRequested:
             clParser.showHelp();
+            break;
     }
 
     try {
