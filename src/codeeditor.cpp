@@ -846,6 +846,8 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
+    } else if (e == Hotkey::DuplicateLine) {
+        return;
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
