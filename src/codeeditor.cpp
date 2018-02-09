@@ -138,6 +138,55 @@ void CodeEditor::blockEditBlink()
     if (mBlockEdit) mBlockEdit->refreshCursors();
 }
 
+void CodeEditor::clearSelection()
+{
+    if (isReadOnly()) return;
+    if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
+        mBlockEdit->replaceBlockText(QStringList()<<QString());
+    } else {
+        textCursor().clearSelection();
+    }
+}
+
+void CodeEditor::cutSelection()
+{
+    if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
+        mBlockEdit->selectionToClipboard();
+        mBlockEdit->replaceBlockText(QStringList()<<QString());
+    } else {
+        cut();
+    }
+}
+
+void CodeEditor::copySelection()
+{
+    if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
+        mBlockEdit->selectionToClipboard();
+    } else {
+        copy();
+    }
+}
+
+void CodeEditor::pasteClipboard()
+{
+    bool isBlock;
+    QStringList texts = clipboard(&isBlock);
+    if (!mBlockEdit) {
+        if (isBlock) {
+            QTextCursor c = textCursor();
+            QTextCursor anc = c;
+            anc.setPosition(c.anchor());
+            startBlockEdit(anc.blockNumber(), anc.columnNumber());
+            mBlockEdit->selectTo(c.blockNumber(), c.columnNumber());
+            mBlockEdit->replaceBlockText(texts);
+        } else {
+            paste();
+        }
+    } else {
+        mBlockEdit->replaceBlockText(texts);
+    }
+}
+
 void CodeEditor::onCursorPositionChanged()
 {
     emit highlightWordUnderCursor("");
@@ -173,12 +222,16 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-    if (!mBlockEdit && (e == Hotkey::BlockEditStart || e == Hotkey::Paste)) {
+    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
         anc.setPosition(c.anchor());
         startBlockEdit(anc.blockNumber(), anc.columnNumber());
-        mBlockEdit->selectTo(c.blockNumber(), c.columnNumber());
+    }
+
+    if (e == Hotkey::Paste) {
+        pasteClipboard();
+        return;
     }
 
     if (mBlockEdit) {
@@ -313,7 +366,8 @@ void CodeEditor::mousePressEvent(QMouseEvent* e)
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
         }
     } else {
-        if (mBlockEdit) endBlockEdit();
+        if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
+            endBlockEdit();
         QPlainTextEdit::mousePressEvent(e);
     }
 }
@@ -348,6 +402,47 @@ void CodeEditor::paintEvent(QPaintEvent* e)
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
     }
+}
+
+void CodeEditor::contextMenuEvent(QContextMenuEvent* e)
+{
+    QMenu *menu = createStandardContextMenu();
+    bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
+    QAction *lastAct = nullptr;
+    for (int i = menu->actions().count()-1; i >= 0; --i) {
+        QAction *act = menu->actions().at(i);
+        if (act->objectName() == "select-all" && mBlockEdit) {
+            act->setEnabled(false);
+        } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
+            menu->removeAction(act);
+            act->disconnect();
+            connect(act, &QAction::triggered, this, &CodeEditor::pasteClipboard);
+            menu->insertAction(lastAct, act);
+        } else if (hasBlockSelection) {
+            if (act->objectName() == "edit-cut") {
+                menu->removeAction(act);
+                act->disconnect();
+                act->setEnabled(true);
+                connect(act, &QAction::triggered, this, &CodeEditor::cutSelection);
+                menu->insertAction(lastAct, act);
+            } else if (act->objectName() == "edit-copy") {
+                menu->removeAction(act);
+                act->disconnect();
+                act->setEnabled(true);
+                connect(act, &QAction::triggered, this, &CodeEditor::copySelection);
+                menu->insertAction(lastAct, act);
+            } else if (act->objectName() == "edit-delete") {
+                menu->removeAction(act);
+                act->disconnect();
+                act->setEnabled(true);
+                connect(act, &QAction::triggered, this, &CodeEditor::clearSelection);
+                menu->insertAction(lastAct, act);
+            }
+        }
+        lastAct = act;
+    }
+    menu->exec(e->globalPos());
+    delete menu;
 }
 
 void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
@@ -454,7 +549,7 @@ void dumpClipboard()
     }
 }
 
-QStringList CodeEditor::clipboard()
+QStringList CodeEditor::clipboard(bool *isBlock)
 {
 //    dumpClipboard();
     QString mimes = "|" + QGuiApplication::clipboard()->mimeData()->formats().join("|") + "|";
@@ -462,9 +557,10 @@ QStringList CodeEditor::clipboard()
     QStringList texts = QGuiApplication::clipboard()->mimeData()->text().split("\n");
     if (texts.last().isEmpty()) texts.removeLast();
     if (!asBlock || texts.count() <= 1) {
+        if (isBlock) *isBlock = false;
         texts = QStringList() << QGuiApplication::clipboard()->mimeData()->text();
     }
-    DEB() << "Paste text count: " << texts.count();
+    if (isBlock) *isBlock = true;
     return texts;
 }
 
@@ -700,6 +796,15 @@ QString CodeEditor::BlockEdit::blockText()
     return res;
 }
 
+void CodeEditor::BlockEdit::selectionToClipboard()
+{
+    QMimeData *mime = new QMimeData();
+    mime->setText(blockText());
+    mime->setData("application/x-qt-windows-mime;value=\"MSDEVColumnSelect\"", QByteArray());
+    mime->setData("application/x-qt-windows-mime;value=\"Borland IDE Block Type\"", QByteArray(1,char(2)));
+    QApplication::clipboard()->setMimeData(mime);
+}
+
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;
@@ -732,11 +837,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             mColumn += mEdit->indent(qMax(-minWhiteCount, -4), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
         // TODO(JM) copy selected text to clipboard
-        QMimeData *mime = new QMimeData();
-        mime->setText(blockText());
-        mime->setData("application/x-qt-windows-mime;value=\"MSDEVColumnSelect\"", QByteArray());
-        mime->setData("application/x-qt-windows-mime;value=\"Borland IDE Block Type\"", QByteArray(1,char(2)));
-        QApplication::clipboard()->setMimeData(mime);
+        selectionToClipboard();
         if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
@@ -940,18 +1041,26 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
     QTextCursor cursor = mEdit->textCursor();
+    int maxLen = 0;
+    for (const QString &s: texts) {
+        if (maxLen < s.length()) maxLen = s.length();
+    }
 
     if (newUndoBlock)  cursor.beginEditBlock();
     else cursor.joinPreviousEditBlock();
 
+    QChar ch(' ');
     while (block.blockNumber() >= qMin(mCurrentLine, mStartLine)) {
+//        if (ch=='.') ch='0'; else ch=',';
         QString addText = texts.at(i);
+        if (maxLen && addText.length() < maxLen)
+            addText += QString(maxLen-addText.length(), ch);
         int offsetFromEnd = fromCol - block.length()+1;
         if (offsetFromEnd > 0 && !texts.at(i).isEmpty()) {
             // line ends before start of mark -> calc additional spaces
             cursor.setPosition(block.position()+block.length()-1);
-            QString s(offsetFromEnd, ' ');
-            addText = s + texts.at(i);
+            QString s(offsetFromEnd, ch);
+            addText = s + addText;
         } else if (mSize) {
             // block-edit contains marking -> remove to end of block/line
             int pos = block.position()+fromCol;
