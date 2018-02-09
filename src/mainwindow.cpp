@@ -140,6 +140,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
         if (fc->metrics().fileType() != FileType::Gdx) {
 
             CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
+            codeEdit->setTabChangesFocus(false);
             FileSystemContext::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
