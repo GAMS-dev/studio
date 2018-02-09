@@ -785,25 +785,21 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
     QRect evRect = e->rect();
     bool editable = !mEdit->isReadOnly();
     painter.setClipRect(evRect);
-
-    QAbstractTextDocumentLayout::PaintContext context = mEdit->getPaintContext();
-
-    QTextBlock block = mEdit->firstVisibleBlock();
-    QTextCursor cursor(mEdit->document());
     int cursorColumn = mColumn+mSize;
     QFontMetrics metric(mEdit->font());
     double spaceWidth = metric.width(QString(100,' ')) / 100.0;
+    QTextBlock block = mEdit->firstVisibleBlock();
+    QTextCursor cursor(block);
+    cursor.setPosition(block.position()+block.length()-1);
+    qreal cursorOffset = mEdit->cursorRect(cursor).left()-block.layout()->minimumWidth();
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
-        QTextLayout *layout = block.layout();
-
         if (!hasBlock(block.blockNumber()) || !block.isVisible()) {
             offset.ry() += blockRect.height();
             block = block.next();
             continue;
         }
-
         // draw extended extra-selection for lines past line-end
         int beyondEnd = qMax(mColumn, mColumn+mSize);
         if (beyondEnd >= block.length()) {
@@ -811,9 +807,10 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
             // we have to draw selection beyond the line-end
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
-            if (block.length() <= beyondStart) {
+            qreal x = block.layout()->minimumWidth()+cursorOffset;
+            selRect.setLeft(x);
+            if (block.length() <= beyondStart)
                 selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
-            }
             selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
             QColor beColor = QColor(Qt::cyan).lighter(150);
             painter.fillRect(selRect, QBrush(beColor));
@@ -833,16 +830,8 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
         cursorRect.setWidth(2);
 
         if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
-            int blpos = block.position();
             bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
             if (drawCursor) {
-                int cpos = context.cursorPosition+1;
-                if (cpos < -1)
-                    cpos = layout->preeditAreaPosition() - (cpos + 2);
-                else
-                    cpos -= blpos;
-
-
                 bool toggleAntialiasing = !(painter.renderHints() & QPainter::Antialiasing)
                                           && (painter.transform().type() > QTransform::TxTranslate);
                 if (toggleAntialiasing)
