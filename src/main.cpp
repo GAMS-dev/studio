@@ -53,11 +53,8 @@ int main(int argc, char *argv[])
     }
 
     try {
-        MainWindow w;
-        auto* settings = w.settings();
-        settings->setIgnoreSettings(clParser.ignoreSettings());
-        settings->setResetSettings(clParser.resetSettings());
-        settings->loadSettings(&w);
+        auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
+        MainWindow w(settings);
         w.openFiles(clParser.files());
         w.show();
         return app.exec();

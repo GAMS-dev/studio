@@ -34,6 +34,9 @@ class StudioSettings
 {
 
 public:
+    StudioSettings(bool ignoreSettings, bool resetSettings);
+    ~StudioSettings();
+
     void loadSettings(MainWindow *main);
     void saveSettings(MainWindow *main);
 
@@ -94,12 +97,6 @@ public:
     bool wordUnderCursor() const;
     void setWordUnderCursor(bool wordUnderCursor);
     QString userModelLibraryDir() const;
-
-    bool ignoreSettings() const;
-    void setIgnoreSettings(bool ignoreSettings);
-
-    bool resetSettings() const;
-    void setResetSettings(bool resetSettings);
 
 private:
     QSettings *mAppSettings = nullptr;

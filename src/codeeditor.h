@@ -68,11 +68,18 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
+    void contextMenuEvent(QContextMenuEvent *e);
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
     void highlightWordUnderCursor(QString word);
+
+public slots:
+    void clearSelection();
+    void cutSelection();
+    void copySelection();
+    void pasteClipboard();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -94,12 +101,12 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
-    QStringList clipboard(); // on relevant Block-Edit data returns multiple strings
+    QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
+    void updateTabSize();
 
 private:
     class BlockEdit
@@ -125,7 +132,7 @@ private:
         void selectToEnd();
         QString blockText();
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
-
+        void selectionToClipboard();
 
     private:
         CodeEditor* mEdit;
