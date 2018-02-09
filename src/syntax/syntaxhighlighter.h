@@ -14,20 +14,13 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(FileContext *context, TextMarkList* marks);
+    ErrorHighlighter(FileContext *context);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
-    void setMarks(TextMarkList* marks) {mMarks = marks;}
+    TextMarkList* marks();
 
 protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& format, QList<TextMark*> marks);
-
-private slots:
-    void docBlockCountChanged(int newCount);
-    void docContentsChange(int from, int removed, int added);
-
-protected:
-    TextMarkList* mMarks;
+    void setCombiFormat(int start, int len, const QTextCharFormat& format, QList<TextMark*> markList);
 
 private:
     FileContext* mContext = nullptr;
@@ -39,7 +32,7 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(FileContext *context, TextMarkList *marks);
+    SyntaxHighlighter(FileContext *context);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

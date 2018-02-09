@@ -25,14 +25,41 @@
 namespace gams {
 namespace studio {
 
-
-StudioSettings::StudioSettings(MainWindow *main)
-    : mMain(main)
+StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings)
+    : mIgnoreSettings(ignoreSettings),
+      mResetSettings(resetSettings)
 {
+    if (ignoreSettings && !mResetSettings)
+    {
+        mAppSettings = new QSettings();
+        mUserSettings = new QSettings();
+    }
+    else if (mAppSettings == nullptr)
+    {
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    }
 }
 
-void StudioSettings::saveSettings()
+StudioSettings::~StudioSettings()
 {
+    if (mAppSettings) {
+        delete mAppSettings;
+        mAppSettings = nullptr;
+    }
+
+    if (mUserSettings) {
+        delete mUserSettings;
+        mUserSettings = nullptr;
+    }
+}
+
+void StudioSettings::saveSettings(MainWindow *main)
+{
+    // return directly only if settings are ignored and not resettet
+    if (mIgnoreSettings && !mResetSettings)
+        return;
+
     if (mAppSettings == nullptr) {
         qDebug() << "ERROR: settings file missing.";
         return;
@@ -40,36 +67,36 @@ void StudioSettings::saveSettings()
     // Main Application Settings
     // window
     mAppSettings->beginGroup("mainWindow");
-    mAppSettings->setValue("size", mMain->size());
-    mAppSettings->setValue("pos", mMain->pos());
-    mAppSettings->setValue("windowState", mMain->saveState());
+    mAppSettings->setValue("size", main->size());
+    mAppSettings->setValue("pos", main->pos());
+    mAppSettings->setValue("windowState", main->saveState());
 
-    if (mMain->searchWidget()) {
-        mAppSettings->setValue("searchRegex", mMain->searchWidget()->regex());
-        mAppSettings->setValue("searchCaseSens", mMain->searchWidget()->caseSens());
-        mAppSettings->setValue("searchWholeWords", mMain->searchWidget()->wholeWords());
-        mAppSettings->setValue("selectedScope", mMain->searchWidget()->selectedScope());
+    if (main->searchWidget()) {
+        mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
+        mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
+        mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
+        mAppSettings->setValue("selectedScope", main->searchWidget()->selectedScope());
     }
     mAppSettings->endGroup();
 
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
-    mAppSettings->setValue("projectView", mMain->projectViewVisibility());
-    mAppSettings->setValue("outputView", mMain->outputViewVisibility());
-    mAppSettings->setValue("optionEditor", mMain->optionEditorVisibility());
+    mAppSettings->setValue("projectView", main->projectViewVisibility());
+    mAppSettings->setValue("outputView", main->outputViewVisibility());
+    mAppSettings->setValue("optionEditor", main->optionEditorVisibility());
 
     mAppSettings->endGroup();
 
     // history
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < mMain->history()->lastOpenedFiles.size(); i++) {
+    for (int i = 0; i < main->history()->lastOpenedFiles.size(); i++) {
         mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("file", mMain->history()->lastOpenedFiles.at(i));
+        mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(mMain->commandLineHistory()->allHistory());
+    QMap<QString, QStringList> map(main->commandLineHistory()->allHistory());
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -79,17 +106,17 @@ void StudioSettings::saveSettings()
     mAppSettings->endArray();
 
     QJsonObject json;
-    mMain->fileRepository()->write(json);
+    main->fileRepository()->write(json);
     QJsonDocument saveDoc(json);
     mAppSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
 //    FileSystemContext* root = mMain->fileRepository()->treeModel()->serialize();
 //    mAppSettings->endGroup();
 
     mAppSettings->beginWriteArray("openedTabs");
-    QWidgetList editList = mMain->fileRepository()->editors();
+    QWidgetList editList = main->fileRepository()->editors();
     for (int i = 0; i < editList.size(); i++) {
         mAppSettings->setArrayIndex(i);
-        FileContext *fc = mMain->fileRepository()->fileContext(editList.at(i));
+        FileContext *fc = main->fileRepository()->fileContext(editList.at(i));
         mAppSettings->setValue("location", fc->location());
     }
 
@@ -124,16 +151,19 @@ void StudioSettings::saveSettings()
     mAppSettings->sync();
 }
 
-void StudioSettings::loadSettings()
+void StudioSettings::loadSettings(MainWindow *main)
 {
-    if (mAppSettings == nullptr)
-        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
+    if (mResetSettings)
+    {
+        mAppSettings->clear();
+        mUserSettings->clear();
+    }
 
     // window
     mAppSettings->beginGroup("mainWindow");
-    mMain->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
-    mMain->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
-    mMain->restoreState(mAppSettings->value("windowState").toByteArray());
+    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+    main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    main->restoreState(mAppSettings->value("windowState").toByteArray());
 
     setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
     setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
@@ -144,9 +174,9 @@ void StudioSettings::loadSettings()
 
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
-    mMain->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
-    mMain->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
-    mMain->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
+    main->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
+    main->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
+    main->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
 
     mAppSettings->endGroup();
 
@@ -154,9 +184,9 @@ void StudioSettings::loadSettings()
     mAppSettings->beginGroup("fileHistory");
 
     mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < mMain->history()->MAX_FILE_HISTORY; i++) {
+    for (int i = 0; i < main->history()->MAX_FILE_HISTORY; i++) {
         mAppSettings->setArrayIndex(i);
-        mMain->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
 
@@ -168,16 +198,13 @@ void StudioSettings::loadSettings()
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
-    mMain->commandLineHistory()->setAllHistory(map);
+    main->commandLineHistory()->setAllHistory(map);
 
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    mMain->fileRepository()->read(loadDoc.object());
+    main->fileRepository()->read(loadDoc.object());
 
     mAppSettings->endGroup();
-
-    if (mUserSettings == nullptr)
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
 
     mUserSettings->beginGroup("General");
 
@@ -213,7 +240,7 @@ void StudioSettings::loadSettings()
         mAppSettings->setArrayIndex(i);
         QString value = mAppSettings->value("location").toString();
         if(QFileInfo(value).exists())
-            mMain->openFile(value);
+            main->openFile(value);
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
@@ -221,6 +248,10 @@ void StudioSettings::loadSettings()
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
+
+    // save settings directly after loading in order to reset
+    if (mResetSettings)
+        saveSettings(main);
 }
 
 QString StudioSettings::defaultWorkspace() const
@@ -351,45 +382,6 @@ QString StudioSettings::fontFamily() const
 void StudioSettings::setFontFamily(const QString &value)
 {
     mFontFamily = value;
-}
-
-void StudioSettings::updateEditorFont(QString fontFamily, int fontSize)
-{
-    QFont font(fontFamily, fontSize);
-    foreach (QWidget* edit, mMain->openEditors()) {
-        edit->setFont(font);
-    }
-}
-
-void StudioSettings::redrawEditors()
-{
-    QPlainTextEdit::LineWrapMode wrapModeEditor;
-    if(lineWrapEditor())
-        wrapModeEditor = QPlainTextEdit::WidgetWidth;
-    else
-        wrapModeEditor = QPlainTextEdit::NoWrap;
-
-    QWidgetList editList = mMain->fileRepository()->editors();
-    for (int i = 0; i < editList.size(); i++) {
-        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(editList.at(i));
-        if (ed) {
-            ed->blockCountChanged(0); // force redraw for line number area
-            ed->setLineWrapMode(wrapModeEditor);
-        }
-    }
-
-    QPlainTextEdit::LineWrapMode wrapModeProcess;
-    if(lineWrapProcess())
-        wrapModeProcess = QPlainTextEdit::WidgetWidth;
-    else
-        wrapModeProcess = QPlainTextEdit::NoWrap;
-
-    QList<QPlainTextEdit*> logList = mMain->openLogs();
-    for (int i = 0; i < logList.size(); i++) {
-        if (logList.at(i))
-            logList.at(i)->setLineWrapMode(wrapModeProcess);
-    }
-
 }
 
 bool StudioSettings::clearLog() const

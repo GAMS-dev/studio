@@ -96,6 +96,7 @@ void GdxSymbolView::resetSortFilter()
         mSym->resetSortFilter();
         ui->tableView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
+    ui->cbSqueezeDefaults->setChecked(false);
 }
 
 void GdxSymbolView::refreshView()

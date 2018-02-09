@@ -68,15 +68,23 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
+    void contextMenuEvent(QContextMenuEvent *e);
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
     void highlightWordUnderCursor(QString word);
 
+public slots:
+    void clearSelection();
+    void cutSelection();
+    void copySelection();
+    void pasteClipboard();
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
+    void recalcExtraSelections();
+    void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void onCursorIdle();
     void onCursorPositionChanged();
@@ -90,12 +98,15 @@ private:
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     int indent(int size, int fromLine = -1, int toLine = -1);
-
+    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
+    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
-    QStringList clipboard(); // on relevant Block-Edit data returns multiple strings
+    QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
+    void updateTabSize();
 
 private:
     class BlockEdit
@@ -112,7 +123,7 @@ private:
         void startCursorTimer();
         void stopCursorTimer();
         void refreshCursors();
-        void drawCursor(QPaintEvent *e);
+        void paintEvent(QPaintEvent *e);
         void replaceBlockText(QString text);
         void replaceBlockText(QStringList texts);
         void updateExtraSelections();
@@ -120,6 +131,8 @@ private:
         void selectTo(int blockNr, int colNr);
         void selectToEnd();
         QString blockText();
+        inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
+        void selectionToClipboard();
 
     private:
         CodeEditor* mEdit;
@@ -129,6 +142,7 @@ private:
         int mSize = 0;
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
+        QList<QTextEdit::ExtraSelection> mSelections;
     };
 
 private:
@@ -140,6 +154,8 @@ private:
     QPoint mDragStart;
     BlockEdit* mBlockEdit = nullptr;
     QTimer mBlinkBlockEdit;
+    QString mWordUnderCursor;
+    QTimer mWordDelay;
 };
 
 

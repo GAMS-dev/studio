@@ -102,7 +102,6 @@ void SettingsDialog::saveSettings()
     mSettings->setClearLog(ui->cb_clearlog->isChecked());
 
     // done
-    mSettings->saveSettings();
     setModifiedStatus(false);
 }
 
@@ -127,17 +126,17 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
     }
-    mSettings->redrawEditors();
+    emit editorLineWrappingChanged();
 }
 
 void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
 {
-    mSettings->updateEditorFont(arg1, ui->sb_fontsize->value());
+    emit editorFontChanged(arg1, ui->sb_fontsize->value());
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 {
-    mSettings->updateEditorFont(ui->fontComboBox->currentFont().family(), arg1);
+    emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
@@ -160,7 +159,7 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
             event->setAccepted(false);
         }
     }
-    mSettings->redrawEditors();
+    emit editorLineWrappingChanged();
 }
 
 SettingsDialog::~SettingsDialog()

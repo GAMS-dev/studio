@@ -72,12 +72,12 @@ LogContext*GamsProcess::logContext() const
 void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
-    QStringList args({QDir::toNativeSeparators(mInputFile)});
+    QStringList args({QDir::toNativeSeparators('"' + mInputFile + '"')});
     if (!mCommandLineStr.isEmpty()) {
        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
        args.append(paramList);
     }
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << QString("o=%1.lst").arg(QFileInfo(mInputFile).baseName());
+    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << QString("o=\"%1.lst\"").arg(QFileInfo(mInputFile).baseName());
     mProcess.start(nativeAppPath(), args);
 }
 

@@ -23,19 +23,22 @@
 #include <QSettings>
 #include <QDebug>
 #include "mainwindow.h"
+#include "commandlineparser.h"
 
 namespace gams {
 namespace studio {
 
+// TODO(AF) switch to struct for the actual settings?
+// TODO(AF) new class SettingsReaderWriter?
 class StudioSettings
 {
 
 public:
-    StudioSettings(MainWindow *main);
+    StudioSettings(bool ignoreSettings, bool resetSettings);
     ~StudioSettings();
 
-    void loadSettings();
-    void saveSettings();
+    void loadSettings(MainWindow *main);
+    void saveSettings(MainWindow *main);
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);
@@ -76,9 +79,6 @@ public:
     QString fontFamily() const;
     void setFontFamily(const QString &value);
 
-    void updateEditorFont(QString fontFamily, int fontSize);
-    void redrawEditors();
-
     bool clearLog() const;
     void setClearLog(bool value);
 
@@ -99,9 +99,10 @@ public:
     QString userModelLibraryDir() const;
 
 private:
-    MainWindow *mMain = nullptr;
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+    bool mIgnoreSettings = false;
+    bool mResetSettings = false;
 
     // general
     QString mDefaultWorkspace;
