@@ -101,12 +101,12 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
+    void updateTabSize();
 
 private:
     class BlockEdit

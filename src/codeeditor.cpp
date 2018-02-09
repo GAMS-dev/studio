@@ -393,6 +393,7 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
             zoomOut();
         else if (delta > 0)
             zoomIn();
+        updateTabSize();
         return;
     }
     QPlainTextEdit::wheelEvent(e);
@@ -596,6 +597,12 @@ CharType CodeEditor::charType(QChar c)
         break;
     }
     return CharType::Other;
+}
+
+void CodeEditor::updateTabSize()
+{
+    QFontMetrics metric(font());
+    setTabStopDistance(8*metric.width(' '));
 }
 
 inline int findAlphaNum(QString text, int start, bool back)
