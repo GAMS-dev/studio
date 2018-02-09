@@ -235,6 +235,10 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     }
 
     if (mBlockEdit) {
+        if (e->key() == Hotkey::NewLine) {
+            endBlockEdit();
+            return;
+        }
         if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
             endBlockEdit();
         } else {
@@ -840,7 +844,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         selectionToClipboard();
         if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
-        if (!mSize) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
     } else if (e->text().length()) {
         replaceBlockText(e->text());
@@ -892,7 +896,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
     QTextBlock block = mEdit->firstVisibleBlock();
     QTextCursor cursor(block);
     cursor.setPosition(block.position()+block.length()-1);
-    qreal cursorOffset = mEdit->cursorRect(cursor).left()-block.layout()->minimumWidth();
+//    qreal cursorOffset = 0; //mEdit->cursorRect(cursor).left()-block.layout()->minimumWidth();
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
@@ -908,8 +912,8 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
             // we have to draw selection beyond the line-end
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
-            qreal x = block.layout()->minimumWidth()+cursorOffset;
-            selRect.setLeft(x);
+//            qreal x = block.layout()->minimumWidth()+cursorOffset;
+//            selRect.setLeft(x);
             if (block.length() <= beyondStart)
                 selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
             selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
