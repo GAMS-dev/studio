@@ -988,31 +988,10 @@ void CodeEditor::BlockEdit::updateExtraSelections()
 
 void CodeEditor::BlockEdit::adjustCursor()
 {
-    // This restores the hidden column-information when moving vertically with the cursor
-    QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine));
-    int len = 0;
-    QTextBlock searchBlock = block;
-    while (block.blockNumber() <= qMax(mStartLine, mCurrentLine)) {
-        if (block.length() > len) {
-            searchBlock = block;
-            len = block.length();
-        }
-        if (len >= mColumn+mSize) {
-            searchBlock = block;
-            break;
-        }
-        if (block.next().isValid())
-            block = block.next();
-        else
-            break;
-    }
-    QTextCursor cursor(searchBlock);
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(mColumn, searchBlock.length()-1));
+    QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+    QTextCursor cursor(block);
+    cursor.setPosition(block.position() + qMin(block.length()-1, mColumn+mSize));
     mEdit->setTextCursor(cursor);
-    QTextCursor::MoveOperation moveOp = searchBlock.blockNumber() < mCurrentLine ? QTextCursor::Down : QTextCursor::Up;
-    for (int i = 0; i < searchBlock.blockNumber()-mCurrentLine; ++i) {
-        mEdit->moveCursor(moveOp);
-    }
 }
 
 void CodeEditor::BlockEdit::replaceBlockText(QString text)
