@@ -34,31 +34,26 @@ namespace gdxviewer {
 GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
 {
-    mFilterIconWidth = new int[GMS_MAX_INDEX_DIM + GMS_VAL_MAX];
-    mFilterIconX = new int[GMS_MAX_INDEX_DIM + GMS_VAL_MAX];
-    mFilterIconY = new int[GMS_MAX_INDEX_DIM + GMS_VAL_MAX];
+    mFilterIconWidth.resize(GMS_MAX_INDEX_DIM);
+    mFilterIconX.resize(GMS_MAX_INDEX_DIM);
+    mFilterIconY.resize(GMS_MAX_INDEX_DIM);
 }
 
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
 {
-    if(mFilterIconWidth)
-        delete[] mFilterIconWidth;
-    if(mFilterIconX)
-        delete[] mFilterIconX;
-    if(mFilterIconY)
-        delete[] mFilterIconY;
 }
 
 void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
+    painter->save();
     GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
+    painter->restore();
 
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
     if(logicalIndex < symbol->dim())
     {
-        painter->restore();
         QString iconRes;
         if(symbol->filterActive()[logicalIndex])
             iconRes = iconFilterOn;
@@ -78,8 +73,6 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         mFilterIconWidth[logicalIndex] = iconWidth;
         mFilterIconX[logicalIndex] = posX;
         mFilterIconY[logicalIndex] = posY;
-
-        painter->save();
     }
 }
 
@@ -94,13 +87,18 @@ void GdxSymbolHeaderView::mousePressEvent(QMouseEvent *event)
 bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
 {
     int index = logicalIndexAt(p);
-    if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth[index] &&
-       p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth[index])
+    QTableView* tv = static_cast<QTableView*>(this->parent());
+    GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
+
+    if (index < symbol->dim())
     {
-        return true;
+        if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth[index] &&
+           p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth[index])
+        {
+            return true;
+        }
     }
     return false;
-
 }
 
 } // namespace gdxviewer

@@ -75,6 +75,7 @@ signals:
     void gamsProcessStateChanged(FileGroupContext* group);
     void removeNode(FileSystemContext *node);
     void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

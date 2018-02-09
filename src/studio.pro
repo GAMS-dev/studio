@@ -1,8 +1,22 @@
-#-------------------------------------------------
 #
-# Project created by QtCreator 2017-08-15T17:41:18
+# This file is part of the GAMS Studio project.
 #
-#-------------------------------------------------
+# Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
 QT       += core gui svg concurrent webenginewidgets
 
@@ -40,6 +54,9 @@ exists($$PWD/gamsinclude.pri) {
     include($$PWD/gamsinclude.pri)
 }
 
+include (../studioversion)
+DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
+
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
@@ -48,12 +65,10 @@ macx {
 }
 unix {
     LIBS += -ldl
-    #VERSION=0.5.0
 }
 win32 {
     RC_FILE += studio.rc
     LIBS += -luser32
-    #VERSION=0.5.0.0
 }
 
 # The following define makes your compiler emit warnings if you use
@@ -132,8 +147,8 @@ SOURCES += \
     resultsview.cpp \
     searchresultlist.cpp \
     keys.cpp \
-    helpview.cpp
-
+    helpview.cpp \
+    commandlineparser.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -199,7 +214,8 @@ HEADERS += \
     searchresultlist.h \
     syntax/syntaxdata.h \
     keys.h \
-    helpview.h
+    helpview.h \
+    commandlineparser.h
 
 FORMS += \
     welcomepage.ui  \

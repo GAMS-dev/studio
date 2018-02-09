@@ -321,13 +321,12 @@ void SearchWidget::findNext(SearchDirection direction)
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
     if (!fc || !edit) return;
 
-    QList<Result> matches;
-    matches = findInFile(fc);
+    if (hasChanged) {
+        cachedResults = findInFile(fc);
+        hasChanged = false;
+    }
 
-    QTextCursor cursor;
-    cursor = edit->textCursor();
-
-    selectNextMatch(direction, matches);
+    selectNextMatch(direction, cachedResults);
 }
 
 void SearchWidget::on_btn_Replace_clicked()
@@ -349,6 +348,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     QWidget *widget = mMain->recent()->editor;
     QPlainTextEdit *edit = nullptr;
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
+    ui->combo_search->setFocus();
 
     if (!fsc) {
         return;
@@ -363,7 +363,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     else
         ui->combo_search->setCurrentText("");
 
-    ui->combo_search->setFocus();
+
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
@@ -509,6 +509,8 @@ void SearchWidget::clearResults()
 void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
+    hasChanged = true;
+
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (fc)
         fc->removeTextMarks(TextMark::match);

@@ -22,7 +22,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>420</x>
+     <x>315</x>
      <y>35</y>
      <width>100</width>
      <height>25</height>
@@ -105,7 +105,10 @@
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start search in chosen scope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
-    <string>Find</string>
+    <string>Find All</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_Replace">
@@ -114,7 +117,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>315</x>
+     <x>420</x>
      <y>35</y>
      <width>100</width>
      <height>25</height>
@@ -254,6 +257,9 @@
    <property name="text">
     <string>&lt;</string>
    </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="btn_forward">
    <property name="geometry">
@@ -328,6 +334,9 @@
     <bool>false</bool>
    </property>
    <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoDefault">
     <bool>false</bool>
    </property>
    <property name="default">

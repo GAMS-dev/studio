@@ -30,6 +30,7 @@ private slots:
 private:
     FileSystemContext* mNode;
     QHash<int, QAction*> mActions;
+    void onOpenFileLoc();
 };
 
 } // namespace studio

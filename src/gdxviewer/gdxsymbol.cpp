@@ -52,7 +52,7 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
     mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
     mSpecValSortVal.push_back(GMS_SV_PINF); // GMS_SV_PINF
-    mSpecValSortVal.push_back(std::numeric_limits<double>::min()); // GMS_SV_MINF
+    mSpecValSortVal.push_back(-std::numeric_limits<double>::max()); // GMS_SV_MINF
     mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
     mSpecValSortVal.push_back(0);  //TODO: Acronyms
 }
@@ -76,9 +76,7 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
         if (orientation == Qt::Horizontal)
         {
             if (section < mDim)
-            {
                 return mDomains.at(section);
-            }
             else
             {
                 if (mType == GMS_DT_SET)
@@ -96,6 +94,23 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
                 }
             }
         }
+    }
+    else if (role == Qt::ToolTipRole)
+    {
+        QString description("<html><head/><body>");
+
+        if (section < mDim)
+            description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
+        else if (section >= mDim)
+        {
+            if (mType == GMS_DT_SET)
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+            else
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+        }
+            description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop can be used for changing the order of columns</p>";
+        description += "</body></html>";
+        return description;
     }
     return QVariant();
 }

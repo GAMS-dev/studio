@@ -34,9 +34,9 @@ FileContext::FileContext(FileId fileId, QString name, QString location, ContextT
 {
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(this, mMarks);
+        mSyntaxHighlighter = new SyntaxHighlighter(this);
     else if (mMetrics.fileType() != FileType::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(this, mMarks);
+        mSyntaxHighlighter = new ErrorHighlighter(this);
     }
 }
 
@@ -47,7 +47,7 @@ QWidgetList& FileContext::editorList()
 
 FileContext::~FileContext()
 {
-    if (mMarks) mMarks->unbindFileContext();
+    if (mMarks) mMarks->unbind();
 
 //    setParentEntry(nullptr);
     removeAllEditors();
@@ -56,13 +56,13 @@ FileContext::~FileContext()
 void FileContext::setParentEntry(FileGroupContext* parent)
 {
     FileSystemContext::setParentEntry(parent);
-    if (parent) {
-        mMarks = parent->marks(location());
-    } else {
-        if (mMarks) mMarks->unbindFileContext();
+    if (!parent) {
+        if (mMarks) mMarks->unbind();
         mMarks = nullptr;
+    } else if (mMarks != parent->marks(location())) {
+        mMarks = parent->marks(location());
+        if (mMarks) connect(this, &FileContext::documentOpened, mMarks, &TextMarkList::documentOpened);
     }
-    if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
 }
 
 QString FileContext::codec() const
@@ -152,6 +152,7 @@ void FileContext::addEditor(QWidget* edit)
     }
     if (FileSystemContext::editorType(edit) == FileSystemContext::etUndefined)
         EXCEPT() << "Type assignment missing for this editor/viewer";
+    bool newlyOpen = !document();
     mEditors.prepend(edit);
     QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
     CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
@@ -161,7 +162,8 @@ void FileContext::addEditor(QWidget* edit)
             ptEdit->document()->setParent(this);
             connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
             if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
-                mSyntaxHighlighter->setDocAndConnect(document());
+                mSyntaxHighlighter->setDocument(document());
+            if (newlyOpen) emit documentOpened();
             QTimer::singleShot(50, this, &FileContext::updateMarks);
         }
     } else if (ptEdit) {
@@ -178,7 +180,7 @@ void FileContext::addEditor(QWidget* edit)
     if (scEdit && mMarks) {
         connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
         connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
-        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
+//        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -196,13 +198,14 @@ void FileContext::removeEditor(QWidget* edit)
     bool wasModified = isModified();
     QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
     if (ptEdit && mEditors.size() == 1) {
+        emit documentClosed();
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
         disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
-        if (mSyntaxHighlighter && type() != FileSystemContext::Log) mSyntaxHighlighter->setDocAndConnect(nullptr);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
+        if (!document()) emit documentClosed();
         unsetFlag(FileSystemContext::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {
@@ -228,15 +231,24 @@ bool FileContext::hasEditor(QWidget* edit)
     return mEditors.contains(edit);
 }
 
-QTextDocument*FileContext::document()
+QTextDocument*FileContext::document() const
 {
     if (mEditors.isEmpty())
         return nullptr;
-    QPlainTextEdit* ed = FileSystemContext::toPlainEdit(mEditors.first());
-    return ed ? ed->document() : nullptr;
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+    return edit ? edit->document() : nullptr;
 }
 
-void FileContext::load(QString codecName)
+bool FileContext::isReadOnly()
+{
+    QPlainTextEdit* edit = nullptr;
+    if (mEditors.size()) {
+        edit = toPlainEdit(mEditors.first());
+    }
+    return edit && edit->isReadOnly();
+}
+
+void FileContext::load(QString codecName, bool keepMarks)
 {
 //    TRACETIME();
     if (!document())
@@ -266,7 +278,11 @@ void FileContext::load(QString codecName)
             }
         }
         if (!nameOfUsedCodec.isEmpty()) {
+//            if (mMarks && keepMarks)
+//                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             document()->setPlainText(text);
+//            if (mMarks && keepMarks)
+//                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             mCodec = nameOfUsedCodec;
         }
         file.close();
@@ -302,10 +318,11 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
 
 void FileContext::showToolTip(const QList<TextMark*> marks)
 {
-    if (mEditors.size() && marks.size() > 0 &&  !marks.first()->textCursor().isNull()) {
+    if (mEditors.size() && marks.size() > 0) {
+        QTextCursor cursor(marks.first()->textCursor());
+        if (cursor.isNull()) return;
         QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
         if (!edit) return;
-        QTextCursor cursor(marks.first()->textCursor());
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
         QString tip = parentEntry()->lstErrorText(marks.first()->value());
@@ -315,8 +332,18 @@ void FileContext::showToolTip(const QList<TextMark*> marks)
 
 void FileContext::rehighlightAt(int pos)
 {
-    if (pos == -1) return;
+    if (pos < 0) return;
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
+}
+
+void FileContext::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
+{
+    if (!document() || !mSyntaxHighlighter) return;
+    while (block.isValid()) {
+        mSyntaxHighlighter->rehighlightBlock(block);
+        if (!endBlock.isValid() || block == endBlock) break;
+        block = block.next();
+    }
 }
 
 void FileContext::updateMarks()
@@ -367,17 +394,18 @@ void FileContext::highlightWordUnderCursor(QString word)
         int length = last.selectionEnd() - last.selectionStart();
 
         if (!last.isNull())
-            mMarks->generateTextMark(this, TextMark::wordUnderCursor, 0, last.blockNumber(),
+            mMarks->generateTextMark(TextMark::wordUnderCursor, 0, last.blockNumber(),
                                      last.columnNumber() - length, length );
     } while (!last.isNull());
-    highlighter()->rehighlight();
+    if (highlighter())
+        highlighter()->rehighlight();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
     if (!mMarks || !parentEntry())
         EXCEPT() << "Marks can only be set if FileContext is linked to a Group";
-    TextMark* mark = mMarks->generateTextMark(this, tmType, value, line, column, size);
+    TextMark* mark = mMarks->generateTextMark(tmType, value, line, column, size);
     return mark;
 }
 
@@ -385,7 +413,7 @@ TextMark*FileContext::generateTextMark(QString fileName, TextMark::Type tmType, 
 {
     if (!parentEntry())
         EXCEPT() << "Marks can only be set if FileContext is linked to a Group";
-    TextMark* mark = parentEntry()->marks(fileName)->generateTextMark(fileName, parentEntry(), tmType, value, line, column, size);
+    TextMark* mark = parentEntry()->marks(fileName)->generateTextMark(tmType, value, line, column, size);
     return mark;
 }
 

@@ -17,35 +17,65 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <iostream>
+#include <cstdlib>
+
 #include "mainwindow.h"
 #include "application.h"
 #include "exception.h"
+#include "commandlineparser.h"
+#include "studiosettings.h"
+
+using gams::studio::Application;
+using gams::studio::MainWindow;
+using gams::studio::StudioSettings;
 
 int main(int argc, char *argv[])
 {
-    gams::studio::Application a(argc, argv);
-    a.setOrganizationName("GAMS");
-    a.setOrganizationDomain("www.gams.com");
-    a.setApplicationName("Studio");
+    Application app(argc, argv);
+    app.setOrganizationName("GAMS");
+    app.setOrganizationDomain("www.gams.com");
+    app.setApplicationName("GAMS Studio");
+    app.setApplicationVersion(STUDIO_VERSION);
+
+    gams::studio::CommandLineParser clParser;
+    switch(clParser.parseCommandLine())
+    {
+        case gams::studio::CommandLineOk:
+            break;
+        case gams::studio::CommandLineError:
+            std::cerr << clParser.errorText().toStdString() << std::endl;
+            return EXIT_FAILURE;
+        case gams::studio::CommandLineVersionRequested:
+            clParser.showVersion();
+        case gams::studio::CommandLineHelpRequested:
+            clParser.showHelp();
+    }
+
     try {
-        gams::studio::MainWindow w;
+        MainWindow w;
+        auto* settings = w.settings();
+        settings->setIgnoreSettings(clParser.ignoreSettings());
+        settings->setResetSettings(clParser.resetSettings());
+        settings->loadSettings(&w);
+        w.openFiles(clParser.files());
         w.show();
-        return a.exec();
+        return app.exec();
     } catch (gams::studio::FatalException &e) {
-        gams::studio::Application::showBox(QObject::tr("fatal exception"), e.what());
+        Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
         return -1;
     } catch (gams::studio::Exception &e) {
-        gams::studio::Application::showBox(QObject::tr("error"), e.what());
+        Application::showExceptionMessage(QObject::tr("error"), e.what());
     } catch (QException &e) {
-        gams::studio::Application::showBox(QObject::tr("external exception"), e.what());
+        Application::showExceptionMessage(QObject::tr("external exception"), e.what());
         e.raise();
     } catch (std::exception &e) {
         QString title(QObject::tr("standard exception"));
-        gams::studio::Application::showBox(title, e.what());
+        Application::showExceptionMessage(title, e.what());
         FATAL() << title << " - " << e.what();
     } catch (...) {
         QString msg(QObject::tr("An exception occured. Due to its unknown type the message can't be shown"));
-        gams::studio::Application::showBox(QObject::tr("unknown exception"), msg);
+        Application::showExceptionMessage(QObject::tr("unknown exception"), msg);
         FATAL() << msg;
     }
     return -2;

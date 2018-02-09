@@ -20,7 +20,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
 #include <QtWidgets>
+
 #include "codeeditor.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
@@ -31,6 +33,8 @@
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
 #include "helpview.h"
+#include "resultsview.h"
+#include "commandlineparser.h"
 
 namespace Ui {
 class MainWindow;
@@ -67,6 +71,7 @@ struct HistoryData {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -75,7 +80,8 @@ public:
     void ensureCodecMenu(QString codecName);
     QStringList openedFiles();
     void openFile(const QString &filePath);
-    void openFileContext(FileContext *fileContext, bool focus = true);
+    void openFiles(QStringList pathList);
+
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
@@ -94,6 +100,7 @@ public:
     StudioSettings *settings() const;
 
 private slots:
+    void openFileContext(FileContext *fileContext, bool focus = true);
     void codecChanged(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
@@ -105,6 +112,8 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
     void projectContextMenuRequested(const QPoint &pos);
@@ -150,7 +159,6 @@ private slots:
     void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
-
     void on_actionSearch_triggered();
 
 protected:
@@ -163,7 +171,6 @@ protected:
 
 private:
     void initTabs();
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
@@ -176,7 +183,10 @@ private:
     bool requestCloseChanged(QList<FileContext*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
-    QString getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
+                                  const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void updateEditorFont(const QString &fontFamily, int fontSize);
+    void updateEditorLineWrapping();
 
 private:
     const int MAX_FILE_HISTORY = 5;
@@ -199,11 +209,13 @@ private:
     QActionGroup *mCodecGroup;
     RecentData mRecent;
     HistoryData *mHistory;
-    StudioSettings *mSettings;
+    std::unique_ptr<StudioSettings> mSettings;
     WelcomePage *mWp = nullptr;
+    ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
+    void changeToLog(FileContext* fileContext);
 };
 
 }

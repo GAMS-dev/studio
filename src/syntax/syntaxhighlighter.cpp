@@ -6,44 +6,37 @@
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(FileContext* context, TextMarkList *marks)
-    : QSyntaxHighlighter(context->document()), mMarks(marks), mContext(context)
+ErrorHighlighter::ErrorHighlighter(FileContext* context)
+    : QSyntaxHighlighter(context->document()), mContext(context)
 {
-    if (!document()) return;
-    connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
-    connect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
 }
 
 void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
 {
-    if (document() && doc != document()) {
-        disconnect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
-        disconnect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
-    }
     setDocument(doc);
-    if (doc) {
-        connect(document(), &QTextDocument::contentsChange, this, &ErrorHighlighter::docContentsChange);
-        connect(document(), &QTextDocument::blockCountChanged, this, &ErrorHighlighter::docBlockCountChanged);
-        if (mMarks) mMarks->rehighlight();
-    }
+}
+
+TextMarkList* ErrorHighlighter::marks()
+{
+    return (mContext) ? mContext->marks() : nullptr;
 }
 
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
-    if (!mMarks) {
+    if (!marks()) {
         DEB() << "trying to highlight without marks!";
         return;
     }
-    QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
-    setCombiFormat(0, text.length(), QTextCharFormat(), marks);
+    QList<TextMark*> markList = marks()->marksForBlock(currentBlock());
+    setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &format, QList<TextMark*> marks)
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &format, QList<TextMark*> markList)
 {
     int end = start+len;
     int marksStart = end;
     int marksEnd = start;
-    for (TextMark* mark: marks) {
+    for (TextMark* mark: markList) {
         if (mark->blockStart() < marksStart) marksStart = qMax(start, mark->blockStart());
         if (mark->blockEnd() > marksEnd) marksEnd = qMin(end, mark->blockEnd());
     }
@@ -56,7 +49,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     start = marksStart;
     end = marksEnd;
 
-    for (TextMark* mark: marks) {
+    for (TextMark* mark: markList) {
         if (mark->blockStart() >= end || mark->blockEnd() < start)
             continue;
         QTextCharFormat combinedFormat(format);
@@ -92,30 +85,9 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     }
 }
 
-void ErrorHighlighter::docBlockCountChanged(int newCount)
-{
-    Q_UNUSED(newCount);
-    if (!mMarks) return;
-    QList<TextMark*> marks = mMarks->marksForBlock(currentBlock());
-    for (TextMark* mark: marks) {
-        mark->modified();
-    }
-}
 
-void ErrorHighlighter::docContentsChange(int from, int removed, int added)
-{
-    Q_UNUSED(removed)
-    Q_UNUSED(added)
-    if (!mMarks) return;
-    // TODO(JM) check for use of removed and added to remove display
-    QList<TextMark*> marks = mMarks->marksForBlock(document()->findBlock(from));
-    for (TextMark* mark: marks) {
-        mark->modified();
-    }
-}
-
-SyntaxHighlighter::SyntaxHighlighter(FileContext* context, TextMarkList* marks)
-    : ErrorHighlighter(context, marks)
+SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
+    : ErrorHighlighter(context)
 {
     SyntaxAbstract* syntax = new SyntaxStandard();
     addState(syntax);
@@ -163,7 +135,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     ErrorHighlighter::highlightBlock(text);
-    QList<TextMark*> marks = mMarks ? mMarks->marksForBlock(currentBlock()) : QList<TextMark*>();
+    QList<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QList<TextMark*>();
     int code = previousBlockState();
     int index = 0;
     while (index < text.length()) {
@@ -197,10 +169,10 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         if (thisBlock.isValid() && thisBlock.length() > 0) {
             if (thisBlock.syntax->state() != SyntaxState::Standard)
-                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormat(), marks);
+                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormat(), markList);
 
             if (thisBlock.error && thisBlock.length() > 0)
-                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError(), marks);
+                setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError(), markList);
 
             index = thisBlock.end;
             code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.next));
