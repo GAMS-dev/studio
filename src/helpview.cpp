@@ -1,7 +1,7 @@
 #include <QWebEngineHistory>
 
-#include "helpview.h"
 #include "gamspaths.h"
+#include "helpview.h"
 
 namespace gams {
 namespace studio {
@@ -14,14 +14,14 @@ HelpView::HelpView(QWidget *parent) :
     helpLocation = QUrl::fromLocalFile(dir.canonicalPath());
 
     defaultOnlineHelpLocation = "www.gams.com/latest/docs";
-    setupUi(parent);
+    setupUi();
 }
 
 HelpView::~HelpView()
 {
 }
 
-void HelpView::setupUi(QWidget* parent)
+void HelpView::setupUi()
 {
     this->setObjectName(QStringLiteral("dockHelpView"));
     this->setEnabled(true);
@@ -40,11 +40,13 @@ void HelpView::setupUi(QWidget* parent)
 
     QToolBar* toolbar = new QToolBar(this);
 
-    actionHome = new QAction(this);
+    QAction* actionHome = new QAction(this);
     actionHome->setObjectName(QStringLiteral("actionHome"));
-    actionHome->setText("Home");
-    actionHome->setToolTip("Help start page");
-    actionHome->setStatusTip(tr("Help start page"));
+    actionHome->setToolTip("Start page");
+    actionHome->setStatusTip(tr("Start page"));
+    QPixmap homePixmap(":/img/home");
+    QIcon homeButtonIcon(homePixmap);
+    actionHome->setIcon(homeButtonIcon);
 
     toolbar->addAction(actionHome);
     toolbar->addSeparator();
@@ -54,6 +56,38 @@ void HelpView::setupUi(QWidget* parent)
     toolbar->addAction(helpView->pageAction(QWebEnginePage::Reload));
     toolbar->addSeparator();
     toolbar->addAction(helpView->pageAction(QWebEnginePage::Stop));
+    toolbar->addSeparator();
+
+    actionAddBookmark = new QAction(this);
+    actionAddBookmark->setObjectName(QStringLiteral("actionAddBookmark"));
+    actionAddBookmark->setText(QLatin1String("Bookmark This Page"));
+    actionAddBookmark->setToolTip(tr("Bookmark This Page"));
+    actionAddBookmark->setStatusTip(tr("Bookmark This Page"));
+
+    connect(actionAddBookmark, &QAction::triggered, this, &HelpView::on_actionAddBookMark_triggered);
+
+    bookmarkMenu = new QMenu(this);
+    bookmarkMenu->addAction(actionAddBookmark);
+
+//    QMap<QString, QString>::iterator i;
+//    for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
+//        qDebug() << i.key() << ": " << i.value();
+//        QAction* action = new QAction(this);
+//        action->setText(i.value());
+//        action->setToolTip(i.key());
+//        bookmarkMenu->addAction(action);
+//    }
+
+    QToolButton* bookmarkToolButton = new QToolButton(this);
+    QPixmap bookmarkPixmap(":/img/bookmark");
+    QIcon bookmarkButtonIcon(bookmarkPixmap);
+    bookmarkToolButton->setToolTip("Bookmarks");
+    bookmarkToolButton->setIcon(bookmarkButtonIcon);
+    bookmarkToolButton->setIcon(bookmarkButtonIcon);
+    bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    bookmarkToolButton->setMenu(bookmarkMenu);
+
+    toolbar->addWidget(bookmarkToolButton);
 
     QWidget* spacerWidget = new QWidget();
     spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -77,9 +111,10 @@ void HelpView::setupUi(QWidget* parent)
     helpMenu->addAction(actionOpenInBrowser);
 
     QToolButton* helpToolButton = new QToolButton(this);
-        QPixmap pixmap(":/img/gams");
-        QIcon ButtonIcon(pixmap);
-        helpToolButton->setIcon(ButtonIcon);
+    QPixmap toolPixmap(":/img/config");
+    QIcon toolButtonIcon(toolPixmap);
+    helpToolButton->setToolTip("Option");
+    helpToolButton->setIcon(toolButtonIcon);
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
     toolbar->addWidget(helpToolButton);
@@ -113,6 +148,45 @@ void HelpView::on_actionHome_triggered()
 {
     helpView->load(helpLocation);
 }
+
+void HelpView::on_actionAddBookMark_triggered()
+{
+    qDebug() << "on_actionBookMark_triggered()";
+
+    if (bookmarkMap.size() == 0)
+        bookmarkMenu->addSeparator();
+
+    QString pageUrl = helpView->page()->url().toString();
+    if (!bookmarkMap.contains(pageUrl)) {
+        bookmarkMap.insert(pageUrl, helpView->page()->title());
+
+        QAction* action = new QAction(this);
+        action->setObjectName(pageUrl);
+        action->setText(helpView->page()->title());
+        action->setToolTip(pageUrl);
+
+        if (pageUrl.startsWith("file")) {
+            QPixmap linkPixmap(":/img/link");
+            QIcon linkButtonIcon(linkPixmap);
+            action->setIcon(linkButtonIcon);
+        } else if (pageUrl.startsWith("http")) {
+            QPixmap linkPixmap(":/img/external-link");
+            QIcon linkButtonIcon(linkPixmap);
+            action->setIcon(linkButtonIcon);
+        }
+        connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
+        bookmarkMenu->addAction(action);
+    } /*else {
+        actionAddBookmark->setEnabled(false);
+    }*/
+}
+
+void HelpView::on_actionBookMark_triggered()
+{
+    QAction* sAction = qobject_cast<QAction*>(sender());
+    helpView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+}
+
 
 void HelpView::on_actionOnlineHelp_triggered(bool checked)
 {

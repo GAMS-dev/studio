@@ -14,18 +14,24 @@ public:
     HelpView(QWidget *parent = nullptr);
     ~HelpView();
 
-    void setupUi(QWidget* parent);
+    void setupUi();
     void openUrl(const QUrl& location);
 
 private slots:
     void on_loadFinished(bool ok);
     void on_actionHome_triggered();
+    void on_actionAddBookMark_triggered();
+    void on_actionBookMark_triggered();
+
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
-private:
-    QAction* actionHome;
 
+private:
+    QMap<QString, QString> bookmarkMap;
+    QMenu* bookmarkMenu;
+
+    QAction* actionAddBookmark;
     QAction* actionOnlineHelp;
     QAction* actionOpenInBrowser;
 

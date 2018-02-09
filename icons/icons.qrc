@@ -22,6 +22,10 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="times">times.svg</file>
         <file alias="user">user.svg</file>
+        <file alias="link">link.svg</file>
+        <file alias="external-link">external-link.svg</file>
+        <file alias="fork">code-fork.svg</file>
+        <file alias="config">gear.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>
