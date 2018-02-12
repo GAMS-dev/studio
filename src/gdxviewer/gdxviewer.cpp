@@ -109,8 +109,9 @@ bool GdxViewer::reload()
             mHasChanged = false;
             QMessageBox msgBox;
             msgBox.setWindowTitle("GDX File Reloaded");
-            msgBox.setText("GDX file has been changed and was reloaded");
+            msgBox.setText("GDX file has been modified and was reloaded.");
             msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Information);
             msgBox.exec();
         }
         return initSuccess;
@@ -141,9 +142,10 @@ bool GdxViewer::init()
         gdxErrorStr(mGdx,errNr, msg);
 
         QMessageBox msgBox;
-        msgBox.setWindowTitle("Unable to open GDX File");
-        msgBox.setText("Unable to open or reload GDX file: " + mGdxFile + "\nError: " + msg);
+        msgBox.setWindowTitle("Unable to Open GDX File");
+        msgBox.setText("Unable to open GDX file: " + mGdxFile + "\nError: " + msg);
         msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
         if (QMessageBox::Retry == msgBox.exec())
             reload();
         return false;
