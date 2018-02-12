@@ -92,9 +92,12 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 GdxSymbol *GdxViewer::selectedSymbol()
 {
     GdxSymbol* selected = nullptr;
-    QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
-    if(!selectedIdx.isEmpty())
-        selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+    if(ui.tvSymbols->selectionModel())
+    {
+        QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
+        if(!selectedIdx.isEmpty())
+            selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+    }
     return selected;
 }
 
