@@ -207,7 +207,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 
                     if (regex()) {
                         if (line.contains(searchRegex, &match))
-                            matches.addResult(lineCounter, match.capturedEnd(), file.fileName(), line.trimmed());
+                            matches.addResult(lineCounter, match.capturedEnd() - searchTerm.length(), file.fileName(), line.trimmed());
                     } else if (line.contains(searchTerm, cs)){
                         matches.addResult(lineCounter, line.indexOf(searchTerm, cs), file.fileName(), line.trimmed());
                     }
@@ -231,7 +231,8 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                 else break;
 
                 if (!item.isNull()) {
-                    matches.addResult(item.blockNumber()+1, item.columnNumber(), fc->location(), item.block().text().trimmed());
+                    matches.addResult(item.blockNumber()+1, item.columnNumber() - searchTerm.length(),
+                                      fc->location(), item.block().text().trimmed());
                     if (isOpenFile) {
                         int length = item.selectionEnd() - item.selectionStart();
                         mAllTextMarks.append(fc->generateTextMark(TextMark::match, 0, item.blockNumber(),

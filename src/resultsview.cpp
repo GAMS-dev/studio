@@ -70,7 +70,8 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
     } else {
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                       + item.locCol() - searchTermLength);
+                       + item.locCol());
+
     }
     jmpFc->jumpTo(tc, false);
     jmpFc->editors().first()->setFocus();
