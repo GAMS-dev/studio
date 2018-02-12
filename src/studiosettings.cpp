@@ -25,6 +25,35 @@
 namespace gams {
 namespace studio {
 
+StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings)
+    : mIgnoreSettings(ignoreSettings),
+      mResetSettings(resetSettings)
+{
+    if (ignoreSettings && !mResetSettings)
+    {
+        mAppSettings = new QSettings();
+        mUserSettings = new QSettings();
+    }
+    else if (mAppSettings == nullptr)
+    {
+        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
+        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    }
+}
+
+StudioSettings::~StudioSettings()
+{
+    if (mAppSettings) {
+        delete mAppSettings;
+        mAppSettings = nullptr;
+    }
+
+    if (mUserSettings) {
+        delete mUserSettings;
+        mUserSettings = nullptr;
+    }
+}
+
 void StudioSettings::saveSettings(MainWindow *main)
 {
     // return directly only if settings are ignored and not resettet
@@ -124,17 +153,6 @@ void StudioSettings::saveSettings(MainWindow *main)
 
 void StudioSettings::loadSettings(MainWindow *main)
 {
-    if (mIgnoreSettings && !mResetSettings)
-    {
-        mAppSettings = new QSettings();
-        mUserSettings = new QSettings();
-    }
-    else if (mAppSettings == nullptr)
-    {
-        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
-    }
-
     if (mResetSettings)
     {
         mAppSettings->clear();
@@ -429,23 +447,6 @@ void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 QString StudioSettings::userModelLibraryDir() const
 {
     return mUserModelLibraryDir;
-}
-
-bool StudioSettings::ignoreSettings() const {
-    return mIgnoreSettings;
-}
-
-void StudioSettings::setIgnoreSettings(bool ignoreSettings) {
-    mIgnoreSettings = ignoreSettings;
-}
-
-bool StudioSettings::resetSettings() const {
-    return mResetSettings;
-}
-
-void StudioSettings::setResetSettings(bool resetSettings)
-{
-    mResetSettings = resetSettings;
 }
 
 }

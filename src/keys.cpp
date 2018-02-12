@@ -103,7 +103,7 @@ void Keys::reset()
     setHotkey(Hotkey::Indent, seq);
 
     seq = new KeySeqList("Ctrl+Shift+U","outdent selected lines");
-    *seq << QKeySequence("Shift+Tab");
+    *seq << QKeySequence("Shift+Tab") << QKeySequence("Shift+Backtab");
     setHotkey(Hotkey::Outdent, seq);
 
     seq = new KeySeqList("Ctrl+Y","remove line");
