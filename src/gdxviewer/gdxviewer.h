@@ -53,7 +53,7 @@ private:
     Ui::GdxViewer ui;
     void reportIoError(int errNr, QString message);
 
-    GdxSymbolTable* mGdxSymbolTable;
+    GdxSymbolTable* mGdxSymbolTable = nullptr;
 
     gdxHandle_t mGdx;
     QMutex* mGdxMutex;

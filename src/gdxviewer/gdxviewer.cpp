@@ -175,6 +175,7 @@ void GdxViewer::free()
     GdxSymbol* selected = selectedSymbol();
     if(selected)
         selected->stopLoadingData();
+
     disconnect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     ui.splitter->replaceWidget(1, ui.widget);
 
