@@ -44,6 +44,9 @@ public:
     void reload();
 
 private:
+    QString mGdxFile;
+    QString mSystemDirectory;
+
     Ui::GdxViewer ui;
     void reportIoError(int errNr, QString message);
 
@@ -55,6 +58,9 @@ private:
     void loadSymbol(GdxSymbol* selectedSymbol);
 
     QVector<GdxSymbolView*> mSymbolViews;
+
+    void init();
+    void free();
 };
 
 } // namespace gdxviewer

@@ -31,51 +31,23 @@ namespace studio {
 namespace gdxviewer {
 
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent), mGdxFile(gdxFile), mSystemDirectory(systemDirectory)
 {
     ui.setupUi(this);
-
     mGdxMutex = new QMutex();
-
     char msg[GMS_SSSIZE];
-    int errNr = 0;
-    if (!gdxCreateD(&mGdx, systemDirectory.toLatin1(), msg, sizeof(msg)))
+    if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
     {
         //TODO(CW): raise exception wit proper message
         EXCEPT() << "Could not load GDX library: " << msg;
     }
-
-    gdxOpenRead(mGdx, gdxFile.toLatin1(), &errNr);
-    if (errNr) reportIoError(errNr,"gdxOpenRead");
-
-    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
-    mSymbolViews.resize(mGdxSymbolTable->symbolCount());
-
-    ui.tvSymbols->setModel(mGdxSymbolTable);
-    ui.tvSymbols->resizeColumnsToContents();
-
-    connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    init();
 }
 
 GdxViewer::~GdxViewer()
 {
-    GdxSymbol* selected = selectedSymbol();
-    if(selected)
-        selected->stopLoadingData();
-
-    delete mGdxSymbolTable;
-
-    QMutexLocker locker(mGdxMutex);
-    gdxClose(mGdx);
-    gdxFree(&mGdx);
-    locker.unlock();
+    free();
     delete mGdxMutex;
-
-    for(GdxSymbolView* view : mSymbolViews)
-    {
-        if(view)
-            delete view;
-    }
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -122,13 +94,67 @@ GdxSymbol *GdxViewer::selectedSymbol()
 }
 
 void GdxViewer::reload()
-{
-    //TODO
+{    
+    ui.splitter->widget(0)->hide();
+    ui.splitter->widget(1)->hide();
+
+    free();
+    init();
+
+    ui.splitter->widget(0)->show();
+    ui.splitter->widget(1)->show();
 }
+
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
+}
+
+void GdxViewer::init()
+{
+    int errNr = 0;
+
+    gdxOpenRead(mGdx, mGdxFile.toLatin1(), &errNr);
+    if (errNr)
+    {
+        char msg[GMS_SSSIZE];
+        gdxErrorStr(mGdx, errNr, msg);
+        qDebug() << msg;
+        reportIoError(errNr, msg);
+    }
+
+    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
+    mSymbolViews.resize(mGdxSymbolTable->symbolCount());
+
+    ui.tvSymbols->setModel(mGdxSymbolTable);
+    ui.tvSymbols->resizeColumnsToContents();
+
+    connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+}
+
+void GdxViewer::free()
+{
+    disconnect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    ui.splitter->replaceWidget(1, ui.widget);
+
+    ui.tvSymbols->setModel(nullptr);
+    GdxSymbol* selected = selectedSymbol();
+    if(selected)
+        selected->stopLoadingData();
+
+    delete mGdxSymbolTable;
+
+    QMutexLocker locker(mGdxMutex);
+    gdxClose(mGdx);
+    locker.unlock();
+
+    for(GdxSymbolView* view : mSymbolViews)
+    {
+        if(view)
+            delete view;
+    }
+    mSymbolViews.clear();
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
