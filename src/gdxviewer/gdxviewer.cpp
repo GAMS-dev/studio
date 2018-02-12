@@ -150,7 +150,10 @@ bool GdxViewer::init()
         msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         if (QMessageBox::Retry == msgBox.exec())
+        {
+            mHasChanged = true;
             reload();
+        }
         return false;
     }
 
