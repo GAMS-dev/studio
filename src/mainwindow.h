@@ -194,8 +194,6 @@ private:
     void updateEditorLineWrapping();
 
 private:
-    const int MAX_FILE_HISTORY = 5;
-
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
