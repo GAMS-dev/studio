@@ -550,7 +550,7 @@ void FileContext::onFileChangedExtern(QString filepath)
         else
         {
             // file changed externally
-            gdxViewer->reload();
+            gdxViewer->setHasChanged(true);
         }
     }
     // we have a normal document

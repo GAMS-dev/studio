@@ -41,11 +41,14 @@ public:
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
-    void reload();
+    bool reload();
+    void setHasChanged(bool value);
 
 private:
     QString mGdxFile;
     QString mSystemDirectory;
+
+    bool mHasChanged=false;
 
     Ui::GdxViewer ui;
     void reportIoError(int errNr, QString message);
@@ -59,7 +62,7 @@ private:
 
     QVector<GdxSymbolView*> mSymbolViews;
 
-    void init();
+    bool init();
     void free();
 };
 

@@ -25,6 +25,7 @@
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -60,6 +61,10 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(deselected.indexes().at(0).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
+
+        if (!reload())
+            return;
+
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
 
         //aliases are also aliases in the sense of the view
@@ -93,16 +98,29 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-void GdxViewer::reload()
-{    
-    ui.splitter->widget(0)->hide();
-    ui.splitter->widget(1)->hide();
+bool GdxViewer::reload()
+{
+    if (mHasChanged)
+    {
+        free();
+        bool initSuccess = init();
+        if (initSuccess)
+        {
+            mHasChanged = false;
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("GDX File Reloaded");
+            msgBox.setText("GDX file has been changed and was reloaded");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
+        }
+        return initSuccess;
+    }
+    return true;
+}
 
-    free();
-    init();
-
-    ui.splitter->widget(0)->show();
-    ui.splitter->widget(1)->show();
+void GdxViewer::setHasChanged(bool value)
+{
+    mHasChanged = value;
 }
 
 
@@ -111,18 +129,28 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
     selectedSymbol->loadData();
 }
 
-void GdxViewer::init()
+bool GdxViewer::init()
 {
     int errNr = 0;
 
     gdxOpenRead(mGdx, mGdxFile.toLatin1(), &errNr);
     if (errNr)
     {
+        gdxClose(mGdx);
         char msg[GMS_SSSIZE];
-        gdxErrorStr(mGdx, errNr, msg);
-        qDebug() << msg;
-        reportIoError(errNr, msg);
+        gdxErrorStr(mGdx,errNr, msg);
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Unable to open GDX File");
+        msgBox.setText("Unable to open or reload GDX file: " + mGdxFile + "\nError: " + msg);
+        msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
+        if (QMessageBox::Retry == msgBox.exec())
+            reload();
+        return false;
     }
+
+    ui.splitter->widget(0)->hide();
+    ui.splitter->widget(1)->hide();
 
     mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount());
@@ -131,20 +159,27 @@ void GdxViewer::init()
     ui.tvSymbols->resizeColumnsToContents();
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+
+    ui.splitter->widget(0)->show();
+    ui.splitter->widget(1)->show();
+    return true;
 }
 
 void GdxViewer::free()
 {
+    GdxSymbol* selected = selectedSymbol();
+    if(selected)
+        selected->stopLoadingData();
     disconnect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     ui.splitter->replaceWidget(1, ui.widget);
 
     ui.tvSymbols->setModel(nullptr);
-    GdxSymbol* selected = selectedSymbol();
-    if(selected)
-        selected->stopLoadingData();
 
-    delete mGdxSymbolTable;
-
+    if(mGdxSymbolTable)
+    {
+        delete mGdxSymbolTable;
+        mGdxSymbolTable = nullptr;
+    }
     QMutexLocker locker(mGdxMutex);
     gdxClose(mGdx);
     locker.unlock();
@@ -152,7 +187,7 @@ void GdxViewer::free()
     for(GdxSymbolView* view : mSymbolViews)
     {
         if(view)
-            delete view;
+            delete view;            
     }
     mSymbolViews.clear();
 }
@@ -160,6 +195,7 @@ void GdxViewer::free()
 void GdxViewer::reportIoError(int errNr, QString message)
 {
     // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
+
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
