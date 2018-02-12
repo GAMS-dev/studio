@@ -59,7 +59,7 @@ struct RecentData {
 };
 
 struct HistoryData {
-    const int MAX_FILE_HISTORY = 5;
+    const int MAX_FILE_HISTORY = 10;
     QStringList lastOpenedFiles;
 
     // TODO: implement projects & sessions
