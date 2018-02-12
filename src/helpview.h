@@ -14,7 +14,7 @@ public:
     HelpView(QWidget *parent = nullptr);
     ~HelpView();
 
-    void setupUi();
+    void setupUi(QWidget *parent);
     void openUrl(const QUrl& location);
 
 private slots:

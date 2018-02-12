@@ -14,14 +14,14 @@ HelpView::HelpView(QWidget *parent) :
     helpLocation = QUrl::fromLocalFile(dir.canonicalPath());
 
     defaultOnlineHelpLocation = "www.gams.com/latest/docs";
-    setupUi();
+    setupUi(parent);
 }
 
 HelpView::~HelpView()
 {
 }
 
-void HelpView::setupUi()
+void HelpView::setupUi(QWidget *parent)
 {
     this->setObjectName(QStringLiteral("dockHelpView"));
     this->setEnabled(true);
@@ -29,7 +29,7 @@ void HelpView::setupUi()
     this->setAllowedAreas(Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
     this->setWindowTitle("Help");
 
-    QWidget* helpWidget = new QWidget(this);
+    QWidget* helpWidget = new QWidget(parent);
     QVBoxLayout* helpVLayout = new QVBoxLayout(helpWidget);
     helpVLayout->setObjectName(QStringLiteral("helpVLayout"));
     helpVLayout->setContentsMargins(0, 0, 0, 0);

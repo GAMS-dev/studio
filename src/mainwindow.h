@@ -125,6 +125,7 @@ private slots:
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
+    void closeHelpView();
 
 private slots:
     // File

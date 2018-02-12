@@ -113,6 +113,7 @@ MainWindow::~MainWindow()
     delete mCommandLineHistory;
 //    delete mCommandLineOption; TODO fix crash
     delete mCommandLineTokenizer;
+    delete mDockHelpView;
 }
 
 void MainWindow::initTabs()
@@ -286,6 +287,12 @@ void MainWindow::toggleOptionDefinition(bool checked)
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
     }
+}
+
+void MainWindow::closeHelpView()
+{
+    if (mDockHelpView)
+        mDockHelpView->close();
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -1006,6 +1013,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mSettings->saveSettings(this);
     }
     on_actionClose_All_triggered();
+    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
