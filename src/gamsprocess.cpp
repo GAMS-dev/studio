@@ -110,12 +110,12 @@ void GamsProcess::setCommandLineStr(const QString &commandLineStr)
 
 void GamsProcess::interrupt()
 {
+    qint64 pid = mProcess.processId();
 #ifdef _WIN32
     //IntPtr receiver;
     COPYDATASTRUCT cds;
     const char* msgText = "GAMS Message Interrupt";
 
-    qint64 pid = mProcess.processId();
     QString windowName("___GAMSMSGWINDOW___");
     windowName += QString::number(pid);
     LPCTSTR windowNameL = windowName.toStdWString().c_str();
@@ -129,9 +129,26 @@ void GamsProcess::interrupt()
 #elif __APPLE__
     //TODO: implement
 #elif __linux__
+    QStringList s1;
     QProcess proc;
     proc.setProgram("/bin/bash");
-    QStringList s2 { "-c", "kill -2 " + QString::number(mProcess.processId())};
+    s1 << "-c" << QString("pstree -p ") + QString::number(pid).toUtf8().constData()
+          + QString(" | sed 's/(/\\n(/g' | grep '(' | sed 's/(\\(.*\\)).*/\\1/'");
+    proc.setArguments(s1);
+    proc.start();
+
+    QString s(proc.readAllStandardOutput());
+
+    QStringList childList = s.split("\n");
+
+    for(int i=0; i<childList.length(); i++)
+    {
+        childListStr += childList[i].toUtf8().constData();
+        childListStr += " ";
+    }
+
+    proc.setProgram("/bin/bash");
+    QStringList s2 { "-c", "kill -2 " + childListStr};
     proc.setArguments(s2);
     proc.start();
 #elif __unix__
