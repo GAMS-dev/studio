@@ -53,16 +53,15 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
         mMain->openFile(item.locFile());
 
     FileSystemContext *fsc = mMain->fileRepository()->findContext(item.locFile());
-    FileContext *jmpFc = nullptr;
     if (!fsc) EXCEPT() << "File not found: " << item.locFile();
 
+    FileContext *jmpFc = nullptr;
     if (fsc->type() == FileSystemContext::File)
         jmpFc = static_cast<FileContext*>(fsc);
 
     if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->openFile(item.locFile());
     mMain->searchWidget()->findInFile(jmpFc);
 
     // jump to line
@@ -71,7 +70,8 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
     } else {
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                       + item.locCol() - searchTermLength);
+                       + item.locCol());
+
     }
     jmpFc->jumpTo(tc, false);
     jmpFc->editors().first()->setFocus();

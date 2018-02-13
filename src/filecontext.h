@@ -85,7 +85,7 @@ public:
 
     /// Loads the file into the current QTextDocument.
     /// \param codecName The text-codec to use.
-    void load(QString codecName = QString());
+    void load(QString codecName = QString(), bool keepMarks = false);
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
@@ -115,13 +115,16 @@ public:
 
     /// The current QTextDocument assigned to this file.
     /// \return The current QTextDocument
-    virtual QTextDocument* document();
+    virtual QTextDocument* document() const;
+
+    bool isReadOnly();
 
     const FileMetrics& metrics() const;
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
     void showToolTip(const QList<TextMark*> marks);
 
     void rehighlightAt(int pos);
+    void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     void updateMarks();
     inline void clearMarksEnhanced() {mMarksEnhanced = false;}
     TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
@@ -132,6 +135,8 @@ public:
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     void addFileWatcherForGdx();
+    
+    TextMarkList* marks() const {return mMarks;}
 
 public slots:
     void highlightWordUnderCursor(QString word);
@@ -148,6 +153,8 @@ signals:
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
+    void documentOpened();
+    void documentClosed();
 
 protected slots:
     void onFileChangedExtern(QString filepath);

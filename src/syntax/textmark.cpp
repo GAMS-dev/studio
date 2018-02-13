@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textmark.h"
+#include "textmarklist.h"
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "logger.h"
@@ -28,86 +29,26 @@ namespace studio {
 
 int TextMark::mNextId = 0;
 
-TextMark::TextMark(Type tmType): mId(mNextId++), mType(tmType)
+TextMark::TextMark(TextMarkList* marks, Type tmType): mId(mNextId++), mMarks(marks), mType(tmType)
 {}
 
 TextMark::~TextMark()
-{}
-
-void TextMark::ensureFileContext()
 {
-    if (!mFileContext && mGroup) {
-        FileSystemContext *fsc = mGroup->findFile(mFileName);
-        if (!fsc) {
-            mGroup->attachFile(mFileName);
-            fsc = mGroup->findFile(mFileName);
-        }
-        if (fsc && fsc->type() == FileSystemContext::File) {
-            mFileContext = static_cast<FileContext*>(fsc);
-            updateCursor();
-        }
-    } else if (!mFileContext) {
-        EXCEPT() << "Invalid TextMark found: neither linked to FileContext nor FileName " << static_cast<void*>(this);
-    }
+    if (mMarks) mMarks->removeTextMark(this);
 }
 
-void TextMark::unbindFileContext()
+QTextDocument*TextMark::document() const
 {
-    if (mFileContext) {
-        if (!mGroup) {
-            mGroup = mFileContext->parentEntry();
-            mFileName = mFileContext->location();
-        }
-        mFileContext = nullptr;
-    }
+    return mMarks ? mMarks->document() : nullptr;
 }
 
-void TextMark::setPosition(FileContext* fileContext, int line, int column, int size)
+
+void TextMark::setPosition(int line, int column, int size)
 {
-    if (!fileContext)
-        EXCEPT() << "FileContext must not be null.";
-    mFileContext = fileContext;
-    mGroup = nullptr;
-    mFileName = "";
     mLine = line;
-    mSize = size;
-    mColumn = column;
-    updateCursor();
-}
-
-void TextMark::setPosition(QString fileName, FileGroupContext* group, int line, int column, int size)
-{
-    if (!group)
-        EXCEPT() << "FileGroupContext must not be null.";
-    mFileContext = nullptr;
-    mGroup = group;
-    mFileName = fileName;
-    mLine = line;
-    mSize = size;
-    mColumn = column;
-}
-
-void TextMark::updateCursor()
-{
-    if (mFileContext && mFileContext->document()) {
-        QTextBlock block = mFileContext->document()->findBlockByNumber(mLine);
-        mCursor = QTextCursor(block);
-        if (mSize <= 0) {
-            int end = block.next().text().indexOf('$');
-            if (end == 0) end = block.next().length();
-            if (end < 0) end = 0;
-            if (end > 0) mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end+1);
-            mSize = qAbs(mCursor.selectionEnd()-mCursor.selectionStart());
-        } else {
-            QString str = block.text();
-            for (int i = mColumn; i < qMin(mColumn+mSize, str.length()); ++i)
-                if (str.at(i)=='\t') mSize -= (7 - i%8);
-            mCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, mColumn);
-            mCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mSize);
-        }
-    } else {
-        mCursor = QTextCursor();
-    }
+    mSize = (size<0) ? -size : size;
+    mColumn = (size<0) ? column+size : column;
+    updatePos();
 }
 
 void TextMark::jumpToRefMark(bool focus)
@@ -118,16 +59,15 @@ void TextMark::jumpToRefMark(bool focus)
 
 void TextMark::jumpToMark(bool focus)
 {
-    ensureFileContext();
-    if (mFileContext) {
-        if (mCursor.isNull()) {
-            if (mFileContext->metrics().fileType() == FileType::Gdx)
-                mFileContext->openFileContext(mFileContext, focus);
-            else
-                mFileContext->jumpTo(mCursor, focus, mLine, mColumn);
-        } else {
-            mFileContext->jumpTo(mCursor, focus);
-        }
+    if (!mMarks) return;
+    FileContext* fc = mMarks->openFileContext();
+    if (!fc) return;
+
+    if (fc->document()) {
+        updatePos();
+        fc->jumpTo(textCursor(), focus);
+    } else if (fc->metrics().fileType() == FileType::Gdx) {
+        fc->openFileContext(fc, focus);
     }
 }
 
@@ -171,7 +111,8 @@ QColor TextMark::color()
 
 FileType::Kind TextMark::fileKind()
 {
-    return (!mFileContext) ? FileType::None : mFileContext->metrics().fileType().kind();
+    return (!mMarks || !mMarks->fileContext()) ? FileType::None
+                                               : mMarks->fileContext()->metrics().fileType().kind();
 }
 
 FileType::Kind TextMark::refFileKind()
@@ -209,27 +150,67 @@ Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion
 
 QTextBlock TextMark::textBlock()
 {
-    if (mCursor.isNull())
+    if (!document())
         return QTextBlock();
-    return mCursor.block();
+    return document()->findBlock(mPosition);
 }
 
-QTextCursor TextMark::textCursor() const
+QTextCursor TextMark::textCursor()
 {
-    return mCursor;
+    if (!document())
+        return QTextCursor();
+    QTextCursor cursor(document());
+    cursor.setPosition(mPosition);
+    return cursor;
 }
 
 void TextMark::rehighlight()
 {
-    if (mFileContext) mFileContext->rehighlightAt(position());
+    if (mMarks && mMarks->fileContext()) mMarks->fileContext()->rehighlightAt(position());
 }
 
-void TextMark::modified()
+void TextMark::move(int delta)
+{
+    if (mPosition < 0)
+        EXCEPT() << "Can't move an uninitialized position";
+
+    mPosition += delta;
+    updateLineCol();
+    if (mMarks && mMarks->fileContext()) mMarks->fileContext()->rehighlightAt(mPosition - delta+1);
+    rehighlight();
+}
+
+void TextMark::updatePos()
+{
+    if (document()) {
+        QTextBlock block = document()->findBlockByNumber(mLine);
+        int col = (mColumn>=0 ? mColumn : 0);
+        mPosition = block.position() + col;
+        if (mSize <= 0) {
+            mSize = block.next().text().indexOf('$')+1;
+            if (mSize <= 0) mSize = block.length()-col;
+        } else {
+            QString str = block.text();
+            for (int i = col; i < qMin(col+mSize, str.length()); ++i)
+                if (str.at(i)=='\t') mSize -= (7 - i%8);
+        }
+    }
+}
+
+void TextMark::updateLineCol()
+{
+    if (document()) {
+        QTextCursor cursor(document());
+        cursor.setPosition(mPosition);
+        mLine = cursor.blockNumber();
+        if (mColumn >= 0) mColumn = cursor.positionInBlock();
+    }
+}
+
+void TextMark::flatten()
 {
     mSize = 0;
-    mColumn = 0;
-    mCursor.setPosition(mCursor.position());
-    rehighlight();
+    mColumn = -1;
 }
 
 QString TextMark::dump()
@@ -238,7 +219,7 @@ QString TextMark::dump()
     for (TextMark* mark: mBackRefs) {
         refs << QString::number(mark->mId);
     }
-    return QString("[%1->%2]  %3").arg(mId).arg(mReference?QString::number(mReference->mId):"#").arg(refs.join(", "));
+    return QString("(%3,%4)[%1->%2] ").arg(mId).arg(mReference?QString::number(mReference->mId):"#").arg(mPosition).arg(mSize);
 }
 
 int TextMark::value() const

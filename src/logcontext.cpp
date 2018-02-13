@@ -38,7 +38,7 @@ void LogContext::markOld()
     }
 }
 
-QTextDocument* LogContext::document()
+QTextDocument* LogContext::document() const
 {
     return mDocument;
 }
@@ -72,7 +72,6 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     if (parent) {
         parent->setLogContext(this);
         mMarks = parent->marks(location());
-        if (mSyntaxHighlighter) mSyntaxHighlighter->setMarks(mMarks);
     } else {
         mParent->setLogContext(nullptr);
         mMarks = nullptr;

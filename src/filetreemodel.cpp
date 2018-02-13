@@ -192,8 +192,10 @@ void FileTreeModel::setCurrent(const QModelIndex& ind)
         mCurrent = ind;
         if (mi.isValid()) {
             dataChanged(mi, mi);                        // invalidate old
-            QModelIndex par = index(mFileRepo->context(mi)->parentEntry());
-            if (par.isValid()) dataChanged(par, par);
+            if (mFileRepo->context(mi)) {
+                QModelIndex par = index(mFileRepo->context(mi)->parentEntry());
+                if (par.isValid()) dataChanged(par, par);
+            }
         }
         if (mCurrent.isValid()) {
             dataChanged(mCurrent, mCurrent);            // invalidate new
@@ -207,6 +209,7 @@ bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         FileSystemContext* fsc = mFileRepo->context(mCurrent);
+        if (!fsc) return false;
         if (fsc->parentEntry()->id() == static_cast<FileId>(ind.internalId())) {
             return true;
         }

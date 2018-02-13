@@ -1,35 +1,35 @@
 #include "textmarklist.h"
 #include "filecontext.h"
+#include "filegroupcontext.h"
+#include "exception.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
-TextMarkList::TextMarkList()
-    : QObject()
+TextMarkList::TextMarkList(FileGroupContext* group, const QString& fileName)
+    : QObject(), mGroupContext(group), mFileName(fileName)
 {}
 
-TextMarkList::TextMarkList(const TextMarkList& marks)
-    : QObject()
+void TextMarkList::unbind()
 {
-    // deep copy
-    for (TextMark *mark: marks.mMarks) {
-        mMarks.append(new TextMark(*mark));
-    }
+    mFileContext = nullptr;
 }
 
-void TextMarkList::unbindFileContext()
+void TextMarkList::bind(FileContext* fc)
 {
-    for (TextMark *mark: mMarks) {
-        mark->unbindFileContext();
-    }
+    if (mFileContext)
+        EXCEPT() << "TextMarks are already bound to FileContext " << mFileContext->location();
+    mFileContext = fc;
+    mGroupContext = fc->parentEntry();
+    mFileName = fc->location();
+    if (fc->document() && fc->metrics().fileType().kind() == FileType::Gms) connectDoc();
 }
 
 void TextMarkList::updateMarks()
 {
     for (TextMark* mark: mMarks) {
-        mark->updateCursor();
-        // TODO(JM) Read the more specific error message from lst-file
+        mark->updatePos();
         mark->rehighlight();
     }
 }
@@ -48,32 +48,43 @@ void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks)
     }
 }
 
-void TextMarkList::textMarksEmpty(bool* empty)
-{
-    *empty = mMarks.isEmpty();
-}
-
 void TextMarkList::textMarkIconsEmpty(bool* noIcons)
 {
     int tms = textMarkCount(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::bookmark);
     *noIcons = !(tms > 0);
 }
 
-TextMark*TextMarkList::generateTextMark(FileContext* context, studio::TextMark::Type tmType, int value, int line, int column, int size)
+void TextMarkList::documentOpened()
 {
-    TextMark* res = new TextMark(tmType);
-    res->setPosition(context, line, column, size);
-    res->setValue(value);
-    mMarks << res;
-    return res;
+    if (mFileContext && mFileContext->metrics().fileType().kind() == FileType::Gms)
+        connectDoc();
 }
 
-TextMark*TextMarkList::generateTextMark(QString fileName, FileGroupContext* group, TextMark::Type tmType, int value, int line, int column, int size)
+void TextMarkList::documentChanged(int pos, int charsRemoved, int charsAdded)
 {
-    TextMark* res = new TextMark(tmType);
-    res->setPosition(fileName, group, line, column, size);
+    int i = mMarks.size()-1;
+    while (i >= 0) {
+        TextMark* mark = mMarks.at(i);
+        int compare = mark->in(pos, charsRemoved);
+        if (!compare) {
+            int pos = mark->position();
+            if (mark->type() == TextMark::error || mark->type() == TextMark::link) mark->flatten();
+            else mMarks.removeAt(i);
+            if (fileContext()) fileContext()->rehighlightAt(pos);
+        } else if (compare > 0 && !mFileContext->isReadOnly()) {
+            mark->move(charsAdded-charsRemoved);
+        }
+        i--;
+    }
+}
+
+TextMark*TextMarkList::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
+{
+    TextMark* res = new TextMark(this, tmType);
+    res->setPosition(line, column, size);
     res->setValue(value);
     mMarks << res;
+    if (document()) fileContext()->rehighlightAt(res->position());
     return res;
 }
 
@@ -92,6 +103,31 @@ int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
     return res;
 }
 
+FileContext*TextMarkList::fileContext()
+{
+    if (mFileContext) return mFileContext;
+    // TODO(JM) find file-context in group
+    return mFileContext;
+}
+
+QTextDocument*TextMarkList::document() const
+{
+    return mFileContext ? mFileContext->document() : nullptr;
+}
+
+FileContext* TextMarkList::openFileContext()
+{
+    if (!mFileContext) {
+        DEB() << "!!! Error !!! FileContext should be already bound:" << mFileName;
+        emit getFileContext(mFileName, &mFileContext, mGroupContext);
+        if (!mFileContext) EXCEPT() << "Error creating FileContext " << mFileName;
+    }
+    if (!mFileContext->document()) {
+        emit mFileContext->openFileContext(mFileContext, true);
+    }
+    return mFileContext;
+}
+
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
 {
     int i = mMarks.size();
@@ -100,14 +136,18 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
         TextMark* tm = mMarks.at(i);
         if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             int pos = tm->position();
-            FileContext* file = tm->fileContext();
             TextMark* mark = mMarks.takeAt(i);
             mark->clearBackRefs();
             // TODO(JM) Somehow this cannot be deleted, as if it's already done
             delete mark;
-            if (file) file->rehighlightAt(pos);
+            if (fileContext() && fileContext()->document()) fileContext()->rehighlightAt(pos);
         }
     }
+}
+
+void TextMarkList::removeTextMark(TextMark* mark)
+{
+    mMarks.removeAll(mark);
 }
 
 QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
@@ -130,14 +170,6 @@ QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
     return res;
 }
 
-void TextMarkList::merge(const TextMarkList& marks)
-{
-    for (TextMark *mark: marks.mMarks) {
-        if (!mMarks.contains(mark))
-            mMarks.append(mark);
-    }
-}
-
 TextMark*TextMarkList::firstErrorMark()
 {
     for (TextMark* mark: mMarks)
@@ -145,15 +177,30 @@ TextMark*TextMarkList::firstErrorMark()
     return nullptr;
 }
 
+void TextMarkList::connectDoc()
+{
+    if (mFileContext && mFileContext->document() && !mFileContext->isReadOnly()) {
+        connect(mFileContext->document(), &QTextDocument::contentsChange, this, &TextMarkList::documentChanged);
+        updateMarks();
+    }
+}
+
 QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
 {
-    QList<TextMark *> marks;
+    QList<TextMark*> marks;
     for (TextMark* tm: mMarks) {
-        int hit = tm->in(block.position(), block.length());
+        int hit = tm->in(block.position(), block.length()-1);
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
             marks << tm;
         }
     }
+//    if (marks.size() && mFileName.isEmpty()) {
+//        QString res;
+//        for (TextMark *mark: marks) {
+//            res += "  " + mark->dump();
+//        }
+//        DEB() << "at " << block.position() << ":  line " << block.blockNumber() << "(" << block.length() << ")  -- MARKS FOR LOG: " << res;
+//    }
     return marks;
 }
 
