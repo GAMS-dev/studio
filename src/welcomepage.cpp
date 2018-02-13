@@ -41,19 +41,20 @@ WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
 
 void WelcomePage::historyChanged(HistoryData *history)
 {
-    int size = ui->layout_lastFiles->rowCount();
+    int size = ui->layout_lastFiles->count();
     for (int i = 0; i < size; i++)
-        ui->layout_lastFiles->removeRow(0);
+        ui->layout_lastFiles->removeItem(ui->layout_lastFiles->itemAt(0));
 
     QLabel *tmpLabel;
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
-            tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName()
-                                  + "</a><br/>"
+            tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a><br/>"
                                   + "<small>" + file.filePath() + "</small>");
             tmpLabel->setToolTip(file.filePath());
+            tmpLabel->setFrameShape(QFrame::StyledPanel);
+            tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
             tmpLabel = new QLabel(file.fileName() + " (File missing!)<br/><small>" + file.canonicalPath() + "</small>");
