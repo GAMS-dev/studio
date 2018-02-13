@@ -128,7 +128,7 @@ void GamsProcess::interrupt()
 #elif __APPLE__
     //TODO: implement
 #elif __linux__
-    //TODO: implement
+    mProcess.terminate();
 #elif __unix__
     //TODO: implement
 #else
