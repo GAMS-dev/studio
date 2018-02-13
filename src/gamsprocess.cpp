@@ -22,6 +22,7 @@
 #include "filegroupcontext.h"
 #include "logcontext.h"
 #include <QDebug>
+#include <QProcess>
 #include <QDir>
 
 #ifdef _WIN32
@@ -128,7 +129,11 @@ void GamsProcess::interrupt()
 #elif __APPLE__
     //TODO: implement
 #elif __linux__
-    mProcess.terminate();
+    QProcess proc;
+    proc.setProgram("/bin/bash");
+    QStringList s2 { "-c", "kill -2 " + QString::number(mProcess.processId())};
+    proc.setArguments(s2);
+    proc.start();
 #elif __unix__
     //TODO: implement
 #else
