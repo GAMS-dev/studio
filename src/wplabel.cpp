@@ -4,8 +4,12 @@
 namespace gams {
 namespace studio {
 
-WpLabel::WpLabel(const QString &content, const QString &link)
-    : mContent(content), mLink(link)
+WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
+{
+}
+
+WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
+    : QLabel(parent), mContent(content), mLink(link)
 {
     QLabel::setText(mContent);
 }

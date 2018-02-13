@@ -9,7 +9,8 @@ namespace studio {
 class WpLabel : public QLabel
 {
 public:
-    WpLabel(const QString &content, const QString &link);
+    WpLabel(QWidget *parent = nullptr);
+    WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
