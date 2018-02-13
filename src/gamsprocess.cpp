@@ -148,6 +148,8 @@ void GamsProcess::interrupt()
         childListStr += " ";
     }
 
+    qDebug() << childListStr;
+
     proc.setProgram("/bin/bash");
     QStringList s2 { "-c", "kill -2 " + childListStr};
     proc.setArguments(s2);
