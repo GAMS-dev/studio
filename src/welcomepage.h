@@ -44,6 +44,7 @@ private slots:
 
 private:
     Ui::WelcomePage *ui;
+    QList<QLabel*> mFileHistory;
 
 signals:
     void linkActivated(const QString &link);
