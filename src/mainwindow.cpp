@@ -1170,6 +1170,16 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
+void MainWindow::interrupt()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    process->interrupt();
+}
+
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
