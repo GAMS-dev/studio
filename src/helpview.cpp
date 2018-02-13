@@ -2,6 +2,7 @@
 
 #include "gamspaths.h"
 #include "helpview.h"
+#include "bookmarkdialog.h"
 
 namespace gams {
 namespace studio {
@@ -63,11 +64,19 @@ void HelpView::setupUi(QWidget *parent)
     actionAddBookmark->setText(QLatin1String("Bookmark This Page"));
     actionAddBookmark->setToolTip(tr("Bookmark This Page"));
     actionAddBookmark->setStatusTip(tr("Bookmark This Page"));
-
     connect(actionAddBookmark, &QAction::triggered, this, &HelpView::on_actionAddBookMark_triggered);
+
+    actionOrganizeBookmark = new QAction(this);
+    actionOrganizeBookmark->setObjectName(QStringLiteral("actionOrganizeBookmark"));
+    actionOrganizeBookmark->setText(QLatin1String("Organize Bookmarks"));
+    actionOrganizeBookmark->setToolTip(tr("Organize Bookmarks"));
+    actionOrganizeBookmark->setStatusTip(tr("Organize Bookmarks"));
+    connect(actionOrganizeBookmark, &QAction::triggered, this, &HelpView::on_actionOrganizeBookMark_triggered);
 
     bookmarkMenu = new QMenu(this);
     bookmarkMenu->addAction(actionAddBookmark);
+    bookmarkMenu->addSeparator();
+    bookmarkMenu->addAction(actionOrganizeBookmark);
 
 //    QMap<QString, QString>::iterator i;
 //    for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
@@ -129,9 +138,25 @@ void HelpView::setupUi(QWidget *parent)
     connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
 }
 
-void HelpView::openUrl(const QUrl& location)
+void HelpView::on_urlOpened(const QUrl& location)
 {
     helpView->load(location);
+}
+
+void HelpView::on_bookmarkRemoved(const QUrl &location)
+{
+    if (bookmarkMap.contains(location.toString())) {
+        bookmarkMap.remove(location.toString());
+        foreach (QAction* action, bookmarkMenu->actions()) {
+            if (action->isSeparator())
+                continue;
+            if (QString::compare(action->objectName(), location.toString(), Qt::CaseInsensitive) == 0) {
+                bookmarkMenu->removeAction( action );
+                break;
+           }
+        }
+    }
+
 }
 
 void HelpView::on_loadFinished(bool ok)
@@ -151,8 +176,6 @@ void HelpView::on_actionHome_triggered()
 
 void HelpView::on_actionAddBookMark_triggered()
 {
-    qDebug() << "on_actionBookMark_triggered()";
-
     if (bookmarkMap.size() == 0)
         bookmarkMenu->addSeparator();
 
@@ -179,6 +202,12 @@ void HelpView::on_actionAddBookMark_triggered()
     } /*else {
         actionAddBookmark->setEnabled(false);
     }*/
+}
+
+void HelpView::on_actionOrganizeBookMark_triggered()
+{
+    BookmarkDialog bookmarkDialog(bookmarkMap, this);
+    bookmarkDialog.exec();
 }
 
 void HelpView::on_actionBookMark_triggered()

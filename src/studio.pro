@@ -148,6 +148,7 @@ SOURCES += \
     searchresultlist.cpp \
     keys.cpp \
     helpview.cpp \
+    bookmarkdialog.cpp \
     commandlineparser.cpp
 
 HEADERS += \
@@ -215,6 +216,7 @@ HEADERS += \
     syntax/syntaxdata.h \
     keys.h \
     helpview.h \
+    bookmarkdialog.h \
     commandlineparser.h
 
 FORMS += \
@@ -228,7 +230,8 @@ FORMS += \
     settingsdialog.ui \
     option/optionconfigurator.ui \
     searchwidget.ui \
-    resultsview.ui
+    resultsview.ui \
+    bookmarkdialog.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

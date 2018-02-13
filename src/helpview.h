@@ -11,27 +11,30 @@ class HelpView : public QDockWidget
 {
     Q_OBJECT
 public:
-    HelpView(QWidget *parent = nullptr);
+    HelpView(QWidget* parent = nullptr);
     ~HelpView();
 
     void setupUi(QWidget *parent);
-    void openUrl(const QUrl& location);
 
-private slots:
+public slots:
+    void on_urlOpened(const QUrl& location);
+    void on_bookmarkRemoved(const QUrl& location);
+
     void on_loadFinished(bool ok);
     void on_actionHome_triggered();
     void on_actionAddBookMark_triggered();
+    void on_actionOrganizeBookMark_triggered();
     void on_actionBookMark_triggered();
 
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
-
 
 private:
     QMap<QString, QString> bookmarkMap;
     QMenu* bookmarkMenu;
 
     QAction* actionAddBookmark;
+    QAction* actionOrganizeBookmark;
     QAction* actionOnlineHelp;
     QAction* actionOpenInBrowser;
 

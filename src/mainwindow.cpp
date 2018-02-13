@@ -1206,7 +1206,7 @@ void MainWindow::on_commandLineHelpTriggered()
         mDockHelpView = new HelpView(this);
         this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
     }
-    mDockHelpView->openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
     mDockHelpView->show();
 
 //    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
