@@ -53,6 +53,8 @@ public:
     QString commandLineStr() const;
     void setCommandLineStr(const QString &commandLineStr);
 
+    void interrupt();
+
 private:
     static const QString App;
     QString mWorkingDir;

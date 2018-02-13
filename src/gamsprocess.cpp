@@ -24,6 +24,10 @@
 #include <QDebug>
 #include <QDir>
 
+#ifdef _WIN32
+#include "windows.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -101,6 +105,35 @@ QString GamsProcess::commandLineStr() const
 void GamsProcess::setCommandLineStr(const QString &commandLineStr)
 {
     mCommandLineStr = commandLineStr;
+}
+
+void GamsProcess::interrupt()
+{
+#ifdef _WIN32
+    //IntPtr receiver;
+    COPYDATASTRUCT cds;
+    const char* msgText = "GAMS Message Interrupt";
+
+    qint64 pid = mProcess.processId();
+    QString windowName("___GAMSMSGWINDOW___");
+    windowName += QString::number(pid);
+    LPCTSTR windowNameL = windowName.toStdWString().c_str();
+    HWND receiver = FindWindow(nullptr, windowNameL);
+
+    cds.dwData = (ULONG_PTR) 1;
+    cds.lpData = (PVOID) msgText;
+    cds.cbData = (DWORD) (strlen(msgText) + 1);
+
+    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+#elif __APPLE__
+    //TODO: implement
+#elif __linux__
+    //TODO: implement
+#elif __unix__
+    //TODO: implement
+#else
+    //TODO: implement
+#endif
 }
 
 } // namespace studio
