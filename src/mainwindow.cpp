@@ -169,6 +169,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            fc->addFileWatcherForGdx();
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -419,6 +420,7 @@ void MainWindow::activeTabChanged(int index)
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
+
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
@@ -442,7 +444,10 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setEnabled( false );
             setRunActionsEnabled( false );
         }
-    }  else {
+    } else if(FileContext::toGdxViewer(editWidget)) {
+        gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
+        gdxViewer->reload();
+    } else {
         mCommandLineOption->setCurrentIndex(-1);
         mCommandLineOption->setEnabled( false );
         setRunActionsEnabled( false );
