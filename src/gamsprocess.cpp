@@ -129,6 +129,7 @@ void GamsProcess::interrupt()
 #elif __APPLE__
     //TODO: implement
 #elif __linux__
+    QString childListStr = "";
     QStringList s1;
     QProcess proc;
     proc.setProgram("/bin/bash");
