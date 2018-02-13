@@ -54,7 +54,7 @@ void WelcomePage::historyChanged(HistoryData *history)
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
             tmpLabel = new WpLabel("<a href='" + file.filePath() + "'>" + file.fileName() + "</a><br/>"
-                                  + "<small>" + file.filePath() + "</small>");
+                                  + "<small>" + file.filePath() + "</small>", file.filePath());
             tmpLabel->setToolTip(file.filePath());
             tmpLabel->setFrameShape(QFrame::StyledPanel);
             tmpLabel->setMargin(8);

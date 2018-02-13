@@ -9,7 +9,7 @@ namespace studio {
 class WpLabel : public QLabel
 {
 public:
-    WpLabel(const QString &content);
+    WpLabel(const QString &content, const QString &link);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -17,7 +17,8 @@ protected:
     void leaveEvent(QEvent* event);
 
 private:
-    const QString &mContent;
+    QString mContent;
+    QString mLink;
 };
 
 }
