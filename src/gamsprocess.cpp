@@ -137,7 +137,7 @@ void GamsProcess::interrupt()
           + QString(" | sed 's/(/\\n(/g' | grep '(' | sed 's/(\\(.*\\)).*/\\1/'");
     proc.setArguments(s1);
     proc.start();
-
+    proc.waitForFinished(-1);
     QString s(proc.readAllStandardOutput());
 
     QStringList childList = s.split("\n");
