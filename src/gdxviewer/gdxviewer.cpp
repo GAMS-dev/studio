@@ -37,8 +37,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     ui.setupUi(this);
     mGdxMutex = new QMutex();
     char msg[GMS_SSSIZE];
-    if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
-    {
+    if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg))) {
         //TODO(CW): raise exception wit proper message
         EXCEPT() << "Could not load GDX library: " << msg;
     }
@@ -53,11 +52,9 @@ GdxViewer::~GdxViewer()
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-    if (selected.indexes().size()>0)
-    {
+    if (selected.indexes().size()>0) {
         int selectedIdx = selected.indexes().at(0).row();
-        if (deselected.indexes().size()>0)
-        {
+        if (deselected.indexes().size()>0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(deselected.indexes().at(0).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
@@ -68,15 +65,13 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
 
         //aliases are also aliases in the sense of the view
-        if(selectedSymbol->type() == GMS_DT_ALIAS)
-        {
+        if(selectedSymbol->type() == GMS_DT_ALIAS) {
             selectedIdx = selectedSymbol->subType() - 1;
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
 
         // create new GdxSymbolView if the symbol is selected for the first time
-        if(!mSymbolViews.at(selectedIdx))
-        {
+        if(!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
             mSymbolViews.replace(selectedIdx, symView);
             symView->setSym(selectedSymbol);
@@ -103,12 +98,10 @@ GdxSymbol *GdxViewer::selectedSymbol()
 
 bool GdxViewer::reload()
 {
-    if (mHasChanged)
-    {
+    if (mHasChanged) {
         free();
         bool initSuccess = init();
-        if (initSuccess)
-        {
+        if (initSuccess) {
             mHasChanged = false;
             QMessageBox msgBox;
             msgBox.setWindowTitle("GDX File Reloaded");
@@ -138,8 +131,7 @@ bool GdxViewer::init()
     int errNr = 0;
 
     gdxOpenRead(mGdx, mGdxFile.toLatin1(), &errNr);
-    if (errNr)
-    {
+    if (errNr) {
         gdxClose(mGdx);
         char msg[GMS_SSSIZE];
         gdxErrorStr(mGdx,errNr, msg);
@@ -184,8 +176,7 @@ void GdxViewer::free()
 
     ui.tvSymbols->setModel(nullptr);
 
-    if(mGdxSymbolTable)
-    {
+    if(mGdxSymbolTable) {
         delete mGdxSymbolTable;
         mGdxSymbolTable = nullptr;
     }
@@ -193,10 +184,9 @@ void GdxViewer::free()
     gdxClose(mGdx);
     locker.unlock();
 
-    for(GdxSymbolView* view : mSymbolViews)
-    {
+    for(GdxSymbolView* view : mSymbolViews) {
         if(view)
-            delete view;            
+            delete view;
     }
     mSymbolViews.clear();
 }

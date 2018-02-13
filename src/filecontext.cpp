@@ -538,24 +538,19 @@ void FileContext::onFileChangedExtern(QString filepath)
 
     gdxviewer::GdxViewer* gdxViewer = toGdxViewer(mEditors.first());
     // we have a GDX Viewer
-    if (gdxViewer)
-    {
+    if (gdxViewer) {
 
-        if (!fi.exists())
-        {
+        if (!fi.exists()) {
             // file has been renamed or deleted
             //TODO: implement
             this->removeEditor(gdxViewer);
-        }
-        else
-        {
+        } else {
             // file changed externally
             gdxViewer->setHasChanged(true);
         }
     }
     // we have a normal document
-    else
-    {
+    else {
         FileMetrics::ChangeKind changeKind = mMetrics.check(fi);
         if (changeKind == FileMetrics::ckSkip) return;
         if (changeKind == FileMetrics::ckUnchanged) return;

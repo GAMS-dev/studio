@@ -445,13 +445,10 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setEnabled( false );
             setRunActionsEnabled( false );
         }
-    }
-    else if(FileContext::toGdxViewer(editWidget))
-    {
+    } else if(FileContext::toGdxViewer(editWidget)) {
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
-    }
-    else {
+    } else {
         mCommandLineOption->setCurrentIndex(-1);
         mCommandLineOption->setEnabled( false );
         setRunActionsEnabled( false );
