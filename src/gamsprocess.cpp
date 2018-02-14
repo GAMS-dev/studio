@@ -154,5 +154,10 @@ void GamsProcess::interrupt()
 #endif
 }
 
+void GamsProcess::stop()
+{
+    mProcess.kill();
+}
+
 } // namespace studio
 } // namespace gams

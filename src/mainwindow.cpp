@@ -1198,11 +1198,12 @@ void MainWindow::on_interrupt_triggered()
 
 void MainWindow::on_stop_triggered()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Not Implemented");
-
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.exec();
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::updateRunState()

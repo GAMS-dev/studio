@@ -54,6 +54,7 @@ public:
     void setCommandLineStr(const QString &commandLineStr);
 
     void interrupt();
+    void stop();
 
 private:
     static const QString App;
