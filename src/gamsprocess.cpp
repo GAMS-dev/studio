@@ -126,9 +126,7 @@ void GamsProcess::interrupt()
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
     SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
-#elif __APPLE__
-    //TODO: implement
-#elif __linux__
+#else
     QString childListStr = "";
     QStringList s1;
     QProcess proc;
@@ -148,16 +146,11 @@ void GamsProcess::interrupt()
         childListStr += " ";
     }
 
-    qDebug() << childListStr;
-
     proc.setProgram("/bin/bash");
     QStringList s2 { "-c", "kill -2 " + childListStr};
     proc.setArguments(s2);
     proc.start();
-#elif __unix__
-    //TODO: implement
-#else
-    //TODO: implement
+    proc.waitForFinished(-1);
 #endif
 }
 
