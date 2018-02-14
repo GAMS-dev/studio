@@ -719,6 +719,12 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setMenu(runMenu);
     runToolButton->setDefaultAction(ui->actionRun);
     commandHLayout->addWidget(runToolButton);
+
+    interruptButton = new QPushButton(this);
+    interruptButton->setText("Interrupt");
+    connect(interruptButton, &QPushButton::clicked, this, &MainWindow::interrupt);
+    commandHLayout->addWidget(interruptButton);
+
     commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
@@ -1184,6 +1190,7 @@ void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
+    interruptButton->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()

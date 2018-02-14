@@ -220,6 +220,8 @@ private:
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(FileContext* fileContext);
+
+    QPushButton* interruptButton = nullptr;
 };
 
 }
