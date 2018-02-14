@@ -166,6 +166,8 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
 
+    void on_interruptButton_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -182,7 +184,6 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr);
-    void interrupt();
     void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();

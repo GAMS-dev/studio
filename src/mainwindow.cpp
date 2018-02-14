@@ -724,7 +724,7 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     interruptButton = new QPushButton(this);
     interruptButton->setText("Interrupt");
-    connect(interruptButton, &QPushButton::clicked, this, &MainWindow::interrupt);
+    connect(interruptButton, &QPushButton::clicked, this, &MainWindow::on_interruptButton_triggered);
     commandHLayout->addWidget(interruptButton);
 
     commandHLayout->addWidget(mCommandLineOption);
@@ -1178,7 +1178,7 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
-void MainWindow::interrupt()
+void MainWindow::on_interruptButton_triggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);

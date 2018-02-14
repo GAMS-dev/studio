@@ -110,14 +110,14 @@ void GamsProcess::setCommandLineStr(const QString &commandLineStr)
 
 void GamsProcess::interrupt()
 {
-    qint64 pid = mProcess.processId();
+    QString pid = QString::number(mProcess.processId());
 #ifdef _WIN32
     //IntPtr receiver;
     COPYDATASTRUCT cds;
     const char* msgText = "GAMS Message Interrupt";
 
     QString windowName("___GAMSMSGWINDOW___");
-    windowName += QString::number(pid);
+    windowName += pid;
     LPCTSTR windowNameL = windowName.toStdWString().c_str();
     HWND receiver = FindWindow(nullptr, windowNameL);
 
@@ -126,12 +126,11 @@ void GamsProcess::interrupt()
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
     SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
-#else
-    QString childListStr = "";
+#else // Linux and Mac OS X
     QStringList s1;
     QProcess proc;
     proc.setProgram("/bin/bash");
-    s1 << "-c" << QString("pstree -p ") + QString::number(pid).toUtf8().constData()
+    s1 << "-c" << QString("pstree -p ") + pid.toUtf8().constData()
           + QString(" | sed 's/(/\\n(/g' | grep '(' | sed 's/(\\(.*\\)).*/\\1/'");
     proc.setArguments(s1);
     proc.start();
@@ -140,6 +139,7 @@ void GamsProcess::interrupt()
 
     QStringList childList = s.split("\n");
 
+    QString childListStr = "";
     for(int i=0; i<childList.length(); i++)
     {
         childListStr += childList[i].toUtf8().constData();
