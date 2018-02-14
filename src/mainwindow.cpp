@@ -714,7 +714,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->actionRun->setShortcutVisibleInContextMenu(true);
     ui->actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     ui->actionCompile->setShortcutVisibleInContextMenu(true);
-    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
+    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);   
 
     QToolButton* runToolButton = new QToolButton(this);
     runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -722,10 +722,17 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setDefaultAction(ui->actionRun);
     commandHLayout->addWidget(runToolButton);
 
-    interruptButton = new QPushButton(this);
-    interruptButton->setText("Interrupt");
-    connect(interruptButton, &QPushButton::clicked, this, &MainWindow::on_interruptButton_triggered);
-    commandHLayout->addWidget(interruptButton);
+    interruptToolButton = new QToolButton(this);
+    interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu* interruptMenu = new QMenu();
+    QAction* interruptAction = interruptMenu->addAction("Interrupt");
+    QAction* stopAction = interruptMenu->addAction("Stop");
+    connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
+    interruptToolButton->setMenu(interruptMenu);
+    interruptToolButton->setDefaultAction(interruptAction);
+
+    commandHLayout->addWidget(interruptToolButton);
 
     commandHLayout->addWidget(mCommandLineOption);
 
@@ -1178,7 +1185,7 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
-void MainWindow::on_interruptButton_triggered()
+void MainWindow::on_interrupt_triggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
@@ -1189,11 +1196,20 @@ void MainWindow::on_interruptButton_triggered()
 
 }
 
+void MainWindow::on_stop_triggered()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Not Implemented");
+
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
+}
+
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
-    interruptButton->setEnabled(state == QProcess::Running);
+    interruptToolButton->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()

@@ -166,7 +166,8 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
 
-    void on_interruptButton_triggered();
+    void on_interrupt_triggered();
+    void on_stop_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -222,7 +223,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(FileContext* fileContext);
 
-    QPushButton* interruptButton = nullptr;
+    QToolButton* interruptToolButton = nullptr;
 };
 
 }
