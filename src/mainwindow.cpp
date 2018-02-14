@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QtConcurrent>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
@@ -1183,7 +1185,8 @@ void MainWindow::interrupt()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    process->interrupt();
+    QtConcurrent::run(process, &GamsProcess::interrupt);
+
 }
 
 void MainWindow::updateRunState()
