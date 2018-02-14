@@ -1,5 +1,7 @@
 #include "wplabel.h"
 #include <QDebug>
+#include <QDesktopServices>
+#include <QUrl>
 
 namespace gams {
 namespace studio {
@@ -26,14 +28,13 @@ void WpLabel::leaveEvent(QEvent *event)
 
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
-    if (!mLink.isNull())
+    if (!mLink.isNull()) { // programatically added, file history
         QLabel::linkActivated(mLink);
+    } else {
+        QString link = this->property("link").toString(); // added via designer, only web links for now
+        QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
+    }
 }
-
-//void WpLabel::linkActivated(const QString &link)
-//{
-//    QLabel::linkActivated(link);
-//}
 
 }
 }

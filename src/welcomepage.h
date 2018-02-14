@@ -39,9 +39,6 @@ public:
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 
-private slots:
-    void labelLinkActivated(const QString &link);
-
 private:
     Ui::WelcomePage *ui;
     QList<QLabel*> mFileHistory;

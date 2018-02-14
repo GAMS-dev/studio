@@ -32,11 +32,6 @@ WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
     ui(new Ui::WelcomePage)
 {
     ui->setupUi(this);
-    connect(ui->label_documentation, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_gamsworld, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_gamsyoutube, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_stackoverflow, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-
     historyChanged(history);
 }
 
@@ -69,11 +64,6 @@ void WelcomePage::historyChanged(HistoryData *history)
 WelcomePage::~WelcomePage()
 {
     delete ui;
-}
-
-void WelcomePage::labelLinkActivated(const QString &link)
-{
-    QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
 }
 
 }
