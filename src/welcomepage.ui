@@ -546,6 +546,7 @@
    <header location="global">wplabel.h</header>
    <slots>
     <signal>relayActionLab(QString)</signal>
+    <signal>relayModLibLoad(QString)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -567,9 +568,75 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>label_browseLib</sender>
+   <signal>relayActionLab(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayAction(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>431</x>
+     <y>507</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_trnsport</sender>
+   <signal>relayModLibLoad(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayModLibLoad(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>431</x>
+     <y>294</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_magic</sender>
+   <signal>relayModLibLoad(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayModLibLoad(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>431</x>
+     <y>365</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_embeddedSort</sender>
+   <signal>relayModLibLoad(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayModLibLoad(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>431</x>
+     <y>436</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>relayActionWp(QString)</signal>
+  <signal>relayModLibLoad(QString)</signal>
   <slot>on_relayAction(QString)</slot>
+  <slot>on_relayModLibLoad(QString)</slot>
  </slots>
 </ui>

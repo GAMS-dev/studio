@@ -46,9 +46,11 @@ private:
 signals:
     void linkActivated(const QString &link);
     void relayActionWp(QString action);
+    void relayModLibLoad(QString lib);
 
 public slots:
     void on_relayAction(QString action);
+    void on_relayModLibLoad(QString lib);
 
 };
 

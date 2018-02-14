@@ -244,16 +244,29 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
     return resList;
 }
 
-void MainWindow::receiveAction(const QString &action)
+void MainWindow::receiveAction(QString action)
 {
-    qDebug() << "action" << action;
-    if (action == "createNewFile") {
-        qDebug() << "action?";
+    if (action == "createNewFile")
         on_actionNew_triggered();
+    else if(action == "browseModLib")
+        on_actionGAMS_Library_triggered();
+}
 
-    } else if(action == "browseModLib") {
+void MainWindow::receiveModLibLoad(QString lib)
+{
+    // TODO(rogo): refactor this, code doubling with MainWindow::triggerGamsLibFileCreation
+    QDir gamsSysDir(GAMSPaths::systemDir());
+    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess->setGlbFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
+    mLibProcess->setModelName(lib);
+    mLibProcess->setInputFile(lib + ".gms");
+    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
+    mLibProcess->execute();
 
-    }
+    // This log is passed to the system-wide log
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
+    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+
 }
 
 SearchWidget* MainWindow::searchWidget() const

@@ -105,7 +105,8 @@ public:
     StudioSettings *settings() const;
 
 public slots:
-    void receiveAction(const QString &action);
+    void receiveAction(QString action);
+    void receiveModLibLoad(QString lib);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true);

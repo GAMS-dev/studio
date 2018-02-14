@@ -45,7 +45,8 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
         emit relayActionLab(action);
 
     } else if (!this->property("modlib").isNull()) { // load item from model library
-
+        QString lib = this->property("modlib").toString();
+        emit relayModLibLoad(lib);
     }
 }
 

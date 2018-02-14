@@ -35,6 +35,7 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
     historyChanged(history);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
+    connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
 }
 
 void WelcomePage::historyChanged(HistoryData *history)
@@ -57,8 +58,10 @@ void WelcomePage::historyChanged(HistoryData *history)
             tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
-            tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/><small>"
-                                  + file.canonicalPath() + "</small>");
+            tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>");
+            tmpLabel->setFrameShape(QFrame::StyledPanel);
+            tmpLabel->setMargin(8);
+            tmpLabel->setToolTip("File has been deleted or moved");
         }
         ui->layout_lastFiles->addWidget(tmpLabel);
     }
@@ -71,8 +74,12 @@ WelcomePage::~WelcomePage()
 
 void WelcomePage::on_relayAction(QString action)
 {
-    qDebug() << "im here WelcomePage::on_relayAction";
     emit relayActionWp(action);
+}
+
+void WelcomePage::on_relayModLibLoad(QString lib)
+{
+    emit relayModLibLoad(lib);
 }
 
 }
