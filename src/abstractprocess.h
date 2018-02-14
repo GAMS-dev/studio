@@ -57,7 +57,7 @@ public:
 signals:
     void finished(AbstractProcess *process, int exitCode);
     void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
-    void  stateChanged(QProcess::ProcessState newState);
+    void stateChanged(QProcess::ProcessState newState);
 
 protected slots:
     void completed(int exitCode);

@@ -90,6 +90,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
+    connect(mWp, &WelcomePage::relayActionWp, this, &MainWindow::receiveAction);
 
     ensureCodecMenu("System");
     mSettings->loadSettings(this);
@@ -241,6 +242,18 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
         if (ed) resList << ed;
     }
     return resList;
+}
+
+void MainWindow::receiveAction(const QString &action)
+{
+    qDebug() << "action" << action;
+    if (action == "createNewFile") {
+        qDebug() << "action?";
+        on_actionNew_triggered();
+
+    } else if(action == "browseModLib") {
+
+    }
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -682,7 +695,7 @@ void MainWindow::on_logTab_tabCloseRequested(int index)
 
 void MainWindow::createWelcomePage()
 {
-    mWp = new WelcomePage(history());
+    mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
@@ -701,7 +714,7 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget(mDockOptionView);
     QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
-    commandHLayout->setContentsMargins(10, 10, 10, 5);
+    commandHLayout->setContentsMargins(4, 4, 4, 4);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);

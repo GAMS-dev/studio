@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>736</width>
-    <height>587</height>
+    <width>972</width>
+    <height>767</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -205,15 +205,15 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QLabel" name="label_newfile">
+            <widget class="gams::studio::WpLabel" name="label_newfile">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>Create New File</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;small&gt;Creates a new and empty .gms file.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::AutoText</enum>
@@ -221,10 +221,13 @@
              <property name="margin">
               <number>8</number>
              </property>
+             <property name="action" stdset="0">
+              <string>createNewFile</string>
+             </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_transport">
+            <widget class="gams::studio::WpLabel" name="label_trnsport">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -235,54 +238,88 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;trnsport&quot;&gt;Transport Example&lt;/a&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example based on wares distribution problem&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
              </property>
              <property name="margin">
               <number>8</number>
+             </property>
+             <property name="modlib" stdset="0">
+              <string>trnsport</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_python">
+            <widget class="gams::studio::WpLabel" name="label_magic">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;python&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;$Python Example&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;An example showing how to use GAMS' embedded code functionality.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Power Generation Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;Example for power demand and -generation with three different kinds of generators which have minimum and maximum output constraints.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
              </property>
              <property name="margin">
               <number>8</number>
+             </property>
+             <property name="modlib" stdset="0">
+              <string>magic</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_example3">
+            <widget class="gams::studio::WpLabel" name="label_embeddedSort">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;link&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;$someother Example&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;TODO&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;An example showing how to use GAMS together with embedded Python code to sort randomly generated numerical values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
              </property>
              <property name="margin">
               <number>8</number>
+             </property>
+             <property name="modlib" stdset="0">
+              <string>embeddedSort</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="gams::studio::WpLabel" name="label_browseLib">
+             <property name="mouseTracking">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse Model Library&lt;/span&gt;&lt;br/&gt;&lt;small&gt;The model library contains an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="action" stdset="0">
+              <string>browseModLib</string>
              </property>
             </widget>
            </item>
@@ -396,6 +433,9 @@
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsworld_16x16.gif&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS World&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -504,8 +544,32 @@
    <class>gams::studio::WpLabel</class>
    <extends>QLabel</extends>
    <header location="global">wplabel.h</header>
+   <slots>
+    <signal>relayActionLab(QString)</signal>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>label_newfile</sender>
+   <signal>relayActionLab(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayAction(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>431</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>relayActionWp(QString)</signal>
+  <slot>on_relayAction(QString)</slot>
+ </slots>
 </ui>

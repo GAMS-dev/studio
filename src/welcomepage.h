@@ -35,7 +35,7 @@ class WelcomePage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WelcomePage(HistoryData *history, QWidget *parent = 0);
+    explicit WelcomePage(HistoryData *history, MainWindow *parent = 0);
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 
@@ -45,6 +45,10 @@ private:
 
 signals:
     void linkActivated(const QString &link);
+    void relayActionWp(QString action);
+
+public slots:
+    void on_relayAction(QString action);
 
 };
 

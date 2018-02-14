@@ -27,12 +27,14 @@
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
+WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
     QWidget(parent),
     ui(new Ui::WelcomePage)
 {
     ui->setupUi(this);
     historyChanged(history);
+
+    connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
 }
 
 void WelcomePage::historyChanged(HistoryData *history)
@@ -65,6 +67,12 @@ void WelcomePage::historyChanged(HistoryData *history)
 WelcomePage::~WelcomePage()
 {
     delete ui;
+}
+
+void WelcomePage::on_relayAction(QString action)
+{
+    qDebug() << "im here WelcomePage::on_relayAction";
+    emit relayActionWp(action);
 }
 
 }

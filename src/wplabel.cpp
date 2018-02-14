@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
+#include "mainwindow.h"
 
 namespace gams {
 namespace studio {
@@ -31,13 +32,23 @@ void WpLabel::leaveEvent(QEvent *event)
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    if (!mLink.isNull()) { // programatically added, for file history
+    if (!mLink.isNull()) { // file history
         QLabel::linkActivated(mLink);
-    } else {
-        QString link = this->property("link").toString(); // added via designer, only web links for now
+
+    // added via designer from here on
+    } else if (!this->property("link").isNull()) { // web- or file links, open directly
+        QString link = this->property("link").toString();
         QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
+
+    } else if (!this->property("action").isNull()) { // actions
+        QString action = this->property("action").toString();
+        emit relayActionLab(action);
+
+    } else if (!this->property("modlib").isNull()) { // load item from model library
+
     }
 }
+
 
 }
 }

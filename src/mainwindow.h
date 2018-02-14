@@ -104,6 +104,9 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
 
+public slots:
+    void receiveAction(const QString &action);
+
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true);
     void codecChanged(QAction *action);

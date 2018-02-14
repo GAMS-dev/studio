@@ -8,6 +8,8 @@ namespace studio {
 
 class WpLabel : public QLabel
 {
+    Q_OBJECT
+
 public:
     WpLabel(QWidget *parent = nullptr);
     WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr);
@@ -20,6 +22,9 @@ protected:
 private:
     QString mContent;
     QString mLink;
+
+signals:
+    void relayActionLab(QString action);
 };
 
 }
