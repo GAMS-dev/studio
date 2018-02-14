@@ -378,17 +378,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;
-&lt;head/&gt;
-&lt;body&gt;
-&lt;p&gt;
-&lt;img src=&quot;:/img/gamsicon_16x16.png&quot; /&gt;
-&lt;a href=&quot;https://www.gams.com/latest/docs/&quot;&gt;
-&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GAMS Documentation &lt;/span&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Documentation &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
@@ -407,7 +397,7 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsworld_16x16.gif&quot;/&gt;&lt;a href=&quot;http://gamsworld.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GAMS World&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsworld_16x16.gif&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS World&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
@@ -426,7 +416,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;a href=&quot;https://www.youtube.com/user/GAMSLessons&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GAMS on YouTube&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
@@ -457,7 +447,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;a href=&quot;https://stackoverflow.com/questions/tagged/gams-math&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt; GAMS on StackOverflow&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on StackOverflow&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>

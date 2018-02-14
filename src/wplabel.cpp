@@ -18,17 +18,20 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
 
 void WpLabel::enterEvent(QEvent *event)
 {
+    Q_UNUSED(event);
     setFrameShape(QFrame::Box);
 }
 
 void WpLabel::leaveEvent(QEvent *event)
 {
+    Q_UNUSED(event);
     setFrameShape(QFrame::StyledPanel);
 }
 
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
-    if (!mLink.isNull()) { // programatically added, file history
+    Q_UNUSED(event);
+    if (!mLink.isNull()) { // programatically added, for file history
         QLabel::linkActivated(mLink);
     } else {
         QString link = this->property("link").toString(); // added via designer, only web links for now
