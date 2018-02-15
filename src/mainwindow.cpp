@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QtConcurrent>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
@@ -724,6 +726,21 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setMenu(runMenu);
     runToolButton->setDefaultAction(ui->actionRun);
     commandHLayout->addWidget(runToolButton);
+
+    interruptToolButton = new QToolButton(this);
+    interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu* interruptMenu = new QMenu();
+    QIcon interruptIcon(":/img/interrupt");
+    QIcon stopIcon(":/img/stop");
+    QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
+    QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
+    connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
+    interruptToolButton->setMenu(interruptMenu);
+    interruptToolButton->setDefaultAction(interruptAction);
+
+    commandHLayout->addWidget(interruptToolButton);
+
     commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
@@ -1175,10 +1192,32 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
+void MainWindow::on_interrupt_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::interrupt);
+
+}
+
+void MainWindow::on_stop_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::stop);
+}
+
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
+    interruptToolButton->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()

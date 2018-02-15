@@ -166,6 +166,9 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
 
+    void on_interrupt_triggered();
+    void on_stop_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -219,6 +222,8 @@ private:
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(FileContext* fileContext);
+
+    QToolButton* interruptToolButton = nullptr;
 };
 
 }

@@ -14,6 +14,7 @@
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w24">gams-w24.svg</file>
         <file alias="home">home.svg</file>
+        <file alias="interrupt">interrupt.svg</file>
         <file alias="play">play.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="question">question.svg</file>
