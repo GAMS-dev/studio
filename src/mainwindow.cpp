@@ -714,7 +714,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->actionRun->setShortcutVisibleInContextMenu(true);
     ui->actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     ui->actionCompile->setShortcutVisibleInContextMenu(true);
-    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);   
+    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
 
     QToolButton* runToolButton = new QToolButton(this);
     runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
