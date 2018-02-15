@@ -252,15 +252,15 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString lib, QString gmsFileName)
+void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
     if (gmsFileName == "")
-        gmsFileName = lib + ".gms";
+        gmsFileName = model + ".gms";
 
     QDir gamsSysDir(GAMSPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(lib);
+    mLibProcess->setModelName(model);
     mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
@@ -270,15 +270,15 @@ void MainWindow::openModelFromLib(QString glbFile, QString lib, QString gmsFileN
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString lib)
+void MainWindow::receiveModLibLoad(QString model)
 {
     QString glbFile;
-    if (lib != "embeddedSort")
+    if (model != "embeddedSort")
         glbFile = "gamslib_ml/gamslib.glb";
     else
         glbFile = "datalib_ml/datalib.glb";
 
-    openModelFromLib(glbFile, lib);
+    openModelFromLib(glbFile, model);
 
 }
 
