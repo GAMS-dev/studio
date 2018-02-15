@@ -387,6 +387,8 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
         mRunInfo = runInfo;
     } else if (alternateFile.exists()) {
         mRunInfo = alternateFile.fileName();
+    } else {
+        mRunInfo = runnableFile.canonicalFilePath();
     }
 }
 

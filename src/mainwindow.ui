@@ -442,6 +442,9 @@
    <property name="text">
     <string>Model Library Explorer</string>
    </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
   </action>
   <action name="actionRun">
    <property name="icon">

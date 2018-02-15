@@ -134,8 +134,9 @@ public:
 
     void removeTextMarks(TextMark::Type tmType);
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void addFileWatcherForGdx();
+    
     TextMarkList* marks() const {return mMarks;}
-
 
 public slots:
     void highlightWordUnderCursor(QString word);

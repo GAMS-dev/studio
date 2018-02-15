@@ -22,7 +22,12 @@
 #include "filegroupcontext.h"
 #include "logcontext.h"
 #include <QDebug>
+#include <QProcess>
 #include <QDir>
+
+#ifdef _WIN32
+#include "windows.h"
+#endif
 
 namespace gams {
 namespace studio {
@@ -101,6 +106,60 @@ QString GamsProcess::commandLineStr() const
 void GamsProcess::setCommandLineStr(const QString &commandLineStr)
 {
     mCommandLineStr = commandLineStr;
+}
+
+void GamsProcess::interrupt()
+{
+    QString pid = QString::number(mProcess.processId());
+#ifdef _WIN32
+    //IntPtr receiver;
+    COPYDATASTRUCT cds;
+    const char* msgText = "GAMS Message Interrupt";
+
+    QString windowName("___GAMSMSGWINDOW___");
+    windowName += pid;
+    LPCTSTR windowNameL = windowName.toStdWString().c_str();
+    HWND receiver = FindWindow(nullptr, windowNameL);
+
+    cds.dwData = (ULONG_PTR) 1;
+    cds.lpData = (PVOID) msgText;
+    cds.cbData = (DWORD) (strlen(msgText) + 1);
+
+    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+#else // Linux and Mac OS X
+    QStringList s1;
+    QProcess proc;
+    proc.setProgram("/bin/bash");
+    s1 << "-c" << QString("pstree -p ") + pid.toUtf8().constData()
+          + QString(" | sed 's/(/\\n(/g' | grep '(' | sed 's/(\\(.*\\)).*/\\1/'");
+    proc.setArguments(s1);
+    proc.start();
+    proc.waitForFinished(-1);
+
+    QString s(proc.readAllStandardOutput());
+
+    QStringList childList = s.split("\n");
+
+    QString childListStr = "";
+    for(int i=0; i<childList.length(); i++)
+    {
+        childListStr += childList[i].toUtf8().constData();
+        childListStr += " ";
+    }
+    if (childListStr.isEmpty())
+        return;
+
+    proc.setProgram("/bin/bash");
+    QStringList s2 { "-c", "kill -2 " + childListStr};
+    proc.setArguments(s2);
+    proc.start();
+    proc.waitForFinished(-1);
+#endif
+}
+
+void GamsProcess::stop()
+{
+    mProcess.kill();
 }
 
 } // namespace studio

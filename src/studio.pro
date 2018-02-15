@@ -149,7 +149,8 @@ SOURCES += \
     keys.cpp \
     helpview.cpp \
     bookmarkdialog.cpp \
-    commandlineparser.cpp
+    commandlineparser.cpp \
+    wplabel.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -217,7 +218,8 @@ HEADERS += \
     keys.h \
     helpview.h \
     bookmarkdialog.h \
-    commandlineparser.h
+    commandlineparser.h \
+    wplabel.h
 
 FORMS += \
     welcomepage.ui  \

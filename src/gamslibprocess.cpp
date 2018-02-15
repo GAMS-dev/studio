@@ -75,7 +75,7 @@ void GAMSLibProcess::execute()
 {// TODO(AF) improve the gamslib output messages... currently they don't make sense for the GAMS Studio!
     QStringList args;
     args << "-lib";
-    args << mGlbFile;
+    args << QDir::toNativeSeparators(mGlbFile);
     args << (mModelName.isEmpty() ? QString::number(mModelNumber) : mModelName);
     args << QDir::toNativeSeparators(mTargetDir);
     mProcess.start(nativeAppPath(), args);

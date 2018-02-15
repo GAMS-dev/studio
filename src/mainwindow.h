@@ -60,7 +60,7 @@ struct RecentData {
 };
 
 struct HistoryData {
-    const int MAX_FILE_HISTORY = 5;
+    const int MAX_FILE_HISTORY = 8;
     QStringList lastOpenedFiles;
 
     // TODO: implement projects & sessions
@@ -104,6 +104,11 @@ public:
     void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
+    void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
+
+public slots:
+    void receiveAction(QString action);
+    void receiveModLibLoad(QString model);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true);
@@ -168,6 +173,9 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
 
+    void on_interrupt_triggered();
+    void on_stop_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -196,8 +204,6 @@ private:
     void updateEditorLineWrapping();
 
 private:
-    const int MAX_FILE_HISTORY = 5;
-
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
@@ -223,6 +229,8 @@ private:
     FileRepository mFileRepo;
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(FileContext* fileContext);
+
+    QToolButton* interruptToolButton = nullptr;
 };
 
 }
