@@ -103,6 +103,7 @@ public:
     void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
+    void openModelFromLib(QString glbFile, QString lib, QString gmsFileName = "");
 
 public slots:
     void receiveAction(QString action);

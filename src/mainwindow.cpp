@@ -252,20 +252,33 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::receiveModLibLoad(QString lib)
+void MainWindow::openModelFromLib(QString glbFile, QString lib, QString gmsFileName)
 {
-    // TODO(rogo): refactor this, code doubling with MainWindow::triggerGamsLibFileCreation
+    if (gmsFileName == "")
+        gmsFileName = lib + ".gms";
+
     QDir gamsSysDir(GAMSPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
-    mLibProcess->setGlbFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
+    mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
     mLibProcess->setModelName(lib);
-    mLibProcess->setInputFile(lib + ".gms");
+    mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
     // This log is passed to the system-wide log
     connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+}
+
+void MainWindow::receiveModLibLoad(QString lib)
+{
+    QString glbFile;
+    if (lib != "embeddedSort")
+        glbFile = "gamslib_ml/gamslib.glb";
+    else
+        glbFile = "datalib_ml/datalib.glb";
+
+    openModelFromLib(glbFile, lib);
 
 }
 
@@ -885,15 +898,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
-    mLibProcess = new GAMSLibProcess(this);
-    mLibProcess->setGlbFile(item->library()->glbFile());
-    mLibProcess->setModelName(item->name());
-    mLibProcess->setInputFile(gmsFileName);
-    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
-    mLibProcess->execute();
-    // This log is passed to the system-wide log
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
-    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+    openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
 }
 
 QStringList MainWindow::openedFiles()
