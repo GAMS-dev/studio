@@ -455,12 +455,16 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
 //        mCommandLineOption->resetCurrentValue();
     }
+    mCommandLineOption->setCurrentIndex(-1);
+    mCommandLineOption->setEnabled( false );
+    setRunActionsEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
+
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
@@ -480,18 +484,10 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
             setRunActionsEnabled( true );
-        } else {
-            mCommandLineOption->setCurrentIndex(-1);
-            mCommandLineOption->setEnabled( false );
-            setRunActionsEnabled( false );
         }
     } else if(FileContext::toGdxViewer(editWidget)) {
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
-    } else {
-        mCommandLineOption->setCurrentIndex(-1);
-        mCommandLineOption->setEnabled( false );
-        setRunActionsEnabled( false );
     }
 }
 
