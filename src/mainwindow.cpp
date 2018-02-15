@@ -725,8 +725,10 @@ void MainWindow::createRunAndCommandLineWidgets()
     interruptToolButton = new QToolButton(this);
     interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     QMenu* interruptMenu = new QMenu();
-    QAction* interruptAction = interruptMenu->addAction("Interrupt");
-    QAction* stopAction = interruptMenu->addAction("Stop");
+    QIcon interruptIcon(":/img/interrupt");
+    QIcon stopIcon(":/img/stop");
+    QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
+    QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
     connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
     connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
     interruptToolButton->setMenu(interruptMenu);
