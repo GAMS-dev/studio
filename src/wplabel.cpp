@@ -9,24 +9,28 @@ namespace studio {
 
 WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
 {
+    setStyleSheet("QLabel { background-color : white; }");
 }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     : QLabel(parent), mContent(content), mLink(link)
 {
     QLabel::setText(mContent);
+    setStyleSheet("QLabel { background-color : white; }");
 }
 
 void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event);
     setFrameShape(QFrame::Box);
+    setStyleSheet("QLabel { background-color : #f39619; }");
 }
 
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event);
     setFrameShape(QFrame::StyledPanel);
+    setStyleSheet("QLabel { background-color : white; }");
 }
 
 void WpLabel::mousePressEvent(QMouseEvent *event)

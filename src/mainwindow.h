@@ -107,7 +107,7 @@ public:
 
 public slots:
     void receiveAction(QString action);
-    void receiveModLibLoad(QString lib);
+    void receiveModLibLoad(QString model);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true);

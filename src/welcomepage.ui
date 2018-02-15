@@ -43,8 +43,11 @@
          <bold>true</bold>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">padding: 0 20 0 20;</string>
+       </property>
        <property name="text">
-        <string>GAMS Studio (beta)</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GAMS Studio (beta)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -57,7 +60,7 @@
         </sizepolicy>
        </property>
        <property name="styleSheet">
-        <string notr="true"/>
+        <string notr="true">QLabel { background-color : white; margin: 0 20 0 20 }</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
@@ -73,6 +76,9 @@
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="margin">
+        <number>10</number>
        </property>
       </widget>
      </item>

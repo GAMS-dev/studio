@@ -18,7 +18,6 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void enterEvent(QEvent* event);
     void leaveEvent(QEvent* event);
-
 private:
     QString mContent;
     QString mLink;
