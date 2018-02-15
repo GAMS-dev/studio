@@ -135,6 +135,17 @@ void GamsProcess::interrupt()
     proc.setArguments(s1);
     proc.start();
     proc.waitForFinished(-1);
+
+    if (QProcess::CrashExit == proc.exitStatus())
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Interrupt failed");
+
+        msgBox.setText("Unable to interrupt process. Interrupt requires the command line tool 'pstree'");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        return;
+    }
+
     QString s(proc.readAllStandardOutput());
 
     QStringList childList = s.split("\n");
