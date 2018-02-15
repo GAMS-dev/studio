@@ -35,18 +35,22 @@ class WelcomePage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WelcomePage(HistoryData *history, QWidget *parent = 0);
+    explicit WelcomePage(HistoryData *history, MainWindow *parent = 0);
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 
-private slots:
-    void labelLinkActivated(const QString &link);
-
 private:
     Ui::WelcomePage *ui;
+    QList<QLabel*> mFileHistory;
 
 signals:
     void linkActivated(const QString &link);
+    void relayActionWp(QString action);
+    void relayModLibLoad(QString lib);
+
+public slots:
+    void on_relayAction(QString action);
+    void on_relayModLibLoad(QString lib);
 
 };
 

@@ -92,6 +92,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
+    connect(mWp, &WelcomePage::relayActionWp, this, &MainWindow::receiveAction);
 
     ensureCodecMenu("System");
     mSettings->loadSettings(this);
@@ -244,6 +245,44 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
         if (ed) resList << ed;
     }
     return resList;
+}
+
+void MainWindow::receiveAction(QString action)
+{
+    if (action == "createNewFile")
+        on_actionNew_triggered();
+    else if(action == "browseModLib")
+        on_actionGAMS_Library_triggered();
+}
+
+void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
+{
+    if (gmsFileName == "")
+        gmsFileName = model + ".gms";
+
+    QDir gamsSysDir(GAMSPaths::systemDir());
+    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
+    mLibProcess->setModelName(model);
+    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
+    mLibProcess->execute();
+
+    // This log is passed to the system-wide log
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
+    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+}
+
+void MainWindow::receiveModLibLoad(QString model)
+{
+    QString glbFile;
+    if (model != "embeddedSort")
+        glbFile = "gamslib_ml/gamslib.glb";
+    else
+        glbFile = "datalib_ml/datalib.glb";
+
+    openModelFromLib(glbFile, model);
+
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -689,7 +728,7 @@ void MainWindow::on_logTab_tabCloseRequested(int index)
 
 void MainWindow::createWelcomePage()
 {
-    mWp = new WelcomePage(history());
+    mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
@@ -708,7 +747,7 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget(mDockOptionView);
     QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
-    commandHLayout->setContentsMargins(10, 10, 10, 5);
+    commandHLayout->setContentsMargins(4, 4, 4, 4);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -881,15 +920,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
-    mLibProcess = new GAMSLibProcess(this);
-    mLibProcess->setGlbFile(item->library()->glbFile());
-    mLibProcess->setModelName(item->name());
-    mLibProcess->setInputFile(gmsFileName);
-    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
-    mLibProcess->execute();
-    // This log is passed to the system-wide log
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
-    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+    openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
 }
 
 QStringList MainWindow::openedFiles()

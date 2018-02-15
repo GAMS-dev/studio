@@ -23,6 +23,8 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="times">times.svg</file>
         <file alias="user">user.svg</file>
+        <file>gamsicon_16x16.png</file>
+        <file>gamsworld_16x16.gif</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

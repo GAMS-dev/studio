@@ -146,7 +146,8 @@ SOURCES += \
     resultsview.cpp \
     searchresultlist.cpp \
     keys.cpp \
-    commandlineparser.cpp
+    commandlineparser.cpp \
+    wplabel.cpp
 
 
 HEADERS += \
@@ -213,7 +214,8 @@ HEADERS += \
     searchresultlist.h \
     syntax/syntaxdata.h \
     keys.h \
-    commandlineparser.h
+    commandlineparser.h \
+    wplabel.h
 
 FORMS += \
     welcomepage.ui  \
