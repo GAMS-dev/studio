@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>440</width>
-    <height>402</height>
+    <width>602</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,8 +23,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>360</y>
-     <width>421</width>
+     <y>400</y>
+     <width>581</width>
      <height>32</height>
     </rect>
    </property>
@@ -39,8 +39,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>280</y>
-     <width>421</width>
+     <y>310</y>
+     <width>581</width>
      <height>41</height>
     </rect>
    </property>
@@ -77,8 +77,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>320</y>
-     <width>421</width>
+     <y>350</y>
+     <width>581</width>
      <height>41</height>
     </rect>
    </property>
@@ -115,8 +115,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>421</width>
+     <y>40</y>
+     <width>581</width>
      <height>261</height>
     </rect>
    </property>
@@ -126,6 +126,38 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>0</y>
+     <width>581</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="locationbookmarkHLayout">
+    <item>
+     <widget class="QLabel" name="bookmarkLabel">
+      <property name="text">
+       <string>Bookmarks:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

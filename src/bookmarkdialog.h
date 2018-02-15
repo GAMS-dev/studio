@@ -12,22 +12,26 @@ class BookmarkDialog : public QDialog
 {
     Q_OBJECT
 public:
-    BookmarkDialog(QMap<QString, QString>& bookmarkMap, QWidget *parent = 0);
+    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = 0);
     ~BookmarkDialog();
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
 
 signals:
     void openUrl(const QUrl& location);
-    void updateBookmark(const QUrl& location, const QString& name);
-    void removeBookmark(const QUrl& location);
+    void updateBookmarkName(const QString& location, const QString& name);
+    void updateBookmarkLocation(const QString& oldLocation, const QString& newLocation, const QString& name);
+    void removeBookmark(const QString& location, const QString& name);
 
 private slots:
-//    void on_bookmarkEntryUpdated(const QUrl& location, const QString& name);
     void on_bookmarkEntryShowed(const QModelIndex &index);
     void on_contextMenuShowed(const QPoint &pos);
 
 private:
     Ui::bookmarkDialog ui;
     QStandardItemModel* model;
+    QMultiMap<QString, QString>& bookmarkMap;
 };
 
 } // namespace studio

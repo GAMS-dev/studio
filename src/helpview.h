@@ -18,7 +18,9 @@ public:
 
 public slots:
     void on_urlOpened(const QUrl& location);
-    void on_bookmarkRemoved(const QUrl& location);
+    void on_bookmarkNameUpdated(const QString& location, const QString& name);
+    void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
+    void on_bookmarkRemoved(const QString& location, const QString& name);
 
     void on_loadFinished(bool ok);
     void on_actionHome_triggered();
@@ -29,8 +31,10 @@ public slots:
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
+    void addBookmarkAction(const QString& objectName, const QString& title);
+
 private:
-    QMap<QString, QString> bookmarkMap;
+    QMultiMap<QString, QString> bookmarkMap;
     QMenu* bookmarkMenu;
 
     QAction* actionAddBookmark;

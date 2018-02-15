@@ -78,7 +78,7 @@ void HelpView::setupUi(QWidget *parent)
     bookmarkMenu->addSeparator();
     bookmarkMenu->addAction(actionOrganizeBookmark);
 
-//    QMap<QString, QString>::iterator i;
+//    QMultiMap<QString, QString>::iterator i;
 //    for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
 //        qDebug() << i.key() << ": " << i.value();
 //        QAction* action = new QAction(this);
@@ -143,20 +143,65 @@ void HelpView::on_urlOpened(const QUrl& location)
     helpView->load(location);
 }
 
-void HelpView::on_bookmarkRemoved(const QUrl &location)
+void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& name)
 {
-    if (bookmarkMap.contains(location.toString())) {
-        bookmarkMap.remove(location.toString());
+    if (bookmarkMap.contains(location)) {
         foreach (QAction* action, bookmarkMenu->actions()) {
             if (action->isSeparator())
                 continue;
-            if (QString::compare(action->objectName(), location.toString(), Qt::CaseInsensitive) == 0) {
-                bookmarkMenu->removeAction( action );
+            if (QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) {
+                action->setText(name);
+                bookmarkMap.replace(location, name);
                 break;
            }
         }
     }
+}
 
+void HelpView::on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name)
+{
+     if (bookmarkMap.contains(oldLocation)) {
+         bookmarkMap.remove(oldLocation);
+         foreach (QAction* action, bookmarkMenu->actions()) {
+             if (action->isSeparator())
+                 continue;
+             if (QString::compare(action->objectName(), oldLocation, Qt::CaseInsensitive) == 0) {
+                 bookmarkMenu->removeAction( action );
+                 break;
+            }
+         }
+     }
+
+     bool found = false;
+     foreach (QAction* action, bookmarkMenu->actions()) {
+         if (action->isSeparator())
+             continue;
+         if ((QString::compare(action->objectName(), newLocation, Qt::CaseInsensitive) == 0) &&
+             (QString::compare(action->text(), name, Qt::CaseInsensitive) == 0)
+            ) {
+               found = true;
+               break;
+         }
+     }
+     if (!found) {
+         addBookmarkAction(newLocation, name);
+         bookmarkMap.insert(newLocation, name);
+     }
+}
+
+void HelpView::on_bookmarkRemoved(const QString &location, const QString& name)
+{
+    foreach (QAction* action, bookmarkMenu->actions()) {
+        if (action->isSeparator())
+            continue;
+        if ((QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) &&
+            (QString::compare(action->text(), name, Qt::CaseInsensitive) == 0)
+           ) {
+              bookmarkMap.remove(location, name);
+              bookmarkMenu->removeAction( action );
+              break;
+        }
+    }
 }
 
 void HelpView::on_loadFinished(bool ok)
@@ -180,28 +225,21 @@ void HelpView::on_actionAddBookMark_triggered()
         bookmarkMenu->addSeparator();
 
     QString pageUrl = helpView->page()->url().toString();
-    if (!bookmarkMap.contains(pageUrl)) {
-        bookmarkMap.insert(pageUrl, helpView->page()->title());
-
-        QAction* action = new QAction(this);
-        action->setObjectName(pageUrl);
-        action->setText(helpView->page()->title());
-        action->setToolTip(pageUrl);
-
-        if (pageUrl.startsWith("file")) {
-            QPixmap linkPixmap(":/img/link");
-            QIcon linkButtonIcon(linkPixmap);
-            action->setIcon(linkButtonIcon);
-        } else if (pageUrl.startsWith("http")) {
-            QPixmap linkPixmap(":/img/external-link");
-            QIcon linkButtonIcon(linkPixmap);
-            action->setIcon(linkButtonIcon);
+    bool found = false;
+    foreach (QAction* action, bookmarkMenu->actions()) {
+        if (action->isSeparator())
+            continue;
+        if ((QString::compare(action->objectName(), pageUrl, Qt::CaseInsensitive) == 0) &&
+            (QString::compare(action->text(), helpView->page()->title(), Qt::CaseInsensitive) == 0)
+           ) {
+              found = true;
+              break;
         }
-        connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
-        bookmarkMenu->addAction(action);
-    } /*else {
-        actionAddBookmark->setEnabled(false);
-    }*/
+    }
+    if (!found) {
+       bookmarkMap.replace(pageUrl, helpView->page()->title());
+       addBookmarkAction(pageUrl, helpView->page()->title());
+    }
 }
 
 void HelpView::on_actionOrganizeBookMark_triggered()
@@ -239,6 +277,26 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
 void HelpView::on_actionOpenInBrowser_triggered()
 {
     QDesktopServices::openUrl( helpView->url() );
+}
+
+void HelpView::addBookmarkAction(const QString &objectName, const QString &title)
+{
+    QAction* action = new QAction(this);
+    action->setObjectName(objectName);
+    action->setText(title);
+    action->setToolTip(objectName);
+
+    if (objectName.startsWith("file")) {
+           QPixmap linkPixmap(":/img/link");
+           QIcon linkButtonIcon(linkPixmap);
+           action->setIcon(linkButtonIcon);
+    } else if (objectName.startsWith("http")) {
+           QPixmap linkPixmap(":/img/external-link");
+           QIcon linkButtonIcon(linkPixmap);
+           action->setIcon(linkButtonIcon);
+    }
+    connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
+    bookmarkMenu->addAction(action);
 }
 
 } // namespace studio
