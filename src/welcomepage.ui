@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="autoFillBackground">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -66,7 +66,7 @@
         <enum>QFrame::Plain</enum>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is a preview version of the newly developed GAMS IDE - now called &lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;incomplete features bla bla some bugs yadadada pls give feedback.&lt;/p&gt;&lt;p&gt;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a gal [...] cently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is a preview version of the newly developed GAMS IDE - now called &lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio&lt;/span&gt;.&lt;br/&gt;This software is designed to replace the older GAMS IDE in the longterm. However, a transition period is needed in order to be able to offer a feature complete replacement. &lt;br/&gt;The original IDE has grown over many years and now offers a vast array of features and it takes time to implement these into a new product. The decision for an early release was made to be able to listen to and incorporate users feedback and be hereby able to develop a product tailormade for our customers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -111,7 +111,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>20</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -174,7 +174,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>30</width>
-           <height>13</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -367,7 +367,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>30</width>
-           <height>13</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -375,7 +375,7 @@
        <item>
         <layout class="QVBoxLayout" name="vl_links">
          <item>
-          <widget class="QLabel" name="label_5">
+          <widget class="QLabel" name="label_discovergams">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -528,7 +528,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>13</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
