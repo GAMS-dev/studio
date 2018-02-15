@@ -53,9 +53,9 @@ GdxViewer::~GdxViewer()
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     if (selected.indexes().size()>0) {
-        int selectedIdx = selected.indexes().at(0).row();
+        int selectedIdx = mSymbolTableProxyModel->mapToSource(selected.indexes().at(0)).row();
         if (deselected.indexes().size()>0) {
-            GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(deselected.indexes().at(0).row());
+            GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
 
@@ -155,8 +155,11 @@ bool GdxViewer::init()
     mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount());
 
-    ui.tvSymbols->setModel(mGdxSymbolTable);
+    mSymbolTableProxyModel = new QSortFilterProxyModel(this);
+    mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
+    ui.tvSymbols->setModel(mSymbolTableProxyModel);
     ui.tvSymbols->resizeColumnsToContents();
+    ui.tvSymbols->sortByColumn(1,Qt::AscendingOrder);
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
 

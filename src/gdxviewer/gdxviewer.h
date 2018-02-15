@@ -27,6 +27,7 @@
 #include <memory>
 #include <QMutex>
 #include <QVector>
+#include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {
@@ -54,6 +55,7 @@ private:
     void reportIoError(int errNr, QString message);
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
+    QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
 
     gdxHandle_t mGdx;
     QMutex* mGdxMutex;
