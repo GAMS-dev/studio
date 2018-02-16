@@ -201,6 +201,7 @@ void MainWindow::ensureCodecMenu(QString codecName)
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
     ui->actionOutput_View->setChecked(visibility);
+    ui->dockLogView->setVisible(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
