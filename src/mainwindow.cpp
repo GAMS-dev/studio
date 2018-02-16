@@ -1226,8 +1226,8 @@ void MainWindow::on_interrupt_triggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::interrupt);
-
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
 void MainWindow::on_stop_triggered()
@@ -1237,7 +1237,8 @@ void MainWindow::on_stop_triggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::stop);
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::updateRunState()
@@ -1245,6 +1246,7 @@ void MainWindow::updateRunState()
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
     interruptToolButton->setEnabled(state == QProcess::Running);
+    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()
