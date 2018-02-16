@@ -455,16 +455,13 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
 //        mCommandLineOption->resetCurrentValue();
     }
-    mCommandLineOption->setCurrentIndex(-1);
-    mCommandLineOption->setEnabled( false );
-    setRunActionsEnabled( false );
+    mDockOptionView->setEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
@@ -475,6 +472,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
+            mDockOptionView->setEnabled( true );
             QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
