@@ -71,12 +71,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("pos", main->pos());
     mAppSettings->setValue("windowState", main->saveState());
 
-    if (main->searchWidget()) {
-        mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
-        mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
-        mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
-        mAppSettings->setValue("selectedScope", main->searchWidget()->selectedScope());
-    }
+    mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
+    mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
+    mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
+    mAppSettings->setValue("selectedScope", main->searchWidget()->selectedScope());
+
     mAppSettings->endGroup();
 
     // tool-/menubar

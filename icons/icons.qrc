@@ -14,6 +14,7 @@
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w24">gams-w24.svg</file>
         <file alias="home">home.svg</file>
+        <file alias="interrupt">interrupt.svg</file>
         <file alias="play">play.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="question">question.svg</file>
@@ -22,6 +23,8 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="times">times.svg</file>
         <file alias="user">user.svg</file>
+        <file>gamsicon_16x16.png</file>
+        <file>gamsworld_16x16.gif</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

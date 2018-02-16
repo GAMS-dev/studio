@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QtConcurrent>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
@@ -48,7 +50,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
-        this->setStyleSheet(css.readAll());
+//        this->setStyleSheet(css.readAll());
     }
 
     ui->setupUi(this);
@@ -90,6 +92,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
+    connect(mWp, &WelcomePage::relayActionWp, this, &MainWindow::receiveAction);
 
     ensureCodecMenu("System");
     mSettings->loadSettings(this);
@@ -169,6 +172,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            fc->addFileWatcherForGdx();
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -197,6 +201,7 @@ void MainWindow::ensureCodecMenu(QString codecName)
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
     ui->actionOutput_View->setChecked(visibility);
+    ui->dockLogView->setVisible(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
@@ -241,6 +246,44 @@ QList<QPlainTextEdit*> MainWindow::openLogs()
         if (ed) resList << ed;
     }
     return resList;
+}
+
+void MainWindow::receiveAction(QString action)
+{
+    if (action == "createNewFile")
+        on_actionNew_triggered();
+    else if(action == "browseModLib")
+        on_actionGAMS_Library_triggered();
+}
+
+void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
+{
+    if (gmsFileName == "")
+        gmsFileName = model + ".gms";
+
+    QDir gamsSysDir(GAMSPaths::systemDir());
+    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
+    mLibProcess->setModelName(model);
+    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
+    mLibProcess->execute();
+
+    // This log is passed to the system-wide log
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
+    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+}
+
+void MainWindow::receiveModLibLoad(QString model)
+{
+    QString glbFile;
+    if (model != "embeddedSort")
+        glbFile = "gamslib_ml/gamslib.glb";
+    else
+        glbFile = "datalib_ml/datalib.glb";
+
+    openModelFromLib(glbFile, model);
+
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -413,12 +456,15 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
 //        mCommandLineOption->resetCurrentValue();
     }
+    mCommandLineOption->setCurrentIndex(-1);
+    mDockOptionView->setEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
+
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
@@ -428,6 +474,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
+            mDockOptionView->setEnabled( true );
             QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
@@ -437,15 +484,10 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
             setRunActionsEnabled( true );
-        } else {
-            mCommandLineOption->setCurrentIndex(-1);
-            mCommandLineOption->setEnabled( false );
-            setRunActionsEnabled( false );
         }
-    }  else {
-        mCommandLineOption->setCurrentIndex(-1);
-        mCommandLineOption->setEnabled( false );
-        setRunActionsEnabled( false );
+    } else if(FileContext::toGdxViewer(editWidget)) {
+        gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
+        gdxViewer->reload();
     }
 }
 
@@ -682,7 +724,7 @@ void MainWindow::on_logTab_tabCloseRequested(int index)
 
 void MainWindow::createWelcomePage()
 {
-    mWp = new WelcomePage(history());
+    mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
 }
@@ -701,7 +743,7 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget(mDockOptionView);
     QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
-    commandHLayout->setContentsMargins(10, 10, 10, 5);
+    commandHLayout->setContentsMargins(4, 4, 4, 4);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -719,6 +761,21 @@ void MainWindow::createRunAndCommandLineWidgets()
     runToolButton->setMenu(runMenu);
     runToolButton->setDefaultAction(ui->actionRun);
     commandHLayout->addWidget(runToolButton);
+
+    interruptToolButton = new QToolButton(this);
+    interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu* interruptMenu = new QMenu();
+    QIcon interruptIcon(":/img/interrupt");
+    QIcon stopIcon(":/img/stop");
+    QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
+    QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
+    connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
+    interruptToolButton->setMenu(interruptMenu);
+    interruptToolButton->setDefaultAction(interruptAction);
+
+    commandHLayout->addWidget(interruptToolButton);
+
     commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
@@ -859,15 +916,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
-    mLibProcess = new GAMSLibProcess(this);
-    mLibProcess->setGlbFile(item->library()->glbFile());
-    mLibProcess->setModelName(item->name());
-    mLibProcess->setInputFile(gmsFileName);
-    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
-    mLibProcess->execute();
-    // This log is passed to the system-wide log
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
-    connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+    openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
 }
 
 QStringList MainWindow::openedFiles()
@@ -1170,10 +1219,34 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
+void MainWindow::on_interrupt_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::interrupt);
+}
+
+void MainWindow::on_stop_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    GamsProcess* process = group->gamsProcess();
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::stop);
+}
+
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
+    interruptToolButton->setEnabled(state == QProcess::Running);
+    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()

@@ -196,7 +196,10 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(FileSystemContext::cfExtendCaption);
-    group->attachFile(fi.filePath());
+
+    if (!fi.isDir())
+        group->attachFile(fi.filePath());
+
     group->updateChildNodes();
     return group;
 }

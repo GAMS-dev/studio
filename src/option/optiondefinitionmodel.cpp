@@ -110,7 +110,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 
     for(auto it = option->getOption().cbegin(); it != option->getOption().cend(); ++it)  {
         OptionDefinition optdef =  it.value();
-        if (optdef.deprecated)
+        if ((optdef.deprecated) || (!optdef.valid))
             continue;
         QList<QVariant> columnData;
 
@@ -118,7 +118,20 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                               + (optdef.synonym.isEmpty() ? "" : QString("[%1]").arg(optdef.synonym));
         columnData.append(optdef.name);
         columnData.append(optdef.synonym);
-        columnData.append(optdef.defaultValue);
+        switch(optdef.dataType) {
+        case optDataInteger:
+            columnData.append(optdef.defaultValue.toInt());
+            break;
+        case optDataDouble:
+            columnData.append(optdef.defaultValue.toDouble());
+            break;
+        case optDataString:
+            columnData.append(optdef.defaultValue.toString());
+            break;
+        default:
+            columnData.append("");
+            break;
+        }
         switch(optdef.type){
         case optTypeInteger :
 //            columnData.append( QString("[%1,%2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )

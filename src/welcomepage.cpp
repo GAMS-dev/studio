@@ -19,6 +19,7 @@
  */
 #include "welcomepage.h"
 #include "ui_welcomepage.h"
+#include "wplabel.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDebug>
@@ -26,37 +27,41 @@
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(HistoryData *history, QWidget *parent) :
-    QWidget(parent),
+WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
+    QWidget(parent), mMain(parent),
     ui(new Ui::WelcomePage)
 {
     ui->setupUi(this);
-    connect(ui->label_documentation, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_gamsworld, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_gamsyoutube, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-    connect(ui->label_stackoverflow, &QLabel::linkActivated, this, &WelcomePage::labelLinkActivated);
-
     historyChanged(history);
+
+    connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
+    connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
 }
 
 void WelcomePage::historyChanged(HistoryData *history)
 {
-    int size = ui->layout_lastFiles->rowCount();
-    for (int i = 0; i < size; i++)
-        ui->layout_lastFiles->removeRow(0);
+    QLayoutItem* item;
+    while ((item = ui->layout_lastFiles->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
 
     QLabel *tmpLabel;
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
-            tmpLabel = new QLabel("<a href='" + file.filePath() + "'>" + file.fileName()
-                                  + "</a><br/>"
-                                  + "<small>" + file.filePath() + "</small>");
+            tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
+                                  + "<small>" + file.filePath() + "</small>", file.filePath());
             tmpLabel->setToolTip(file.filePath());
+            tmpLabel->setFrameShape(QFrame::StyledPanel);
+            tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
-            tmpLabel = new QLabel(file.fileName() + " (File missing!)<br/><small>" + file.canonicalPath() + "</small>");
+            tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>");
+            tmpLabel->setFrameShape(QFrame::StyledPanel);
+            tmpLabel->setMargin(8);
+            tmpLabel->setToolTip("File has been deleted or moved");
         }
         ui->layout_lastFiles->addWidget(tmpLabel);
     }
@@ -67,9 +72,26 @@ WelcomePage::~WelcomePage()
     delete ui;
 }
 
-void WelcomePage::labelLinkActivated(const QString &link)
+void WelcomePage::on_relayAction(QString action)
 {
-    QDesktopServices::openUrl(QUrl(link, QUrl::TolerantMode));
+    emit relayActionWp(action);
+}
+
+void WelcomePage::on_relayModLibLoad(QString lib)
+{
+    emit relayModLibLoad(lib);
+}
+
+void WelcomePage::showEvent(QShowEvent *event)
+{
+    Q_UNUSED(event);
+    mMain->setOutputViewVisibility(false);
+}
+
+void WelcomePage::hideEvent(QHideEvent *event)
+{
+    Q_UNUSED(event);
+    mMain->setOutputViewVisibility(true);
 }
 
 }
