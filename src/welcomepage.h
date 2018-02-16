@@ -42,6 +42,7 @@ public:
 private:
     Ui::WelcomePage *ui;
     QList<QLabel*> mFileHistory;
+    MainWindow *mMain;
 
 signals:
     void linkActivated(const QString &link);
@@ -52,6 +53,11 @@ public slots:
     void on_relayAction(QString action);
     void on_relayModLibLoad(QString lib);
 
+
+    // QWidget interface
+protected:
+    void showEvent(QShowEvent *event);
+    void hideEvent(QHideEvent *event);
 };
 
 }
