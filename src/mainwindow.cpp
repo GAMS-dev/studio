@@ -50,7 +50,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
-        this->setStyleSheet(css.readAll());
+//        this->setStyleSheet(css.readAll());
     }
 
     ui->setupUi(this);
