@@ -33,7 +33,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
 {
     const QCommandLineOption helpOption = addHelpOption();
     const QCommandLineOption versionOption = addVersionOption();
-    addPositionalArgument("file", "Files to be opened.");
+    addPositionalArgument("files", "List of files to be opened.", "[files]");
     addOption({"ignore-settings", "Completely ignore settings files."});
     addOption({"reset-settings", "Reset all settings to default."});
 
