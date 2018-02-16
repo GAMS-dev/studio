@@ -58,6 +58,13 @@ QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, in
             if (section < mHeaderText.size())
                 return mHeaderText.at(section);
     }
+    else if (role == Qt::ToolTipRole)
+    {
+        QString description("<html><head/><body>");
+        description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the column in alphanumerical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p></p>";
+        description += "</body></html>";
+        return description;
+    }
     return QVariant();
 }
 

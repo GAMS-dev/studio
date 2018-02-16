@@ -156,6 +156,7 @@ bool GdxViewer::init()
     mSymbolViews.resize(mGdxSymbolTable->symbolCount());
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
+    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
     ui.tvSymbols->setModel(mSymbolTableProxyModel);
     ui.tvSymbols->resizeColumnsToContents();
