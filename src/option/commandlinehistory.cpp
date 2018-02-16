@@ -30,15 +30,26 @@ void CommandLineHistory::addIntoCurrentContextHistory(QString option)
 //        return;
 
     if (mHistory.contains(mCurrentContext)) {
-        QStringList list = mHistory[mCurrentContext].filter(option.simplified());
-        if (list.size() > 0) {
-            mHistory[mCurrentContext].removeOne(option.simplified());
-        }
+        if (!option.simplified().isEmpty()) {
+           QStringList list = mHistory[mCurrentContext].filter(option.simplified());
+           if (list.size() > 0) {
+               mHistory[mCurrentContext].removeOne(option.simplified());
+           }
 
-        if (mHistory[mCurrentContext].size() >= mHistorySize) {
-            mHistory[mCurrentContext].removeFirst();
+           if (mHistory[mCurrentContext].size() >= mHistorySize) {
+               mHistory[mCurrentContext].removeFirst();
+           }
+           mHistory[mCurrentContext].append(option.simplified());
+        } else {
+            for (int i=0; i< mHistory[mCurrentContext].size(); ++i) {
+                QString str = mHistory[mCurrentContext].at(i);
+                if (str.simplified().isEmpty()) {
+                    mHistory[mCurrentContext].removeAt(i);
+                    break;
+                }
+            }
+            mHistory[mCurrentContext].append("");
         }
-        mHistory[mCurrentContext].append(option.simplified());
     }
 }
 
