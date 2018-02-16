@@ -34,6 +34,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QVBoxLayout" name="vl_parent">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetNoConstraint</enum>
+     </property>
      <property name="topMargin">
       <number>0</number>
      </property>
@@ -134,9 +137,39 @@
           <enum>QLayout::SetNoConstraint</enum>
          </property>
          <item>
+          <widget class="QLabel" name="label_lastFiles">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+            </font>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
+           </property>
+           <property name="text">
+            <string>Last Files</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QScrollArea" name="sa_lastFiles">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustToContents</enum>
            </property>
            <property name="widgetResizable">
             <bool>true</bool>
@@ -147,39 +180,30 @@
               <x>0</x>
               <y>0</y>
               <width>308</width>
-              <height>577</height>
+              <height>543</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
-             <item>
-              <widget class="QLabel" name="label_19">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>16</pointsize>
-                </font>
-               </property>
-               <property name="contextMenuPolicy">
-                <enum>Qt::NoContextMenu</enum>
-               </property>
-               <property name="text">
-                <string>Last Files</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
+             <property name="sizeConstraint">
+              <enum>QLayout::SetNoConstraint</enum>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <layout class="QVBoxLayout" name="layout_lastFiles"/>
              </item>
              <item>
-              <spacer name="verticalSpacer_5">
+              <spacer name="spacer_history_bot">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -215,6 +239,9 @@
        </item>
        <item>
         <layout class="QVBoxLayout" name="vl_gettingstarted">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetNoConstraint</enum>
+         </property>
          <item>
           <widget class="QLabel" name="label_gettingstarted">
            <property name="font">
@@ -234,146 +261,192 @@
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="vl_examplelist">
-           <property name="bottomMargin">
-            <number>0</number>
+          <widget class="QScrollArea" name="sa_gettingStarted">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_newfile">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>307</width>
+              <height>537</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <property name="leftMargin">
+              <number>0</number>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
+             <property name="topMargin">
+              <number>0</number>
              </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;small&gt;Creates a new and empty .gms file.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <property name="rightMargin">
+              <number>0</number>
              </property>
-             <property name="textFormat">
-              <enum>Qt::AutoText</enum>
+             <property name="bottomMargin">
+              <number>0</number>
              </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="action" stdset="0">
-              <string>createNewFile</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_trnsport">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="modlib" stdset="0">
-              <string>trnsport</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_magic">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Power Generation Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;Example for power demand and -generation with three different kinds of generators which have minimum and maximum output constraints.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="modlib" stdset="0">
-              <string>magic</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_embeddedSort">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;An example showing how to use GAMS together with embedded Python code to sort randomly generated numerical values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="modlib" stdset="0">
-              <string>embeddedSort</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_browseLib">
-             <property name="mouseTracking">
-              <bool>true</bool>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse Model Library&lt;/span&gt;&lt;br/&gt;&lt;small&gt;The model library contains an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="action" stdset="0">
-              <string>browseModLib</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+             <item>
+              <layout class="QVBoxLayout" name="vl_examplelist">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetNoConstraint</enum>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_newfile">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;small&gt;Creates a new and empty .gms file.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="textFormat">
+                  <enum>Qt::AutoText</enum>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="action" stdset="0">
+                  <string>createNewFile</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_trnsport">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="modlib" stdset="0">
+                  <string>trnsport</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_magic">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Power Generation Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;Example for power demand and -generation with three different kinds of generators which have minimum and maximum output constraints.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="modlib" stdset="0">
+                  <string>magic</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_embeddedSort">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;An example showing how to use GAMS together with embedded Python code to sort randomly generated numerical values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="modlib" stdset="0">
+                  <string>embeddedSort</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_browseLib">
+                 <property name="mouseTracking">
+                  <bool>true</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse Model Library&lt;/span&gt;&lt;br/&gt;&lt;small&gt;The model library contains an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="action" stdset="0">
+                  <string>browseModLib</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>5</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>5</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_12">
+          <spacer name="spacer_getStarted_bot">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -408,6 +481,9 @@
        </item>
        <item>
         <layout class="QVBoxLayout" name="vl_links">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetNoConstraint</enum>
+         </property>
          <item>
           <widget class="QLabel" name="label_discovergams">
            <property name="sizePolicy">
@@ -537,7 +613,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_2">
+          <spacer name="spacer_discover_bot">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
