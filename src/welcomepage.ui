@@ -310,7 +310,7 @@
               <x>0</x>
               <y>0</y>
               <width>307</width>
-              <height>537</height>
+              <height>543</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -326,6 +326,9 @@
              </size>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_3">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetNoConstraint</enum>
+             </property>
              <property name="leftMargin">
               <number>0</number>
              </property>
@@ -470,9 +473,12 @@
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::MinimumExpanding</enum>
+                 </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>20</width>
+                   <width>0</width>
                    <height>5</height>
                   </size>
                  </property>
@@ -483,22 +489,6 @@
             </layout>
            </widget>
           </widget>
-         </item>
-         <item>
-          <spacer name="spacer_getStarted_bot">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::MinimumExpanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>0</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
@@ -655,6 +645,9 @@
           <spacer name="spacer_discover_bot">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::MinimumExpanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
