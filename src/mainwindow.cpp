@@ -455,6 +455,7 @@ void MainWindow::activeTabChanged(int index)
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
 //        mCommandLineOption->resetCurrentValue();
     }
+    mCommandLineOption->setCurrentIndex(-1);
     mDockOptionView->setEnabled( false );
 
     // remove highlights from old tab
