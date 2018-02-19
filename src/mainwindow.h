@@ -29,7 +29,6 @@
 #include "option/commandlinehistory.h"
 #include "option/commandlineoption.h"
 #include "option/lineeditcompleteevent.h"
-#include "option/optionconfigurator.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
 #include "resultsview.h"

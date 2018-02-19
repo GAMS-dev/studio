@@ -125,7 +125,6 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
     option/option.cpp \
-    option/optionconfigurator.cpp \
     option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
     option/commandlinetokenizer.cpp \
@@ -190,7 +189,6 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxsymbolheaderview.h \
     option/option.h \
-    option/optionconfigurator.h \
     option/commandlinehistory.h \
     option/commandlinetokenizer.h \
     option/commandlineoption.h \

@@ -1,5 +1,4 @@
 #include "optioneditor.h"
-#include "optionconfigurator.h"
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionparametermodel.h"
