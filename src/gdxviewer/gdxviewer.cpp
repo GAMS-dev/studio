@@ -54,6 +54,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 {
     if (selected.indexes().size()>0) {
         int selectedIdx = mSymbolTableProxyModel->mapToSource(selected.indexes().at(0)).row();
+        qDebug() << "selectedIdx : " << selectedIdx;
         if (deselected.indexes().size()>0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
@@ -66,7 +67,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         //aliases are also aliases in the sense of the view
         if(selectedSymbol->type() == GMS_DT_ALIAS) {
-            selectedIdx = selectedSymbol->subType() - 1;
+            selectedIdx = selectedSymbol->subType();
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
 
@@ -166,6 +167,8 @@ bool GdxViewer::init()
 
     ui.splitter->widget(0)->show();
     ui.splitter->widget(1)->show();
+
+    ui.tvSymbols->hideRow(0); //first entry is the universe which we do not want to show
     return true;
 }
 

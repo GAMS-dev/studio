@@ -122,7 +122,7 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
 void GdxSymbolTable::loadGDXSymbols()
 {
     QMutexLocker locker(mGdxMutex);
-    for(int i=1; i<mSymbolCount+1; i++)
+    for(int i=0; i<mSymbolCount+1; i++)
         mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, this));
     locker.unlock();
 }
