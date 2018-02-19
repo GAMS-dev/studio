@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Organize Bookmarks</string>
+   <string>GAMS Studio - Organize Bookmarks</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">

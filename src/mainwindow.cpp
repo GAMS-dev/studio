@@ -73,6 +73,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
+    mDockHelpView = new HelpView(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    mDockHelpView->hide();
+
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
@@ -641,12 +645,15 @@ void MainWindow::on_actionExit_Application_triggered()
 }
 
 void MainWindow::on_actionHelp_triggered()
-{
-    if (mDockHelpView == nullptr) {
-        mDockHelpView = new HelpView(this);
-        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    }
-    mDockHelpView->show();
+{   
+//    if (mDockHelpView == nullptr) {
+//       mDockHelpView = new HelpView(this);
+////        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+//    }
+//    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+
+    if (mDockHelpView->isHidden())
+       mDockHelpView->show();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -1275,12 +1282,13 @@ void MainWindow::on_commandLineHelpTriggered()
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
 //    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 
-    if (mDockHelpView == nullptr) {
-        mDockHelpView = new HelpView(this);
-        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    }
+//    if (mDockHelpView == nullptr) {
+//        mDockHelpView = new HelpView(this);
+//        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+//    }
     mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
-    mDockHelpView->show();
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 
 //    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
 //    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
@@ -1543,6 +1551,11 @@ void MainWindow::updateEditorLineWrapping()
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
+}
+
+HelpView *MainWindow::getDockHelpView() const
+{
+    return mDockHelpView;
 }
 
 }

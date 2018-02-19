@@ -29,11 +29,14 @@ void HelpView::setupUi(QWidget *parent)
     this->setFloating(true);
     this->setAllowedAreas(Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
     this->setWindowTitle("Help");
+    this->resize(QSize(950, 600));
+    this->move(QPoint(200, 200));
 
     QWidget* helpWidget = new QWidget(parent);
     QVBoxLayout* helpVLayout = new QVBoxLayout(helpWidget);
     helpVLayout->setObjectName(QStringLiteral("helpVLayout"));
     helpVLayout->setContentsMargins(0, 0, 0, 0);
+    helpWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     helpView = new QWebEngineView(this);
     helpView->load(helpLocation);
@@ -77,15 +80,6 @@ void HelpView::setupUi(QWidget *parent)
     bookmarkMenu->addAction(actionAddBookmark);
     bookmarkMenu->addSeparator();
     bookmarkMenu->addAction(actionOrganizeBookmark);
-
-//    QMultiMap<QString, QString>::iterator i;
-//    for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
-//        qDebug() << i.key() << ": " << i.value();
-//        QAction* action = new QAction(this);
-//        action->setText(i.value());
-//        action->setToolTip(i.key());
-//        bookmarkMenu->addAction(action);
-//    }
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
     QPixmap bookmarkPixmap(":/img/bookmark");
@@ -297,6 +291,25 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     }
     connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
     bookmarkMenu->addAction(action);
+}
+
+QMultiMap<QString, QString> HelpView::getBookmarkMap() const
+{
+    return bookmarkMap;
+}
+
+void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
+{
+    bookmarkMap = value;
+
+    if (bookmarkMap.size() > 0)
+        bookmarkMenu->addSeparator();
+
+    QMultiMap<QString, QString>::iterator i;
+    for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
+//        qDebug() << i.key() << ": " << i.value();
+        addBookmarkAction(i.key(), i.value());
+    }
 }
 
 } // namespace studio

@@ -16,6 +16,9 @@ public:
 
     void setupUi(QWidget *parent);
 
+    QMultiMap<QString, QString> getBookmarkMap() const;
+    void setBookmarkMap(const QMultiMap<QString, QString> &value);
+
 public slots:
     void on_urlOpened(const QUrl& location);
     void on_bookmarkNameUpdated(const QString& location, const QString& name);

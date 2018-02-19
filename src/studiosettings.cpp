@@ -86,6 +86,19 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mAppSettings->endGroup();
 
+    // help
+    mAppSettings->beginGroup("helpView");
+// qDebug() << "helpView : " << main->getDockHelpView()->getBookmarkMap().size();
+    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    mAppSettings->beginWriteArray("bookmarks");
+    for (int i = 0; i < bookmarkMap.size(); i++) {
+        mAppSettings->setArrayIndex(i);
+        mAppSettings->setValue("location", bookmarkMap.keys().at(i));
+        mAppSettings->setValue("name",bookmarkMap.values().at(i));
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+
     // history
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginWriteArray("lastOpenedFiles");
@@ -178,6 +191,22 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
 
     mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap;
+    for (int i = 0; i < mAppSettings->beginReadArray("bookmarks"); i++) {
+        mAppSettings->setArrayIndex(i);
+//        qDebug() << "load -> " << mAppSettings->value("location").toString() << ": " << mAppSettings->value("name").toString();
+        bookmarkMap.insert(mAppSettings->value("location").toString(),
+                           mAppSettings->value("name").toString());
+    }
+    mAppSettings->endArray();
+    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+//    qDebug() << "helpView : " << bookmarkMap.size();
+
+    mAppSettings->endGroup();
+
 
     // history
     mAppSettings->beginGroup("fileHistory");

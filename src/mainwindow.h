@@ -105,6 +105,8 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
 
+    HelpView *getDockHelpView() const;
+
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
