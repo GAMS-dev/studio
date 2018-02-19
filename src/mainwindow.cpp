@@ -50,7 +50,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
     if (css.open(QFile::ReadOnly | QFile::Text)) {
-        this->setStyleSheet(css.readAll());
+//        this->setStyleSheet(css.readAll());
     }
 
     ui->setupUi(this);
@@ -202,6 +202,7 @@ void MainWindow::ensureCodecMenu(QString codecName)
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
     ui->actionOutput_View->setChecked(visibility);
+    ui->dockLogView->setVisible(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
@@ -460,18 +461,16 @@ void MainWindow::activeTabChanged(int index)
 {
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
-//        mCommandLineOption->resetCurrentValue();
     }
     mCommandLineOption->setCurrentIndex(-1);
-    mCommandLineOption->setEnabled( false );
-    setRunActionsEnabled( false );
+    mCommandLineOption->setCurrentContext("");
+    mDockOptionView->setEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
@@ -482,6 +481,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
+            mDockOptionView->setEnabled( true );
             QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
             mCommandLineOption->clear();
             foreach(QString str, option) {
@@ -1235,8 +1235,8 @@ void MainWindow::on_interrupt_triggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::interrupt);
-
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
 void MainWindow::on_stop_triggered()
@@ -1246,7 +1246,8 @@ void MainWindow::on_stop_triggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::stop);
+    if (process)
+        QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::updateRunState()
@@ -1254,6 +1255,7 @@ void MainWindow::updateRunState()
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     setRunActionsEnabled(state != QProcess::Running);
     interruptToolButton->setEnabled(state == QProcess::Running);
+    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()

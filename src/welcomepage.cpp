@@ -28,7 +28,7 @@ namespace gams {
 namespace studio {
 
 WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
-    QWidget(parent),
+    QWidget(parent), mMain(parent),
     ui(new Ui::WelcomePage)
 {
     ui->setupUi(this);
@@ -80,6 +80,18 @@ void WelcomePage::on_relayAction(QString action)
 void WelcomePage::on_relayModLibLoad(QString lib)
 {
     emit relayModLibLoad(lib);
+}
+
+void WelcomePage::showEvent(QShowEvent *event)
+{
+    Q_UNUSED(event);
+    mMain->setOutputViewVisibility(false);
+}
+
+void WelcomePage::hideEvent(QHideEvent *event)
+{
+    Q_UNUSED(event);
+    mMain->setOutputViewVisibility(true);
 }
 
 }
