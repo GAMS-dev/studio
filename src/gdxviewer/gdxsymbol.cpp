@@ -377,7 +377,7 @@ void GdxSymbol::loadMetaData()
 void GdxSymbol::loadDomains()
 {
     if (mNr == 0) //universe
-        mDomains.append("");
+        mDomains.append("*");
     else {
         gdxStrIndexPtrs_t domX;
         gdxStrIndex_t     domXXX;
