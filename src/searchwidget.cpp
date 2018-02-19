@@ -165,7 +165,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
     if (!fsc) return QList<Result>();
 
-    QRegExp rx(ui->txt_filePattern->text());
+    QRegExp rx(ui->txt_filePattern->text().trimmed());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
     // (scope not current file && wildcard not matching) || has gdx extension
