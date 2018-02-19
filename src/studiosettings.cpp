@@ -145,6 +145,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("clearLog", clearLog());
     mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
     mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
+    mUserSettings->setValue("autoIndent", autoIndent());
 
     mUserSettings->endGroup();
 
@@ -229,6 +230,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     setClearLog(mUserSettings->value("clearLog", false).toBool());
     setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
     setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
+    setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
 
     mUserSettings->endGroup();
 
@@ -458,6 +460,16 @@ bool StudioSettings::highlightCurrentLine() const
 void StudioSettings::setHighlightCurrentLine(bool highlightCurrentLine)
 {
     mHighlightCurrentLine = highlightCurrentLine;
+}
+
+bool StudioSettings::autoIndent() const
+{
+    return mAutoIndent;
+}
+
+void StudioSettings::setAutoIndent(bool autoIndent)
+{
+    mAutoIndent = autoIndent;
 }
 
 }

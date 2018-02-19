@@ -49,6 +49,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     connect(ui->cb_clearlog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_highlightUnderCursor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -72,6 +73,7 @@ void SettingsDialog::loadSettings()
     ui->cb_clearlog->setChecked(mSettings->clearLog());
     ui->cb_highlightUnderCursor->setChecked(mSettings->wordUnderCursor());
     ui->cb_highlightcurrent->setChecked(mSettings->highlightCurrentLine());
+    ui->cb_autoindent->setChecked(mSettings->autoIndent());
 }
 
 void SettingsDialog::setModified()
@@ -106,6 +108,7 @@ void SettingsDialog::saveSettings()
     mSettings->setClearLog(ui->cb_clearlog->isChecked());
     mSettings->setWordUnderCursor(ui->cb_highlightUnderCursor->isChecked());
     mSettings->setHighlightCurrentLine(ui->cb_highlightcurrent->isChecked());
+    mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
 
     // done
     setModifiedStatus(false);

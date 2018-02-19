@@ -273,6 +273,8 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
 
 void CodeEditor::adjustIndent(QTextCursor cursor)
 {
+    if (!mSettings->autoIndent()) return;
+
     QRegularExpression rex("^(\\s*).*$");
     QRegularExpressionMatch match = rex.match(cursor.block().text());
     if (match.hasMatch()) {

@@ -101,6 +101,9 @@ public:
     bool highlightCurrentLine() const;
     void setHighlightCurrentLine(bool highlightCurrentLine);
 
+    bool autoIndent() const;
+    void setAutoIndent(bool autoIndent);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -126,6 +129,7 @@ private:
     bool mClearLog;
     bool mWordUnderCursor;
     bool mHighlightCurrentLine;
+    bool mAutoIndent;
 
     // search widget
     bool mSearchUseRegex;
