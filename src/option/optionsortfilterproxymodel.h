@@ -13,8 +13,10 @@ public:
     OptionSortFilterProxyModel(QObject *parent = 0);
 
 protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
+    bool filterAcceptsSelfRow(int sourcRrow, const QModelIndex& sourceParent) const;
+    bool hasAcceptedChildren(int sourceRow, const QModelIndex& sourceParent) const;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 
 };
 
