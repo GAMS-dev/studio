@@ -122,7 +122,6 @@ private:
     QString mFontFamily;
     int mFontSize;
     bool mShowLineNr;
-    bool mReplaceTabsWithSpaces;
     int mTabSize;
     bool mLineWrapEditor;
     bool mLineWrapProcess;

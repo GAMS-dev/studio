@@ -138,7 +138,6 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
     mUserSettings->setValue("showLineNr", showLineNr());
-    mUserSettings->setValue("replaceTabsWithSpaces", replaceTabsWithSpaces());
     mUserSettings->setValue("tabSize", tabSize());
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
@@ -223,7 +222,6 @@ void StudioSettings::loadSettings(MainWindow *main)
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
-    setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
@@ -335,16 +333,6 @@ bool StudioSettings::showLineNr() const
 void StudioSettings::setShowLineNr(bool value)
 {
     mShowLineNr = value;
-}
-
-bool StudioSettings::replaceTabsWithSpaces() const
-{
-    return mReplaceTabsWithSpaces;
-}
-
-void StudioSettings::setReplaceTabsWithSpaces(bool value)
-{
-    mReplaceTabsWithSpaces = value;
 }
 
 int StudioSettings::tabSize() const

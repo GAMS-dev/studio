@@ -66,8 +66,7 @@ void SettingsDialog::loadSettings()
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
-//    ui->cb_replacetabs->setChecked(mSettings->replaceTabsWithSpaces());
-//    ui->sb_tabsize->setValue(mSettings->tabSize());
+    ui->sb_tabsize->setValue(mSettings->tabSize());
     ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
     ui->cb_linewrap_process->setChecked(mSettings->lineWrapProcess());
     ui->cb_clearlog->setChecked(mSettings->clearLog());
@@ -101,8 +100,7 @@ void SettingsDialog::saveSettings()
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
-//    mSettings->setReplaceTabsWithSpaces(ui->cb_replacetabs->isChecked());
-//    mSettings->setTabSize(ui->sb_tabsize->value());
+    mSettings->setTabSize(ui->sb_tabsize->value());
     mSettings->setLineWrapEditor(ui->cb_linewrap_editor->isChecked());
     mSettings->setLineWrapProcess(ui->cb_linewrap_process->isChecked());
     mSettings->setClearLog(ui->cb_clearlog->isChecked());

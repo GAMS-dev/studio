@@ -230,11 +230,11 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         } else if (e == Hotkey::Indent) {
-            indent(4);
+            indent(mSettings->tabSize());
             e->accept();
             return;
         } else if (e == Hotkey::Outdent) {
-            indent(-4);
+            indent(-mSettings->tabSize());
             e->accept();
             return;
         } else if (e == Hotkey::DuplicateLine) {
@@ -816,11 +816,11 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
             replaceBlockText(texts);
     } else if (e == Hotkey::Indent) {
-        mColumn += mEdit->indent(4, mStartLine, mCurrentLine);
+        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Outdent) {
         int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
         if (minWhiteCount)
-            mColumn += mEdit->indent(qMax(-minWhiteCount, -4), mStartLine, mCurrentLine);
+            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
         // TODO(JM) copy selected text to clipboard
         selectionToClipboard();
