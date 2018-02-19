@@ -46,6 +46,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
+
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -120,6 +123,13 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
     refreshView();
+}
+
+void GdxSymbolView::showContextMenu(QPoint p)
+{
+    QMenu m(this);
+    m.addAction("Copy Selection");
+    m.exec(ui->tableView->mapToGlobal(p));
 }
 
 void GdxSymbolView::enableControls()

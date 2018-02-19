@@ -53,6 +53,9 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);
+
+private slots:
+    void showContextMenu(QPoint p);
 };
 
 
