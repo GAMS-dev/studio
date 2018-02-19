@@ -22,6 +22,8 @@
 #include "gdxsymbolheaderview.h"
 #include "columnfilter.h"
 #include <QMenu>
+#include <QClipboard>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -125,15 +127,72 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     refreshView();
 }
 
-void GdxSymbolView::copySelection()
+void GdxSymbolView::copySelectionToClipboard()
 {
+    QList<QVector<QString>> lines;
+    QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
 
+    int minRow = std::numeric_limits<int>::max();
+    int maxRow = std::numeric_limits<int>::min();
+    int minCol = std::numeric_limits<int>::max();
+    int maxCol = std::numeric_limits<int>::min();
+
+    for (QModelIndex idx : selection)
+    {
+        int currentRow = idx.row();
+        int currentCol = idx.column();
+        minRow = qMin(minRow, currentRow);
+        maxRow = qMax(maxRow, currentRow);
+        minCol = qMin(minCol, currentCol);
+        maxCol = qMax(maxCol, currentCol);
+    }
+    int nrRows = maxRow - minRow + 1;
+    int rowOffset = minRow;
+    int nrCols = maxCol - minCol + 1;
+    int colOffset = minCol;
+
+    int row = -1;
+    std::vector<int> maxColWidth(ui->tableView->model()->columnCount());
+
+    for (int i=0; i<nrRows; i++)
+    {
+        QVector<QString> vec;
+        vec.resize(nrCols);
+        lines.append(vec);
+    }
+
+    for (QModelIndex idx : selection)
+    {
+        row = idx.row();
+        int col = ui->tableView->horizontalHeader()->visualIndex(idx.column());
+        QString currentText = idx.data().toString();
+        maxColWidth[idx.column()] = qMax(maxColWidth[idx.column()], currentText.length());
+        lines[row-rowOffset][col] = currentText;
+    }
+
+    // assemble the actual clipboard content
+    QString text;
+    for (QVector<QString> line : lines)
+    {
+        for (int col=0; col<line.length(); col++)
+        {
+            QString currentText = line.at(col);
+            text += currentText;
+            for (int spaces=0; spaces<maxColWidth[col]-currentText.length()+1; spaces++)
+                text += " ";
+            text += ".";
+        }
+        text = text.remove(text.length()-1, text.length());
+        text += "\n";
+    }
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText(text);
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     QMenu m(this);
-    m.addAction("Copy Selection", this, &GdxSymbolView::copySelection);
+    m.addAction("Copy Selection", this, &GdxSymbolView::copySelectionToClipboard);
     m.exec(ui->tableView->mapToGlobal(p));
 }
 
