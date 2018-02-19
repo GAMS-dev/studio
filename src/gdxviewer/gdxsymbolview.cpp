@@ -125,10 +125,15 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     refreshView();
 }
 
+void GdxSymbolView::copySelection()
+{
+
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     QMenu m(this);
-    m.addAction("Copy Selection");
+    m.addAction("Copy Selection", this, &GdxSymbolView::copySelection);
     m.exec(ui->tableView->mapToGlobal(p));
 }
 

@@ -46,6 +46,7 @@ private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
+    void copySelection();
 
 public slots:
     void enableControls();
