@@ -857,7 +857,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            mSettings->updateEditorFont(mSettings->fontFamily(),10);
+            mSettings->updateEditorFont(mSettings->fontFamily(),mSettings->fontSize());
     }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
