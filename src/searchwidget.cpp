@@ -165,7 +165,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
     if (!fsc) return QList<Result>();
 
-    QRegExp rx(ui->txt_filePattern->text());
+    QRegExp rx(ui->txt_filePattern->text().trimmed());
     rx.setPatternSyntax(QRegExp::Wildcard);
 
     // (scope not current file && wildcard not matching) || has gdx extension
@@ -206,10 +206,21 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                     QRegularExpressionMatch match;
 
                     if (regex()) {
-                        if (line.contains(searchRegex, &match))
-                            matches.addResult(lineCounter, match.capturedEnd() - searchTerm.length(), file.fileName(), line.trimmed());
-                    } else if (line.contains(searchTerm, cs)){
-                        matches.addResult(lineCounter, line.indexOf(searchTerm, cs), file.fileName(), line.trimmed());
+                        int count = line.count(searchRegex);
+                        if (count > 0) {
+                            for (int i = 0; i < count; i++) {
+                                matches.addResult(lineCounter, match.capturedEnd() - searchTerm.length(),
+                                                  file.fileName(), line.trimmed());
+                            }
+                        }
+                    } else {
+                        int count = line.count(searchTerm);
+                        if (count > 0) {
+                            for (int i = 0; i < count; i++) {
+                                matches.addResult(lineCounter, line.indexOf(searchTerm, cs),
+                                                  file.fileName(), line.trimmed());
+                            }
+                        }
                     }
                 }
                 file.close();
