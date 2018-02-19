@@ -54,7 +54,6 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 {
     if (selected.indexes().size()>0) {
         int selectedIdx = mSymbolTableProxyModel->mapToSource(selected.indexes().at(0)).row();
-        qDebug() << "selectedIdx : " << selectedIdx;
         if (deselected.indexes().size()>0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
