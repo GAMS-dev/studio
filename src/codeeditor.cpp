@@ -638,6 +638,8 @@ void CodeEditor::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 
 void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
 {
+    if (!mSettings->highlightCurrentLine()) return;
+
     QTextEdit::ExtraSelection selection;
     QColor lineColor = QColor(Qt::cyan).lighter(190);
     selection.format.setBackground(lineColor);

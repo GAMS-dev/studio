@@ -144,6 +144,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
     mUserSettings->setValue("clearLog", clearLog());
     mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
+    mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
 
     mUserSettings->endGroup();
 
@@ -227,6 +228,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
     setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
+    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
 
     mUserSettings->endGroup();
 
@@ -446,6 +448,16 @@ void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 QString StudioSettings::userModelLibraryDir() const
 {
     return mUserModelLibraryDir;
+}
+
+bool StudioSettings::highlightCurrentLine() const
+{
+    return mHighlightCurrentLine;
+}
+
+void StudioSettings::setHighlightCurrentLine(bool highlightCurrentLine)
+{
+    mHighlightCurrentLine = highlightCurrentLine;
 }
 
 }

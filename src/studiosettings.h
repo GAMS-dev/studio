@@ -98,6 +98,9 @@ public:
     void setWordUnderCursor(bool wordUnderCursor);
     QString userModelLibraryDir() const;
 
+    bool highlightCurrentLine() const;
+    void setHighlightCurrentLine(bool highlightCurrentLine);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -122,6 +125,7 @@ private:
     bool mLineWrapProcess;
     bool mClearLog;
     bool mWordUnderCursor;
+    bool mHighlightCurrentLine;
 
     // search widget
     bool mSearchUseRegex;
