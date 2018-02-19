@@ -54,12 +54,6 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
         setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         setLineWrapMode(QPlainTextEdit::NoWrap);
-
-    connect(&mCursorTimer, &QTimer::timeout, this, &CodeEditor::onCursorIdle);
-    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
-
-    mCursorTimer.setInterval(WORD_UNDER_CURSOR_HIGHLIGHT_TIMER);
-    mCursorTimer.start();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -184,30 +178,6 @@ void CodeEditor::pasteClipboard()
         }
     } else {
         mBlockEdit->replaceBlockText(texts);
-    }
-}
-
-void CodeEditor::onCursorPositionChanged()
-{
-    emit highlightWordUnderCursor("");
-    mCursorTimer.stop();
-    mCursorTimer.start();
-}
-
-void CodeEditor::onCursorIdle()
-{
-    QTextCursor cursor = textCursor();
-    if (cursor.hasSelection()) return;
-    if (mBlockEdit) return;
-
-    cursor.select(QTextCursor::WordUnderCursor);
-    QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("\\w+");
-
-    if (isIdentifier.match(wordUnderCursor).hasMatch()) {
-        mCursorTimer.stop();
-
-        emit highlightWordUnderCursor(wordUnderCursor);
     }
 }
 
@@ -680,6 +650,7 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
+    if (!mSettings->wordUnderCursor()) return;
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));

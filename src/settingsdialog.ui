@@ -514,7 +514,7 @@
        </widget>
        <widget class="QCheckBox" name="cb_highlightUnderCursor">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
