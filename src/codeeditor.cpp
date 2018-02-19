@@ -187,6 +187,10 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)){
+            e->ignore();
+            return;
+    }
     if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         // ignore enter/return key
         e->accept();
