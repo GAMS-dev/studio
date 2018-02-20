@@ -54,12 +54,6 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEd
         setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         setLineWrapMode(QPlainTextEdit::NoWrap);
-
-    connect(&mCursorTimer, &QTimer::timeout, this, &CodeEditor::onCursorIdle);
-    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
-
-    mCursorTimer.setInterval(WORD_UNDER_CURSOR_HIGHLIGHT_TIMER);
-    mCursorTimer.start();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -187,30 +181,6 @@ void CodeEditor::pasteClipboard()
     }
 }
 
-void CodeEditor::onCursorPositionChanged()
-{
-    emit highlightWordUnderCursor("");
-    mCursorTimer.stop();
-    mCursorTimer.start();
-}
-
-void CodeEditor::onCursorIdle()
-{
-    QTextCursor cursor = textCursor();
-    if (cursor.hasSelection()) return;
-    if (mBlockEdit) return;
-
-    cursor.select(QTextCursor::WordUnderCursor);
-    QString wordUnderCursor = cursor.selection().toPlainText();
-    QRegularExpression isIdentifier("\\w+");
-
-    if (isIdentifier.match(wordUnderCursor).hasMatch()) {
-        mCursorTimer.stop();
-
-        emit highlightWordUnderCursor(wordUnderCursor);
-    }
-}
-
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
     QPlainTextEdit::resizeEvent(e);
@@ -260,11 +230,11 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         } else if (e == Hotkey::Indent) {
-            indent(4);
+            indent(mSettings->tabSize());
             e->accept();
             return;
         } else if (e == Hotkey::Outdent) {
-            indent(-4);
+            indent(-mSettings->tabSize());
             e->accept();
             return;
         } else if (e == Hotkey::DuplicateLine) {
@@ -303,6 +273,8 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
 
 void CodeEditor::adjustIndent(QTextCursor cursor)
 {
+    if (!mSettings->autoIndent()) return;
+
     QRegularExpression rex("^(\\s*).*$");
     QRegularExpressionMatch match = rex.match(cursor.block().text());
     if (match.hasMatch()) {
@@ -668,6 +640,8 @@ void CodeEditor::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 
 void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
 {
+    if (!mSettings->highlightCurrentLine()) return;
+
     QTextEdit::ExtraSelection selection;
     QColor lineColor = QColor(Qt::cyan).lighter(190);
     selection.format.setBackground(lineColor);
@@ -680,6 +654,7 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
+    if (!mSettings->wordUnderCursor()) return;
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
@@ -841,11 +816,11 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
             replaceBlockText(texts);
     } else if (e == Hotkey::Indent) {
-        mColumn += mEdit->indent(4, mStartLine, mCurrentLine);
+        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Outdent) {
         int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
         if (minWhiteCount)
-            mColumn += mEdit->indent(qMax(-minWhiteCount, -4), mStartLine, mCurrentLine);
+            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
         // TODO(JM) copy selected text to clipboard
         selectionToClipboard();

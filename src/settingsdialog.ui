@@ -176,7 +176,7 @@
        </property>
        <widget class="QPushButton" name="btn_export">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -192,7 +192,7 @@
        </widget>
        <widget class="QPushButton" name="btn_import">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -391,7 +391,7 @@
        </widget>
        <widget class="QCheckBox" name="cb_highlightcurrent">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -427,35 +427,16 @@
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QCheckBox" name="cb_replacetabs">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>183</y>
-          <width>231</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Replace tabs with spaces. Tab size</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
        <widget class="QSpinBox" name="sb_tabsize">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
-          <x>230</x>
-          <y>182</y>
-          <width>40</width>
-          <height>20</height>
+          <x>114</x>
+          <y>235</y>
+          <width>51</width>
+          <height>26</height>
          </rect>
         </property>
         <property name="minimum">
@@ -470,12 +451,12 @@
        </widget>
        <widget class="QCheckBox" name="cb_autoindent">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>210</y>
+          <y>180</y>
           <width>271</width>
           <height>23</height>
          </rect>
@@ -497,7 +478,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>240</y>
+          <y>210</y>
           <width>271</width>
           <height>23</height>
          </rect>
@@ -514,7 +495,7 @@
        </widget>
        <widget class="QCheckBox" name="cb_highlightUnderCursor">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="geometry">
          <rect>
@@ -529,6 +510,19 @@
         </property>
         <property name="checkable">
          <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_tabsize">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>240</y>
+          <width>111</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Tab stop size</string>
         </property>
        </widget>
       </widget>

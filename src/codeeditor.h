@@ -73,7 +73,6 @@ protected:
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
-    void highlightWordUnderCursor(QString word);
 
 public slots:
     void clearSelection();
@@ -86,8 +85,6 @@ private slots:
     void recalcExtraSelections();
     void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
-    void onCursorIdle();
-    void onCursorPositionChanged();
     void blockEditBlink();
 
 private:
@@ -146,7 +143,6 @@ private:
     };
 
 private:
-    const int WORD_UNDER_CURSOR_HIGHLIGHT_TIMER = 600;
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
     StudioSettings *mSettings;

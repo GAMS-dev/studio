@@ -24,8 +24,8 @@ namespace gams {
 namespace studio {
 
 
-SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
-    QDialog(parent), mSettings(settings), ui(new Ui::SettingsDialog)
+SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
+    QDialog(parent), mMain(parent), mSettings(settings), ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
     setFixedSize(size());
@@ -47,6 +47,9 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
     connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_clearlog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_highlightUnderCursor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -63,11 +66,13 @@ void SettingsDialog::loadSettings()
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
-//    ui->cb_replacetabs->setChecked(mSettings->replaceTabsWithSpaces());
-//    ui->sb_tabsize->setValue(mSettings->tabSize());
+    ui->sb_tabsize->setValue(mSettings->tabSize());
     ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
     ui->cb_linewrap_process->setChecked(mSettings->lineWrapProcess());
     ui->cb_clearlog->setChecked(mSettings->clearLog());
+    ui->cb_highlightUnderCursor->setChecked(mSettings->wordUnderCursor());
+    ui->cb_highlightcurrent->setChecked(mSettings->highlightCurrentLine());
+    ui->cb_autoindent->setChecked(mSettings->autoIndent());
 }
 
 void SettingsDialog::setModified()
@@ -95,11 +100,13 @@ void SettingsDialog::saveSettings()
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
-//    mSettings->setReplaceTabsWithSpaces(ui->cb_replacetabs->isChecked());
-//    mSettings->setTabSize(ui->sb_tabsize->value());
+    mSettings->setTabSize(ui->sb_tabsize->value());
     mSettings->setLineWrapEditor(ui->cb_linewrap_editor->isChecked());
     mSettings->setLineWrapProcess(ui->cb_linewrap_process->isChecked());
     mSettings->setClearLog(ui->cb_clearlog->isChecked());
+    mSettings->setWordUnderCursor(ui->cb_highlightUnderCursor->isChecked());
+    mSettings->setHighlightCurrentLine(ui->cb_highlightcurrent->isChecked());
+    mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
 
     // done
     setModifiedStatus(false);
@@ -165,6 +172,25 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+}
+
+void SettingsDialog::on_btn_export_clicked()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, "Export Settings", mSettings->defaultWorkspace(),
+                                                    tr("GAMS user settings (*.gus);;"
+                                                       "All files (*)"));
+    mSettings->exportSettings(filePath);
+}
+
+void SettingsDialog::on_btn_import_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, "Import Settings", mSettings->defaultWorkspace(),
+                                                    tr("GAMS user settings (*.gus);;"
+                                                       "All files (*)"));
+    mSettings->importSettings(filePath, mMain);
+    emit editorLineWrappingChanged();
+    emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
+    close();
 }
 
 }
