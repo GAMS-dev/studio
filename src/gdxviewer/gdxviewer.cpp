@@ -26,6 +26,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QClipboard>
+#include <QModelIndexList>
 
 namespace gams {
 namespace studio {
@@ -42,6 +44,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
         EXCEPT() << "Could not load GDX library: " << msg;
     }
     init();
+
+    QAction* cpAction = new QAction("Copy");
+    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
+    ui.tvSymbols->addAction(cpAction);
+    connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
 }
 
 GdxViewer::~GdxViewer()
@@ -124,6 +132,22 @@ void GdxViewer::setHasChanged(bool value)
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
+}
+
+void GdxViewer::copySelectionToClipboard()
+{
+    if (!ui.tvSymbols->model())
+        return;
+
+    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();
+    qSort(selection);
+    QString text;
+    for (QModelIndex idx : selection)
+        text += idx.data().toString() + ", ";
+    text = text.chopped(2);
+
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText(text);
 }
 
 bool GdxViewer::init()
