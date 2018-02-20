@@ -129,7 +129,9 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
 
 void GdxSymbolView::copySelectionToClipboard()
 {
-    QList<QVector<QString>> lines;
+    QString separator = ",";
+    // row -> column -> QModelIndex
+    QMap<int, QMap<int, QString>> sortedSelection;
     QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
 
     int minRow = std::numeric_limits<int>::max();
@@ -137,52 +139,40 @@ void GdxSymbolView::copySelectionToClipboard()
     int minCol = std::numeric_limits<int>::max();
     int maxCol = std::numeric_limits<int>::min();
 
+    QMap<int, int> maxColLength;
+
     for (QModelIndex idx : selection)
     {
         int currentRow = idx.row();
         int currentCol = idx.column();
+        currentCol = ui->tableView->horizontalHeader()->visualIndex(currentCol);
+        QString currenText = idx.data().toString();
+        if (currenText.contains(separator)) {
+            if (currenText.contains("'"))
+                currenText = "\'" + currenText + "\'";
+            else
+                currenText = "\"" + currenText + "\"";
+        }
+        sortedSelection[currentRow][currentCol] = currenText;
+
         minRow = qMin(minRow, currentRow);
         maxRow = qMax(maxRow, currentRow);
         minCol = qMin(minCol, currentCol);
         maxCol = qMax(maxCol, currentCol);
-    }
-    int nrRows = maxRow - minRow + 1;
-    int rowOffset = minRow;
-    int nrCols = maxCol - minCol + 1;
-    int colOffset = minCol;
 
-    int row = -1;
-    std::vector<int> maxColWidth(ui->tableView->model()->columnCount());
-
-    for (int i=0; i<nrRows; i++)
-    {
-        QVector<QString> vec;
-        vec.resize(nrCols);
-        lines.append(vec);
+        maxColLength[currentCol] = qMax(maxColLength[currentCol], currenText.length());
     }
 
-    for (QModelIndex idx : selection)
-    {
-        row = idx.row();
-        int col = ui->tableView->horizontalHeader()->visualIndex(idx.column());
-        QString currentText = idx.data().toString();
-        maxColWidth[idx.column()] = qMax(maxColWidth[idx.column()], currentText.length());
-        lines[row-rowOffset][col] = currentText;
-    }
-
-    // assemble the actual clipboard content
     QString text;
-    for (QVector<QString> line : lines)
-    {
-        for (int col=0; col<line.length(); col++)
-        {
-            QString currentText = line.at(col);
-            text += currentText;
-            for (int spaces=0; spaces<maxColWidth[col]-currentText.length()+1; spaces++)
+    for(int r=minRow; r<maxRow+1; r++) {
+        for(int c=minCol; c<maxCol+1; c++) {
+            QString currentText = sortedSelection[r][c];
+            text += sortedSelection[r][c];
+            for (int spaces=0; spaces<maxColLength[c]-currentText.length(); spaces++)
                 text += " ";
-            text += ".";
+            text += separator + " ";
         }
-        text = text.remove(text.length()-1, text.length());
+        text = text.chopped(2);
         text += "\n";
     }
     QClipboard* clip = QApplication::clipboard();
