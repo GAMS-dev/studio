@@ -127,9 +127,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     refreshView();
 }
 
-void GdxSymbolView::copySelectionToClipboard()
+void GdxSymbolView::copySelectionToClipboard(QString separator)
 {
-    QString separator = ",";
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
     QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
@@ -148,10 +147,10 @@ void GdxSymbolView::copySelectionToClipboard()
         currentCol = ui->tableView->horizontalHeader()->visualIndex(currentCol);
         QString currenText = idx.data().toString();
         if (currenText.contains(separator)) {
-            if (currenText.contains("'"))
-                currenText = "\'" + currenText + "\'";
-            else
+            if (currenText.contains("\'"))
                 currenText = "\"" + currenText + "\"";
+            else
+                currenText = "\'" + currenText + "\'";
         }
         sortedSelection[currentRow][currentCol] = currenText;
 
@@ -182,7 +181,7 @@ void GdxSymbolView::copySelectionToClipboard()
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     QMenu m(this);
-    m.addAction("Copy Selection", this, &GdxSymbolView::copySelectionToClipboard);
+    m.addAction("Copy Selection", [this]() { copySelectionToClipboard(); });
     m.exec(ui->tableView->mapToGlobal(p));
 }
 
