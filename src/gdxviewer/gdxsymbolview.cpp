@@ -138,6 +138,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
 
 void GdxSymbolView::copySelectionToClipboard(QString separator)
 {
+    if (!ui->tableView->model())
+        return;
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
     QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
