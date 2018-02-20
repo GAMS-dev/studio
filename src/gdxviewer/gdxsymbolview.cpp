@@ -39,8 +39,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     QAction* cpTab   = mContextMenu.addAction("Copy Selection (tab-separated)"  , [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
     cpComma->setShortcutVisibleInContextMenu(true);
     cpTab->setShortcutVisibleInContextMenu(true);
-    this->addAction(cpComma);
-    this->addAction(cpTab);
+    ui->tableView->addAction(cpComma);
+    ui->tableView->addAction(cpTab);
 
     //create header
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
