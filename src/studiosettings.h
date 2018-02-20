@@ -104,6 +104,12 @@ public:
     bool autoIndent() const;
     void setAutoIndent(bool autoIndent);
 
+    void exportSettings(const QString &path);
+    void importSettings(const QString &path, MainWindow *main);
+
+    void loadUserSettings();
+    void updateSettingsFiles();
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -138,6 +144,8 @@ private:
 
     // user model library directory
     QString mUserModelLibraryDir;
+    void initSettingsFiles();
+    void resetSettings();
 };
 
 }

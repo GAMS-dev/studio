@@ -24,8 +24,8 @@ namespace gams {
 namespace studio {
 
 
-SettingsDialog::SettingsDialog(StudioSettings *settings, QWidget *parent) :
-    QDialog(parent), mSettings(settings), ui(new Ui::SettingsDialog)
+SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
+    QDialog(parent), mMain(parent), mSettings(settings), ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
     setFixedSize(size());
@@ -172,6 +172,25 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+}
+
+void SettingsDialog::on_btn_export_clicked()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, "Export Settings", mSettings->defaultWorkspace(),
+                                                    tr("GAMS user settings (*.gus);;"
+                                                       "All files (*)"));
+    mSettings->exportSettings(filePath);
+}
+
+void SettingsDialog::on_btn_import_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, "Import Settings", mSettings->defaultWorkspace(),
+                                                    tr("GAMS user settings (*.gus);;"
+                                                       "All files (*)"));
+    mSettings->importSettings(filePath, mMain);
+    emit editorLineWrappingChanged();
+    emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
+    close();
 }
 
 }
