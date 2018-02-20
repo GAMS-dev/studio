@@ -37,6 +37,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     //create context menu
     QAction* cpComma = mContextMenu.addAction("Copy Selection (comma-separated)", [this]() { copySelectionToClipboard(",");  }, QKeySequence(tr("Ctrl+C")));
     QAction* cpTab   = mContextMenu.addAction("Copy Selection (tab-separated)"  , [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
+    cpComma->setShortcutVisibleInContextMenu(true);
+    cpTab->setShortcutVisibleInContextMenu(true);
     this->addAction(cpComma);
     this->addAction(cpTab);
 
