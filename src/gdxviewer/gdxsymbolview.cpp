@@ -21,7 +21,6 @@
 #include "ui_gdxsymbolview.h"
 #include "gdxsymbolheaderview.h"
 #include "columnfilter.h"
-#include <QMenu>
 #include <QClipboard>
 #include <QDebug>
 
@@ -34,6 +33,14 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);
+
+    //create context menu
+    QAction* cpComma = mContextMenu.addAction("Copy Selection (comma-separated)", [this]() { copySelectionToClipboard(",");  }, QKeySequence(tr("Ctrl+C")));
+    QAction* cpTab   = mContextMenu.addAction("Copy Selection (tab-separated)"  , [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
+    this->addAction(cpComma);
+    this->addAction(cpTab);
+
+    //create header
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
     headerView->setEnabled(false);
 
@@ -180,9 +187,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
 void GdxSymbolView::showContextMenu(QPoint p)
 {
-    QMenu m(this);
-    m.addAction("Copy Selection", [this]() { copySelectionToClipboard(); });
-    m.exec(ui->tableView->mapToGlobal(p));
+    mContextMenu.exec(ui->tableView->mapToGlobal(p));
 }
 
 void GdxSymbolView::enableControls()

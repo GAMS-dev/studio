@@ -21,6 +21,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEW_H
 
 #include <QFrame>
+#include <QMenu>
 #include "gdxsymbol.h"
 
 namespace gams {
@@ -46,7 +47,8 @@ private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
-    void copySelectionToClipboard(QString separator = ",");
+    void copySelectionToClipboard(QString separator);
+    QMenu mContextMenu;
 
 public slots:
     void enableControls();
