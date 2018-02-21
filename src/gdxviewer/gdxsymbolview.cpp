@@ -159,8 +159,6 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     int minCol = std::numeric_limits<int>::max();
     int maxCol = std::numeric_limits<int>::min();
 
-    QMap<int, int> maxColLength;
-
     for (QModelIndex idx : selection)
     {
         int currentRow = idx.row();
@@ -179,20 +177,13 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
         maxRow = qMax(maxRow, currentRow);
         minCol = qMin(minCol, currentCol);
         maxCol = qMax(maxCol, currentCol);
-
-        maxColLength[currentCol] = qMax(maxColLength[currentCol], currenText.length());
     }
 
     QString text;
     for(int r=minRow; r<maxRow+1; r++) {
-        for(int c=minCol; c<maxCol+1; c++) {
-            QString currentText = sortedSelection[r][c];
-            text += sortedSelection[r][c];
-            for (int spaces=0; spaces<maxColLength[c]-currentText.length(); spaces++)
-                text += " ";
-            text += separator + " ";
-        }
-        text = text.chopped(2);
+        for(int c=minCol; c<maxCol+1; c++)
+            text += sortedSelection[r][c] + separator;
+        text = text.chopped(separator.length());
         text += "\n";
     }
     QClipboard* clip = QApplication::clipboard();
