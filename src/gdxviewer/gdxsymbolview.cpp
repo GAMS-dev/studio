@@ -181,18 +181,17 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
         maxCol = qMax(maxCol, currentCol);
     }
 
-    QString text;
+    QStringList sList;
     for(int r=minRow; r<maxRow+1; r++) {
         for(int c=minCol; c<maxCol+1; c++)
-            text += sortedSelection[r][c] + separator;
-        text = text.chopped(separator.length());
-        text += "\n";
+            sList << sortedSelection[r][c] << separator;
+        sList.pop_back(); // remove last separator
+        sList << "\n";
     }
-    if (text.endsWith("\n")) // if text is not empty, remove last newline character
-        text = text.chopped(1);
+    sList.pop_back();  // remove last newline
 
-    QClipboard* clip = QApplication::clipboard();
-    clip->setText(text);
+    QClipboard* clip = QApplication::clipboard();;
+    clip->setText(sList.join(""));
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
