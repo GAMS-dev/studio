@@ -26,6 +26,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QClipboard>
+#include <QModelIndexList>
 
 namespace gams {
 namespace studio {
@@ -42,6 +44,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
         EXCEPT() << "Could not load GDX library: " << msg;
     }
     init();
+
+    QAction* cpAction = new QAction("Copy");
+    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
+    ui.tvSymbols->addAction(cpAction);
+    connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
 }
 
 GdxViewer::~GdxViewer()
@@ -52,31 +60,23 @@ GdxViewer::~GdxViewer()
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-    qDebug() << "update selected symbol 1";
     if (selected.indexes().size()>0) {
-        qDebug() << "update selected symbol 2";
-
         int selectedIdx = mSymbolTableProxyModel->mapToSource(selected.indexes().at(0)).row();
         if (deselected.indexes().size()>0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
 
-        qDebug() << "update selected symbol 3";
-
         if (!reload())
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
-
-        qDebug() << "update selected symbol 4";
 
         //aliases are also aliases in the sense of the view
         if(selectedSymbol->type() == GMS_DT_ALIAS) {
             selectedIdx = selectedSymbol->subType();
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
-        qDebug() << "update selected symbol 5";
 
         // create new GdxSymbolView if the symbol is selected for the first time
         if(!mSymbolViews.at(selectedIdx)) {
@@ -85,16 +85,10 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             symView->setSym(selectedSymbol);
         }
 
-        qDebug() << "update selected symbol 6";
-
         if(!selectedSymbol->isLoaded())
             QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
 
-        qDebug() << "update selected symbol 7";
-
         ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
-
-        qDebug() << "update selected symbol 8";
     }
 }
 
@@ -138,6 +132,24 @@ void GdxViewer::setHasChanged(bool value)
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
+}
+
+void GdxViewer::copySelectionToClipboard()
+{
+    if (!ui.tvSymbols->model())
+        return;
+
+    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();\
+    if (selection.isEmpty())
+        return;
+    qSort(selection);
+    QString text;
+    for (QModelIndex idx : selection)
+        text += idx.data().toString() + ",";
+    text = text.chopped(1);
+
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText(text);
 }
 
 bool GdxViewer::init()

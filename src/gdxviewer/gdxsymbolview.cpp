@@ -21,7 +21,8 @@
 #include "ui_gdxsymbolview.h"
 #include "gdxsymbolheaderview.h"
 #include "columnfilter.h"
-#include <QMenu>
+#include <QClipboard>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -32,6 +33,26 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);
+
+    //create context menu
+    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)", [this]() { copySelectionToClipboard(",");  }, QKeySequence(tr("Ctrl+C")));
+    cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    cpComma->setShortcutVisibleInContextMenu(true);
+    ui->tableView->addAction(cpComma);
+
+    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
+    cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    cpTab->setShortcutVisibleInContextMenu(true);
+    ui->tableView->addAction(cpTab);
+
+    mContextMenu.addSeparator();
+
+    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll, QKeySequence(tr("Ctrl+A")));
+    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    selectAll->setShortcutVisibleInContextMenu(true);
+    ui->tableView->addAction(selectAll);
+
+    //create header
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
     headerView->setEnabled(false);
 
@@ -46,6 +67,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
+
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -120,6 +144,60 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
     refreshView();
+}
+
+void GdxSymbolView::copySelectionToClipboard(QString separator)
+{
+    if (!ui->tableView->model())
+        return;
+    // row -> column -> QModelIndex
+    QMap<int, QMap<int, QString>> sortedSelection;
+    QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
+    if (selection.isEmpty())
+        return;
+
+    int minRow = std::numeric_limits<int>::max();
+    int maxRow = std::numeric_limits<int>::min();
+    int minCol = std::numeric_limits<int>::max();
+    int maxCol = std::numeric_limits<int>::min();
+
+    for (QModelIndex idx : selection)
+    {
+        int currentRow = idx.row();
+        int currentCol = idx.column();
+        currentCol = ui->tableView->horizontalHeader()->visualIndex(currentCol);
+        QString currenText = idx.data().toString();
+        if (currenText.contains(separator)) {
+            if (currenText.contains("\'"))
+                currenText = "\"" + currenText + "\"";
+            else
+                currenText = "\'" + currenText + "\'";
+        }
+        sortedSelection[currentRow][currentCol] = currenText;
+
+        minRow = qMin(minRow, currentRow);
+        maxRow = qMax(maxRow, currentRow);
+        minCol = qMin(minCol, currentCol);
+        maxCol = qMax(maxCol, currentCol);
+    }
+
+    QString text;
+    for(int r=minRow; r<maxRow+1; r++) {
+        for(int c=minCol; c<maxCol+1; c++)
+            text += sortedSelection[r][c] + separator;
+        text = text.chopped(separator.length());
+        text += "\n";
+    }
+    if (text.endsWith("\n")) // if text is not empty, remove last newline character
+        text = text.chopped(1);
+
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText(text);
+}
+
+void GdxSymbolView::showContextMenu(QPoint p)
+{
+    mContextMenu.exec(ui->tableView->mapToGlobal(p));
 }
 
 void GdxSymbolView::enableControls()
