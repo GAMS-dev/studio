@@ -28,7 +28,6 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     QDialog(parent), mMain(parent), mSettings(settings), ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
-    setFixedSize(size());
 
     // load from settings to UI
     loadSettings();
