@@ -139,12 +139,14 @@ void GdxViewer::copySelectionToClipboard()
     if (!ui.tvSymbols->model())
         return;
 
-    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();
+    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();\
+    if (selection.isEmpty())
+        return;
     qSort(selection);
     QString text;
     for (QModelIndex idx : selection)
-        text += idx.data().toString() + ", ";
-    text = text.chopped(2);
+        text += idx.data().toString() + ",";
+    text = text.chopped(1);
 
     QClipboard* clip = QApplication::clipboard();
     clip->setText(text);

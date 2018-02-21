@@ -153,6 +153,8 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
     QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
+    if (selection.isEmpty())
+        return;
 
     int minRow = std::numeric_limits<int>::max();
     int maxRow = std::numeric_limits<int>::min();
@@ -186,6 +188,9 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
         text = text.chopped(separator.length());
         text += "\n";
     }
+    if (text.endsWith("\n")) // if text is not empty, remove last newline character
+        text = text.chopped(1);
+
     QClipboard* clip = QApplication::clipboard();
     clip->setText(text);
 }
