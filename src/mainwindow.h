@@ -195,6 +195,7 @@ private:
     bool requestCloseChanged(QList<FileContext*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
+    bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateEditorFont(const QString &fontFamily, int fontSize);

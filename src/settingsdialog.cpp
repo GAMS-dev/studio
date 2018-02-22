@@ -25,10 +25,9 @@ namespace studio {
 
 
 SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
-    QDialog(parent), mMain(parent), mSettings(settings), ui(new Ui::SettingsDialog)
+    QDialog(parent), ui(new Ui::SettingsDialog), mSettings(settings), mMain(parent)
 {
     ui->setupUi(this);
-    setFixedSize(size());
 
     // load from settings to UI
     loadSettings();

@@ -839,12 +839,6 @@ void MainWindow::connectCommandLineWidgets()
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mOptionEditor, &OptionEditor::updateTableModel );
 
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//            this, &MainWindow::loadCommandLineHistory);
-//            mCommandLineOption, &CommandLineOption::updateCurrentOption );
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-//            mCommandLineHistory, &CommandLineHistory::addIntoCurrentContextHistory );
     connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
 }
 
@@ -854,6 +848,17 @@ void MainWindow::setRunActionsEnabled(bool enable)
     ui->actionRun_with_GDX_Creation->setEnabled(enable);
     ui->actionCompile->setEnabled(enable);
     ui->actionCompile_with_GDX_Creation->setEnabled(enable);
+}
+
+bool MainWindow::isActiveTabEditable()
+{
+    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit( editWidget );
+    if (edit) {
+        FileContext* fc = mFileRepo.fileContext(edit);
+        return (fc && !edit->isReadOnly());
+    }
+    return false;
 }
 
 QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
@@ -1283,29 +1288,37 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_actionRun_triggered()
 {
-    emit mCommandLineOption->optionRunChanged();
+    if (isActiveTabEditable()) {
+       emit mCommandLineOption->optionRunChanged();
+    }
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+    }
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+    }
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+    }
 }
 
 void MainWindow::changeToLog(FileContext* fileContext)

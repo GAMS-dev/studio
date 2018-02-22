@@ -89,7 +89,8 @@ void GamsProcess::execute()
 QString GamsProcess::aboutGAMS()
 {
     QProcess process;
-    QStringList args({"?", "lo=3"});
+    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QStringList args({"?", "lo=3", "curdir=" + tempDir});
     process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
     QString about;
     if (process.waitForFinished()) {
