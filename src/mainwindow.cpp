@@ -94,7 +94,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
-    connect(mWp, &WelcomePage::relayActionWp, this, &MainWindow::receiveAction);
 
     ensureCodecMenu("System");
     mSettings->loadSettings(this);
