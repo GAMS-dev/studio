@@ -49,6 +49,7 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class Result;
+class GoToWidget;
 
 struct RecentData {
     FileId editFileId = -1;
@@ -169,6 +170,15 @@ private slots:
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
+    void on_actionGo_To_triggered();
+    void on_actionRedo_triggered();
+    void on_actionUndo_triggered();
+    void on_actionPaste_triggered();
+    void on_actionCopy_triggered();
+    void on_actionSelect_All_triggered();
+    void on_actionCut_triggered();
+    void on_actionSet_to_Uppercase_triggered();
+    void on_actionSet_to_Lowercase_triggered();
 
     void interruptTriggered();
     void stopTriggered();
@@ -227,6 +237,8 @@ private:
     void changeToLog(FileContext* fileContext);
 
     QToolButton* interruptToolButton = nullptr;
+    GoToWidget *mGoto;
+
 };
 
 }

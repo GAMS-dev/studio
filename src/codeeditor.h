@@ -104,6 +104,7 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+    bool mOverwriteActivated = false;
 
 private:
     class BlockEdit

@@ -198,6 +198,20 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         anc.setPosition(c.anchor());
         startBlockEdit(anc.blockNumber(), anc.columnNumber());
     }
+    if (e->key() == Qt::Key_Insert){
+        mOverwriteActivated = !mOverwriteActivated;
+        setOverwriteMode(mOverwriteActivated);
+    }
+
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)){
+            e->ignore();
+            return;
+    }
+    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
+        // ignore enter/return key
+        e->accept();
+        return;
+    }
 
     if (e == Hotkey::Paste) {
         pasteClipboard();

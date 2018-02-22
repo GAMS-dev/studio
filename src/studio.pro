@@ -146,8 +146,8 @@ SOURCES += \
     searchresultlist.cpp \
     keys.cpp \
     commandlineparser.cpp \
-    wplabel.cpp
-
+    wplabel.cpp \
+    gotowidget.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -213,7 +213,8 @@ HEADERS += \
     syntax/syntaxdata.h \
     keys.h \
     commandlineparser.h \
-    wplabel.h
+    wplabel.h \
+    gotowidget.h
 
 FORMS += \
     welcomepage.ui  \
@@ -226,7 +227,8 @@ FORMS += \
     settingsdialog.ui \
     option/optionconfigurator.ui \
     searchwidget.ui \
-    resultsview.ui
+    resultsview.ui \
+    gotowidget.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

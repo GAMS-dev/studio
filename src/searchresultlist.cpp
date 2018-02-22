@@ -128,6 +128,3 @@ bool SearchResultList::isRegex() const
 }
 }
 
-
-
-
