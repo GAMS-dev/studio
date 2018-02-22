@@ -68,7 +68,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
-    void contextMenuEvent(QContextMenuEvent *e);
+    void contextMenuEvent(QContextMenuEvent *e) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
