@@ -140,7 +140,7 @@ void GdxViewer::copySelectionToClipboard()
     if (!ui.tvSymbols->model())
         return;
 
-    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();\
+    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();
     if (selection.isEmpty())
         return;
     std::sort(selection.begin(), selection.end());
