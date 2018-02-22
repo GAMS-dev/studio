@@ -27,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-bool overrideactivated = false;
+bool overwriteactivated = false;
 CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
 {
     mLineNumberArea = new LineNumberArea(this);
@@ -188,14 +188,9 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-    if ((e->key() == Qt::Key_Insert) &&  (overrideactivated == false)){
-        overrideactivated = true;
-    } else if ((e->key() == Qt::Key_Insert) &&  (overrideactivated == true)){
-        overrideactivated = false;
-        setOverwriteMode(overrideactivated);
-    }
-    if (overrideactivated == true) {
-        setOverwriteMode(overrideactivated);
+    if (e->key() == Qt::Key_Insert){
+        overwriteactivated = !overwriteactivated;
+        setOverwriteMode(overwriteactivated);
     }
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)){

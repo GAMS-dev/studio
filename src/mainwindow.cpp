@@ -861,6 +861,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
+        //TODO check accept event
     } else {
         QMainWindow::keyPressEvent(event);
     }
@@ -1208,16 +1209,17 @@ void MainWindow::showResults(SearchResultList &results)
 
 void MainWindow::on_actionGo_To_triggered()
 {
-
+    int width = mGoto->frameGeometry().width();
+    int height = mGoto->frameGeometry().height();
+    QDesktopWidget wid;
+    int screenWidth = wid.screen()->width();
+    int screenHeight = wid.screen()->height();
     if (mGoto->isVisible()) {
         mGoto->hide();
     } else {
-        QPoint p(-600,200);
-        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
-        if (ui->mainTab->currentWidget()) {
-           int offset = (ui->mainTab->currentWidget()->width() - mGoto->width());
-           mGoto->move(newP.x() + offset, newP.y());
-        }
+        mGoto->setGeometry((screenWidth/2)-(width/2),(screenHeight/2)-(height/2),width,height);
+        if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+            return;
         mGoto->show();
         mGoto->focusTextBox();
     }  
@@ -1226,43 +1228,59 @@ void MainWindow::on_actionGo_To_triggered()
 
 void MainWindow::on_actionRedo_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->redo();
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->paste();
 }
 
 void MainWindow::on_actionCopy_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->copy();
 }
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce) return;
     ce->selectAll();
 }
 
 void MainWindow::on_actionCut_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0)){
+        return;
+    }
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->cut();
 }
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QClipboard *clipboard = QGuiApplication::clipboard();
     bool a = true;
     QString oldtext = clipboard->text();
@@ -1289,7 +1307,9 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
-    CodeEditor* ce= (CodeEditor*) mRecent.editor;
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QClipboard *clipboard = QGuiApplication::clipboard();
     bool a = true;
     QString oldtext = clipboard->text();

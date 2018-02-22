@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>242</width>
-    <height>51</height>
+    <width>205</width>
+    <height>38</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,23 +19,29 @@
   <widget class="QPushButton" name="GoTo">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>15</y>
-     <width>75</width>
-     <height>23</height>
+     <x>130</x>
+     <y>4</y>
+     <width>65</width>
+     <height>28</height>
     </rect>
    </property>
    <property name="text">
     <string>Go</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
    </property>
   </widget>
   <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>131</width>
-     <height>31</height>
+     <y>4</y>
+     <width>110</width>
+     <height>28</height>
     </rect>
    </property>
    <property name="layoutDirection">
