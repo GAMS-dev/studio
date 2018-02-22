@@ -28,8 +28,7 @@ namespace gams {
 namespace studio {
 
 WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
-    QWidget(parent), mMain(parent),
-    ui(new Ui::WelcomePage)
+    QWidget(parent), ui(new Ui::WelcomePage), mMain(parent)
 {
     ui->setupUi(this);
     historyChanged(history);
