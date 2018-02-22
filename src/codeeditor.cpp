@@ -207,11 +207,6 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             e->ignore();
             return;
     }
-    if (!isReadOnly() && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
-        // ignore enter/return key
-        e->accept();
-        return;
-    }
 
     if (e == Hotkey::Paste) {
         pasteClipboard();
