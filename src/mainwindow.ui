@@ -470,6 +470,10 @@
    </property>
   </action>
   <action name="actionCompile">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/compile</normaloff>:/img/compile</iconset>
+   </property>
    <property name="text">
     <string>Compile</string>
    </property>
@@ -481,6 +485,10 @@
    </property>
   </action>
   <action name="actionRun_with_GDX_Creation">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/run-gdx</normaloff>:/img/run-gdx</iconset>
+   </property>
    <property name="text">
     <string>Run with GDX Creation</string>
    </property>
@@ -500,6 +508,10 @@
    </property>
   </action>
   <action name="actionCompile_with_GDX_Creation">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/compile-gdx</normaloff>:/img/compile-gdx</iconset>
+   </property>
    <property name="text">
     <string>Compile with GDX Creation</string>
    </property>

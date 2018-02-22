@@ -760,11 +760,11 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->actionCompile->setShortcutVisibleInContextMenu(true);
     ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
 
-    QToolButton* runToolButton = new QToolButton(this);
-    runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    runToolButton->setMenu(runMenu);
-    runToolButton->setDefaultAction(ui->actionRun);
-    commandHLayout->addWidget(runToolButton);
+    mRunToolButton = new QToolButton(this);
+    mRunToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mRunToolButton->setMenu(runMenu);
+    mRunToolButton->setDefaultAction(ui->actionRun);
+    commandHLayout->addWidget(mRunToolButton);
 
     interruptToolButton = new QToolButton(this);
     interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -1296,6 +1296,7 @@ void MainWindow::on_actionRun_triggered()
 {
     if (isActiveTabEditable()) {
        emit mCommandLineOption->optionRunChanged();
+      mRunToolButton->setDefaultAction( ui->actionRun );
     }
 }
 
@@ -1305,6 +1306,7 @@ void MainWindow::on_actionRun_with_GDX_Creation_triggered()
         QList<OptionItem> forcedOptionItems;
         forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
         on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionRun_with_GDX_Creation );
     }
 }
 
@@ -1314,6 +1316,7 @@ void MainWindow::on_actionCompile_triggered()
         QList<OptionItem> forcedOptionItems;
         forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
         on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionCompile );
     }
 }
 
@@ -1324,6 +1327,7 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
         forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
         forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
         on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionCompile_with_GDX_Creation );
     }
 }
 

@@ -237,6 +237,7 @@ private:
     void changeToLog(FileContext* fileContext);
 
     QToolButton* interruptToolButton = nullptr;
+    QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
 
 };
