@@ -22,6 +22,7 @@
 #include "gdxsymbol.h"
 #include "gdxsymbolview.h"
 #include "exception.h"
+#include <algorithm>
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -142,7 +143,7 @@ void GdxViewer::copySelectionToClipboard()
     QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();\
     if (selection.isEmpty())
         return;
-    qSort(selection);
+    std::sort(selection.begin(), selection.end());
     QString text;
     for (QModelIndex idx : selection)
         text += idx.data().toString() + ",";
