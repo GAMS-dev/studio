@@ -170,8 +170,8 @@ private slots:
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
 
-    void on_interrupt_triggered();
-    void on_stop_triggered();
+    void interruptTriggered();
+    void stopTriggered();
 
 protected:
     void closeEvent(QCloseEvent *event);

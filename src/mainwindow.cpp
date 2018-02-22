@@ -771,8 +771,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     QIcon stopIcon(":/img/stop");
     QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
     QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
-    connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
+    connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
     interruptToolButton->setMenu(interruptMenu);
     interruptToolButton->setDefaultAction(interruptAction);
 
@@ -1219,7 +1219,7 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
-void MainWindow::on_interrupt_triggered()
+void MainWindow::interruptTriggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
@@ -1230,7 +1230,7 @@ void MainWindow::on_interrupt_triggered()
         QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
-void MainWindow::on_stop_triggered()
+void MainWindow::stopTriggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
