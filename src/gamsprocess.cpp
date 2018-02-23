@@ -119,8 +119,7 @@ void GamsProcess::interrupt()
 
     QString windowName("___GAMSMSGWINDOW___");
     windowName += pid;
-    LPCTSTR windowNameL = windowName.toStdWString().c_str();
-    HWND receiver = FindWindow(nullptr, windowNameL);
+    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
 
     cds.dwData = (ULONG_PTR) 1;
     cds.lpData = (PVOID) msgText;
