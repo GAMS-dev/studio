@@ -11,6 +11,7 @@ GoToWidget::GoToWidget(MainWindow *parent) :
     QDialog(parent), ui(new Ui::GoToWidget), mMain(parent)
 {
     ui->setupUi(this);
+    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
     setFixedSize(size());
 }
 
@@ -31,7 +32,7 @@ void GoToWidget::on_GoTo_clicked()
     QTextCursor cursor;
     FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
-    fc->jumpTo(cursor, true,altLine,0);
+    fc->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->setText("");
 }
 
