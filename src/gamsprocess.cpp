@@ -126,7 +126,7 @@ void GamsProcess::interrupt()
     cds.lpData = (PVOID) msgText;
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
-    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
 #else // Linux and Mac OS X
     QStringList s1;
     QProcess proc;
