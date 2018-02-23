@@ -119,14 +119,13 @@ void GamsProcess::interrupt()
 
     QString windowName("___GAMSMSGWINDOW___");
     windowName += pid;
-    LPCTSTR windowNameL = windowName.toStdWString().c_str();
-    HWND receiver = FindWindow(nullptr, windowNameL);
+    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
 
     cds.dwData = (ULONG_PTR) 1;
     cds.lpData = (PVOID) msgText;
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
-    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
 #else // Linux and Mac OS X
     QStringList s1;
     QProcess proc;
