@@ -98,6 +98,18 @@ public:
     void setWordUnderCursor(bool wordUnderCursor);
     QString userModelLibraryDir() const;
 
+    bool highlightCurrentLine() const;
+    void setHighlightCurrentLine(bool highlightCurrentLine);
+
+    bool autoIndent() const;
+    void setAutoIndent(bool autoIndent);
+
+    void exportSettings(const QString &path);
+    void importSettings(const QString &path, MainWindow *main);
+
+    void loadUserSettings();
+    void updateSettingsFiles();
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -116,12 +128,13 @@ private:
     QString mFontFamily;
     int mFontSize;
     bool mShowLineNr;
-    bool mReplaceTabsWithSpaces;
     int mTabSize;
     bool mLineWrapEditor;
     bool mLineWrapProcess;
     bool mClearLog;
     bool mWordUnderCursor;
+    bool mHighlightCurrentLine;
+    bool mAutoIndent;
 
     // search widget
     bool mSearchUseRegex;
@@ -131,6 +144,8 @@ private:
 
     // user model library directory
     QString mUserModelLibraryDir;
+    void initSettingsFiles();
+    void resetSettings();
 };
 
 }

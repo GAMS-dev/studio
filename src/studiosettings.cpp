@@ -36,8 +36,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings)
     }
     else if (mAppSettings == nullptr)
     {
-        mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
-        mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+        initSettingsFiles();
     }
 }
 
@@ -52,6 +51,19 @@ StudioSettings::~StudioSettings()
         delete mUserSettings;
         mUserSettings = nullptr;
     }
+}
+
+void StudioSettings::initSettingsFiles()
+{
+    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
+    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+}
+
+void StudioSettings::resetSettings()
+{
+    initSettingsFiles();
+    mAppSettings->sync();
+    mUserSettings->sync();
 }
 
 void StudioSettings::saveSettings(MainWindow *main)
@@ -138,16 +150,46 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
     mUserSettings->setValue("showLineNr", showLineNr());
-    mUserSettings->setValue("replaceTabsWithSpaces", replaceTabsWithSpaces());
     mUserSettings->setValue("tabSize", tabSize());
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
     mUserSettings->setValue("clearLog", clearLog());
     mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
+    mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
+    mUserSettings->setValue("autoIndent", autoIndent());
 
     mUserSettings->endGroup();
 
     mAppSettings->sync();
+}
+
+void StudioSettings::loadUserSettings()
+{
+    mUserSettings->beginGroup("General");
+
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
+    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
+    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
+    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
+    setOpenLst(mUserSettings->value("openLst", false).toBool());
+    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Editor");
+
+    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    setFontSize(mUserSettings->value("fontSize", 10).toInt());
+    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
+    setTabSize(mUserSettings->value("tabSize", 4).toInt());
+    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
+    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
+    setClearLog(mUserSettings->value("clearLog", false).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
+    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
+    setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
+
+    mUserSettings->endGroup();
 }
 
 void StudioSettings::loadSettings(MainWindow *main)
@@ -205,44 +247,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     mAppSettings->endGroup();
 
-    mUserSettings->beginGroup("General");
-
-    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
-    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
-    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
-    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
-    setOpenLst(mUserSettings->value("openLst", false).toBool());
-    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-
-    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
-    setFontSize(mUserSettings->value("fontSize", 10).toInt());
-    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
-    setReplaceTabsWithSpaces(mUserSettings->value("replaceTabsWithSpaces", false).toBool());
-    setTabSize(mUserSettings->value("tabSize", 4).toInt());
-    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
-    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
-    setClearLog(mUserSettings->value("clearLog", false).toBool());
-    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
-
-    mUserSettings->endGroup();
-
-    if(!restoreTabs())
-        return;
-
-    mAppSettings->beginGroup("fileHistory");
-    size = mAppSettings->beginReadArray("openedTabs");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        QString value = mAppSettings->value("location").toString();
-        if(QFileInfo(value).exists())
-            main->openFile(value);
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
+    loadUserSettings();
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
@@ -251,6 +256,38 @@ void StudioSettings::loadSettings(MainWindow *main)
     // save settings directly after loading in order to reset
     if (mResetSettings)
         saveSettings(main);
+
+    if(restoreTabs()) {
+        mAppSettings->beginGroup("fileHistory");
+        size = mAppSettings->beginReadArray("openedTabs");
+        for (int i = 0; i < size; i++) {
+            mAppSettings->setArrayIndex(i);
+            QString value = mAppSettings->value("location").toString();
+            if(QFileInfo(value).exists())
+                main->openFile(value);
+        }
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+}
+
+void StudioSettings::importSettings(const QString &path, MainWindow *main)
+{
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("You are about to overwrite your local settings. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+        QFile backupFile(path);
+        QFile settingsFile(mUserSettings->fileName());
+
+        settingsFile.remove(); // remove old file
+        backupFile.copy(settingsFile.fileName()); // import new file
+        resetSettings();
+        loadSettings(main);
+    }
 }
 
 QString StudioSettings::defaultWorkspace() const
@@ -331,16 +368,6 @@ bool StudioSettings::showLineNr() const
 void StudioSettings::setShowLineNr(bool value)
 {
     mShowLineNr = value;
-}
-
-bool StudioSettings::replaceTabsWithSpaces() const
-{
-    return mReplaceTabsWithSpaces;
-}
-
-void StudioSettings::setReplaceTabsWithSpaces(bool value)
-{
-    mReplaceTabsWithSpaces = value;
 }
 
 int StudioSettings::tabSize() const
@@ -446,6 +473,32 @@ void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 QString StudioSettings::userModelLibraryDir() const
 {
     return mUserModelLibraryDir;
+}
+
+bool StudioSettings::highlightCurrentLine() const
+{
+    return mHighlightCurrentLine;
+}
+
+void StudioSettings::setHighlightCurrentLine(bool highlightCurrentLine)
+{
+    mHighlightCurrentLine = highlightCurrentLine;
+}
+
+bool StudioSettings::autoIndent() const
+{
+    return mAutoIndent;
+}
+
+void StudioSettings::setAutoIndent(bool autoIndent)
+{
+    mAutoIndent = autoIndent;
+}
+
+void StudioSettings::exportSettings(const QString &path)
+{
+    QFile originFile(mUserSettings->fileName());
+    originFile.copy(path);
 }
 
 }

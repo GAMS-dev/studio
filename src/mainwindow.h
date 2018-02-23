@@ -29,7 +29,6 @@
 #include "option/commandlinehistory.h"
 #include "option/commandlineoption.h"
 #include "option/lineeditcompleteevent.h"
-#include "option/optionconfigurator.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
 #include "resultsview.h"
@@ -50,6 +49,7 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class Result;
+class GoToWidget;
 
 struct RecentData {
     FileId editFileId = -1;
@@ -170,9 +170,18 @@ private slots:
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
+    void on_actionGo_To_triggered();
+    void on_actionRedo_triggered();
+    void on_actionUndo_triggered();
+    void on_actionPaste_triggered();
+    void on_actionCopy_triggered();
+    void on_actionSelect_All_triggered();
+    void on_actionCut_triggered();
+    void on_actionSet_to_Uppercase_triggered();
+    void on_actionSet_to_Lowercase_triggered();
 
-    void on_interrupt_triggered();
-    void on_stop_triggered();
+    void interruptTriggered();
+    void stopTriggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -196,6 +205,7 @@ private:
     bool requestCloseChanged(QList<FileContext*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
+    bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateEditorFont(const QString &fontFamily, int fontSize);
@@ -227,6 +237,9 @@ private:
     void changeToLog(FileContext* fileContext);
 
     QToolButton* interruptToolButton = nullptr;
+    QToolButton* mRunToolButton = nullptr;
+    GoToWidget *mGoto;
+
 };
 
 }

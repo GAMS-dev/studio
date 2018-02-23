@@ -24,11 +24,16 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
-                            cd src
-                            qmake studio.pro
-                            mingw32-make
+                            @echo off
+                            echo Setting up environment for VS 2015 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+                            call vcvars32.bat
+                            set
+                            cd %WORKSPACE%\\src
+                            qmake studio.pro "CONFIG+=release"
+                            nmake
                         '''
-                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 },
                 windowsX64: {
@@ -37,7 +42,7 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS2014 usage...
+                            echo Setting up environment for VS2017 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
                             set

@@ -376,12 +376,16 @@ void GdxSymbol::loadMetaData()
 
 void GdxSymbol::loadDomains()
 {
-    gdxStrIndexPtrs_t domX;
-    gdxStrIndex_t     domXXX;
-    GDXSTRINDEXPTRS_INIT(domXXX,domX);
-    gdxSymbolGetDomainX(mGdx, mNr, domX);
-    for(int i=0; i<mDim; i++)
-        mDomains.append(domX[i]);
+    if (mNr == 0) //universe
+        mDomains.append("*");
+    else {
+        gdxStrIndexPtrs_t domX;
+        gdxStrIndex_t     domXXX;
+        GDXSTRINDEXPTRS_INIT(domXXX,domX);
+        gdxSymbolGetDomainX(mGdx, mNr, domX);
+        for(int i=0; i<mDim; i++)
+            mDomains.append(domX[i]);
+    }
 }
 
 double GdxSymbol::specVal2SortVal(double val)

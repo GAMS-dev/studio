@@ -68,12 +68,11 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
-    void contextMenuEvent(QContextMenuEvent *e);
+    void contextMenuEvent(QContextMenuEvent *e) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
-    void highlightWordUnderCursor(QString word);
 
 public slots:
     void clearSelection();
@@ -86,8 +85,6 @@ private slots:
     void recalcExtraSelections();
     void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
-    void onCursorIdle();
-    void onCursorPositionChanged();
     void blockEditBlink();
 
 private:
@@ -107,6 +104,7 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+    bool mOverwriteActivated = false;
 
 private:
     class BlockEdit
@@ -146,7 +144,6 @@ private:
     };
 
 private:
-    const int WORD_UNDER_CURSOR_HIGHLIGHT_TIMER = 600;
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
     StudioSettings *mSettings;

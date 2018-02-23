@@ -1,5 +1,4 @@
 #include "optioneditor.h"
-#include "optionconfigurator.h"
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionparametermodel.h"
@@ -26,7 +25,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     if (optionEditor->objectName().isEmpty())
         optionEditor->setObjectName(QStringLiteral("OptionEditor"));
-    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(optionEditor->sizePolicy().hasHeightForWidth());
@@ -51,14 +50,13 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     commandLineTableView->setAutoScroll(true);
     commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    commandLineTableView->setModel( optionParamModel );
-    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
-    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
-    commandLineTableView->resizeColumnsToContents();
+   commandLineTableView->setModel( optionParamModel );
+//    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
+//    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
+//    commandLineTableView->resizeColumnsToContents();
 
     splitter->addWidget(commandLineTableView);   
-    splitter->setStretchFactor(0,1);
-    splitter->setStretchFactor(1,2);
+    splitter->setSizes(QList<int>({INT_MAX, INT_MAX}));
 
     verticalLayoutWidget = new QWidget(splitter);
     verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
@@ -73,6 +71,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mTokenizer->getGamsOption(), this);
+    proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);

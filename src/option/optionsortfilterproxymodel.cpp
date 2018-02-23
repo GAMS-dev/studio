@@ -10,18 +10,60 @@ OptionSortFilterProxyModel::OptionSortFilterProxyModel(QObject *parent)
 
 bool OptionSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    if (!index.isValid())
-       return false;
+    // accept is itself matches
+    if (filterAcceptsSelfRow(sourceRow, sourceParent))
+       return true;
 
-    if ( sourceModel()->rowCount(index) > 0 ) {
-        return sourceModel()->data(index).toString().contains(filterRegExp());
-    } else {
-        if (sourceModel()->parent(index).isValid())
-             return sourceModel()->data(sourceParent).toString().contains(filterRegExp());
-        else
-           return sourceModel()->data(index).toString().contains(filterRegExp());
+    // accept if any of its parents matches
+    QModelIndex parent = sourceParent;
+    while (parent.isValid()) {
+        if (filterAcceptsSelfRow(parent.row(), parent.parent()))
+            return true;
+        parent = parent.parent();
     }
+
+    // accept if any of its children matches
+    if (hasAcceptedChildren(sourceRow, sourceParent))
+        return true;
+    else
+        return false;
+}
+
+bool OptionSortFilterProxyModel::filterAcceptsSelfRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    for (int col=0; col < sourceModel()->columnCount(); ++col) {
+        QModelIndex keyIndex = sourceModel()->index(sourceRow, col, sourceParent);
+        if (!keyIndex.isValid())
+           continue;
+
+        if (sourceModel()->data(keyIndex).toString().contains(filterRegExp()))
+           return true;
+    }
+    return false;
+}
+
+bool OptionSortFilterProxyModel::hasAcceptedChildren(int sourceRow, const QModelIndex &sourceParent) const
+{
+    for (int col=0; col < sourceModel()->columnCount(); ++col) {
+        QModelIndex index = sourceModel()->index(sourceRow, col, sourceParent);
+        if (!index.isValid())
+          continue;
+
+        int childCount = index.model()->rowCount(index);
+        if (childCount == 0)
+           continue;
+
+        for (int i = 0; i < childCount; ++i) {
+            if (filterAcceptsSelfRow(i, index))
+               return true;
+
+            // DFS - recursive, better BFS?
+            if (hasAcceptedChildren(i, index))
+               return true;
+        }
+    }
+
+    return false;
 }
 
 bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const

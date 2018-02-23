@@ -1,5 +1,4 @@
-/*
- * This file is part of the GAMS Studio project.
+/* This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
@@ -16,11 +15,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 #include "resultsview.h"
 #include "searchwidget.h"
 #include "ui_resultsview.h"
 #include "exception.h"
+#include "searchresultlist.h"
 
 namespace gams {
 namespace studio {
@@ -79,3 +79,4 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
 }
 }
+

@@ -22,10 +22,13 @@
 #include "gdxsymbol.h"
 #include "gdxsymbolview.h"
 #include "exception.h"
+#include <algorithm>
 #include <memory>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QClipboard>
+#include <QModelIndexList>
 
 namespace gams {
 namespace studio {
@@ -42,6 +45,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
         EXCEPT() << "Could not load GDX library: " << msg;
     }
     init();
+
+    QAction* cpAction = new QAction("Copy");
+    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
+    ui.tvSymbols->addAction(cpAction);
+    connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
 }
 
 GdxViewer::~GdxViewer()
@@ -66,7 +75,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         //aliases are also aliases in the sense of the view
         if(selectedSymbol->type() == GMS_DT_ALIAS) {
-            selectedIdx = selectedSymbol->subType() - 1;
+            selectedIdx = selectedSymbol->subType();
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
 
@@ -126,6 +135,24 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
     selectedSymbol->loadData();
 }
 
+void GdxViewer::copySelectionToClipboard()
+{
+    if (!ui.tvSymbols->model())
+        return;
+
+    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();
+    if (selection.isEmpty())
+        return;
+    std::sort(selection.begin(), selection.end());
+    QString text;
+    for (QModelIndex idx : selection)
+        text += idx.data().toString() + ",";
+    text = text.chopped(1);
+
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText(text);
+}
+
 bool GdxViewer::init()
 {
     int errNr = 0;
@@ -153,7 +180,7 @@ bool GdxViewer::init()
     ui.splitter->widget(1)->hide();
 
     mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
-    mSymbolViews.resize(mGdxSymbolTable->symbolCount());
+    mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -166,6 +193,8 @@ bool GdxViewer::init()
 
     ui.splitter->widget(0)->show();
     ui.splitter->widget(1)->show();
+
+    ui.tvSymbols->hideRow(0); //first entry is the universe which we do not want to show
     return true;
 }
 
