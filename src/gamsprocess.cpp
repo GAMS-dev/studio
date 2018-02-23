@@ -78,11 +78,11 @@ void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
     QStringList args({QDir::toNativeSeparators(mInputFile)});
+    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1";
     if (!mCommandLineStr.isEmpty()) {
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
         args.append(paramList);
     }
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1";
     mProcess.start(nativeAppPath(), args);
 }
 
