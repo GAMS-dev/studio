@@ -40,7 +40,6 @@
 #include "resultsview.h"
 #include "gotowidget.h"
 #include "logeditor.h"
-#include <QClipboard>
 
 namespace gams {
 namespace studio {
@@ -1644,28 +1643,9 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    bool a = true;
-    QString oldtext = clipboard->text();
-    clipboard->clear();
-    if (oldtext!=""){
-        a=false;
-    }
-    ce->copy();
-    QString originalText = clipboard->text();
-    QString abc= originalText.toUpper();
-    if ((abc==originalText) || (abc=="")) {
-        goto finish;
-    }
-    clipboard->setText(abc);
-    ce->paste();
-    if (a==true) {
-        clipboard->clear();
-    } else {
-    clipboard->setText(oldtext);
-    }
-    finish:
-    clipboard->setText(oldtext);
+    QTextCursor c = ce->textCursor();
+    c.insertText(c.selectedText().toUpper());
+
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()
@@ -1691,28 +1671,8 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    bool a = true;
-    QString oldtext = clipboard->text();
-    clipboard->clear();
-    if (oldtext!=""){
-        a=false;
-    }
-    ce->copy();
-    QString originalText = clipboard->text();
-    QString abc= originalText.toLower();
-    if ((abc==originalText) || (abc=="")){
-        goto finish;
-    }
-    clipboard->setText(abc);
-    ce->paste();
-    if (a==true) {
-        clipboard->clear();
-    } else {
-    clipboard->setText(oldtext);
-    }
-    finish:
-    clipboard->setText(oldtext);
+    QTextCursor c = ce->textCursor();
+    c.insertText(c.selectedText().toLower());
 }
 }
 }
