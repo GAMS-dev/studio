@@ -2,6 +2,7 @@
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionparametermodel.h"
+#include "addoptionheaderview.h"
 
 namespace gams {
 namespace studio {
@@ -50,12 +51,16 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     commandLineTableView->setAutoScroll(true);
     commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-   commandLineTableView->setModel( optionParamModel );
+    commandLineTableView->setModel( optionParamModel );
 //    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
 //    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
 //    commandLineTableView->resizeColumnsToContents();
 
-    splitter->addWidget(commandLineTableView);   
+    AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, commandLineTableView);
+    headerView->setSectionResizeMode(QHeaderView::Stretch);
+    commandLineTableView->setHorizontalHeader(headerView);
+
+    splitter->addWidget(commandLineTableView);
     splitter->setSizes(QList<int>({INT_MAX, INT_MAX}));
 
     verticalLayoutWidget = new QWidget(splitter);
@@ -145,12 +150,14 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = commandLineTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* addAction = menu.addAction("add new option");
+    QIcon addIcon(":/img/plus");
+    QAction* addAction = menu.addAction(addIcon, "add new option");
     QAction* insertAction = menu.addAction("insert new option");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction("delete selected option");
+    QIcon deleteIcon(":/img/minus");
+    QAction* deleteAction = menu.addAction(deleteIcon, "delete selected option");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction("reset all options");
+    QAction* deleteAllActions = menu.addAction("delete all options");
 
     if (commandLineTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);

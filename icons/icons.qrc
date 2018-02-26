@@ -28,6 +28,8 @@
         <file alias="compile">compile.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
         <file alias="compile-gdx">compile-gdx.svg</file>
+        <file alias="plus">plus.svg</file>
+        <file alias="minus">minus.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>
