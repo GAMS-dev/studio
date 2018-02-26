@@ -660,6 +660,11 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this, "About Qt");
 }
 
+void MainWindow::on_actionUpdate_triggered()
+{
+
+}
+
 void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     if(checked)

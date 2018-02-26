@@ -148,10 +148,11 @@ private slots:
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
-    // About
+    // Help
     void on_actionOnline_Help_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
+    void on_actionUpdate_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
