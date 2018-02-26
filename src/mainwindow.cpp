@@ -114,13 +114,13 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete mDockHelpView;
     delete ui;
     delete mOptionEditor;
     delete mDockOptionView;
     delete mCommandLineHistory;
 //    delete mCommandLineOption; TODO fix crash
     delete mCommandLineTokenizer;
-    delete mDockHelpView;
 }
 
 void MainWindow::initTabs()
@@ -1286,6 +1286,7 @@ void MainWindow::on_commandLineHelpTriggered()
 //        mDockHelpView = new HelpView(this);
 //        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
 //    }
+
     mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
