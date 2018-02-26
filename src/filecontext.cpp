@@ -303,7 +303,15 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
     if (mEditors.size()) {
         QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
         if (!edit) return;
-        QTextCursor tc(cursor.isNull() ? QTextCursor(edit->document()->findBlockByNumber(altLine)) : cursor);
+
+        QTextCursor tc;
+        if (cursor.isNull()) {
+            if (edit->document()->blockCount()-1 < altLine) return;
+            tc = QTextCursor(edit->document()->findBlockByNumber(altLine));
+        } else {
+            tc = cursor;
+        }
+
         if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
         tc.clearSelection();
         edit->setTextCursor(tc);

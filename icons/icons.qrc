@@ -29,6 +29,9 @@
         <file alias="config">gear.svg</file>
         <file>gamsicon_16x16.png</file>
         <file>gamsworld_16x16.gif</file>
+        <file alias="compile">compile.svg</file>
+        <file alias="run-gdx">play-gdx.svg</file>
+        <file alias="compile-gdx">compile-gdx.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

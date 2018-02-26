@@ -78,18 +78,19 @@ void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
     QStringList args({QDir::toNativeSeparators(mInputFile)});
+    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1";
     if (!mCommandLineStr.isEmpty()) {
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
         args.append(paramList);
     }
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << QString("o=%1.lst").arg(QFileInfo(mInputFile).baseName());
     mProcess.start(nativeAppPath(), args);
 }
 
 QString GamsProcess::aboutGAMS()
 {
     QProcess process;
-    QStringList args({"?", "lo=3"});
+    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QStringList args({"?", "lo=3", "curdir=" + tempDir});
     process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
     QString about;
     if (process.waitForFinished()) {
@@ -118,14 +119,13 @@ void GamsProcess::interrupt()
 
     QString windowName("___GAMSMSGWINDOW___");
     windowName += pid;
-    LPCTSTR windowNameL = windowName.toStdWString().c_str();
-    HWND receiver = FindWindow(nullptr, windowNameL);
+    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
 
     cds.dwData = (ULONG_PTR) 1;
     cds.lpData = (PVOID) msgText;
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
-    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
 #else // Linux and Mac OS X
     QStringList s1;
     QProcess proc;

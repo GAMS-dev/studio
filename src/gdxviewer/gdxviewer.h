@@ -61,6 +61,7 @@ private:
     QMutex* mGdxMutex;
 
     void loadSymbol(GdxSymbol* selectedSymbol);
+    void copySelectionToClipboard();
 
     QVector<GdxSymbolView*> mSymbolViews;
 

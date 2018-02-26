@@ -21,6 +21,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEW_H
 
 #include <QFrame>
+#include <QMenu>
 #include "gdxsymbol.h"
 
 namespace gams {
@@ -46,6 +47,8 @@ private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
+    void copySelectionToClipboard(QString separator);
+    QMenu mContextMenu;
 
 public slots:
     void enableControls();
@@ -53,6 +56,9 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);
+
+private slots:
+    void showContextMenu(QPoint p);
 };
 
 

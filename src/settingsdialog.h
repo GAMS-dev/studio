@@ -36,7 +36,7 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(StudioSettings* settings, QWidget *parent = 0);
+    explicit SettingsDialog(StudioSettings* settings, MainWindow *parent = 0);
     ~SettingsDialog();
 
 protected:
@@ -56,9 +56,15 @@ private slots:
 
     void on_btn_browse_clicked();
 
+    void on_btn_export_clicked();
+
+    void on_btn_import_clicked();
+
 private:
-    StudioSettings *mSettings;
     Ui::SettingsDialog *ui;
+    StudioSettings *mSettings;
+    MainWindow *mMain;
+
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);

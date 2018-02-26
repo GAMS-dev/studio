@@ -124,8 +124,19 @@
      </property>
      <addaction name="actionSystem_2"/>
     </widget>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+    <addaction name="actionCut"/>
+    <addaction name="actionSelect_All"/>
+    <addaction name="actionSet_to_Uppercase"/>
+    <addaction name="actionSet_to_Lowercase"/>
+    <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
+    <addaction name="actionGo_To"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -459,6 +470,10 @@
    </property>
   </action>
   <action name="actionCompile">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/compile</normaloff>:/img/compile</iconset>
+   </property>
    <property name="text">
     <string>Compile</string>
    </property>
@@ -470,6 +485,10 @@
    </property>
   </action>
   <action name="actionRun_with_GDX_Creation">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/run-gdx</normaloff>:/img/run-gdx</iconset>
+   </property>
    <property name="text">
     <string>Run with GDX Creation</string>
    </property>
@@ -489,6 +508,10 @@
    </property>
   </action>
   <action name="actionCompile_with_GDX_Creation">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/compile-gdx</normaloff>:/img/compile-gdx</iconset>
+   </property>
    <property name="text">
     <string>Compile with GDX Creation</string>
    </property>
@@ -519,6 +542,78 @@
    </property>
    <property name="toolTip">
     <string>Option</string>
+   </property>
+  </action>
+  <action name="actionSelect_All">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionGo_To">
+   <property name="text">
+    <string>Go To</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionSet_to_Uppercase">
+   <property name="text">
+    <string>Set to Uppercase</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+U</string>
+   </property>
+  </action>
+  <action name="actionSet_to_Lowercase">
+   <property name="text">
+    <string>Set to Lowercase</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+L</string>
    </property>
   </action>
  </widget>

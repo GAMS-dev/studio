@@ -40,7 +40,6 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
 
-    setFixedSize(size());
     ui->combo_search->setFocus();
 }
 

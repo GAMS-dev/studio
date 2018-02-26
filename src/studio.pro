@@ -149,7 +149,8 @@ SOURCES += \
     helpview.cpp \
     bookmarkdialog.cpp \
     commandlineparser.cpp \
-    wplabel.cpp
+    wplabel.cpp \
+    gotowidget.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -217,7 +218,8 @@ HEADERS += \
     helpview.h \
     bookmarkdialog.h \
     commandlineparser.h \
-    wplabel.h
+    wplabel.h \
+    gotowidget.h
 
 FORMS += \
     welcomepage.ui  \
@@ -231,7 +233,8 @@ FORMS += \
     option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui \
-    bookmarkdialog.ui
+    bookmarkdialog.ui \
+    gotowidget.ui
 
 INCLUDEPATH += \
     $$GAMS_DISTRIB_API

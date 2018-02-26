@@ -38,6 +38,8 @@
 #include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
+#include "gotowidget.h"
+#include <QClipboard>
 
 namespace gams {
 namespace studio {
@@ -96,12 +98,12 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
-    connect(mWp, &WelcomePage::relayActionWp, this, &MainWindow::receiveAction);
 
     ensureCodecMenu("System");
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
+    mGoto= new GoToWidget(this);
 
     if (mSettings->lineWrapProcess())
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -213,6 +215,7 @@ bool MainWindow::outputViewVisibility()
 {
     return ui->actionOutput_View->isChecked();
 }
+
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility);
@@ -333,6 +336,8 @@ void MainWindow::toggleOptionDefinition(bool checked)
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
+        mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
+        this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
     }
 }
 
@@ -680,12 +685,12 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
 
 void MainWindow::on_actionOption_View_triggered(bool checked)
 {
-    if(checked)
+    if(checked) {
         mDockOptionView->show();
-    else
+    } else {
         mDockOptionView->hide();
-
-    mDockOptionView->raise();
+        mDockOptionView->setFloating(false);
+    }
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -757,7 +762,6 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView = new QDockWidget(this);
     mDockOptionView->setObjectName(QStringLiteral("mDockOptionView"));
     mDockOptionView->setEnabled(true);
-    mDockOptionView->setFloating(false);
 
     QWidget* optionWidget = new QWidget(mDockOptionView);
     QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
@@ -774,11 +778,11 @@ void MainWindow::createRunAndCommandLineWidgets()
     ui->actionCompile->setShortcutVisibleInContextMenu(true);
     ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
 
-    QToolButton* runToolButton = new QToolButton(this);
-    runToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    runToolButton->setMenu(runMenu);
-    runToolButton->setDefaultAction(ui->actionRun);
-    commandHLayout->addWidget(runToolButton);
+    mRunToolButton = new QToolButton(this);
+    mRunToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mRunToolButton->setMenu(runMenu);
+    mRunToolButton->setDefaultAction(ui->actionRun);
+    commandHLayout->addWidget(mRunToolButton);
 
     interruptToolButton = new QToolButton(this);
     interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -787,8 +791,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     QIcon stopIcon(":/img/stop");
     QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
     QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
-    connect(interruptAction, &QAction::triggered, this, &MainWindow::on_interrupt_triggered);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::on_stop_triggered);
+    connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
+    connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
     interruptToolButton->setMenu(interruptMenu);
     interruptToolButton->setDefaultAction(interruptAction);
 
@@ -809,10 +813,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     showOptionDefintionCheckBox->setEnabled(true);
     showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
     commandHLayout->addWidget(showOptionDefintionCheckBox);
-
-    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-    sizePolicy.setHeightForWidth(optionWidget->sizePolicy().hasHeightForWidth());
-    sizePolicy.setVerticalStretch(2);
+    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+    sizePolicy.setVerticalStretch(0);
     optionWidget->setSizePolicy(sizePolicy);
     optionWidget->setLayout(commandHLayout);
 
@@ -820,8 +822,6 @@ void MainWindow::createRunAndCommandLineWidgets()
     sizePolicy.setHeightForWidth(mOptionSplitter->sizePolicy().hasHeightForWidth());
     mOptionSplitter->setSizePolicy(sizePolicy);
     mOptionSplitter->setOrientation(Qt::Vertical);
-    mOptionSplitter->setStretchFactor(0, 0);
-    mOptionSplitter->setStretchFactor(1, 1);
     mOptionSplitter->addWidget(optionWidget);
 
     mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer, mDockOptionView);
@@ -830,15 +830,17 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setWindowTitle("Option");
     mOptionSplitter->widget(1)->hide();
 
-    sizePolicy.setHorizontalStretch(0);
-    sizePolicy.setVerticalStretch(0);
-    sizePolicy.setHeightForWidth(mOptionEditor->sizePolicy().hasHeightForWidth());
     mDockOptionView->setSizePolicy(sizePolicy);
+//    mDockOptionView->setMinimumSize(commandHLayout->sizeHint());
+//    mDockOptionView->resize(commandHLayout->minimumSize());
+
     mDockOptionView->show();
     ui->actionOption_View->setChecked(true);
 
     mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
+    mDockOptionView->setFloating(false);
+    this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
 
     connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
@@ -854,12 +856,6 @@ void MainWindow::connectCommandLineWidgets()
     connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
             mOptionEditor, &OptionEditor::updateTableModel );
 
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//            this, &MainWindow::loadCommandLineHistory);
-//            mCommandLineOption, &CommandLineOption::updateCurrentOption );
-//    connect(mCommandLineOption, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-//            mCommandLineHistory, &CommandLineHistory::addIntoCurrentContextHistory );
     connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
 }
 
@@ -869,6 +865,17 @@ void MainWindow::setRunActionsEnabled(bool enable)
     ui->actionRun_with_GDX_Creation->setEnabled(enable);
     ui->actionCompile->setEnabled(enable);
     ui->actionCompile_with_GDX_Creation->setEnabled(enable);
+}
+
+bool MainWindow::isActiveTabEditable()
+{
+    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit( editWidget );
+    if (edit) {
+        FileContext* fc = mFileRepo.fileContext(edit);
+        return (fc && !edit->isReadOnly());
+    }
+    return false;
 }
 
 QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
@@ -1074,8 +1081,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
+            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+    }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
+        //TODO check accept event
     } else {
         QMainWindow::keyPressEvent(event);
     }
@@ -1235,7 +1246,7 @@ void MainWindow::execute(QString commandLineStr)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 
-void MainWindow::on_interrupt_triggered()
+void MainWindow::interruptTriggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
@@ -1246,7 +1257,7 @@ void MainWindow::on_interrupt_triggered()
         QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
-void MainWindow::on_stop_triggered()
+void MainWindow::stopTriggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
@@ -1308,29 +1319,41 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_actionRun_triggered()
 {
-    emit mCommandLineOption->optionRunChanged();
+    if (isActiveTabEditable()) {
+       emit mCommandLineOption->optionRunChanged();
+      mRunToolButton->setDefaultAction( ui->actionRun );
+    }
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionRun_with_GDX_Creation );
+    }
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionCompile );
+    }
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    QList<OptionItem> forcedOptionItems;
-    forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-    forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-    on_runWithParamAndChangedOptions(forcedOptionItems);
+    if (isActiveTabEditable()) {
+        QList<OptionItem> forcedOptionItems;
+        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
+        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
+        on_runWithParamAndChangedOptions(forcedOptionItems);
+        mRunToolButton->setDefaultAction( ui->actionCompile_with_GDX_Creation );
+    }
 }
 
 void MainWindow::changeToLog(FileContext* fileContext)
@@ -1488,7 +1511,7 @@ void MainWindow::on_actionSearch_triggered()
 
         if (ui->mainTab->currentWidget()) {
             int sbs;
-            if (FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+            if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
                 sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
             else
                 sbs = 2;
@@ -1559,5 +1582,131 @@ HelpView *MainWindow::getDockHelpView() const
     return mDockHelpView;
 }
 
+void MainWindow::on_actionGo_To_triggered()
+{
+    int width = mGoto->frameGeometry().width();
+    int height = mGoto->frameGeometry().height();
+    QDesktopWidget wid;
+    int screenWidth = wid.screen()->width();
+    int screenHeight = wid.screen()->height();
+    if (mGoto->isVisible()) {
+        mGoto->hide();
+    } else {
+        mGoto->setGeometry((screenWidth/2)-(width/2),(screenHeight/2)-(height/2),width,height);
+        if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+            return;
+        mGoto->show();
+        mGoto->focusTextBox();
+    }
+}
+
+
+void MainWindow::on_actionRedo_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->redo();
+}
+
+void MainWindow::on_actionUndo_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->undo();
+}
+
+void MainWindow::on_actionPaste_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->paste();
+}
+
+void MainWindow::on_actionCopy_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->copy();
+}
+
+void MainWindow::on_actionSelect_All_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce) return;
+    ce->selectAll();
+}
+
+void MainWindow::on_actionCut_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0)){
+        return;
+    }
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    ce->cut();
+}
+
+void MainWindow::on_actionSet_to_Uppercase_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    bool a = true;
+    QString oldtext = clipboard->text();
+    clipboard->clear();
+    if (oldtext!=""){
+        a=false;
+    }
+    ce->copy();
+    QString originalText = clipboard->text();
+    QString abc= originalText.toUpper();
+    if ((abc==originalText) || (abc=="")) {
+        goto finish;
+    }
+    clipboard->setText(abc);
+    ce->paste();
+    if (a==true) {
+        clipboard->clear();
+    } else {
+    clipboard->setText(oldtext);
+    }
+    finish:
+    clipboard->setText(oldtext);
+}
+
+void MainWindow::on_actionSet_to_Lowercase_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    bool a = true;
+    QString oldtext = clipboard->text();
+    clipboard->clear();
+    if (oldtext!=""){
+        a=false;
+    }
+    ce->copy();
+    QString originalText = clipboard->text();
+    QString abc= originalText.toLower();
+    if ((abc==originalText) || (abc=="")){
+        goto finish;
+    }
+    clipboard->setText(abc);
+    ce->paste();
+    if (a==true) {
+        clipboard->clear();
+    } else {
+    clipboard->setText(oldtext);
+    }
+    finish:
+    clipboard->setText(oldtext);
+}
 }
 }
