@@ -646,6 +646,9 @@ void MainWindow::on_actionOnline_Help_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    about += "TODO: licence info<br/>";
+    about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
+    about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/><br/>";
     about += "<b><big>GAMS Distribution</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
