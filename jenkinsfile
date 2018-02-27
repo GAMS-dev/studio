@@ -163,6 +163,7 @@ pipeline {
                         sh '''
                             security unlock-keychain -p ${KEYCHAIN_PASSWD}
                             macdeployqt "bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                            security lock-keychain
                             mv "bin/GAMS Studio.dmg" studio.dmg
                         '''
                         zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
