@@ -89,6 +89,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     optionDefinitionTreeView->resizeColumnToContents(2);
     optionDefinitionTreeView->resizeColumnToContents(3);
     optionDefinitionTreeView->setAlternatingRowColors(true);
+    optionDefinitionTreeView->setExpandsOnDoubleClick(false);
 
     optionDefinition_VLayout->addWidget(optionDefinitionTreeView);
 
@@ -114,6 +115,9 @@ void OptionEditor::setupUi(QWidget* optionEditor)
             this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
     connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
             mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+
+    connect(optionDefinitionTreeView, &QAbstractItemView::doubleClicked, this, &OptionEditor::addOptionFromDefinition);
+
 }
 
 QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
@@ -205,6 +209,30 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
              }
     } else if (action == deleteAllActions) {
         emit optionTableModelChanged("");
+    }
+}
+
+void OptionEditor::addOptionFromDefinition(const QModelIndex &index)
+{
+    QVariant data = optionDefinitionTreeView->model()->data(index);
+    QModelIndex defValueIndex = optionDefinitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+    QModelIndex  parentIndex =  optionDefinitionTreeView->model()->parent(index);
+//    qDebug() <<  "parentIndex=" << parentIndex.row();
+    // TODO insert before selected  or at the end when no selection
+    commandLineTableView->model()->insertRows(commandLineTableView->model()->rowCount(), 1, QModelIndex());
+    QModelIndex insertKeyIndex = commandLineTableView->model()->index(commandLineTableView->model()->rowCount()-1, 0);
+    QModelIndex insertValueIndex = commandLineTableView->model()->index(commandLineTableView->model()->rowCount()-1, 1);
+//    qDebug() <<  "insertIndex=" << insertKeyIndex.row();
+    if (parentIndex.row() < 0) {
+//        qDebug() << index.row() << " : " << data.toString()
+//                 << "], def=["   << optionDefinitionTreeView->model()->data(defValueIndex).toString() << "]";
+        commandLineTableView->model()->setData( insertKeyIndex, data.toString(), Qt::EditRole);
+        commandLineTableView->model()->setData( insertValueIndex, optionDefinitionTreeView->model()->data(defValueIndex).toString(), Qt::EditRole);
+    } else {
+        QVariant parentData = optionDefinitionTreeView->model()->data( parentIndex );
+//        qDebug() << index.row() << " : " << data.toString() << " of parent [" << parentData.toString() << "] -> " << parentIndex.row();
+        commandLineTableView->model()->setData( insertKeyIndex, parentData.toString(), Qt::EditRole);
+        commandLineTableView->model()->setData( insertValueIndex, data.toString(), Qt::EditRole);
     }
 }
 

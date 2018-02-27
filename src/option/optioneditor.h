@@ -36,6 +36,7 @@ public slots:
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &opionItems);
     void showOptionContextMenu(const QPoint &pos);
+    void addOptionFromDefinition(const QModelIndex &index);
 
 private:
     CommandLineOption* mCommandLineOption;
