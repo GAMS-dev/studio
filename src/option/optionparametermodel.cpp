@@ -31,13 +31,15 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
         else
             return mCheckState[index];
     case Qt::DecorationRole:
-        QPixmap p{12,12};
-        p.fill(Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked ? Qt::red : Qt::darkGreen);
-//        if (mOptionItem.isEmpty())
-//            p.fill(Qt::CheckState(Qt::gray));
-//        else
-//            p.fill(Qt::CheckState(mCheckState[index].toUInt()) ? Qt::gray : Qt::green);
-        return p;
+        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
+            QIcon icon(":/img/square-red");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
+        } else {
+            QIcon icon(":/img/square-green");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
+        }
     }
 
     return QVariant();
