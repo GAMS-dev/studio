@@ -15,8 +15,9 @@ public:
     ~AddOptionHeaderView();
 
 protected:
-    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
+    bool event(QEvent *event) override;
     void mousePressEvent(QMouseEvent * event) override;
+    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
 
 private:
     const QString iconStr = ":/img/plus";
@@ -28,7 +29,7 @@ private:
     mutable int mIconY;
     mutable int mLogicalIndex;
 
-    bool addOptionIconCollision(QPoint p);
+    bool isAddOptionCoordinate(QPoint p);
 };
 
 } // namespace studio

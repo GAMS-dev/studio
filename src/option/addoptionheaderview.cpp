@@ -1,6 +1,7 @@
 #include <QPainter>
 #include <QTableView>
 #include <QMouseEvent>
+#include <QtWidgets>
 
 #include "addoptionheaderview.h"
 
@@ -17,6 +18,41 @@ AddOptionHeaderView::AddOptionHeaderView(Qt::Orientation orientation, QWidget *p
 AddOptionHeaderView::~AddOptionHeaderView()
 {
 
+}
+
+bool AddOptionHeaderView::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        if (isAddOptionCoordinate(helpEvent->pos())) {
+            QToolTip::showText(helpEvent->globalPos(), "add new option");
+        } else {
+            QToolTip::hideText();
+            event->ignore();
+        }
+
+        return true;
+    }
+    return QWidget::event(event);
+}
+
+void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
+{
+    if (Qt::LeftButton == event->button() && isAddOptionCoordinate(event->pos())) {
+        QTableView* tableView = static_cast<QTableView*>(this->parent());
+        tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
+    }
+
+   QHeaderView::mousePressEvent(event);
+}
+
+bool AddOptionHeaderView::isAddOptionCoordinate(QPoint p)
+{
+    int index = logicalIndexAt(p);
+    if (index != mLogicalIndex)
+        return false;
+
+    return (p.x() >= mIconX && p.x() <= mIconX+mIconWidth && p.y() >= mIconY && p.y() <= mIconY+mIconWidth);
 }
 
 void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int logicalIndex) const
@@ -40,27 +76,6 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
          mIconY= posY;
          mLogicalIndex = logicalIndex;
     }
-}
-
-void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
-{
-    if (Qt::LeftButton == event->button() && addOptionIconCollision(event->pos())) {
-        QTableView* tableView = static_cast<QTableView*>(this->parent());
-        tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
-    }
-
-   QHeaderView::mousePressEvent(event);
-}
-
-bool AddOptionHeaderView::addOptionIconCollision(QPoint p)
-{
-    int index = logicalIndexAt(p);
-    QTableView* tv = static_cast<QTableView*>(this->parent());
-
-    if (index != mLogicalIndex)
-        return false;
-
-    return (p.x() >= mIconX && p.x() <= mIconX+mIconWidth && p.y() >= mIconY && p.y() <= mIconY+mIconWidth);
 }
 
 } // namespace studio

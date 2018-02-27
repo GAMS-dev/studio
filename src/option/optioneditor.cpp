@@ -52,9 +52,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     commandLineTableView->setAutoScroll(true);
     commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     commandLineTableView->setModel( optionParamModel );
-//    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
-//    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
-//    commandLineTableView->resizeColumnsToContents();
+    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, commandLineTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
