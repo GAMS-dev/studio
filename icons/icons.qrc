@@ -33,6 +33,7 @@
         <file alias="delete-all">trash.svg</file>
         <file alias="move-up">move-up.svg</file>
         <file alias="move-down">move-down.svg</file>
+        <file alias="delete">remove.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

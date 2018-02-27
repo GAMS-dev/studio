@@ -157,7 +157,7 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QIcon moveDownIcon(":/img/move-down");
     QAction* moveDownAction = menu.addAction(moveDownIcon, "move selected option down");
     menu.addSeparator();
-    QIcon deleteIcon(":/img/minus");
+    QIcon deleteIcon(":/img/delete");
     QAction* deleteAction = menu.addAction(deleteIcon, "remove selected option");
     menu.addSeparator();
     QIcon deleteAllIcon(":/img/delete-all");
