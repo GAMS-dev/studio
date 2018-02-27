@@ -646,9 +646,18 @@ void MainWindow::on_actionOnline_Help_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
-    about += "TODO: licence info<br/>";
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
+    about +=  "This program is free software: you can redistribute it and/or modify";
+    about += "it under the terms of the GNU General Public License as published by";
+    about += "the Free Software Foundation, either version 3 of the License, or";
+    about += "(at your option) any later version.<br/><br/>";
+    about += "This program is distributed in the hope that it will be useful,";
+    about += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
+    about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the";
+    about += "GNU General Public License for more details.<br/><br/>";
+    about += "You should have received a copy of the GNU General Public License";
+    about += "along with this program. If not, see <http://www.gnu.org/licenses/>.";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/><br/>";
     about += "<b><big>GAMS Distribution</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
