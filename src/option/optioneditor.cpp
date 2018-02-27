@@ -152,10 +152,16 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QAction* addAction = menu.addAction(addIcon, "add new option");
     QAction* insertAction = menu.addAction("insert new option");
     menu.addSeparator();
-    QIcon deleteIcon(":/img/minus");
-    QAction* deleteAction = menu.addAction(deleteIcon, "delete selected option");
+    QIcon moveUpIcon(":/img/move-up");
+    QAction* moveUpAction = menu.addAction(moveUpIcon, "move selected option up");
+    QIcon moveDownIcon(":/img/move-down");
+    QAction* moveDownAction = menu.addAction(moveDownIcon, "move selected option down");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction("delete all options");
+    QIcon deleteIcon(":/img/minus");
+    QAction* deleteAction = menu.addAction(deleteIcon, "remove selected option");
+    menu.addSeparator();
+    QIcon deleteAllIcon(":/img/delete-all");
+    QAction* deleteAllActions = menu.addAction(deleteAllIcon, "remove all options");
 
     if (commandLineTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);
@@ -163,6 +169,14 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     if (selection.count() <= 0) {
         insertAction->setVisible(false);
         deleteAction->setVisible(false);
+        moveUpAction->setVisible(false);
+        moveDownAction->setVisible(false);
+    } else {
+        QModelIndex index = selection.at(0);
+        if (index.row()==0)
+            moveUpAction->setVisible(false);
+        if (index.row()+1 == commandLineTableView->model()->rowCount())
+            moveDownAction->setVisible(false);
     }
 
     QAction* action = menu.exec(commandLineTableView->viewport()->mapToGlobal(pos));
@@ -173,12 +187,23 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
                 QModelIndex index = selection.at(0);
                 commandLineTableView->model()->insertRows(index.row(), 1, QModelIndex());
             }
-   } else if (action == deleteAction) {
+    } else if (action == moveUpAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            commandLineTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()-1);
+        }
+
+    } else if (action == moveDownAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            commandLineTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()+2);
+        }
+    } else if (action == deleteAction) {
              if (selection.count() > 0) {
                  QModelIndex index = selection.at(0);
                  commandLineTableView->model()->removeRow(index.row(), QModelIndex());
              }
-    } if (action == deleteAllActions) {
+    } else if (action == deleteAllActions) {
         emit optionTableModelChanged("");
     }
 }

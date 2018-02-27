@@ -25,6 +25,7 @@ public:
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual bool insertRows(int row, int count, const QModelIndex &parent) override;
     virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
+    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QList<OptionItem> getCurrentListOfOptionItems();
 signals:

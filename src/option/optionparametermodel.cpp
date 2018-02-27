@@ -226,6 +226,21 @@ bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &par
     return true;
 }
 
+bool OptionParameterModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
+         return false;
+
+    Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
+    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
+    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
+    mOptionItem.removeAt(removeIndex);
+    endMoveRows();
+    emit optionModelChanged(mOptionItem);
+    return true;
+}
+
 QList<OptionItem> OptionParameterModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
