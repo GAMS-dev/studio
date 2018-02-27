@@ -131,7 +131,6 @@ pipeline {
                 },
                 windowsX86: {
                     node('windowsX86') {
-                        bat 'echo %PATH%'
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         script {
@@ -145,7 +144,6 @@ pipeline {
                 },
                 windowsX64: {
                     node('windowsX64') {
-                        bat 'echo %PATH%'
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         script {
