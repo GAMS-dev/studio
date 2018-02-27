@@ -1064,28 +1064,31 @@ void MainWindow::closeEvent(QCloseEvent* event)
     on_actionClose_All_triggered();
 }
 
-void MainWindow::keyPressEvent(QKeyEvent* event)
-{
-    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
-    }
-    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-        openContext(ui->projectView->currentIndex());
-        //TODO check accept event
-    } else {
-        QMainWindow::keyPressEvent(event);
-    }
+//void MainWindow::keyPressEvent(QKeyEvent* event)
+//{
+//    qDebug() << "MW::kpE" << event->text();
+//    event->ignore();
+//    return;
+//    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
+//            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+//    }
+//    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+//        openContext(ui->projectView->currentIndex());
+//        //TODO check accept event
+//    } else {
+//        QMainWindow::keyPressEvent(event);
+//    }
 
-    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-        mSearchWidget->findNext(SearchWidget::Backward); // Shift + F3
-    } else if (event->key() == Qt::Key_F3) {
-        mSearchWidget->findNext(SearchWidget::Forward); // F3
-    }
-    if (event->key() == Qt::Key_Escape) {
-        mSearchWidget->hide();
-        mSearchWidget->clearResults();
-    }
-}
+//    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
+//        mSearchWidget->findNext(SearchWidget::Backward); // Shift + F3
+//    } else if (event->key() == Qt::Key_F3) {
+//        mSearchWidget->findNext(SearchWidget::Forward); // F3
+//    }
+//    if (event->key() == Qt::Key_Escape) {
+//        mSearchWidget->hide();
+//        mSearchWidget->clearResults();
+//    }
+//}
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
@@ -1198,7 +1201,7 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        LogEditor* logEdit = new LogEditor();
+        LogEditor* logEdit = new LogEditor(this);
         FileSystemContext::initEditorType(logEdit);
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         logEdit->setReadOnly(true);
@@ -1600,9 +1603,18 @@ void MainWindow::on_actionCopy_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
 
-    ce->copy();
+    QString className = focusWidget()->metaObject()->className();
+    qDebug() << "className" << className;
+
+//    if (className == "gams::studio::CodeEditor") {
+//        CodeEditor *ce = static_cast<CodeEditor*>(focusWidget());
+//        qDebug() << ce->textInteractionFlags();
+//        ce->copy();
+//    } else if (className == "gams::studio::LogEditor") {
+//        LogEditor *le = static_cast<LogEditor*>(focusWidget());
+//        le->copy();
+//    }
 }
 
 void MainWindow::on_actionSelect_All_triggered()

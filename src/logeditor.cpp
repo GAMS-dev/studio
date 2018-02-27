@@ -33,18 +33,10 @@ QMimeData* LogEditor::createMimeDataFromSelection() const
     return mimeData;
 }
 
-void LogEditor::keyPressEvent(QKeyEvent *e)
+LogEditor::LogEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
-    qDebug() << "pressed" << e->text() << "in logedit" << e->modifiers() << e->key();
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_C)) {
-        qDebug() << "copying";
-        copy();
-    }
-    e->accept();
 }
-
-
 
 }
 }

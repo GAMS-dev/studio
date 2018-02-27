@@ -31,10 +31,8 @@ class LogEditor : public QPlainTextEdit
 
 public:
     QMimeData* createMimeDataFromSelection() const override;
+    LogEditor(QWidget *parent = 0);
 
-    // QWidget interface
-protected:
-    void keyPressEvent(QKeyEvent *e);
 };
 
 }
