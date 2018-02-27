@@ -160,10 +160,14 @@ pipeline {
                 macos: {
                     node('macos') {
                         fileOperations([folderRenameOperation(destination: 'bin/GAMS Studio.app', source: 'bin/studio.app')])
+                        withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
+                            sh '''
+                                security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
+                                macdeployqt "bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                                security lock-keychain
+                            '''
+                        }
                         sh '''
-                            security unlock-keychain -p ${KEYCHAIN_PASSWD}
-                            macdeployqt "bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
-                            security lock-keychain
                             mv "bin/GAMS Studio.dmg" studio.dmg
                         '''
                         zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
