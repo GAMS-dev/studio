@@ -1607,14 +1607,17 @@ void MainWindow::on_actionCopy_triggered()
     QString className = focusWidget()->metaObject()->className();
     qDebug() << "className" << className;
 
-//    if (className == "gams::studio::CodeEditor") {
-//        CodeEditor *ce = static_cast<CodeEditor*>(focusWidget());
-//        qDebug() << ce->textInteractionFlags();
-//        ce->copy();
-//    } else if (className == "gams::studio::LogEditor") {
-//        LogEditor *le = static_cast<LogEditor*>(focusWidget());
-//        le->copy();
-//    }
+    if (className == "gams::studio::CodeEditor") {
+        CodeEditor *ce = static_cast<CodeEditor*>(focusWidget());
+        ce->copy();
+    } else if (className == "gams::studio::LogEditor") {
+        LogEditor *le = static_cast<LogEditor*>(focusWidget());
+        le->copy();
+    } else if (className == "gams::studio::gdxviewer::GdxViewer") {
+
+        // when in table classname is QTableView
+        // TODO: GdxViewer::copySelectionToClipboard
+    }
 }
 
 void MainWindow::on_actionSelect_All_triggered()
