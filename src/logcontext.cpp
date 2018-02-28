@@ -2,6 +2,7 @@
 #include "exception.h"
 #include "filegroupcontext.h"
 #include "logger.h"
+#include "logeditor.h"
 
 namespace gams {
 namespace studio {
@@ -51,7 +52,7 @@ void LogContext::addEditor(QWidget* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    LogEditor* ptEdit = static_cast<LogEditor*>(edit);
     if (!ptEdit) return;
     ptEdit->setDocument(mDocument);
     FileContext::addEditor(edit);

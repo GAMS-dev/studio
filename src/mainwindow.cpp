@@ -39,6 +39,7 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
+#include "logeditor.h"
 #include <QClipboard>
 
 namespace gams {
@@ -1197,7 +1198,7 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        QPlainTextEdit* logEdit = new QPlainTextEdit();
+        LogEditor* logEdit = new LogEditor();
         FileSystemContext::initEditorType(logEdit);
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         logEdit->setReadOnly(true);
@@ -1600,6 +1601,7 @@ void MainWindow::on_actionCopy_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+
     ce->copy();
 }
 

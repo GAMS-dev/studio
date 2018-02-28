@@ -147,7 +147,8 @@ SOURCES += \
     keys.cpp \
     commandlineparser.cpp \
     wplabel.cpp \
-    gotowidget.cpp
+    gotowidget.cpp \
+    logeditor.cpp
 
 HEADERS += \
     codeeditor.h \
@@ -214,7 +215,8 @@ HEADERS += \
     keys.h \
     commandlineparser.h \
     wplabel.h \
-    gotowidget.h
+    gotowidget.h \
+    logeditor.h
 
 FORMS += \
     welcomepage.ui  \
