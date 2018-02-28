@@ -183,18 +183,13 @@ private slots:
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
     void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionIndent_triggered();
+    void on_actionOutdent_triggered();
+    void on_actionDuplicate_Line_triggered();
+    void on_actionRemove_Line_triggered();
 
     void interruptTriggered();
     void stopTriggered();
-
-
-    void on_actionIndent_triggered();
-
-    void on_actionOutdent_triggered();
-
-    void on_actionDuplicate_Line_triggered();
-
-    void on_actionRemove_Line_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -221,7 +216,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void updateEditorFont(const QString &fontFamily, int fontSize);
+    void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
 
 private:

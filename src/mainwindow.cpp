@@ -68,7 +68,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
     ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->logView->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -644,6 +644,12 @@ void MainWindow::on_actionOnline_Help_triggered()
     QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
 }
 
+//void MainWindow::on_actionHelp_triggered()
+//{
+//    if (mDockHelpView->isHidden())
+//       mDockHelpView->show();
+//}
+
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
@@ -1007,7 +1013,6 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
-            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -1066,7 +1071,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
+            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
         event->accept();
@@ -1196,6 +1203,7 @@ void MainWindow::execute(QString commandLineStr)
 
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
 
     if (!mSettings->clearLog()) {
@@ -1461,7 +1469,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(mSettings.get(), this);
-    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateEditorFont);
+    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
@@ -1507,15 +1515,17 @@ void MainWindow::showResults(SearchResultList &results)
     ui->logTab->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
+void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
-        edit->setFont(font);
+        if (!FileContext::toGdxViewer(edit))
+            edit->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
     }
+    ui->logView->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -1635,7 +1645,7 @@ void MainWindow::on_actionCut_triggered()
 void MainWindow::on_actionReset_Zoom_triggered()
 {
     AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (qpte) updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+    if (qpte) updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
@@ -1658,7 +1668,6 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     QTextCursor c = ce->textCursor();
     if (!ce->isReadOnly())
         c.insertText(c.selectedText().toUpper());
-
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
@@ -1723,4 +1732,3 @@ void MainWindow::on_actionRemove_Line_triggered()
 
 }
 }
-

@@ -34,7 +34,6 @@ class LogEditor : public AbstractEditor
 public:
     LogEditor(StudioSettings *settings, QWidget *parent = 0);
 
-    // AbstractEditor interface
 public:
     EditorType type();
 };
