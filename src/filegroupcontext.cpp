@@ -285,7 +285,7 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    dumpMarks();
+//    dumpMarks();
     removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 //    FileSystemContext *fsc = findFile(lstFileName());
 //    if (fsc && fsc->type() == FileSystemContext::File) {
