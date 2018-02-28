@@ -23,7 +23,7 @@
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
 {
     setReadOnly(true);
     setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);

@@ -17,30 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LOGEDITOR_H
-#define LOGEDITOR_H
+#ifndef ABSTRACTEDITOR_H
+#define ABSTRACTEDITOR_H
 
-#include "abstracteditor.h"
+#include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
 class StudioSettings;
 
-class LogEditor : public AbstractEditor
+class AbstractEditor : public QPlainTextEdit
 {
-    Q_OBJECT
 
 public:
-    LogEditor(StudioSettings *settings, QWidget *parent = 0);
-    QMimeData* createMimeDataFromSelection() const override;
+    virtual ~AbstractEditor();
 
-private:
-    StudioSettings* mSettings = nullptr;
+protected:
+    AbstractEditor(StudioSettings *settings, QWidget *parent);
 
+protected:
+    StudioSettings *mSettings = nullptr;
 };
 
 }
 }
 
-#endif // LOGEDITOR_H
+#endif // ABSTRACTEDITOR_H
