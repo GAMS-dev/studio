@@ -17,8 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QtConcurrent>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
@@ -39,7 +37,10 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
+#include "c4umcc.h"
+
 #include <QClipboard>
+#include <QtConcurrent>
 
 namespace gams {
 namespace studio {
