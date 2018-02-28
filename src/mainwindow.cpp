@@ -102,7 +102,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSearchWidget = new SearchWidget(this);
     mGoto= new GoToWidget(this);
 
-    if (mSettings->lineWrapProcess())
+    if (mSettings->lineWrapProcess()) // set wrapping for system log
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -1003,7 +1003,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if (fsc->type() == FileSystemContext::FileGroup) {
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = new QPlainTextEdit();
+            LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
@@ -1201,10 +1201,9 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        LogEditor* logEdit = new LogEditor(this);
+        LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
-        logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
-        logEdit->setReadOnly(true);
+
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
     }
@@ -1524,6 +1523,9 @@ void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
     foreach (QWidget* edit, openEditors()) {
         edit->setFont(font);
     }
+    foreach (QWidget* log, openLogs()) {
+        log->setFont(font);
+    }
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -1667,6 +1669,30 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     clipboard->setText(oldtext);
 }
 
+void MainWindow::on_actionReset_Zoom_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte) // if any sort of editor
+        updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+    else // tables n stuff
+        focusWidget()->setFont(QFont().defaultFamily());
+}
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    qDebug() << "qpte" << qpte;
+    if (qpte)
+        qpte->zoomOut();
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte)
+        qpte->zoomIn();
+}
+
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
@@ -1697,3 +1723,4 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 }
 }
 }
+

@@ -25,13 +25,17 @@
 namespace gams {
 namespace studio {
 
+class StudioSettings;
 class LogEditor : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
     QMimeData* createMimeDataFromSelection() const override;
-    LogEditor(QWidget *parent = 0);
+    LogEditor(StudioSettings *settings, QWidget *parent = 0);
+
+private:
+    StudioSettings* mSettings = nullptr;
 
 };
 

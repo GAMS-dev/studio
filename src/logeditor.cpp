@@ -23,6 +23,13 @@
 namespace gams {
 namespace studio {
 
+LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+{
+    setReadOnly(true);
+    setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+    setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+}
+
 QMimeData* LogEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
@@ -31,11 +38,6 @@ QMimeData* LogEditor::createMimeDataFromSelection() const
     mimeData->setText( plainTextStr );
 
     return mimeData;
-}
-
-LogEditor::LogEditor(QWidget *parent) : QPlainTextEdit(parent)
-{
-
 }
 
 }
