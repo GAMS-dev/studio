@@ -463,6 +463,7 @@ void MainWindow::activeTabChanged(int index)
     mCommandLineOption->setCurrentIndex(-1);
     mCommandLineOption->setCurrentContext("");
     mDockOptionView->setEnabled( false );
+    setRunActionsEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
