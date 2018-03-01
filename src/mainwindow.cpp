@@ -17,8 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QtConcurrent>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "codeeditor.h"
@@ -39,7 +37,11 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
+#include "logeditor.h"
+#include "c4umcc.h"
+
 #include <QClipboard>
+#include <QtConcurrent>
 
 namespace gams {
 namespace studio {
@@ -658,6 +660,18 @@ void MainWindow::on_actionHelp_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
+    about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
+    about +=  "This program is free software: you can redistribute it and/or modify";
+    about += "it under the terms of the GNU General Public License as published by";
+    about += "the Free Software Foundation, either version 3 of the License, or";
+    about += "(at your option) any later version.<br/><br/>";
+    about += "This program is distributed in the hope that it will be useful,";
+    about += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
+    about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the";
+    about += "GNU General Public License for more details.<br/><br/>";
+    about += "You should have received a copy of the GNU General Public License";
+    about += "along with this program. If not, see <http://www.gnu.org/licenses/>.";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/><br/>";
     about += "<b><big>GAMS Distribution</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
@@ -667,6 +681,11 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, "About Qt");
+}
+
+void MainWindow::on_actionUpdate_triggered()
+{
+
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)
@@ -1207,7 +1226,7 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        QPlainTextEdit* logEdit = new QPlainTextEdit();
+        LogEditor* logEdit = new LogEditor();
         FileSystemContext::initEditorType(logEdit);
         logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
         logEdit->setReadOnly(true);
@@ -1604,6 +1623,7 @@ void MainWindow::on_actionCopy_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+
     ce->copy();
 }
 

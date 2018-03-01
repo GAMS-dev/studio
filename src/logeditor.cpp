@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,44 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
-
-#include <QDialog>
-#include "mainwindow.h"
-#include "filecontext.h"
-
-namespace Ui {
-class GoToWidget;
-}
+#include "logeditor.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
 
-class GoToWidget : public QDialog
+QMimeData* LogEditor::createMimeDataFromSelection() const
 {
-    Q_OBJECT
+    QMimeData* mimeData = new QMimeData();
+    QTextCursor c = textCursor();
+    QString plainTextStr = c.selection().toPlainText();
+    mimeData->setText( plainTextStr );
 
-public:
-    explicit GoToWidget(MainWindow *parent = 0);
+    return mimeData;
+}
 
-    ~GoToWidget();
+void LogEditor::keyPressEvent(QKeyEvent *e)
+{
+    qDebug() << "pressed" << e->text() << "in logedit" << e->modifiers() << e->key();
 
-    void focusTextBox();
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_C)) {
+        qDebug() << "copying";
+        copy();
+    }
+    e->accept();
+}
 
-private slots:
-    void on_GoTo_clicked();
 
-private:
-    Ui::GoToWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;
-    QList<TextMark*> mAllTextMarks;
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
-
-};
 
 }
 }
-#endif // GOTOWIDGET_H

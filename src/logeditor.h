@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,44 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef LOGEDITOR_H
+#define LOGEDITOR_H
 
-#include <QDialog>
-#include "mainwindow.h"
-#include "filecontext.h"
-
-namespace Ui {
-class GoToWidget;
-}
+#include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
-class GoToWidget : public QDialog
+class LogEditor : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = 0);
+    QMimeData* createMimeDataFromSelection() const override;
 
-    ~GoToWidget();
-
-    void focusTextBox();
-
-private slots:
-    void on_GoTo_clicked();
-
-private:
-    Ui::GoToWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;
-    QList<TextMark*> mAllTextMarks;
+    // QWidget interface
+protected:
     void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
-
 };
 
 }
 }
-#endif // GOTOWIDGET_H
+
+#endif // LOGEDITOR_H
