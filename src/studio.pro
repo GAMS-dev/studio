@@ -203,7 +203,6 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
-    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui \
     gotowidget.ui
