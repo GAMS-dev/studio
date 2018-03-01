@@ -170,7 +170,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             }
 
         } else {
-            // TODO(JM) also use addEditor for GdxViewer
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
@@ -1671,26 +1670,20 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
-    if (qpte) // if any sort of editor
-        updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
-    else // tables n stuff
-        focusWidget()->setFont(QFont().defaultFamily());
+    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (qpte) updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
-    qDebug() << "qpte" << qpte;
-    if (qpte)
-        qpte->zoomOut();
+    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (qpte) qpte->zoomOut();
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
-    if (qpte)
-        qpte->zoomIn();
+    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (qpte) qpte->zoomIn();
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()

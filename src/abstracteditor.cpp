@@ -29,6 +29,11 @@ AbstractEditor::AbstractEditor(StudioSettings *settings, QWidget *parent)
 
 }
 
+AbstractEditor::~AbstractEditor()
+{
+
+}
+
 QMimeData* AbstractEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();

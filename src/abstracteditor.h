@@ -31,7 +31,7 @@ class AbstractEditor : public QPlainTextEdit
 {
 
 public:
-//    virtual ~AbstractEditor();
+    virtual ~AbstractEditor();
 
 protected:
     AbstractEditor(StudioSettings *settings, QWidget *parent);
