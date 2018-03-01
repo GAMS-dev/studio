@@ -192,6 +192,10 @@ private slots:
 
     void on_actionOutdent_triggered();
 
+    void on_actionDuplicate_Line_triggered();
+
+    void on_actionRemove_Line_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);

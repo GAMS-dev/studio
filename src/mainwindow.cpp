@@ -1569,7 +1569,7 @@ void MainWindow::on_actionGo_To_triggered()
 
 void MainWindow::on_actionRedo_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->redo();
@@ -1577,7 +1577,7 @@ void MainWindow::on_actionRedo_triggered()
 
 void MainWindow::on_actionUndo_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->undo();
@@ -1585,15 +1585,16 @@ void MainWindow::on_actionUndo_triggered()
 
 void MainWindow::on_actionPaste_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->paste();
+    if (!ce->isReadOnly())
+        ce->paste();
 }
 
 void MainWindow::on_actionCopy_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
     QString className = focusWidget()->metaObject()->className();
@@ -1614,7 +1615,7 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     if (!ce) return;
@@ -1623,11 +1624,12 @@ void MainWindow::on_actionSelect_All_triggered()
 
 void MainWindow::on_actionCut_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr){
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    }
+
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->cut();
+    if (!ce->isReadOnly())
+        ce->cut();
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()
@@ -1650,21 +1652,23 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr)
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QTextCursor c = ce->textCursor();
-    c.insertText(c.selectedText().toUpper());
+    if (!ce->isReadOnly())
+        c.insertText(c.selectedText().toUpper());
 
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr)
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QTextCursor c = ce->textCursor();
-    c.insertText(c.selectedText().toLower());
+    if (!ce->isReadOnly())
+        c.insertText(c.selectedText().toLower());
 }
 
 void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
@@ -1683,7 +1687,8 @@ void MainWindow::on_actionIndent_triggered()
         return;
 
     CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    ce->indent(mSettings->tabSize());
+    if (!ce->isReadOnly())
+        ce->indent(mSettings->tabSize());
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -1692,8 +1697,30 @@ void MainWindow::on_actionOutdent_triggered()
         return;
 
     CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    ce->indent(-mSettings->tabSize());
+    if (!ce->isReadOnly())
+        ce->indent(-mSettings->tabSize());
+}
+
+void MainWindow::on_actionDuplicate_Line_triggered()
+{
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+        return;
+
+    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce->isReadOnly())
+        ce->duplicateLine();
+}
+
+void MainWindow::on_actionRemove_Line_triggered()
+{
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+        return;
+
+    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce->isReadOnly())
+        ce->removeLine();
 }
 
 }
 }
+

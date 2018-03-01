@@ -58,6 +58,8 @@ public:
     int iconSize();
     LineNumberArea* lineNumberArea();
     int indent(int size, int fromLine = -1, int toLine = -1);
+    void duplicateLine();
+    void removeLine();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -91,8 +93,6 @@ private:
     friend class BlockEdit;
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
-    void duplicateLine();
-    void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
