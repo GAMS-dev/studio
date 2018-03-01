@@ -17,50 +17,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MODELDIALOG_H
-#define MODELDIALOG_H
+#ifndef BOOKMARKDIALOG_H
+#define BOOKMARKDIALOG_H
 
-#include "ui_modeldialog.h"
-#include <QSortFilterProxyModel>
-#include "libraryitem.h"
-#include <QTableView>
+#include <QtWidgets>
+
+#include "ui_bookmarkdialog.h"
 
 namespace gams {
 namespace studio {
 
-class ModelDialog : public QDialog
+class BookmarkDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    explicit ModelDialog(QWidget *parent = 0);
-    explicit ModelDialog(QString userLibPath, QWidget* parent = 0);
-    LibraryItem *selectedLibraryItem() const;
+    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = 0);
+    ~BookmarkDialog();
 
-public slots:
-    void changeHeader();
-    void updateSelectedLibraryItem();
-    void clearSelections();
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
+signals:
+    void openUrl(const QUrl& location);
+    void updateBookmarkName(const QString& location, const QString& name);
+    void updateBookmarkLocation(const QString& oldLocation, const QString& newLocation, const QString& name);
+    void removeBookmark(const QString& location, const QString& name);
 
 private slots:
-    void on_pbDescription_clicked();
-
-    void on_cbRegEx_toggled(bool checked);
+    void on_bookmarkEntryShowed(const QModelIndex &index);
+    void on_contextMenuShowed(const QPoint &pos);
 
 private:
-    Ui::ModelDialog ui;
-    LibraryItem* mSelectedLibraryItem;
-    void addLibrary(QList<LibraryItem> items, bool isUserLibrary=false);
-    void loadUserLibs();
-
-    QList<QTableView*> tableViewList;
-    QList<QSortFilterProxyModel*> proxyModelList;
-
-    QString mUserLibPath;
-    QString mIconUserLib = ":/img/user";
+    Ui::bookmarkDialog ui;
+    QStandardItemModel* model;
+    QMultiMap<QString, QString>& bookmarkMap;
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // MODELDIALOG_H
+#endif // BOOKMARKDIALOG_H

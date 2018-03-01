@@ -152,7 +152,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionOnline_Help"/>
+    <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
@@ -337,9 +337,9 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionOnline_Help">
+  <action name="actionHelp">
    <property name="text">
-    <string>Online Help</string>
+    <string>Documentation</string>
    </property>
    <property name="shortcut">
     <string>F1</string>

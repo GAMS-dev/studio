@@ -31,6 +31,7 @@
 #include "option/lineeditcompleteevent.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 
@@ -105,6 +106,8 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
 
+    HelpView *getDockHelpView() const;
+
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
@@ -129,6 +132,7 @@ private slots:
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
+    void closeHelpView();
 
 private slots:
     // File
@@ -148,8 +152,8 @@ private slots:
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
-    // Help
-    void on_actionOnline_Help_triggered();
+    // About
+    void on_actionHelp_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
@@ -223,6 +227,8 @@ private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+
+    HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

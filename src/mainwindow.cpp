@@ -77,6 +77,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
+    mDockHelpView = new HelpView(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    mDockHelpView->hide();
+
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
@@ -114,6 +118,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete mDockHelpView;
     delete ui;
     delete mOptionEditor;
     delete mDockOptionView;
@@ -336,6 +341,12 @@ void MainWindow::toggleOptionDefinition(bool checked)
         mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
         this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
     }
+}
+
+void MainWindow::closeHelpView()
+{
+    if (mDockHelpView)
+        mDockHelpView->close();
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -640,9 +651,10 @@ void MainWindow::on_actionExit_Application_triggered()
     QCoreApplication::quit();
 }
 
-void MainWindow::on_actionOnline_Help_triggered()
-{
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
+void MainWindow::on_actionHelp_triggered()
+{   
+    if (mDockHelpView->isHidden())
+       mDockHelpView->show();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -801,16 +813,13 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     commandHLayout->addWidget(mCommandLineOption);
 
-    QPushButton* helpButton = new QPushButton(this);
-//    QPixmap pixmap(":/img/gams");
-//    QIcon ButtonIcon(pixmap);
-//    helpButton->setIcon(ButtonIcon);
-    helpButton->setText("Help");
-    helpButton->setToolTip("Help on The GAMS Call and Command Line Parameters");
-    commandHLayout->addWidget(helpButton);
 
-    QHBoxLayout* button_HLayout = new QHBoxLayout();
-    button_HLayout->setObjectName(QStringLiteral("button_HLayout"));
+    QPushButton* helpButton = new QPushButton(this);
+    QPixmap helpPixmap(":/img/question");
+    QIcon helpButtonIcon(helpPixmap);
+    helpButton->setIcon(helpButtonIcon);
+    helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
+    commandHLayout->addWidget(helpButton);
 
     QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
@@ -1080,6 +1089,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mSettings->saveSettings(this);
     }
     on_actionClose_All_triggered();
+    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1294,21 +1304,10 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_commandLineHelpTriggered()
 {
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 
-//    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-//    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-//    if (!fgc)
-//        return;
-//    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
-//                                   QString("Run - %1").arg(fc->caption()) );
-//    ui->mainTab->setCurrentIndex(idx);
-
-//    if (!ui->actionOption_View->isChecked()) {
-//        mDockOptionView->show();
-//    } else {
-//        mDockOptionView->hide();
-//    }
+    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -1569,6 +1568,11 @@ void MainWindow::updateEditorLineWrapping()
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
+}
+
+HelpView *MainWindow::getDockHelpView() const
+{
+    return mDockHelpView;
 }
 
 void MainWindow::on_actionGo_To_triggered()
