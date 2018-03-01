@@ -33,11 +33,6 @@ class LogEditor : public AbstractEditor
 
 public:
     LogEditor(StudioSettings *settings, QWidget *parent = 0);
-    QMimeData* createMimeDataFromSelection() const override;
-
-private:
-    StudioSettings* mSettings = nullptr;
-
 };
 
 }

@@ -29,5 +29,15 @@ AbstractEditor::AbstractEditor(StudioSettings *settings, QWidget *parent)
 
 }
 
+QMimeData* AbstractEditor::createMimeDataFromSelection() const
+{
+    QMimeData* mimeData = new QMimeData();
+    QTextCursor c = textCursor();
+    QString plainTextStr = c.selection().toPlainText();
+    mimeData->setText( plainTextStr );
+
+    return mimeData;
+}
+
 }
 }

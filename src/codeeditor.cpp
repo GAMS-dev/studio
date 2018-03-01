@@ -31,7 +31,8 @@ namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
-CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
+    : AbstractEditor(settings, parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
@@ -85,16 +86,6 @@ int CodeEditor::iconSize()
 LineNumberArea* CodeEditor::lineNumberArea()
 {
     return mLineNumberArea;
-}
-
-QMimeData* CodeEditor::createMimeDataFromSelection() const
-{
-    QMimeData* mimeData = new QMimeData();
-    QTextCursor c = textCursor();
-    QString plainTextStr = c.selection().toPlainText();
-    mimeData->setText( plainTextStr );
-
-    return mimeData;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)

@@ -30,15 +30,5 @@ LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor
     setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 }
 
-QMimeData* LogEditor::createMimeDataFromSelection() const
-{
-    QMimeData* mimeData = new QMimeData();
-    QTextCursor c = textCursor();
-    QString plainTextStr = c.selection().toPlainText();
-    mimeData->setText( plainTextStr );
-
-    return mimeData;
-}
-
 }
 }

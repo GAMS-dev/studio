@@ -20,7 +20,7 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
-#include <QtWidgets>
+#include "abstracteditor.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -46,7 +46,7 @@ enum class CharType {
     LetterLCase,
 };
 
-class CodeEditor : public QPlainTextEdit
+class CodeEditor : public AbstractEditor
 {
     Q_OBJECT
 
@@ -57,7 +57,6 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    QMimeData* createMimeDataFromSelection() const override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -146,7 +145,6 @@ private:
 private:
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
-    StudioSettings *mSettings;
     QTimer mCursorTimer;
     QPoint mDragStart;
     BlockEdit* mBlockEdit = nullptr;
