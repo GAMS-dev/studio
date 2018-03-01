@@ -40,6 +40,7 @@
 #include "resultsview.h"
 #include "gotowidget.h"
 #include "logeditor.h"
+#include "abstracteditor.h"
 
 namespace gams {
 namespace studio {
@@ -1666,6 +1667,17 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     c.insertText(c.selectedText().toLower());
 }
 
+void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
+{
+    if (mRecent.editor == nullptr) return;
+
+    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
+    if (ae->type() == AbstractEditor::CodeEditor) {
+        ae->setOverwriteMode(arg1);
+    }
+}
+
 }
 }
+
 

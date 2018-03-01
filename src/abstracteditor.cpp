@@ -34,6 +34,11 @@ AbstractEditor::~AbstractEditor()
 
 }
 
+AbstractEditor::EditorType AbstractEditor::type()
+{
+    return EditorType::BaseEditor;
+}
+
 QMimeData* AbstractEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
@@ -43,6 +48,8 @@ QMimeData* AbstractEditor::createMimeDataFromSelection() const
 
     return mimeData;
 }
+
+
 
 }
 }

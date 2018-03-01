@@ -27,8 +27,11 @@ namespace studio {
 
 class StudioSettings;
 
+
 class AbstractEditor : public QPlainTextEdit
 {
+public:
+    enum EditorType { BaseEditor, CodeEditor, LogEditor };
 
 public:
     virtual ~AbstractEditor();
@@ -40,8 +43,6 @@ protected:
 
 protected:
     StudioSettings *mSettings = nullptr;
-
-    enum EditorType { CodeEditor, LogEditor };
 };
 
 }

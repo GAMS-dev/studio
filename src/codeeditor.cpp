@@ -583,8 +583,9 @@ bool CodeEditor::event(QEvent *e)
 {
     if (e->type() == QEvent::ShortcutOverride) {
         e->ignore();
+        return true;
     } else {
-        QPlainTextEdit::event(e);
+        return QPlainTextEdit::event(e);
     }
 }
 

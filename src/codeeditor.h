@@ -103,7 +103,6 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
-    bool mOverwriteActivated = false;
 
 private:
     class BlockEdit
@@ -155,9 +154,11 @@ private:
     // QObject interface
 public:
     bool event(QEvent *event);
+
+    // AbstractEditor interface
+public:
+    EditorType type();
 };
-
-
 
 class LineNumberArea : public QWidget
 {
