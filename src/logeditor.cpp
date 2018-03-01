@@ -30,5 +30,10 @@ LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor
     setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 }
 
+AbstractEditor::EditorType LogEditor::type()
+{
+    return EditorType::LogEditor;
+}
+
 }
 }

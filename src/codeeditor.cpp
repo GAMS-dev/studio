@@ -588,6 +588,11 @@ bool CodeEditor::event(QEvent *e)
     }
 }
 
+AbstractEditor::EditorType CodeEditor::type()
+{
+    return EditorType::CodeEditor;
+}
+
 inline int findAlphaNum(QString text, int start, bool back)
 {
     QChar c = ' ';

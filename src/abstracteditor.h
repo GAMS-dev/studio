@@ -32,6 +32,7 @@ class AbstractEditor : public QPlainTextEdit
 
 public:
     virtual ~AbstractEditor();
+    virtual EditorType type();
 
 protected:
     AbstractEditor(StudioSettings *settings, QWidget *parent);
@@ -39,6 +40,8 @@ protected:
 
 protected:
     StudioSettings *mSettings = nullptr;
+
+    enum EditorType { CodeEditor, LogEditor };
 };
 
 }
