@@ -188,6 +188,10 @@ private slots:
     void stopTriggered();
 
 
+    void on_actionIndent_triggered();
+
+    void on_actionOutdent_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);

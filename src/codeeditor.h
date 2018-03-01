@@ -57,6 +57,7 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+    int indent(int size, int fromLine = -1, int toLine = -1);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -93,7 +94,6 @@ private:
     void duplicateLine();
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
-    int indent(int size, int fromLine = -1, int toLine = -1);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
