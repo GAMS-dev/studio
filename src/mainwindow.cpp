@@ -651,12 +651,6 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {   
-//    if (mDockHelpView == nullptr) {
-//       mDockHelpView = new HelpView(this);
-////        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-//    }
-//    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-
     if (mDockHelpView->isHidden())
        mDockHelpView->show();
 }
@@ -1291,30 +1285,10 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_commandLineHelpTriggered()
 {
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-//    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
-
-//    if (mDockHelpView == nullptr) {
-//        mDockHelpView = new HelpView(this);
-//        this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-//    }
 
     mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
-
-//    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-//    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-//    if (!fgc)
-//        return;
-//    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
-//                                   QString("Run - %1").arg(fc->caption()) );
-//    ui->mainTab->setCurrentIndex(idx);
-
-//    if (!ui->actionOption_View->isChecked()) {
-//        mDockOptionView->show();
-//    } else {
-//        mDockOptionView->hide();
-//    }
 }
 
 void MainWindow::on_actionRun_triggered()

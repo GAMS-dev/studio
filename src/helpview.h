@@ -46,7 +46,8 @@ private:
     QAction* actionOpenInBrowser;
 
     QWebEngineView* helpView;
-    QUrl helpLocation;
+
+    QUrl helpStartPage;
     QDir defaultLocalHelpDir;
     QString defaultOnlineHelpLocation;
 };

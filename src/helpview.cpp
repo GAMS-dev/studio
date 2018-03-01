@@ -12,7 +12,7 @@ HelpView::HelpView(QWidget *parent) :
 {
     defaultLocalHelpDir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") );
     QDir dir = defaultLocalHelpDir.filePath("index.html");
-    helpLocation = QUrl::fromLocalFile(dir.canonicalPath());
+    helpStartPage = QUrl::fromLocalFile(dir.canonicalPath());
 
     defaultOnlineHelpLocation = "www.gams.com/latest/docs";
     setupUi(parent);
@@ -39,7 +39,7 @@ void HelpView::setupUi(QWidget *parent)
     helpWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     helpView = new QWebEngineView(this);
-    helpView->load(helpLocation);
+    helpView->load(helpStartPage);
     connect(helpView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
 
     QToolBar* toolbar = new QToolBar(this);
@@ -99,9 +99,9 @@ void HelpView::setupUi(QWidget *parent)
     QMenu* helpMenu = new QMenu;
     actionOnlineHelp = new QAction(this);
     actionOnlineHelp->setObjectName(QStringLiteral("actionOnlineHelp"));
-    actionOnlineHelp->setText("View this Help Online");
-    actionOnlineHelp->setToolTip("View this help page Online");
-    actionOnlineHelp->setStatusTip(tr("View this help page Online"));
+    actionOnlineHelp->setText("View lastest online version of this page");
+    actionOnlineHelp->setToolTip("View lastest online version of this page");
+    actionOnlineHelp->setStatusTip(tr("View lastest online version of this page"));
     actionOnlineHelp->setCheckable(true);
     helpMenu->addAction(actionOnlineHelp);
     helpMenu->addSeparator();
@@ -116,7 +116,7 @@ void HelpView::setupUi(QWidget *parent)
     QToolButton* helpToolButton = new QToolButton(this);
     QPixmap toolPixmap(":/img/config");
     QIcon toolButtonIcon(toolPixmap);
-    helpToolButton->setToolTip("Option");
+    helpToolButton->setToolTip("Help Option");
     helpToolButton->setIcon(toolButtonIcon);
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
@@ -210,7 +210,7 @@ void HelpView::on_loadFinished(bool ok)
 
 void HelpView::on_actionHome_triggered()
 {
-    helpView->load(helpLocation);
+    helpView->load(helpStartPage);
 }
 
 void HelpView::on_actionAddBookMark_triggered()
@@ -307,7 +307,6 @@ void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
 
     QMultiMap<QString, QString>::iterator i;
     for (i = bookmarkMap.begin(); i != bookmarkMap.end(); ++i) {
-//        qDebug() << i.key() << ": " << i.value();
         addBookmarkAction(i.key(), i.value());
     }
 }
