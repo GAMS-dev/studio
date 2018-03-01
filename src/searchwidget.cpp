@@ -329,8 +329,9 @@ void SearchWidget::findNext(SearchDirection direction)
     if (!mMain->recent()->editor) return;
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    if (!fc) return;
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
-    if (!fc || !edit) return;
+    if (!edit) return;
 
     if (hasChanged) {
         cachedResults = findInFile(fc);

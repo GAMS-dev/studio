@@ -1062,31 +1062,21 @@ void MainWindow::closeEvent(QCloseEvent* event)
     on_actionClose_All_triggered();
 }
 
-//void MainWindow::keyPressEvent(QKeyEvent* event)
-//{
-//    qDebug() << "MW::kpE" << event->text();
-//    event->ignore();
-//    return;
-//    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-//            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
-//    }
-//    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-//        openContext(ui->projectView->currentIndex());
-//        //TODO check accept event
-//    } else {
-//        QMainWindow::keyPressEvent(event);
-//    }
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
 
-//    if (event->modifiers() & Qt::ShiftModifier && event->key() == Qt::Key_F3) {
-//        mSearchWidget->findNext(SearchWidget::Backward); // Shift + F3
-//    } else if (event->key() == Qt::Key_F3) {
-//        mSearchWidget->findNext(SearchWidget::Forward); // F3
-//    }
-//    if (event->key() == Qt::Key_Escape) {
-//        mSearchWidget->hide();
-//        mSearchWidget->clearResults();
-//    }
-//}
+    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+        openContext(ui->projectView->currentIndex());
+        event->accept();
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+
+    if (event->key() == Qt::Key_Escape) {
+        mSearchWidget->hide();
+        mSearchWidget->clearResults();
+    }
+}
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
@@ -1638,16 +1628,6 @@ void MainWindow::on_actionCut_triggered()
     ce->cut();
 }
 
-void MainWindow::on_actionSet_to_Uppercase_triggered()
-{
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
-        return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    QTextCursor c = ce->textCursor();
-    c.insertText(c.selectedText().toUpper());
-
-}
-
 void MainWindow::on_actionReset_Zoom_triggered()
 {
     AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
@@ -1666,6 +1646,16 @@ void MainWindow::on_actionZoom_In_triggered()
     if (qpte) qpte->zoomIn();
 }
 
+void MainWindow::on_actionSet_to_Uppercase_triggered()
+{
+    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        return;
+    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    QTextCursor c = ce->textCursor();
+    c.insertText(c.selectedText().toUpper());
+
+}
+
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
@@ -1674,6 +1664,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     QTextCursor c = ce->textCursor();
     c.insertText(c.selectedText().toLower());
 }
+
 }
 }
 
