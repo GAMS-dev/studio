@@ -456,6 +456,7 @@ void MainWindow::codecChanged(QAction *action)
 
 void MainWindow::activeTabChanged(int index)
 {
+    mRecent.editor = nullptr;
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
     }
@@ -1557,7 +1558,7 @@ void MainWindow::on_actionGo_To_triggered()
         mGoto->hide();
     } else {
         mGoto->setGeometry((screenWidth/2)-(width/2),(screenHeight/2)-(height/2),width,height);
-        if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+        if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
             return;
         mGoto->show();
         mGoto->focusTextBox();
@@ -1567,7 +1568,7 @@ void MainWindow::on_actionGo_To_triggered()
 
 void MainWindow::on_actionRedo_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->redo();
@@ -1575,7 +1576,7 @@ void MainWindow::on_actionRedo_triggered()
 
 void MainWindow::on_actionUndo_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->undo();
@@ -1583,7 +1584,7 @@ void MainWindow::on_actionUndo_triggered()
 
 void MainWindow::on_actionPaste_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     ce->paste();
@@ -1591,7 +1592,7 @@ void MainWindow::on_actionPaste_triggered()
 
 void MainWindow::on_actionCopy_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
         return;
 
     QString className = focusWidget()->metaObject()->className();
@@ -1612,7 +1613,7 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     if (!ce) return;
@@ -1621,7 +1622,7 @@ void MainWindow::on_actionSelect_All_triggered()
 
 void MainWindow::on_actionCut_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0)){
+    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr){
         return;
     }
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
@@ -1648,7 +1649,7 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr)
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QTextCursor c = ce->textCursor();
@@ -1658,7 +1659,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
+    if ((ui->mainTab->currentWidget() == mWp) || mRecent.editor == nullptr)
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     QTextCursor c = ce->textCursor();
