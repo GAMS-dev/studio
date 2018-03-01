@@ -191,46 +191,32 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
 //        anc.setPosition(c.anchor());
 //        startBlockEdit(anc.blockNumber(), anc.columnNumber());
 //    }
-//    if (e->key() == Qt::Key_Insert){
-//        mOverwriteActivated = !mOverwriteActivated;
-//        setOverwriteMode(mOverwriteActivated);
-//    }
 
-//    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)){
-//            e->ignore();
-//            return;
-//    }
-
-//    if (e == Hotkey::Paste) {
-//        pasteClipboard();
-//        return;
-//    }
-
-//    if (mBlockEdit) {
-//        if (e->key() == Hotkey::NewLine) {
-//            endBlockEdit();
-//            return;
-//        }
+    if (mBlockEdit) {
+        if (e->key() == Hotkey::NewLine) {
+            endBlockEdit();
+            return;
+        }
 //        if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
 //            endBlockEdit();
 //        } else {
 //            mBlockEdit->keyPressEvent(e);
 //            return;
 //        }
-//    }
+    }
 
-//    if (!isReadOnly()) {
-//        if (e->key() == Hotkey::NewLine) {
-//            QTextCursor cursor = textCursor();
-//            cursor.beginEditBlock();
-//            cursor.insertText("\n");
-//            if (cursor.block().previous().isValid())
-//                truncate(cursor.block().previous());
-//            adjustIndent(cursor);
-//            cursor.endEditBlock();
-//            setTextCursor(cursor);
-//            e->accept();
-//            return;
+    if (!isReadOnly()) {
+        if (e->key() == Hotkey::NewLine) {
+            QTextCursor cursor = textCursor();
+            cursor.beginEditBlock();
+            cursor.insertText("\n");
+            if (cursor.block().previous().isValid())
+                truncate(cursor.block().previous());
+            adjustIndent(cursor);
+            cursor.endEditBlock();
+            setTextCursor(cursor);
+            e->accept();
+            return;
 //        } else if (e == Hotkey::Indent) {
 //            indent(mSettings->tabSize());
 //            e->accept();
@@ -247,8 +233,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
 //            removeLine();
 //            e->accept();
 //            return;
-//        }
-//    }
+        }
+    }
 
     QPlainTextEdit::keyPressEvent(e);
 }
