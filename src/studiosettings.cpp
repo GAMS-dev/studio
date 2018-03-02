@@ -95,6 +95,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
     mAppSettings->setValue("optionEditor", main->optionEditorVisibility());
+    mAppSettings->setValue("helpView", main->helpViewVisibility());
 
     mAppSettings->endGroup();
 
@@ -232,6 +233,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
     main->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
+    main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
 
     mAppSettings->endGroup();
 

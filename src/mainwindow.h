@@ -91,10 +91,12 @@ public:
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
+    bool helpViewVisibility();
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
+    void setHelpViewVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
@@ -160,6 +162,7 @@ private slots:
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
+    void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other

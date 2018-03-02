@@ -97,6 +97,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
+    connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
@@ -228,6 +229,11 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
     ui->actionOption_View->setChecked(visibility);
 }
 
+void MainWindow::setHelpViewVisibility(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility);
+}
+
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
     mCommandLineHistory = opt;
@@ -309,6 +315,11 @@ bool MainWindow::projectViewVisibility()
 bool MainWindow::optionEditorVisibility()
 {
     return ui->actionOption_View->isChecked();
+}
+
+bool MainWindow::helpViewVisibility()
+{
+    return ui->actionHelp_View->isChecked();
 }
 
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
@@ -654,7 +665,7 @@ void MainWindow::on_actionExit_Application_triggered()
 void MainWindow::on_actionHelp_triggered()
 {   
     if (mDockHelpView->isHidden())
-       mDockHelpView->show();
+        mDockHelpView->show();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -704,6 +715,14 @@ void MainWindow::on_actionOption_View_triggered(bool checked)
         mDockOptionView->hide();
         mDockOptionView->setFloating(false);
     }
+}
+
+void MainWindow::on_actionHelp_View_triggered(bool checked)
+{
+    if (checked)
+        mDockHelpView->show();
+    else
+        mDockHelpView->hide();
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)

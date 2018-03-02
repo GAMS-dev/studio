@@ -145,6 +145,7 @@
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
+    <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
    </widget>
@@ -623,7 +624,15 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Update</string>
+    <string>&amp;Update</string>
+   </property>
+  </action>
+  <action name="actionHelp_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Help</string>
    </property>
   </action>
  </widget>

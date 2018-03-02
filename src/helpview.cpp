@@ -45,8 +45,6 @@ void HelpView::setupUi(QWidget *parent)
 {
     this->setObjectName(QStringLiteral("dockHelpView"));
     this->setEnabled(true);
-    this->setFloating(true);
-    this->setAllowedAreas(Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
     this->setWindowTitle("Help");
     this->resize(QSize(950, 600));
     this->move(QPoint(200, 200));
