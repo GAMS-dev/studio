@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,22 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
     mAppSettings->setValue("optionEditor", main->optionEditorVisibility());
+    mAppSettings->setValue("helpView", main->helpViewVisibility());
 
+    mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    // remove all keys in the helpView group before begin writing them
+    mAppSettings->remove("");
+    mAppSettings->beginWriteArray("bookmarks");
+    for (int i = 0; i < bookmarkMap.size(); i++) {
+        mAppSettings->setArrayIndex(i);
+        mAppSettings->setValue("location", bookmarkMap.keys().at(i));
+        mAppSettings->setValue("name", bookmarkMap.values().at(i));
+    }
+    mAppSettings->endArray();
     mAppSettings->endGroup();
 
     // history
@@ -218,8 +233,24 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
     main->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
+    main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
 
     mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap;
+    int mapsize = mAppSettings->beginReadArray("bookmarks");
+    for (int i = 0; i < mapsize; i++) {
+        mAppSettings->setArrayIndex(i);
+        bookmarkMap.insert(mAppSettings->value("location").toString(),
+                           mAppSettings->value("name").toString());
+    }
+    mAppSettings->endArray();
+    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+
+    mAppSettings->endGroup();
+
 
     // history
     mAppSettings->beginGroup("fileHistory");

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <QtWidgets>
 #include "codeeditor.h"
+#include "logeditor.h"
 #include "gdxviewer/gdxviewer.h"
 
 namespace gams {
@@ -126,7 +127,10 @@ public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(QPlainTextEdit* w) {
+    inline static void initEditorType(QPlainTextEdit* w) { // obsolete?
+        if(w) w->setProperty("EditorType", etPlainText);
+    }
+    inline static void initEditorType(LogEditor* w) {
         if(w) w->setProperty("EditorType", etPlainText);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {

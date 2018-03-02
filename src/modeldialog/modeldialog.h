@@ -34,7 +34,7 @@ class ModelDialog : public QDialog
 
 public:
     explicit ModelDialog(QWidget *parent = 0);
-    explicit ModelDialog(QString userLibPath, QWidget *parent = 0);
+    explicit ModelDialog(QString userLibPath, QWidget* parent = 0);
     LibraryItem *selectedLibraryItem() const;
 
 public slots:
