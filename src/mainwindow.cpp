@@ -79,7 +79,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    mDockHelpView->hide();
+    mDockHelpView->hide();   
 
     createRunAndCommandLineWidgets();
 
@@ -349,8 +349,8 @@ void MainWindow::toggleOptionDefinition(bool checked)
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
-        mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
-        this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+        mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+        this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
     }
 }
 
@@ -873,7 +873,9 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
     mDockOptionView->setFloating(false);
-    this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+
+    mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+    this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
 
     connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
