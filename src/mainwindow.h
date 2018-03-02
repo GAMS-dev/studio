@@ -187,9 +187,13 @@ private slots:
     void on_actionCut_triggered();
     void on_actionSet_to_Uppercase_triggered();
     void on_actionSet_to_Lowercase_triggered();
+    void on_actionReset_Zoom_triggered();
+    void on_actionZoom_Out_triggered();
+    void on_actionZoom_In_triggered();
 
     void interruptTriggered();
     void stopTriggered();
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -216,7 +220,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void updateEditorFont(const QString &fontFamily, int fontSize);
+    void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
 
 private:

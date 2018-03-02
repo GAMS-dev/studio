@@ -69,7 +69,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
     ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->logView->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -108,7 +108,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSearchWidget = new SearchWidget(this);
     mGoto= new GoToWidget(this);
 
-    if (mSettings->lineWrapProcess())
+    if (mSettings->lineWrapProcess()) // set wrapping for system log
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -663,7 +663,7 @@ void MainWindow::on_actionExit_Application_triggered()
 }
 
 void MainWindow::on_actionHelp_triggered()
-{   
+{
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
@@ -1049,11 +1049,10 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if (fsc->type() == FileSystemContext::FileGroup) {
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = new QPlainTextEdit();
+            LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
-            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -1114,7 +1113,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
@@ -1245,12 +1244,12 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        LogEditor* logEdit = new LogEditor();
+        LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
-        logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
-        logEdit->setReadOnly(true);
+
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
 
     if (!mSettings->clearLog()) {
@@ -1505,7 +1504,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(mSettings.get(), this);
-    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateEditorFont);
+    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
@@ -1551,12 +1550,17 @@ void MainWindow::showResults(SearchResultList &results)
     ui->logTab->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
+void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
-        edit->setFont(font);
+        if (!FileContext::toGdxViewer(edit))
+            edit->setFont(font);
     }
+    foreach (QWidget* log, openLogs()) {
+        log->setFont(font);
+    }
+    ui->logView->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -1693,6 +1697,29 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     clipboard->setText(oldtext);
 }
 
+void MainWindow::on_actionReset_Zoom_triggered()
+{
+    QPlainTextEdit *qpte = dynamic_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte) // if any sort of editor
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    else // tables n stuff
+        focusWidget()->setFont(QFont().defaultFamily());
+}
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte)
+        qpte->zoomOut();
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte)
+        qpte->zoomIn();
+}
+
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
@@ -1723,3 +1750,4 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 }
 }
 }
+

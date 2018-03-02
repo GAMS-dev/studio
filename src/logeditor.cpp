@@ -23,6 +23,12 @@
 namespace gams {
 namespace studio {
 
+LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+{
+    setReadOnly(true);
+    setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+}
+
 QMimeData* LogEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
@@ -35,16 +41,11 @@ QMimeData* LogEditor::createMimeDataFromSelection() const
 
 void LogEditor::keyPressEvent(QKeyEvent *e)
 {
-    qDebug() << "pressed" << e->text() << "in logedit" << e->modifiers() << e->key();
-
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_C)) {
-        qDebug() << "copying";
         copy();
     }
     e->accept();
 }
-
-
 
 }
 }
