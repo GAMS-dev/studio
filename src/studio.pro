@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
 QT       += core gui svg concurrent
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webenginewidgets
 
 TARGET = studio
 TEMPLATE = app
@@ -120,6 +121,8 @@ SOURCES += \
     resultsview.cpp \
     searchresultlist.cpp \
     keys.cpp \
+    helpview.cpp \
+    bookmarkdialog.cpp \
     commandlineparser.cpp \
     wplabel.cpp \
     gotowidget.cpp \
@@ -189,6 +192,8 @@ HEADERS += \
     searchresultlist.h \
     syntax/syntaxdata.h \
     keys.h \
+    helpview.h \
+    bookmarkdialog.h \
     commandlineparser.h \
     wplabel.h \
     gotowidget.h \
@@ -205,6 +210,7 @@ FORMS += \
     settingsdialog.ui \
     searchwidget.ui \
     resultsview.ui \
+    bookmarkdialog.ui \
     gotowidget.ui
 
 RESOURCES += \

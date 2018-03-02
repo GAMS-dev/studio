@@ -69,13 +69,17 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
     ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
-    ui->logView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    ui->logView->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
+
+    mDockHelpView = new HelpView(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    mDockHelpView->hide();
 
     createRunAndCommandLineWidgets();
 
@@ -93,6 +97,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
+    connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
@@ -103,7 +108,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSearchWidget = new SearchWidget(this);
     mGoto= new GoToWidget(this);
 
-    if (mSettings->lineWrapProcess())
+    if (mSettings->lineWrapProcess()) // set wrapping for system log
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     else
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -114,6 +119,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete mDockHelpView;
     delete ui;
     delete mOptionEditor;
     delete mDockOptionView;
@@ -223,6 +229,11 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
     ui->actionOption_View->setChecked(visibility);
 }
 
+void MainWindow::setHelpViewVisibility(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility);
+}
+
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
     mCommandLineHistory = opt;
@@ -306,6 +317,11 @@ bool MainWindow::optionEditorVisibility()
     return ui->actionOption_View->isChecked();
 }
 
+bool MainWindow::helpViewVisibility()
+{
+    return ui->actionHelp_View->isChecked();
+}
+
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
     if (mRecent.group == group) updateRunState();
@@ -336,6 +352,12 @@ void MainWindow::toggleOptionDefinition(bool checked)
         mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
         this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
     }
+}
+
+void MainWindow::closeHelpView()
+{
+    if (mDockHelpView)
+        mDockHelpView->close();
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -641,9 +663,10 @@ void MainWindow::on_actionExit_Application_triggered()
     QCoreApplication::quit();
 }
 
-void MainWindow::on_actionOnline_Help_triggered()
+void MainWindow::on_actionHelp_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -693,6 +716,14 @@ void MainWindow::on_actionOption_View_triggered(bool checked)
         mDockOptionView->hide();
         mDockOptionView->setFloating(false);
     }
+}
+
+void MainWindow::on_actionHelp_View_triggered(bool checked)
+{
+    if (checked)
+        mDockHelpView->show();
+    else
+        mDockHelpView->hide();
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -802,16 +833,13 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     commandHLayout->addWidget(mCommandLineOption);
 
-    QPushButton* helpButton = new QPushButton(this);
-//    QPixmap pixmap(":/img/gams");
-//    QIcon ButtonIcon(pixmap);
-//    helpButton->setIcon(ButtonIcon);
-    helpButton->setText("Help");
-    helpButton->setToolTip("Help on The GAMS Call and Command Line Parameters");
-    commandHLayout->addWidget(helpButton);
 
-    QHBoxLayout* button_HLayout = new QHBoxLayout();
-    button_HLayout->setObjectName(QStringLiteral("button_HLayout"));
+    QPushButton* helpButton = new QPushButton(this);
+    QPixmap helpPixmap(":/img/question");
+    QIcon helpButtonIcon(helpPixmap);
+    helpButton->setIcon(helpButtonIcon);
+    helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
+    commandHLayout->addWidget(helpButton);
 
     QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
@@ -1022,11 +1050,10 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if (fsc->type() == FileSystemContext::FileGroup) {
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
-            QPlainTextEdit* logEdit = new QPlainTextEdit();
+            LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
                                                                   : QPlainTextEdit::NoWrap);
-            logEdit->setReadOnly(true);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -1081,12 +1108,13 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mSettings->saveSettings(this);
     }
     on_actionClose_All_triggered();
+    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            updateEditorFont(mSettings->fontFamily(), mSettings->fontSize());
+            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
     if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
         openContext(ui->projectView->currentIndex());
@@ -1217,12 +1245,12 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
-        LogEditor* logEdit = new LogEditor();
+        LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
-        logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
-        logEdit->setReadOnly(true);
+
         ui->logTab->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
 
     if (!mSettings->clearLog()) {
@@ -1295,21 +1323,10 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_commandLineHelpTriggered()
 {
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 
-//    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-//    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-//    if (!fgc)
-//        return;
-//    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
-//                                   QString("Run - %1").arg(fc->caption()) );
-//    ui->mainTab->setCurrentIndex(idx);
-
-//    if (!ui->actionOption_View->isChecked()) {
-//        mDockOptionView->show();
-//    } else {
-//        mDockOptionView->hide();
-//    }
+    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -1488,7 +1505,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(mSettings.get(), this);
-    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateEditorFont);
+    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
@@ -1534,12 +1551,17 @@ void MainWindow::showResults(SearchResultList &results)
     ui->logTab->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::updateEditorFont(const QString &fontFamily, int fontSize)
+void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
-        edit->setFont(font);
+        if (!FileContext::toGdxViewer(edit))
+            edit->setFont(font);
     }
+    foreach (QWidget* log, openLogs()) {
+        log->setFont(font);
+    }
+    ui->logView->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -1570,6 +1592,11 @@ void MainWindow::updateEditorLineWrapping()
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
+}
+
+HelpView *MainWindow::getDockHelpView() const
+{
+    return mDockHelpView;
 }
 
 void MainWindow::on_actionGo_To_triggered()
@@ -1671,6 +1698,29 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     clipboard->setText(oldtext);
 }
 
+void MainWindow::on_actionReset_Zoom_triggered()
+{
+    QPlainTextEdit *qpte = dynamic_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte) // if any sort of editor
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    else // tables n stuff
+        focusWidget()->setFont(QFont().defaultFamily());
+}
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte)
+        qpte->zoomOut();
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+    if (qpte)
+        qpte->zoomIn();
+}
+
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (ui->mainTab->count() == 0))
@@ -1701,3 +1751,4 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 }
 }
 }
+

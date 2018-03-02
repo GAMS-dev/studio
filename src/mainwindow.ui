@@ -145,14 +145,19 @@
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
+    <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionReset_Zoom"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionOnline_Help"/>
+    <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
@@ -337,9 +342,9 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionOnline_Help">
+  <action name="actionHelp">
    <property name="text">
-    <string>Online Help</string>
+    <string>Documentation</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -619,8 +624,43 @@
    </property>
   </action>
   <action name="actionUpdate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>Update</string>
+    <string>&amp;Update</string>
+   </property>
+  </action>
+  <action name="actionHelp_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionReset_Zoom">
+   <property name="text">
+    <string>Reset Zoom</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>
