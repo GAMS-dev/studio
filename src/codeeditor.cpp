@@ -184,25 +184,24 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-//    qDebug() << "CodeEdit::keyPressEvent" << e->text();
-//    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
-//        QTextCursor c = textCursor();
-//        QTextCursor anc = c;
-//        anc.setPosition(c.anchor());
-//        startBlockEdit(anc.blockNumber(), anc.columnNumber());
-//    }
+    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
+        QTextCursor c = textCursor();
+        QTextCursor anc = c;
+        anc.setPosition(c.anchor());
+        startBlockEdit(anc.blockNumber(), anc.columnNumber());
+    }
 
     if (mBlockEdit) {
         if (e->key() == Hotkey::NewLine) {
             endBlockEdit();
             return;
         }
-//        if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
-//            endBlockEdit();
-//        } else {
-//            mBlockEdit->keyPressEvent(e);
-//            return;
-//        }
+        if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
+            endBlockEdit();
+        } else {
+            mBlockEdit->keyPressEvent(e);
+            return;
+        }
     }
 
     if (!isReadOnly()) {
@@ -217,22 +216,6 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             setTextCursor(cursor);
             e->accept();
             return;
-//        } else if (e == Hotkey::Indent) {
-//            indent(mSettings->tabSize());
-//            e->accept();
-//            return;
-//        } else if (e == Hotkey::Outdent) {
-//            indent(-mSettings->tabSize());
-//            e->accept();
-//            return;
-//        } else if (e == Hotkey::DuplicateLine) {
-//            duplicateLine();
-//            e->accept();
-//            return;
-//        } else if (e == Hotkey::RemoveLine) {
-//            removeLine();
-//            e->accept();
-//            return;
         }
     }
 
@@ -240,24 +223,24 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
 }
 
 
-//void CodeEditor::keyReleaseEvent(QKeyEvent* e)
-//{
-//    if (isReadOnly()) {
-//        QPlainTextEdit::keyReleaseEvent(e);
-//        return;
-//    }
-//    if (mBlockEdit) {
-//        mBlockEdit->keyReleaseEvent(e);
-//        return;
-//    }
-//    // return pressed, if current block consists of whitespaces only: ignore here
-//    if (!isReadOnly() && e->key() == Hotkey::NewLine) {
-//        e->accept();
-//        return;
-//    } else {
-//        QPlainTextEdit::keyReleaseEvent(e);
-//    }
-//}
+void CodeEditor::keyReleaseEvent(QKeyEvent* e)
+{
+    if (isReadOnly()) {
+        QPlainTextEdit::keyReleaseEvent(e);
+        return;
+    }
+    if (mBlockEdit) {
+        mBlockEdit->keyReleaseEvent(e);
+        return;
+    }
+    // return pressed, if current block consists of whitespaces only: ignore here
+    if (!isReadOnly() && e->key() == Hotkey::NewLine) {
+        e->accept();
+        return;
+    } else {
+        QPlainTextEdit::keyReleaseEvent(e);
+    }
+}
 
 void CodeEditor::adjustIndent(QTextCursor cursor)
 {
@@ -794,58 +777,58 @@ void CodeEditor::BlockEdit::selectionToClipboard()
     QApplication::clipboard()->setMimeData(mime);
 }
 
-//void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
-//{
-//    QSet<int> moveKeys;
-//    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
-//             << Qt::Key_PageUp << Qt::Key_PageDown;
-//    if (moveKeys.contains(e->key())) {
-//        if (e->key() == Qt::Key_Right) mSize++;
-//        if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
-//        if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
-//        if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
-//        if (e->key() == Qt::Key_Home) mSize = -mColumn;
-//        if (e->key() == Qt::Key_End) selectToEnd();
-//        QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
-//        QTextCursor cursor(block);
-//        if (block.length() > mColumn+mSize)
-//            cursor.setPosition(block.position()+mColumn+mSize);
-//        else
-//            cursor.setPosition(block.position()+block.length()-1);
-//        mEdit->setTextCursor(cursor);
-//        updateExtraSelections();
-//    } else if (e == Hotkey::Paste) {
-//        QStringList texts = mEdit->clipboard();
-//        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
-//            replaceBlockText(texts);
-//    } else if (e == Hotkey::Indent) {
-//        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
-//    } else if (e == Hotkey::Outdent) {
-//        int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
-//        if (minWhiteCount)
-//            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
-//    } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
-//        // TODO(JM) copy selected text to clipboard
-//        selectionToClipboard();
-//        if (e == Hotkey::Cut) replaceBlockText("");
-//    } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
-//        if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
-//        replaceBlockText("");
-//    } else if (e == Hotkey::DuplicateLine) {
-//        return;
-//    } else if (e->text().length()) {
-//        replaceBlockText(e->text());
-//    }
-//    startCursorTimer();
-//}
+void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
+{
+    QSet<int> moveKeys;
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
+             << Qt::Key_PageUp << Qt::Key_PageDown;
+    if (moveKeys.contains(e->key())) {
+        if (e->key() == Qt::Key_Right) mSize++;
+        if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
+        if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
+        if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
+        if (e->key() == Qt::Key_Home) mSize = -mColumn;
+        if (e->key() == Qt::Key_End) selectToEnd();
+        QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+        QTextCursor cursor(block);
+        if (block.length() > mColumn+mSize)
+            cursor.setPosition(block.position()+mColumn+mSize);
+        else
+            cursor.setPosition(block.position()+block.length()-1);
+        mEdit->setTextCursor(cursor);
+        updateExtraSelections();
+    } else if (e == Hotkey::Paste) {
+        QStringList texts = mEdit->clipboard();
+        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
+            replaceBlockText(texts);
+    } else if (e == Hotkey::Indent) {
+        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
+    } else if (e == Hotkey::Outdent) {
+        int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
+        if (minWhiteCount)
+            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
+    } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
+        // TODO(JM) copy selected text to clipboard
+        selectionToClipboard();
+        if (e == Hotkey::Cut) replaceBlockText("");
+    } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
+        if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        replaceBlockText("");
+    } else if (e == Hotkey::DuplicateLine) {
+        return;
+    } else if (e->text().length()) {
+        replaceBlockText(e->text());
+    }
+    startCursorTimer();
+}
 
-//void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
-//{
-//    Q_UNUSED(e)
-//    QSet<int> moveKeys;
-//    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
-//             << Qt::Key_PageUp << Qt::Key_PageDown;
-//}
+void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
+{
+    Q_UNUSED(e)
+    QSet<int> moveKeys;
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
+             << Qt::Key_PageUp << Qt::Key_PageDown;
+}
 
 void CodeEditor::BlockEdit::startCursorTimer()
 {

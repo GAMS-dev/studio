@@ -64,7 +64,7 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
-//    void keyReleaseEvent(QKeyEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
@@ -110,8 +110,8 @@ private:
     public:
         BlockEdit(CodeEditor* edit, int blockNr, int colNr);
         virtual ~BlockEdit();
-//        void keyPressEvent(QKeyEvent *e);
-//        void keyReleaseEvent(QKeyEvent *e);
+        void keyPressEvent(QKeyEvent *e);
+        void keyReleaseEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
             return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
         int colFrom() { return 0; }
