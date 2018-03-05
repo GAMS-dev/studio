@@ -69,7 +69,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
     ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
-    ui->logView->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -1557,9 +1556,6 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     foreach (QWidget* edit, openEditors()) {
         if (!FileContext::toGdxViewer(edit))
             edit->setFont(font);
-    }
-    foreach (QWidget* log, openLogs()) {
-        log->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);

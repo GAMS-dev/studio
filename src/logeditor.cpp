@@ -27,7 +27,6 @@ LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor
 {
     setReadOnly(true);
     setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
-    setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 }
 
 AbstractEditor::EditorType LogEditor::type()
