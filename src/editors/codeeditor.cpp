@@ -548,16 +548,6 @@ void CodeEditor::updateTabSize()
     setTabStopDistance(8*metric.width(' '));
 }
 
-bool CodeEditor::event(QEvent *e)
-{
-    if (e->type() == QEvent::ShortcutOverride) {
-        e->ignore();
-        return true;
-    } else {
-        return QPlainTextEdit::event(e);
-    }
-}
-
 AbstractEditor::EditorType CodeEditor::type()
 {
     return EditorType::CodeEditor;

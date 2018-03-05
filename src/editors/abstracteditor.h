@@ -43,6 +43,11 @@ protected:
 
 protected:
     StudioSettings *mSettings = nullptr;
+
+    // QObject interface
+public:
+    bool event(QEvent *event);
+
 };
 
 }

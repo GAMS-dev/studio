@@ -151,10 +151,6 @@ private:
     QString mWordUnderCursor;
     QTimer mWordDelay;
 
-    // QObject interface
-public:
-    bool event(QEvent *event);
-
     // AbstractEditor interface
 public:
     EditorType type();

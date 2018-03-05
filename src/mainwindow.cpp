@@ -1644,7 +1644,7 @@ void MainWindow::on_actionPaste_triggered()
 
 void MainWindow::on_actionCopy_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if (focusWidget() == nullptr)
         return;
 
     AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
@@ -1653,7 +1653,7 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if (focusWidget() == nullptr)
         return;
     CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
     if (!ce) return;
@@ -1662,12 +1662,15 @@ void MainWindow::on_actionSelect_All_triggered()
 
 void MainWindow::on_actionCut_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if (focusWidget() == nullptr)
         return;
 
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (!ce) return;
     if (!ce->isReadOnly())
         ce->cut();
+    else
+        ce->copy();
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()
