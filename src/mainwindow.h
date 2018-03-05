@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "option/lineeditcompleteevent.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 
@@ -90,10 +91,12 @@ public:
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
+    bool helpViewVisibility();
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
+    void setHelpViewVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
@@ -104,6 +107,8 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
+
+    HelpView *getDockHelpView() const;
 
 public slots:
     void receiveAction(QString action);
@@ -129,6 +134,7 @@ private slots:
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
+    void closeHelpView();
 
 private slots:
     // File
@@ -149,12 +155,14 @@ private slots:
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
     // About
-    void on_actionOnline_Help_triggered();
+    void on_actionHelp_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
+    void on_actionUpdate_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
+    void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
@@ -230,6 +238,8 @@ private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+
+    HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

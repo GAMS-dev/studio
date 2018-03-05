@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,40 +119,18 @@ void GamsProcess::interrupt()
 
     QString windowName("___GAMSMSGWINDOW___");
     windowName += pid;
-    LPCTSTR windowNameL = windowName.toStdWString().c_str();
-    HWND receiver = FindWindow(nullptr, windowNameL);
+    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
 
     cds.dwData = (ULONG_PTR) 1;
     cds.lpData = (PVOID) msgText;
     cds.cbData = (DWORD) (strlen(msgText) + 1);
 
-    SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
 #else // Linux and Mac OS X
-    QStringList s1;
     QProcess proc;
     proc.setProgram("/bin/bash");
-    s1 << "-c" << QString("pstree -p ") + pid.toUtf8().constData()
-          + QString(" | sed 's/(/\\n(/g' | grep '(' | sed 's/(\\(.*\\)).*/\\1/'");
-    proc.setArguments(s1);
-    proc.start();
-    proc.waitForFinished(-1);
-
-    QString s(proc.readAllStandardOutput());
-
-    QStringList childList = s.split("\n");
-
-    QString childListStr = "";
-    for(int i=0; i<childList.length(); i++)
-    {
-        childListStr += childList[i].toUtf8().constData();
-        childListStr += " ";
-    }
-    if (childListStr.isEmpty())
-        return;
-
-    proc.setProgram("/bin/bash");
-    QStringList s2 { "-c", "kill -2 " + childListStr};
-    proc.setArguments(s2);
+    QStringList args { "-c", "kill -2 " + pid};
+    proc.setArguments(args);
     proc.start();
     proc.waitForFinished(-1);
 #endif

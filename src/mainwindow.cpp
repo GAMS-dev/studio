@@ -41,6 +41,7 @@
 #include "gotowidget.h"
 #include "logeditor.h"
 #include "abstracteditor.h"
+#include "c4umcc.h"
 
 namespace gams {
 namespace studio {
@@ -76,6 +77,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
+    mDockHelpView = new HelpView(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    mDockHelpView->hide();
+
     createRunAndCommandLineWidgets();
 
     mCodecGroup = new QActionGroup(this);
@@ -92,6 +97,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
+    connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
@@ -113,6 +119,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete mDockHelpView;
     delete ui;
     delete mOptionEditor;
     delete mDockOptionView;
@@ -221,6 +228,11 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
     ui->actionOption_View->setChecked(visibility);
 }
 
+void MainWindow::setHelpViewVisibility(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility);
+}
+
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
     mCommandLineHistory = opt;
@@ -304,6 +316,11 @@ bool MainWindow::optionEditorVisibility()
     return ui->actionOption_View->isChecked();
 }
 
+bool MainWindow::helpViewVisibility()
+{
+    return ui->actionHelp_View->isChecked();
+}
+
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
 {
     if (mRecent.group == group) updateRunState();
@@ -334,6 +351,12 @@ void MainWindow::toggleOptionDefinition(bool checked)
         mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
         this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
     }
+}
+
+void MainWindow::closeHelpView()
+{
+    if (mDockHelpView)
+        mDockHelpView->close();
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -639,9 +662,10 @@ void MainWindow::on_actionExit_Application_triggered()
     QCoreApplication::quit();
 }
 
-void MainWindow::on_actionOnline_Help_triggered()
+void MainWindow::on_actionHelp_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.gams.com/latest/docs", QUrl::TolerantMode));
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 }
 
 //void MainWindow::on_actionHelp_triggered()
@@ -653,6 +677,18 @@ void MainWindow::on_actionOnline_Help_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
+    about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
+    about +=  "This program is free software: you can redistribute it and/or modify";
+    about += "it under the terms of the GNU General Public License as published by";
+    about += "the Free Software Foundation, either version 3 of the License, or";
+    about += "(at your option) any later version.<br/><br/>";
+    about += "This program is distributed in the hope that it will be useful,";
+    about += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
+    about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the";
+    about += "GNU General Public License for more details.<br/><br/>";
+    about += "You should have received a copy of the GNU General Public License";
+    about += "along with this program. If not, see <http://www.gnu.org/licenses/>.";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/><br/>";
     about += "<b><big>GAMS Distribution</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
@@ -662,6 +698,11 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, "About Qt");
+}
+
+void MainWindow::on_actionUpdate_triggered()
+{
+
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)
@@ -680,6 +721,14 @@ void MainWindow::on_actionOption_View_triggered(bool checked)
         mDockOptionView->hide();
         mDockOptionView->setFloating(false);
     }
+}
+
+void MainWindow::on_actionHelp_View_triggered(bool checked)
+{
+    if (checked)
+        mDockHelpView->show();
+    else
+        mDockHelpView->hide();
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -789,16 +838,13 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     commandHLayout->addWidget(mCommandLineOption);
 
-    QPushButton* helpButton = new QPushButton(this);
-//    QPixmap pixmap(":/img/gams");
-//    QIcon ButtonIcon(pixmap);
-//    helpButton->setIcon(ButtonIcon);
-    helpButton->setText("Help");
-    helpButton->setToolTip("Help on The GAMS Call and Command Line Parameters");
-    commandHLayout->addWidget(helpButton);
 
-    QHBoxLayout* button_HLayout = new QHBoxLayout();
-    button_HLayout->setObjectName(QStringLiteral("button_HLayout"));
+    QPushButton* helpButton = new QPushButton(this);
+    QPixmap helpPixmap(":/img/question");
+    QIcon helpButtonIcon(helpPixmap);
+    helpButton->setIcon(helpButtonIcon);
+    helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
+    commandHLayout->addWidget(helpButton);
 
     QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
@@ -1067,6 +1113,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mSettings->saveSettings(this);
     }
     on_actionClose_All_triggered();
+    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1276,21 +1323,10 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_commandLineHelpTriggered()
 {
     QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.canonicalPath()));
 
-//    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-//    FileGroupContext *fgc = (fc ? fc->parentEntry() : nullptr);
-//    if (!fgc)
-//        return;
-//    int idx = ui->mainTab->addTab( new OptionConfigurator(fgc->runableGms(), mCommandLineOption->lineEdit()->text(), mCommandLineTokenizer, this),
-//                                   QString("Run - %1").arg(fc->caption()) );
-//    ui->mainTab->setCurrentIndex(idx);
-
-//    if (!ui->actionOption_View->isChecked()) {
-//        mDockOptionView->show();
-//    } else {
-//        mDockOptionView->hide();
-//    }
+    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    if (mDockHelpView->isHidden())
+        mDockHelpView->show();
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -1525,6 +1561,9 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
     }
+    foreach (QWidget* log, openLogs()) {
+        log->setFont(font);
+    }
     ui->logView->setFont(font);
 }
 
@@ -1556,6 +1595,11 @@ void MainWindow::updateEditorLineWrapping()
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
+}
+
+HelpView *MainWindow::getDockHelpView() const
+{
+    return mDockHelpView;
 }
 
 void MainWindow::on_actionGo_To_triggered()
@@ -1732,3 +1776,4 @@ void MainWindow::on_actionRemove_Line_triggered()
 
 }
 }
+

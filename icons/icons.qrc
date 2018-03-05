@@ -23,6 +23,10 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="times">times.svg</file>
         <file alias="user">user.svg</file>
+        <file alias="link">link.svg</file>
+        <file alias="external-link">external-link.svg</file>
+        <file alias="fork">code-fork.svg</file>
+        <file alias="config">gear.svg</file>
         <file>gamsicon_16x16.png</file>
         <file>gamsworld_16x16.gif</file>
         <file alias="compile">compile.svg</file>
