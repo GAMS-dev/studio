@@ -21,7 +21,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
@@ -39,8 +39,8 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
-#include "logeditor.h"
-#include "abstracteditor.h"
+#include "editors/logeditor.h"
+#include "editors/abstracteditor.h"
 #include "c4umcc.h"
 
 namespace gams {
@@ -1647,20 +1647,8 @@ void MainWindow::on_actionCopy_triggered()
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
-    QString className = focusWidget()->metaObject()->className();
-    qDebug() << "className" << className;
-
-    if (className == "gams::studio::CodeEditor") {
-        CodeEditor *ce = static_cast<CodeEditor*>(focusWidget());
-        ce->copy();
-    } else if (className == "gams::studio::LogEditor") {
-        LogEditor *le = static_cast<LogEditor*>(focusWidget());
-        le->copy();
-    } else if (className == "gams::studio::gdxviewer::GdxViewer") {
-
-        // when in table classname is QTableView
-        // TODO: GdxViewer::copySelectionToClipboard
-    }
+    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (ae) ae->copy();
 }
 
 void MainWindow::on_actionSelect_All_triggered()
@@ -1684,20 +1672,20 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (qpte) updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (ae) updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (qpte) qpte->zoomOut();
+    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (ae) ae->zoomOut();
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    AbstractEditor *qpte = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (qpte) qpte->zoomIn();
+    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (ae) ae->zoomIn();
 }
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()

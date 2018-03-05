@@ -20,7 +20,7 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
-#include "abstracteditor.h"
+#include "editors/abstracteditor.h"
 
 class QPaintEvent;
 class QResizeEvent;

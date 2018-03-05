@@ -23,7 +23,7 @@
 #include <memory>
 #include <QtWidgets>
 
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 #include "option/commandlinehistory.h"

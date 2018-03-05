@@ -21,7 +21,7 @@
 #include "exception.h"
 #include "filegroupcontext.h"
 #include "logger.h"
-#include "logeditor.h"
+#include "editors/logeditor.h"
 
 namespace gams {
 namespace studio {

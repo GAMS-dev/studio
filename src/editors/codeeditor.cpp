@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtWidgets>
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "studiosettings.h"
 #include "searchwidget.h"
 #include "exception.h"

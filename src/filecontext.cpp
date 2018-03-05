@@ -20,7 +20,7 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "exception.h"
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "logger.h"
 
 namespace gams {
