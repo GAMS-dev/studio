@@ -39,6 +39,17 @@ HelpView::HelpView(QWidget *parent) :
 
 HelpView::~HelpView()
 {
+    delete bookmarkMenu;
+    delete actionAddBookmark;
+    delete actionOrganizeBookmark;
+    delete actionOnlineHelp;
+    delete actionOpenInBrowser;
+
+    delete zoomInAction;
+    delete zoomOutAction;
+    delete resetZoomAction;
+
+    delete helpView;
 }
 
 void HelpView::setupUi(QWidget *parent)
@@ -68,6 +79,7 @@ void HelpView::setupUi(QWidget *parent)
     QPixmap homePixmap(":/img/home");
     QIcon homeButtonIcon(homePixmap);
     actionHome->setIcon(homeButtonIcon);
+    connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
 
     toolbar->addAction(actionHome);
     toolbar->addSeparator();
@@ -79,17 +91,11 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addAction(helpView->pageAction(QWebEnginePage::Stop));
     toolbar->addSeparator();
 
-    actionAddBookmark = new QAction(this);
-    actionAddBookmark->setObjectName(QStringLiteral("actionAddBookmark"));
-    actionAddBookmark->setText(QLatin1String("Bookmark This Page"));
-    actionAddBookmark->setToolTip(tr("Bookmark This Page"));
+    actionAddBookmark = new QAction(tr("Bookmark This Page"), this);
     actionAddBookmark->setStatusTip(tr("Bookmark This Page"));
     connect(actionAddBookmark, &QAction::triggered, this, &HelpView::on_actionAddBookMark_triggered);
 
-    actionOrganizeBookmark = new QAction(this);
-    actionOrganizeBookmark->setObjectName(QStringLiteral("actionOrganizeBookmark"));
-    actionOrganizeBookmark->setText(QLatin1String("Organize Bookmarks"));
-    actionOrganizeBookmark->setToolTip(tr("Organize Bookmarks"));
+    actionOrganizeBookmark = new QAction(tr("Organize Bookmarks"), this);
     actionOrganizeBookmark->setStatusTip(tr("Organize Bookmarks"));
     connect(actionOrganizeBookmark, &QAction::triggered, this, &HelpView::on_actionOrganizeBookMark_triggered);
 
@@ -114,21 +120,27 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    actionOnlineHelp = new QAction(this);
-    actionOnlineHelp->setObjectName(QStringLiteral("actionOnlineHelp"));
-    actionOnlineHelp->setText("View lastest online version of this page");
-    actionOnlineHelp->setToolTip("View lastest online version of this page");
-    actionOnlineHelp->setStatusTip(tr("View lastest online version of this page"));
+    actionOnlineHelp = new QAction(tr("View latest online version of this page"), this);
+    actionOnlineHelp->setStatusTip(tr("View latest online version of this page"));
     actionOnlineHelp->setCheckable(true);
+    connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
     helpMenu->addAction(actionOnlineHelp);
     helpMenu->addSeparator();
 
-    actionOpenInBrowser = new QAction(this);
-    actionOpenInBrowser->setObjectName(QStringLiteral("actionOpenInBrowser"));
-    actionOpenInBrowser->setText("Open in Default Web Browser");
-    actionOpenInBrowser->setToolTip("Open in Default Web Browser");
-    actionOpenInBrowser->setStatusTip(tr("Open in Default Web Browser"));
+    actionOpenInBrowser = new QAction(tr("Open in Default Web Browser"), this);
+    actionOpenInBrowser->setStatusTip(tr("Open this page in Default Web Browser"));
+    connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
     helpMenu->addAction(actionOpenInBrowser);
+    helpMenu->addSeparator();
+
+    zoomInAction = helpMenu->addAction(tr("Zoom In"), this,  &HelpView::zoomIn);
+    zoomInAction->setStatusTip(tr("Zoom in the help page"));
+
+    zoomOutAction = helpMenu->addAction(tr("Zoom Out"), this,  &HelpView::zoomOut);
+    zoomOutAction->setStatusTip(tr("Zoom out the help page"));
+
+    resetZoomAction = helpMenu->addAction(tr("Reset Zoom"), this,  &HelpView::resetZoom);
+    resetZoomAction->setStatusTip(tr("Reset Zoom to Original view"));
 
     QToolButton* helpToolButton = new QToolButton(this);
     QPixmap toolPixmap(":/img/config");
@@ -143,10 +155,6 @@ void HelpView::setupUi(QWidget *parent)
     helpVLayout->addWidget( helpView );
 
     this->setWidget( helpWidget );
-
-    connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
-    connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
-    connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
 }
 
 void HelpView::on_urlOpened(const QUrl& location)
@@ -288,6 +296,21 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
 void HelpView::on_actionOpenInBrowser_triggered()
 {
     QDesktopServices::openUrl( helpView->url() );
+}
+
+void HelpView::zoomIn()
+{
+    helpView->page()->setZoomFactor( helpView->page()->zoomFactor() + 0.1);
+}
+
+void HelpView::zoomOut()
+{
+    helpView->page()->setZoomFactor( helpView->page()->zoomFactor() - 0.1);
+}
+
+void HelpView::resetZoom()
+{
+    helpView->page()->setZoomFactor(1.0);
 }
 
 void HelpView::addBookmarkAction(const QString &objectName, const QString &title)

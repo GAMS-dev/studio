@@ -121,11 +121,12 @@ MainWindow::~MainWindow()
 {
     delete mDockHelpView;
     delete ui;
-    delete mOptionEditor;
-    delete mDockOptionView;
-    delete mCommandLineHistory;
+// TODO fix crash
+//    delete mOptionEditor;
+//    delete mDockOptionView;
+//    delete mCommandLineHistory;
 //    delete mCommandLineOption; TODO fix crash
-    delete mCommandLineTokenizer;
+//    delete mCommandLineTokenizer;
 }
 
 void MainWindow::initTabs()
