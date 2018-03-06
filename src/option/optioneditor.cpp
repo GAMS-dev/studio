@@ -171,20 +171,15 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = commandLineTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QIcon addIcon(":/img/plus");
-    QAction* addAction = menu.addAction(addIcon, "add new option");
-    QAction* insertAction = menu.addAction("insert new option");
+    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "add new option");
+    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
     menu.addSeparator();
-    QIcon moveUpIcon(":/img/move-up");
-    QAction* moveUpAction = menu.addAction(moveUpIcon, "move selected option up");
-    QIcon moveDownIcon(":/img/move-down");
-    QAction* moveDownAction = menu.addAction(moveDownIcon, "move selected option down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
     menu.addSeparator();
-    QIcon deleteIcon(":/img/delete");
-    QAction* deleteAction = menu.addAction(deleteIcon, "remove selected option");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
     menu.addSeparator();
-    QIcon deleteAllIcon(":/img/delete-all");
-    QAction* deleteAllActions = menu.addAction(deleteAllIcon, "remove all options");
+    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
 
     if (commandLineTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);
