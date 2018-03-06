@@ -165,14 +165,12 @@ pipeline {
                         sh '''
                             mv "bin/GAMS Studio.dmg" studio.dmg
                         '''
-                        zip zipFile: 'studio-mac.zip', archive: false, dir: 'bin'
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
-                                sh "mv studio-mac.zip ${env.BRANCH_NAME}-studio-mac.zip"
                             }
                         }
-                        archiveArtifacts artifacts: '*.dmg, *.zip', fingerprint: true
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
                 }
             }
