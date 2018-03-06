@@ -239,6 +239,17 @@ void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
     mCommandLineHistory = opt;
 }
 
+void MainWindow::checkOptionDefinition(bool checked)
+{
+    showOptionDefintionCheckBox->setChecked(checked);
+    toggleOptionDefinition(checked);
+}
+
+bool MainWindow::isOptionDefinitionChecked()
+{
+    return showOptionDefintionCheckBox->isChecked();
+}
+
 CommandLineHistory *MainWindow::commandLineHistory()
 {
     return mCommandLineHistory;
@@ -841,7 +852,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     commandHLayout->addWidget(helpButton);
 
-    QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
+    showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
     showOptionDefintionCheckBox->setEnabled(true);
     showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
