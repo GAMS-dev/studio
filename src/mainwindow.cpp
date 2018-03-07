@@ -683,7 +683,8 @@ void MainWindow::on_actionAbout_triggered()
     about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the";
     about += "GNU General Public License for more details.<br/><br/>";
     about += "You should have received a copy of the GNU General Public License";
-    about += "along with this program. If not, see <http://www.gnu.org/licenses/>.";
+    about += "along with this program. If not, see ";
+    about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/><br/>";
     about += "<b><big>GAMS Distribution</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
