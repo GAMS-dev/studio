@@ -45,9 +45,9 @@ HelpView::~HelpView()
     delete actionOnlineHelp;
     delete actionOpenInBrowser;
 
-    delete zoomInAction;
-    delete zoomOutAction;
-    delete resetZoomAction;
+    delete actionZoomIn;
+    delete actionZoomOut;
+    delete actionResetZoom;
 
     delete helpView;
 }
@@ -120,7 +120,7 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    actionOnlineHelp = new QAction(tr("View latest online version of this page"), this);
+    actionOnlineHelp = new QAction(tr("View Latest Online Version of This Page"), this);
     actionOnlineHelp->setStatusTip(tr("View latest online version of this page"));
     actionOnlineHelp->setCheckable(true);
     connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
@@ -133,14 +133,18 @@ void HelpView::setupUi(QWidget *parent)
     helpMenu->addAction(actionOpenInBrowser);
     helpMenu->addSeparator();
 
-    zoomInAction = helpMenu->addAction(tr("Zoom In"), this,  &HelpView::zoomIn);
-    zoomInAction->setStatusTip(tr("Zoom in the help page"));
+    actionZoomIn = helpMenu->addAction(tr("Zoom In"), this,  &HelpView::zoomIn);
+    actionZoomIn->setStatusTip(tr("Zoom in the help page"));
 
-    zoomOutAction = helpMenu->addAction(tr("Zoom Out"), this,  &HelpView::zoomOut);
-    zoomOutAction->setStatusTip(tr("Zoom out the help page"));
+    actionZoomOut = helpMenu->addAction(tr("Zoom Out"), this,  &HelpView::zoomOut);
+    actionZoomOut->setStatusTip(tr("Zoom out the help page"));
 
-    resetZoomAction = helpMenu->addAction(tr("Reset Zoom"), this,  &HelpView::resetZoom);
-    resetZoomAction->setStatusTip(tr("Reset Zoom to Original view"));
+    actionResetZoom = helpMenu->addAction(tr("Reset Zoom"), this,  &HelpView::resetZoom);
+    actionResetZoom->setStatusTip(tr("Reset Zoom to Original view"));
+    helpMenu->addSeparator();
+
+    actionCopyPageURL = helpMenu->addAction(tr("Copy Page URL to Clipboard"), this,  &HelpView::copyURLToClipboard);
+    actionCopyPageURL->setStatusTip(tr("Copy URL of this page to Clipboard"));
 
     QToolButton* helpToolButton = new QToolButton(this);
     QPixmap toolPixmap(":/img/config");
@@ -296,6 +300,12 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
 void HelpView::on_actionOpenInBrowser_triggered()
 {
     QDesktopServices::openUrl( helpView->url() );
+}
+
+void HelpView::copyURLToClipboard()
+{
+    QClipboard* clip = QApplication::clipboard();;
+    clip->setText( helpView->page()->url().toString());
 }
 
 void HelpView::zoomIn()
