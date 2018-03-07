@@ -53,6 +53,11 @@ public slots:
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
+    void copyURLToClipboard();
+    void zoomIn();
+    void zoomOut();
+    void resetZoom();
+
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:
@@ -63,6 +68,11 @@ private:
     QAction* actionOrganizeBookmark;
     QAction* actionOnlineHelp;
     QAction* actionOpenInBrowser;
+    QAction* actionCopyPageURL;
+
+    QAction* actionZoomIn;
+    QAction* actionZoomOut;
+    QAction* actionResetZoom;
 
     QWebEngineView* helpView;
 
