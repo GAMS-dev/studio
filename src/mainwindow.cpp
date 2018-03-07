@@ -1635,11 +1635,16 @@ void MainWindow::on_actionUndo_triggered()
 
 void MainWindow::on_actionPaste_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
-        ce->paste();
+
+    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+    if (!ae || ae->isReadOnly()) return;
+
+    if (ae->type() == AbstractEditor::CodeEditor) {
+        CodeEditor *ce = static_cast<CodeEditor*>(ae);
+        ce->pasteClipboard();
+    }
 }
 
 void MainWindow::on_actionCopy_triggered()

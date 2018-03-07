@@ -792,9 +792,9 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
     } else if (e == Hotkey::Paste) {
-        QStringList texts = mEdit->clipboard();
-        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
-            replaceBlockText(texts);
+//        QStringList texts = mEdit->clipboard();
+//        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
+//            replaceBlockText(texts);
     } else if (e == Hotkey::Indent) {
         mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Outdent) {
