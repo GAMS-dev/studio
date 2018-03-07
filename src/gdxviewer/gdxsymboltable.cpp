@@ -20,6 +20,8 @@
 #include "gdxsymboltable.h"
 #include "exception.h"
 
+#include <limits>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -149,6 +151,19 @@ int GdxSymbolTable::symbolCount() const
     return mSymbolCount;
 }
 
+QString GdxSymbolTable::getElementText(int textNr)
+{
+    if (textNr <= 0)
+        return QString("Y");
+    else {
+        char text[GMS_SSSIZE];
+        int node;
+
+        gdxGetElemText(mGdx, textNr, text, &node);
+        return QString(text);
+    }
+}
+
 void GdxSymbolTable::loadUel2Label()
 {
     char label[GMS_UEL_IDENT_SIZE];
@@ -162,10 +177,11 @@ void GdxSymbolTable::loadUel2Label()
 
 void GdxSymbolTable::loadStringPool()
 {
+    mStrPool.append("Y");
     int strNr = 1;
     int node;
     char text[GMS_SSSIZE];
-    mStrPool.append("Y");
+
     while(gdxGetElemText(mGdx, strNr, text, &node))
     {
         mStrPool.append(QString(text));
@@ -183,11 +199,6 @@ int *GdxSymbolTable::labelCompIdx()
     if(!mLabelCompIdx)
         this->createSortIndex();
     return mLabelCompIdx;
-}
-
-QStringList GdxSymbolTable::strPool() const
-{
-    return mStrPool;
 }
 
 QStringList GdxSymbolTable::uel2Label() const

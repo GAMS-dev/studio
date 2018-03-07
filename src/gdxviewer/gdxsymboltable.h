@@ -52,11 +52,11 @@ public:
 
     QStringList uel2Label() const;
 
-    QStringList strPool() const;
-
     int *labelCompIdx();
 
     int symbolCount() const;
+
+    QString getElementText(int textNr);
 
 private:
     QStringList mHeaderText;
