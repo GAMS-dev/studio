@@ -672,7 +672,32 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
+    c4uHandle_t c4u;
+    char msg[255];
+    if (!c4uCreateD(&c4u, GAMSPaths::systemDir().toLatin1(), msg, 255)) {
+        EXCEPT() << "Could not load c4u library: " << msg;
+    }
 
+    QString gamslice = GAMSPaths::systemDir() + QDir::separator() + "gamslice.txt";
+    qDebug() << "gamslice >> " << gamslice;
+
+    c4uReadLice(c4u, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
+    if (c4uIsValid(c4u)) {
+        qDebug() << "valid";
+    } else {
+        c4uCreateMsg(c4u);
+        //void *data = c4ugetMsgLst(c4u);
+        qDebug() << "invalid"; // >> " << sizeof(data);
+        //qDebug() << (char*)&(((char*)data)[0]);
+    }
+
+//    void *data = c4ugetMsgLst(c4u);
+//    qDebug() << "data >> " << (char*)data;
+//    qDebug() << c4uCheck4Update(c4u);
+
+//    qDebug() << "loaded >> " << c4uLibraryLoaded();
+
+    c4uFree(&c4u);
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)
