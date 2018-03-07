@@ -811,25 +811,9 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
-    } else if (e == Hotkey::Paste) {
-//        QStringList texts = mEdit->clipboard();
-//        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
-//            replaceBlockText(texts);
-    } else if (e == Hotkey::Indent) {
-        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
-    } else if (e == Hotkey::Outdent) {
-        int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
-        if (minWhiteCount)
-            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
-    } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
-        // TODO(JM) copy selected text to clipboard
-//    X    selectionToClipboard();
-//    X   if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
-    } else if (e == Hotkey::DuplicateLine) {
-        return;
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
