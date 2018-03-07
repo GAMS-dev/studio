@@ -1676,11 +1676,15 @@ void MainWindow::on_actionCut_triggered()
         return;
 
     CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
-    if (!ce) return;
-    if (!ce->isReadOnly())
+    if (!ce || ce->isReadOnly()) return;
+
+    if (ce->blockEdit()) {
+        ce->blockEdit()->selectionToClipboard();
+        ce->blockEdit()->replaceBlockText("");
+        return;
+    } else {
         ce->cut();
-    else
-        ce->copy();
+    }
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()

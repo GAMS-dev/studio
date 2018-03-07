@@ -803,8 +803,8 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
     } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
         // TODO(JM) copy selected text to clipboard
-        selectionToClipboard();
-        if (e == Hotkey::Cut) replaceBlockText("");
+//    X    selectionToClipboard();
+//    X   if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
