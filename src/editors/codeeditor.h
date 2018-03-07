@@ -151,6 +151,9 @@ private:
     QString mWordUnderCursor;
     QTimer mWordDelay;
 
+public:
+    BlockEdit *blockEdit() const;
+
     // AbstractEditor interface
 public:
     EditorType type();

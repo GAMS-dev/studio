@@ -145,7 +145,6 @@ void CodeEditor::cutSelection()
 
 void CodeEditor::copySelection()
 {
-    qDebug() << "CE::copySelection";
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
@@ -546,6 +545,11 @@ void CodeEditor::updateTabSize()
 {
     QFontMetrics metric(font());
     setTabStopDistance(8*metric.width(' '));
+}
+
+CodeEditor::BlockEdit *CodeEditor::blockEdit() const
+{
+    return mBlockEdit;
 }
 
 AbstractEditor::EditorType CodeEditor::type()

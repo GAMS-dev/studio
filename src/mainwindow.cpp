@@ -1648,7 +1648,17 @@ void MainWindow::on_actionCopy_triggered()
         return;
 
     AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) ae->copy();
+    if (!ae) return;
+
+    if (ae->type() == AbstractEditor::CodeEditor) {
+        CodeEditor *ce = static_cast<CodeEditor*>(ae);
+
+        if (ce->blockEdit()) {
+            ce->blockEdit()->selectionToClipboard();
+            return;
+        }
+    }
+    ae->copy();
 }
 
 void MainWindow::on_actionSelect_All_triggered()
