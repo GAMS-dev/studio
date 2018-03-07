@@ -60,6 +60,7 @@ public:
     int indent(int size, int fromLine = -1, int toLine = -1);
     void duplicateLine();
     void removeLine();
+    int minIndentCount(int fromLine = -1, int toLine = -1);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -93,7 +94,6 @@ private:
     friend class BlockEdit;
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
-    int minIndentCount(int fromLine = -1, int toLine = -1);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
@@ -129,6 +129,11 @@ private:
         QString blockText();
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
         void selectionToClipboard();
+        int startLine() const;
+        int currentLine() const;
+
+        int column() const;
+        void setColumn(int column);
 
     private:
         CodeEditor* mEdit;

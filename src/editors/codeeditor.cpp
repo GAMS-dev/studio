@@ -771,6 +771,16 @@ void CodeEditor::BlockEdit::selectionToClipboard()
     QApplication::clipboard()->setMimeData(mime);
 }
 
+int CodeEditor::BlockEdit::currentLine() const
+{
+    return mCurrentLine;
+}
+
+int CodeEditor::BlockEdit::startLine() const
+{
+    return mStartLine;
+}
+
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;

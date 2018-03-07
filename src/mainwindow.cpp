@@ -1746,8 +1746,13 @@ void MainWindow::on_actionIndent_triggered()
         return;
 
     CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
+    if (ce->isReadOnly()) return;
+
+    if (ce->blockEdit()) {
+        ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+    } else {
         ce->indent(mSettings->tabSize());
+    }
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -1756,8 +1761,15 @@ void MainWindow::on_actionOutdent_triggered()
         return;
 
     CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
+    if (ce->isReadOnly()) return;
+
+    if (ce->blockEdit()) {
+        int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+        ce->indent(qMax(-minWhiteCount, -ce->settings()->tabSize()),
+                   ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+    } else {
         ce->indent(-mSettings->tabSize());
+    }
 }
 
 void MainWindow::on_actionDuplicate_Line_triggered()

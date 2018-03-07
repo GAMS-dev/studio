@@ -49,6 +49,11 @@ QMimeData* AbstractEditor::createMimeDataFromSelection() const
     return mimeData;
 }
 
+StudioSettings *AbstractEditor::settings() const
+{
+    return mSettings;
+}
+
 bool AbstractEditor::event(QEvent *e)
 {
     if (e->type() == QEvent::ShortcutOverride) {

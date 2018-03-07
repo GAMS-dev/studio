@@ -47,7 +47,7 @@ protected:
     // QObject interface
 public:
     bool event(QEvent *event);
-
+    StudioSettings *settings() const;
 };
 
 }
