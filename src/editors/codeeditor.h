@@ -131,7 +131,6 @@ private:
         void selectionToClipboard();
         int startLine() const;
         int currentLine() const;
-
         int column() const;
         void setColumn(int column);
 

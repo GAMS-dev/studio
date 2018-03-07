@@ -1749,7 +1749,8 @@ void MainWindow::on_actionIndent_triggered()
     if (ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
-        ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+        int col = ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
     } else {
         ce->indent(mSettings->tabSize());
     }
@@ -1765,8 +1766,9 @@ void MainWindow::on_actionOutdent_triggered()
 
     if (ce->blockEdit()) {
         int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        ce->indent(qMax(-minWhiteCount, -ce->settings()->tabSize()),
-                   ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+        int col = ce->indent(qMax(-minWhiteCount, -ce->settings()->tabSize()),
+                             ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
+        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
     } else {
         ce->indent(-mSettings->tabSize());
     }

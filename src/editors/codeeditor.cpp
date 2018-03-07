@@ -776,6 +776,16 @@ int CodeEditor::BlockEdit::currentLine() const
     return mCurrentLine;
 }
 
+int CodeEditor::BlockEdit::column() const
+{
+    return mColumn;
+}
+
+void CodeEditor::BlockEdit::setColumn(int column)
+{
+    mColumn = column;
+}
+
 int CodeEditor::BlockEdit::startLine() const
 {
     return mStartLine;
