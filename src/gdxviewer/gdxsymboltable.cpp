@@ -30,7 +30,6 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
-    qDebug() << "mUelCount: " << mUelCount;
     loadUel2Label();
     loadStringPool();
 
