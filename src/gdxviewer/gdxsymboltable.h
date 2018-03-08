@@ -50,13 +50,13 @@ public:
 
     QList<GdxSymbol *> gdxSymbols() const;
 
-    QStringList uel2Label() const;
-
-    QStringList strPool() const;
+    QString uel2Label(int uel);
 
     int *labelCompIdx();
 
     int symbolCount() const;
+
+    QString getElementText(int textNr);
 
 private:
     QStringList mHeaderText;

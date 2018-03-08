@@ -31,7 +31,7 @@ CONFIG += c++14
 # Setup and include the GAMS distribution
 include($$PWD/gamsdependency.pri)
 
-include (../studioversion)
+include (../version)
 DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
 
 macx {

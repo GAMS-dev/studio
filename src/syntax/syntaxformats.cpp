@@ -43,7 +43,11 @@ SyntaxStandard::SyntaxStandard()
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
 {
     Q_UNUSED(entryState);
-    return SyntaxBlock(this, index, line.length());
+    int i = line.indexOf(';', index);
+    if (i>-1)
+        return SyntaxBlock(this, index, i+1);
+    else
+        return SyntaxBlock(this, index, line.length());
 }
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar)
