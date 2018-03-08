@@ -161,8 +161,10 @@ void FileContext::addEditor(QWidget* edit)
         if (ptEdit) {
             ptEdit->document()->setParent(this);
             connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-            if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
+            if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document()) {
                 mSyntaxHighlighter->setDocument(document());
+                if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
+            }
             if (newlyOpen) emit documentOpened();
             QTimer::singleShot(50, this, &FileContext::updateMarks);
         }
@@ -197,6 +199,8 @@ void FileContext::removeEditor(QWidget* edit)
         return;
     bool wasModified = isModified();
     QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
+
     if (ptEdit && mEditors.size() == 1) {
         emit documentClosed();
         // On removing last editor: paste document-parency back to editor
@@ -214,6 +218,9 @@ void FileContext::removeEditor(QWidget* edit)
     if (ptEdit) {
         ptEdit->viewport()->removeEventFilter(this);
         ptEdit->removeEventFilter(this);
+    }
+    if (scEdit && mSyntaxHighlighter) {
+        disconnect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
     }
 }
 

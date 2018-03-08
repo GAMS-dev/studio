@@ -76,6 +76,7 @@ protected:
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks);
     void requestMarksEmpty(bool* marksEmpty);
+    void requestSyntaxState(int position, int &intState);
 
 public slots:
     void clearSelection();
@@ -103,6 +104,7 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+    void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
 private:
     class BlockEdit
@@ -153,6 +155,7 @@ private:
     BlockEdit* mBlockEdit = nullptr;
     QTimer mBlinkBlockEdit;
     QString mWordUnderCursor;
+    bool mOverwriteActivated = false;
     QTimer mWordDelay;
 
 public:

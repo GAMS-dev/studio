@@ -43,6 +43,8 @@ enum class SyntaxState {
 
     StateCount
 };
+QString syntaxStateName(SyntaxState state);
+
 typedef QList<SyntaxState> SyntaxStates;
 
 enum class SyntaxStateShift {
@@ -85,9 +87,10 @@ public:
     virtual SyntaxStates subStates() { return mSubStates; }
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
-    virtual void copyCharFormat(QTextCharFormat charFormat) {
-        mCharFormat = charFormat;
-    }
+    virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
+    int intSyntaxType() { return static_cast<int>(state()); }
+    static int stateToInt(SyntaxState _state);
+    static SyntaxState intToState(int intState);
 protected:
     inline bool isWhitechar(const QString& line, int index) {
         return index<line.length() && (line.at(index).category()==QChar::Separator_Space

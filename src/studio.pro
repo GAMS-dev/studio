@@ -126,7 +126,8 @@ SOURCES += \
     wplabel.cpp \
     gotowidget.cpp \
     editors/logeditor.cpp \
-    editors/abstracteditor.cpp
+    editors/abstracteditor.cpp \
+    tool.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -197,7 +198,8 @@ HEADERS += \
     wplabel.h \
     gotowidget.h \
     editors/logeditor.h \
-    editors/abstracteditor.h
+    editors/abstracteditor.h \
+    tool.h
 
 FORMS += \
     welcomepage.ui  \

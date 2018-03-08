@@ -52,7 +52,7 @@ public:
 
     QString uel2Label(int uel);
 
-    int *labelCompIdx();
+    std::vector<int> labelCompIdx();
 
     int symbolCount() const;
 
@@ -76,7 +76,8 @@ private:
     QStringList mUel2Label;
     QStringList mStrPool;
 
-    int* mLabelCompIdx = nullptr;
+    std::vector<int> mLabelCompIdx;
+    bool mIsSortIndexCreated = false;
 
     QMutex* mGdxMutex;
 };

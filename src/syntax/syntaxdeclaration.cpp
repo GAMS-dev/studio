@@ -31,7 +31,7 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
     case SyntaxState::DeclarationSetType:
         list = QStringList() << "Singleton";
         mKeywords.insert(state, new DictList(list));
-        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline;
         break;
     case SyntaxState::DeclarationVariableType:
         list = QStringList() << "free" << "positive" << "nonnegative" << "negative"
@@ -50,7 +50,7 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
 
         list = QStringList() << "Variable" << "Variables";
         mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
-        mSubStates << SyntaxState::Identifier << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+        mSubStates << SyntaxState::Identifier << SyntaxState::CommentEndline << SyntaxState::CommentInline << SyntaxState::Directive;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
@@ -108,9 +108,9 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
         }
     } else {
         end = findEnd(state(), line, start);
-        if (end > start)
+        if (end > start) {
             return SyntaxBlock(this, start, end, SyntaxStateShift::out);
-        else {
+        } else {
             return SyntaxBlock(this, start, start, SyntaxStateShift::out);
         }
     }
