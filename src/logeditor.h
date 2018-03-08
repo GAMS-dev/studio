@@ -39,7 +39,7 @@ private:
 
     // QWidget interface
 protected:
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *e) override;
 };
 
 }
