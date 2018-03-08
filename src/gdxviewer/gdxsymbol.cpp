@@ -158,7 +158,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
-                return val;
+                return QString::number(val, 'g', 15);
             }
             else
             {
