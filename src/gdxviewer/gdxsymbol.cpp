@@ -482,11 +482,16 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     // sort by key column
     if(column<mDim)
     {
-        int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
+        std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
-        for(int rec=0; rec<mRecordCount; rec++)
-            l.append(QPair<int, int>(labelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
-
+        int uel = -1;
+        for(int rec=0; rec<mRecordCount; rec++) {
+            uel = mKeys[mRecSortIdx[rec]*mDim + column];
+            if (uel >= labelCompIdx.size())  //TODO: workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
+                l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
+            else
+                l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));
+        }
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
         else

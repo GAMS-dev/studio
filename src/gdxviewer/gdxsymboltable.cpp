@@ -49,8 +49,6 @@ GdxSymbolTable::~GdxSymbolTable()
 {
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
-    if(mLabelCompIdx)
-        delete[] mLabelCompIdx;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -138,7 +136,7 @@ void GdxSymbolTable::createSortIndex()
         l.append(QPair<QString, int>(uel2Label(uel), uel));
     std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
 
-    mLabelCompIdx = new int[mUelCount+1];
+    mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
     for(QPair<QString, int> p : l)
     {
@@ -195,10 +193,12 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-int *GdxSymbolTable::labelCompIdx()
+std::vector<int> GdxSymbolTable::labelCompIdx()
 {
-    if(!mLabelCompIdx)
+    if(!mIsSortIndexCreated) {
         this->createSortIndex();
+        mIsSortIndexCreated = true;
+    }
     return mLabelCompIdx;
 }
 
