@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -192,6 +193,12 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
+    if (e->key() == Qt::Key_F7) {
+        QString word;
+        int intState = 0;
+        wordInfo(textCursor(), word, intState);
+        DEB() << "Word: \"" << word << "\"   State: " << intState;
+    }
     if (!mBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
@@ -586,25 +593,23 @@ void CodeEditor::updateTabSize()
     setTabStopDistance(8*metric.width(' '));
 }
 
-inline int findAlphaNum(QString text, int start, bool back)
+
+void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
 {
-    QChar c = ' ';
-    int pos = (back && start == text.length()) ? start-1 : start;
-    while (pos >= 0 && pos < text.length()) {
-        c = text.at(pos);
-        if (!c.isLetterOrNumber() && c != '_' && (pos != start || !back)) break;
-        pos = pos + (back?-1:1);
+    QString text = cursor.block().text();
+    int start = cursor.positionInBlock();
+    int from = Tool::findAlphaNum(text, start, true);
+    int to = Tool::findAlphaNum(text, from, false);
+    if (from >= 0 && from <= to) {
+        word = text.mid(from, to-from+1);
+        start = from + cursor.block().position();
+        emit requestSyntaxState(start+1, intState);
+//        cursor.setPosition(start+1);
+//        intState = cursor.charFormat().property(QTextFormat::UserProperty).toInt();
+    } else {
+        word = "";
+        intState = 0;
     }
-    pos = pos - (back?-1:1);
-    if (pos == start) {
-        c = (pos >= 0 && pos < text.length()) ? text.at(pos) : ' ';
-        if (!c.isLetterOrNumber() && c != '_') return -1;
-    }
-    if (pos >= 0 && pos < text.length()) { // must not start with number
-        c = text.at(pos);
-        if (!c.isLetter() && c != '_') return -1;
-    }
-    return pos;
 }
 
 void CodeEditor::recalcExtraSelections()
@@ -619,8 +624,8 @@ void CodeEditor::recalcExtraSelections()
         selection.cursor = textCursor();
         QString text = selection.cursor.block().text();
         int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
-        int from = findAlphaNum(text, start, true);
-        int to = findAlphaNum(text, from, false);
+        int from = Tool::findAlphaNum(text, start, true);
+        int to = Tool::findAlphaNum(text, from, false);
         if (from >= 0 && from <= to) {
             if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
                 mWordUnderCursor = text.mid(from, to-from+1);
