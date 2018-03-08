@@ -459,6 +459,8 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
     flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
 
     QString searchTerm = ui->combo_search->currentText();
+    int searchLength = searchTerm.length();
+
     if (regex()) searchRegex.setPattern(searchTerm);
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
@@ -492,7 +494,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
     int count = 0;
     foreach (Result match, matches) {
         if (matches.at(count).locLineNr() == matchSelection.blockNumber()+1
-                && matches.at(count).locCol() == matchSelection.columnNumber()) {
+                && matches.at(count).locCol() == matchSelection.columnNumber() - searchLength) {
             updateMatchAmount(matches.size(), count+1);
             break;
         } else {
