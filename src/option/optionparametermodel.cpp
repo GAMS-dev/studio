@@ -54,6 +54,10 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
             QIcon icon(":/img/square-red");
             QPixmap p = icon.pixmap(12,12);
             return p;
+        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
+            QIcon icon(":/img/square-gray");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
         } else {
             QIcon icon(":/img/square-green");
             QPixmap p = icon.pixmap(12,12);
@@ -274,7 +278,7 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
 
     bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
     setHeaderData( index, Qt::Vertical,
-                          Qt::CheckState(checked ? Qt::Checked : Qt::Unchecked),
+                          Qt::CheckState(headerData(index, Qt::Vertical, Qt::CheckStateRole).toInt()),
                           Qt::CheckStateRole );
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
     emit optionModelChanged(mOptionItem);
@@ -295,10 +299,14 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
-        else
+        else if (mOptionItem.at(i).error == Deprecated_Option)
             setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::Checked),
+                              Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
+        else setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);

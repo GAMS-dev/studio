@@ -36,7 +36,7 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
     if (index.column()==0) {
-        completer->setModel(new QStringListModel(gamsOption->getKeyList()) );
+        completer->setModel(new QStringListModel(gamsOption->getValidNonDeprecatedKeyList()));
     } else {
         QVariant key = index.model()->data( index.model()->index(index.row(), 0) );
         if (gamsOption->isValid(key.toString())) {
@@ -55,8 +55,6 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
 
     connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
     connect(lineEdit, &QLineEdit::textChanged, this, &OptionCompleterDelegate::on_lineEdit_textChanged);
-//    connect(completer,  static_cast<void (QCompleter::*)(const QString &)>(&QCompleter::activated),
-//            this, &OptionCompleterDelegate::activated);
     return lineEdit;
 }
 
@@ -80,12 +78,6 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
     }
     QStyledItemDelegate::setModelData(editor, model, index);
 }
-
-//void OptionCompleterDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
-//{
-//    qDebug() << "CompleterDelegate::setModelData() called for" << index << index.data(Qt::EditRole);
-//     QStyledItemDelegate::updateEditorGeometry(editor, option, index);
-//}
 
 void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
 {
