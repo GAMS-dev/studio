@@ -375,6 +375,7 @@ void MainWindow::on_actionNew_triggered()
 
     if (filePath == "") return;
     QFileInfo fi(filePath);
+
     if (fi.suffix().isEmpty())
         filePath += ".gms";
     QFile file(filePath);
