@@ -30,6 +30,7 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *paren
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
+    qDebug() << "mUelCount: " << mUelCount;
     loadUel2Label();
     loadStringPool();
 
@@ -134,7 +135,7 @@ void GdxSymbolTable::createSortIndex()
 {
     QList<QPair<QString, int>> l;
     for(int uel=0; uel<=mUelCount; uel++)
-        l.append(QPair<QString, int>(mUel2Label.at(uel), uel));
+        l.append(QPair<QString, int>(uel2Label(uel), uel));
     std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
 
     mLabelCompIdx = new int[mUelCount+1];
@@ -201,9 +202,15 @@ int *GdxSymbolTable::labelCompIdx()
     return mLabelCompIdx;
 }
 
-QStringList GdxSymbolTable::uel2Label() const
+QString GdxSymbolTable::uel2Label(int uel)
 {
-    return mUel2Label;
+    if (uel >= mUel2Label.size()) {
+        char label[GMS_UEL_IDENT_SIZE];
+        int map;
+        gdxUMUelGet(mGdx, uel, label, &map);
+        return QString(label);
+    }
+    return this->mUel2Label.at(uel);
 }
 
 QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const

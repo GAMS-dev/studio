@@ -50,7 +50,7 @@ public:
 
     QList<GdxSymbol *> gdxSymbols() const;
 
-    QStringList uel2Label() const;
+    QString uel2Label(int uel);
 
     int *labelCompIdx();
 

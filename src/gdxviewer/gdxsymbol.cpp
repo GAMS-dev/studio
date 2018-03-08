@@ -142,7 +142,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
-            return mGdxSymbolTable->uel2Label().at(mKeys[row*mDim + index.column()]);
+            return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
         else
         {
             double val = 0.0;
