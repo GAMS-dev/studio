@@ -28,7 +28,6 @@ int Tool::findAlphaNum(QString text, int start, bool back)
 QString Tool::absolutePath(QString path)
 {
     QFileInfo fi(path);
-    DEB() << "File " << path << " # " << fi.canonicalFilePath() << " # " << fi.absoluteFilePath();
     return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
 }
 

@@ -1436,6 +1436,16 @@ void MainWindow::closeGroup(FileGroupContext* group)
         for (FileContext *file: openFiles) {
             fileClosed(file->id());
         }
+        LogContext* log = group->logContext();
+        if (log) {
+            QWidget* edit = log->editors().isEmpty() ? nullptr : log->editors().first();
+            if (edit) {
+                log->removeEditor(edit);
+                int index = ui->logTab->indexOf(edit);
+                if (index >= 0) ui->logTab->removeTab(index);
+            }
+        }
+
         mFileRepo.removeGroup(group);
         mSettings->saveSettings(this);
     }

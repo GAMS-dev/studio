@@ -184,12 +184,6 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent* e)
 {
-    if (e->key() == Qt::Key_F7) {
-        QString word;
-        int intState = 0;
-        wordInfo(textCursor(), word, intState);
-        DEB() << "Word: \"" << word << "\"   State: " << intState;
-    }
     if (!mBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
@@ -347,7 +341,6 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
             zoomIn();
             if (pix == fontInfo().pixelSize()) zoomOut();
         }
-        DEB() << "FontSize " << font().pointSize();
         updateTabSize();
         return;
     }
