@@ -161,9 +161,9 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
-            QTextCursor tc = codeEdit->textCursor();
-            tc.movePosition(QTextCursor::Start);
-            codeEdit->setTextCursor(tc);
+//            QTextCursor tc = codeEdit->textCursor();
+//            tc.movePosition(QTextCursor::Start);
+//            codeEdit->setTextCursor(tc);
             fc->load(codecName, true);
 
             if (fc->metrics().fileType() == FileType::Log ||
@@ -175,7 +175,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
-            codeEdit->setTextCursor(QTextCursor(codeEdit->document()));
+//            codeEdit->setTextCursor(QTextCursor(codeEdit->document()));
 
         } else {
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
@@ -561,9 +561,10 @@ void MainWindow::fileChangedExtern(FileId fileId)
         choice = msgBox.exec();
     }
 
-    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard)
+    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
+        // TODO(JM) restore textcursors after reload
         fc->load(fc->codec());
-    else
+    } else
         fc->document()->setModified();
 }
 
@@ -1223,7 +1224,7 @@ void MainWindow::execute(QString commandLineStr)
     if (mSettings->autosaveOnRun())
         fc->save();
 
-    if (fc->editors().size() == 1 && fc->isModified()) {
+    if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText(fc->location()+" has been modified.");

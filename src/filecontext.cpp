@@ -287,7 +287,9 @@ void FileContext::load(QString codecName, bool keepMarks)
         if (!nameOfUsedCodec.isEmpty()) {
 //            if (mMarks && keepMarks)
 //                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+            QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
+            setEditPositions(edPos);
 //            if (mMarks && keepMarks)
 //                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             mCodec = nameOfUsedCodec;
@@ -544,6 +546,39 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 bool FileContext::mouseOverLink()
 {
     return !mMarksAtMouse.isEmpty();
+}
+
+QVector<QPoint> FileContext::getEditPositions()
+{
+    QVector<QPoint> res;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        if (edit) {
+            QTextCursor cursor = edit->textCursor();
+            res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
+        } else {
+            res << QPoint(0, 0);
+        }
+    }
+    return res;
+}
+
+void FileContext::setEditPositions(QVector<QPoint> edPositions)
+{
+    int i = 0;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
+        if (edit) {
+            QTextCursor cursor(edit->document());
+            if (cursor.blockNumber() < pos.y())
+                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, qMin(edit->blockCount()-1, pos.y()));
+            if (cursor.positionInBlock() < pos.x())
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(cursor.block().length()-1, pos.x()));
+            edit->setTextCursor(cursor);
+        }
+
+    }
 }
 
 void FileContext::modificationChanged(bool modiState)

@@ -168,6 +168,10 @@ protected:
     bool mouseOverLink();
 
 private:
+    QVector<QPoint> getEditPositions();
+    void setEditPositions(QVector<QPoint> edPositions);
+
+private:
     FileMetrics mMetrics;
     QString mCodec = "UTF-8";
     FileContext *mLinkFile = nullptr;
