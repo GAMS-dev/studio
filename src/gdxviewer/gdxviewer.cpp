@@ -38,6 +38,12 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     QWidget(parent), mGdxFile(gdxFile), mSystemDirectory(systemDirectory)
 {
     ui.setupUi(this);
+
+    QPalette palette;
+    palette.setColor(QPalette::Highlight, ui.tvSymbols->palette().highlight().color());
+    palette.setColor(QPalette::HighlightedText, ui.tvSymbols->palette().highlightedText().color());
+    ui.tvSymbols->setPalette(palette);
+
     mGdxMutex = new QMutex();
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg))) {
