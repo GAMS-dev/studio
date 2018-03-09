@@ -601,6 +601,14 @@ void MainWindow::fileClosed(FileId fileId)
         fc->removeEditor(edit);
         edit->deleteLater();
     }
+
+    // TODO(JM) Right now there are issues with the TextMarkList, so we leave it out for now
+//    if (!QFileInfo(fc->location()).exists()) {
+//        fc->marks()->unbind();
+//        emit fc->parentEntry()->removeNode(fc);
+//        fc = nullptr;
+//    }
+
 }
 
 void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
@@ -770,6 +778,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret != QMessageBox::Cancel) {
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
+//            if (!QFileInfo(fc->location()).exists()) {
+//                emit fc->parentEntry()->removeNode(fc);
+//                fc = nullptr;
+//            }
         } else {
             fc->removeEditor(edit);
             ui->mainTab->removeTab(ui->mainTab->indexOf(edit));

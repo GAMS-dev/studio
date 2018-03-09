@@ -22,7 +22,6 @@
 
 #include <QtWidgets>
 #include "filetreemodel.h"
-#include "fileactioncontext.h"
 #include "logcontext.h"
 #include "filesystemcontext.h"
 #include "filecontext.h"

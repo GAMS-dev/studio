@@ -71,7 +71,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    fileactioncontext.cpp \
     newdialog.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/glbparser.cpp   \
@@ -136,7 +135,6 @@ HEADERS += \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    fileactioncontext.h \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \

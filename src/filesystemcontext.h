@@ -54,8 +54,6 @@ public:
 
     enum ContextType {
         File,
-        FileAction, // TODO(AF) still required?
-                    // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
         FileSystem,
         Log
