@@ -121,6 +121,10 @@ MainWindow::~MainWindow()
 {
     delete mDockHelpView;
     delete ui;
+
+    // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
+    //          may not be in the ui, delete them before the ui. That removes them from the ui-hierarchy
+
 // TODO fix crash
 //    delete mOptionEditor;
 //    delete mDockOptionView;
