@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEACTIONCONTEXT_H
-#define FILEACTIONCONTEXT_H
-
-#include "filesystemcontext.h"
+#include "logeditor.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
 
-class FileActionContext : public FileSystemContext
+LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
 {
-    Q_OBJECT
-public:
-    void trigger();
-    void setLocation(const QString& location);
-    virtual QIcon icon();
+    setReadOnly(true);
+    setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+}
 
-private:
-    friend class FileRepository;
-    FileActionContext(int id, QAction* action);
+AbstractEditor::EditorType LogEditor::type()
+{
+    return EditorType::LogEditor;
+}
 
-private:
-    QAction *mAction;
-};
-
-} // namespace studio
-} // namespace gams
-
-#endif // FILEACTIONCONTEXT_H
+}
+}

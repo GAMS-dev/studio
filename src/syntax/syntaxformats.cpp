@@ -24,6 +24,29 @@
 namespace gams {
 namespace studio {
 
+QString syntaxStateName(SyntaxState state)
+{
+    static const QHash<int, QString> syntaxStateName {
+        {static_cast<int>(SyntaxState::Standard), "Standard"},
+        {static_cast<int>(SyntaxState::Directive), "Directive"},
+        {static_cast<int>(SyntaxState::Title), "Title"},
+        {static_cast<int>(SyntaxState::CommentLine), "CommentLine"},
+        {static_cast<int>(SyntaxState::CommentBlock), "CommentBlock"},
+        {static_cast<int>(SyntaxState::CommentEndline), "CommentEndline"},
+        {static_cast<int>(SyntaxState::CommentInline), "CommentInline"},
+        {static_cast<int>(SyntaxState::CommentMargin), "CommentMargin"},
+        {static_cast<int>(SyntaxState::DeclarationSetType), "DeclarationSetType"},
+        {static_cast<int>(SyntaxState::DeclarationVariableType), "DeclarationVariableType"},
+        {static_cast<int>(SyntaxState::Declaration), "Declaration"},
+        {static_cast<int>(SyntaxState::Identifier), "Identifier"},
+        {static_cast<int>(SyntaxState::IdentifierDescription), "IdentifierDescription"},
+        {static_cast<int>(SyntaxState::IdentifierAssignment), "IdentifierAssignment"},
+
+        {static_cast<int>(SyntaxState::StateCount), "StateCount"},
+    };
+    return syntaxStateName.value(static_cast<int>(state));
+}
+
 
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
@@ -31,6 +54,20 @@ QTextCharFormat SyntaxAbstract::charFormatError()
     errorFormat.setUnderlineColor(Qt::red);
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
+}
+
+int SyntaxAbstract::stateToInt(SyntaxState _state)
+{
+    return static_cast<int>(_state);
+}
+
+SyntaxState SyntaxAbstract::intToState(int intState)
+{
+    int i = intState - QTextFormat::UserObject;
+    if (i >= 0 && i < static_cast<int>(SyntaxState::StateCount))
+        return static_cast<SyntaxState>(intState);
+    else
+        return SyntaxState::Standard;
 }
 
 
@@ -43,7 +80,11 @@ SyntaxStandard::SyntaxStandard()
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
 {
     Q_UNUSED(entryState);
-    return SyntaxBlock(this, index, line.length());
+    int i = line.indexOf(';', index);
+    if (i>-1)
+        return SyntaxBlock(this, index, i+1);
+    else
+        return SyntaxBlock(this, index, line.length());
 }
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar)

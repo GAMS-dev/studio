@@ -23,7 +23,7 @@
 #include <memory>
 #include <QtWidgets>
 
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 #include "option/commandlinehistory.h"
@@ -190,10 +190,14 @@ private slots:
     void on_actionReset_Zoom_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
+    void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionIndent_triggered();
+    void on_actionOutdent_triggered();
+    void on_actionDuplicate_Line_triggered();
+    void on_actionRemove_Line_triggered();
 
     void interruptTriggered();
     void stopTriggered();
-
 
 protected:
     void closeEvent(QCloseEvent *event);

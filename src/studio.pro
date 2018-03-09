@@ -31,7 +31,7 @@ CONFIG += c++14
 # Setup and include the GAMS distribution
 include($$PWD/gamsdependency.pri)
 
-include (../studioversion)
+include (../version)
 DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
 
 macx {
@@ -62,7 +62,7 @@ DEFINES += _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
     main.cpp \
-    codeeditor.cpp \
+    editors/codeeditor.cpp \
     filesystemcontext.cpp \
     filecontext.cpp \
     filerepository.cpp \
@@ -71,7 +71,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    fileactioncontext.cpp \
     newdialog.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/glbparser.cpp   \
@@ -125,16 +124,17 @@ SOURCES += \
     commandlineparser.cpp \
     wplabel.cpp \
     gotowidget.cpp \
-    logeditor.cpp
+    editors/logeditor.cpp \
+    editors/abstracteditor.cpp \
+    tool.cpp
 
 HEADERS += \
-    codeeditor.h \
+    editors/codeeditor.h \
     filesystemcontext.h \
     filecontext.h \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    fileactioncontext.h \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \
@@ -195,7 +195,9 @@ HEADERS += \
     commandlineparser.h \
     wplabel.h \
     gotowidget.h \
-    logeditor.h
+    editors/logeditor.h \
+    editors/abstracteditor.h \
+    tool.h
 
 FORMS += \
     welcomepage.ui  \

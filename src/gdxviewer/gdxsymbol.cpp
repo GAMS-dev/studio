@@ -142,7 +142,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
-            return mGdxSymbolTable->uel2Label().at(mKeys[row*mDim + index.column()]);
+            return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
         else
         {
             double val = 0.0;
@@ -151,14 +151,14 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             else if (mType == GMS_DT_SET)
             {
                 val = mValues[row];
-                return gdxSymbolTable()->strPool().at((int) val);
+                return mGdxSymbolTable->getElementText((int) val);
             }
             else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
             {
-                return val;
+                return QString::number(val, 'g', 15);
             }
             else
             {
@@ -482,11 +482,16 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     // sort by key column
     if(column<mDim)
     {
-        int* labelCompIdx = mGdxSymbolTable->labelCompIdx();
+        std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
-        for(int rec=0; rec<mRecordCount; rec++)
-            l.append(QPair<int, int>(labelCompIdx[mKeys[mRecSortIdx[rec]*mDim + column]], mRecSortIdx[rec]));
-
+        int uel = -1;
+        for(int rec=0; rec<mRecordCount; rec++) {
+            uel = mKeys[mRecSortIdx[rec]*mDim + column];
+            if (uel >= labelCompIdx.size())  //TODO: workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
+                l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
+            else
+                l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));
+        }
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.first < b.first; });
         else
@@ -502,7 +507,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     {
         QList<QPair<QString, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
-            l.append(QPair<QString, int>(mGdxSymbolTable->strPool().at(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
+            l.append(QPair<QString, int>(mGdxSymbolTable->getElementText(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
 
         if(order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });

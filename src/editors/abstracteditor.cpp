@@ -17,19 +17,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "logeditor.h"
-#include "keys.h"
+#include "editors/abstracteditor.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+AbstractEditor::AbstractEditor(StudioSettings *settings, QWidget *parent)
+    : QPlainTextEdit(parent), mSettings(settings)
 {
-    setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+
 }
 
-QMimeData* LogEditor::createMimeDataFromSelection() const
+AbstractEditor::~AbstractEditor()
+{
+
+}
+
+AbstractEditor::EditorType AbstractEditor::type()
+{
+    return EditorType::BaseEditor;
+}
+
+QMimeData* AbstractEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
     QTextCursor c = textCursor();
@@ -39,13 +49,21 @@ QMimeData* LogEditor::createMimeDataFromSelection() const
     return mimeData;
 }
 
-void LogEditor::keyPressEvent(QKeyEvent *e)
+StudioSettings *AbstractEditor::settings() const
 {
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_C)) {
-        copy();
-    }
-    e->accept();
+    return mSettings;
 }
+
+bool AbstractEditor::event(QEvent *e)
+{
+    if (e->type() == QEvent::ShortcutOverride) {
+        e->ignore();
+        return true;
+    } else {
+        return QPlainTextEdit::event(e);
+    }
+}
+
 
 }
 }

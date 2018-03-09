@@ -20,26 +20,22 @@
 #ifndef LOGEDITOR_H
 #define LOGEDITOR_H
 
-#include <QtWidgets>
+#include "abstracteditor.h"
 
 namespace gams {
 namespace studio {
 
 class StudioSettings;
-class LogEditor : public QPlainTextEdit
+
+class LogEditor : public AbstractEditor
 {
     Q_OBJECT
 
 public:
-    QMimeData* createMimeDataFromSelection() const override;
     LogEditor(StudioSettings *settings, QWidget *parent = 0);
 
-private:
-    StudioSettings* mSettings = nullptr;
-
-    // QWidget interface
-protected:
-    void keyPressEvent(QKeyEvent *e);
+public:
+    EditorType type();
 };
 
 }

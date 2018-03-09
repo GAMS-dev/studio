@@ -20,6 +20,8 @@
 #include "gdxsymboltable.h"
 #include "exception.h"
 
+#include <limits>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -46,8 +48,6 @@ GdxSymbolTable::~GdxSymbolTable()
 {
     for(auto gdxSymbol : mGdxSymbols)
         delete gdxSymbol;
-    if(mLabelCompIdx)
-        delete[] mLabelCompIdx;
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -132,10 +132,10 @@ void GdxSymbolTable::createSortIndex()
 {
     QList<QPair<QString, int>> l;
     for(int uel=0; uel<=mUelCount; uel++)
-        l.append(QPair<QString, int>(mUel2Label.at(uel), uel));
+        l.append(QPair<QString, int>(uel2Label(uel), uel));
     std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
 
-    mLabelCompIdx = new int[mUelCount+1];
+    mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
     for(QPair<QString, int> p : l)
     {
@@ -147,6 +147,19 @@ void GdxSymbolTable::createSortIndex()
 int GdxSymbolTable::symbolCount() const
 {
     return mSymbolCount;
+}
+
+QString GdxSymbolTable::getElementText(int textNr)
+{
+    if (textNr <= 0)
+        return QString("Y");
+    else {
+        char text[GMS_SSSIZE];
+        int node;
+
+        gdxGetElemText(mGdx, textNr, text, &node);
+        return QString(text);
+    }
 }
 
 void GdxSymbolTable::loadUel2Label()
@@ -162,10 +175,11 @@ void GdxSymbolTable::loadUel2Label()
 
 void GdxSymbolTable::loadStringPool()
 {
+    mStrPool.append("Y");
     int strNr = 1;
     int node;
     char text[GMS_SSSIZE];
-    mStrPool.append("Y");
+
     while(gdxGetElemText(mGdx, strNr, text, &node))
     {
         mStrPool.append(QString(text));
@@ -178,21 +192,24 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-int *GdxSymbolTable::labelCompIdx()
+std::vector<int> GdxSymbolTable::labelCompIdx()
 {
-    if(!mLabelCompIdx)
+    if(!mIsSortIndexCreated) {
         this->createSortIndex();
+        mIsSortIndexCreated = true;
+    }
     return mLabelCompIdx;
 }
 
-QStringList GdxSymbolTable::strPool() const
+QString GdxSymbolTable::uel2Label(int uel)
 {
-    return mStrPool;
-}
-
-QStringList GdxSymbolTable::uel2Label() const
-{
-    return mUel2Label;
+    if (uel >= mUel2Label.size()) {
+        char label[GMS_UEL_IDENT_SIZE];
+        int map;
+        gdxUMUelGet(mGdx, uel, label, &map);
+        return QString(label);
+    }
+    return this->mUel2Label.at(uel);
 }
 
 QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const

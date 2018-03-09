@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,36 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "fileactioncontext.h"
+#ifndef ABSTRACTEDITOR_H
+#define ABSTRACTEDITOR_H
+
 #include <QtWidgets>
-#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-FileActionContext::FileActionContext(int id, QAction *action)
-    : FileSystemContext(id, action->text(), action->toolTip(), FileSystemContext::FileAction), mAction(action)
+class StudioSettings;
+
+
+class AbstractEditor : public QPlainTextEdit
 {
-    setFlag(cfVirtual);
+public:
+    enum EditorType { BaseEditor, CodeEditor, LogEditor };
+
+public:
+    virtual ~AbstractEditor();
+    virtual EditorType type();
+
+protected:
+    AbstractEditor(StudioSettings *settings, QWidget *parent);
+    QMimeData* createMimeDataFromSelection() const override;
+
+protected:
+    StudioSettings *mSettings = nullptr;
+
+    // QObject interface
+public:
+    bool event(QEvent *event);
+    StudioSettings *settings() const;
+};
+
+}
 }
 
-void FileActionContext::trigger()
-{
-    emit mAction->trigger();
-}
-
-void FileActionContext::setLocation(const QString& location)
-{
-    Q_UNUSED(location);
-    EXCEPT() << "The location of a FileActionContext can't be changed.";
-}
-
-QIcon FileActionContext::icon()
-{
-    return mAction->icon();
-}
-
-
-
-} // namespace studio
-} // namespace gams
+#endif // ABSTRACTEDITOR_H
