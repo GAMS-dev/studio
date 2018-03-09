@@ -369,10 +369,11 @@ void MainWindow::on_actionNew_triggered()
     QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
                                                     tr("GAMS code (*.gms *.inc );;"
                                                        "Text files (*.txt);;"
-                                                       "All files (*)"));
+                                                       "All files (*.*)"));
 
     if (filePath == "") return;
     QFileInfo fi(filePath);
+
     if (fi.suffix().isEmpty())
         filePath += ".gms";
     QFile file(filePath);
@@ -393,7 +394,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog openDialog(this, "Open file", mRecent.path, tr("GAMS code (*.gms *.inc *.gdx);;"
                                                                "Text files (*.txt);;"
-                                                               "All files (*)"));
+                                                               "All files (*.*)"));
     openDialog.setFileMode(QFileDialog::ExistingFiles);
     QStringList fNames = openDialog.getOpenFileNames();
 
@@ -426,7 +427,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                  path,
                                                  tr("GAMS code (*.gms *.inc );;"
                                                  "Text files (*.txt);;"
-                                                 "All files (*)"));
+                                                 "All files (*.*)"));
     if (!filePath.isEmpty()) {
         mRecent.path = QFileInfo(filePath).path();
         FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
