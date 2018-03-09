@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtWidgets>
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "studiosettings.h"
 #include "searchwidget.h"
 #include "exception.h"
@@ -32,7 +32,8 @@ namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
-CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent) : QPlainTextEdit(parent), mSettings(settings)
+CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
+    : AbstractEditor(settings, parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
@@ -86,16 +87,6 @@ int CodeEditor::iconSize()
 LineNumberArea* CodeEditor::lineNumberArea()
 {
     return mLineNumberArea;
-}
-
-QMimeData* CodeEditor::createMimeDataFromSelection() const
-{
-    QMimeData* mimeData = new QMimeData();
-    QTextCursor c = textCursor();
-    QString plainTextStr = c.selection().toPlainText();
-    mimeData->setText( plainTextStr );
-
-    return mimeData;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
@@ -205,20 +196,6 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         anc.setPosition(c.anchor());
         startBlockEdit(anc.blockNumber(), anc.columnNumber());
     }
-    if (e->key() == Qt::Key_Insert){
-        mOverwriteActivated = !mOverwriteActivated;
-        setOverwriteMode(mOverwriteActivated);
-    }
-
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)){
-            e->ignore();
-            return;
-    }
-
-    if (e == Hotkey::Paste) {
-        pasteClipboard();
-        return;
-    }
 
     if (mBlockEdit) {
         if (e->key() == Hotkey::NewLine) {
@@ -243,22 +220,6 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             adjustIndent(cursor);
             cursor.endEditBlock();
             setTextCursor(cursor);
-            e->accept();
-            return;
-        } else if (e == Hotkey::Indent) {
-            indent(mSettings->tabSize());
-            e->accept();
-            return;
-        } else if (e == Hotkey::Outdent) {
-            indent(-mSettings->tabSize());
-            e->accept();
-            return;
-        } else if (e == Hotkey::DuplicateLine) {
-            duplicateLine();
-            e->accept();
-            return;
-        } else if (e == Hotkey::RemoveLine) {
-            removeLine();
             e->accept();
             return;
         }
@@ -593,6 +554,15 @@ void CodeEditor::updateTabSize()
     setTabStopDistance(8*metric.width(' '));
 }
 
+CodeEditor::BlockEdit *CodeEditor::blockEdit() const
+{
+    return mBlockEdit;
+}
+
+AbstractEditor::EditorType CodeEditor::type()
+{
+    return EditorType::CodeEditor;
+}
 
 void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
 {
@@ -805,6 +775,26 @@ void CodeEditor::BlockEdit::selectionToClipboard()
     QApplication::clipboard()->setMimeData(mime);
 }
 
+int CodeEditor::BlockEdit::currentLine() const
+{
+    return mCurrentLine;
+}
+
+int CodeEditor::BlockEdit::column() const
+{
+    return mColumn;
+}
+
+void CodeEditor::BlockEdit::setColumn(int column)
+{
+    mColumn = column;
+}
+
+int CodeEditor::BlockEdit::startLine() const
+{
+    return mStartLine;
+}
+
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;
@@ -825,25 +815,9 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
-    } else if (e == Hotkey::Paste) {
-        QStringList texts = mEdit->clipboard();
-        if (texts.count() > 1 || (texts.count() == 1 && texts.first().length() > 0))
-            replaceBlockText(texts);
-    } else if (e == Hotkey::Indent) {
-        mColumn += mEdit->indent(mEdit->mSettings->tabSize(), mStartLine, mCurrentLine);
-    } else if (e == Hotkey::Outdent) {
-        int minWhiteCount = mEdit->minIndentCount(mStartLine, mCurrentLine);
-        if (minWhiteCount)
-            mColumn += mEdit->indent(qMax(-minWhiteCount, -mEdit->mSettings->tabSize()), mStartLine, mCurrentLine);
-    } else if (e == Hotkey::Cut || e == Hotkey::Copy) {
-        // TODO(JM) copy selected text to clipboard
-        selectionToClipboard();
-        if (e == Hotkey::Cut) replaceBlockText("");
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
-    } else if (e == Hotkey::DuplicateLine) {
-        return;
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }

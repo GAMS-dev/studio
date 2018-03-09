@@ -62,7 +62,7 @@ DEFINES += _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
     main.cpp \
-    codeeditor.cpp \
+    editors/codeeditor.cpp \
     filesystemcontext.cpp \
     filecontext.cpp \
     filerepository.cpp \
@@ -125,11 +125,12 @@ SOURCES += \
     commandlineparser.cpp \
     wplabel.cpp \
     gotowidget.cpp \
-    logeditor.cpp \
+    editors/logeditor.cpp \
+    editors/abstracteditor.cpp \
     tool.cpp
 
 HEADERS += \
-    codeeditor.h \
+    editors/codeeditor.h \
     filesystemcontext.h \
     filecontext.h \
     filerepository.h \
@@ -196,7 +197,8 @@ HEADERS += \
     commandlineparser.h \
     wplabel.h \
     gotowidget.h \
-    logeditor.h \
+    editors/logeditor.h \
+    editors/abstracteditor.h \
     tool.h
 
 FORMS += \

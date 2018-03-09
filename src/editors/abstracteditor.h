@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LOGEDITOR_H
-#define LOGEDITOR_H
+#ifndef ABSTRACTEDITOR_H
+#define ABSTRACTEDITOR_H
 
 #include <QtWidgets>
 
@@ -26,23 +26,31 @@ namespace gams {
 namespace studio {
 
 class StudioSettings;
-class LogEditor : public QPlainTextEdit
+
+
+class AbstractEditor : public QPlainTextEdit
 {
-    Q_OBJECT
+public:
+    enum EditorType { BaseEditor, CodeEditor, LogEditor };
 
 public:
-    QMimeData* createMimeDataFromSelection() const override;
-    LogEditor(StudioSettings *settings, QWidget *parent = 0);
+    virtual ~AbstractEditor();
+    virtual EditorType type();
 
-private:
-    StudioSettings* mSettings = nullptr;
-
-    // QWidget interface
 protected:
-    void keyPressEvent(QKeyEvent *e) override;
+    AbstractEditor(StudioSettings *settings, QWidget *parent);
+    QMimeData* createMimeDataFromSelection() const override;
+
+protected:
+    StudioSettings *mSettings = nullptr;
+
+    // QObject interface
+public:
+    bool event(QEvent *event);
+    StudioSettings *settings() const;
 };
 
 }
 }
 
-#endif // LOGEDITOR_H
+#endif // ABSTRACTEDITOR_H

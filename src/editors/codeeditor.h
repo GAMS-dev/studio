@@ -20,7 +20,7 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
-#include <QtWidgets>
+#include "editors/abstracteditor.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -46,7 +46,7 @@ enum class CharType {
     LetterLCase,
 };
 
-class CodeEditor : public QPlainTextEdit
+class CodeEditor : public AbstractEditor
 {
     Q_OBJECT
 
@@ -57,7 +57,10 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    QMimeData* createMimeDataFromSelection() const override;
+    int indent(int size, int fromLine = -1, int toLine = -1);
+    void duplicateLine();
+    void removeLine();
+    int minIndentCount(int fromLine = -1, int toLine = -1);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -92,10 +95,6 @@ private:
     friend class BlockEdit;
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
-    void duplicateLine();
-    void removeLine();
-    int minIndentCount(int fromLine = -1, int toLine = -1);
-    int indent(int size, int fromLine = -1, int toLine = -1);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
@@ -132,6 +131,10 @@ private:
         QString blockText();
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
         void selectionToClipboard();
+        int startLine() const;
+        int currentLine() const;
+        int column() const;
+        void setColumn(int column);
 
     private:
         CodeEditor* mEdit;
@@ -147,7 +150,6 @@ private:
 private:
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
-    StudioSettings *mSettings;
     QTimer mCursorTimer;
     QPoint mDragStart;
     BlockEdit* mBlockEdit = nullptr;
@@ -155,9 +157,14 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
+
+public:
+    BlockEdit *blockEdit() const;
+
+    // AbstractEditor interface
+public:
+    EditorType type();
 };
-
-
 
 class LineNumberArea : public QWidget
 {
