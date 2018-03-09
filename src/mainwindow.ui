@@ -576,6 +576,9 @@
    <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionCopy">
    <property name="text">
@@ -583,6 +586,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionPaste">
@@ -650,14 +656,14 @@
    </property>
   </action>
   <action name="actionHelp_View">
-   <property name="text">
-    <string>Help</string>
-   </property>
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
   </action>
- <action name="actionInsert_Mode">
+  <action name="actionInsert_Mode">
    <property name="text">
     <string>Insert Mode</string>
    </property>
