@@ -328,6 +328,11 @@ QString StudioSettings::defaultWorkspace() const
 
 void StudioSettings::setDefaultWorkspace(const QString &value)
 {
+    QDir workspace(value);
+
+    if (!workspace.exists())
+        workspace.mkpath(".");
+
     mDefaultWorkspace = value;
 }
 
