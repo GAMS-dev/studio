@@ -116,7 +116,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     // history
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->lastOpenedFiles.size(); i++) {
+    for (int i = 0; i < main->settings()->historySize(); i++) {
+        if (i >= main->history()->lastOpenedFiles.length()) break;
         mAppSettings->setArrayIndex(i);
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }
@@ -174,6 +175,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autoIndent", autoIndent());
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("Misc");
+
+    mUserSettings->setValue("historySize", historySize());
+
+    mUserSettings->endGroup();
 
     mAppSettings->sync();
 }
@@ -205,6 +211,21 @@ void StudioSettings::loadUserSettings()
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("Misc");
+
+    setHistorySize(mUserSettings->value("historySize", 8).toInt());
+
+    mUserSettings->endGroup();
+}
+
+int StudioSettings::historySize() const
+{
+    return mHistorySize;
+}
+
+void StudioSettings::setHistorySize(int historySize)
+{
+    mHistorySize = historySize;
 }
 
 void StudioSettings::loadSettings(MainWindow *main)
@@ -256,7 +277,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     mAppSettings->beginGroup("fileHistory");
 
     mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->MAX_FILE_HISTORY; i++) {
+    for (int i = 0; i < historySize(); i++) {
         mAppSettings->setArrayIndex(i);
         main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }

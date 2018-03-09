@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "welcomepage.h"
+#include "studiosettings.h"
 #include "ui_welcomepage.h"
 #include "wplabel.h"
 #include <QDesktopServices>
