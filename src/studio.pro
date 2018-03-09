@@ -109,6 +109,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optioneditor.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/addoptionheaderview.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -177,6 +178,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optioneditor.h \
     option/optionsortfilterproxymodel.h \
+    option/addoptionheaderview.h \
     syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
@@ -208,7 +210,6 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
-    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui \
     bookmarkdialog.ui \

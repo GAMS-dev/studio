@@ -98,6 +98,8 @@ public:
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
+    void checkOptionDefinition(bool checked);
+    bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
@@ -238,6 +240,7 @@ private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+    QCheckBox* showOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
 

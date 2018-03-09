@@ -26,6 +26,7 @@ namespace studio {
 OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
 {
+    Q_UNUSED(normalizedCommandLineStr);
     mHeader.append("Key");
     mHeader.append("Value");
 
@@ -50,13 +51,19 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
         else
             return mCheckState[index];
     case Qt::DecorationRole:
-        QPixmap p{12,12};
-        p.fill(Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked ? Qt::red : Qt::darkGreen);
-//        if (mOptionItem.isEmpty())
-//            p.fill(Qt::CheckState(Qt::gray));
-//        else
-//            p.fill(Qt::CheckState(mCheckState[index].toUInt()) ? Qt::gray : Qt::green);
-        return p;
+        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
+            QIcon icon(":/img/square-red");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
+        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
+            QIcon icon(":/img/square-gray");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
+        } else {
+            QIcon icon(":/img/square-green");
+            QPixmap p = icon.pixmap(12,12);
+            return p;
+        }
     }
 
     return QVariant();
@@ -219,6 +226,7 @@ QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &
 
 bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
+    Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
@@ -235,12 +243,28 @@ bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &par
 
 bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
+    Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
     mOptionItem.removeAt(row);
     endRemoveRows();
+    emit optionModelChanged(mOptionItem);
+    return true;
+}
+
+bool OptionParameterModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
+         return false;
+
+    Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
+    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
+    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
+    mOptionItem.removeAt(removeIndex);
+    endMoveRows();
     emit optionModelChanged(mOptionItem);
     return true;
 }
@@ -257,7 +281,7 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
 
     bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
     setHeaderData( index, Qt::Vertical,
-                          Qt::CheckState(checked ? Qt::Checked : Qt::Unchecked),
+                          Qt::CheckState(headerData(index, Qt::Vertical, Qt::CheckStateRole).toInt()),
                           Qt::CheckStateRole );
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
     emit optionModelChanged(mOptionItem);
@@ -278,10 +302,14 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
-        else
+        else if (mOptionItem.at(i).error == Deprecated_Option)
             setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::Checked),
+                              Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
+        else setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);

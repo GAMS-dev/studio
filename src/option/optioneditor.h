@@ -27,7 +27,6 @@
 #include "option.h"
 #include "optionsortfilterproxymodel.h"
 #include "optionparametermodel.h"
-#include "ui_optionconfigurator.h"
 
 namespace gams {
 namespace studio {
@@ -55,6 +54,7 @@ public slots:
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &opionItems);
     void showOptionContextMenu(const QPoint &pos);
+    void addOptionFromDefinition(const QModelIndex &index);
 
 private:
     CommandLineOption* mCommandLineOption;

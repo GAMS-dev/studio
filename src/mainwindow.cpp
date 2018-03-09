@@ -79,7 +79,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    mDockHelpView->hide();
+    mDockHelpView->hide();   
 
     createRunAndCommandLineWidgets();
 
@@ -240,6 +240,17 @@ void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
     mCommandLineHistory = opt;
 }
 
+void MainWindow::checkOptionDefinition(bool checked)
+{
+    showOptionDefintionCheckBox->setChecked(checked);
+    toggleOptionDefinition(checked);
+}
+
+bool MainWindow::isOptionDefinitionChecked()
+{
+    return showOptionDefintionCheckBox->isChecked();
+}
+
 CommandLineHistory *MainWindow::commandLineHistory()
 {
     return mCommandLineHistory;
@@ -350,8 +361,8 @@ void MainWindow::toggleOptionDefinition(bool checked)
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
-        mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
-        this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+        mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+        this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
     }
 }
 
@@ -490,6 +501,7 @@ void MainWindow::activeTabChanged(int index)
     mCommandLineOption->setCurrentIndex(-1);
     mCommandLineOption->setCurrentContext("");
     mDockOptionView->setEnabled( false );
+    setRunActionsEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
@@ -863,7 +875,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     commandHLayout->addWidget(helpButton);
 
-    QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
+    showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
     showOptionDefintionCheckBox->setEnabled(true);
     showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
@@ -895,7 +907,9 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
     mDockOptionView->setFloating(false);
-    this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+
+    mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+    this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
 
     connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
