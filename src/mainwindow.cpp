@@ -175,6 +175,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
+            codeEdit->setTextCursor(QTextCursor(codeEdit->document()));
 
         } else {
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);

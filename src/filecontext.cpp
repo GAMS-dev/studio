@@ -395,27 +395,6 @@ void FileContext::updateMarks()
     }
 }
 
-void FileContext::highlightWordUnderCursor(QString word)
-{
-    removeTextMarks(TextMark::wordUnderCursor);
-
-    if (mMarks->textMarkCount(QSet<TextMark::Type>() << TextMark::match) > 0) { // ongoing search
-        return; // no highighting during search
-    }
-
-    QTextCursor last;
-    do {
-        last = document()->find(word, last, QTextDocument::FindWholeWords);
-        int length = last.selectionEnd() - last.selectionStart();
-
-        if (!last.isNull())
-            mMarks->generateTextMark(TextMark::wordUnderCursor, 0, last.blockNumber(),
-                                     last.columnNumber() - length, length );
-    } while (!last.isNull());
-    if (highlighter())
-        highlighter()->rehighlight();
-}
-
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
     if (!mMarks || !parentEntry())

@@ -138,9 +138,6 @@ public:
     
     TextMarkList* marks() const {return mMarks;}
 
-public slots:
-    void highlightWordUnderCursor(QString word);
-
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
