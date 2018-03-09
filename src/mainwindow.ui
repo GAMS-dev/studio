@@ -577,7 +577,7 @@
     <string>Ctrl+A</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionCopy">
@@ -588,7 +588,7 @@
     <string>Ctrl+C</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionPaste">

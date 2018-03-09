@@ -42,6 +42,7 @@
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "c4umcc.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -1187,16 +1188,14 @@ void MainWindow::dropEvent(QDropEvent* e)
 void MainWindow::openFiles(QStringList pathList)
 {
     QStringList filesNotFound;
-    for (QString fName: pathList)
-    {
+    for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(fi.canonicalFilePath(), nullptr, true);
+            openFilePath(Tool::absolutePath(fName), nullptr, true);
         else
             filesNotFound.append(fName);
     }
-    if (!filesNotFound.empty())
-    {
+    if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
         for(QString s : filesNotFound)
             msgText.append("\n" + s);
@@ -1455,12 +1454,14 @@ void MainWindow::closeFile(FileContext* file)
 
 void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus)
 {
-    QFileInfo fileInfo(filePath);
+    if (!QFileInfo(filePath).exists()) {
+        EXCEPT() << "File not found: " << filePath;
+    }
     FileSystemContext *fsc = mFileRepo.findContext(filePath, parent);
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
     if (!fc) { // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
+        FileGroupContext* group = mFileRepo.ensureGroup(Tool::absolutePath(filePath));
         mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
@@ -1477,7 +1478,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     if (!fc) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
     }
-    mRecent.path = fileInfo.path();
+    mRecent.path = filePath;
     mRecent.group = fc->parentEntry();
 }
 
