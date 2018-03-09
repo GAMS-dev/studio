@@ -27,7 +27,7 @@ namespace gams {
 namespace studio {
 
 LogContext::LogContext(FileId fileId, QString name)
-    : FileContext(fileId, name, "", FileSystemContext::Log)
+    : FileContext(fileId, name, "[LOG]", FileSystemContext::Log)
 {
     mMetrics = FileMetrics(QFileInfo(name+".log"));
     mDocument = new QTextDocument(this);
@@ -241,7 +241,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
 //                    result += QString("[LST:%1]").arg(lineNr+1);
                     mark.size = result.length() - mark.col - 1;
                     FileContext *fc;
-                    emit findOrCreateFileContext(fName, &fc, parentEntry());
+                    emit findOrCreateFileContext(fName, fc, parentEntry());
                     if (fc) {
                         mCurrentErrorHint.lstLine = lineNr;
                         mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)

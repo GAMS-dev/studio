@@ -227,7 +227,7 @@ void FileGroupContext::updateChildNodes()
     QList<IndexedFSContext> vanishedEntries;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *entry = childEntry(i);
-        if (entry->location().isEmpty())
+        if (entry->type() == FileSystemContext::Log)
             continue;
         QFileInfo fi(entry->location());
         int pos = addList.indexOf(fi);

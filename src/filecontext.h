@@ -148,7 +148,7 @@ signals:
     void deletedExtern(FileId fileId);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void documentOpened();
     void documentClosed();

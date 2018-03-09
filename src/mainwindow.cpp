@@ -408,7 +408,7 @@ void MainWindow::on_actionSave_triggered()
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editFileId);
     if (!fc) return;
-    if (fc->location().isEmpty()) {
+    if (fc->type() == FileSystemContext::Log) {
         on_actionSave_As_triggered();
     } else if (fc->isModified()) {
         fc->save();
@@ -1449,11 +1449,11 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
 
     if (!fc) { // not yet opened by user, open file in new tab
         FileGroupContext* group = mFileRepo.ensureGroup(fileInfo.canonicalFilePath());
-        mFileRepo.findOrCreateFileContext(filePath, &fc, group);
+        mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
         }
-        QTabWidget* tabWidget = fc->location().isEmpty() ? ui->logTab : ui->mainTab;
+        QTabWidget* tabWidget = (fc->type() == FileSystemContext::Log) ? ui->logTab : ui->mainTab;
         createEdit(tabWidget, focus, fc->id());
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();

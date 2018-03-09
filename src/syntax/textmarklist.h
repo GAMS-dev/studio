@@ -45,7 +45,7 @@ public:
     FileContext* openFileContext();
 
 signals:
-    void getFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void getFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks);

@@ -127,7 +127,7 @@ signals:
 public slots:
     void nodeChanged(FileId fileId);
     void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
     void removeGroup(FileGroupContext* fileGroup);
     void removeFile(FileContext* file);

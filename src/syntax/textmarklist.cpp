@@ -138,7 +138,7 @@ FileContext* TextMarkList::openFileContext()
 {
     if (!mFileContext) {
         DEB() << "!!! Error !!! FileContext should be already bound:" << mFileName;
-        emit getFileContext(mFileName, &mFileContext, mGroupContext);
+        emit getFileContext(mFileName, mFileContext, mGroupContext);
         if (!mFileContext) EXCEPT() << "Error creating FileContext " << mFileName;
     }
     if (!mFileContext->document()) {

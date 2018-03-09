@@ -69,18 +69,18 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
     *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-void FileRepository::findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
+void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
     if (!fileGroup)
         EXCEPT() << "The group must not be null";
     FileSystemContext* fsc = findContext(filePath, fileGroup);
     if (!fsc) {
         QFileInfo fi(filePath);
-        *resultFile = addFile(fi.fileName(), fi.canonicalFilePath(), fileGroup);
+        resultFile = addFile(fi.fileName(), fi.canonicalFilePath(), fileGroup);
     } else if (fsc->type() == FileSystemContext::File) {
-        *resultFile = static_cast<FileContext*>(fsc);
+        resultFile = static_cast<FileContext*>(fsc);
     } else {
-        *resultFile = nullptr;
+        resultFile = nullptr;
     }
 
 }
