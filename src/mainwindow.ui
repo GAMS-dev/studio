@@ -523,7 +523,7 @@
     <string>Compile with GDX Creation</string>
    </property>
    <property name="toolTip">
-    <string>Compile with GDX Creation</string>
+    <string>Compile and Create a GDX File with gms file root name</string>
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>

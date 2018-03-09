@@ -21,7 +21,6 @@
 
 #include "lineeditcompleteevent.h"
 #include "optioncompleterdelegate.h"
-//#include "optionparametermodel.h"
 
 namespace gams {
 namespace studio {
@@ -33,6 +32,7 @@ OptionCompleterDelegate::OptionCompleterDelegate(CommandLineTokenizer* tokenizer
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    Q_UNUSED(option);
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
     if (index.column()==0) {

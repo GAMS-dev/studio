@@ -26,6 +26,7 @@ namespace studio {
 OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
 {
+    Q_UNUSED(normalizedCommandLineStr);
     mHeader.append("Key");
     mHeader.append("Value");
 
@@ -225,6 +226,7 @@ QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &
 
 bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
+    Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
@@ -241,6 +243,7 @@ bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &par
 
 bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
+    Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
 
