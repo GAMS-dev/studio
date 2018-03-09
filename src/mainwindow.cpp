@@ -1706,13 +1706,21 @@ void MainWindow::on_actionReset_Zoom_triggered()
 void MainWindow::on_actionZoom_Out_triggered()
 {
     AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) ae->zoomOut();
+    if (ae) {
+        int pix = ae->fontInfo().pixelSize();
+        ae->zoomOut();
+        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+    }
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
     AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) ae->zoomIn();
+    if (ae) {
+        int pix = ae->fontInfo().pixelSize();
+        ae->zoomIn();
+        if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
+    }
 }
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()

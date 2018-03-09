@@ -338,10 +338,16 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* e)
 void CodeEditor::wheelEvent(QWheelEvent *e) {
     if (e->modifiers() & Qt::ControlModifier) {
         const int delta = e->delta();
-        if (delta < 0)
+        if (delta < 0) {
+            int pix = fontInfo().pixelSize();
             zoomOut();
-        else if (delta > 0)
+            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
+        } else if (delta > 0) {
+            int pix = fontInfo().pixelSize();
             zoomIn();
+            if (pix == fontInfo().pixelSize()) zoomOut();
+        }
+        DEB() << "FontSize " << font().pointSize();
         updateTabSize();
         return;
     }
