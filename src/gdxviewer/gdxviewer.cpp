@@ -53,8 +53,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     init();
 
     QAction* cpAction = new QAction("Copy");
-    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
+//    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+//    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui.tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
 }
