@@ -287,7 +287,9 @@ void FileContext::load(QString codecName, bool keepMarks)
         if (!nameOfUsedCodec.isEmpty()) {
 //            if (mMarks && keepMarks)
 //                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+            QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
+            setEditPositions(edPos);
 //            if (mMarks && keepMarks)
 //                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             mCodec = nameOfUsedCodec;
@@ -393,27 +395,6 @@ void FileContext::updateMarks()
         }
         mMarksEnhanced = true;
     }
-}
-
-void FileContext::highlightWordUnderCursor(QString word)
-{
-    removeTextMarks(TextMark::wordUnderCursor);
-
-    if (mMarks->textMarkCount(QSet<TextMark::Type>() << TextMark::match) > 0) { // ongoing search
-        return; // no highighting during search
-    }
-
-    QTextCursor last;
-    do {
-        last = document()->find(word, last, QTextDocument::FindWholeWords);
-        int length = last.selectionEnd() - last.selectionStart();
-
-        if (!last.isNull())
-            mMarks->generateTextMark(TextMark::wordUnderCursor, 0, last.blockNumber(),
-                                     last.columnNumber() - length, length );
-    } while (!last.isNull());
-    if (highlighter())
-        highlighter()->rehighlight();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
@@ -565,6 +546,39 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 bool FileContext::mouseOverLink()
 {
     return !mMarksAtMouse.isEmpty();
+}
+
+QVector<QPoint> FileContext::getEditPositions()
+{
+    QVector<QPoint> res;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        if (edit) {
+            QTextCursor cursor = edit->textCursor();
+            res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
+        } else {
+            res << QPoint(0, 0);
+        }
+    }
+    return res;
+}
+
+void FileContext::setEditPositions(QVector<QPoint> edPositions)
+{
+    int i = 0;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
+        if (edit) {
+            QTextCursor cursor(edit->document());
+            if (cursor.blockNumber() < pos.y())
+                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, qMin(edit->blockCount()-1, pos.y()));
+            if (cursor.positionInBlock() < pos.x())
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(cursor.block().length()-1, pos.x()));
+            edit->setTextCursor(cursor);
+        }
+
+    }
 }
 
 void FileContext::modificationChanged(bool modiState)

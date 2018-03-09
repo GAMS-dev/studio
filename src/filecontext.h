@@ -138,9 +138,6 @@ public:
     
     TextMarkList* marks() const {return mMarks;}
 
-public slots:
-    void highlightWordUnderCursor(QString word);
-
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
@@ -169,6 +166,10 @@ protected:
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
+
+private:
+    QVector<QPoint> getEditPositions();
+    void setEditPositions(QVector<QPoint> edPositions);
 
 private:
     FileMetrics mMetrics;
