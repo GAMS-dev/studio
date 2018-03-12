@@ -235,6 +235,7 @@ void StudioSettings::loadSettings(MainWindow *main)
         mAppSettings->clear();
         mUserSettings->clear();
     }
+    loadUserSettings();
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -271,6 +272,14 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->getDockHelpView()->setBookmarkMap(bookmarkMap);
 
     mAppSettings->endGroup();
+    mAppSettings->beginGroup("fileHistory");
+
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
 
     QMap<QString, QStringList> map;
     int size = mAppSettings->beginReadArray("commandLineOptions");
@@ -286,20 +295,14 @@ void StudioSettings::loadSettings(MainWindow *main)
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->fileRepository()->read(loadDoc.object());
 
-    mAppSettings->endGroup();
-
-    loadUserSettings();
-
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
     // save settings directly after loading in order to reset
-    if (mResetSettings)
-        saveSettings(main);
+    if (mResetSettings) saveSettings(main);
 
     if(restoreTabs()) {
-        mAppSettings->beginGroup("fileHistory");
         size = mAppSettings->beginReadArray("openedTabs");
         for (int i = 0; i < size; i++) {
             mAppSettings->setArrayIndex(i);
@@ -307,8 +310,8 @@ void StudioSettings::loadSettings(MainWindow *main)
             if(QFileInfo(value).exists())
                 main->openFile(value);
         }
+        mAppSettings->endArray();
     }
-    mAppSettings->endArray();
 
     // history
     mAppSettings->beginReadArray("lastOpenedFiles");
@@ -320,8 +323,6 @@ void StudioSettings::loadSettings(MainWindow *main)
     mAppSettings->endArray();
 
     mAppSettings->endGroup();
-
-
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)
