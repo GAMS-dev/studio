@@ -706,6 +706,8 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
         ui->dockLogView->show();
     else
         ui->dockLogView->hide();
+
+    if (mWp) mWp->setOutputVisible(checked);
 }
 
 void MainWindow::on_actionOption_View_triggered(bool checked)

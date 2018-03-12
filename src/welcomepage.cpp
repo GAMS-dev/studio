@@ -72,6 +72,11 @@ WelcomePage::~WelcomePage()
     delete ui;
 }
 
+void WelcomePage::setOutputVisible(bool outputVisible)
+{
+    mOutputVisible = outputVisible;
+}
+
 void WelcomePage::on_relayAction(QString action)
 {
     emit relayActionWp(action);
@@ -85,13 +90,14 @@ void WelcomePage::on_relayModLibLoad(QString lib)
 void WelcomePage::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
+    mOutputVisible = mMain->outputViewVisibility();
     mMain->setOutputViewVisibility(false);
 }
 
 void WelcomePage::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event);
-    mMain->setOutputViewVisibility(true);
+    mMain->setOutputViewVisibility(mOutputVisible);
 }
 
 }
