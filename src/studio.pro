@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
 QT       += core gui svg concurrent
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webenginewidgets
 
 TARGET = studio
 TEMPLATE = app
@@ -30,7 +31,7 @@ CONFIG += c++14
 # Setup and include the GAMS distribution
 include($$PWD/gamsdependency.pri)
 
-include (../studioversion)
+include (../version)
 DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
 
 macx {
@@ -61,7 +62,7 @@ DEFINES += _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
     main.cpp \
-    codeeditor.cpp \
+    editors/codeeditor.cpp \
     filesystemcontext.cpp \
     filecontext.cpp \
     filerepository.cpp \
@@ -70,7 +71,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    fileactioncontext.cpp \
     newdialog.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/glbparser.cpp   \
@@ -109,6 +109,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optioneditor.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/addoptionheaderview.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -119,18 +120,22 @@ SOURCES += \
     resultsview.cpp \
     searchresultlist.cpp \
     keys.cpp \
+    helpview.cpp \
+    bookmarkdialog.cpp \
     commandlineparser.cpp \
     wplabel.cpp \
-    gotowidget.cpp
+    gotowidget.cpp \
+    editors/logeditor.cpp \
+    editors/abstracteditor.cpp \
+    tool.cpp
 
 HEADERS += \
-    codeeditor.h \
+    editors/codeeditor.h \
     filesystemcontext.h \
     filecontext.h \
     filerepository.h \
     filegroupcontext.h \
     welcomepage.h \
-    fileactioncontext.h \
     mainwindow.h \
     exception.h \
     treeitemdelegate.h \
@@ -173,6 +178,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optioneditor.h \
     option/optionsortfilterproxymodel.h \
+    option/addoptionheaderview.h \
     syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
@@ -186,9 +192,14 @@ HEADERS += \
     searchresultlist.h \
     syntax/syntaxdata.h \
     keys.h \
+    helpview.h \
+    bookmarkdialog.h \
     commandlineparser.h \
     wplabel.h \
-    gotowidget.h
+    gotowidget.h \
+    editors/logeditor.h \
+    editors/abstracteditor.h \
+    tool.h
 
 FORMS += \
     welcomepage.ui  \
@@ -199,9 +210,9 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
-    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui \
+    bookmarkdialog.ui \
     gotowidget.ui
 
 RESOURCES += \

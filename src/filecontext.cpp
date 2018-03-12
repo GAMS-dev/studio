@@ -20,7 +20,7 @@
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "exception.h"
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "logger.h"
 
 namespace gams {
@@ -161,8 +161,10 @@ void FileContext::addEditor(QWidget* edit)
         if (ptEdit) {
             ptEdit->document()->setParent(this);
             connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
-            if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document())
+            if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document()) {
                 mSyntaxHighlighter->setDocument(document());
+                if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
+            }
             if (newlyOpen) emit documentOpened();
             QTimer::singleShot(50, this, &FileContext::updateMarks);
         }
@@ -197,6 +199,8 @@ void FileContext::removeEditor(QWidget* edit)
         return;
     bool wasModified = isModified();
     QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
+    CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
+
     if (ptEdit && mEditors.size() == 1) {
         emit documentClosed();
         // On removing last editor: paste document-parency back to editor
@@ -214,6 +218,9 @@ void FileContext::removeEditor(QWidget* edit)
     if (ptEdit) {
         ptEdit->viewport()->removeEventFilter(this);
         ptEdit->removeEventFilter(this);
+    }
+    if (scEdit && mSyntaxHighlighter) {
+        disconnect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
     }
 }
 
@@ -280,7 +287,9 @@ void FileContext::load(QString codecName, bool keepMarks)
         if (!nameOfUsedCodec.isEmpty()) {
 //            if (mMarks && keepMarks)
 //                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+            QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
+            setEditPositions(edPos);
 //            if (mMarks && keepMarks)
 //                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             mCodec = nameOfUsedCodec;
@@ -386,27 +395,6 @@ void FileContext::updateMarks()
         }
         mMarksEnhanced = true;
     }
-}
-
-void FileContext::highlightWordUnderCursor(QString word)
-{
-    removeTextMarks(TextMark::wordUnderCursor);
-
-    if (mMarks->textMarkCount(QSet<TextMark::Type>() << TextMark::match) > 0) { // ongoing search
-        return; // no highighting during search
-    }
-
-    QTextCursor last;
-    do {
-        last = document()->find(word, last, QTextDocument::FindWholeWords);
-        int length = last.selectionEnd() - last.selectionStart();
-
-        if (!last.isNull())
-            mMarks->generateTextMark(TextMark::wordUnderCursor, 0, last.blockNumber(),
-                                     last.columnNumber() - length, length );
-    } while (!last.isNull());
-    if (highlighter())
-        highlighter()->rehighlight();
 }
 
 TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
@@ -558,6 +546,39 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 bool FileContext::mouseOverLink()
 {
     return !mMarksAtMouse.isEmpty();
+}
+
+QVector<QPoint> FileContext::getEditPositions()
+{
+    QVector<QPoint> res;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        if (edit) {
+            QTextCursor cursor = edit->textCursor();
+            res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
+        } else {
+            res << QPoint(0, 0);
+        }
+    }
+    return res;
+}
+
+void FileContext::setEditPositions(QVector<QPoint> edPositions)
+{
+    int i = 0;
+    foreach (QWidget* widget, mEditors) {
+        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
+        if (edit) {
+            QTextCursor cursor(edit->document());
+            if (cursor.blockNumber() < pos.y())
+                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, qMin(edit->blockCount()-1, pos.y()));
+            if (cursor.positionInBlock() < pos.x())
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(cursor.block().length()-1, pos.x()));
+            edit->setTextCursor(cursor);
+        }
+
+    }
 }
 
 void FileContext::modificationChanged(bool modiState)

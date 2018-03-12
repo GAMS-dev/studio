@@ -17,36 +17,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "fileactioncontext.h"
+#ifndef BOOKMARKDIALOG_H
+#define BOOKMARKDIALOG_H
+
 #include <QtWidgets>
-#include "exception.h"
+
+#include "ui_bookmarkdialog.h"
 
 namespace gams {
 namespace studio {
 
-FileActionContext::FileActionContext(int id, QAction *action)
-    : FileSystemContext(id, action->text(), action->toolTip(), FileSystemContext::FileAction), mAction(action)
+class BookmarkDialog : public QDialog
 {
-    setFlag(cfVirtual);
-}
+    Q_OBJECT
+public:
+    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = 0);
+    ~BookmarkDialog();
 
-void FileActionContext::trigger()
-{
-    emit mAction->trigger();
-}
+protected:
+    void keyPressEvent(QKeyEvent *event);
 
-void FileActionContext::setLocation(const QString& location)
-{
-    Q_UNUSED(location);
-    EXCEPT() << "The location of a FileActionContext can't be changed.";
-}
+signals:
+    void openUrl(const QUrl& location);
+    void updateBookmarkName(const QString& location, const QString& name);
+    void updateBookmarkLocation(const QString& oldLocation, const QString& newLocation, const QString& name);
+    void removeBookmark(const QString& location, const QString& name);
 
-QIcon FileActionContext::icon()
-{
-    return mAction->icon();
-}
+private slots:
+    void on_bookmarkEntryShowed(const QModelIndex &index);
+    void on_contextMenuShowed(const QPoint &pos);
 
-
+private:
+    Ui::bookmarkDialog ui;
+    QStandardItemModel* model;
+    QMultiMap<QString, QString>& bookmarkMap;
+};
 
 } // namespace studio
 } // namespace gams
+
+#endif // BOOKMARKDIALOG_H

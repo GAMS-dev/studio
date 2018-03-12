@@ -23,7 +23,7 @@
 #include <memory>
 #include <QtWidgets>
 
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
 #include "filerepository.h"
 #include "modeldialog/libraryitem.h"
 #include "option/commandlinehistory.h"
@@ -31,6 +31,7 @@
 #include "option/lineeditcompleteevent.h"
 #include "option/optioneditor.h"
 #include "projectcontextmenu.h"
+#include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 
@@ -90,11 +91,15 @@ public:
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
+    bool helpViewVisibility();
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
+    void setHelpViewVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
+    void checkOptionDefinition(bool checked);
+    bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
@@ -104,6 +109,8 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
+
+    HelpView *getDockHelpView() const;
 
 public slots:
     void receiveAction(QString action);
@@ -129,6 +136,7 @@ private slots:
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
+    void closeHelpView();
 
 private slots:
     // File
@@ -148,14 +156,15 @@ private slots:
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
-    // Help
-    void on_actionOnline_Help_triggered();
+    // About
+    void on_actionHelp_triggered();
     void on_actionAbout_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
+    void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
@@ -180,6 +189,14 @@ private slots:
     void on_actionCut_triggered();
     void on_actionSet_to_Uppercase_triggered();
     void on_actionSet_to_Lowercase_triggered();
+    void on_actionReset_Zoom_triggered();
+    void on_actionZoom_Out_triggered();
+    void on_actionZoom_In_triggered();
+    void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionIndent_triggered();
+    void on_actionOutdent_triggered();
+    void on_actionDuplicate_Line_triggered();
+    void on_actionRemove_Line_triggered();
 
     void interruptTriggered();
     void stopTriggered();
@@ -209,7 +226,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void updateEditorFont(const QString &fontFamily, int fontSize);
+    void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
 
 private:
@@ -223,6 +240,9 @@ private:
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+    QCheckBox* showOptionDefintionCheckBox;
+
+    HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

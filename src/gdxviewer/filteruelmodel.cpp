@@ -58,7 +58,7 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
-    return mUels->size();
+    return (int) mUels->size();
 }
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const
@@ -70,7 +70,7 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
     if(role == Qt::DisplayRole)
     {
         int uel = mUels->at(index.row());
-        return mSymbol->gdxSymbolTable()->uel2Label().at(uel);
+        return mSymbol->gdxSymbolTable()->uel2Label(uel);
     }
     else if(role == Qt::CheckStateRole)
     {
@@ -116,7 +116,7 @@ void FilterUelModel::filterLabels(QString filterString)
     {
         int uel = mUels->at(idx);
         checkedOld = mChecked[idx];
-        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label().at(uel)))
+        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label(uel)))
             checkedNew = true;
         else
             checkedNew = false;

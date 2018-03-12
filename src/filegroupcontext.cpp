@@ -23,6 +23,7 @@
 #include "exception.h"
 #include "gamsprocess.h"
 #include "logger.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -227,7 +228,7 @@ void FileGroupContext::updateChildNodes()
     QList<IndexedFSContext> vanishedEntries;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *entry = childEntry(i);
-        if (entry->location().isEmpty())
+        if (entry->type() == FileSystemContext::Log)
             continue;
         QFileInfo fi(entry->location());
         int pos = addList.indexOf(fi);
@@ -255,7 +256,7 @@ void FileGroupContext::updateChildNodes()
     // add newly appeared files and directories
     for (QFileInfo fi: addList) {
         if (fi.exists())
-            emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
+            emit requestNode(fi.fileName(), Tool::absolutePath(fi.filePath()), this);
     }
 }
 
@@ -285,7 +286,7 @@ void FileGroupContext::setLstErrorText(int line, QString text)
 void FileGroupContext::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    dumpMarks();
+//    dumpMarks();
     removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 //    FileSystemContext *fsc = findFile(lstFileName());
 //    if (fsc && fsc->type() == FileSystemContext::File) {

@@ -102,11 +102,11 @@ public:
 
     void dumpAll();
 
-    bool isValid(const QString &optionName);
-    bool isThereASynonym(const QString &optionName);
-    bool isDeprecated(const QString &optionName);
-    bool isDoubleDashedOption(const QString &optionName);
-    OptionErrorType getValueErrorType(const QString &optionName, const QString &value);
+    bool isValid(const QString &optionName) const;
+    bool isThereASynonym(const QString &optionName) const;
+    bool isDeprecated(const QString &optionName) const;
+    bool isDoubleDashedOption(const QString &optionName) const;
+    OptionErrorType getValueErrorType(const QString &optionName, const QString &value) const;
 
     QString getSynonym(const QString &optionName) const;
     optOptionType getOptionType(const QString &optionName) const;
@@ -118,6 +118,7 @@ public:
     QList<OptionValue> getValueList(const QString &optionName) const;
 
     QStringList getKeyList() const;
+    QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
     QStringList getValuesList(const QString &optionName) const;
     QStringList getNonHiddenValuesList(const QString &optionName) const;

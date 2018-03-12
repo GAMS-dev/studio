@@ -50,13 +50,13 @@ public:
 
     QList<GdxSymbol *> gdxSymbols() const;
 
-    QStringList uel2Label() const;
+    QString uel2Label(int uel);
 
-    QStringList strPool() const;
-
-    int *labelCompIdx();
+    std::vector<int> labelCompIdx();
 
     int symbolCount() const;
+
+    QString getElementText(int textNr);
 
 private:
     QStringList mHeaderText;
@@ -76,7 +76,8 @@ private:
     QStringList mUel2Label;
     QStringList mStrPool;
 
-    int* mLabelCompIdx = nullptr;
+    std::vector<int> mLabelCompIdx;
+    bool mIsSortIndexCreated = false;
 
     QMutex* mGdxMutex;
 };

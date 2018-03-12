@@ -94,8 +94,24 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
-    mAppSettings->setValue("optionEditor", main->optionEditorVisibility());
+    mAppSettings->setValue("helpView", main->helpViewVisibility());
+    mAppSettings->setValue("optionView", main->optionEditorVisibility());
+    mAppSettings->setValue("optionEditor", main->isOptionDefinitionChecked());
 
+    mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    // remove all keys in the helpView group before begin writing them
+    mAppSettings->remove("");
+    mAppSettings->beginWriteArray("bookmarks");
+    for (int i = 0; i < bookmarkMap.size(); i++) {
+        mAppSettings->setArrayIndex(i);
+        mAppSettings->setValue("location", bookmarkMap.keys().at(i));
+        mAppSettings->setValue("name", bookmarkMap.values().at(i));
+    }
+    mAppSettings->endArray();
     mAppSettings->endGroup();
 
     // history
@@ -217,9 +233,26 @@ void StudioSettings::loadSettings(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
     main->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
-    main->setOptionEditorVisibility(mAppSettings->value("optionEditor").toBool());
+    main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
+    main->setOptionEditorVisibility(mAppSettings->value("optionView").toBool());
+    main->checkOptionDefinition(mAppSettings->value("optionEditor").toBool());
 
     mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap;
+    int mapsize = mAppSettings->beginReadArray("bookmarks");
+    for (int i = 0; i < mapsize; i++) {
+        mAppSettings->setArrayIndex(i);
+        bookmarkMap.insert(mAppSettings->value("location").toString(),
+                           mAppSettings->value("name").toString());
+    }
+    mAppSettings->endArray();
+    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+
+    mAppSettings->endGroup();
+
 
     // history
     mAppSettings->beginGroup("fileHistory");
@@ -297,6 +330,11 @@ QString StudioSettings::defaultWorkspace() const
 
 void StudioSettings::setDefaultWorkspace(const QString &value)
 {
+    QDir workspace(value);
+
+    if (!workspace.exists())
+        workspace.mkpath(".");
+
     mDefaultWorkspace = value;
 }
 

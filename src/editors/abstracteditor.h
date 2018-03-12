@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEACTIONCONTEXT_H
-#define FILEACTIONCONTEXT_H
+#ifndef ABSTRACTEDITOR_H
+#define ABSTRACTEDITOR_H
 
-#include "filesystemcontext.h"
+#include <QtWidgets>
 
 namespace gams {
 namespace studio {
 
-class FileActionContext : public FileSystemContext
+class StudioSettings;
+
+
+class AbstractEditor : public QPlainTextEdit
 {
-    Q_OBJECT
 public:
-    void trigger();
-    void setLocation(const QString& location);
-    virtual QIcon icon();
+    enum EditorType { BaseEditor, CodeEditor, LogEditor };
 
-private:
-    friend class FileRepository;
-    FileActionContext(int id, QAction* action);
+public:
+    virtual ~AbstractEditor();
+    virtual EditorType type();
 
-private:
-    QAction *mAction;
+protected:
+    AbstractEditor(StudioSettings *settings, QWidget *parent);
+    QMimeData* createMimeDataFromSelection() const override;
+
+protected:
+    StudioSettings *mSettings = nullptr;
+
+    // QObject interface
+public:
+    bool event(QEvent *event);
+    StudioSettings *settings() const;
 };
 
-} // namespace studio
-} // namespace gams
+}
+}
 
-#endif // FILEACTIONCONTEXT_H
+#endif // ABSTRACTEDITOR_H

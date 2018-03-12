@@ -38,8 +38,15 @@ public:
     void setDocAndConnect(QTextDocument* doc);
     TextMarkList* marks();
 
+public slots:
+    void syntaxState(int position, int &intState);
+
 protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& format, QList<TextMark*> markList);
+    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QList<TextMark*> markList);
+
+protected:
+    int mPositionForSyntaxState = -1;
+    int mLastSyntaxState = 0;
 
 private:
     FileContext* mContext = nullptr;

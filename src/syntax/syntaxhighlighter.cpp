@@ -21,6 +21,7 @@
 #include "logger.h"
 #include "filecontext.h"
 #include "textmark.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -40,6 +41,15 @@ TextMarkList* ErrorHighlighter::marks()
     return (mContext) ? mContext->marks() : nullptr;
 }
 
+void ErrorHighlighter::syntaxState(int position, int &intState)
+{
+    mPositionForSyntaxState = position;
+    mLastSyntaxState = 0;
+    rehighlightBlock(document()->findBlock(position));
+    intState = mLastSyntaxState;
+    mLastSyntaxState = 0;
+}
+
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
     if (!marks()) {
@@ -50,7 +60,7 @@ void ErrorHighlighter::highlightBlock(const QString& text)
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &format, QList<TextMark*> markList)
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QList<TextMark*> markList)
 {
     int end = start+len;
     int marksStart = end;
@@ -60,18 +70,18 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
         if (mark->blockEnd() > marksEnd) marksEnd = qMin(end, mark->blockEnd());
     }
     if (marksStart == end) {
-        setFormat(start, len, format);
+        setFormat(start, len, charFormat);
         return;
     }
-    if (marksStart > start) setFormat(start, marksStart-start, format);
-    if (marksEnd < end) setFormat(marksEnd, end-marksEnd, format);
+    if (marksStart > start) setFormat(start, marksStart-start, charFormat);
+    if (marksEnd < end) setFormat(marksEnd, end-marksEnd, charFormat);
     start = marksStart;
     end = marksEnd;
 
     for (TextMark* mark: markList) {
         if (mark->blockStart() >= end || mark->blockEnd() < start)
             continue;
-        QTextCharFormat combinedFormat(format);
+        QTextCharFormat combinedFormat(charFormat);
         marksStart = qMax(mark->blockStart(), start);
         marksEnd = qMin(mark->blockEnd(), end);
         if (mark->type() == TextMark::error) {
@@ -109,38 +119,46 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     : ErrorHighlighter(context)
 {
     SyntaxAbstract* syntax = new SyntaxStandard();
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxDirective();
     syntax->charFormat().setForeground(Qt::darkMagenta);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxTitle();
     syntax->charFormat().setForeground(Qt::darkBlue);
     syntax->charFormat().setFontWeight(QFont::Bold);
     syntax->charFormat().setFontItalic(true);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxCommentLine();
     syntax->charFormat().setForeground(Qt::darkGreen);
     syntax->charFormat().setFontItalic(true);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxCommentBlock();
     syntax->copyCharFormat(mStates.last()->charFormat());
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxDeclaration(SyntaxState::Declaration);
     syntax->charFormat().setForeground(Qt::darkBlue);
     syntax->charFormat().setFontWeight(QFont::Bold);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationSetType);
     syntax->copyCharFormat(mStates.last()->charFormat());
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationVariableType);
     syntax->copyCharFormat(mStates.last()->charFormat());
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 }
 
@@ -157,6 +175,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QList<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QList<TextMark*>();
     int code = previousBlockState();
     int index = 0;
+    int posForSyntaxState = mPositionForSyntaxState - currentBlock().position();
+    if (posForSyntaxState < 0) posForSyntaxState = text.length();
+
     while (index < text.length()) {
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
@@ -184,7 +205,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             // new state inside current block -> shorten end
             if (nextBlock.start < thisBlock.end) thisBlock.end = nextBlock.start;
             // current block has zero size
-            if (thisBlock.length()<1) thisBlock = nextBlock;
+            if (thisBlock.length() < 1) thisBlock = nextBlock;
         }
         if (thisBlock.isValid() && thisBlock.length() > 0) {
             if (thisBlock.syntax->state() != SyntaxState::Standard)
@@ -194,14 +215,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 setCombiFormat(thisBlock.start, thisBlock.length(), thisBlock.syntax->charFormatError(), markList);
 
             index = thisBlock.end;
-            code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.next));
 
-//            stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
-//            DEB() << "line " << currentBlock().blockNumber() << ": marked state " << int(thisBlock.syntax->state())
-//                  << " - next is " << int(mStates.at(stateCode.first)->state());
+            code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.next));
+            if (posForSyntaxState <= index) {
+                mLastSyntaxState = thisBlock.syntax->intSyntaxType();
+                mPositionForSyntaxState = -1;
+                posForSyntaxState = text.length();
+            }
         } else {
             index++;
         }
+//        if (thisBlock.isValid()) DEB() << "Line " << currentBlock().blockNumber()+1
+//                                       << " Syntax " << syntaxStateName(thisBlock.syntax->state());
     }
     StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
     if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {

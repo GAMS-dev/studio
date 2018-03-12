@@ -21,7 +21,8 @@
 #define FILESYSTEMCONTEXT_H
 
 #include <QtWidgets>
-#include "codeeditor.h"
+#include "editors/codeeditor.h"
+#include "editors/logeditor.h"
 #include "gdxviewer/gdxviewer.h"
 
 namespace gams {
@@ -53,8 +54,6 @@ public:
 
     enum ContextType {
         File,
-        FileAction, // TODO(AF) still required?
-                    // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
         FileSystem,
         Log
@@ -126,7 +125,10 @@ public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(QPlainTextEdit* w) {
+    inline static void initEditorType(QPlainTextEdit* w) { // obsolete?
+        if(w) w->setProperty("EditorType", etPlainText);
+    }
+    inline static void initEditorType(LogEditor* w) {
         if(w) w->setProperty("EditorType", etPlainText);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {

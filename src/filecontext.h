@@ -36,7 +36,7 @@ typedef QPair<int,QString> ErrorHint;
 
 ///
 /// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
-/// \see FileSystemContext, FileGroupContext, FileActionContext
+/// \see FileSystemContext, FileGroupContext, FileContext, LogContext
 ///
 class FileContext : public FileSystemContext
 {
@@ -136,10 +136,8 @@ public:
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     void addFileWatcherForGdx();
     
-    TextMarkList* marks() const {return mMarks;}
-
-public slots:
-    void highlightWordUnderCursor(QString word);
+    TextMarkList* marks() const { return mMarks; }
+    void unbindMarks() { mMarks = nullptr; }
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -151,7 +149,7 @@ signals:
     void deletedExtern(FileId fileId);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void documentOpened();
     void documentClosed();
@@ -169,6 +167,10 @@ protected:
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
+
+private:
+    QVector<QPoint> getEditPositions();
+    void setEditPositions(QVector<QPoint> edPositions);
 
 private:
     FileMetrics mMetrics;

@@ -21,6 +21,7 @@
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionparametermodel.h"
+#include "addoptionheaderview.h"
 
 namespace gams {
 namespace studio {
@@ -69,10 +70,12 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     commandLineTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     commandLineTableView->setAutoScroll(true);
     commandLineTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-   commandLineTableView->setModel( optionParamModel );
-//    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
-//    commandLineTableView->horizontalHeader()->setAccessibleDescription("Active/Deactivate the option when run");
-//    commandLineTableView->resizeColumnsToContents();
+    commandLineTableView->setModel( optionParamModel );
+    commandLineTableView->horizontalHeader()->setStretchLastSection(true);
+
+    AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, commandLineTableView);
+    headerView->setSectionResizeMode(QHeaderView::Stretch);
+    commandLineTableView->setHorizontalHeader(headerView);
 
     splitter->addWidget(commandLineTableView);
     splitter->setSizes(QList<int>({INT_MAX, INT_MAX}));
@@ -105,6 +108,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
     optionDefinitionTreeView->resizeColumnToContents(2);
     optionDefinitionTreeView->resizeColumnToContents(3);
     optionDefinitionTreeView->setAlternatingRowColors(true);
+    optionDefinitionTreeView->setExpandsOnDoubleClick(false);
 
     optionDefinition_VLayout->addWidget(optionDefinitionTreeView);
 
@@ -130,6 +134,9 @@ void OptionEditor::setupUi(QWidget* optionEditor)
             this, static_cast<void(OptionEditor::*)(const QList<OptionItem> &)> (&OptionEditor::updateCommandLineStr));
     connect(this, static_cast<void(OptionEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionEditor::commandLineOptionChanged),
             mTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+
+    connect(optionDefinitionTreeView, &QAbstractItemView::doubleClicked, this, &OptionEditor::addOptionFromDefinition);
+
 }
 
 QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
@@ -139,7 +146,8 @@ QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
 
 void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
 {
-     emit optionTableModelChanged(commandLineStr);
+    Q_UNUSED(lineEdit);
+    emit optionTableModelChanged(commandLineStr);
 }
 
 void OptionEditor::updateCommandLineStr(const QString &commandLineStr)
@@ -164,12 +172,15 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = commandLineTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* addAction = menu.addAction("add new option");
-    QAction* insertAction = menu.addAction("insert new option");
+    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "add new option");
+    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction("delete selected option");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction("reset all options");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
+    menu.addSeparator();
+    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
 
     if (commandLineTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);
@@ -177,24 +188,68 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
     if (selection.count() <= 0) {
         insertAction->setVisible(false);
         deleteAction->setVisible(false);
+        moveUpAction->setVisible(false);
+        moveDownAction->setVisible(false);
+    } else {
+        QModelIndex index = selection.at(0);
+        if (index.row()==0)
+            moveUpAction->setVisible(false);
+        if (index.row()+1 == commandLineTableView->model()->rowCount())
+            moveDownAction->setVisible(false);
     }
 
     QAction* action = menu.exec(commandLineTableView->viewport()->mapToGlobal(pos));
     if (action == addAction) {
          commandLineTableView->model()->insertRows(commandLineTableView->model()->rowCount(), 1, QModelIndex());
+         commandLineTableView->selectRow(commandLineTableView->model()->rowCount()-1);
     } else if (action == insertAction) {
             if (selection.count() > 0) {
                 QModelIndex index = selection.at(0);
                 commandLineTableView->model()->insertRows(index.row(), 1, QModelIndex());
+                commandLineTableView->selectRow(index.row());
             }
-   } else if (action == deleteAction) {
+    } else if (action == moveUpAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            commandLineTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()-1);
+            commandLineTableView->selectRow(index.row()-1);
+        }
+
+    } else if (action == moveDownAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            commandLineTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()+2);
+            commandLineTableView->selectRow(index.row()+1);
+        }
+    } else if (action == deleteAction) {
              if (selection.count() > 0) {
                  QModelIndex index = selection.at(0);
                  commandLineTableView->model()->removeRow(index.row(), QModelIndex());
              }
-    } if (action == deleteAllActions) {
+    } else if (action == deleteAllActions) {
         emit optionTableModelChanged("");
     }
+}
+
+void OptionEditor::addOptionFromDefinition(const QModelIndex &index)
+{
+    QVariant data = optionDefinitionTreeView->model()->data(index);
+    QModelIndex defValueIndex = optionDefinitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+    QModelIndex  parentIndex =  optionDefinitionTreeView->model()->parent(index);
+//    qDebug() <<  "parentIndex=" << parentIndex.row();
+    // TODO insert before selected  or at the end when no selection
+    commandLineTableView->model()->insertRows(commandLineTableView->model()->rowCount(), 1, QModelIndex());
+    QModelIndex insertKeyIndex = commandLineTableView->model()->index(commandLineTableView->model()->rowCount()-1, 0);
+    QModelIndex insertValueIndex = commandLineTableView->model()->index(commandLineTableView->model()->rowCount()-1, 1);
+    if (parentIndex.row() < 0) {
+        commandLineTableView->model()->setData( insertKeyIndex, data.toString(), Qt::EditRole);
+        commandLineTableView->model()->setData( insertValueIndex, optionDefinitionTreeView->model()->data(defValueIndex).toString(), Qt::EditRole);
+    } else {
+        QVariant parentData = optionDefinitionTreeView->model()->data( parentIndex );
+        commandLineTableView->model()->setData( insertKeyIndex, parentData.toString(), Qt::EditRole);
+        commandLineTableView->model()->setData( insertValueIndex, data.toString(), Qt::EditRole);
+    }
+    commandLineTableView->selectRow(commandLineTableView->model()->rowCount()-1);
 }
 
 } // namespace studio

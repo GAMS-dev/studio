@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -124,6 +124,18 @@
      </property>
      <addaction name="actionSystem_2"/>
     </widget>
+    <widget class="QMenu" name="menuAdvanced">
+     <property name="title">
+      <string>Advanced</string>
+     </property>
+     <addaction name="actionSet_to_Uppercase"/>
+     <addaction name="actionSet_to_Lowercase"/>
+     <addaction name="separator"/>
+     <addaction name="actionIndent"/>
+     <addaction name="actionOutdent"/>
+     <addaction name="actionDuplicate_Line"/>
+     <addaction name="actionRemove_Line"/>
+    </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
@@ -131,8 +143,14 @@
     <addaction name="actionPaste"/>
     <addaction name="actionCut"/>
     <addaction name="actionSelect_All"/>
-    <addaction name="actionSet_to_Uppercase"/>
-    <addaction name="actionSet_to_Lowercase"/>
+    <addaction name="separator"/>
+    <addaction name="menuAdvanced"/>
+    <addaction name="separator"/>
+    <addaction name="actionInsert_Mode"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionReset_Zoom"/>
     <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
@@ -145,14 +163,19 @@
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
+    <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Welcome_Page"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionReset_Zoom"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionOnline_Help"/>
+    <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
@@ -337,9 +360,9 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionOnline_Help">
+  <action name="actionHelp">
    <property name="text">
-    <string>Online Help</string>
+    <string>Documentation</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -518,7 +541,7 @@
     <string>Compile with GDX Creation</string>
    </property>
    <property name="toolTip">
-    <string>Compile with GDX Creation</string>
+    <string>Compile and Create a GDX File with gms file root name</string>
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>
@@ -553,6 +576,9 @@
    <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionCopy">
    <property name="text">
@@ -560,6 +586,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionPaste">
@@ -604,7 +633,7 @@
   </action>
   <action name="actionSet_to_Uppercase">
    <property name="text">
-    <string>Set to Uppercase</string>
+    <string>Selection to Uppercase</string>
    </property>
    <property name="shortcut">
     <string>Alt+Shift+U</string>
@@ -612,15 +641,90 @@
   </action>
   <action name="actionSet_to_Lowercase">
    <property name="text">
-    <string>Set to Lowercase</string>
+    <string>Selection to Lowercase</string>
    </property>
    <property name="shortcut">
     <string>Alt+Shift+L</string>
    </property>
   </action>
   <action name="actionUpdate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>Update</string>
+    <string>&amp;Update</string>
+   </property>
+  </action>
+  <action name="actionHelp_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionInsert_Mode">
+   <property name="text">
+    <string>Insert Mode</string>
+   </property>
+   <property name="shortcut">
+    <string>Ins</string>
+   </property>
+  </action>
+  <action name="actionIndent">
+   <property name="text">
+    <string>Indent Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Tab</string>
+   </property>
+  </action>
+  <action name="actionOutdent">
+   <property name="text">
+    <string>Outdent Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Tab</string>
+   </property>
+  </action>
+  <action name="actionDuplicate_Line">
+   <property name="text">
+    <string>Duplicate Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+L</string>
+   </property>
+  </action>
+  <action name="actionRemove_Line">
+   <property name="text">
+    <string>Remove Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Del</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionReset_Zoom">
+   <property name="text">
+    <string>Reset Zoom</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>
