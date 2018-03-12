@@ -184,12 +184,12 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         FileContext *fc(static_cast<FileContext*>(fsc));
         if (fc == nullptr) FATAL() << "FileContext not found";
 
-        QRegularExpression searchRegex; // QRegularExpression(searchTerm);
+        QRegularExpression searchRegex;
 
         if (!regex()) searchRegex.setPattern(QRegularExpression::escape(searchTerm));
         else searchRegex.setPattern(searchTerm);
 
-        if (wholeWords()) searchRegex.setPattern("\b" + searchRegex.pattern() + "\b");
+        if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
         if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
         QTextCursor item;
@@ -201,7 +201,6 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 
             QFile file(fc->location());
             if (file.open(QIODevice::ReadOnly)) {
-                Qt::CaseSensitivity cs = (caseSens() ? Qt::CaseSensitive : Qt::CaseInsensitive);
                 QTextStream in(&file);
                 while (!in.atEnd()) { // read file
                     lineCounter++;
