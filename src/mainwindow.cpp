@@ -1854,7 +1854,6 @@ void MainWindow::on_actionRemove_Line_triggered()
 
 void MainWindow::toggleLogDebug()
 {
-    DEB() << "Ctrl+F12 triggered";
     mLogDebugLines = !mLogDebugLines;
     FileGroupContext* root = mFileRepo.treeModel()->rootContext();
     for (int i = 0; i < root->childCount(); ++i) {
