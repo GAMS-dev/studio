@@ -127,7 +127,8 @@ SOURCES += \
     gotowidget.cpp \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
-    tool.cpp
+    tool.cpp \
+    updatedialog.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -199,7 +200,8 @@ HEADERS += \
     gotowidget.h \
     editors/logeditor.h \
     editors/abstracteditor.h \
-    tool.h
+    tool.h \
+    updatedialog.h
 
 FORMS += \
     welcomepage.ui  \
@@ -213,7 +215,8 @@ FORMS += \
     searchwidget.ui \
     resultsview.ui \
     bookmarkdialog.ui \
-    gotowidget.ui
+    gotowidget.ui \
+    updatedialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

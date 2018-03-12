@@ -41,8 +41,8 @@
 #include "gotowidget.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
-#include "c4umcc.h"
 #include "tool.h"
+#include "updatedialog.h"
 
 namespace gams {
 namespace studio {
@@ -727,30 +727,8 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
-    c4uHandle_t c4u;
-    char msg[GMS_SSSIZE];
-    if (!c4uCreateD(&c4u, GAMSPaths::systemDir().toLatin1(), msg, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library: " << msg;
-    }
-
-    QString gamslice = GAMSPaths::systemDir() + QDir::separator() + "gamslice.txt";
-    qDebug() << "gamslice >> " << gamslice;
-
-    c4uReadLice(c4u, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
-    if (c4uIsValid(c4u)) {
-        qDebug() << "valid";
-    } else {
-        qDebug() << "invalid";
-        c4uCreateMsg(c4u);
-        auto msgCount = c4uMsgCount(c4u);
-        qDebug() << "count >> " << msgCount;
-        for (int i=0; i<msgCount; ++i) {
-            int res = c4uGetMsg(c4u, i, msg);
-            qDebug() << "res >> " << res;
-            qDebug() << "msg >> " << msg;
-        }
-    }
-    c4uFree(&c4u);
+    UpdateDialog updateDialog(this);
+    updateDialog.exec();
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)
