@@ -1702,25 +1702,29 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    QPlainTextEdit *qpte = dynamic_cast<QPlainTextEdit*>(focusWidget());
-    if (qpte) // if any sort of editor
-        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-    else // tables n stuff
-        focusWidget()->setFont(QFont().defaultFamily());
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
+    focusWidget()->setFont(QFont().defaultFamily()); // reset focus widget (project view, gedx viewer, ...)
+    getDockHelpView()->resetZoom(); // reset help view
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
-    if (qpte)
-        qpte->zoomOut();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomOut();
+    } else {
+        QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+        if (qpte) qpte->zoomOut();
+    }
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
-    if (qpte)
-        qpte->zoomIn();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomIn();
+    } else {
+        QPlainTextEdit *qpte = static_cast<QPlainTextEdit*>(focusWidget());
+        if (qpte) qpte->zoomIn();
+    }
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
