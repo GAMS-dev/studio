@@ -272,17 +272,6 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     mAppSettings->endGroup();
 
-
-    // history
-    mAppSettings->beginGroup("fileHistory");
-
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-
     QMap<QString, QStringList> map;
     int size = mAppSettings->beginReadArray("commandLineOptions");
     for (int i = 0; i < size; i++) {
@@ -320,7 +309,19 @@ void StudioSettings::loadSettings(MainWindow *main)
         }
     }
     mAppSettings->endArray();
+
+    // history
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    main->history()->lastOpenedFiles.clear();
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+
     mAppSettings->endGroup();
+
+
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)
