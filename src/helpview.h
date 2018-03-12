@@ -40,6 +40,9 @@ public:
 
 public slots:
     void on_urlOpened(const QUrl& location);
+    void on_commandLineHelpRequested();
+    void on_dollarControlHelpRequested(const QString& word);
+    void on_keywordHelpRequested(const QString& word);
     void on_bookmarkNameUpdated(const QString& location, const QString& name);
     void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
     void on_bookmarkRemoved(const QString& location, const QString& name);
@@ -61,6 +64,12 @@ public slots:
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:
+    static const QString DOCUMENT_DIR;
+    static const QString START_CHAPTER;
+    static const QString DOLLARCONTROL_CHAPTER;
+    static const QString GAMSCALL_CHAPTER;
+    static const QString INDEX_CHAPTER;
+
     QMultiMap<QString, QString> bookmarkMap;
     QMenu* bookmarkMenu;
 
@@ -77,7 +86,7 @@ private:
     QWebEngineView* helpView;
 
     QUrl helpStartPage;
-    QDir defaultLocalHelpDir;
+    QDir defaultBaseHelpDir;
     QString defaultOnlineHelpLocation;
 };
 

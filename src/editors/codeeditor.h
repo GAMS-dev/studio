@@ -61,6 +61,7 @@ public:
     void duplicateLine();
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
+    void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -104,7 +105,6 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
-    void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
 private:
     class BlockEdit

@@ -688,15 +688,24 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
+    if ( (mRecent.editor != nullptr) && (focusWidget() == mRecent.editor) ) {
+        CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+        QString word;
+        int istate = 0;
+        ce->wordInfo(ce->textCursor(), word, istate);
+        qDebug() << "word=[" << word << "], State=" << istate;
+
+        if (istate == static_cast<int>(SyntaxState::Title)) {
+            mDockHelpView->on_dollarControlHelpRequested("title");
+        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            mDockHelpView->on_dollarControlHelpRequested(word);
+        } else {
+            mDockHelpView->on_keywordHelpRequested(word);
+        }
+    }
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
-
-//void MainWindow::on_actionHelp_triggered()
-//{
-//    if (mDockHelpView->isHidden())
-//       mDockHelpView->show();
-//}
 
 void MainWindow::on_actionAbout_triggered()
 {
@@ -1351,9 +1360,7 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-
-    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->on_commandLineHelpRequested();
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }

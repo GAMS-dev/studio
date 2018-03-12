@@ -26,12 +26,19 @@
 namespace gams {
 namespace studio {
 
+const QString HelpView::DOCUMENT_DIR = "docs";
+const QString HelpView::START_CHAPTER = "index.html";
+const QString HelpView::DOLLARCONTROL_CHAPTER = "UG_DollarControlOptions.html";
+const QString HelpView::GAMSCALL_CHAPTER = "UG_GamsCall.html";
+const QString HelpView::INDEX_CHAPTER = "keyword.html";
+
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    defaultLocalHelpDir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") );
-    QDir dir = defaultLocalHelpDir.filePath("index.html");
+    defaultBaseHelpDir = QDir( QDir( GAMSPaths::systemDir() ).filePath(DOCUMENT_DIR) );
+    QDir dir = defaultBaseHelpDir.filePath(START_CHAPTER);
     helpStartPage = QUrl::fromLocalFile(dir.canonicalPath());
+//    if (!helpStartPage.isValid())
 
     defaultOnlineHelpLocation = "www.gams.com/latest/docs";
     setupUi(parent);
@@ -166,6 +173,48 @@ void HelpView::on_urlOpened(const QUrl& location)
     helpView->load(location);
 }
 
+void HelpView::on_commandLineHelpRequested()
+{
+    QDir dir = defaultBaseHelpDir.filePath(GAMSCALL_CHAPTER) ;
+    helpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+}
+
+void HelpView::on_dollarControlHelpRequested(const QString &word)
+{
+    QDir dir = defaultBaseHelpDir.filePath(DOLLARCONTROL_CHAPTER);
+    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+    if (word.toLower().startsWith("off")) {
+        url.setFragment("DOLLARon"+word.toLower());
+    } else  if (word.toLower().startsWith("on")) {
+            QString dollarOptionStr = "onoff"+word.toLower().mid(2);
+            url.setFragment("DOLLAR"+dollarOptionStr);
+    } else {
+        url.setFragment("DOLLAR"+word.toLower());
+    }
+    qDebug() << url.path();
+    qDebug() << url.toDisplayString();
+    if (url.isValid())
+        helpView->load(url);
+    else
+        qDebug() << "INVALID!";
+
+}
+
+void HelpView::on_keywordHelpRequested(const QString &word)
+{
+    QDir dir = defaultBaseHelpDir.filePath(INDEX_CHAPTER);
+    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+
+    url.setQuery("q="+word);
+    qDebug() << url.path();
+    qDebug() << url.toDisplayString();
+    if (url.isValid())
+        helpView->load(url);
+    else
+        qDebug() << "INVALID!";
+
+}
+
 void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& name)
 {
     if (bookmarkMap.contains(location)) {
@@ -234,6 +283,8 @@ void HelpView::on_loadFinished(bool ok)
            actionOnlineHelp->setChecked( true );
        else
            actionOnlineHelp->setChecked( false );
+    } else {
+        qDebug() << "WHAT?";
     }
 }
 
@@ -283,15 +334,15 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
     QString urlStr = helpView->url().toString();
     if (checked) {
         urlStr.replace( urlStr.indexOf("file"), 4, "https");
-        urlStr.replace( urlStr.indexOf( defaultLocalHelpDir.canonicalPath()),
-                        defaultLocalHelpDir.canonicalPath().size(),
+        urlStr.replace( urlStr.indexOf( defaultBaseHelpDir.canonicalPath()),
+                        defaultBaseHelpDir.canonicalPath().size(),
                         defaultOnlineHelpLocation );
         actionOnlineHelp->setChecked( true );
     } else {
         urlStr.replace( urlStr.indexOf("https"), 5, "file");
         urlStr.replace( urlStr.indexOf( defaultOnlineHelpLocation ),
                         defaultOnlineHelpLocation.size(),
-                        defaultLocalHelpDir.canonicalPath());
+                        defaultBaseHelpDir.canonicalPath());
         actionOnlineHelp->setChecked( false );
     }
     helpView->load( QUrl(urlStr, QUrl::TolerantMode) );
