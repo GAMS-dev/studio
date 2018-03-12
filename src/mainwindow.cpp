@@ -135,10 +135,8 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    if (!mSettings->skipWelcomePage()) {
+    if (!mSettings->skipWelcomePage())
         createWelcomePage();
-        ui->mainTab->setCurrentIndex(0);
-    }
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -785,6 +783,7 @@ void MainWindow::createWelcomePage()
     mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
 void MainWindow::createRunAndCommandLineWidgets()
@@ -957,7 +956,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     if(mWp == nullptr)
         createWelcomePage();
-    ui->mainTab->setCurrentIndex(0);
+    else
+        ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
 }
 
 void MainWindow::renameToBackup(QFile *file)
