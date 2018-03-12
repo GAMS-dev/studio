@@ -49,6 +49,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_highlightUnderCursor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
 }
 
 void SettingsDialog::loadSettings()
@@ -72,6 +73,9 @@ void SettingsDialog::loadSettings()
     ui->cb_highlightUnderCursor->setChecked(mSettings->wordUnderCursor());
     ui->cb_highlightcurrent->setChecked(mSettings->highlightCurrentLine());
     ui->cb_autoindent->setChecked(mSettings->autoIndent());
+
+    // misc tab page
+    ui->sb_historySize->setValue(mSettings->historySize());
 }
 
 void SettingsDialog::setModified()
@@ -86,9 +90,10 @@ void SettingsDialog::setModifiedStatus(bool status)
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(status);
 }
 
+    // save settings from ui to qsettings
 void SettingsDialog::saveSettings()
 {
-    // save settings from ui to qsettings
+    // general page
     mSettings->setDefaultWorkspace(ui->txt_workspace->text());
     mSettings->setSkipWelcomePage(ui->cb_skipwelcome->isChecked());
     mSettings->setRestoreTabs(ui->cb_restoretabs->isChecked());
@@ -96,6 +101,7 @@ void SettingsDialog::saveSettings()
     mSettings->setOpenLst(ui->cb_openlst->isChecked());
     mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
 
+    // editor page
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
@@ -106,6 +112,9 @@ void SettingsDialog::saveSettings()
     mSettings->setWordUnderCursor(ui->cb_highlightUnderCursor->isChecked());
     mSettings->setHighlightCurrentLine(ui->cb_highlightcurrent->isChecked());
     mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
+
+    // misc page
+    mSettings->setHistorySize(ui->sb_historySize->value());
 
     // done
     setModifiedStatus(false);

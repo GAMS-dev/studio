@@ -79,7 +79,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    mDockHelpView->hide();   
+    mDockHelpView->hide();
 
     createRunAndCommandLineWidgets();
 
@@ -141,10 +141,8 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    if (!mSettings->skipWelcomePage()) {
+    if (!mSettings->skipWelcomePage())
         createWelcomePage();
-        ui->mainTab->setCurrentIndex(0);
-    }
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -688,8 +686,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
-    mSettings->saveSettings(this);
-    QCoreApplication::quit();
+    close();
 }
 
 void MainWindow::on_actionHelp_triggered()
@@ -742,6 +739,8 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
         ui->dockLogView->show();
     else
         ui->dockLogView->hide();
+
+    if (mWp) mWp->setOutputVisible(checked);
 }
 
 void MainWindow::on_actionOption_View_triggered(bool checked)
@@ -823,6 +822,7 @@ void MainWindow::createWelcomePage()
     mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
 void MainWindow::createRunAndCommandLineWidgets()
@@ -997,7 +997,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     if(mWp == nullptr)
         createWelcomePage();
-    ui->mainTab->setCurrentIndex(0);
+    else
+        ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
 }
 
 void MainWindow::renameToBackup(QFile *file)
@@ -1033,7 +1034,7 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history()->lastOpenedFiles.size() >= history()->MAX_FILE_HISTORY) {
+    if (history()->lastOpenedFiles.size() >= mSettings->historySize()) {
         history()->lastOpenedFiles.removeLast();
     }
     if (!history()->lastOpenedFiles.contains(filePath))
@@ -1745,27 +1746,38 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
+    getDockHelpView()->resetZoom(); // reset help view
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomOut();
-        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomOut();
+    } else {
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (ae) {
+            if (getDockHelpView()->isAncestorOf(focusWidget())) {
+                getDockHelpView()->zoomIn();
+            } else {
+                int pix = ae->fontInfo().pixelSize();
+                if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
+            }
+        }
     }
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomIn();
-        if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomIn();
+    } else {
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (ae) {
+            int pix = ae->fontInfo().pixelSize();
+            ae->zoomIn();
+            if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+        }
     }
 }
 

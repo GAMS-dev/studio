@@ -117,7 +117,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     // history
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->lastOpenedFiles.size(); i++) {
+    for (int i = 0; i < main->settings()->historySize(); i++) {
+        if (i >= main->history()->lastOpenedFiles.length()) break;
         mAppSettings->setArrayIndex(i);
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }
@@ -175,6 +176,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autoIndent", autoIndent());
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("Misc");
+
+    mUserSettings->setValue("historySize", historySize());
+
+    mUserSettings->endGroup();
 
     mAppSettings->sync();
 }
@@ -206,6 +212,21 @@ void StudioSettings::loadUserSettings()
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("Misc");
+
+    setHistorySize(mUserSettings->value("historySize", 8).toInt());
+
+    mUserSettings->endGroup();
+}
+
+int StudioSettings::historySize() const
+{
+    return mHistorySize;
+}
+
+void StudioSettings::setHistorySize(int historySize)
+{
+    mHistorySize = historySize;
 }
 
 void StudioSettings::loadSettings(MainWindow *main)
@@ -215,6 +236,7 @@ void StudioSettings::loadSettings(MainWindow *main)
         mAppSettings->clear();
         mUserSettings->clear();
     }
+    loadUserSettings();
 
     // window
     mAppSettings->beginGroup("mainWindow");
@@ -252,13 +274,10 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->getDockHelpView()->setBookmarkMap(bookmarkMap);
 
     mAppSettings->endGroup();
-
-
-    // history
     mAppSettings->beginGroup("fileHistory");
 
     mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->MAX_FILE_HISTORY; i++) {
+    for (int i = 0; i < historySize(); i++) {
         mAppSettings->setArrayIndex(i);
         main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
@@ -278,20 +297,14 @@ void StudioSettings::loadSettings(MainWindow *main)
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->fileRepository()->read(loadDoc.object());
 
-    mAppSettings->endGroup();
-
-    loadUserSettings();
-
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
     // save settings directly after loading in order to reset
-    if (mResetSettings)
-        saveSettings(main);
+    if (mResetSettings) saveSettings(main);
 
     if(restoreTabs()) {
-        mAppSettings->beginGroup("fileHistory");
         size = mAppSettings->beginReadArray("openedTabs");
         for (int i = 0; i < size; i++) {
             mAppSettings->setArrayIndex(i);
@@ -299,8 +312,18 @@ void StudioSettings::loadSettings(MainWindow *main)
             if(QFileInfo(value).exists())
                 main->openFile(value);
         }
+        mAppSettings->endArray();
+    }
+
+    // history
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    main->history()->lastOpenedFiles.clear();
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
+
     mAppSettings->endGroup();
 }
 
