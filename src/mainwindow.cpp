@@ -115,6 +115,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     initTabs();
     connectCommandLineWidgets();
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
 
 MainWindow::~MainWindow()
@@ -1090,6 +1091,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if (fsc->type() == FileSystemContext::FileGroup) {
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
+            logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
@@ -1278,6 +1280,7 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
+        logProc->setDebugLog(mLogDebugLines);
         LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
 
@@ -1403,8 +1406,9 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 
 void MainWindow::changeToLog(FileContext* fileContext)
 {
-    FileContext* logContext = mFileRepo.logContext(fileContext);
+    LogContext* logContext = mFileRepo.logContext(fileContext);
     if (logContext && !logContext->editors().isEmpty()) {
+        logContext->setDebugLog(mLogDebugLines);
         QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
         if (logEdit && ui->logTab->currentWidget() != logEdit) {
             if (ui->logTab->currentWidget() != mResultsView)
@@ -1848,6 +1852,22 @@ void MainWindow::on_actionRemove_Line_triggered()
         ce->removeLine();
 }
 
+void MainWindow::toggleLogDebug()
+{
+    DEB() << "Ctrl+F12 triggered";
+    mLogDebugLines = !mLogDebugLines;
+    FileGroupContext* root = mFileRepo.treeModel()->rootContext();
+    for (int i = 0; i < root->childCount(); ++i) {
+        FileSystemContext *fsc = root->childEntry(i);
+        if (fsc->type() == FileSystemContext::FileGroup) {
+            FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+            LogContext* log = group->logContext();
+            if (log) log->setDebugLog(mLogDebugLines);
+        }
+    }
+}
+
 }
 }
+
 

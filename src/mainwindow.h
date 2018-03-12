@@ -201,6 +201,8 @@ private slots:
     void interruptTriggered();
     void stopTriggered();
 
+    void toggleLogDebug();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -260,6 +262,7 @@ private:
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
+    bool mLogDebugLines = false;
 
 };
 
