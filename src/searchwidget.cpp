@@ -164,7 +164,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
 {
     if (!fsc) return QList<Result>();
 
-    QRegExp fileFilter(ui->txt_filePattern->text().trimmed());
+    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     // (scope not current file && wildcard not matching) || has gdx extension
@@ -423,7 +423,7 @@ Result::Result(int locLineNr, int locCol, QString locFile, QString context) :
 
 void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 {
-    ui->txt_filePattern->setEnabled(index != SearchScope::ThisFile);
+    ui->combo_filePattern->setEnabled(index != SearchScope::ThisFile);
 }
 
 void SearchWidget::on_btn_back_clicked()
@@ -519,14 +519,22 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 
 void SearchWidget::insertHistory()
 {
-    QString current(ui->combo_search->currentText());
-
-    if (ui->combo_search->findText(current) == -1) {
-        ui->combo_search->insertItem(0, current);
+    QString searchText(ui->combo_search->currentText());
+    if (ui->combo_search->findText(searchText) == -1) {
+        ui->combo_search->insertItem(0, searchText);
     } else {
-        ui->combo_search->removeItem(ui->combo_search->findText(current));
-        ui->combo_search->insertItem(0, current);
+        ui->combo_search->removeItem(ui->combo_search->findText(searchText));
+        ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
+    }
+
+    QString filePattern(ui->combo_filePattern->currentText());
+    if (ui->combo_filePattern->findText(filePattern) == -1) {
+        ui->combo_filePattern->insertItem(0, filePattern);
+    } else {
+        ui->combo_filePattern->removeItem(ui->combo_filePattern->findText(filePattern));
+        ui->combo_filePattern->insertItem(0, filePattern);
+        ui->combo_filePattern->setCurrentIndex(0);
     }
 }
 
