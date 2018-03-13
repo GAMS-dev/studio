@@ -345,24 +345,15 @@ void SearchWidget::showEvent(QShowEvent *event)
     Q_UNUSED(event);
 
     QWidget *widget = mMain->recent()->editor;
-    QPlainTextEdit *edit = nullptr;
+    QPlainTextEdit *edit = static_cast<QPlainTextEdit*>(widget);
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
+    if (!fsc) return;
+
     ui->combo_search->setFocus();
-
-    if (!fsc) {
-        return;
-    }
-
-    if ((fsc->type() != FileSystemContext::etGdx) && (fsc->type() != FileSystemContext::etUndefined))
-        edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
-    if (!edit) return;
-
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
         ui->combo_search->setCurrentText("");
-
-
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
