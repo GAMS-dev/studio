@@ -22,6 +22,7 @@
 #include "gclgms.h"
 #include "gamspaths.h"
 #include "exception.h"
+#include "version.h"
 
 namespace gams {
 namespace studio {
@@ -36,27 +37,38 @@ UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
 
 UpdateDialog::~UpdateDialog()
 {
-    c4uFree(&mCheckUpdate);
+    c4uFree(&mC4UHandle);
 }
 
 void UpdateDialog::setUpdateInfo()
 {
-    char message[GMS_SSSIZE];
-    if (!c4uCreateD(&mCheckUpdate, GAMSPaths::systemDir().toLatin1(), message, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library: " << message;
+    char buffer[GMS_SSSIZE];
+    if (!c4uCreateD(&mC4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
+        EXCEPT() << "Could not load c4u library: " << buffer;
     }
 
-    c4uReadLice(mCheckUpdate, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
-    if (!c4uIsValid(mCheckUpdate)) {
-        c4uCreateMsg(mCheckUpdate);
+    c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
+    if (!c4uIsValid(mC4UHandle)) {
+        c4uCreateMsg(mC4UHandle);
     }
 
-    QStringList messages;
-    for (int i=0, c=c4uMsgCount(mCheckUpdate); i<c; ++i) {
-        if (c4uGetMsg(mCheckUpdate, i, message))
-            messages.append(message);
+    int messageIndex=0;
+    mMessages << "GAMS Distribution";
+    getMessages(messageIndex, buffer);
+
+    mMessages << "\nGAMS Studio";
+    c4uCheck4NewStudio(mC4UHandle, gams::studio::versionToNumber());
+    getMessages(messageIndex, buffer);
+
+    ui->updateInfo->setText(mMessages.join("\n"));
+}
+
+void UpdateDialog::getMessages(int &messageIndex, char *buffer)
+{
+    for (int c=c4uMsgCount(mC4UHandle); messageIndex<c; ++messageIndex) {
+        if (c4uGetMsg(mC4UHandle, messageIndex, buffer))
+            mMessages.append(buffer);
     }
-    ui->updateInfo->setText(messages.join("\n"));
 }
 
 }

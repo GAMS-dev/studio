@@ -41,10 +41,12 @@ public:
 
 private:
     void setUpdateInfo();
+    void getMessages(int &messageIndex, char *buffer);
 
 private:
     Ui::UpdateDialog *ui;
-    c4uHandle_t mCheckUpdate;
+    c4uHandle_t mC4UHandle;
+    QStringList mMessages;
 };
 
 }
