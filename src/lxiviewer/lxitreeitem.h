@@ -42,6 +42,8 @@ public:
 
     QString index() const;
 
+    QString text() const;
+
 private:
     QList<LxiTreeItem*> mChildItems;
     QString mIndex;

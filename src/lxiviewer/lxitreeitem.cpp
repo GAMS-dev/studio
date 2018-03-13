@@ -67,6 +67,11 @@ QString LxiTreeItem::index() const
     return mIndex;
 }
 
+QString LxiTreeItem::text() const
+{
+    return mText;
+}
+
 } // namespace lxiviewer
 } // namespace studio
 } // namespace gams

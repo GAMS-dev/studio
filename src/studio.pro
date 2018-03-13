@@ -129,7 +129,8 @@ SOURCES += \
     editors/abstracteditor.cpp \
     tool.cpp \
     lxiviewer/lxitreeitem.cpp \
-    lxiviewer/lxiparser.cpp
+    lxiviewer/lxiparser.cpp \
+    lxiviewer/lxitreemodel.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -203,7 +204,8 @@ HEADERS += \
     editors/abstracteditor.h \
     tool.h \
     lxiviewer/lxitreeitem.h \
-    lxiviewer/lxiparser.h
+    lxiviewer/lxiparser.h \
+    lxiviewer/lxitreemodel.h
 
 FORMS += \
     welcomepage.ui  \
