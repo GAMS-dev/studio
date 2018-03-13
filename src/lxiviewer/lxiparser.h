@@ -17,56 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef LXIPARSER_H
+#define LXIPARSER_H
+
 #include "lxitreeitem.h"
 
 namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeItem::LxiTreeItem(QString index, int lineNr, QString text, LxiTreeItem *parentItem)
-    : mIndex(index), mLineNr(lineNr), mText(text), mParentItem(parentItem)
+class LxiParser
 {
 
-}
+public:
+    static LxiTreeItem* parseFile(QString lxiFile);
 
-LxiTreeItem::~LxiTreeItem()
-{
-    qDeleteAll(mChildItems);
-}
+private:
+    LxiParser();
 
-void LxiTreeItem::appendChild(LxiTreeItem *child)
-{
-    mChildItems.append(child);
-}
-
-LxiTreeItem *LxiTreeItem::child(int row)
-{
-    return mChildItems.value(row);
-}
-
-int LxiTreeItem::childCount() const
-{
-    return mChildItems.count();
-}
-
-int LxiTreeItem::row() const
-{
-    if (mParentItem)
-        return mParentItem->mChildItems.indexOf(const_cast<LxiTreeItem*>(this));
-
-    return 0;
-}
-
-LxiTreeItem *LxiTreeItem::parentItem()
-{
-    return mParentItem;
-}
-
-QString LxiTreeItem::index() const
-{
-    return mIndex;
-}
+};
 
 } // namespace lxiviewer
 } // namespace studio
 } // namespace gams
+
+#endif // LXIPARSER_H

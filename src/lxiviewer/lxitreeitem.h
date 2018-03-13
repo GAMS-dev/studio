@@ -30,7 +30,7 @@ namespace lxiviewer {
 class LxiTreeItem
 {
 public:
-    explicit LxiTreeItem(LxiTreeItem *parentItem = nullptr);
+    explicit LxiTreeItem(QString index = "", int lineNr = -1, QString text = "", LxiTreeItem *parentItem = nullptr);
     ~LxiTreeItem();
 
     void appendChild(LxiTreeItem *child);
@@ -40,9 +40,16 @@ public:
     int row() const;
     LxiTreeItem* parentItem();
 
+    QString index() const;
+
 private:
     QList<LxiTreeItem*> mChildItems;
+    QString mIndex;
+    int mLineNr;
+    QString mText;
     LxiTreeItem* mParentItem = nullptr;
+
+
 };
 
 } // namespace lxiviewer
