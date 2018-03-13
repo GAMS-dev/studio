@@ -52,20 +52,34 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
         if (idx == lastIdx)
             lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         else {
-            if (idx == "D")
+            if (idx == "B")
+                lastParent = rootItem;
+            else if (idx == "D") {
                 current = new LxiTreeItem(lastIdx, -1, "Equation", lastParent);
-            else if (idx == "E")
+                lastParent->appendChild(current);
+                lastParent = current;
+            }
+            else if (idx == "E") {
                 current = new LxiTreeItem(lastIdx, -1, "Column", lastParent);
-            else if (idx == "F")
+                lastParent->appendChild(current);
+                lastParent = current;
+            }
+            else if (idx == "F") {
                 current = new LxiTreeItem(lastIdx, -1, "SolEQU", lastParent);
-            else if (idx == "G")
+                lastParent->appendChild(current);
+                lastParent = current;
+            }
+            else if (idx == "G") {
                 current = new LxiTreeItem(lastIdx, -1, "SolVAR", lastParent);
+                lastParent->appendChild(current);
+                lastParent = current;
+            }
 
-            lastParent = current;
             lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         }
         lastIdx = idx;
     }
+    return rootItem;
 }
 
 LxiParser::LxiParser()

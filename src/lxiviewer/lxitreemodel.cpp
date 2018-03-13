@@ -1,4 +1,5 @@
 #include "lxitreemodel.h"
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -64,9 +65,6 @@ int LxiTreeModel::rowCount(const QModelIndex &parent) const
 
 int LxiTreeModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid())
-        return 0;
-
     return 1;
 }
 
