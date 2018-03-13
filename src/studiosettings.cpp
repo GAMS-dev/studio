@@ -97,6 +97,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("helpView", main->helpViewVisibility());
     mAppSettings->setValue("optionView", main->optionEditorVisibility());
     mAppSettings->setValue("optionEditor", main->isOptionDefinitionChecked());
+    mAppSettings->setValue("encodingMIBs", main->encodingMIBs());
 
     mAppSettings->endGroup();
 
@@ -236,6 +237,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView").toBool());
     main->checkOptionDefinition(mAppSettings->value("optionEditor").toBool());
+    main->setEncodingMIBs(mAppSettings->value("encodingMIPs", "0").toString());
 
     mAppSettings->endGroup();
 

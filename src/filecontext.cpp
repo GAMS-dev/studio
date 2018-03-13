@@ -26,8 +26,8 @@
 namespace gams {
 namespace studio {
 
-const QStringList FileContext::mDefaulsCodecs = QStringList() << "Utf-8" << "GB2312" << "Shift-JIS"
-                                                              << "System" << "Windows-1250" << "Latin-1";
+const QList<int> FileContext::mDefaulsCodecs {0, 1, 108};
+        // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
 FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
     : FileSystemContext(fileId, name, location, type)
@@ -65,15 +65,18 @@ void FileContext::setParentEntry(FileGroupContext* parent)
     }
 }
 
-QString FileContext::codec() const
+int FileContext::codecMib() const
 {
-    return mCodec;
+    return mCodec->mibEnum();
 }
 
-void FileContext::setCodec(const QString& codec)
+void FileContext::setCodecMib(int mib)
 {
-    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
+    QTextCodec *codec = QTextCodec::codecForMib(mib);
+    if (!codec)
+        EXCEPT() << "TextCodec not found for MIB " << mib;
     mCodec = codec;
+    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
 }
 
 const QString FileContext::caption()
@@ -101,7 +104,7 @@ void FileContext::save(QString filePath)
         EXCEPT() << "Can't open the file";
     mMetrics = FileMetrics();
     QTextStream out(&file);
-    out.setCodec(mCodec.toLatin1().data());
+    if (mCodec) out.setCodec(mCodec);
     out << document()->toPlainText();
     out.flush();
     file.close();
@@ -255,13 +258,14 @@ bool FileContext::isReadOnly()
     return edit && edit->isReadOnly();
 }
 
-void FileContext::load(QString codecName, bool keepMarks)
+void FileContext::load(QList<int> codecMibs, bool keepMarks)
 {
 //    TRACETIME();
     if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 
-    QStringList codecNames = codecName.isEmpty() ? mDefaulsCodecs : QStringList() << codecName;
+    QList<int> mibs = codecMibs.isEmpty() ? mDefaulsCodecs : codecMibs;
+
     QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -269,22 +273,20 @@ void FileContext::load(QString codecName, bool keepMarks)
         mMetrics = FileMetrics();
         const QByteArray data(file.readAll());
         QString text;
-        QString nameOfUsedCodec;
-        for (QString tcName: codecNames) {
+        QTextCodec *codec = nullptr;
+        for (int mib: mibs) {
             QTextCodec::ConverterState state;
-            QTextCodec *codec = QTextCodec::codecForName(tcName.toLatin1().data());
+            codec = QTextCodec::codecForMib(mib);
             if (codec) {
-                nameOfUsedCodec = tcName;
                 text = codec->toUnicode(data.constData(), data.size(), &state);
                 if (state.invalidChars == 0) {
                     break;
                 }
             } else {
-                qDebug() << "System doesn't contain codec " << nameOfUsedCodec;
-                nameOfUsedCodec = QString();
+                DEB() << "System doesn't contain codec for MIB " << mib;
             }
         }
-        if (!nameOfUsedCodec.isEmpty()) {
+        if (codec) {
 //            if (mMarks && keepMarks)
 //                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             QVector<QPoint> edPos = getEditPositions();
@@ -292,7 +294,7 @@ void FileContext::load(QString codecName, bool keepMarks)
             setEditPositions(edPos);
 //            if (mMarks && keepMarks)
 //                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
-            mCodec = nameOfUsedCodec;
+            mCodec = codec;
         }
         file.close();
         document()->setModified(false);
@@ -304,6 +306,11 @@ void FileContext::load(QString codecName, bool keepMarks)
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
         mWatcher->addPath(location());
     }
+}
+
+void FileContext::load(int codecMib, bool keepMarks)
+{
+    load(QList<int>() << codecMib, keepMarks);
 }
 
 void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)

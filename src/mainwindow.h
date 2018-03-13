@@ -83,7 +83,7 @@ public:
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
-    void ensureCodecMenu(QString codecName);
+    void ensureCodecMenu(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
@@ -92,6 +92,9 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    QString encodingMIBs();
+    void setEncodingMIBs(QString mibList);
+    void setEncodingMIBs(QList<int> mibs);
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -119,6 +122,7 @@ public slots:
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true);
     void codecChanged(QAction *action);
+    void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
@@ -197,11 +201,12 @@ private slots:
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
+    void on_actionSelect_encodings_triggered();
 
     void interruptTriggered();
     void stopTriggered();
-
     void toggleLogDebug();
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -248,7 +253,8 @@ private:
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    QActionGroup *mCodecGroup;
+    QActionGroup *mCodecGroupSwitch;
+    QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;

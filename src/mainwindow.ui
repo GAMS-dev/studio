@@ -122,7 +122,16 @@
      <property name="title">
       <string>Encoding</string>
      </property>
-     <addaction name="actionSystem_2"/>
+     <widget class="QMenu" name="menureload_with">
+      <property name="title">
+       <string>reload with ...</string>
+      </property>
+      <addaction name="actionSwitchEncoding"/>
+     </widget>
+     <addaction name="menureload_with"/>
+     <addaction name="actionSelect_encodings"/>
+     <addaction name="separator"/>
+     <addaction name="actionReloadEncoding"/>
     </widget>
     <widget class="QMenu" name="menuAdvanced">
      <property name="title">
@@ -464,7 +473,7 @@
     <string>Close All Except Visible</string>
    </property>
   </action>
-  <action name="actionSystem_2">
+  <action name="actionReloadEncoding">
    <property name="text">
     <string>System</string>
    </property>
@@ -725,6 +734,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionSelect_encodings">
+   <property name="text">
+    <string>Select encodings</string>
+   </property>
+  </action>
+  <action name="actionSwitchEncoding">
+   <property name="text">
+    <string>System</string>
    </property>
   </action>
  </widget>

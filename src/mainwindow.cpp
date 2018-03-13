@@ -41,6 +41,7 @@
 #include "gotowidget.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
+#include "editors/selectencodings.h"
 #include "c4umcc.h"
 #include "tool.h"
 
@@ -83,8 +84,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     createRunAndCommandLineWidgets();
 
-    mCodecGroup = new QActionGroup(this);
-    connect(mCodecGroup, &QActionGroup::triggered, this, &MainWindow::codecChanged);
+    mCodecGroupReload = new QActionGroup(this);
+    connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
+    mCodecGroupSwitch = new QActionGroup(this);
+    connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
@@ -102,7 +105,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
-    ensureCodecMenu("System");
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
@@ -116,6 +118,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
+
+    QList<QByteArray> codecs = QTextCodec::availableCodecs();
+    QList<int> mibs = QTextCodec::availableMibs();
+    qSort(mibs);
+
+    DEB() << mibs.count() << " MIBs,  " << codecs.count() << " codecs";
+    foreach (int mib, mibs) {
+        DEB() << QString("      %1: ").arg(mib).right(8) << " " << QTextCodec::codecForMib(mib)->name()
+              << "  (" << QTextCodec::codecForMib(mib)->aliases().join(", ") << ")";
+    }
 }
 
 MainWindow::~MainWindow()
@@ -194,24 +206,25 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) tabWidget->setCurrentIndex(tabIndex);
-        ensureCodecMenu(fc->codec());
+        ensureCodecMenu(fc->textCodec());
     }
 }
 
-void MainWindow::ensureCodecMenu(QString codecName)
+void MainWindow::ensureCodecMenu(int mib)
 {
+    QString codecName = QTextCodec::codecForMib(mib)->name();
     bool actionFound = false;
     for (QAction *act: ui->menuEncoding->actions()) {
-        if (act->text().compare(codecName, Qt::CaseInsensitive) == 0)
+        if (act->data().toInt() == mib)
             actionFound = true;
     }
     if (!actionFound) {
         QAction *action = new QAction(codecName, ui->menuEncoding);
         action->setCheckable(true);
         action->setChecked(true);
-        action->setActionGroup(mCodecGroup);
-//        mCodecGroup->addAction(codecName);
-        ui->menuEncoding->addActions(mCodecGroup->actions());
+        action->setData(mib);
+        action->setActionGroup(mCodecGroupSwitch);
+        ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
     }
 }
 
@@ -338,6 +351,52 @@ bool MainWindow::optionEditorVisibility()
 bool MainWindow::helpViewVisibility()
 {
     return ui->actionHelp_View->isChecked();
+}
+
+QString MainWindow::encodingMIBs()
+{
+    QStringList res;
+    foreach (QAction *act, ui->menuEncoding->actions()) {
+        if (!act->data().isNull()) res << act->data().toString();
+    }
+    return res.join(",");
+}
+
+void MainWindow::setEncodingMIBs(QString mibList)
+{
+    QList<int> mibs;
+    QStringList strMibs = mibList.split(",");
+    foreach (QString mib, strMibs) {
+        if (mib.length()) mibs << mib.toInt();
+    }
+    setEncodingMIBs(mibs);
+}
+
+void MainWindow::setEncodingMIBs(QList<int> mibs)
+{
+    while (mCodecGroupSwitch->actions().size()) {
+        QAction *act = mCodecGroupSwitch->actions().last();
+        if (ui->menuEncoding->actions().contains(act))
+            ui->menuEncoding->removeAction(act);
+        mCodecGroupSwitch->removeAction(act);
+    }
+    while (mCodecGroupReload->actions().size()) {
+        QAction *act = mCodecGroupReload->actions().last();
+        if (ui->menureload_with->actions().contains(act))
+            ui->menureload_with->removeAction(act);
+        mCodecGroupReload->removeAction(act);
+    }
+    foreach (int mib, mibs) {
+        QAction *act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
+        act->setCheckable(true);
+        act->setData(mib);
+
+        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupReload);
+        act->setCheckable(true);
+        act->setData(mib);
+    }
+    ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
+    ui->menureload_with->addActions(mCodecGroupReload->actions());
 }
 
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
@@ -498,6 +557,11 @@ void MainWindow::codecChanged(QAction *action)
     qDebug() << "Codec action triggered: " << action->text();
 }
 
+void MainWindow::codecReload(QAction *action)
+{
+    qDebug() << "Codec reload triggered: " << action->text();
+}
+
 void MainWindow::activeTabChanged(int index)
 {
     mRecent.editor = nullptr;
@@ -582,7 +646,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
         // TODO(JM) restore textcursors after reload
-        fc->load(fc->codec());
+        fc->load(fc->textCodec());
     } else
         fc->document()->setModified();
 }
@@ -1271,7 +1335,7 @@ void MainWindow::execute(QString commandLineStr)
         } else if (ret == QMessageBox::Save) {
             fc->save();
         } else if (msgBox.clickedButton() == discardButton) {
-            fc->load(fc->codec());
+            fc->load(fc->textCodec());
         }
     }
 
@@ -1867,7 +1931,16 @@ void MainWindow::toggleLogDebug()
     }
 }
 
-}
+void MainWindow::on_actionSelect_encodings_triggered()
+{
+    // getEncodings from settings
+    QList<int> selectedMibs { 0, 4, 17, 106, 2025 };
+    SelectEncodings se(selectedMibs, this);
+    se.exec();
+    setEncodingMIBs(se.selectedMibs());
+    // writeEncodings to settings
 }
 
+}
+}
 
