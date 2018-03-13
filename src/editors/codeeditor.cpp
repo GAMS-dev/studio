@@ -626,7 +626,7 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
     if (!mSettings->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    QColor lineColor = QColor(Qt::cyan).lighter(190);
+    QColor lineColor = QColor(Qt::cyan).lighter(170);
     selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
@@ -638,6 +638,12 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (!mSettings->wordUnderCursor()) return;
+
+    QHash<int, TextMark*> textMarks;
+    emit requestMarkHash(&textMarks, TextMark::match);
+
+    if (textMarks.size() > 0) return;  // no word highlighting when a user searches
+
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
@@ -654,7 +660,7 @@ void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selection
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
 //                QPen outlinePen( Qt::lightGray, 1);
 //                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
-                QColor wordColor = QColor(Qt::lightGray).lighter(115);
+                QColor wordColor = QColor(Qt::lightGray)/*.lighter(115)*/;
                 selection.format.setBackground(wordColor);
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
@@ -669,7 +675,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     QHash<int, TextMark*> textMarks;
-    emit requestMarkHash(&textMarks);
+    emit requestMarkHash(&textMarks, TextMark::all);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();

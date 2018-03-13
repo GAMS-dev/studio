@@ -48,7 +48,7 @@ signals:
     void getFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
 
 public slots:
-    void shareMarkHash(QHash<int, TextMark*>* marks);
+    void shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void textMarkIconsEmpty(bool* hasIcons);
     void documentOpened();
     void documentChanged(int pos, int charsRemoved, int charsAdded);

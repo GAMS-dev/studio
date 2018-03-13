@@ -21,6 +21,7 @@
 #define CODEEDITOR_H
 
 #include "editors/abstracteditor.h"
+#include "syntax/textmark.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -30,7 +31,6 @@ class QWidget;
 namespace gams {
 namespace studio {
 
-class TextMark;
 class StudioSettings;
 class LineNumberArea;
 class SearchWidget;
@@ -74,7 +74,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
 
 signals:
-    void requestMarkHash(QHash<int, TextMark*>* marks);
+    void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
     void requestSyntaxState(int position, int &intState);
 

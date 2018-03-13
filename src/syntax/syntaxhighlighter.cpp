@@ -20,7 +20,6 @@
 #include "syntaxhighlighter.h"
 #include "logger.h"
 #include "filecontext.h"
-#include "textmark.h"
 #include "tool.h"
 
 namespace gams {
