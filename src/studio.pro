@@ -127,7 +127,8 @@ SOURCES += \
     gotowidget.cpp \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
-    tool.cpp
+    tool.cpp \
+    lxiviewer/lxitreeitem.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -199,7 +200,8 @@ HEADERS += \
     gotowidget.h \
     editors/logeditor.h \
     editors/abstracteditor.h \
-    tool.h
+    tool.h \
+    lxiviewer/lxitreeitem.h
 
 FORMS += \
     welcomepage.ui  \
