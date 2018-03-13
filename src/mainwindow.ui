@@ -126,12 +126,10 @@
       <property name="title">
        <string>reload with ...</string>
       </property>
-      <addaction name="actionSwitchEncoding"/>
      </widget>
      <addaction name="menureload_with"/>
      <addaction name="actionSelect_encodings"/>
      <addaction name="separator"/>
-     <addaction name="actionReloadEncoding"/>
     </widget>
     <widget class="QMenu" name="menuAdvanced">
      <property name="title">

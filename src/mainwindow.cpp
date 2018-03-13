@@ -118,16 +118,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
-
-    QList<QByteArray> codecs = QTextCodec::availableCodecs();
-    QList<int> mibs = QTextCodec::availableMibs();
-    qSort(mibs);
-
-    DEB() << mibs.count() << " MIBs,  " << codecs.count() << " codecs";
-    foreach (int mib, mibs) {
-        DEB() << QString("      %1: ").arg(mib).right(8) << " " << QTextCodec::codecForMib(mib)->name()
-              << "  (" << QTextCodec::codecForMib(mib)->aliases().join(", ") << ")";
-    }
+    QList<int> selectedMibs { 0, 4, 17, 106, 2025 };
+    setEncodingMIBs(selectedMibs);
+    ui->menuEncoding->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -159,12 +152,7 @@ void MainWindow::initTabs()
     }
 }
 
-void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
-{
-    createEdit(tabWidget, focus, -1, codecName);
-}
-
-void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString codecName)
+void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
 {
     FileContext *fc = mFileRepo.fileContext(id);
     if (fc) {
@@ -183,7 +171,10 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
 //            QTextCursor tc = codeEdit->textCursor();
 //            tc.movePosition(QTextCursor::Start);
 //            codeEdit->setTextCursor(tc);
-            fc->load(codecName, true);
+            if (codecMip == -1)
+                fc->load(QList<int>());
+            else
+                fc->load(codecMip, true);
 
             if (fc->metrics().fileType() == FileType::Log ||
                     fc->metrics().fileType() == FileType::Lst ||
@@ -206,7 +197,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) tabWidget->setCurrentIndex(tabIndex);
-        ensureCodecMenu(fc->textCodec());
+        ensureCodecMenu(fc->codecMib());
     }
 }
 
@@ -574,6 +565,7 @@ void MainWindow::activeTabChanged(int index)
     setRunActionsEnabled( false );
 
     // remove highlights from old tab
+    // TODO(JM) always null: mRecent.editor has just been nulled above
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
@@ -598,10 +590,15 @@ void MainWindow::activeTabChanged(int index)
             mCommandLineOption->setEnabled( true );
             mCommandLineOption->setCurrentContext(fc->location());
             setRunActionsEnabled( true );
+            ui->menuEncoding->setEnabled(true);
         }
+        ui->menuEncoding->setEnabled(fc && !edit->isReadOnly());
     } else if(FileContext::toGdxViewer(editWidget)) {
+        ui->menuEncoding->setEnabled(false);
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
+    } else {
+        ui->menuEncoding->setEnabled(false);
     }
 }
 
@@ -646,7 +643,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
         // TODO(JM) restore textcursors after reload
-        fc->load(fc->textCodec());
+        fc->load(fc->codecMib());
     } else
         fc->document()->setModified();
 }
@@ -1335,7 +1332,7 @@ void MainWindow::execute(QString commandLineStr)
         } else if (ret == QMessageBox::Save) {
             fc->save();
         } else if (msgBox.clickedButton() == discardButton) {
-            fc->load(fc->textCodec());
+            fc->load(fc->codecMib());
         }
     }
 

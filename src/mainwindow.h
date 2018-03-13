@@ -81,8 +81,7 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
-    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
+    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
     void ensureCodecMenu(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
