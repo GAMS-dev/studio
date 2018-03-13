@@ -37,6 +37,8 @@ public:
     ///
     static QString systemDir();
 
+    static QString systemDocumentsDir();
+
     static QString defaultWorkingDir();
 
     static QString userDocumentsDir();

@@ -26,21 +26,29 @@
 namespace gams {
 namespace studio {
 
-const QString HelpView::DOCUMENT_DIR = "docs";
 const QString HelpView::START_CHAPTER = "index.html";
 const QString HelpView::DOLLARCONTROL_CHAPTER = "UG_DollarControlOptions.html";
 const QString HelpView::GAMSCALL_CHAPTER = "UG_GamsCall.html";
+const QString HelpView::OPTION_CHAPTER = "UG_OptionStatement.html";
 const QString HelpView::INDEX_CHAPTER = "keyword.html";
+const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest/docs";
 
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    defaultBaseHelpDir = QDir( QDir( GAMSPaths::systemDir() ).filePath(DOCUMENT_DIR) );
-    QDir dir = defaultBaseHelpDir.filePath(START_CHAPTER);
-    helpStartPage = QUrl::fromLocalFile(dir.canonicalPath());
-//    if (!helpStartPage.isValid())
+    qDebug() << "GAMSPaths::systemDocumentsDir()=" << GAMSPaths::systemDocumentsDir();
+    QDir dir = QDir(GAMSPaths::systemDocumentsDir()).filePath(START_CHAPTER);
+    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+        startPageUrl = QUrl::fromLocalFile(dir.absolutePath());
+        baseLocation = QDir(GAMSPaths::systemDocumentsDir()).absolutePath();
+    } else { // show latest online doc
+        QUrl url = QUrl(LATEST_ONLINE_HELP_URL);
+        startPageUrl = QUrl(LATEST_ONLINE_HELP_URL + "/" + START_CHAPTER); //QUrl::fromLocalFile(""); //dir.canonicalPath());
+        baseLocation = LATEST_ONLINE_HELP_URL;
+    }
+    qDebug() << "startPageUrl=" << startPageUrl.toDisplayString();
+    qDebug() << "baseLocation=" << baseLocation;
 
-    defaultOnlineHelpLocation = "www.gams.com/latest/docs";
     setupUi(parent);
 }
 
@@ -74,7 +82,7 @@ void HelpView::setupUi(QWidget *parent)
     helpWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     helpView = new QWebEngineView(this);
-    helpView->load(helpStartPage);
+    helpView->load(startPageUrl);
     connect(helpView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
 
     QToolBar* toolbar = new QToolBar(this);
@@ -175,44 +183,57 @@ void HelpView::on_urlOpened(const QUrl& location)
 
 void HelpView::on_commandLineHelpRequested()
 {
-    QDir dir = defaultBaseHelpDir.filePath(GAMSCALL_CHAPTER) ;
-    helpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+    QDir dir = QDir(baseLocation).filePath(GAMSCALL_CHAPTER);
+    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+        helpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+    } else { // show latest online doc
+        QUrl url = QUrl(baseLocation + "/" + GAMSCALL_CHAPTER);
+        helpView->load(url);
+    }
 }
 
 void HelpView::on_dollarControlHelpRequested(const QString &word)
 {
-    QDir dir = defaultBaseHelpDir.filePath(DOLLARCONTROL_CHAPTER);
-    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+    QString anchorStr;
     if (word.toLower().startsWith("off")) {
-        url.setFragment("DOLLARon"+word.toLower());
-    } else  if (word.toLower().startsWith("on")) {
-            QString dollarOptionStr = "onoff"+word.toLower().mid(2);
-            url.setFragment("DOLLAR"+dollarOptionStr);
+        anchorStr = "DOLLARon"+word.toLower();
+    } else if (word.toLower().startsWith("on")) {
+               anchorStr = "DOLLARonoff"+word.toLower().mid(2);
     } else {
-        url.setFragment("DOLLAR"+word.toLower());
+        anchorStr = "DOLLAR"+word.toLower();
     }
-    qDebug() << url.path();
-    qDebug() << url.toDisplayString();
-    if (url.isValid())
+
+    QDir dir = QDir(baseLocation).filePath(DOLLARCONTROL_CHAPTER);
+    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+       QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+       url.setFragment(anchorStr);
+       helpView->load(url);
+    } else { // show latest online doc
+        QUrl url = QUrl(baseLocation + "/" + DOLLARCONTROL_CHAPTER);
+        url.setFragment(anchorStr);
         helpView->load(url);
-    else
-        qDebug() << "INVALID!";
+        qDebug() << "NOT exist -> " << url.toDisplayString();
+    }
+
+//    helpView->page()->findText(word, QWebEnginePage::FindFlags(), [this](bool found) {
+//        if (!found) QMessageBox::information(helpView, QString(), QStringLiteral("No occurrences found"));
+//    });
 
 }
 
 void HelpView::on_keywordHelpRequested(const QString &word)
 {
-    QDir dir = defaultBaseHelpDir.filePath(INDEX_CHAPTER);
-    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
-
-    url.setQuery("q="+word);
-    qDebug() << url.path();
-    qDebug() << url.toDisplayString();
-    if (url.isValid())
+    QDir dir = QDir(baseLocation).filePath(INDEX_CHAPTER);
+    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+        QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+        url.setQuery("q="+word);
+        qDebug() << url.toDisplayString();
         helpView->load(url);
-    else
-        qDebug() << "INVALID!";
-
+    } else { // show latest online doc
+        QUrl url = QUrl(baseLocation + "/" + INDEX_CHAPTER);
+        url.setQuery("q="+word);
+        helpView->load(url);
+    }
 }
 
 void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& name)
@@ -290,7 +311,7 @@ void HelpView::on_loadFinished(bool ok)
 
 void HelpView::on_actionHome_triggered()
 {
-    helpView->load(helpStartPage);
+    helpView->load(startPageUrl);
 }
 
 void HelpView::on_actionAddBookMark_triggered()
@@ -332,19 +353,31 @@ void HelpView::on_actionBookMark_triggered()
 void HelpView::on_actionOnlineHelp_triggered(bool checked)
 {
     QString urlStr = helpView->url().toString();
-    if (checked) {
-        urlStr.replace( urlStr.indexOf("file"), 4, "https");
-        urlStr.replace( urlStr.indexOf( defaultBaseHelpDir.canonicalPath()),
-                        defaultBaseHelpDir.canonicalPath().size(),
-                        defaultOnlineHelpLocation );
-        actionOnlineHelp->setChecked( true );
-    } else {
-        urlStr.replace( urlStr.indexOf("https"), 5, "file");
-        urlStr.replace( urlStr.indexOf( defaultOnlineHelpLocation ),
-                        defaultOnlineHelpLocation.size(),
-                        defaultBaseHelpDir.canonicalPath());
-        actionOnlineHelp->setChecked( false );
-    }
+
+//    QDir dir = QDir(baseLocation);
+//    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+//        if (checked) {
+//            urlStr.replace( urlStr.indexOf("file"), 4, "https");
+//            urlStr.replace( urlStr.indexOf( baseLocation.canonicalPath()),
+//                            baseLocation.canonicalPath().size(),
+//                            defaultOnlineHelpLocation );
+//            actionOnlineHelp->setChecked( true );
+//        } else {
+//            urlStr.replace( urlStr.indexOf("https"), 5, "file");
+//            urlStr.replace( urlStr.indexOf( defaultOnlineHelpLocation ),
+//                            defaultOnlineHelpLocation.size(),
+//                            defaultBaseHelpDir.canonicalPath());
+//            actionOnlineHelp->setChecked( false );
+//        }
+//    } else
+
+
+    //        QString startText = "<html><head><title>Error Loading File</title></head><body>";
+    //        QString bodyText = "<div id='message'>Document Not Found!</div><br/><a href='https://www.gams.com/latest/docs/index.html'>View latest document online</a>";
+    //        QString endText = "</body></html>";
+    //        QString htmlText = startText + bodyText + endText;
+    //        helpView->setHtml(htmlText);
+
     helpView->load( QUrl(urlStr, QUrl::TolerantMode) );
 }
 

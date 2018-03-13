@@ -64,11 +64,12 @@ public slots:
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:
-    static const QString DOCUMENT_DIR;
     static const QString START_CHAPTER;
     static const QString DOLLARCONTROL_CHAPTER;
+    static const QString OPTION_CHAPTER;
     static const QString GAMSCALL_CHAPTER;
     static const QString INDEX_CHAPTER;
+    static const QString LATEST_ONLINE_HELP_URL;
 
     QMultiMap<QString, QString> bookmarkMap;
     QMenu* bookmarkMenu;
@@ -85,9 +86,9 @@ private:
 
     QWebEngineView* helpView;
 
-    QUrl helpStartPage;
-    QDir defaultBaseHelpDir;
-    QString defaultOnlineHelpLocation;
+    QString baseLocation;
+    QUrl startPageUrl;
+    QUrl onlineStartPageUrl;
 };
 
 } // namespace studio
