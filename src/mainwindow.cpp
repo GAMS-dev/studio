@@ -43,6 +43,7 @@
 #include "editors/abstracteditor.h"
 #include "tool.h"
 #include "updatedialog.h"
+#include "version.h"
 
 namespace gams {
 namespace studio {
@@ -715,7 +716,9 @@ void MainWindow::on_actionAbout_triggered()
     about += "You should have received a copy of the GNU General Public License ";
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
-    about += "<br/><br/><b><big>GAMS Distribution</big></b><br/><br/>";
+    about += "<br/><br/><b><big>GAMS Distribution ";
+    about += gams::studio::currentGAMSDistribVersion();
+    about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
     QMessageBox::about(this, "About GAMS Studio", about);
 }

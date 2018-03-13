@@ -44,11 +44,15 @@ namespace studio {
 ///
 /// \brief Converts the STUDIO_VERSION into an number.
 /// \return The STUDIO_VERSION as number.
+/// \remark Used to check for updates.
 ///
-static int versionToNumber()
-{
-    return QString(STUDIO_VERSION).replace('.', "", Qt::CaseInsensitive).toInt();
-}
+int versionToNumber();
+
+///
+/// \brief Get current GAMS Distribution version number.
+/// \return The GAMS Distribution version number as string.
+///
+QString currentGAMSDistribVersion();
 
 }
 }

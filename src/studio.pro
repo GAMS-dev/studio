@@ -132,7 +132,8 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
     tool.cpp \
-    updatedialog.cpp
+    updatedialog.cpp \
+    version.cpp
 
 HEADERS += \
     editors/codeeditor.h \
