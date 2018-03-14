@@ -38,6 +38,15 @@ public:
     /// \param message The exception/error message.
     ///
     static void showExceptionMessage(const QString &title, const QString &message);
+
+protected:
+    ///
+    /// \brief Reimplemented QObject::event function.
+    /// \param e Event to handle.
+    /// \return <c>true</c> on success; otherwise <c>false</c>.
+    /// \remark This function if requried for macos, e.g. for file associations.
+    ///
+    bool event(QEvent *e) override;
 };
 
 } // namespace studio

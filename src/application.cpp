@@ -20,6 +20,8 @@
 #include "application.h"
 #include "exception.h"
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 
@@ -55,6 +57,17 @@ bool Application::notify(QObject* object, QEvent* event)
 
 void Application::showExceptionMessage(const QString &title, const QString &message) {
     QMessageBox::critical(nullptr, title, message);
+}
+
+bool Application::event(QEvent *e)
+{
+    switch (e->type()) {
+    case QEvent::FileOpen:
+        qDebug() << ">> file open";
+        return true;
+    default:
+        return QApplication::event(e);
+    }
 }
 
 } // namespace studio
