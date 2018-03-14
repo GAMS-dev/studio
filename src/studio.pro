@@ -130,7 +130,8 @@ SOURCES += \
     tool.cpp \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxiparser.cpp \
-    lxiviewer/lxitreemodel.cpp
+    lxiviewer/lxitreemodel.cpp \
+    lxiviewer/lxiviewer.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -205,7 +206,8 @@ HEADERS += \
     tool.h \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
-    lxiviewer/lxitreemodel.h
+    lxiviewer/lxitreemodel.h \
+    lxiviewer/lxiviewer.h
 
 FORMS += \
     welcomepage.ui  \
@@ -219,7 +221,8 @@ FORMS += \
     searchwidget.ui \
     resultsview.ui \
     bookmarkdialog.ui \
-    gotowidget.ui
+    gotowidget.ui \
+    lxiviewer/lxiviewer.ui
 
 RESOURCES += \
     ../icons/icons.qrc
