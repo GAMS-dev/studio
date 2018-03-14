@@ -234,8 +234,8 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
                                       fc->location(), item.block().text().trimmed());
                     if (isOpenFile) {
                         int length = item.selectionEnd() - item.selectionStart();
-                        mAllTextMarks.append(fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
-                                                                  item.columnNumber() - length, length));
+                        fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
+                                             item.columnNumber() - length, length);
                     }
                 }
             } while (!item.isNull());

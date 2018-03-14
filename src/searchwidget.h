@@ -70,7 +70,6 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    QList<TextMark*> mAllTextMarks;
     bool hasChanged = false;
     QList<Result> cachedResults;
 
