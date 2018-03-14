@@ -25,7 +25,7 @@
 #define FI_ORIGINALFILENAME_STR    "studio.exe"
 #define FI_INTERNALNAME_STR        "GAMS Studio"
 #define FI_PRODUCTNAME_STR         "GAMS Studio"
-#define FI_FILEDESCRIPTION_STR     "GAMS Studio - optimization modeling development"
+#define FI_FILEDESCRIPTION_STR     "GAMS Studio"
 
 #define FI_PRODUCTVERSION          25,00,00,00
 #define FI_PRODUCTVERSION_STR      "25.00.00.00"
