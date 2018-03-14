@@ -56,7 +56,7 @@ public:
     /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
     /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(QWidget* edit);
+    FileContext* fileContext(QWidget* edit) const;
 
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.

@@ -91,7 +91,8 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
-    QString encodingMIBs();
+    QString encodingMIBsString();
+    QList<int> encodingMIBs();
     void setEncodingMIBs(QString mibList);
     void setEncodingMIBs(QList<int> mibs);
     HistoryData* history();
@@ -111,8 +112,9 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
-
     HelpView *getDockHelpView() const;
+    void readTabs(const QJsonObject &json);
+    void writeTabs(QJsonObject &json) const;
 
 public slots:
     void receiveAction(QString action);

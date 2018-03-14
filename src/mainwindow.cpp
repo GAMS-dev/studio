@@ -196,7 +196,11 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         }
 
         tabWidget->setTabToolTip(tabIndex, fc->location());
-        if (focus) tabWidget->setCurrentIndex(tabIndex);
+        if (focus) {
+            tabWidget->setCurrentIndex(tabIndex);
+            mRecent.editor = tabWidget->currentWidget();
+            mRecent.editFileId = fc->id();
+        }
         ensureCodecMenu(fc->codecMib());
     }
 }
@@ -344,13 +348,21 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-QString MainWindow::encodingMIBs()
+QString MainWindow::encodingMIBsString()
 {
     QStringList res;
     foreach (QAction *act, ui->menuEncoding->actions()) {
         if (!act->data().isNull()) res << act->data().toString();
     }
     return res.join(",");
+}
+
+QList<int> MainWindow::encodingMIBs()
+{
+    QList<int> res;
+    foreach (QAction *act, ui->menuEncoding->actions())
+        if (!act->data().isNull()) res << act->data().toInt();
+    return res;
 }
 
 void MainWindow::setEncodingMIBs(QString mibList)
@@ -545,17 +557,16 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-    qDebug() << "Codec action triggered: " << action->text();
+    DEB() << "Codec change triggered: " << action->text();
 }
 
 void MainWindow::codecReload(QAction *action)
 {
-    qDebug() << "Codec reload triggered: " << action->text();
+    DEB() << "Codec reload triggered: " << action->text();
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    mRecent.editor = nullptr;
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
         mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
     }
@@ -565,12 +576,11 @@ void MainWindow::activeTabChanged(int index)
     setRunActionsEnabled( false );
 
     // remove highlights from old tab
-    // TODO(JM) always null: mRecent.editor has just been nulled above
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor);
 
+    mRecent.editor = nullptr;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
@@ -1710,6 +1720,42 @@ HelpView *MainWindow::getDockHelpView() const
     return mDockHelpView;
 }
 
+void MainWindow::readTabs(const QJsonObject &json)
+{
+    if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
+        QJsonArray tabArray = json["mainTabs"].toArray();
+        for (int i = 0; i < tabArray.size(); ++i) {
+            QJsonObject tabObject = tabArray[i].toObject();
+            if (tabObject.contains("location")) {
+                QString location = tabObject["location"].toString();
+                if (QFileInfo(location).exists()) openFile(location);
+            }
+        }
+    }
+    if (json.contains("mainTabRecent")) {
+        QString location = json["mainTabRecent"].toString();
+        if (QFileInfo(location).exists()) openFile(location);
+    }
+}
+
+void MainWindow::writeTabs(QJsonObject &json) const
+{
+    QJsonArray tabArray;
+    for (int i = 0; i < ui->mainTab->count(); ++i) {
+        QWidget *wid = ui->mainTab->widget(i);
+        if (!wid || wid == mWp) continue;
+        FileContext *fc = mFileRepo.fileContext(wid);
+        if (!fc) continue;
+        QJsonObject tabObject;
+        tabObject["location"] = fc->location();
+        // TODO(JM) store current edit position
+        tabArray.append(tabObject);
+    }
+    json["mainTabs"] = tabArray;
+    FileContext *fc = mRecent.editor ? mFileRepo.fileContext(mRecent.editor) : nullptr;
+    if (fc) json["mainTabRecent"] = fc->location();
+}
+
 void MainWindow::on_actionGo_To_triggered()
 {
     int width = mGoto->frameGeometry().width();
@@ -1930,12 +1976,10 @@ void MainWindow::toggleLogDebug()
 
 void MainWindow::on_actionSelect_encodings_triggered()
 {
-    // getEncodings from settings
-    QList<int> selectedMibs { 0, 4, 17, 106, 2025 };
-    SelectEncodings se(selectedMibs, this);
+    SelectEncodings se(encodingMIBs(), this);
     se.exec();
     setEncodingMIBs(se.selectedMibs());
-    // writeEncodings to settings
+    mSettings->saveSettings(this);
 }
 
 }

@@ -435,7 +435,7 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
     return fileContext(index.internalId());
 }
 
-FileContext* FileRepository::fileContext(QWidget* edit)
+FileContext* FileRepository::fileContext(QWidget* edit) const
 {
     for (FileSystemContext *fsc: mContext) {
         FileContext *file = fileContext(fsc->id());
