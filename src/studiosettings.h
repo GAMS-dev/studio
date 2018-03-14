@@ -110,13 +110,16 @@ public:
     void loadUserSettings();
     void updateSettingsFiles();
 
+    int historySize() const;
+    void setHistorySize(int historySize);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
 
-    // general
+    // general settings page
     QString mDefaultWorkspace;
     bool mSkipWelcomePage;
     bool mRestoreTabs;
@@ -124,7 +127,7 @@ private:
     bool mOpenLst;
     bool mJumpToError;
 
-    // editor
+    // editor settings page
     QString mFontFamily;
     int mFontSize;
     bool mShowLineNr;
@@ -135,6 +138,9 @@ private:
     bool mWordUnderCursor;
     bool mHighlightCurrentLine;
     bool mAutoIndent;
+
+    // misc settings page
+    int mHistorySize;
 
     // search widget
     bool mSearchUseRegex;

@@ -163,7 +163,7 @@ public:
 
     // AbstractEditor interface
 public:
-    EditorType type();
+    EditorType type() override;
 };
 
 class LineNumberArea : public QWidget

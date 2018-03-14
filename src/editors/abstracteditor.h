@@ -46,7 +46,7 @@ protected:
 
     // QObject interface
 public:
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
     StudioSettings *settings() const;
 };
 
