@@ -39,8 +39,6 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
-
-    ui->combo_search->setFocus();
 }
 
 SearchWidget::~SearchWidget()
@@ -78,9 +76,21 @@ void SearchWidget::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
+void SearchWidget::on_btn_Replace_clicked()
+{
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+    if (!edit || edit->isReadOnly()) return;
+
+    QString replaceTerm = ui->txt_replace->text();
+    if (edit->textCursor().hasSelection())
+        edit->textCursor().insertText(replaceTerm);
+
+    findNext(SearchWidget::Forward);
+}
+
 void SearchWidget::on_btn_ReplaceAll_clicked()
 {
-    // TODO: allow users to reaplace in more than the current file?
+    // TODO: allow users to replace in more than the current file?
     simpleReplaceAll();
 }
 
@@ -268,7 +278,7 @@ void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
 void SearchWidget::simpleReplaceAll()
 {
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
-    if (!edit) return;
+    if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
     QRegularExpression searchRegex(ui->combo_search->currentText());
@@ -294,10 +304,14 @@ void SearchWidget::simpleReplaceAll()
 
     QMessageBox msgBox;
     if (hits.length() == 1) {
-        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
+                       + mMain->fileRepository()->fileContext(mMain->recent()->editor)->location()
+                       + ". Are you sure?");
     } else {
         msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "'. Are you sure?");
+                       searchTerm + "' with '" + replaceTerm + "' in file "
+                       + mMain->fileRepository()->fileContext(mMain->recent()->editor)->location()
+                       + ". Are you sure?");
     }
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     int answer = msgBox.exec();
@@ -328,18 +342,6 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, cachedResults);
 }
 
-void SearchWidget::on_btn_Replace_clicked()
-{
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
-    if (!edit) return;
-
-    QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection())
-        edit->textCursor().insertText(replaceTerm);
-
-    findNext(SearchWidget::Forward);
-}
-
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
@@ -354,6 +356,20 @@ void SearchWidget::showEvent(QShowEvent *event)
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
         ui->combo_search->setCurrentText("");
+
+    updateReplaceActionAvailability();
+}
+
+void SearchWidget::updateReplaceActionAvailability()
+{
+    // TODO: add soemthing for gdx and others...
+    AbstractEditor *edit = static_cast<AbstractEditor*>(mMain->recent()->editor);
+    if (!edit) return;
+
+    bool activated = !edit->isReadOnly();
+    ui->txt_replace->setEnabled(activated);
+    ui->btn_Replace->setEnabled(activated);
+    ui->btn_ReplaceAll->setEnabled(activated);
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
@@ -489,6 +505,7 @@ void SearchWidget::on_btn_clear_clicked()
 void SearchWidget::clearResults()
 {
     ui->combo_search->clearEditText();
+    ui->txt_replace->clear();
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
