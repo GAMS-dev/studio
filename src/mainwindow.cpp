@@ -30,6 +30,7 @@
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
+#include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
@@ -163,8 +164,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
-            fc->addEditor(codeEdit);
-            tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            if (fc->metrics().fileType() == FileType::Lst) {
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc->location(), this);
+                FileSystemContext::initEditorType(lxiViewer);
+                fc->addEditor(lxiViewer);
+                tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
+            } else {
+                fc->addEditor(codeEdit);
+                tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            }
+
 
 //            QTextCursor tc = codeEdit->textCursor();
 //            tc.movePosition(QTextCursor::Start);
@@ -186,7 +195,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
 

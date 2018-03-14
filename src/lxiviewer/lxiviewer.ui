@@ -31,7 +31,11 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QTreeView" name="lxiTreeView"/>
+     <widget class="QTreeView" name="lxiTreeView">
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
+     </widget>
     </widget>
    </item>
   </layout>

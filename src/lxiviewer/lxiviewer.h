@@ -20,6 +20,8 @@ public:
     explicit LxiViewer(CodeEditor *codeEditor, QString lstFile, QWidget *parent);
     ~LxiViewer();
 
+    CodeEditor *codeEditor() const;
+
 private:
     Ui::LxiViewer *ui;
 

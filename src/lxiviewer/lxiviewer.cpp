@@ -29,6 +29,11 @@ LxiViewer::~LxiViewer()
     delete ui;
 }
 
+CodeEditor *LxiViewer::codeEditor() const
+{
+    return mCodeEditor;
+}
+
 } // namespace lxiviewer
 } // namespace studio
 } // namespace gams

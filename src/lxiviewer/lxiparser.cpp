@@ -52,9 +52,8 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
         if (idx == lastIdx)
             lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         else {
-            if (idx == "B")
-                lastParent = rootItem;
-            else if (idx == "D") {
+            lastParent = rootItem;
+            if (idx == "D") {
                 current = new LxiTreeItem(lastIdx, -1, "Equation", lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
