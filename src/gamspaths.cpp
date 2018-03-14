@@ -68,12 +68,6 @@ QString GAMSPaths::systemDir() {
     return gamsPath;
 }
 
-QString GAMSPaths::systemDocumentsDir()
-{
-    QDir sysDocDir = QDir::cleanPath(systemDir() + "/docs");
-    return sysDocDir.path();
-}
-
 QString GAMSPaths::userDocumentsDir()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);

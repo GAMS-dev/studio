@@ -693,7 +693,7 @@ void MainWindow::on_actionHelp_triggered()
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
-        qDebug() << "word=[" << word << "], State=" << istate;
+//        qDebug() << "word=[" << word << "], State=" << istate;
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
             mDockHelpView->on_dollarControlHelpRequested("title");

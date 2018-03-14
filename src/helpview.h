@@ -71,8 +71,8 @@ private:
     static const QString INDEX_CHAPTER;
     static const QString LATEST_ONLINE_HELP_URL;
 
-    QMultiMap<QString, QString> bookmarkMap;
-    QMenu* bookmarkMenu;
+    QMultiMap<QString, QString> mBookmarkMap;
+    QMenu* mBookmarkMenu;
 
     QAction* actionAddBookmark;
     QAction* actionOrganizeBookmark;
@@ -84,11 +84,18 @@ private:
     QAction* actionZoomOut;
     QAction* actionResetZoom;
 
-    QWebEngineView* helpView;
+    QWebEngineView* mHelpView;
 
     QString baseLocation;
     QUrl startPageUrl;
     QUrl onlineStartPageUrl;
+
+    int mThisRelease = 0;
+    int mLastRelease = 0;
+    bool mOfflineHelpAvailable = false;
+
+    void getGAMSVersion();
+    void getErrorHTMLText(QString& htmlText, const QString& chapterText);
 };
 
 } // namespace studio
