@@ -721,6 +721,8 @@ void MainWindow::on_actionAbout_triggered()
     about += gams::studio::currentGAMSDistribVersion(version);
     about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
+    about += "<br/><br/>For further information about GAMS please visit ";
+    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
     QMessageBox::about(this, "About GAMS Studio", about);
 }
 

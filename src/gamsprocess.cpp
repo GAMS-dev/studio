@@ -97,7 +97,7 @@ QString GamsProcess::aboutGAMS()
         about = process.readAllStandardOutput();
     }
     QStringList lines = about.split('\n', QString::SkipEmptyParts, Qt::CaseInsensitive);
-    lines.removeAt(0);
+    lines.removeFirst();
     lines.removeLast();
     lines.removeLast();
     return lines.join("\n");
