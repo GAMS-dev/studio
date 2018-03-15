@@ -821,7 +821,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
-        if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
     } else if (e->text().length()) {
         replaceBlockText(e->text());

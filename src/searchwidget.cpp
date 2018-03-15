@@ -362,7 +362,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    // TODO: add soemthing for gdx and others...
+    // TODO: add something for gdx and others...
     AbstractEditor *edit = static_cast<AbstractEditor*>(mMain->recent()->editor);
     if (!edit) return;
 
