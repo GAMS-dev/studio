@@ -523,11 +523,13 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
+    lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
+
     if (edit) {
-        FileContext* fc = mFileRepo.fileContext(edit);
+        FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
         if (fc) {
             mRecent.editFileId = fc->id();
-            mRecent.editor = edit;
+            mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
