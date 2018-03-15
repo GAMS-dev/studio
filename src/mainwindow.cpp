@@ -1724,7 +1724,7 @@ void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
     if (!ce) return;
     ce->selectAll();
 }
@@ -1734,7 +1734,7 @@ void MainWindow::on_actionCut_triggered()
     if (focusWidget() == nullptr)
         return;
 
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
