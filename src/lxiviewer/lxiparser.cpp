@@ -73,6 +73,11 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
                 lastParent->appendChild(current);
                 lastParent = current;
             }
+            else if (idx == "I") {
+                current = new LxiTreeItem(lastIdx, -1, "Display", lastParent);
+                lastParent->appendChild(current);
+                lastParent = current;
+            }
 
             lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         }
