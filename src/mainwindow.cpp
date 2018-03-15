@@ -717,7 +717,8 @@ void MainWindow::on_actionAbout_triggered()
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
     about += "<br/><br/><b><big>GAMS Distribution ";
-    about += gams::studio::currentGAMSDistribVersion();
+    char version[16];
+    about += gams::studio::currentGAMSDistribVersion(version);
     about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
     QMessageBox::about(this, "About GAMS Studio", about);

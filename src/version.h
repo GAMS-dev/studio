@@ -20,8 +20,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#include <QString>
-
 #define FI_FILEVERSION             STUDIO_MAJOR_VERSION,STUDIO_MINOR_VERSION,STUDIO_PATCH_LEVEL,0
 #define FI_FILEVERSION_STR         "0.1.0.0\0"
 #define FI_ORIGINALFILENAME_STR    "studio.exe"
@@ -50,9 +48,12 @@ int versionToNumber();
 
 ///
 /// \brief Get current GAMS Distribution version number.
-/// \return The GAMS Distribution version number as string.
+/// \param version Version string buffer.
+/// \param length Length of the version string buffer.
+/// \return The GAMS Distribution version number as string. The
+///         same as the <c>version</c> argument.
 ///
-QString currentGAMSDistribVersion();
+char* currentGAMSDistribVersion(char* version, int length=16);
 
 }
 }
