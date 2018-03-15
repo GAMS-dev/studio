@@ -24,6 +24,7 @@
 #include <QFileOpenEvent>
 #include <QDebug>
 #include <fstream>
+#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -65,7 +66,9 @@ void Application::showExceptionMessage(const QString &title, const QString &mess
 bool Application::event(QEvent *event)
 {
     std::ofstream fs;
-    fs.open("~/lala.txt", std::ofstream::out | std::ofstream::app);
+    auto wd = GAMSPaths::defaultWorkingDir();
+    wd.append("/lala.txt");
+    fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
     if (event->type() == QEvent::FileOpen) {
         fs << ">> file open";
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
