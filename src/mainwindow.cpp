@@ -120,19 +120,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    mDockHelpView->setParent(nullptr);
-    delete mDockHelpView;
     delete ui;
-
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
     //          may not be in the ui, delete and remove them from ui before the ui is deleted.
-
-// TODO fix crash
-//    delete mOptionEditor;
-//    delete mDockOptionView;
-//    delete mCommandLineHistory;
-//    delete mCommandLineOption; TODO fix crash
-//    delete mCommandLineTokenizer;
+    delete mGamsOption;
 }
 
 void MainWindow::initTabs()
@@ -836,8 +827,8 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
-    mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
+    mGamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
 

@@ -58,13 +58,6 @@ HelpView::HelpView(QWidget *parent) :
 
 HelpView::~HelpView()
 {
-    delete mBookmarkMenu;
-    delete actionAddBookmark;
-    delete actionOrganizeBookmark;
-    delete actionOnlineHelp;
-    delete actionOpenInBrowser;
-
-    delete mHelpView;
 }
 
 void HelpView::setupUi(QWidget *parent)
