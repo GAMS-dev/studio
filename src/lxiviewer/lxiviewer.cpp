@@ -52,7 +52,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
         }
         QTextCursor cursor = mCodeEditor->textCursor();
         cursor.setPosition(tb.position());
-        mFileContext->jumpTo(cursor, false);
+        mFileContext->jumpTo(cursor, true);
     }
 }
 

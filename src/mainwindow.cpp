@@ -1442,7 +1442,13 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         createEdit(tabWidget, focus, fileContext->id());
     }
     if (tabWidget->currentWidget())
-        if (focus) tabWidget->currentWidget()->setFocus();
+        if (focus) {
+            lxiviewer::LxiViewer* lxiViewer = FileSystemContext::toLxiViewer(edit);
+            if (lxiViewer)
+                lxiViewer->codeEditor()->setFocus();
+            else
+                tabWidget->currentWidget()->setFocus();
+        }
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         changeToLog(fileContext);
