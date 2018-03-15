@@ -20,7 +20,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <QtWidgets>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -46,7 +46,10 @@ protected:
     /// \return <c>true</c> on success; otherwise <c>false</c>.
     /// \remark This function if requried for macos, e.g. for file associations.
     ///
-    bool event(QEvent *e) override;
+    bool event(QEvent *event) override;
+
+private:
+    QString mOpenFile;
 };
 
 } // namespace studio

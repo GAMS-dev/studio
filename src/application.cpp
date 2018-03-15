@@ -20,7 +20,10 @@
 #include "application.h"
 #include "exception.h"
 
+#include <QMessageBox>
+#include <QFileOpenEvent>
 #include <QDebug>
+#include <fstream>
 
 namespace gams {
 namespace studio {
@@ -59,15 +62,18 @@ void Application::showExceptionMessage(const QString &title, const QString &mess
     QMessageBox::critical(nullptr, title, message);
 }
 
-bool Application::event(QEvent *e)
+bool Application::event(QEvent *event)
 {
-    switch (e->type()) {
-    case QEvent::FileOpen:
-        qDebug() << ">> file open";
-        return true;
-    default:
-        return QApplication::event(e);
+    std::ofstream fs;
+    fs.open("~/lala.txt", std::ofstream::out | std::ofstream::app);
+    if (event->type() == QEvent::FileOpen) {
+        fs << ">> file open";
+        auto* openEvent = static_cast<QFileOpenEvent*>(event);
+        fs << "file >> " << openEvent->file().toStdString();
     }
+    fs.flush();
+    fs.close();
+    return QApplication::event(event);
 }
 
 } // namespace studio
