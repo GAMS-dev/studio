@@ -225,11 +225,6 @@ void HelpView::on_dollarControlHelpRequested(const QString &word)
         getErrorHTMLText( htmlText, DOLLARCONTROL_CHAPTER);
         mHelpView->setHtml( htmlText );
     }
-
-//    helpView->page()->findText(word, QWebEnginePage::FindFlags(), [this](bool found) {
-//        if (!found) QMessageBox::information(helpView, QString(), QStringLiteral("No occurrences found"));
-//    });
-
 }
 
 void HelpView::on_keywordHelpRequested(const QString &word)
@@ -422,6 +417,14 @@ void HelpView::zoomOut()
 void HelpView::resetZoom()
 {
     mHelpView->page()->setZoomFactor(1.0);
+}
+
+void HelpView::findText(const QString& word, QWebEnginePage::FindFlags options)
+{
+    mHelpView->page()->findText(word, options);
+//    mHelpView->page()->findText(word, options, [this](bool found) {
+//        if (!found) QMessageBox::information(mHelpView, QString(), QStringLiteral("No occurrences found"));
+//    });
 }
 
 void HelpView::addBookmarkAction(const QString &objectName, const QString &title)

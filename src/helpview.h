@@ -22,6 +22,7 @@
 
 #include <QtWidgets>
 #include <QWebEngineView>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
@@ -61,6 +62,7 @@ public slots:
     void zoomOut();
     void resetZoom();
 
+    void findText(const QString& word, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags());
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:
