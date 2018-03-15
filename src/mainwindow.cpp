@@ -548,6 +548,8 @@ void MainWindow::activeTabChanged(int index)
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
     }
+
+    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 }
 
 void MainWindow::fileChanged(FileId fileId)
