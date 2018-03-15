@@ -4,7 +4,7 @@
 #include "exception.h"
 #include "gamspaths.h"
 
-#include <string>
+#include <cstring>
 
 namespace gams {
 namespace studio {
