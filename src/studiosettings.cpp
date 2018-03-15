@@ -297,8 +297,6 @@ void StudioSettings::loadSettings(MainWindow *main)
     loadDoc = QJsonDocument::fromJson(saveData);
     main->readTabs(loadDoc.object());
 
-    mAppSettings->endGroup();
-
     loadUserSettings();
 
     // the location for user model libraries is not modifyable right now
