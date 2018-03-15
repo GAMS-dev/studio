@@ -81,7 +81,7 @@ public:
     explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
-    void ensureCodecMenu(int mib);
+    void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
@@ -92,8 +92,9 @@ public:
     bool helpViewVisibility();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
-    void setEncodingMIBs(QString mibList);
-    void setEncodingMIBs(QList<int> mibs);
+    void setEncodingMIBs(QString mibList, int active = -1);
+    void setEncodingMIBs(QList<int> mibs, int active = -1);
+    void setActiveMIB(int active = -1);
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);

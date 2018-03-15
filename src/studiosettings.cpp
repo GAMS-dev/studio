@@ -253,7 +253,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView").toBool());
     main->checkOptionDefinition(mAppSettings->value("optionEditor").toBool());
-    main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "0,4,17,106,2025").toString());
+    main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();
 

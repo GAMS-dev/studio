@@ -437,9 +437,10 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
 
 FileContext* FileRepository::fileContext(QWidget* edit) const
 {
+    QWidget *parentEdit = edit ? edit->parentWidget() : nullptr;
     for (FileSystemContext *fsc: mContext) {
         FileContext *file = fileContext(fsc->id());
-        if (file && file->hasEditor(edit)) return file;
+        if (file && (file->hasEditor(edit) || file->hasEditor(parentEdit))) return file;
     }
     return nullptr;
 }

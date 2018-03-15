@@ -67,7 +67,7 @@ void FileContext::setParentEntry(FileGroupContext* parent)
 
 int FileContext::codecMib() const
 {
-    return mCodec->mibEnum();
+    return mCodec ? mCodec->mibEnum() : -1;
 }
 
 void FileContext::setCodecMib(int mib)
@@ -75,7 +75,10 @@ void FileContext::setCodecMib(int mib)
     QTextCodec *codec = QTextCodec::codecForMib(mib);
     if (!codec)
         EXCEPT() << "TextCodec not found for MIB " << mib;
-    mCodec = codec;
+    if (document() && !isReadOnly() && !isModified() && codec != mCodec) {
+        document()->setModified();
+        mCodec = codec;
+    }
     // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
 }
 

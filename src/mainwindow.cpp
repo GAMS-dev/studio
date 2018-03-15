@@ -105,6 +105,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
+    setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
@@ -119,7 +120,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
-    setEncodingMIBs(encodingMIBs());
 }
 
 MainWindow::~MainWindow()
@@ -165,11 +165,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             fc->addEditor(codeEdit);
             tabIndex = tabWidget->addTab(codeEdit, fc->caption());
 
-//            QTextCursor tc = codeEdit->textCursor();
-//            tc.movePosition(QTextCursor::Start);
-//            codeEdit->setTextCursor(tc);
             if (codecMip == -1)
-                fc->load(QList<int>());
+                fc->load(encodingMIBs());
             else
                 fc->load(codecMip, true);
 
@@ -182,7 +179,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             } else {
                 connect(fc, &FileContext::changed, this, &MainWindow::fileChanged);
             }
-//            codeEdit->setTextCursor(QTextCursor(codeEdit->document()));
+            if (focus) updateMenuToCodec(fc->codecMib());
 
         } else {
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
@@ -198,25 +195,22 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             mRecent.editor = tabWidget->currentWidget();
             mRecent.editFileId = fc->id();
         }
-        ensureCodecMenu(fc->codecMib());
     }
 }
 
-void MainWindow::ensureCodecMenu(int mib)
+void MainWindow::updateMenuToCodec(int mib)
 {
-    QString codecName = QTextCodec::codecForMib(mib)->name();
-    bool actionFound = false;
-    for (QAction *act: ui->menuEncoding->actions()) {
-        if (act->data().toInt() == mib)
-            actionFound = true;
-    }
-    if (!actionFound) {
-        QAction *action = new QAction(codecName, ui->menuEncoding);
-        action->setCheckable(true);
-        action->setChecked(true);
-        action->setData(mib);
-        action->setActionGroup(mCodecGroupSwitch);
-        ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
+    ui->menuEncoding->setEnabled(mib != -1);
+    if (mib == -1) return;
+    QList<int> enc = encodingMIBs();
+    if (!enc.contains(mib)) {
+        enc << mib;
+        qSort(enc);
+        if (enc.contains(0)) enc.move(enc.indexOf(0), 0);
+        if (enc.contains(106)) enc.move(enc.indexOf(106), 0);
+        setEncodingMIBs(enc, mib);
+    } else {
+        setActiveMIB(mib);
     }
 }
 
@@ -362,17 +356,17 @@ QList<int> MainWindow::encodingMIBs()
     return res;
 }
 
-void MainWindow::setEncodingMIBs(QString mibList)
+void MainWindow::setEncodingMIBs(QString mibList, int active)
 {
     QList<int> mibs;
     QStringList strMibs = mibList.split(",");
     foreach (QString mib, strMibs) {
         if (mib.length()) mibs << mib.toInt();
     }
-    setEncodingMIBs(mibs);
+    setEncodingMIBs(mibs, active);
 }
 
-void MainWindow::setEncodingMIBs(QList<int> mibs)
+void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 {
     while (mCodecGroupSwitch->actions().size()) {
         QAction *act = mCodecGroupSwitch->actions().last();
@@ -390,13 +384,28 @@ void MainWindow::setEncodingMIBs(QList<int> mibs)
         QAction *act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
         act->setCheckable(true);
         act->setData(mib);
+        act->setChecked(mib == active);
 
         act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupReload);
         act->setCheckable(true);
         act->setData(mib);
+        act->setChecked(mib == active);
     }
     ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
     ui->menureload_with->addActions(mCodecGroupReload->actions());
+}
+
+void MainWindow::setActiveMIB(int active)
+{
+    foreach (QAction *act, ui->menuEncoding->actions())
+        if (!act->data().isNull()) {
+            act->setChecked(act->data().toInt() == active);
+        }
+
+    foreach (QAction *act, ui->menureload_with->actions())
+        if (!act->data().isNull()) {
+            act->setChecked(act->data().toInt() == active);
+        }
 }
 
 void MainWindow::gamsProcessStateChanged(FileGroupContext* group)
@@ -554,12 +563,35 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-    DEB() << "Codec change triggered: " << action->text();
+    FileContext *fc = mFileRepo.fileContext(focusWidget());
+    if (fc) {
+        if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
+        updateMenuToCodec(action->data().toInt());
+    }
 }
 
 void MainWindow::codecReload(QAction *action)
 {
-    DEB() << "Codec reload triggered: " << action->text();
+    if (!focusWidget()) return;
+    FileContext *fc = mFileRepo.fileContext(focusWidget());
+    if (fc && fc->codecMib() != action->data().toInt()) {
+        bool reload = true;
+        if (fc->isModified()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText(fc->location()+" has been modified.");
+            msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
+                                      + action->text() + "?");
+            msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Cancel);
+            reload = msgBox.exec();
+        }
+        if (reload) {
+            fc->load(action->data().toInt());
+            updateMenuToCodec(action->data().toInt());
+        }
+    }
 }
 
 void MainWindow::activeTabChanged(int index)
@@ -585,22 +617,23 @@ void MainWindow::activeTabChanged(int index)
             mRecent.editFileId = fc->id();
             mRecent.editor = edit;
             mRecent.group = fc->parentEntry();
-        }
-        if (fc && !edit->isReadOnly()) {
-            mDockOptionView->setEnabled( true );
-            QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
-            mCommandLineOption->clear();
-            foreach(QString str, option) {
-               mCommandLineOption->insertItem(0, str );
+            if (!edit->isReadOnly()) {
+                mDockOptionView->setEnabled(true);
+                QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
+                mCommandLineOption->clear();
+                foreach(QString str, option) {
+                   mCommandLineOption->insertItem(0, str );
+                }
+                mCommandLineOption->setCurrentIndex(0);
+                mCommandLineOption->setEnabled(true);
+                mCommandLineOption->setCurrentContext(fc->location());
+                setRunActionsEnabled(true);
+                ui->menuEncoding->setEnabled(true);
             }
-            mCommandLineOption->setCurrentIndex(0);
-            mCommandLineOption->setEnabled( true );
-            mCommandLineOption->setCurrentContext(fc->location());
-            setRunActionsEnabled( true );
-            ui->menuEncoding->setEnabled(true);
+            updateMenuToCodec(fc->codecMib());
         }
         ui->menuEncoding->setEnabled(fc && !edit->isReadOnly());
-    } else if(FileContext::toGdxViewer(editWidget)) {
+    } else if (FileContext::toGdxViewer(editWidget)) {
         ui->menuEncoding->setEnabled(false);
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
@@ -649,10 +682,10 @@ void MainWindow::fileChangedExtern(FileId fileId)
     }
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
-        // TODO(JM) restore textcursors after reload
         fc->load(fc->codecMib());
-    } else
+    } else {
         fc->document()->setModified();
+    }
 }
 
 void MainWindow::fileDeletedExtern(FileId fileId)

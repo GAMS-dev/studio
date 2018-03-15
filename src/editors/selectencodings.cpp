@@ -50,6 +50,9 @@ QList<int> SelectEncodings::selectedMibs()
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
         if (box->isChecked()) res << ui->tableWidget->item(row, 1)->data(Qt::EditRole).toInt();
     }
+    // ensure to have UTF-8 on top and System at the 2nd place
+    if (res.contains(0)) res.move(res.indexOf(0), 0);
+    if (res.contains(106)) res.move(res.indexOf(106), 0);
     return res;
 }
 
@@ -62,4 +65,14 @@ void SelectEncodings::on_pbCancel_clicked()
 void SelectEncodings::on_pbSave_clicked()
 {
     accept();
+}
+
+void SelectEncodings::on_pbReset_clicked()
+{
+    QList<int> defaultEncodings {106, 0, 4, 17, 2025};
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
+        int mib = ui->tableWidget->item(row, 1)->data(Qt::EditRole).toInt();
+        box->setChecked(mib == 0 || defaultEncodings.contains(mib));
+    }
 }

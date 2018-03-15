@@ -104,6 +104,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="pbReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pbSave">
         <property name="text">
          <string>Save</string>

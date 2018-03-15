@@ -22,6 +22,8 @@ private slots:
 
     void on_pbSave_clicked();
 
+    void on_pbReset_clicked();
+
 private:
     Ui::SelectEncodings *ui;
 };
