@@ -24,6 +24,9 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
     loadLxiFile();
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
+
+    connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
+    connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
 
 LxiViewer::~LxiViewer()
@@ -40,10 +43,8 @@ void LxiViewer::loadLxiFile()
 {
     if (QFileInfo(mLxiFile).exists()) {
         ui->splitter->widget(0)->show();
-        disconnect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
         LxiTreeModel* model = new LxiTreeModel(LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile)));
         ui->lxiTreeView->setModel(model);
-        connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     }
     else
         ui->splitter->widget(0)->hide();

@@ -34,6 +34,7 @@ private:
     QString mLxiFile;
     FileContext *mFileContext;
 
+private slots:
     void loadLxiFile();
 
 
