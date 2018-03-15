@@ -121,7 +121,7 @@ public slots:
     void receiveModLibLoad(QString model);
 
 private slots:
-    void openFileContext(FileContext *fileContext, bool focus = true);
+    void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);

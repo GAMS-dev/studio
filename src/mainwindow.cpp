@@ -1533,7 +1533,7 @@ void MainWindow::changeToLog(FileContext* fileContext)
     }
 }
 
-void MainWindow::openFileContext(FileContext* fileContext, bool focus)
+void MainWindow::openFileContext(FileContext* fileContext, bool focus, int codecMib)
 {
     if (!fileContext) return;
     QWidget* edit = nullptr;
@@ -1544,7 +1544,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        createEdit(tabWidget, focus, fileContext->id());
+        createEdit(tabWidget, focus, fileContext->id(), codecMib);
     }
     if (tabWidget->currentWidget())
         if (focus) {
@@ -1627,7 +1627,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
     } else if (fc) {
-        openFileContext(fc, focus);
+        openFileContext(fc, focus, codecMip);
     }
     if (!fc) {
         EXCEPT() << "invalid pointer found: FileContext expected.";
@@ -1779,6 +1779,7 @@ void MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
+                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
             }
         }

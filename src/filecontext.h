@@ -153,7 +153,7 @@ signals:
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
-    void openFileContext(FileContext* fileContext, bool focus = true);
+    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
     void documentClosed();
 
