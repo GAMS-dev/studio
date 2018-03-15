@@ -128,7 +128,11 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
     tool.cpp \
-    editors/selectencodings.cpp
+    editors/selectencodings.cpp \
+    lxiviewer/lxitreeitem.cpp \
+    lxiviewer/lxiparser.cpp \
+    lxiviewer/lxitreemodel.cpp \
+    lxiviewer/lxiviewer.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -201,7 +205,11 @@ HEADERS += \
     editors/logeditor.h \
     editors/abstracteditor.h \
     tool.h \
-    editors/selectencodings.h
+    editors/selectencodings.h \
+    lxiviewer/lxitreeitem.h \
+    lxiviewer/lxiparser.h \
+    lxiviewer/lxitreemodel.h \
+    lxiviewer/lxiviewer.h
 
 FORMS += \
     welcomepage.ui  \
@@ -216,7 +224,8 @@ FORMS += \
     resultsview.ui \
     bookmarkdialog.ui \
     gotowidget.ui \
-    editors/selectencodings.ui
+    editors/selectencodings.ui \
+    lxiviewer/lxiviewer.ui
 
 RESOURCES += \
     ../icons/icons.qrc

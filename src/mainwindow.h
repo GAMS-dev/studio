@@ -134,7 +134,7 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View
     void gamsProcessStateChanged(FileGroupContext* group);

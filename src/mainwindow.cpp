@@ -30,6 +30,7 @@
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
+#include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
@@ -162,8 +163,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
-            fc->addEditor(codeEdit);
-            tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            if (fc->metrics().fileType() == FileType::Lst) {
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                FileSystemContext::initEditorType(lxiViewer);
+                fc->addEditor(lxiViewer);
+                tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
+            } else {
+                fc->addEditor(codeEdit);
+                tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            }
+
 
             if (codecMip == -1)
                 fc->load(encodingMIBs());
@@ -185,7 +194,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
 
@@ -611,11 +620,13 @@ void MainWindow::activeTabChanged(int index)
     mRecent.editor = nullptr;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
+    lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
+
     if (edit) {
-        FileContext* fc = mFileRepo.fileContext(edit);
+        FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
         if (fc) {
             mRecent.editFileId = fc->id();
-            mRecent.editor = edit;
+            mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 mDockOptionView->setEnabled(true);
@@ -1536,7 +1547,13 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         createEdit(tabWidget, focus, fileContext->id());
     }
     if (tabWidget->currentWidget())
-        if (focus) tabWidget->currentWidget()->setFocus();
+        if (focus) {
+            lxiviewer::LxiViewer* lxiViewer = FileSystemContext::toLxiViewer(edit);
+            if (lxiViewer)
+                lxiViewer->codeEditor()->setFocus();
+            else
+                tabWidget->currentWidget()->setFocus();
+        }
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         changeToLog(fileContext);
@@ -1589,7 +1606,7 @@ void MainWindow::closeFile(FileContext* file)
     }
 }
 
-void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus)
+void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip)
 {
     if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
@@ -1604,7 +1621,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
             EXCEPT() << "File not found: " << filePath;
         }
         QTabWidget* tabWidget = (fc->type() == FileSystemContext::Log) ? ui->logTab : ui->mainTab;
-        createEdit(tabWidget, focus, fc->id());
+        createEdit(tabWidget, focus, fc->id(), codecMip);
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
@@ -1710,7 +1727,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
         if (!FileContext::toGdxViewer(edit))
-            edit->setFont(font);
+            FileContext::toPlainEdit(edit)->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
@@ -1761,13 +1778,14 @@ void MainWindow::readTabs(const QJsonObject &json)
             QJsonObject tabObject = tabArray[i].toObject();
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
-                if (QFileInfo(location).exists()) openFile(location);
+                int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
+                if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
             }
         }
     }
     if (json.contains("mainTabRecent")) {
         QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) openFile(location);
+        if (QFileInfo(location).exists()) openFilePath(location, nullptr, true);
     }
 }
 
@@ -1781,6 +1799,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
         if (!fc) continue;
         QJsonObject tabObject;
         tabObject["location"] = fc->location();
+        tabObject["codecMib"] = fc->codecMib();
         // TODO(JM) store current edit position
         tabArray.append(tabObject);
     }
@@ -1861,7 +1880,7 @@ void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
     if (!ce) return;
     ce->selectAll();
 }
@@ -1871,7 +1890,7 @@ void MainWindow::on_actionCut_triggered()
     if (focusWidget() == nullptr)
         return;
 
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
