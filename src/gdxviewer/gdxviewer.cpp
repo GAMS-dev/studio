@@ -114,6 +114,8 @@ GdxSymbol *GdxViewer::selectedSymbol()
 bool GdxViewer::reload()
 {
     if (mHasChanged) {
+        if (ui.splitter->widget(1) != ui.widget)
+            ui.splitter->replaceWidget(1, ui.widget);
         free();
         bool initSuccess = init();
         if (initSuccess) {
@@ -211,8 +213,6 @@ void GdxViewer::free()
         selected->stopLoadingData();
 
     disconnect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    ui.splitter->replaceWidget(1, ui.widget);
-
     ui.tvSymbols->setModel(nullptr);
 
     if(mGdxSymbolTable) {

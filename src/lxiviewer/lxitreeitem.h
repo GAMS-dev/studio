@@ -17,43 +17,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef LXITREEITEM_H
+#define LXITREEITEM_H
 
-#include <QDialog>
-#include "mainwindow.h"
-#include "filecontext.h"
+#include <QList>
 
-namespace Ui {
-class GoToWidget;
-}
 
 namespace gams {
 namespace studio {
+namespace lxiviewer {
 
-class GoToWidget : public QDialog
+class LxiTreeItem
 {
-    Q_OBJECT
-
 public:
-    explicit GoToWidget(MainWindow *parent = 0);
+    explicit LxiTreeItem(QString index = "", int lineNr = -1, QString text = "", LxiTreeItem *parentItem = nullptr);
+    ~LxiTreeItem();
 
-    ~GoToWidget();
+    void appendChild(LxiTreeItem *child);
 
-    void focusTextBox();
+    LxiTreeItem* child(int row);
+    int childCount() const;
+    int row() const;
+    LxiTreeItem* parentItem();
 
-private slots:
-    void on_GoTo_clicked();
+    QString index() const;
+
+    QString text() const;
+
+    int lineNr() const;
 
 private:
-    Ui::GoToWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
+    QList<LxiTreeItem*> mChildItems;
+    QString mIndex;
+    int mLineNr;
+    QString mText;
+    LxiTreeItem* mParentItem = nullptr;
+
 
 };
 
-}
-}
-#endif // GOTOWIDGET_H
+} // namespace lxiviewer
+} // namespace studio
+} // namespace gams
+
+#endif // LXITREEITEM_H

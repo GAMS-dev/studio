@@ -664,6 +664,9 @@
    </property>
   </action>
   <action name="actionInsert_Mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Insert Mode</string>
    </property>

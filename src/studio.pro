@@ -133,7 +133,11 @@ SOURCES += \
     editors/abstracteditor.cpp \
     tool.cpp \
     updatedialog.cpp \
-    version.cpp
+    version.cpp \
+    lxiviewer/lxitreeitem.cpp \
+    lxiviewer/lxiparser.cpp \
+    lxiviewer/lxitreemodel.cpp \
+    lxiviewer/lxiviewer.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -206,7 +210,11 @@ HEADERS += \
     editors/logeditor.h \
     editors/abstracteditor.h \
     tool.h \
-    updatedialog.h
+    updatedialog.h \
+    lxiviewer/lxitreeitem.h \
+    lxiviewer/lxiparser.h \
+    lxiviewer/lxitreemodel.h \
+    lxiviewer/lxiviewer.h
 
 FORMS += \
     welcomepage.ui  \
@@ -221,7 +229,8 @@ FORMS += \
     resultsview.ui \
     bookmarkdialog.ui \
     gotowidget.ui \
-    updatedialog.ui
+    updatedialog.ui \
+    lxiviewer/lxiviewer.ui
 
 RESOURCES += \
     ../icons/icons.qrc

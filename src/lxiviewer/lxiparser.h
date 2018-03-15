@@ -17,43 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef LXIPARSER_H
+#define LXIPARSER_H
 
-#include <QDialog>
-#include "mainwindow.h"
-#include "filecontext.h"
-
-namespace Ui {
-class GoToWidget;
-}
+#include "lxitreeitem.h"
 
 namespace gams {
 namespace studio {
+namespace lxiviewer {
 
-class GoToWidget : public QDialog
+class LxiParser
 {
-    Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = 0);
-
-    ~GoToWidget();
-
-    void focusTextBox();
-
-private slots:
-    void on_GoTo_clicked();
+    static LxiTreeItem* parseFile(QString lxiFile);
 
 private:
-    Ui::GoToWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
+    LxiParser();
 
 };
 
-}
-}
-#endif // GOTOWIDGET_H
+} // namespace lxiviewer
+} // namespace studio
+} // namespace gams
+
+#endif // LXIPARSER_H

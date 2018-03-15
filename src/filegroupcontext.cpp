@@ -314,7 +314,7 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-LogContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext() const
 {
     return mLogContext;
 }
@@ -371,7 +371,7 @@ void FileGroupContext::processDeleted()
 {
     mGamsProcess = nullptr;
     updateRunState(QProcess::NotRunning);
-    emit gamsProcessStateChanged(this);
+    //emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
