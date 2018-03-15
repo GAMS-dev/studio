@@ -34,6 +34,9 @@ private:
     QString mLxiFile;
     FileContext *mFileContext;
 
+    void loadLxiFile();
+
+
 private slots:
     void jumpToLine(QModelIndex modelIndex);
 };
