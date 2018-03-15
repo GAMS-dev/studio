@@ -121,19 +121,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    mDockHelpView->setParent(nullptr);
-    delete mDockHelpView;
     delete ui;
-
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
     //          may not be in the ui, delete and remove them from ui before the ui is deleted.
-
-// TODO fix crash
-//    delete mOptionEditor;
-//    delete mDockOptionView;
-//    delete mCommandLineHistory;
-//    delete mCommandLineOption; TODO fix crash
-//    delete mCommandLineTokenizer;
+    delete mGamsOption;
 }
 
 void MainWindow::initTabs()
@@ -704,15 +695,24 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
+    if ( (mRecent.editor != nullptr) && (focusWidget() == mRecent.editor) ) {
+        CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+        QString word;
+        int istate = 0;
+        ce->wordInfo(ce->textCursor(), word, istate);
+//        qDebug() << "word=[" << word << "], State=" << istate;
+
+        if (istate == static_cast<int>(SyntaxState::Title)) {
+            mDockHelpView->on_dollarControlHelpRequested("title");
+        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            mDockHelpView->on_dollarControlHelpRequested(word);
+        } else {
+            mDockHelpView->on_keywordHelpRequested(word);
+        }
+    }
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
-
-//void MainWindow::on_actionHelp_triggered()
-//{
-//    if (mDockHelpView->isHidden())
-//       mDockHelpView->show();
-//}
 
 void MainWindow::on_actionAbout_triggered()
 {
@@ -840,8 +840,8 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
-    mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
+    mGamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
 
@@ -1373,9 +1373,7 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-
-    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->on_commandLineHelpRequested();
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
