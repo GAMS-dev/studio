@@ -30,6 +30,7 @@
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
+#include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
@@ -163,8 +164,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
-            fc->addEditor(codeEdit);
-            tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            if (fc->metrics().fileType() == FileType::Lst) {
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                FileSystemContext::initEditorType(lxiViewer);
+                fc->addEditor(lxiViewer);
+                tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
+            } else {
+                fc->addEditor(codeEdit);
+                tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            }
+
 
 //            QTextCursor tc = codeEdit->textCursor();
 //            tc.movePosition(QTextCursor::Start);
@@ -186,7 +195,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
 
@@ -514,11 +523,13 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
+    lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
+
     if (edit) {
-        FileContext* fc = mFileRepo.fileContext(edit);
+        FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
         if (fc) {
             mRecent.editFileId = fc->id();
-            mRecent.editor = edit;
+            mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
@@ -1433,7 +1444,13 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         createEdit(tabWidget, focus, fileContext->id());
     }
     if (tabWidget->currentWidget())
-        if (focus) tabWidget->currentWidget()->setFocus();
+        if (focus) {
+            lxiviewer::LxiViewer* lxiViewer = FileSystemContext::toLxiViewer(edit);
+            if (lxiViewer)
+                lxiViewer->codeEditor()->setFocus();
+            else
+                tabWidget->currentWidget()->setFocus();
+        }
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         changeToLog(fileContext);
@@ -1607,7 +1624,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
         if (!FileContext::toGdxViewer(edit))
-            edit->setFont(font);
+            FileContext::toPlainEdit(edit)->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
@@ -1722,7 +1739,7 @@ void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
     if (!ce) return;
     ce->selectAll();
 }
@@ -1732,7 +1749,7 @@ void MainWindow::on_actionCut_triggered()
     if (focusWidget() == nullptr)
         return;
 
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {

@@ -371,7 +371,7 @@ void FileGroupContext::processDeleted()
 {
     mGamsProcess = nullptr;
     updateRunState(QProcess::NotRunning);
-    emit gamsProcessStateChanged(this);
+    //emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
