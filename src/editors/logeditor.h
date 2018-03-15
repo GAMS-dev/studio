@@ -35,7 +35,7 @@ public:
     LogEditor(StudioSettings *settings, QWidget *parent = 0);
 
 public:
-    EditorType type();
+    EditorType type() override;
 };
 
 }

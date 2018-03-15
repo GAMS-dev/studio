@@ -314,7 +314,7 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-LogContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext() const
 {
     return mLogContext;
 }

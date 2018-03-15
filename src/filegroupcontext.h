@@ -53,7 +53,7 @@ public:
 
     QString runableGms();
     QString lstFileName();
-    LogContext* logContext();
+    LogContext* logContext() const;
 
     GamsProcess* newGamsProcess();
     GamsProcess* gamsProcess();

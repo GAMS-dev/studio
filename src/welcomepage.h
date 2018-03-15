@@ -39,10 +39,13 @@ public:
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 
+    void setOutputVisible(bool outputVisible);
+
 private:
     Ui::WelcomePage *ui;
     QList<QLabel*> mFileHistory;
     MainWindow *mMain;
+    bool mOutputVisible;
 
 signals:
     void linkActivated(const QString &link);
