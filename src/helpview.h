@@ -82,10 +82,6 @@ private:
     QAction* actionOpenInBrowser;
     QAction* actionCopyPageURL;
 
-    QAction* actionZoomIn;
-    QAction* actionZoomOut;
-    QAction* actionResetZoom;
-
     QWebEngineView* mHelpView;
 
     QString baseLocation;

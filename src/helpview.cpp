@@ -64,10 +64,6 @@ HelpView::~HelpView()
     delete actionOnlineHelp;
     delete actionOpenInBrowser;
 
-    delete actionZoomIn;
-    delete actionZoomOut;
-    delete actionResetZoom;
-
     delete mHelpView;
 }
 
@@ -157,16 +153,6 @@ void HelpView::setupUi(QWidget *parent)
     actionOpenInBrowser->setStatusTip(tr("Open this page in Default Web Browser"));
     connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
     helpMenu->addAction(actionOpenInBrowser);
-    helpMenu->addSeparator();
-
-    actionZoomIn = helpMenu->addAction(tr("Zoom In"), this,  &HelpView::zoomIn);
-    actionZoomIn->setStatusTip(tr("Zoom in the help page"));
-
-    actionZoomOut = helpMenu->addAction(tr("Zoom Out"), this,  &HelpView::zoomOut);
-    actionZoomOut->setStatusTip(tr("Zoom out the help page"));
-
-    actionResetZoom = helpMenu->addAction(tr("Reset Zoom"), this,  &HelpView::resetZoom);
-    actionResetZoom->setStatusTip(tr("Reset Zoom to Original view"));
     helpMenu->addSeparator();
 
     actionCopyPageURL = helpMenu->addAction(tr("Copy Page URL to Clipboard"), this,  &HelpView::copyURLToClipboard);
