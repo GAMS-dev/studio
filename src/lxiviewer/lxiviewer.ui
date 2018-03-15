@@ -32,6 +32,9 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTreeView" name="lxiTreeView">
+      <property name="expandsOnDoubleClick">
+       <bool>true</bool>
+      </property>
       <attribute name="headerVisible">
        <bool>false</bool>
       </attribute>

@@ -165,7 +165,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
             if (fc->metrics().fileType() == FileType::Lst) {
-                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc->location(), this);
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
                 FileSystemContext::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());

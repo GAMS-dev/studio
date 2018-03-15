@@ -4,8 +4,12 @@
 #include "editors/codeeditor.h"
 #include <QWidget>
 
+
 namespace gams {
 namespace studio {
+
+class FileContext;
+
 namespace lxiviewer {
 
 namespace Ui {
@@ -17,7 +21,7 @@ class LxiViewer : public QWidget
     Q_OBJECT
 
 public:
-    explicit LxiViewer(CodeEditor *codeEditor, QString lstFile, QWidget *parent);
+    explicit LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent);
     ~LxiViewer();
 
     CodeEditor *codeEditor() const;
@@ -28,6 +32,10 @@ private:
     CodeEditor* mCodeEditor;
     QString mLstFile;
     QString mLxiFile;
+    FileContext *mFileContext;
+
+private slots:
+    void jumpToLine(QModelIndex modelIndex);
 };
 
 

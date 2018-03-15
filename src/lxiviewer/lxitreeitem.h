@@ -44,6 +44,8 @@ public:
 
     QString text() const;
 
+    int lineNr() const;
+
 private:
     QList<LxiTreeItem*> mChildItems;
     QString mIndex;

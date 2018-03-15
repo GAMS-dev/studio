@@ -72,6 +72,11 @@ QString LxiTreeItem::text() const
     return mText;
 }
 
+int LxiTreeItem::lineNr() const
+{
+    return mLineNr;
+}
+
 } // namespace lxiviewer
 } // namespace studio
 } // namespace gams
