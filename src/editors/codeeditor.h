@@ -113,7 +113,6 @@ private:
         BlockEdit(CodeEditor* edit, int blockNr, int colNr);
         virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
-        void keyReleaseEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
             return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
         int colFrom() { return 0; }

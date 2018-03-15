@@ -229,10 +229,6 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
         QPlainTextEdit::keyReleaseEvent(e);
         return;
     }
-    if (mBlockEdit) {
-        mBlockEdit->keyReleaseEvent(e);
-        return;
-    }
     // return pressed, if current block consists of whitespaces only: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
@@ -827,14 +823,6 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         replaceBlockText(e->text());
     }
     startCursorTimer();
-}
-
-void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
-{
-    Q_UNUSED(e)
-    QSet<int> moveKeys;
-    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
-             << Qt::Key_PageUp << Qt::Key_PageDown;
 }
 
 void CodeEditor::BlockEdit::startCursorTimer()
