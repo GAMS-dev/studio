@@ -1268,7 +1268,7 @@ void MainWindow::execute(QString commandLineStr)
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
-        fc->save();
+        group->saveGroup();
 
     if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
         QMessageBox msgBox;
