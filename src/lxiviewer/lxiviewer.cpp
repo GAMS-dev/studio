@@ -44,7 +44,10 @@ void LxiViewer::loadLxiFile()
     if (QFileInfo(mLxiFile).exists()) {
         ui->splitter->widget(0)->show();
         LxiTreeModel* model = new LxiTreeModel(LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile)));
+        LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
         ui->lxiTreeView->setModel(model);
+        if (oldModel)
+            delete oldModel;
     }
     else
         ui->splitter->widget(0)->hide();
