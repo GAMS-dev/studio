@@ -1,4 +1,6 @@
 #include "filecontext.h"
+#include "filegroupcontext.h"
+#include "gamsprocess.h"
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
@@ -26,11 +28,15 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
     ui->splitter->setStretchFactor(1, 3);
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
-    connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
+    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
+    //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
 
 LxiViewer::~LxiViewer()
 {
+    LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
+    if (oldModel)
+        delete oldModel;
     delete ui;
 }
 
@@ -41,16 +47,18 @@ CodeEditor *LxiViewer::codeEditor() const
 
 void LxiViewer::loadLxiFile()
 {
-    if (QFileInfo(mLxiFile).exists()) {
-        ui->splitter->widget(0)->show();
-        LxiTreeModel* model = new LxiTreeModel(LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile)));
-        LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
-        ui->lxiTreeView->setModel(model);
-        if (oldModel)
-            delete oldModel;
+    if (QProcess::NotRunning == mFileContext->parentEntry()->gamsProcessState()) {
+        if (QFileInfo(mLxiFile).exists()) {
+            ui->splitter->widget(0)->show();
+            LxiTreeModel* model = new LxiTreeModel(LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile)));
+            LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
+            ui->lxiTreeView->setModel(model);
+            if (oldModel)
+                delete oldModel;
+        }
+        else
+            ui->splitter->widget(0)->hide();
     }
-    else
-        ui->splitter->widget(0)->hide();
 }
 
 void LxiViewer::jumpToLine(QModelIndex modelIndex)
