@@ -290,13 +290,13 @@ void FileContext::load(QList<int> codecMibs, bool keepMarks)
             }
         }
         if (codec) {
-//            if (mMarks && keepMarks)
-//                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+            if (mMarks && keepMarks)
+                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
             setEditPositions(edPos);
-//            if (mMarks && keepMarks)
-//                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+            if (mMarks && keepMarks)
+                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
             mCodec = codec;
         }
         file.close();

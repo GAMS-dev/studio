@@ -175,7 +175,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
 
 
             if (codecMip == -1)
-                fc->load(encodingMIBs());
+                fc->load(encodingMIBs(), true);
             else
                 fc->load(codecMip, true);
 
@@ -597,7 +597,7 @@ void MainWindow::codecReload(QAction *action)
             reload = msgBox.exec();
         }
         if (reload) {
-            fc->load(action->data().toInt());
+            fc->load(action->data().toInt(), true);
             updateMenuToCodec(action->data().toInt());
         }
     }
@@ -693,7 +693,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
     }
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
-        fc->load(fc->codecMib());
+        fc->load(fc->codecMib(), true);
     } else {
         fc->document()->setModified();
     }
