@@ -39,6 +39,13 @@ public:
     ///
     static void showExceptionMessage(const QString &title, const QString &message);
 
+    ///
+    /// \brief Get the open file name.
+    /// \return File name on macos; otherwise <c>""</c>.
+    /// \remark Use this on macos only.
+    ///
+    QString openFile() const;
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.

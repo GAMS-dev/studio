@@ -22,9 +22,9 @@
 
 #include <QMessageBox>
 #include <QFileOpenEvent>
-#include <QDebug>
-#include <fstream>
-#include "gamspaths.h"
+//#include <QDebug>
+//#include <fstream>
+//#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -63,19 +63,25 @@ void Application::showExceptionMessage(const QString &title, const QString &mess
     QMessageBox::critical(nullptr, title, message);
 }
 
+QString Application::openFile() const
+{
+    return mOpenFile;
+}
+
 bool Application::event(QEvent *event)
 {
-    std::ofstream fs;
-    auto wd = GAMSPaths::defaultWorkingDir();
-    wd.append("/lala.txt");
-    fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
+    //std::ofstream fs;
+    //auto wd = GAMSPaths::defaultWorkingDir();
+    //wd.append("/lala.txt");
+    //fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
     if (event->type() == QEvent::FileOpen) {
-        fs << ">> file open";
+        //fs << ">> file open";
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        fs << "file >> " << openEvent->file().toStdString();
+        //fs << "file >> " << openEvent->file().toStdString();
+        mOpenFile = openEvent->file();
     }
-    fs.flush();
-    fs.close();
+    //fs.flush();
+    //fs.close();
     return QApplication::event(event);
 }
 

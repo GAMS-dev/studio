@@ -56,8 +56,10 @@ int main(int argc, char *argv[])
         auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
         MainWindow w(settings);
         auto files = clParser.files();
-        //files.append(app);
-        w.openFiles(files);
+        if (files.size())
+            w.openFiles(files);
+        else if (!app.openFile().isEmpty())
+            w.openFile(app.openFile());
         w.show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
