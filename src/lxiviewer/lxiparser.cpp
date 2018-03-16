@@ -49,38 +49,14 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
         splitList.removeFirst();
         QString text = splitList.join(' ');
 
-        if (idx == lastIdx)
-            lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
-        else {
+        if (idx == "B") {
             lastParent = rootItem;
-            if (idx == "D") {
-                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "E") {
-                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "F") {
-                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "G") {
-                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "I") {
-                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-
-            lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
+        } else if (idx != lastIdx) {
+            current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], rootItem);
+            rootItem->appendChild(current);
+            lastParent = current;
         }
+        lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         lastIdx = idx;
     }
     return rootItem;
