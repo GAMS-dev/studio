@@ -21,6 +21,7 @@
 #define CODEEDITOR_H
 
 #include "editors/abstracteditor.h"
+#include "syntax/textmark.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -30,7 +31,6 @@ class QWidget;
 namespace gams {
 namespace studio {
 
-class TextMark;
 class StudioSettings;
 class LineNumberArea;
 class SearchWidget;
@@ -61,6 +61,7 @@ public:
     void duplicateLine();
     void removeLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
+    void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -74,7 +75,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
 
 signals:
-    void requestMarkHash(QHash<int, TextMark*>* marks);
+    void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
     void requestSyntaxState(int position, int &intState);
 
@@ -104,7 +105,6 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
-    void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
 private:
     class BlockEdit
@@ -113,7 +113,6 @@ private:
         BlockEdit(CodeEditor* edit, int blockNr, int colNr);
         virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
-        void keyReleaseEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
             return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
         int colFrom() { return 0; }
@@ -163,7 +162,7 @@ public:
 
     // AbstractEditor interface
 public:
-    EditorType type();
+    EditorType type() override;
 };
 
 class LineNumberArea : public QWidget

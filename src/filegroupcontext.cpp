@@ -300,6 +300,19 @@ bool FileGroupContext::hasLstErrorText(int line)
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
+void FileGroupContext::saveGroup()
+{
+    foreach (FileSystemContext* child, mChildList) {
+        if (child->type() == ContextType::FileGroup) {
+            FileGroupContext *fgc = static_cast<FileGroupContext*>(child);
+            fgc->saveGroup();
+        } else if (child->type() == ContextType::File) {
+            FileContext *fc = static_cast<FileContext*>(child);
+            fc->save();
+        }
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
@@ -314,7 +327,7 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-LogContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext() const
 {
     return mLogContext;
 }
@@ -371,7 +384,7 @@ void FileGroupContext::processDeleted()
 {
     mGamsProcess = nullptr;
     updateRunState(QProcess::NotRunning);
-    emit gamsProcessStateChanged(this);
+    //emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)

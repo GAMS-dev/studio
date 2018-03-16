@@ -30,6 +30,7 @@
 #include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
+#include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "logger.h"
 #include "studiosettings.h"
@@ -115,18 +116,15 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     initTabs();
     connectCommandLineWidgets();
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
 
 MainWindow::~MainWindow()
 {
-    delete mDockHelpView;
     delete ui;
-// TODO fix crash
-//    delete mOptionEditor;
-//    delete mDockOptionView;
-//    delete mCommandLineHistory;
-//    delete mCommandLineOption; TODO fix crash
-//    delete mCommandLineTokenizer;
+    // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
+    //          may not be in the ui, delete and remove them from ui before the ui is deleted.
+    delete mGamsOption;
 }
 
 void MainWindow::initTabs()
@@ -135,10 +133,8 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    if (!mSettings->skipWelcomePage()) {
+    if (!mSettings->skipWelcomePage())
         createWelcomePage();
-        ui->mainTab->setCurrentIndex(0);
-    }
 }
 
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -159,8 +155,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
-            fc->addEditor(codeEdit);
-            tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            if (fc->metrics().fileType() == FileType::Lst) {
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                FileSystemContext::initEditorType(lxiViewer);
+                fc->addEditor(lxiViewer);
+                tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
+            } else {
+                fc->addEditor(codeEdit);
+                tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+            }
+
 
 //            QTextCursor tc = codeEdit->textCursor();
 //            tc.movePosition(QTextCursor::Start);
@@ -182,7 +186,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
             gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = ui->mainTab->addTab(gdxView, fc->caption());
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
 
@@ -238,6 +242,17 @@ void MainWindow::setHelpViewVisibility(bool visibility)
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 {
     mCommandLineHistory = opt;
+}
+
+void MainWindow::checkOptionDefinition(bool checked)
+{
+    showOptionDefintionCheckBox->setChecked(checked);
+    toggleOptionDefinition(checked);
+}
+
+bool MainWindow::isOptionDefinitionChecked()
+{
+    return showOptionDefintionCheckBox->isChecked();
 }
 
 CommandLineHistory *MainWindow::commandLineHistory()
@@ -350,8 +365,8 @@ void MainWindow::toggleOptionDefinition(bool checked)
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionSplitter->widget(1)->hide();
-        mDockOptionView->widget()->resize( mDockOptionView->widget()->sizeHint() ); // ->minminimumSizeHint() );
-        this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+        mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+        this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
     }
 }
 
@@ -490,6 +505,7 @@ void MainWindow::activeTabChanged(int index)
     mCommandLineOption->setCurrentIndex(-1);
     mCommandLineOption->setCurrentContext("");
     mDockOptionView->setEnabled( false );
+    setRunActionsEnabled( false );
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
@@ -498,11 +514,13 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
 
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
+    lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
+
     if (edit) {
-        FileContext* fc = mFileRepo.fileContext(edit);
+        FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
         if (fc) {
             mRecent.editFileId = fc->id();
-            mRecent.editor = edit;
+            mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
         }
         if (fc && !edit->isReadOnly()) {
@@ -521,6 +539,8 @@ void MainWindow::activeTabChanged(int index)
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
         gdxViewer->reload();
     }
+
+    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -670,21 +690,29 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 
 void MainWindow::on_actionExit_Application_triggered()
 {
-    mSettings->saveSettings(this);
-    QCoreApplication::quit();
+    close();
 }
 
 void MainWindow::on_actionHelp_triggered()
 {
+    if ( (mRecent.editor != nullptr) && (focusWidget() == mRecent.editor) ) {
+        CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+        QString word;
+        int istate = 0;
+        ce->wordInfo(ce->textCursor(), word, istate);
+//        qDebug() << "word=[" << word << "], State=" << istate;
+
+        if (istate == static_cast<int>(SyntaxState::Title)) {
+            mDockHelpView->on_dollarControlHelpRequested("title");
+        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            mDockHelpView->on_dollarControlHelpRequested(word);
+        } else {
+            mDockHelpView->on_keywordHelpRequested(word);
+        }
+    }
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
-
-//void MainWindow::on_actionHelp_triggered()
-//{
-//    if (mDockHelpView->isHidden())
-//       mDockHelpView->show();
-//}
 
 void MainWindow::on_actionAbout_triggered()
 {
@@ -724,6 +752,8 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
         ui->dockLogView->show();
     else
         ui->dockLogView->hide();
+
+    if (mWp) mWp->setOutputVisible(checked);
 }
 
 void MainWindow::on_actionOption_View_triggered(bool checked)
@@ -805,12 +835,13 @@ void MainWindow::createWelcomePage()
     mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
-    mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
+    mGamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
 
@@ -863,7 +894,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     commandHLayout->addWidget(helpButton);
 
-    QCheckBox* showOptionDefintionCheckBox = new QCheckBox(this);
+    showOptionDefintionCheckBox = new QCheckBox(this);
     showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
     showOptionDefintionCheckBox->setEnabled(true);
     showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
@@ -895,7 +926,9 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
     mDockOptionView->setFloating(false);
-    this->resizeDocks({mDockOptionView}, {mDockOptionView->widget()->minimumSizeHint().height()}, Qt::Vertical);
+
+    mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
+    this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
 
     connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
@@ -977,7 +1010,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     if(mWp == nullptr)
         createWelcomePage();
-    ui->mainTab->setCurrentIndex(0);
+    else
+        ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
 }
 
 void MainWindow::renameToBackup(QFile *file)
@@ -1013,7 +1047,7 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history()->lastOpenedFiles.size() >= history()->MAX_FILE_HISTORY) {
+    if (history()->lastOpenedFiles.size() >= mSettings->historySize()) {
         history()->lastOpenedFiles.removeLast();
     }
     if (!history()->lastOpenedFiles.contains(filePath))
@@ -1072,6 +1106,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if (fsc->type() == FileSystemContext::FileGroup) {
         LogContext* logProc = mFileRepo.logContext(fsc);
         if (logProc->editors().isEmpty()) {
+            logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
@@ -1233,7 +1268,7 @@ void MainWindow::execute(QString commandLineStr)
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
-        fc->save();
+        group->saveGroup();
 
     if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
         QMessageBox msgBox;
@@ -1260,6 +1295,7 @@ void MainWindow::execute(QString commandLineStr)
     LogContext* logProc = mFileRepo.logContext(group);
 
     if (logProc->editors().isEmpty()) {
+        logProc->setDebugLog(mLogDebugLines);
         LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
 
@@ -1337,9 +1373,7 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-
-    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->on_commandLineHelpRequested();
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
@@ -1385,8 +1419,9 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 
 void MainWindow::changeToLog(FileContext* fileContext)
 {
-    FileContext* logContext = mFileRepo.logContext(fileContext);
+    LogContext* logContext = mFileRepo.logContext(fileContext);
     if (logContext && !logContext->editors().isEmpty()) {
+        logContext->setDebugLog(mLogDebugLines);
         QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
         if (logEdit && ui->logTab->currentWidget() != logEdit) {
             if (ui->logTab->currentWidget() != mResultsView)
@@ -1409,7 +1444,13 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus)
         createEdit(tabWidget, focus, fileContext->id());
     }
     if (tabWidget->currentWidget())
-        if (focus) tabWidget->currentWidget()->setFocus();
+        if (focus) {
+            lxiviewer::LxiViewer* lxiViewer = FileSystemContext::toLxiViewer(edit);
+            if (lxiViewer)
+                lxiViewer->codeEditor()->setFocus();
+            else
+                tabWidget->currentWidget()->setFocus();
+        }
     if (tabWidget != ui->logTab) {
         // if there is already a log -> show it
         changeToLog(fileContext);
@@ -1436,6 +1477,16 @@ void MainWindow::closeGroup(FileGroupContext* group)
         for (FileContext *file: openFiles) {
             fileClosed(file->id());
         }
+        LogContext* log = group->logContext();
+        if (log) {
+            QWidget* edit = log->editors().isEmpty() ? nullptr : log->editors().first();
+            if (edit) {
+                log->removeEditor(edit);
+                int index = ui->logTab->indexOf(edit);
+                if (index >= 0) ui->logTab->removeTab(index);
+            }
+        }
+
         mFileRepo.removeGroup(group);
         mSettings->saveSettings(this);
     }
@@ -1573,7 +1624,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
         if (!FileContext::toGdxViewer(edit))
-            edit->setFont(font);
+            FileContext::toPlainEdit(edit)->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
@@ -1688,7 +1739,7 @@ void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
     if (!ce) return;
     ce->selectAll();
 }
@@ -1698,7 +1749,7 @@ void MainWindow::on_actionCut_triggered()
     if (focusWidget() == nullptr)
         return;
 
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -1712,27 +1763,38 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
+    getDockHelpView()->resetZoom(); // reset help view
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomOut();
-        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomOut();
+    } else {
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (ae) {
+            if (getDockHelpView()->isAncestorOf(focusWidget())) {
+                getDockHelpView()->zoomIn();
+            } else {
+                int pix = ae->fontInfo().pixelSize();
+                if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
+            }
+        }
     }
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (ae) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomIn();
-        if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
+    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+        getDockHelpView()->zoomIn();
+    } else {
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (ae) {
+            int pix = ae->fontInfo().pixelSize();
+            ae->zoomIn();
+            if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+        }
     }
 }
 
@@ -1820,6 +1882,21 @@ void MainWindow::on_actionRemove_Line_triggered()
         ce->removeLine();
 }
 
+void MainWindow::toggleLogDebug()
+{
+    mLogDebugLines = !mLogDebugLines;
+    FileGroupContext* root = mFileRepo.treeModel()->rootContext();
+    for (int i = 0; i < root->childCount(); ++i) {
+        FileSystemContext *fsc = root->childEntry(i);
+        if (fsc->type() == FileSystemContext::FileGroup) {
+            FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+            LogContext* log = group->logContext();
+            if (log) log->setDebugLog(mLogDebugLines);
+        }
+    }
+}
+
 }
 }
+
 

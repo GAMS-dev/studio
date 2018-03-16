@@ -55,6 +55,7 @@ void LogContext::markOld()
         cur.movePosition(QTextCursor::End);
         cur.setBlockCharFormat(oldFormat);
         mLastLstLink = nullptr;
+        mConceal = false;
     }
 }
 
@@ -108,21 +109,22 @@ TextMark*LogContext::firstErrorMark()
 void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 {
     Q_UNUSED(channel)
-    bool debugTheLog = false;
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
 
     ExtractionState state;
-    QRegularExpression rEx("(\\r?\\n|\\r\\n?)");
-    QStringList lines = text.split(rEx);
-    if (!mLineBuffer.isEmpty()) {
-        lines.replace(0,mLineBuffer+lines.at(0));
-    }
-    mLineBuffer = lines.last();
-    lines.removeAt(lines.count()-1);
-    for (QString line: lines) {
+    QRegularExpressionMatch match;
+    QRegularExpression rEx("(\\r\\n?|\\n)");
+    int from = 0;
+    mLineBuffer.append(text);
+    while (true) {
+        if (mLineBuffer.indexOf(rEx, from, &match) < 0) {
+            mLineBuffer.remove(0, from);
+            break;
+        }
+        QString line = mLineBuffer.mid(from, match.capturedStart());
         QList<LinkData> marks;
         QString newLine = extractError(line, state, marks);
         // store count of followup lines
@@ -131,10 +133,8 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         } else {
             mLastLstLink = nullptr;
         }
-        // TODO(JM) cleanup usage of createErrorHint
         if (state >= FileContext::Exiting)
             parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
-//            emit createErrorHint(mCurrentErrorHint.first, mCurrentErrorHint.second);
         if (state == FileContext::FollowupError)
             newLine = extractError(line, state, marks);
         QList<int> scrollVal;
@@ -152,13 +152,22 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         }
         QTextCursor cursor(mDocument);
         cursor.movePosition(QTextCursor::End);
-        if (debugTheLog) {
-            QTextCharFormat fmtk; fmtk.setForeground(QColor(120,150,100));
+        if (mConceal) {
+            cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
+            cursor.removeSelectedText();
+        }
+        if (mDebugLog) {
+            if (mConceal) {
+                cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
+                cursor.removeSelectedText();
+            }
+            QTextCharFormat fmtk;
+            fmtk.setForeground(QColor(120,150,100));
             cursor.insertText(line, fmtk);
             QTextCharFormat fmt;
             cursor.insertText("\n", fmt);
         }
-        int lineNr = mDocument->lineCount()-1;
+        int lineNr = mDocument->blockCount()-1;
         cursor.insertText(newLine+"\n");
         int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
         for (LinkData mark: marks) {
@@ -184,6 +193,8 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             ++i;
         }
         mDocument->setModified(false);
+        mConceal = match.captured() == "\r";
+        from = match.capturedEnd();
     }
 }
 

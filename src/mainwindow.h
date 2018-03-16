@@ -60,7 +60,6 @@ struct RecentData {
 };
 
 struct HistoryData {
-    const int MAX_FILE_HISTORY = 8;
     QStringList lastOpenedFiles;
 
     // TODO: implement projects & sessions
@@ -98,6 +97,8 @@ public:
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
     void setCommandLineHistory(CommandLineHistory* opt);
+    void checkOptionDefinition(bool checked);
+    bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
@@ -199,6 +200,8 @@ private slots:
     void interruptTriggered();
     void stopTriggered();
 
+    void toggleLogDebug();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -231,13 +234,14 @@ private:
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
-    Option* gamsOption;
+    Option* mGamsOption;
     OptionEditor* mOptionEditor;
     QDockWidget* mDockOptionView;
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
     QSplitter* mOptionSplitter;
+    QCheckBox* showOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
 
@@ -257,6 +261,7 @@ private:
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
+    bool mLogDebugLines = false;
 
 };
 

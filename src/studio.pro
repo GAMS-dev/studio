@@ -109,6 +109,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optioneditor.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/addoptionheaderview.cpp \
     syntax/textmark.cpp \
     syntax/textmarklist.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -126,7 +127,11 @@ SOURCES += \
     gotowidget.cpp \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
-    tool.cpp
+    tool.cpp \
+    lxiviewer/lxitreeitem.cpp \
+    lxiviewer/lxiparser.cpp \
+    lxiviewer/lxitreemodel.cpp \
+    lxiviewer/lxiviewer.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -177,6 +182,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optioneditor.h \
     option/optionsortfilterproxymodel.h \
+    option/addoptionheaderview.h \
     syntax.h \
     syntax/textmark.h \
     syntax/textmarklist.h \
@@ -197,7 +203,11 @@ HEADERS += \
     gotowidget.h \
     editors/logeditor.h \
     editors/abstracteditor.h \
-    tool.h
+    tool.h \
+    lxiviewer/lxitreeitem.h \
+    lxiviewer/lxiparser.h \
+    lxiviewer/lxitreemodel.h \
+    lxiviewer/lxiviewer.h
 
 FORMS += \
     welcomepage.ui  \
@@ -208,11 +218,11 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     settingsdialog.ui \
-    option/optionconfigurator.ui \
     searchwidget.ui \
     resultsview.ui \
     bookmarkdialog.ui \
-    gotowidget.ui
+    gotowidget.ui \
+    lxiviewer/lxiviewer.ui
 
 RESOURCES += \
     ../icons/icons.qrc

@@ -63,10 +63,11 @@ void TextMarkList::rehighlight()
     }
 }
 
-void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks)
+void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter)
 {
     for (TextMark* mark: mMarks) {
-        marks->insert(mark->line(), mark);
+        if ((mark->type() == filter) || mark->type() == TextMark::all)
+            marks->insert(mark->line(), mark);
     }
 }
 

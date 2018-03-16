@@ -53,7 +53,7 @@ public:
 
     QString runableGms();
     QString lstFileName();
-    LogContext* logContext();
+    LogContext* logContext() const;
 
     GamsProcess* newGamsProcess();
     GamsProcess* gamsProcess();
@@ -68,6 +68,7 @@ public:
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
+    void saveGroup();
 
     void dumpMarks();
 

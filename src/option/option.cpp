@@ -83,17 +83,17 @@ void Option::dumpAll()
     }
 }
 
-bool Option::isValid(const QString &optionName)
+bool Option::isValid(const QString &optionName) const
 {
     return mOption.contains(optionName.toUpper());
 }
 
-bool Option::isThereASynonym(const QString &optionName)
+bool Option::isThereASynonym(const QString &optionName) const
 {
     return mSynonymMap.contains( optionName.toUpper() );
 }
 
-bool Option::isDeprecated(const QString &optionName)
+bool Option::isDeprecated(const QString &optionName) const
 {
     if (isValid(optionName))
        return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
@@ -101,12 +101,12 @@ bool Option::isDeprecated(const QString &optionName)
     return false;
 }
 
-bool Option::isDoubleDashedOption(const QString &optionName)
+bool Option::isDoubleDashedOption(const QString &optionName) const
 {
     return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
 }
 
-OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value)
+OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
 {
     QString key = optionName;
     if (!isValid(key))
@@ -199,6 +199,19 @@ QStringList Option::getKeyList() const
 {
     QStringList keyList;
     for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
+        keyList << it.value().name;
+    }
+    return keyList;
+}
+
+QStringList Option::getValidNonDeprecatedKeyList() const
+{
+    QStringList keyList;
+    for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
+        if (isDeprecated(it.key()))
+            continue;
+        if (!it.value().valid)
+            continue;
         keyList << it.value().name;
     }
     return keyList;
