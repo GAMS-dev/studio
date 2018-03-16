@@ -622,7 +622,7 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
     if (!mSettings->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    QColor lineColor = QColor(Qt::cyan).lighter(170);
+    QColor lineColor = QColor(255, 250, 170); // TODO: read from style sheet
     selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
