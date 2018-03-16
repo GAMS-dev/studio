@@ -77,8 +77,8 @@ bool Application::event(QEvent *event)
     fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mOpenFile = openEvent->url().toString();
-        fs << "url >> " << mOpenFile.toStdString() << std::endl;
+        mOpenFile = openEvent->url().path();
+        fs << "ret >> " << mOpenFile.toStdString() << std::endl;
         fs << "path >> " << openEvent->url().path().toStdString() << std::endl;
         fs << "sysdir >> " << GAMSPaths::systemDir().toStdString() << std::endl;
     }
