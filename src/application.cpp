@@ -78,7 +78,7 @@ bool Application::event(QEvent *event)
         //fs << ">> file open";
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
         //fs << "file >> " << openEvent->file().toStdString();
-        mOpenFile = openEvent->file();
+        mOpenFile = openEvent->url().toString();
     }
     //fs.flush();
     //fs.close();
