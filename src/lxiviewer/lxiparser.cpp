@@ -54,27 +54,27 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
         else {
             lastParent = rootItem;
             if (idx == "D") {
-                current = new LxiTreeItem(lastIdx, -1, "Equation", lastParent);
+                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
             }
             else if (idx == "E") {
-                current = new LxiTreeItem(lastIdx, -1, "Column", lastParent);
+                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
             }
             else if (idx == "F") {
-                current = new LxiTreeItem(lastIdx, -1, "SolEQU", lastParent);
+                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
             }
             else if (idx == "G") {
-                current = new LxiTreeItem(lastIdx, -1, "SolVAR", lastParent);
+                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
             }
             else if (idx == "I") {
-                current = new LxiTreeItem(lastIdx, -1, "Display", lastParent);
+                current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], lastParent);
                 lastParent->appendChild(current);
                 lastParent = current;
             }
@@ -90,6 +90,24 @@ LxiParser::LxiParser()
 {
 
 }
+
+QMap<QString, QString> LxiParser::initCaptions()
+{
+    QMap<QString, QString> map;
+    map.insert("A","???");
+    map.insert("B","SubTitle");
+    map.insert("C","Solve Summary");
+    map.insert("D","Equation");
+    map.insert("E","Column");
+    map.insert("F","SolEQU");
+    map.insert("G","SolVAR");
+    map.insert("H","Solution");
+    map.insert("I","Display");
+    map.insert("J","Message");
+    return map;
+}
+
+QMap<QString, QString> LxiParser::mCaptions = LxiParser::initCaptions();
 
 } // namespace lxiviewer
 } // namespace studio
