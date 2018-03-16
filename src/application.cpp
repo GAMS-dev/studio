@@ -75,7 +75,6 @@ bool Application::event(QEvent *event)
     auto wd = GAMSPaths::defaultWorkingDir();
     wd.append("/lala.txt");
     fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
-    fs << "type >> " << QString(event->type()).toStdString() << std::endl;
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
         mOpenFile = openEvent->url().toString();
