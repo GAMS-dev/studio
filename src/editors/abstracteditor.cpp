@@ -26,7 +26,6 @@ namespace studio {
 AbstractEditor::AbstractEditor(StudioSettings *settings, QWidget *parent)
     : QPlainTextEdit(parent), mSettings(settings)
 {
-
 }
 
 AbstractEditor::~AbstractEditor()
@@ -52,6 +51,15 @@ QMimeData* AbstractEditor::createMimeDataFromSelection() const
 StudioSettings *AbstractEditor::settings() const
 {
     return mSettings;
+}
+
+void AbstractEditor::afterContentsChanged()
+{
+    QTextCursor tc = textCursor();
+    int pos = tc.position();
+//    tc.movePosition(QTextCursor::Right);
+    tc.setPosition(pos);
+    setTextCursor(tc);
 }
 
 bool AbstractEditor::event(QEvent *e)
