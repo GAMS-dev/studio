@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         if (files.size())
             w.openFiles(files);
         else if (!app.openFile().isEmpty())
-            w.openFile(app.openFile());
+            w.openFiles({app.openFile()});
         w.show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
