@@ -88,6 +88,7 @@ public:
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
 
+
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();
@@ -206,8 +207,10 @@ protected:
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
+    void timerEvent(QTimerEvent *event);
 
 private:
+    void Checking_Autosavefiles();
     void initTabs();
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
@@ -257,6 +260,8 @@ private:
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
+    int TimerID;
+    FileMetrics mMetrics;
 
 };
 
