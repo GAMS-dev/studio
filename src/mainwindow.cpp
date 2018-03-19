@@ -1321,6 +1321,8 @@ void MainWindow::execute(QString commandLineStr)
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->newGamsProcess();
+    if (!process) return;
+
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
