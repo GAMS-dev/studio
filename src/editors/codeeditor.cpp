@@ -509,7 +509,9 @@ QStringList CodeEditor::clipboard(bool *isBlock)
         if (isBlock) *isBlock = false;
         texts = QStringList() << QGuiApplication::clipboard()->mimeData()->text();
     }
-//    if (isBlock) *isBlock = true; // TODO: find better handling for this
+    if (isBlock && (asBlock || mBlockEdit))
+        *isBlock = true;
+
     return texts;
 }
 

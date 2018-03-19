@@ -57,7 +57,6 @@ void AbstractEditor::afterContentsChanged()
 {
     QTextCursor tc = textCursor();
     int pos = tc.position();
-//    tc.movePosition(QTextCursor::Right);
     tc.setPosition(pos);
     setTextCursor(tc);
 }
