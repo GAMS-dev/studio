@@ -26,6 +26,10 @@
 #include "commandlineparser.h"
 #include "studiosettings.h"
 
+#include <QDebug>
+#include <fstream>
+#include "gamspaths.h"
+
 using gams::studio::Application;
 using gams::studio::MainWindow;
 using gams::studio::StudioSettings;
@@ -55,12 +59,19 @@ int main(int argc, char *argv[])
     try {
         auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
         MainWindow w(settings);
-        //w.openFiles({"/Users/mrmontag/Documents/GAMSStudio/workspace/trnsport1.gms"});
+        std::ofstream fs;
+        auto wd = gams::studio::GAMSPaths::defaultWorkingDir();
+        wd.append("/lala.txt");
+        fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
+        fs << "path >> " << app.openFile().toStdString() << std::endl;
+        fs << "sysdir >> " << gams::studio::GAMSPaths::systemDir().toStdString() << std::endl;
         if (!app.openFile().isEmpty())
-            w.openFiles({app.openFile()});
+            w.openFile(app.openFile());
         else
             w.openFiles(clParser.files());
         w.show();
+        fs.flush();
+        fs.close();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
