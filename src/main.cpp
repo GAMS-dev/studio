@@ -17,22 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
-#include <cstdlib>
-
-//#include "mainwindow.h"
 #include "application.h"
 #include "exception.h"
-//#include "commandlineparser.h"
-//#include "studiosettings.h"
-
-#include <QDebug>
-#include <fstream>
-#include "gamspaths.h"
 
 using gams::studio::Application;
-//using gams::studio::MainWindow;
-//using gams::studio::StudioSettings;
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +31,7 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(STUDIO_VERSION);
 
     try {
+        app.openAssociatedFiles();
         app.mainWindow()->show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {

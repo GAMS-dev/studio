@@ -21,14 +21,9 @@
 #include "exception.h"
 #include "studiosettings.h"
 
-//#include <cstdlib>
 #include <iostream>
 #include <QMessageBox>
 #include <QFileOpenEvent>
-
-#include <QDebug>
-#include <fstream>
-#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -39,11 +34,6 @@ Application::Application(int& argc, char** argv)
     parseCmdArgs();
     auto* settings = new StudioSettings(mCmdParser.ignoreSettings(), mCmdParser.resetSettings());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow(settings));
-}
-
-Application::~Application()
-{
-    //delete mMainWindow;
 }
 
 MainWindow* Application::mainWindow() const
@@ -89,15 +79,6 @@ bool Application::event(QEvent *event)
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
         mMainWindow->openFile(openEvent->url().path());
-
-        std::ofstream fs;
-        auto wd = gams::studio::GAMSPaths::defaultWorkingDir();
-        wd.append("/lala.txt");
-        fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
-        fs << "path >> " << openEvent->url().path().toStdString() << std::endl;
-        fs << "sysdir >> " << gams::studio::GAMSPaths::systemDir().toStdString() << std::endl;
-        fs.flush();
-        fs.close();
     }
     return QApplication::event(event);
 }
@@ -110,11 +91,11 @@ void Application::parseCmdArgs()
             break;
         case gams::studio::CommandLineError:
             std::cerr << mCmdParser.errorText().toStdString() << std::endl;
-            //std::exit(EXIT_FAILURE);
         case gams::studio::CommandLineVersionRequested:
             mCmdParser.showVersion();
         case gams::studio::CommandLineHelpRequested:
             mCmdParser.showHelp();
+            break;
     }
 }
 
