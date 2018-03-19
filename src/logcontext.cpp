@@ -179,7 +179,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
                 mark.textMark->rehighlight();
             }
             tm->rehighlight();
-            size = 0;
+            size = -1;
         }
 
         int i = 0;
