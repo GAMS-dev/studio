@@ -17,18 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
-#include <cstdlib>
-
-#include "mainwindow.h"
 #include "application.h"
 #include "exception.h"
-#include "commandlineparser.h"
-#include "studiosettings.h"
 
 using gams::studio::Application;
-using gams::studio::MainWindow;
-using gams::studio::StudioSettings;
 
 int main(int argc, char *argv[])
 {
@@ -40,25 +32,9 @@ int main(int argc, char *argv[])
     app.setApplicationName("GAMS Studio");
     app.setApplicationVersion(STUDIO_VERSION);
 
-    gams::studio::CommandLineParser clParser;
-    switch(clParser.parseCommandLine())
-    {
-        case gams::studio::CommandLineOk:
-            break;
-        case gams::studio::CommandLineError:
-            std::cerr << clParser.errorText().toStdString() << std::endl;
-            return EXIT_FAILURE;
-        case gams::studio::CommandLineVersionRequested:
-            clParser.showVersion();
-        case gams::studio::CommandLineHelpRequested:
-            clParser.showHelp();
-    }
-
     try {
-        auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
-        MainWindow w(settings);
-        w.openFiles(clParser.files());
-        w.show();
+        app.openAssociatedFiles();
+        app.mainWindow()->show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
