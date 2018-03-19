@@ -19,6 +19,7 @@
  */
 #include "gamspaths.h"
 #include "exception.h"
+#include "gclgms.h"
 
 #include <QApplication>
 #include <QDir>
@@ -38,20 +39,15 @@ QString GAMSPaths::systemDir() {
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
-    const QString gamsStdLocation = "/Applications/GAMS25.1";
-    const QString gamsMacSysdir = "/sysdir";
-    gamsPath = gamsStdLocation + gamsMacSysdir;
-    //const QString appDirPath = QApplication::applicationDirPath();
-    //QRegExp pathRegExp("^((?:.\\w+)*\\d+\\.\\d+).*");
-    //if (pathRegExp.indexIn(appDirPath) != -1) {
-    //    gamsPath = pathRegExp.cap(1) + QDir::separator() + "sysdir";
-    //}
+    gamsPath = "/Applications/GAMS" + QString::number(GAMSMAJOR) + "." +
+               QString::number(GAMSMINOR) + "/sysdir";
 #elif __unix__
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
     gamsPath = QApplication::applicationDirPath().append(subPath);
 #endif
+
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
     if (path.isEmpty()) {
         gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
