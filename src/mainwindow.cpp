@@ -1741,7 +1741,7 @@ void MainWindow::on_actionSelect_All_triggered()
 {
     if (focusWidget() == nullptr)
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
+    CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
     if (!ce) return;
     ce->selectAll();
 }
