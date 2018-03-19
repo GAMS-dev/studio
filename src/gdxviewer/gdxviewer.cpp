@@ -137,6 +137,17 @@ void GdxViewer::setHasChanged(bool value)
     mHasChanged = value;
 }
 
+void GdxViewer::copyAction()
+{
+    QWidget *source = focusWidget();
+
+    if (static_cast<QTableView*>(source) == ui.tvSymbols) {
+        copySelectionToClipboard();
+    } else if (static_cast<GdxSymbolView*>(source->parent())) {
+        GdxSymbolView* gdxView = static_cast<GdxSymbolView*>(source->parent());
+        gdxView->copySelectionToClipboard(",");
+    }
+}
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {

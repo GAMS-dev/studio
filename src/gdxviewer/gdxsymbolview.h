@@ -42,12 +42,12 @@ public:
 
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym);
+    void copySelectionToClipboard(QString separator);
 
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
-    void copySelectionToClipboard(QString separator);
     QMenu mContextMenu;
 
 public slots:

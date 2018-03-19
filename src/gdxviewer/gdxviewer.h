@@ -44,6 +44,7 @@ public:
     GdxSymbol* selectedSymbol();
     bool reload();
     void setHasChanged(bool value);
+    void copyAction();
 
 private:
     QString mGdxFile;
