@@ -55,11 +55,11 @@ int main(int argc, char *argv[])
     try {
         auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
         MainWindow w(settings);
-        auto files = clParser.files();
-        if (files.size())
-            w.openFiles(files);
-        else if (!app.openFile().isEmpty())
+        //w.openFiles({"/Users/mrmontag/Documents/GAMSStudio/workspace/trnsport1.gms"});
+        if (!app.openFile().isEmpty())
             w.openFiles({app.openFile()});
+        else
+            w.openFiles(clParser.files());
         w.show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
