@@ -20,19 +20,19 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "mainwindow.h"
+//#include "mainwindow.h"
 #include "application.h"
 #include "exception.h"
-#include "commandlineparser.h"
-#include "studiosettings.h"
+//#include "commandlineparser.h"
+//#include "studiosettings.h"
 
 #include <QDebug>
 #include <fstream>
 #include "gamspaths.h"
 
 using gams::studio::Application;
-using gams::studio::MainWindow;
-using gams::studio::StudioSettings;
+//using gams::studio::MainWindow;
+//using gams::studio::StudioSettings;
 
 int main(int argc, char *argv[])
 {
@@ -42,36 +42,8 @@ int main(int argc, char *argv[])
     app.setApplicationName("GAMS Studio");
     app.setApplicationVersion(STUDIO_VERSION);
 
-    gams::studio::CommandLineParser clParser;
-    switch(clParser.parseCommandLine())
-    {
-        case gams::studio::CommandLineOk:
-            break;
-        case gams::studio::CommandLineError:
-            std::cerr << clParser.errorText().toStdString() << std::endl;
-            return EXIT_FAILURE;
-        case gams::studio::CommandLineVersionRequested:
-            clParser.showVersion();
-        case gams::studio::CommandLineHelpRequested:
-            clParser.showHelp();
-    }
-
     try {
-        auto* settings = new StudioSettings(clParser.ignoreSettings(), clParser.resetSettings());
-        MainWindow w(settings);
-        std::ofstream fs;
-        auto wd = gams::studio::GAMSPaths::defaultWorkingDir();
-        wd.append("/lala.txt");
-        fs.open(wd.toStdString(), std::ofstream::out | std::ofstream::app);
-        fs << "path >> " << app.openFile().toStdString() << std::endl;
-        fs << "sysdir >> " << gams::studio::GAMSPaths::systemDir().toStdString() << std::endl;
-        if (!app.openFile().isEmpty())
-            w.openFile(app.openFile());
-        else
-            w.openFiles(clParser.files());
-        w.show();
-        fs.flush();
-        fs.close();
+        app.mainWindow()->show();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());
