@@ -149,6 +149,15 @@ void GdxViewer::copyAction()
     }
 }
 
+void GdxViewer::selectAllAction()
+{
+    QWidget *source = focusWidget();
+
+    QTableView* view = dynamic_cast<QTableView*>(source);
+    if (!view) return;
+    view->selectAll();
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();

@@ -1748,11 +1748,17 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    if (focusWidget() == nullptr)
-        return;
-    CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
-    if (!ce) return;
-    ce->selectAll();
+    FileContext *fc = mFileRepo.fileContext(mRecent.editor);
+    if (!fc || focusWidget() == nullptr) return;
+
+    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+        CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
+        if (!ce) return;
+        ce->selectAll();
+    } else if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->selectAllAction();
+    }
 }
 
 void MainWindow::on_actionCut_triggered()
