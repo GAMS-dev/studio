@@ -19,6 +19,11 @@
  */
 #include "application.h"
 #include "exception.h"
+#include "studiosettings.h"
+
+#include <iostream>
+#include <QMessageBox>
+#include <QFileOpenEvent>
 
 namespace gams {
 namespace studio {
@@ -26,7 +31,14 @@ namespace studio {
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
+    parseCmdArgs();
+    auto* settings = new StudioSettings(mCmdParser.ignoreSettings(), mCmdParser.resetSettings());
+    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow(settings));
+}
 
+MainWindow* Application::mainWindow() const
+{
+    return mMainWindow.get();
 }
 
 bool Application::notify(QObject* object, QEvent* event)
@@ -53,8 +65,38 @@ bool Application::notify(QObject* object, QEvent* event)
     return true;
 }
 
+void Application::openAssociatedFiles()
+{
+    mMainWindow->openFiles(mCmdParser.files());
+}
+
 void Application::showExceptionMessage(const QString &title, const QString &message) {
     QMessageBox::critical(nullptr, title, message);
+}
+
+bool Application::event(QEvent *event)
+{
+    if (event->type() == QEvent::FileOpen) {
+        auto* openEvent = static_cast<QFileOpenEvent*>(event);
+        mMainWindow->openFile(openEvent->url().path());
+    }
+    return QApplication::event(event);
+}
+
+void Application::parseCmdArgs()
+{
+    switch(mCmdParser.parseCommandLine())
+    {
+        case gams::studio::CommandLineOk:
+            break;
+        case gams::studio::CommandLineError:
+            std::cerr << mCmdParser.errorText().toStdString() << std::endl;
+        case gams::studio::CommandLineVersionRequested:
+            mCmdParser.showVersion();
+        case gams::studio::CommandLineHelpRequested:
+            mCmdParser.showHelp();
+            break;
+    }
 }
 
 } // namespace studio

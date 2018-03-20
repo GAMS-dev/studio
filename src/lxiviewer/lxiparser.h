@@ -21,6 +21,7 @@
 #define LXIPARSER_H
 
 #include "lxitreeitem.h"
+#include <QMap>
 
 namespace gams {
 namespace studio {
@@ -34,7 +35,8 @@ public:
 
 private:
     LxiParser();
-
+    static QMap<QString, QString> initCaptions();
+    static QMap<QString, QString> mCaptions;
 };
 
 } // namespace lxiviewer

@@ -215,7 +215,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (posForSyntaxState <= index) {
                 mLastSyntaxState = thisBlock.syntax->intSyntaxType();
                 mPositionForSyntaxState = -1;
-                posForSyntaxState = text.length();
+                posForSyntaxState = text.length()+1;
             }
         } else {
             index++;
