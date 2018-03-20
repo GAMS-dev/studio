@@ -1,7 +1,7 @@
 #ifndef GAMS_STUDIO_SELECTENCODINGS_H
 #define GAMS_STUDIO_SELECTENCODINGS_H
 
-#include <QtWidgets>
+#include <QDialog>
 
 namespace Ui {
 class SelectEncodings;

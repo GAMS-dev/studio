@@ -2,7 +2,6 @@
 #include "ui_selectencodings.h"
 #include <QtWidgets>
 
-
 SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
