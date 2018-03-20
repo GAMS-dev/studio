@@ -22,7 +22,7 @@
 #include "gclgms.h"
 #include "gamspaths.h"
 #include "exception.h"
-#include "version.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {

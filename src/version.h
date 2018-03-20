@@ -36,33 +36,4 @@
 #define FI_LEGALTRADEMARKS1_STR    "All Rights Reserved"
 #define FI_LEGALTRADEMARKS2_STR    FI_LEGALTRADEMARKS1_STR
 
-namespace gams {
-namespace studio {
-
-class Version
-{
-private:
-    Version();
-
-public:
-    ///
-    /// \brief Converts the STUDIO_VERSION into an number.
-    /// \return The STUDIO_VERSION as number.
-    /// \remark Used to check for updates.
-    ///
-    static int versionToNumber();
-
-    ///
-    /// \brief Get current GAMS Distribution version number.
-    /// \param version Version string buffer.
-    /// \param length Length of the version string buffer.
-    /// \return The GAMS Distribution version number as string. The
-    ///         same as the <c>version</c> argument.
-    ///
-    //static char* currentGAMSDistribVersion(char* version, int length=16);
-};
-
-}
-}
-
 #endif // VERSION_H
