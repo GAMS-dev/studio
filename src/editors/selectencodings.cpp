@@ -8,7 +8,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
 {
     ui->setupUi(this);
     QList<int> mibs = QTextCodec::availableMibs();
-    qSort(mibs);
+    std::sort(mibs.begin(), mibs.end());
     ui->tableWidget->setRowCount(mibs.count());
 
     int row = 0;

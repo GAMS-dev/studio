@@ -214,7 +214,7 @@ void MainWindow::updateMenuToCodec(int mib)
     QList<int> enc = encodingMIBs();
     if (!enc.contains(mib)) {
         enc << mib;
-        qSort(enc);
+        std::sort(enc.begin(), enc.end());
         if (enc.contains(0)) enc.move(enc.indexOf(0), 0);
         if (enc.contains(106)) enc.move(enc.indexOf(106), 0);
         setEncodingMIBs(enc, mib);
