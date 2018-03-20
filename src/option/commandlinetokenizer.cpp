@@ -288,12 +288,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                          }
                          break;
                      default:
-                         if (value.startsWith("[") && value.endsWith("]")) {
-                            errorMessage.append(", unknown value for option \""+keyStr+"\")");
-                            foundError = true;
-                         } else {
-                             foundError = false;  // do nothing for the moment
-                         }
+                         foundError = false;  // do nothing for the moment
                          break;
                      }
 

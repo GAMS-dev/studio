@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "syntax.h"
 #include "logger.h"
+#include"tool.h"
 
 namespace gams {
 namespace studio {
@@ -69,18 +70,24 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
     *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
 }
 
-void FileRepository::findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
+void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
+    if (!QFileInfo(filePath).exists()) {
+        filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
+    }
+    if (!QFileInfo(filePath).exists()) {
+        EXCEPT() << "File not found: " << filePath;
+    }
     if (!fileGroup)
         EXCEPT() << "The group must not be null";
     FileSystemContext* fsc = findContext(filePath, fileGroup);
     if (!fsc) {
         QFileInfo fi(filePath);
-        *resultFile = addFile(fi.fileName(), fi.canonicalFilePath(), fileGroup);
+        resultFile = addFile(fi.fileName(), Tool::absolutePath(filePath), fileGroup);
     } else if (fsc->type() == FileSystemContext::File) {
-        *resultFile = static_cast<FileContext*>(fsc);
+        resultFile = static_cast<FileContext*>(fsc);
     } else {
-        *resultFile = nullptr;
+        resultFile = nullptr;
     }
 
 }
@@ -178,7 +185,7 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     FileGroupContext* group = nullptr;
 
     QFileInfo fi(filePath);
-    QFileInfo di(fi.canonicalPath());
+    QFileInfo di(Tool::absolutePath(fi.path()));
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {

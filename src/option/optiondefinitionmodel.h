@@ -43,6 +43,10 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    static const int COLUMN_OPTION_NAME = 0;
+    static const int COLUMN_SYNONYM = 1;
+    static const int COLUMN_DEF_VALUE = 2;
+    static const int COLUMN_DATA_TYPE = 3;
 private:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);
     void setupModelData(const QStringList& lines, OptionDefinitionItem* parent);

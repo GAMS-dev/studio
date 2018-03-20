@@ -20,7 +20,6 @@
 #include "syntaxhighlighter.h"
 #include "logger.h"
 #include "filecontext.h"
-#include "textmark.h"
 #include "tool.h"
 
 namespace gams {
@@ -104,10 +103,6 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
         }
         if (mark->type() == TextMark::match) {
-            combinedFormat.setBackground(mark->color());
-            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
-        }
-        if (mark->type() == TextMark::wordUnderCursor) {
             combinedFormat.setBackground(mark->color());
             setFormat(marksStart, marksEnd - marksStart, combinedFormat);
         }
@@ -220,7 +215,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (posForSyntaxState <= index) {
                 mLastSyntaxState = thisBlock.syntax->intSyntaxType();
                 mPositionForSyntaxState = -1;
-                posForSyntaxState = text.length();
+                posForSyntaxState = text.length()+1;
             }
         } else {
             index++;

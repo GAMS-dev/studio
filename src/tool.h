@@ -11,6 +11,7 @@ class Tool
     Tool() {}
 public:
     static int findAlphaNum(QString text, int start, bool back);
+    static QString absolutePath(QString path);
 };
 
 } // namespace studio

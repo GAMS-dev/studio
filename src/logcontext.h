@@ -35,6 +35,7 @@ public:
     void setParentEntry(FileGroupContext *parent) override;
     TextMark* firstErrorMark();
     void clearLog();
+    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
     bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
@@ -63,7 +64,8 @@ private:
 //    QSet<FileContext*> mMarkedContextList;
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
-
+    bool mConceal = false;
+    bool mDebugLog = false;
 };
 
 } // namespace studio

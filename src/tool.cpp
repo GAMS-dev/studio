@@ -1,4 +1,5 @@
 #include "tool.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -22,6 +23,12 @@ int Tool::findAlphaNum(QString text, int start, bool back)
         if (!c.isLetter() && c != '_') return -1;
     }
     return pos;
+}
+
+QString Tool::absolutePath(QString path)
+{
+    QFileInfo fi(path);
+    return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
 }
 
 } // namespace studio

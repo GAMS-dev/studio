@@ -20,7 +20,11 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <QtWidgets>
+#include "commandlineparser.h"
+#include "mainwindow.h"
+
+#include <memory>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -30,7 +34,19 @@ class Application : public QApplication
 public:
     Application(int &argc, char **argv);
 
+    ///
+    /// \brief Get the application MainWindow.
+    /// \return MainWindow managed by <c>Application</c> class.
+    ///
+    MainWindow* mainWindow() const;
+
     bool notify(QObject *object, QEvent *event) override;
+
+    ///
+    /// \brief Open associated files, like <c>gms</c>.
+    /// \remark This is for Windows and Linux only. See <c>event(QEvent*)</c> for macos.
+    ///
+    void openAssociatedFiles();
 
     ///
     /// \brief Show a <c>QMessageBox::critical</c> message.
@@ -38,6 +54,22 @@ public:
     /// \param message The exception/error message.
     ///
     static void showExceptionMessage(const QString &title, const QString &message);
+
+protected:
+    ///
+    /// \brief Reimplemented QObject::event function.
+    /// \param e Event to handle.
+    /// \return <c>true</c> on success; otherwise <c>false</c>.
+    /// \remark This function if requried for macos, e.g. for file associations.
+    ///
+    bool event(QEvent *event) override;
+
+private:
+    void parseCmdArgs();
+
+private:
+    CommandLineParser mCmdParser;
+    std::unique_ptr<MainWindow> mMainWindow = nullptr;
 };
 
 } // namespace studio

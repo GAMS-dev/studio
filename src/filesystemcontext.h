@@ -23,6 +23,7 @@
 #include <QtWidgets>
 #include "editors/codeeditor.h"
 #include "editors/logeditor.h"
+#include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 
 namespace gams {
@@ -54,8 +55,6 @@ public:
 
     enum ContextType {
         File,
-        FileAction, // TODO(AF) still required?
-                    // TODO(JM) I commonly use it - maybe we kill it after Welcome-Page has a quick start?
         FileGroup,
         FileSystem,
         Log
@@ -136,19 +135,30 @@ public: // static convenience methods
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
         if(w) w->setProperty("EditorType", etGdx);
     }
+    inline static void initEditorType(lxiviewer::LxiViewer* w) {
+        if(w) w->setProperty("EditorType", etLxiLst);
+    }
     inline static int editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? v.toInt() : etUndefined);
     }
     inline static QPlainTextEdit* toPlainEdit(QWidget* w) {
         int t = editorType(w);
+        if (t == etLxiLst)
+            return toLxiViewer(w)->codeEditor();
         return (t > etUndefined && t <= etLastTextType) ? static_cast<QPlainTextEdit*>(w) : nullptr;
     }
     inline static CodeEditor* toCodeEdit(QWidget* w) {
-        return (editorType(w) == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
+        int t = editorType(w);
+        if (t == etLxiLst)
+            return toLxiViewer(w)->codeEditor();
+        return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
+    }
+    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
+        return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
     }
 
 signals:

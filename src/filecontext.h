@@ -36,7 +36,7 @@ typedef QPair<int,QString> ErrorHint;
 
 ///
 /// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
-/// \see FileSystemContext, FileGroupContext, FileActionContext
+/// \see FileSystemContext, FileGroupContext, FileContext, LogContext
 ///
 class FileContext : public FileSystemContext
 {
@@ -136,7 +136,8 @@ public:
     void removeTextMarks(QSet<TextMark::Type> tmTypes);
     void addFileWatcherForGdx();
     
-    TextMarkList* marks() const {return mMarks;}
+    TextMarkList* marks() const { return mMarks; }
+    void unbindMarks() { mMarks = nullptr; }
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -148,7 +149,7 @@ signals:
     void deletedExtern(FileId fileId);
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
     void openFileContext(FileContext* fileContext, bool focus = true);
     void documentOpened();
     void documentClosed();
