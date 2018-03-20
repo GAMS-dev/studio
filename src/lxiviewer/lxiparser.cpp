@@ -49,38 +49,14 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
         splitList.removeFirst();
         QString text = splitList.join(' ');
 
-        if (idx == lastIdx)
-            lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
-        else {
+        if (idx == "B") {
             lastParent = rootItem;
-            if (idx == "D") {
-                current = new LxiTreeItem(lastIdx, -1, "Equation", lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "E") {
-                current = new LxiTreeItem(lastIdx, -1, "Column", lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "F") {
-                current = new LxiTreeItem(lastIdx, -1, "SolEQU", lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "G") {
-                current = new LxiTreeItem(lastIdx, -1, "SolVAR", lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-            else if (idx == "I") {
-                current = new LxiTreeItem(lastIdx, -1, "Display", lastParent);
-                lastParent->appendChild(current);
-                lastParent = current;
-            }
-
-            lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
+        } else if (idx != lastIdx) {
+            current = new LxiTreeItem(lastIdx, -1, mCaptions[idx], rootItem);
+            rootItem->appendChild(current);
+            lastParent = current;
         }
+        lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
         lastIdx = idx;
     }
     return rootItem;
@@ -90,6 +66,24 @@ LxiParser::LxiParser()
 {
 
 }
+
+QMap<QString, QString> LxiParser::initCaptions()
+{
+    QMap<QString, QString> map;
+    map.insert("A","???");
+    map.insert("B","SubTitle");
+    map.insert("C","Solve Summary");
+    map.insert("D","Equation");
+    map.insert("E","Column");
+    map.insert("F","SolEQU");
+    map.insert("G","SolVAR");
+    map.insert("H","Solution");
+    map.insert("I","Display");
+    map.insert("J","Message");
+    return map;
+}
+
+QMap<QString, QString> LxiParser::mCaptions = LxiParser::initCaptions();
 
 } // namespace lxiviewer
 } // namespace studio

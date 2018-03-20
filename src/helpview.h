@@ -22,6 +22,7 @@
 
 #include <QtWidgets>
 #include <QWebEngineView>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
@@ -40,6 +41,9 @@ public:
 
 public slots:
     void on_urlOpened(const QUrl& location);
+    void on_commandLineHelpRequested();
+    void on_dollarControlHelpRequested(const QString& word);
+    void on_keywordHelpRequested(const QString& word);
     void on_bookmarkNameUpdated(const QString& location, const QString& name);
     void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
     void on_bookmarkRemoved(const QString& location, const QString& name);
@@ -58,11 +62,19 @@ public slots:
     void zoomOut();
     void resetZoom();
 
+    void findText(const QString& word, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags());
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:
-    QMultiMap<QString, QString> bookmarkMap;
-    QMenu* bookmarkMenu;
+    static const QString START_CHAPTER;
+    static const QString DOLLARCONTROL_CHAPTER;
+    static const QString OPTION_CHAPTER;
+    static const QString GAMSCALL_CHAPTER;
+    static const QString INDEX_CHAPTER;
+    static const QString LATEST_ONLINE_HELP_URL;
+
+    QMultiMap<QString, QString> mBookmarkMap;
+    QMenu* mBookmarkMenu;
 
     QAction* actionAddBookmark;
     QAction* actionOrganizeBookmark;
@@ -70,15 +82,18 @@ private:
     QAction* actionOpenInBrowser;
     QAction* actionCopyPageURL;
 
-    QAction* actionZoomIn;
-    QAction* actionZoomOut;
-    QAction* actionResetZoom;
+    QWebEngineView* mHelpView;
 
-    QWebEngineView* helpView;
+    QString baseLocation;
+    QUrl startPageUrl;
+    QUrl onlineStartPageUrl;
 
-    QUrl helpStartPage;
-    QDir defaultLocalHelpDir;
-    QString defaultOnlineHelpLocation;
+    int mThisRelease = 0;
+    int mLastRelease = 0;
+    bool mOfflineHelpAvailable = false;
+
+    void getGAMSVersion();
+    void getErrorHTMLText(QString& htmlText, const QString& chapterText);
 };
 
 } // namespace studio

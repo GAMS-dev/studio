@@ -347,7 +347,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     Q_UNUSED(event);
 
     QWidget *widget = mMain->recent()->editor;
-    QPlainTextEdit *edit = static_cast<QPlainTextEdit*>(widget);
+    QPlainTextEdit *edit = FileContext::toPlainEdit(widget);
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
     if (!fsc) return;
 
@@ -363,7 +363,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 void SearchWidget::updateReplaceActionAvailability()
 {
     // TODO: add something for gdx and others...
-    AbstractEditor *edit = static_cast<AbstractEditor*>(mMain->recent()->editor);
+    QPlainTextEdit *edit = FileContext::toPlainEdit(mMain->recent()->editor);
     if (!edit) return;
 
     bool activated = !edit->isReadOnly();

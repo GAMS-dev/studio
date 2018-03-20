@@ -300,6 +300,19 @@ bool FileGroupContext::hasLstErrorText(int line)
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
+void FileGroupContext::saveGroup()
+{
+    foreach (FileSystemContext* child, mChildList) {
+        if (child->type() == ContextType::FileGroup) {
+            FileGroupContext *fgc = static_cast<FileGroupContext*>(child);
+            fgc->saveGroup();
+        } else if (child->type() == ContextType::File) {
+            FileContext *fc = static_cast<FileContext*>(child);
+            fc->save();
+        }
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
