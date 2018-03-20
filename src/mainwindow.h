@@ -86,6 +86,7 @@ public:
     void ensureCodecMenu(QString codecName);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
 
 
@@ -128,7 +129,7 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, bool storeSettings = true);
 
     // View
     void gamsProcessStateChanged(FileGroupContext* group);

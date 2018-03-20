@@ -295,7 +295,7 @@ void StudioSettings::loadSettings(MainWindow *main)
             mAppSettings->setArrayIndex(i);
             QString value = mAppSettings->value("location").toString();
             if(QFileInfo(value).exists())
-                main->openFile(value);
+                main->openFileSkipSettings(value);
         }
     }
     mAppSettings->endArray();
