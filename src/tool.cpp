@@ -20,7 +20,7 @@ char* Version::currentGAMSDistribVersion(char *version, int length)
     c4uHandle_t c4uHandle;
     char buffer[GMS_SSSIZE];
     if (!c4uCreateD(&c4uHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        //EXCEPT() << "Could not load c4u library: " << buffer;
+        EXCEPT() << "Could not load c4u library: " << buffer;
     }
     c4uThisRelStr(c4uHandle, buffer);
     std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
