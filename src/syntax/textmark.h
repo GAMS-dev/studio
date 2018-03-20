@@ -33,7 +33,7 @@ class TextMarkList;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, match, wordUnderCursor, all};
+    enum Type {none, error, link, bookmark, match, all};
 
     explicit TextMark(TextMarkList* marks, TextMark::Type tmType);
     virtual ~TextMark();
