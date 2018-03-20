@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -109,6 +109,7 @@
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
     <addaction name="actionClose_All_Except"/>
+    <addaction name="actionRestore_Recently_Closed_Tab"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
@@ -728,6 +729,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionRestore_Recently_Closed_Tab">
+   <property name="text">
+    <string>Restore Recently Closed Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore recently closed tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
    </property>
   </action>
  </widget>

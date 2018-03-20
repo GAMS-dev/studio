@@ -202,6 +202,8 @@ private slots:
 
     void toggleLogDebug();
 
+    void on_actionRestore_Recently_Closed_Tab_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -262,6 +264,7 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
+    QStringList mClosedTabs;
 
 };
 

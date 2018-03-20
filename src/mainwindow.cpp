@@ -614,6 +614,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 void MainWindow::fileClosed(FileId fileId)
 {
     FileContext* fc = mFileRepo.fileContext(fileId);
+    mClosedTabs << fc->location();
     if (!fc)
         FATAL() << "FileId " << fileId << " is not of class FileContext.";
     while (!fc->editors().isEmpty()) {
@@ -1896,7 +1897,17 @@ void MainWindow::toggleLogDebug()
     }
 }
 
+void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
+{
+    if (mClosedTabs.isEmpty())
+        return;
+    //TODO check if the files qre deleted before opening
+    openFile(mClosedTabs.last());
+    mClosedTabs.removeLast();
+}
+
 }
 }
+
 
 
