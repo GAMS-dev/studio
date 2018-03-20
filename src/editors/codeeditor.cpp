@@ -223,8 +223,6 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         emit searchFindPrevPressed();
     else if (e->key() == Qt::Key_F3)
         emit searchFindNextPressed();
-    else
-        QPlainTextEdit::keyPressEvent(e);
 
     QPlainTextEdit::keyPressEvent(e);
 }

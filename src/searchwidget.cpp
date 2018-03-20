@@ -400,7 +400,6 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
 
 void SearchWidget::closeEvent(QCloseEvent *e) {
     updateMatchAmount(0, true);
-
     QDialog::closeEvent(e);
 }
 

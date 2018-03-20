@@ -160,6 +160,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
                 lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
                 FileSystemContext::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
+                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
@@ -1848,8 +1850,8 @@ void MainWindow::on_actionIndent_triggered()
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (ce->isReadOnly()) return;
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
         int col = ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
@@ -1864,8 +1866,8 @@ void MainWindow::on_actionOutdent_triggered()
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (ce->isReadOnly()) return;
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
         int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
