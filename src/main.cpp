@@ -26,9 +26,9 @@ using gams::studio::Application;
 int main(int argc, char *argv[])
 {
     Application app(argc, argv);
-    app.setOrganizationName(FI_COMPANYNAME_STR);
-    app.setOrganizationDomain(FI_COMPANYDOMAIN_STR);
-    app.setApplicationName(FI_PRODUCTNAME_STR);
+    app.setOrganizationName(GAMS_COMPANYNAME_STR);
+    app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
+    app.setApplicationName(GAMS_PRODUCTNAME_STR);
     app.setApplicationVersion(STUDIO_VERSION);
     app.setAttribute(Qt::AA_EnableHighDpiScaling);
 
