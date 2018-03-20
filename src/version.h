@@ -31,7 +31,7 @@
 #define FI_FILEDESCRIPTION_STR     "GAMS Studio"
 
 #define FI_COMPANYNAME_STR         "GAMS Development Corp."
-#define FI_COMPANYDOMAIN_STR       "https://www.gams.com"
+#define FI_COMPANYDOMAIN_STR       "gams.com"
 #define FI_LEGALCOPYRIGHT_STR      "Copyright GAMS Software GmbH, Copyright GAMS Development Corp."
 #define FI_LEGALTRADEMARKS1_STR    "All Rights Reserved"
 #define FI_LEGALTRADEMARKS2_STR    FI_LEGALTRADEMARKS1_STR
