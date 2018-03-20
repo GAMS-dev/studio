@@ -2,19 +2,20 @@
 #include "gclgms.h"
 #include "c4umcc.h"
 //#include "exception.h"
-#include "gamspaths.h"
+//#include "gamspaths.h"
 
-#include <cstring>
+//#include <cstring>
+#include <QString>
 
 namespace gams {
 namespace studio {
 
 int Version::versionToNumber()
 {
-    return QString(STUDIO_VERSION).replace('.', "", Qt::CaseInsensitive).toInt();
+    return QString(STUDIO_VERSION).replace(".", "", Qt::CaseInsensitive).toInt();
 }
 
-char* Version::currentGAMSDistribVersion(char *version, int length)
+/* char* Version::currentGAMSDistribVersion(char *version, int length)
 {
     c4uHandle_t c4uHandle;
     char buffer[GMS_SSSIZE];
@@ -25,7 +26,7 @@ char* Version::currentGAMSDistribVersion(char *version, int length)
     std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
     c4uFree(&c4uHandle);
     return version;
-}
+}*/
 
 }
 }

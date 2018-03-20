@@ -59,7 +59,7 @@ public:
     /// \return The GAMS Distribution version number as string. The
     ///         same as the <c>version</c> argument.
     ///
-    static char* currentGAMSDistribVersion(char* version, int length=16);
+    //static char* currentGAMSDistribVersion(char* version, int length=16);
 };
 
 }
