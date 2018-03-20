@@ -133,7 +133,6 @@ SOURCES += \
     editors/abstracteditor.cpp \
     tool.cpp \
     updatedialog.cpp \
-    version.cpp \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreemodel.cpp \
