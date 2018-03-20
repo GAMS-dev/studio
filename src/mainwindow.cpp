@@ -390,6 +390,7 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
         mCodecGroupReload->removeAction(act);
     }
     foreach (int mib, mibs) {
+        if (!QTextCodec::availableMibs().contains(mib)) continue;
         QAction *act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
         act->setCheckable(true);
         act->setData(mib);
@@ -428,7 +429,6 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     if (!index.isValid()) return;
     mProjectContextMenu.setNode(mFileRepo.context(index));
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
-
 }
 
 void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
@@ -539,7 +539,6 @@ void MainWindow::on_actionSave_As_triggered()
 
         fc->save(filePath);
         openFilePath(filePath, fc->parentEntry(), true);
-
     }
 }
 
