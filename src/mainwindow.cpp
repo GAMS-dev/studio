@@ -734,7 +734,7 @@ void MainWindow::on_actionAbout_triggered()
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
     about += "<br/><br/><b><big>GAMS Distribution ";
     char version[16];
-    about += gams::studio::currentGAMSDistribVersion(version);
+    about += gams::studio::Version::currentGAMSDistribVersion(version);
     about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";

@@ -57,7 +57,7 @@ void UpdateDialog::setUpdateInfo()
     getMessages(messageIndex, buffer);
 
     mMessages << "\nGAMS Studio";
-    c4uCheck4NewStudio(mC4UHandle, gams::studio::versionToNumber());
+    c4uCheck4NewStudio(mC4UHandle, gams::studio::Version::versionToNumber());
     getMessages(messageIndex, buffer);
 
     ui->updateInfo->setText(mMessages.join("\n"));

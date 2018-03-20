@@ -9,12 +9,12 @@
 namespace gams {
 namespace studio {
 
-int versionToNumber()
+int Version::versionToNumber()
 {
     return QString(STUDIO_VERSION).replace('.', "", Qt::CaseInsensitive).toInt();
 }
 
-char* currentGAMSDistribVersion(char *version, int length)
+char* Version::currentGAMSDistribVersion(char *version, int length)
 {
     c4uHandle_t c4uHandle;
     char buffer[GMS_SSSIZE];
