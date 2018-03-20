@@ -115,6 +115,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
+    mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
@@ -162,13 +163,10 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
+                connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
-
-
-//            QTextCursor tc = codeEdit->textCursor();
-//            tc.movePosition(QTextCursor::Start);
-//            codeEdit->setTextCursor(tc);
             fc->load(codecName, true);
 
             if (fc->metrics().fileType() == FileType::Log ||

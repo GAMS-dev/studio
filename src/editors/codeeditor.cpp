@@ -219,6 +219,13 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         }
     }
 
+    if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
+        emit searchFindPrevPressed();
+    else if (e->key() == Qt::Key_F3)
+        emit searchFindNextPressed();
+    else
+        QPlainTextEdit::keyPressEvent(e);
+
     QPlainTextEdit::keyPressEvent(e);
 }
 
