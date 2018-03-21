@@ -20,7 +20,7 @@
 #ifndef LXIPARSER_H
 #define LXIPARSER_H
 
-#include "lxitreeitem.h"
+#include "lxitreemodel.h"
 #include <QMap>
 
 namespace gams {
@@ -31,7 +31,7 @@ class LxiParser
 {
 
 public:
-    static LxiTreeItem* parseFile(QString lxiFile);
+    static LxiTreeModel* parseFile(QString lxiFile);
 
 private:
     LxiParser();

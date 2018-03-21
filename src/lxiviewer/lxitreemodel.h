@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_LXIVIEWER_LXITREEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QVector>
 #include "lxitreeitem.h"
 
 namespace gams {
@@ -13,7 +14,7 @@ class LxiTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit LxiTreeModel(LxiTreeItem* root, QObject *parent = nullptr);
+    explicit LxiTreeModel(LxiTreeItem *root, QVector<int> lineNrs, QVector<LxiTreeItem*> treeItems, QObject *parent = nullptr);
     ~LxiTreeModel();
 
     // Basic functionality:
@@ -26,8 +27,15 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+    QVector<int> lineNrs() const;
+
+    QVector<LxiTreeItem *> treeItems() const;
+
 private:
     LxiTreeItem* mRootItem = nullptr;
+
+    QVector<int> mLineNrs;
+    QVector<LxiTreeItem*> mTreeItems;
 
 };
 
