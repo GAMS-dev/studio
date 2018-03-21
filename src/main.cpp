@@ -25,12 +25,12 @@ using gams::studio::Application;
 
 int main(int argc, char *argv[])
 {
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     Application app(argc, argv);
     app.setOrganizationName(GAMS_COMPANYNAME_STR);
     app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     app.setApplicationName(GAMS_PRODUCTNAME_STR);
     app.setApplicationVersion(STUDIO_VERSION);
-    app.setAttribute(Qt::AA_EnableHighDpiScaling);
 
     try {
         app.openAssociatedFiles();
