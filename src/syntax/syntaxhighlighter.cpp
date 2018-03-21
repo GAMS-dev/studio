@@ -19,6 +19,7 @@
  */
 #include "syntaxhighlighter.h"
 #include "logger.h"
+#include "exception.h"
 #include "filecontext.h"
 #include "tool.h"
 
@@ -122,7 +123,18 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
 
-    syntax = new SyntaxTitle();
+    syntax = new SyntaxDirectiveBody(SyntaxState::DirectiveBody);
+    syntax->charFormat().setForeground(Qt::darkBlue);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
+    addState(syntax);
+
+    syntax = new SyntaxDirectiveBody(SyntaxState::DirectiveComment);
+    syntax->charFormat().setForeground(Qt::darkGreen);
+    syntax->charFormat().setFontItalic(true);
+    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
+    addState(syntax);
+
+    syntax = new SyntaxDirectiveBody(SyntaxState::Title);
     syntax->charFormat().setForeground(Qt::darkBlue);
     syntax->charFormat().setFontWeight(QFont::Bold);
     syntax->charFormat().setFontItalic(true);
@@ -145,17 +157,24 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     syntax->charFormat().setFontWeight(QFont::Bold);
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
+    SyntaxAbstract *sd_dec = syntax;
 
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationSetType);
     syntax->copyCharFormat(mStates.last()->charFormat());
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
-    syntax->charFormat().setBackground(Qt::yellow);
     addState(syntax);
+    SyntaxAbstract *sd_decS = syntax;
 
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationVariableType);
     syntax->copyCharFormat(mStates.last()->charFormat());
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     addState(syntax);
+    SyntaxAbstract *sd_decV = syntax;
+
+    // TODO(JM) just for debugging
+    sd_dec->charFormat().setBackground(Qt::cyan);
+    sd_decS->charFormat().setBackground(Qt::yellow);
+    sd_decV->charFormat().setBackground(Qt::yellow);
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
@@ -202,7 +221,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         if (nextBlock.isValid()) {
             // new state inside current block -> shorten end
-            if (nextBlock.start < thisBlock.end) thisBlock.end = nextBlock.start;
+            /*if (nextBlock.start < thisBlock.end) */thisBlock.end = nextBlock.start;
             // current block has zero size
             if (thisBlock.length() < 1) thisBlock = nextBlock;
         }
@@ -215,7 +234,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
             index = thisBlock.end;
 
-            code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.next));
+            code = getCode(code, thisBlock.shift, getStateIdx(thisBlock.syntax->state()), getStateIdx(thisBlock.next));
             if (posForSyntaxState <= index) {
                 mLastSyntaxState = thisBlock.syntax->intSyntaxType();
                 mPositionForSyntaxState = -1;
@@ -257,13 +276,15 @@ int SyntaxHighlighter::getStateIdx(SyntaxState state) const
 
 void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
 {
-    addCode(mStates.length(), ci);
     mStates << syntax;
+    addCode(mStates.length()-1, ci);
 }
 
 int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
 {
     StateCode sc(si, ci);
+    if (si < 0)
+        EXCEPT() << "Can't generate code for invalid StateIndex";
     int index = mCodes.indexOf(sc);
     if (index >= 0)
         return index;
@@ -271,13 +292,21 @@ int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
     return mCodes.length()-1;
 }
 
-int SyntaxHighlighter::getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state)
+int SyntaxHighlighter::getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext)
 {
     if (code < 0) code = 0;
+    if (shift == SyntaxStateShift::skip)
+        return code;
     if (shift == SyntaxStateShift::out)
         return mCodes.at(code).second;
     if (shift == SyntaxStateShift::in)
-        return addCode(state, code);
+        return addCode(stateNext, code);
+    if (shift == SyntaxStateShift::stay)
+        return addCode(state, mCodes.at(code).second);
+
+    while (mStates.at(mCodes.at(code).first)->state() != SyntaxState::Standard) {
+        code = mCodes.at(code).second;
+    }
     return code;
 }
 

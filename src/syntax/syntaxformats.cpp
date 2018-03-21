@@ -21,6 +21,7 @@
 #include "logger.h"
 #include "syntaxdata.h"
 #include "tool.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -30,6 +31,8 @@ QString syntaxStateName(SyntaxState state)
     static const QHash<int, QString> syntaxStateName {
         {static_cast<int>(SyntaxState::Standard), "Standard"},
         {static_cast<int>(SyntaxState::Directive), "Directive"},
+        {static_cast<int>(SyntaxState::DirectiveBody), "DirectiveBody"},
+        {static_cast<int>(SyntaxState::DirectiveComment), "DirectiveComment"},
         {static_cast<int>(SyntaxState::Title), "Title"},
         {static_cast<int>(SyntaxState::CommentLine), "CommentLine"},
         {static_cast<int>(SyntaxState::CommentBlock), "CommentBlock"},
@@ -117,7 +120,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar)
     // !!! Enter special states always in lowercase
     mSpecialStates.insert(QString("title").toLower(), SyntaxState::Title);
     mSpecialStates.insert(QString("onText").toLower(), SyntaxState::CommentBlock);
-    mSpecialStates.insert(QString("hidden").toLower(), SyntaxState::CommentLine);
+    mSpecialStates.insert(QString("hidden").toLower(), SyntaxState::DirectiveComment);
 }
 
 SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, int index)
@@ -129,16 +132,22 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
         return SyntaxBlock();
     }
-    SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::Standard);
-    return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next
-                       , !mDirectives.contains(match.captured(2), Qt::CaseInsensitive));
+    SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::DirectiveBody);
+    if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
+        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, SyntaxStateShift::in, next);
+    } else {
+        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);
+    }
 }
 
 
-SyntaxTitle::SyntaxTitle()
-{ }
+SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxState state) : mState(state)
+{
+    if (state != SyntaxState::DirectiveBody && state != SyntaxState::DirectiveComment && state != SyntaxState::Title)
+        FATAL() << "invalid SyntaxState to initialize SyntaxDirectiveBody: " << syntaxStateName(state);
+}
 
-SyntaxBlock SyntaxTitle::find(SyntaxState entryState, const QString& line, int index)
+SyntaxBlock SyntaxDirectiveBody::find(SyntaxState entryState, const QString& line, int index)
 {
     Q_UNUSED(entryState);
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
@@ -152,7 +161,7 @@ SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line,
 {
     Q_UNUSED(entryState)
     if (entryState == SyntaxState::CommentLine || (index==0 && line.startsWith(mCommentChar)))
-        return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+        return SyntaxBlock(this, index, line.length(), false, SyntaxStateShift::skip);
     return SyntaxBlock();
 }
 

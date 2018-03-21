@@ -75,9 +75,13 @@ private:
     typedef QList<SyntaxAbstract*> States;
     typedef QList<StateCode> Codes;
 
+    /// \brief addState
+    /// \param syntax The syntax to be added to the stack
+    /// \param ci The index in mStates of the previous syntax
     void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
+
     int addCode(StateIndex si, CodeIndex ci);
-    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state);
+    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);
 
     States mStates;
     Codes mCodes;

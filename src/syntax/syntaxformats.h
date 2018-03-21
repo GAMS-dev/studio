@@ -28,7 +28,9 @@ namespace studio {
 enum class SyntaxState {
     Standard,
     Directive,
-    Title,
+    DirectiveBody,              // text following the Directive
+    DirectiveComment,           // a DirectiveBody formatted as comment
+    Title,                      // a DirectiveBody formatted as title
     CommentLine,
     CommentBlock,
     CommentEndline,
@@ -52,6 +54,7 @@ QString syntaxStateName(SyntaxState state);
 
 enum class SyntaxStateShift {
     stay,       ///> stays in the current state
+    skip,       ///> skips the current state
     in,         ///> stacks the next state on top
     out,        ///> steps out of the state (unstacks current state)
     reset,      ///> steps out of the whole stack of states
@@ -141,11 +144,12 @@ private:
 
 
 /// \brief Defines the syntax for a single comment line.
-class SyntaxTitle: public SyntaxAbstract
+class SyntaxDirectiveBody: public SyntaxAbstract
 {
+    SyntaxState mState;
 public:
-    SyntaxTitle();
-    inline SyntaxState state() override { return SyntaxState::Title; }
+    SyntaxDirectiveBody(SyntaxState state);
+    inline SyntaxState state() override { return mState; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 

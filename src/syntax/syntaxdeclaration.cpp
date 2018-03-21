@@ -31,16 +31,18 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
     case SyntaxState::DeclarationSetType:
         list = QStringList() << "Singleton";
         mKeywords.insert(state, new DictList(list));
-        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline;
+        mSubStates << SyntaxState::Declaration << SyntaxState::Directive
+                   << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     case SyntaxState::DeclarationVariableType:
         list = QStringList() << "free" << "positive" << "nonnegative" << "negative"
                              << "binary" << "integer" << "sos1" << "sos2" << "semicont" << "semiint";
         mKeywords.insert(state, new DictList(list));
-        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+        mSubStates << SyntaxState::Declaration << SyntaxState::Directive
+                   << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     case SyntaxState::Declaration:
-        list = QStringList() << "Table" << "Scalar" << "Scalars" << "Acronym" << "Acronyms" << "Set" << "Sets"
+        list = QStringList() << "Scalar" << "Scalars" << "Acronym" << "Acronyms" << "Set" << "Sets"
                              << "Variable" << "Variables" << "Parameter" << "Parameters"
                              << "Equation" << "Equations" << "Model" << "Models";
         mKeywords.insert(state, new DictList(list));
@@ -50,7 +52,8 @@ SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
 
         list = QStringList() << "Variable" << "Variables";
         mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
-        mSubStates << SyntaxState::Identifier << SyntaxState::CommentEndline << SyntaxState::CommentInline << SyntaxState::Directive;
+        mSubStates << SyntaxState::Identifier << SyntaxState::Directive
+                   << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
@@ -80,18 +83,18 @@ QStringList SyntaxDeclaration::swapStringCase(QStringList list)
 
 SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line, int index)
 {
-    // skip whitespaces
     int start = index;
     int end = -1;
-    while (isWhitechar(line, start))
-        ++start;
     if (entryState != state()) {
+        // skip whitespaces
+        while (isWhitechar(line, start))
+            ++start;
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType) {
             end = findEnd(entryState, line, start);
             if (end > start)
                 return SyntaxBlock(this, start, end, SyntaxStateShift::stay);
             else
-                return SyntaxBlock(this, start, end, SyntaxStateShift::stay, true);
+                return SyntaxBlock(nullptr, start, end, SyntaxStateShift::stay);
         } else {
             end = findEnd(state(), line, start);
             if (end > start) {
@@ -103,12 +106,13 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
             }
         }
     } else {
-        end = findEnd(state(), line, start);
-
+        end = line.length()-1;
+        while (isWhitechar(line, end)) end++;
+//        end = findEnd(state(), line, start);
         if (end > start) {
-            return SyntaxBlock(this, start, end, SyntaxStateShift::reset, true);
+            return SyntaxBlock(this, start, end, SyntaxStateShift::stay);
         } else {
-            return SyntaxBlock(this, start, line.length(), SyntaxStateShift::reset, true);
+            return SyntaxBlock(this, start, line.length(), SyntaxStateShift::stay);
         }
     }
     return SyntaxBlock();
