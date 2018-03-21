@@ -37,21 +37,34 @@ enum class SyntaxState {
     DeclarationSetType,         // must be followed by Declaration
     DeclarationVariableType,    // must be followed by Declaration
     Declaration,
+    DeclarationTable,
     Identifier,
     IdentifierDescription,
     IdentifierAssignment,
-
+    IdentifierTable,
+    IdentifierTableDescription,
+    IdentifierTableAssignment,
+    Reserved,
+    Error,
     StateCount
 };
 QString syntaxStateName(SyntaxState state);
 
-typedef QList<SyntaxState> SyntaxStates;
-
 enum class SyntaxStateShift {
-    stay,
-    in,
-    out
+    stay,       ///> stays in the current state
+    in,         ///> stacks the next state on top
+    out,        ///> steps out of the state (unstacks current state)
+    reset,      ///> steps out of the whole stack of states
 };
+
+struct SyntaxTransition
+{
+    SyntaxTransition(SyntaxState _state, SyntaxStateShift _shift) : state(_state), shift(_shift) {}
+    const SyntaxState state;
+    const SyntaxStateShift shift;
+};
+
+typedef QList<SyntaxState> SyntaxTransitions;
 
 class SyntaxAbstract;
 
@@ -84,7 +97,7 @@ public:
     virtual ~SyntaxAbstract() {}
     virtual SyntaxState state() = 0;
     virtual SyntaxBlock find(SyntaxState entryState, const QString &line, int index) = 0;
-    virtual SyntaxStates subStates() { return mSubStates; }
+    virtual SyntaxTransitions nextStates() { return mSubStates; }
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
@@ -98,7 +111,7 @@ protected:
     }
 protected:
     QTextCharFormat mCharFormat;
-    SyntaxStates mSubStates;
+    SyntaxTransitions mSubStates;
 };
 
 
@@ -153,6 +166,15 @@ class SyntaxCommentBlock: public SyntaxAbstract
 public:
     SyntaxCommentBlock();
     inline SyntaxState state() override { return SyntaxState::CommentBlock; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+};
+
+/// \brief Defines the syntax for an error.
+class SyntaxError: public SyntaxAbstract
+{
+public:
+    SyntaxError();
+    inline SyntaxState state() override { return SyntaxState::Error; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 

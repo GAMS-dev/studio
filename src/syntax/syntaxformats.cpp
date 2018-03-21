@@ -20,6 +20,7 @@
 #include "syntaxformats.h"
 #include "logger.h"
 #include "syntaxdata.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -38,13 +39,18 @@ QString syntaxStateName(SyntaxState state)
         {static_cast<int>(SyntaxState::DeclarationSetType), "DeclarationSetType"},
         {static_cast<int>(SyntaxState::DeclarationVariableType), "DeclarationVariableType"},
         {static_cast<int>(SyntaxState::Declaration), "Declaration"},
+        {static_cast<int>(SyntaxState::DeclarationTable), "DeclarationTable"},
         {static_cast<int>(SyntaxState::Identifier), "Identifier"},
         {static_cast<int>(SyntaxState::IdentifierDescription), "IdentifierDescription"},
         {static_cast<int>(SyntaxState::IdentifierAssignment), "IdentifierAssignment"},
+        {static_cast<int>(SyntaxState::IdentifierTable), "IdentifierTable"},
+        {static_cast<int>(SyntaxState::IdentifierTableDescription), "IdentifierTableDescription"},
+        {static_cast<int>(SyntaxState::IdentifierTableAssignment), "IdentifierTableAssignment"},
+        {static_cast<int>(SyntaxState::Reserved), "Reserved"},
 
         {static_cast<int>(SyntaxState::StateCount), "StateCount"},
     };
-    return syntaxStateName.value(static_cast<int>(state));
+    return syntaxStateName.value(static_cast<int>(state), "-- unassigned --");
 }
 
 
@@ -73,8 +79,13 @@ SyntaxState SyntaxAbstract::intToState(int intState)
 
 SyntaxStandard::SyntaxStandard()
 {
-    mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::Declaration
-               << SyntaxState::Declaration << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType;
+    mSubStates << SyntaxState::CommentLine
+               << SyntaxState::Declaration
+               << SyntaxState::DeclarationSetType
+               << SyntaxState::DeclarationVariableType
+               << SyntaxState::DeclarationTable
+               << SyntaxState::Directive
+               << SyntaxState::Reserved;
 }
 
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
@@ -155,6 +166,14 @@ SyntaxBlock SyntaxCommentBlock::find(SyntaxState entryState, const QString& line
 {
     Q_UNUSED(entryState)
     return SyntaxBlock(this, index, line.length());
+}
+
+SyntaxBlock SyntaxError::find(SyntaxState entryState, const QString &line, int index)
+{
+    // This state won't be 'found'. It exists to mark the error properly and to initialize the SyntaxBlock
+    Q_UNUSED(entryState)
+    Q_UNUSED(line)
+    return SyntaxBlock(this, index, index, SyntaxStateShift::reset, true);
 }
 
 
