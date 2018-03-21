@@ -4,6 +4,7 @@
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
+#include "editors/codeeditor.h"
 #include "ui_lxiviewer.h"
 
 #include "logger.h"
@@ -13,8 +14,10 @@ namespace studio {
 namespace lxiviewer {
 
 LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
-    QWidget(parent), mCodeEditor(codeEditor), mFileContext(fc),
-    ui(new Ui::LxiViewer)
+    QWidget(parent),
+    ui(new Ui::LxiViewer),
+    mCodeEditor(codeEditor),
+    mFileContext(fc)
 {
     ui->setupUi(this);
 

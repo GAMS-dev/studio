@@ -132,6 +132,7 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
     tool.cpp \
+    editors/selectencodings.cpp \
     updatedialog.cpp \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxiparser.cpp \
@@ -209,6 +210,7 @@ HEADERS += \
     editors/logeditor.h \
     editors/abstracteditor.h \
     tool.h \
+    editors/selectencodings.h \
     updatedialog.h \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
@@ -228,6 +230,7 @@ FORMS += \
     resultsview.ui \
     bookmarkdialog.ui \
     gotowidget.ui \
+    editors/selectencodings.ui \
     updatedialog.ui \
     lxiviewer/lxiviewer.ui
 

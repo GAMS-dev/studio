@@ -1,13 +1,13 @@
 #ifndef GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
 #define GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
 
-#include "editors/codeeditor.h"
 #include <QWidget>
-
+#include <QModelIndex>
 
 namespace gams {
 namespace studio {
 
+class CodeEditor;
 class FileContext;
 
 namespace lxiviewer {
@@ -30,9 +30,9 @@ private:
     Ui::LxiViewer *ui;
 
     CodeEditor* mCodeEditor;
+    FileContext *mFileContext;
     QString mLstFile;
     QString mLxiFile;
-    FileContext *mFileContext;
 
 private slots:
     void loadLxiFile();
