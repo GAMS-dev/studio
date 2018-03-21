@@ -65,6 +65,7 @@ int LxiTreeModel::rowCount(const QModelIndex &parent) const
 
 int LxiTreeModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 1;
 }
 
