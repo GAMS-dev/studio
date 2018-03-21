@@ -49,7 +49,6 @@
 namespace gams {
 namespace studio {
 
-bool checkonce = true;
 MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
@@ -146,25 +145,15 @@ void MainWindow::initTabs()
 
 void MainWindow::Checking_Autosavefiles()
 {
-    QStringList pathes;
-    pathes << mRecent.path;
-    QString test = history()->lastOpenedFiles.join(",");    
-    QStringList testlist = test.split(',');
-    int k =testlist.size();
-    int different_path_num = 0;
-    for (int c =0 ; c <= k-1; c++)
+    QStringList pathes { mRecent.path };
+    for (auto file : history()->lastOpenedFiles)
     {
-        QString pathing= testlist.at(c);
-        int size = pathing.size();
-        int pos = pathing.lastIndexOf("/");
-        pathing.remove(pos,size-pos+1);
-        if (pathing != mRecent.path)
-        {
-            different_path_num +=1;
-            pathes << pathing;
-        }
+        QString path = Tool::getPath(file);
+        if (!path.isEmpty() && path != mRecent.path)
+            pathes << path;
     }
     int numberofdirs = pathes.size();
+    bool checkonce = true;
     if (checkonce == true)
     {
         bool showedonce = false;
