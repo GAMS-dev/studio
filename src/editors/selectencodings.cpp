@@ -2,6 +2,9 @@
 #include "ui_selectencodings.h"
 #include <QtWidgets>
 
+namespace gams {
+namespace studio {
+
 SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
@@ -74,4 +77,7 @@ void SelectEncodings::on_pbReset_clicked()
         int mib = ui->tableWidget->item(row, 1)->data(Qt::EditRole).toInt();
         box->setChecked(mib == 0 || defaultEncodings.contains(mib));
     }
+}
+
+}
 }

@@ -7,6 +7,9 @@ namespace Ui {
 class SelectEncodings;
 }
 
+namespace gams {
+namespace studio {
+
 class SelectEncodings : public QDialog
 {
     Q_OBJECT
@@ -27,5 +30,8 @@ private slots:
 private:
     Ui::SelectEncodings *ui;
 };
+
+}
+}
 
 #endif // GAMS_STUDIO_SELECTENCODINGS_H
