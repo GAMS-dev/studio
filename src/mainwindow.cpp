@@ -42,8 +42,8 @@
 #include "gotowidget.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
-#include "c4umcc.h"
 #include "tool.h"
+#include "updatedialog.h"
 
 namespace gams {
 namespace studio {
@@ -731,8 +731,13 @@ void MainWindow::on_actionAbout_triggered()
     about += "You should have received a copy of the GNU General Public License ";
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
-    about += "<br/><br/><b><big>GAMS Distribution</big></b><br/><br/>";
+    about += "<br/><br/><b><big>GAMS Distribution ";
+    char version[16];
+    about += gams::studio::Version::currentGAMSDistribVersion(version);
+    about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
+    about += "<br/><br/>For further information about GAMS please visit ";
+    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
     QMessageBox::about(this, "About GAMS Studio", about);
 }
 
@@ -743,7 +748,8 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
-
+    UpdateDialog updateDialog(this);
+    updateDialog.exec();
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)

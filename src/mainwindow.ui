@@ -649,10 +649,10 @@
   </action>
   <action name="actionUpdate">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Update</string>
+    <string>Check for Update</string>
    </property>
   </action>
   <action name="actionHelp_View">
