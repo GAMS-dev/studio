@@ -93,14 +93,14 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
 
     //jump to first child for virtual nodes
     if(lineNr == -1) {
-        if (!ui->lxiTreeView->isExpanded(modelIndex))
+        if (!ui->lxiTreeView->isExpanded(modelIndex)) {
             modelIndex = modelIndex.child(0,0);
+            selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
+            lineNr = selectedItem->lineNr();
+        }
         else
             return;
     }
-
-    selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
-    lineNr = selectedItem->lineNr();
 
     QTextBlock tb = mCodeEditor->document()->findBlockByNumber(lineNr);
     while (tb.isValid() && tb.text().isEmpty()) {
