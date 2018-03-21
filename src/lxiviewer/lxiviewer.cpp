@@ -83,6 +83,7 @@ void LxiViewer::jumpToTreeItem()
     if (!ui->lxiTreeView->isExpanded(treeItem->parentItem()->modelIndex()))
         ui->lxiTreeView->expand(treeItem->parentItem()->modelIndex());
     ui->lxiTreeView->selectionModel()->select(treeItem->modelIndex(), QItemSelectionModel::SelectCurrent);
+    ui->lxiTreeView->scrollTo(treeItem->modelIndex());
 }
 
 void LxiViewer::jumpToLine(QModelIndex modelIndex)
