@@ -152,93 +152,76 @@ void MainWindow::Checking_Autosavefiles()
         if (!path.isEmpty() && path != mRecent.path)
             pathes << path;
     }
-    int numberofdirs = pathes.size();
-    bool checkonce = true;
-    if (checkonce == true)
+    const QString tmpFileMarker = "~$";
+    bool showedonce = false;
+    for (auto path : pathes)
     {
-        bool showedonce = false;
-        for (int c=0 ; c <=numberofdirs-1;c++)
+        QDir dir(path);
+        QStringList filters { "*.gms", "*.txt" };
+        dir.setNameFilters(filters);
+        QStringList filesList = dir.entryList(filters);
+        if (filesList.isEmpty())
+            return;
+        bool exist=false;
+        for (const auto& file : filesList)
         {
-            QDir dir(pathes.at(c));
-            QStringList filters;
-            filters << "*.gms" << "*.txt";
-            dir.setNameFilters(filters);
-            QStringList filesList = dir.entryList(filters);
-            if (filesList.isEmpty())
-                return;
-            bool exist=false;
-            for (const auto& i : filesList)
+            if (file.startsWith(tmpFileMarker))
+                exist = true;
+        }
+        if (exist)
+        {
+            int decision;
+            if (!showedonce)
             {
-                QStringRef subString(&i, 0, 2);
-                if (subString == "~$")
-                {
-                    exist = true;
-                }
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("Data Recovery");
+                msgBox.setText("Studio has shut down unexpectedly.Some files were not saved correctly. Do you want to recover your last modifications ?");
+                msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                decision = msgBox.exec();
+                showedonce = true;
             }
-            if (exist == true)
+            if (decision == QMessageBox::Yes)
             {
-                int j=0;
-                for (const auto& i : filesList)
+                for (const auto& file : filesList)
                 {
-                    QStringRef subString(&i, 0, 2);
-                    if (subString == "~$")
-                        j++;
-                }
-                int decision;
-                if (showedonce == false)
-                {
-                        QMessageBox msgBox;
-                        msgBox.setWindowTitle("Data Recovery");
-                        msgBox.setText("Studio has shut down unexpectedly.Some files were not saved correctly. Do you want to recover your last modifications ?");
-                        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                        int choice = msgBox.exec();
-                        decision = choice;
-                        showedonce = true;
-                }
-                if (decision == QMessageBox::Yes)
-                {
-                    for (const auto& i : filesList)
+                    if (file.startsWith(tmpFileMarker))
                     {
-                        QStringRef subString(&i, 0, 2);
-                        if (subString == "~$")
+                        QString originalversion = file;
+                        originalversion.replace(tmpFileMarker, "");
+                        QFile srcFile(path+"/"+file);
+                        QFile destFile(path+"/"+originalversion);
+                        MainWindow::openFile(destFile.fileName());
+                        if (srcFile.open(QIODevice::ReadWrite))
                         {
-                            QString originalversion = i ;
-                            originalversion.remove(0,3);
-                            QString autosavefilename = pathes.at(c)+"/"+i;
-                            QString originalfilename = pathes.at(c)+"/"+originalversion;
-                            QFile srcfile(autosavefilename);
-                            QFile destfile(originalfilename);
-                            MainWindow::openFile(originalfilename);
-                            if (srcfile.open(QIODevice::ReadWrite))
+                            if (destFile.open(QIODevice::ReadWrite))
                             {
-                                if (destfile.open(QIODevice::ReadWrite))
-                                {
-                                    QTextStream in(&srcfile);
-                                    QString line = in.readAll() ;
-                                    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-                                    QTextCursor curs(fc->document());
-                                    curs.select(QTextCursor::Document);
-                                    curs.insertText(line);
-                                    destfile.close();
-                                }
-                                srcfile.close();
+                                QTextStream in(&srcFile);
+                                QString line = in.readAll() ;
+                                FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+                                QTextCursor curs(fc->document());
+                                curs.select(QTextCursor::Document);
+                                curs.insertText(line);
+                                destFile.close();
                             }
+                            srcFile.close();
                         }
                     }
-                    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-                    ae->moveCursor(QTextCursor::Start);
+                }
+                AbstractEditor *editor = dynamic_cast<AbstractEditor*>(focusWidget());
+                if (editor) {
+                    editor->moveCursor(QTextCursor::Start);
                 }
                 else
-                {
-                    for (const auto& i : filesList){
-                        QStringRef subString(&i, 0, 2);
-                        if (subString == "~$")
-                            QFile::remove(pathes.at(c)+"/"+i);
-                    }
+                    qDebug() << "null exception.";
+            }
+            else
+            {
+                for (const auto& file : filesList){
+                    if (file.startsWith(tmpFileMarker))
+                        QFile::remove(path+"/"+file);
                 }
             }
         }
-    checkonce = false;
     }
 }
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -313,7 +296,7 @@ void MainWindow::timerEvent(QTimerEvent *event){
 
     QString filename = filepath+fc->name();
     mMetrics = FileMetrics(QFileInfo(filename));
-    QString filename1 = filepath+"/~$ "+fc->name();
+    QString filename1 = filepath+"/~$"+fc->name();
     if (a == 0)
         return;
     else
@@ -321,7 +304,7 @@ void MainWindow::timerEvent(QTimerEvent *event){
         if (fc->isModified() && (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt))
         {
             QString filepath = QFileInfo(fc->location()).path();
-            QString filename = filepath+"/~$ "+fc->name();
+            QString filename = filepath+"/~$"+fc->name();
             QFile file(filename);
             file.open(QIODevice::WriteOnly);
             QTextStream out(&file);
