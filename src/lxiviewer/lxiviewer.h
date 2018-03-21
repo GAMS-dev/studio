@@ -36,6 +36,7 @@ private:
 
 private slots:
     void loadLxiFile();
+    void jumpToTreeItem();
 
 
 private slots:

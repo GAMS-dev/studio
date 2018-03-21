@@ -21,6 +21,7 @@
 #define LXITREEITEM_H
 
 #include <QList>
+#include <QModelIndex>
 
 
 namespace gams {
@@ -46,14 +47,16 @@ public:
 
     int lineNr() const;
 
+    QModelIndex modelIndex() const;
+    void setModelIndex(QModelIndex value);
+
 private:
     QList<LxiTreeItem*> mChildItems;
     QString mIndex;
     int mLineNr;
     QString mText;
     LxiTreeItem* mParentItem = nullptr;
-
-
+    QModelIndex mModelIndex;
 };
 
 } // namespace lxiviewer

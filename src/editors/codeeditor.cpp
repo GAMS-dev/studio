@@ -229,10 +229,6 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
         QPlainTextEdit::keyReleaseEvent(e);
         return;
     }
-    if (mBlockEdit) {
-        mBlockEdit->keyReleaseEvent(e);
-        return;
-    }
     // return pressed, if current block consists of whitespaces only: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
@@ -626,7 +622,7 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
     if (!mSettings->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    QColor lineColor = QColor(Qt::cyan).lighter(190);
+    QColor lineColor = QColor(255, 250, 170); // TODO: read from style sheet
     selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
@@ -638,6 +634,12 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (!mSettings->wordUnderCursor()) return;
+
+    QHash<int, TextMark*> textMarks;
+    emit requestMarkHash(&textMarks, TextMark::match);
+
+    if (textMarks.size() > 0) return;  // no word highlighting when a user searches
+
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
@@ -654,7 +656,7 @@ void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selection
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
 //                QPen outlinePen( Qt::lightGray, 1);
 //                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
-                QColor wordColor = QColor(Qt::lightGray).lighter(115);
+                QColor wordColor = QColor(Qt::lightGray)/*.lighter(115)*/;
                 selection.format.setBackground(wordColor);
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
@@ -669,7 +671,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     QHash<int, TextMark*> textMarks;
-    emit requestMarkHash(&textMarks);
+    emit requestMarkHash(&textMarks, TextMark::all);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -815,20 +817,12 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
-        if (!mSize && mColumn) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
     startCursorTimer();
-}
-
-void CodeEditor::BlockEdit::keyReleaseEvent(QKeyEvent* e)
-{
-    Q_UNUSED(e)
-    QSet<int> moveKeys;
-    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
-             << Qt::Key_PageUp << Qt::Key_PageDown;
 }
 
 void CodeEditor::BlockEdit::startCursorTimer()

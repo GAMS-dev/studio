@@ -17,43 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef UPDATEDIALOG_H
+#define UPDATEDIALOG_H
 
-#include <QDialog>
-#include "mainwindow.h"
-#include "filecontext.h"
+#include "c4umcc.h"
+
+#include <QtWidgets>
 
 namespace Ui {
-class GoToWidget;
+class UpdateDialog;
 }
 
 namespace gams {
 namespace studio {
 
-class GoToWidget : public QDialog
+class UpdateDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = 0);
-
-    ~GoToWidget();
-
-    void focusTextBox();
-
-private slots:
-    void on_GoTo_clicked();
+    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    ~UpdateDialog();
 
 private:
-    Ui::GoToWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
+    void setUpdateInfo();
+    void getMessages(int &messageIndex, char *buffer);
 
+private:
+    Ui::UpdateDialog *ui;
+    c4uHandle_t mC4UHandle;
+    QStringList mMessages;
 };
 
 }
 }
-#endif // GOTOWIDGET_H
+
+#endif // UPDATEDIALOG_H

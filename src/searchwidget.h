@@ -54,6 +54,7 @@ public:
     };
     void findNext(SearchWidget::SearchDirection direction);
     void clearResults();
+    void updateReplaceActionAvailability();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -70,7 +71,6 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    QList<TextMark*> mAllTextMarks;
     bool hasChanged = false;
     QList<Result> cachedResults;
 

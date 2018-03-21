@@ -33,6 +33,10 @@ include($$PWD/gamsdependency.pri)
 
 include (../version)
 DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
+DEFINES += 'STUDIO_MAJOR_VERSION=$$STUDIO_MAJOR_VERSION'
+DEFINES += 'STUDIO_MINOR_VERSION=$$STUDIO_MINOR_VERSION'
+DEFINES += 'STUDIO_PATCH_LEVEL=$$STUDIO_PATCH_LEVEL'
+DEFINES += 'GAMS_DISTRIB_VERSION=$$GAMS_DISTRIB_VERSION'
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
@@ -129,6 +133,7 @@ SOURCES += \
     editors/abstracteditor.cpp \
     tool.cpp \
     editors/selectencodings.cpp \
+    updatedialog.cpp \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreemodel.cpp \
@@ -206,6 +211,7 @@ HEADERS += \
     editors/abstracteditor.h \
     tool.h \
     editors/selectencodings.h \
+    updatedialog.h \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreemodel.h \
@@ -225,6 +231,7 @@ FORMS += \
     bookmarkdialog.ui \
     gotowidget.ui \
     editors/selectencodings.ui \
+    updatedialog.ui \
     lxiviewer/lxiviewer.ui
 
 RESOURCES += \

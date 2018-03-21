@@ -109,9 +109,16 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 //        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
 //            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
         if (col==0) {
-            if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
-                 !gamsOption->isThereASynonym(mOptionItem.at(row).key) )  {
-                return QString("'%1' is an unknown Option Key").arg(mOptionItem.at(row).key);
+            if ( gamsOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
+                if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key))) {
+                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(gamsOption->getOptionKey(mOptionItem.at(row).key));
+                } else {
+                    break;
+                }
+            } else if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
+                        !gamsOption->isThereASynonym(mOptionItem.at(row).key)
+                      )  {
+                         return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
             } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
                       return QString("Option '%1' is deprecated, will be ignored").arg(mOptionItem.at(row).key);
             }
@@ -132,10 +139,10 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
 //            return QVariant::fromValue(QColor(Qt::gray));
 
         if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
-           if (mOptionItem.at(row).key.mid(2).contains(QRegExp("^[a-zA-Z]")) )
-                return QVariant::fromValue(QColor(Qt::black));
-           else
-                 return QVariant::fromValue(QColor(Qt::red));
+            if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key)) )
+                return QVariant::fromValue(QColor(Qt::red));
+            else
+                 return QVariant::fromValue(QColor(Qt::black));
         }
         if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
            if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
@@ -341,10 +348,10 @@ void OptionParameterModel::validateOption()
 {
    for(OptionItem& item : mOptionItem) {
        if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
-           if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )
-               item.error = OptionErrorType::Invalid_Key;
+           if ( gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(item.key)) )
+               item.error = OptionErrorType::No_Error;
            else
-              item.error = OptionErrorType::No_Error;
+              item.error = OptionErrorType::Invalid_Key;
            continue;
        }
        if (gamsOption->isValid(item.key) || gamsOption->isThereASynonym(item.key)) { // valid option

@@ -73,6 +73,9 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
 void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
     if (!QFileInfo(filePath).exists()) {
+        filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
+    }
+    if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
     }
     if (!fileGroup)

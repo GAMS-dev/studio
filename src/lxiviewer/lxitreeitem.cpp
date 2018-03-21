@@ -77,6 +77,16 @@ int LxiTreeItem::lineNr() const
     return mLineNr;
 }
 
+QModelIndex LxiTreeItem::modelIndex() const
+{
+    return mModelIndex;
+}
+
+void LxiTreeItem::setModelIndex(QModelIndex value)
+{
+    mModelIndex = value;
+}
+
 } // namespace lxiviewer
 } // namespace studio
 } // namespace gams

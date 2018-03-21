@@ -241,7 +241,7 @@ private:
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
-    Option* gamsOption;
+    Option* mGamsOption;
     OptionEditor* mOptionEditor;
     QDockWidget* mDockOptionView;
     CommandLineHistory* mCommandLineHistory;

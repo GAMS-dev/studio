@@ -45,6 +45,7 @@
 #include "editors/selectencodings.h"
 #include "c4umcc.h"
 #include "tool.h"
+#include "updatedialog.h"
 
 namespace gams {
 namespace studio {
@@ -125,19 +126,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    mDockHelpView->setParent(nullptr);
-    delete mDockHelpView;
     delete ui;
-
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
     //          may not be in the ui, delete and remove them from ui before the ui is deleted.
-
-// TODO fix crash
-//    delete mOptionEditor;
-//    delete mDockOptionView;
-//    delete mCommandLineHistory;
-//    delete mCommandLineOption; TODO fix crash
-//    delete mCommandLineTokenizer;
+    delete mGamsOption;
 }
 
 void MainWindow::initTabs()
@@ -650,6 +642,8 @@ void MainWindow::activeTabChanged(int index)
     } else {
         ui->menuEncoding->setEnabled(false);
     }
+
+    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -804,15 +798,24 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
+    if ( (mRecent.editor != nullptr) && (focusWidget() == mRecent.editor) ) {
+        CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+        QString word;
+        int istate = 0;
+        ce->wordInfo(ce->textCursor(), word, istate);
+//        qDebug() << "word=[" << word << "], State=" << istate;
+
+        if (istate == static_cast<int>(SyntaxState::Title)) {
+            mDockHelpView->on_dollarControlHelpRequested("title");
+        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            mDockHelpView->on_dollarControlHelpRequested(word);
+        } else {
+            mDockHelpView->on_keywordHelpRequested(word);
+        }
+    }
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
-
-//void MainWindow::on_actionHelp_triggered()
-//{
-//    if (mDockHelpView->isHidden())
-//       mDockHelpView->show();
-//}
 
 void MainWindow::on_actionAbout_triggered()
 {
@@ -831,8 +834,13 @@ void MainWindow::on_actionAbout_triggered()
     about += "You should have received a copy of the GNU General Public License ";
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
-    about += "<br/><br/><b><big>GAMS Distribution</big></b><br/><br/>";
+    about += "<br/><br/><b><big>GAMS Distribution ";
+    char version[16];
+    about += gams::studio::Version::currentGAMSDistribVersion(version);
+    about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
+    about += "<br/><br/>For further information about GAMS please visit ";
+    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
     QMessageBox::about(this, "About GAMS Studio", about);
 }
 
@@ -843,7 +851,8 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
-
+    UpdateDialog updateDialog(this);
+    updateDialog.exec();
 }
 
 void MainWindow::on_actionOutput_View_triggered(bool checked)
@@ -940,8 +949,8 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    gamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
-    mCommandLineTokenizer = new CommandLineTokenizer(gamsOption);
+    mGamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
 
@@ -1368,7 +1377,7 @@ void MainWindow::execute(QString commandLineStr)
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
-        fc->save();
+        group->saveGroup();
 
     if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
         QMessageBox msgBox;
@@ -1473,9 +1482,7 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    QDir dir = QDir( QDir( GAMSPaths::systemDir() ).filePath("docs") ).filePath("UG_GamsCall.html") ;
-
-    mDockHelpView->on_urlOpened(QUrl::fromLocalFile(dir.canonicalPath()));
+    mDockHelpView->on_commandLineHelpRequested();
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
 }
