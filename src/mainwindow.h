@@ -263,6 +263,8 @@ private:
     GoToWidget *mGoto;
     int TimerID;
     FileMetrics mMetrics;
+    bool mCheckOnce = true;
+
 
 };
 

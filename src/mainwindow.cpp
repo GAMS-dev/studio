@@ -47,7 +47,7 @@
 namespace gams {
 namespace studio {
 
-bool checkonce = true;
+
 MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
@@ -167,7 +167,7 @@ void MainWindow::Checking_Autosavefiles()
         }
     }
     int numberofdirs = pathes.size();
-    if (checkonce == true)
+    if (mCheckOnce == true)
     {
         bool showedonce = false;
         for (int c=0 ; c <=numberofdirs-1;c++)
@@ -251,7 +251,7 @@ void MainWindow::Checking_Autosavefiles()
                 }
             }
         }
-    checkonce = false;
+    mCheckOnce = false;
     }
 }
 void MainWindow::createEdit(QTabWidget* tabWidget, bool focus, QString codecName)
@@ -1958,7 +1958,9 @@ void MainWindow::on_actionRemove_Line_triggered()
     if (!ce->isReadOnly())
         ce->removeLine();
 }
+}
+}
 
-}
-}
+
+
 
