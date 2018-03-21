@@ -23,6 +23,7 @@
 #include <QtGui>
 #include "syntaxformats.h"
 #include "syntaxdeclaration.h"
+#include "syntaxreserved.h"
 #include "textmark.h"
 #include "textmarklist.h"
 

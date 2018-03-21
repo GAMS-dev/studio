@@ -149,6 +149,7 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationSetType);
     syntax->copyCharFormat(mStates.last()->charFormat());
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
+    syntax->charFormat().setBackground(Qt::yellow);
     addState(syntax);
 
     syntax = new SyntaxDeclaration(SyntaxState::DeclarationVariableType);
@@ -184,15 +185,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             continue;
         }
         SyntaxBlock nextBlock;
-        for (SyntaxState subState: syntax->subStates()) {
             // TODO(JM) store somehow when states have been redefined with directives
             // (e.g. StdState with indexes to changed subsetStates)
-            SyntaxAbstract* subSyntax = getSyntax(subState);
-            if (subSyntax) {
-                SyntaxBlock subBlock = subSyntax->find(syntax->state(), text, index);
-                if (subBlock.isValid()) {
-                    if (!nextBlock.isValid() || nextBlock.start > subBlock.start)
-                        nextBlock = subBlock;
+            // other approach: add a maxFactor to code whenever a directive changed the syntax
+        for (SyntaxState nextState: syntax->nextStates()) {
+            SyntaxAbstract* testSyntax = getSyntax(nextState);
+            if (testSyntax) {
+                SyntaxBlock testBlock = testSyntax->find(syntax->state(), text, index);
+                if (testBlock.isValid()) {
+                    if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
+                        nextBlock = testBlock;
+
+                    }
                 }
             }
         }

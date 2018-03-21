@@ -89,7 +89,7 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType) {
             end = findEnd(entryState, line, start);
             if (end > start)
-                return SyntaxBlock(this, start, end, SyntaxStateShift::out);
+                return SyntaxBlock(this, start, end, SyntaxStateShift::stay);
             else
                 return SyntaxBlock(this, start, end, SyntaxStateShift::stay, true);
         } else {
@@ -97,7 +97,7 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
             if (end > start) {
                 // TODO(JM) if not in SyntaxState::Declaration mark following as error if not an SyntaxState::Declaration keyword
                 if (state() != SyntaxState::Declaration)
-                    return SyntaxBlock(this, start, end, SyntaxState::Declaration);
+                    return SyntaxBlock(this, start, end, SyntaxStateShift::stay);
                 else
                     return SyntaxBlock(this, start, end, SyntaxStateShift::out);
             }
