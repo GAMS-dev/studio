@@ -131,7 +131,8 @@ SOURCES += \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreemodel.cpp \
-    lxiviewer/lxiviewer.cpp
+    lxiviewer/lxiviewer.cpp \
+    syntax/syntaxreserved.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -207,7 +208,8 @@ HEADERS += \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreemodel.h \
-    lxiviewer/lxiviewer.h
+    lxiviewer/lxiviewer.h \
+    syntax/syntaxreserved.h
 
 FORMS += \
     welcomepage.ui  \
