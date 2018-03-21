@@ -27,8 +27,11 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeItem *LxiParser::parseFile(QString lxiFile)
+LxiTreeModel *LxiParser::parseFile(QString lxiFile)
 {
+    QVector<int> lineNrs;
+    QVector<LxiTreeItem*> treeItems;
+
     lxiFile = QDir::toNativeSeparators(lxiFile);
     QFile file(lxiFile);
     if(!file.open(QIODevice::ReadOnly))
@@ -56,10 +59,13 @@ LxiTreeItem *LxiParser::parseFile(QString lxiFile)
             rootItem->appendChild(current);
             lastParent = current;
         }
-        lastParent->appendChild(new LxiTreeItem(idx, lineNr, text, lastParent));
+        current = new LxiTreeItem(idx, lineNr, text, lastParent);
+        lastParent->appendChild(current);
+        lineNrs.append(current->lineNr());
+        treeItems.append(current);
         lastIdx = idx;
     }
-    return rootItem;
+    return new LxiTreeModel(rootItem, lineNrs, treeItems);
 }
 
 LxiParser::LxiParser()
