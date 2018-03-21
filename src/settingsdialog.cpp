@@ -50,6 +50,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    adjustSize();
 }
 
 void SettingsDialog::loadSettings()

@@ -39,6 +39,7 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
+    adjustSize();
 }
 
 SearchWidget::~SearchWidget()
