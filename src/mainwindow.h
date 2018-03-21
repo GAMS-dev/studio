@@ -267,7 +267,6 @@ private:
     GoToWidget *mGoto;
 
     int TimerID;
-    FileMetrics mMetrics;
     bool mLogDebugLines = false;
 
 };

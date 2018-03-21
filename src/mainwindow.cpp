@@ -283,42 +283,31 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, QString c
     }
 }
 
-void MainWindow::timerEvent(QTimerEvent *event){
-
-    if (mRecent.editor == nullptr)
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    Q_UNUSED(event)
+    if (!mRecent.editor)
+        return;
+    if (ui->mainTab->currentWidget() == mWp)
         return;
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     QString filepath = QFileInfo(fc->location()).path();
-    int a;
-    a =  ui->mainTab->count();
-    if (ui->mainTab->currentWidget() == mWp)
-        return;
-
     QString filename = filepath+fc->name();
-    mMetrics = FileMetrics(QFileInfo(filename));
+    FileMetrics metrics = FileMetrics(QFileInfo(filename));
     QString filename1 = filepath+"/~$"+fc->name();
-    if (a == 0)
-        return;
-    else
+    if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
     {
-        if (fc->isModified() && (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt))
-        {
-            QString filepath = QFileInfo(fc->location()).path();
-            QString filename = filepath+"/~$"+fc->name();
-            QFile file(filename);
-            file.open(QIODevice::WriteOnly);
-            QTextStream out(&file);
-            out << fc->document()->toPlainText();
-            out.flush();
-            file.close();
-            qDebug() << "autosave done";
-        }
-        else {
-            if (!QFileInfo::exists(filename1))
-                return;
-            else
-                QFile::remove(filename1);
-        }
+        QFile file(filename1);
+        file.open(QIODevice::WriteOnly);
+        QTextStream out(&file);
+        out << fc->document()->toPlainText();
+        out.flush();
+        file.close();
+        qDebug() << "autosave done";
+    }
+    else {
+        if (QFileInfo::exists(filename1))
+            QFile::remove(filename1);
     }
 }
 
