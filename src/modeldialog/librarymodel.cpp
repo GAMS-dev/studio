@@ -31,13 +31,11 @@ LibraryModel::LibraryModel(QList<LibraryItem> data, QObject *parent)
 
 QVariant LibraryModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole)
-    {
+    if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal)
             return mData.at(0).library()->columns().at(section);
     }
-    else if (role == Qt::ToolTipRole)
-    {
+    else if (role == Qt::ToolTipRole) {
         if (orientation == Qt::Horizontal)
             return mData.at(0).library()->toolTips().at(section);
     }
