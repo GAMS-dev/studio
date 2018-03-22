@@ -8,6 +8,8 @@
 namespace gams {
 namespace studio {
 
+// TODO find other c4u calls
+
 class CheckForUpdateWrapper
 {// TODO html?
 public:
