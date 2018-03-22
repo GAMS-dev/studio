@@ -856,6 +856,7 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionUpdate_triggered()
 {
     UpdateDialog updateDialog(this);
+    updateDialog.checkForUpdate();
     updateDialog.exec();
 }
 
