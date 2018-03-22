@@ -48,6 +48,9 @@ protected:
 public:
     bool event(QEvent *event) override;
     StudioSettings *settings() const;
+
+public slots:
+    void afterContentsChanged();
 };
 
 }

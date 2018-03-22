@@ -35,19 +35,19 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->setupUi(this);
 
     //create context menu
-    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)", [this]() { copySelectionToClipboard(",");  }, QKeySequence(tr("Ctrl+C")));
+    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)", [this]() { copySelectionToClipboard(",");  });
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(cpComma);
 
-    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
+    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(cpTab);
 
     mContextMenu.addSeparator();
 
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll, QKeySequence(tr("Ctrl+A")));
+    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll);
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     selectAll->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(selectAll);

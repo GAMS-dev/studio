@@ -80,9 +80,8 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
-    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
-    void ensureCodecMenu(QString codecName);
+    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
+    void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
@@ -91,6 +90,11 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    QString encodingMIBsString();
+    QList<int> encodingMIBs();
+    void setEncodingMIBs(QString mibList, int active = -1);
+    void setEncodingMIBs(QList<int> mibs, int active = -1);
+    void setActiveMIB(int active = -1);
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -108,16 +112,18 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
-
     HelpView *getDockHelpView() const;
+    void readTabs(const QJsonObject &json);
+    void writeTabs(QJsonObject &json) const;
 
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
 
 private slots:
-    void openFileContext(FileContext *fileContext, bool focus = true);
+    void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
+    void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
@@ -128,7 +134,7 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -196,11 +202,12 @@ private slots:
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
+    void on_actionSelect_encodings_triggered();
 
     void interruptTriggered();
     void stopTriggered();
-
     void toggleLogDebug();
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -247,7 +254,8 @@ private:
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    QActionGroup *mCodecGroup;
+    QActionGroup *mCodecGroupSwitch;
+    QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;

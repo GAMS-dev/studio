@@ -66,11 +66,11 @@ public:
         return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
     }
 
-    inline int line() const {return mLine;}
+    inline int line() const {return document() ? qMin(mLine,document()->blockCount()-1) : mLine;}
     inline int column() const {return mColumn;}
     inline int size() const {return mSize;}
     inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
-    inline int position() const {return mPosition;}
+    inline int position() const {return document() ? qMin(mPosition,document()->characterCount()-1) : mPosition;}
     inline int blockStart() const {return mColumn;}
     inline int blockEnd() const {return mColumn+mSize;}
     inline void incSpread() {mSpread++;}

@@ -39,6 +39,7 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
+    adjustSize();
 }
 
 SearchWidget::~SearchWidget()
@@ -372,6 +373,16 @@ void SearchWidget::updateReplaceActionAvailability()
     ui->btn_ReplaceAll->setEnabled(activated);
 }
 
+void SearchWidget::on_searchNext()
+{
+    findNext(SearchWidget::Forward);
+}
+
+void SearchWidget::on_searchPrev()
+{
+    findNext(SearchWidget::Backward);
+}
+
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && (e->key() == Qt::Key_Escape
@@ -381,16 +392,15 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
             mMain->recent()->editor->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
-        findNext(SearchWidget::Backward);
+        on_searchPrev();
     } else if (e->key() == Qt::Key_F3) {
-        findNext(SearchWidget::Forward);
+        on_searchNext();
     }
     QDialog::keyPressEvent(e);
 }
 
 void SearchWidget::closeEvent(QCloseEvent *e) {
     updateMatchAmount(0, true);
-
     QDialog::closeEvent(e);
 }
 

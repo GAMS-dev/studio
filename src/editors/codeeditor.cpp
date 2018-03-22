@@ -219,6 +219,11 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         }
     }
 
+    if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
+        emit searchFindPrevPressed();
+    else if (e->key() == Qt::Key_F3)
+        emit searchFindNextPressed();
+
     QPlainTextEdit::keyPressEvent(e);
 }
 
@@ -509,7 +514,9 @@ QStringList CodeEditor::clipboard(bool *isBlock)
         if (isBlock) *isBlock = false;
         texts = QStringList() << QGuiApplication::clipboard()->mimeData()->text();
     }
-//    if (isBlock) *isBlock = true; // TODO: find better handling for this
+    if (isBlock && (asBlock || mBlockEdit))
+        *isBlock = true;
+
     return texts;
 }
 
