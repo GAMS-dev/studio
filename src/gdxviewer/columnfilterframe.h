@@ -44,9 +44,9 @@ protected:
 
 private:
     Ui::ColumnFilterFrame ui;
-    GdxSymbol* mSymbol;
+    GdxSymbol* mSymbol = nullptr;
     int mColumn;
-    FilterUelModel* mModel;
+    FilterUelModel* mModel = nullptr;
 
 private slots:
     void apply();

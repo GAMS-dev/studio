@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "filecontext.h"
 #include "filegroupcontext.h"
 #include "gamsprocess.h"
@@ -35,7 +54,7 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
     connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
-
+    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
@@ -69,6 +88,14 @@ void LxiViewer::loadLxiFile()
     }
 }
 
+void LxiViewer::loadLstFile()
+{
+    if (QProcess::NotRunning == mFileContext->parentEntry()->gamsProcessState()) {
+        mFileContext->load(mFileContext->codecMib());
+    }
+
+}
+
 void LxiViewer::jumpToTreeItem()
 {
     int lineNr  = mCodeEditor->textCursor().block().blockNumber();
@@ -96,7 +123,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     int lineNr = selectedItem->lineNr();
 
     //jump to first child for virtual nodes
-    if(lineNr == -1) {
+    if (lineNr == -1) {
         if (!ui->lxiTreeView->isExpanded(modelIndex)) {
             modelIndex = modelIndex.child(0,0);
             selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());

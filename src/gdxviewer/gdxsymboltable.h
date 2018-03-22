@@ -40,30 +40,20 @@ public:
     explicit GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QObject *parent = 0);
     ~GdxSymbolTable();
 
-    // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
     QList<GdxSymbol *> gdxSymbols() const;
-
     QString uel2Label(int uel);
-
     std::vector<int> labelCompIdx();
-
     int symbolCount() const;
-
     QString getElementText(int textNr);
 
 private:
     QStringList mHeaderText;
-
     QString typeAsString(int type) const;
     void createSortIndex();
-
     gdxHandle_t mGdx = nullptr;
     int mUelCount;
     int mSymbolCount;
@@ -79,7 +69,7 @@ private:
     std::vector<int> mLabelCompIdx;
     bool mIsSortIndexCreated = false;
 
-    QMutex* mGdxMutex;
+    QMutex* mGdxMutex = nullptr;
 };
 
 } // namespace gdxviewer

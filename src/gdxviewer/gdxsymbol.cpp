@@ -62,8 +62,7 @@ GdxSymbol::~GdxSymbol()
 
     for(auto v : mUelsInColumn)
         delete v;
-    for(auto a: mShowUelInColumn)
-    {
+    for(auto a: mShowUelInColumn) {
         if(a)
             delete[] a;
     }
@@ -71,38 +70,32 @@ GdxSymbol::~GdxSymbol()
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole)
-    {
-        if (orientation == Qt::Horizontal)
-        {
+    if (role == Qt::DisplayRole) {
+        if (orientation == Qt::Horizontal) {
             if (section < mDim)
                 return mDomains.at(section);
-            else
-            {
+            else {
                 if (mType == GMS_DT_SET)
                     return "Text";
                 else if (mType == GMS_DT_PAR)
                     return "Value";
                 else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-                switch(section-mDim)
-                {
-                case GMS_VAL_LEVEL: return "Level";
-                case GMS_VAL_MARGINAL: return "Marginal";
-                case GMS_VAL_LOWER: return "Lower";
-                case GMS_VAL_UPPER: return "Upper";
-                case GMS_VAL_SCALE: return "Scale";
+                switch(section-mDim) {
+                    case GMS_VAL_LEVEL: return "Level";
+                    case GMS_VAL_MARGINAL: return "Marginal";
+                    case GMS_VAL_LOWER: return "Lower";
+                    case GMS_VAL_UPPER: return "Upper";
+                    case GMS_VAL_SCALE: return "Scale";
                 }
             }
         }
     }
-    else if (role == Qt::ToolTipRole)
-    {
+    else if (role == Qt::ToolTipRole) {
         QString description("<html><head/><body>");
 
         if (section < mDim)
             description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
-        else if (section >= mDim)
-        {
+        else if (section >= mDim) {
             if (mType == GMS_DT_SET)
                 description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
             else
@@ -138,18 +131,15 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    else if (role == Qt::DisplayRole)
-    {
+    else if (role == Qt::DisplayRole) {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
             return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
-        else
-        {
+        else {
             double val = 0.0;
             if (mType == GMS_DT_PAR)
                 val = mValues[row];
-            else if (mType == GMS_DT_SET)
-            {
+            else if (mType == GMS_DT_SET) {
                 val = mValues[row];
                 return mGdxSymbolTable->getElementText((int) val);
             }
@@ -157,11 +147,8 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             //apply special values:
             if (val<GMS_SV_UNDEF)
-            {
                 return QString::number(val, 'g', 15);
-            }
-            else
-            {
+            else {
                 if (val == GMS_SV_UNDEF)
                     return "UNDEF";
                 if (val == GMS_SV_NA)
@@ -172,20 +159,16 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                     return "-INF";
                 if (val == GMS_SV_EPS)
                     return "EPS";
-                else if (val>=GMS_SV_ACR)
-                {
+                else if (val>=GMS_SV_ACR) {
                     char acr[GMS_SSSIZE];
                     gdxAcronymName(mGdx, val, acr);
                     return QString(acr);
                 }
-                //TODO(CW): check special values
             }
         }
     }
-    else if (role == Qt::TextAlignmentRole)
-    {
-        if (index.column() >= mDim)
-        {
+    else if (role == Qt::TextAlignmentRole) {
+        if (index.column() >= mDim) {
             if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
                 return QVariant(Qt::AlignRight | Qt::AlignVCenter);
             else
@@ -198,8 +181,6 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
-    QTime t;
-    t.start();
     QMutexLocker locker(mGdxMutex);
     mMinUel.resize(mDim);
     for(int i=0; i<mDim; i++)
@@ -207,15 +188,13 @@ void GdxSymbol::loadData()
     mMaxUel.resize(mDim);
     for(int i=0; i<mDim; i++)
         mMaxUel[i] = INT_MIN;
-    if(!mIsLoaded)
-    {
+    if(!mIsLoaded) {
         beginResetModel();
         endResetModel();
 
         if(mKeys.empty())
             mKeys.resize(mRecordCount*mDim);
-        if(mValues.empty())
-        {
+        if(mValues.empty()) {
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
                 mValues.resize(mRecordCount);
             else  if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
@@ -227,11 +206,11 @@ void GdxSymbol::loadData()
         double* values = new double[GMS_VAL_MAX];
         gdxDataReadRawStart(mGdx, mNr, &dummy);
 
-        for(int i=0; i<mLoadedRecCount; i++) //skip records that has already been loaded
-        {
+        //skip records that has already been loaded
+        for(int i=0; i<mLoadedRecCount; i++) {
             gdxDataReadRaw(mGdx, keys, values, &dummy);
-            if(stopLoading) //TODO(CW): redundant code (see below)
-            {
+            //TODO(CW): redundant code (see below)
+            if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
                 delete[] keys;
@@ -244,13 +223,11 @@ void GdxSymbol::loadData()
         int keyOffset;
         int valOffset;
         int k;
-        for(int i=mLoadedRecCount; i<mRecordCount; i++)
-        {
+        for(int i=mLoadedRecCount; i<mRecordCount; i++) {
             keyOffset = i*mDim;
             gdxDataReadRaw(mGdx, keys, values, &dummy);
 
-            for(int j=0; j<mDim; j++)
-            {
+            for(int j=0; j<mDim; j++) {
                 k = keys[j];
                 mKeys[keyOffset+j] = k;
                 mMinUel[j] = qMin(mMinUel[j], k);
@@ -258,24 +235,18 @@ void GdxSymbol::loadData()
             }
             if (mType == GMS_DT_PAR || mType == GMS_DT_SET)
                 mValues[i] = values[0];
-            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
-            {
+            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
                 valOffset = i*GMS_VAL_MAX;
                 for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
-                {
                     mValues[valOffset+vIdx] =  values[vIdx];
-                }
-
             }
             mLoadedRecCount++;
             mFilterRecCount = mLoadedRecCount;
-            if(i%updateCount == 0)
-            {
+            if(i%updateCount == 0) {
                 beginResetModel();
                 endResetModel();
             }
-            if(stopLoading)
-            {
+            if (stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
                 delete[] keys;
@@ -309,16 +280,13 @@ void GdxSymbol::calcDefaultColumns()
     if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
         return; // symbols other than variable and equation do not have default values
     double defVal;
-    for(int valColIdx=0; valColIdx<GMS_VAL_MAX; valColIdx++)
-    {
+    for(int valColIdx=0; valColIdx<GMS_VAL_MAX; valColIdx++) {
         if (mType == GMS_DT_VAR)
             defVal = gmsDefRecVar[mSubType][valColIdx];
         else if (mType == GMS_DT_EQU)
             defVal = gmsDefRecEqu[mSubType][valColIdx];
-        for(int i=0; i<mRecordCount; i++)
-        {
-            if(defVal != mValues[i*GMS_VAL_MAX + valColIdx])
-            {
+        for(int i=0; i<mRecordCount; i++) {
+            if(defVal != mValues[i*GMS_VAL_MAX + valColIdx]) {
                 mDefaultColumn[valColIdx] = false;
                 break;
             }
@@ -330,21 +298,17 @@ void GdxSymbol::calcDefaultColumns()
 //TODO(CW): refactoring for better performance
 void GdxSymbol::calcUelsInColumn()
 {
-    for(int dim=0; dim<mDim; dim++)
-    {
+    for(int dim=0; dim<mDim; dim++) {
         std::vector<int>* uels = new std::vector<int>();
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
 
         int lastUel = -1;
         int currentUel = - 1;
-        for(int rec=0; rec<mRecordCount; rec++)
-        {
+        for(int rec=0; rec<mRecordCount; rec++) {
             currentUel = mKeys[rec*mDim + dim];
-            if(lastUel != currentUel)
-            {
+            if(lastUel != currentUel) {
                 lastUel = currentUel;
-                if(!sawUel[currentUel])
-                {
+                if(!sawUel[currentUel]) {
                     sawUel[currentUel] = true;
                     uels->push_back(currentUel);
                 }
@@ -429,20 +393,15 @@ std::vector<std::vector<int> *> GdxSymbol::uelsInColumn() const
 
 void GdxSymbol::resetSortFilter()
 {
-    for(int i=0; i<mRecordCount; i++)
-    {
+    for(int i=0; i<mRecordCount; i++) {
         mRecSortIdx[i] = i;
         mRecFilterIdx[i] = i;
     }
-    for(int dim=0; dim<mDim; dim++)
-    {
+    for(int dim=0; dim<mDim; dim++) {
         mFilterActive[dim] = false;
         for(int uel : *mUelsInColumn.at(dim))
-        {
             mShowUelInColumn.at(dim)[uel] = true;
-        }
     }
-
     mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
     layoutChanged();
 }
@@ -476,12 +435,8 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     //if(column == mSortColumn && order == mSortOrder)
     //    return;
 
-    QTime t;
-    t.start();
-
     // sort by key column
-    if(column<mDim)
-    {
+    if(column<mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         int uel = -1;
@@ -503,13 +458,12 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
     //TODO(CW): make string pool sorting index like for uels for increasing sort speed on explanatory text
     //sort set and alias by explanatory text
-    else if(mType == GMS_DT_SET || mType == GMS_DT_ALIAS)
-    {
+    else if (mType == GMS_DT_SET || mType == GMS_DT_ALIAS) {
         QList<QPair<QString, int>> l;
         for(int rec=0; rec<mRecordCount; rec++)
             l.append(QPair<QString, int>(mGdxSymbolTable->getElementText(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
 
-        if(order == Qt::SortOrder::AscendingOrder)
+        if (order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
         else
             std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first > b.first; });
@@ -517,26 +471,20 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         for(int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
-
     // sort parameter, variable and equation by value columns
-    else
-    {
+    else {
         QList<QPair<double, int>> l;
         double val=0;
-        if(mType == GMS_DT_PAR)
-        {
-            for(int rec=0; rec<mRecordCount; rec++)
-            {
+        if (mType == GMS_DT_PAR) {
+            for(int rec=0; rec<mRecordCount; rec++) {
                 val = mValues[mRecSortIdx[rec]];
                 if (val>=GMS_SV_UNDEF)
                     val = specVal2SortVal(val);
                 l.append(QPair<double, int>(val, mRecSortIdx[rec]));
             }
         }
-        else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-        {
-            for(int rec=0; rec<mRecordCount; rec++)
-            {
+        else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU) {
+            for(int rec=0; rec<mRecordCount; rec++) {
                 val = mValues[mRecSortIdx[rec]*GMS_VAL_MAX + (column-mDim)];
                 if (val>=GMS_SV_UNDEF)
                     val = specVal2SortVal(val);
@@ -544,12 +492,12 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             }
         }
 
-        if(order == Qt::SortOrder::AscendingOrder)
+        if (order == Qt::SortOrder::AscendingOrder)
             std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first < b.first; });
         else
             std::stable_sort(l.begin(), l.end(), [](QPair<double, int> a, QPair<double, int> b) { return a.first > b.first; });
 
-        for(int rec=0; rec< mRecordCount; rec++)
+        for (int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
     layoutChanged();
@@ -558,23 +506,17 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
-    QTime t;
-    t.start();
-
-    for(int i=0; i<mRecordCount; i++)
+    for (int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
     int removedCount = 0;
 
     mFilterRecCount = mLoadedRecCount;
-    for(int row=0; row<mRecordCount; row++)
-    {
+    for(int row=0; row<mRecordCount; row++) {
         int recIdx = mRecSortIdx[row];
         mRecFilterIdx[row-removedCount] = row;
-        for(int dim=0; dim<mDim; dim++)
-        {
-            if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) //filter record
-            {
+        for(int dim=0; dim<mDim; dim++) {
+            if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
                 mFilterRecCount--;
                 removedCount++;
                 break;

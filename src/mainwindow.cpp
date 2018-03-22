@@ -109,10 +109,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSettings->loadSettings(this);
-    mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
     mGoto= new GoToWidget(this);
+    mSettings->loadSettings(this);
+    mRecent.path = mSettings->defaultWorkspace();
 
     if (mSettings->lineWrapProcess()) // set wrapping for system log
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);

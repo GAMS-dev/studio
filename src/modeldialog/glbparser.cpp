@@ -33,8 +33,8 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
 {
     glbFile = QDir::toNativeSeparators(glbFile);
     QFile file(glbFile);
-    if(!file.open(QIODevice::ReadOnly))
-        throw Exception(); //TODO(CW): exception message
+    if (!file.open(QIODevice::ReadOnly))
+         EXCEPT() << "GLB file not found";
     QTextStream in(&file);
 
     // create Library object containing library meta data like library name and column names
@@ -45,8 +45,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QStringList splitList;
     QStringList columns;
     QStringList toolTips;
-    for(int i=0; i<nrColumns; i++)
-    {
+    for (int i=0; i<nrColumns; i++) {
         splitList = in.readLine().split("|");
         if(2 == splitList.size()) //we have a tool tip
             toolTips.append(splitList.at(1).trimmed());
@@ -56,7 +55,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
         colOrder.append(splitList.at(0).trimmed().toInt()-1);
         columns.append(splitList.at(1).trimmed());
     }
-    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no sorting since this information should not be part of the glb file
+    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
     std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, glbFile);
 
     // read models
@@ -64,24 +63,20 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QString line;
     QString description;
     line = in.readLine();
-    while(!in.atEnd()) {
-        if(line.startsWith("*$*$*$"))
-        {
+    while (!in.atEnd()) {
+        if (line.startsWith("*$*$*$")) {
             line = in.readLine();
-            if(line.length() == 0) // we have reached the end of the file
+            if (line.length() == 0) // we have reached the end of the file
                 file.close();
-            else // read new model
-            {
+            else { // read new model
                 QStringList files = line.split("=")[1].trimmed().split(",");
                 QStringList values;
                 QString longDescription;
-                for(int i=0; i<nrColumns; i++)
+                for (int i=0; i<nrColumns; i++)
                     values.append(in.readLine().split("=")[1].trimmed());
 
-
                 line = in.readLine();
-                while(!line.startsWith("*$*$*$") && !in.atEnd() )
-                {
+                while (!line.startsWith("*$*$*$") && !in.atEnd()) {
                     longDescription += line + "\n";
                     line = in.readLine();
                 }
@@ -90,9 +85,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
             }
         }
         else
-        {
             line = in.readLine();
-        }
     }
     return libraryItems;
 }
