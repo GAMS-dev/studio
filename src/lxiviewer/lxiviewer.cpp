@@ -56,7 +56,6 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
     connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
     connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
-
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
 
@@ -124,7 +123,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     int lineNr = selectedItem->lineNr();
 
     //jump to first child for virtual nodes
-    if(lineNr == -1) {
+    if (lineNr == -1) {
         if (!ui->lxiTreeView->isExpanded(modelIndex)) {
             modelIndex = modelIndex.child(0,0);
             selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
