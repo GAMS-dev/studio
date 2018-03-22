@@ -130,6 +130,11 @@ pipeline {
                     node('windowsX86') {
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
+			withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
+                            bat '''
+			        signtool sign -v -f ${WIN_CERT_FILE} -p ${WIN_CERT_PASSWD} -tr http://timestamp.comodoca.com/rfc3161 tmp/studio/studio.exe
+			    '''
+			}
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'tmp'
@@ -143,6 +148,12 @@ pipeline {
                     node('windowsX64') {
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
+			withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
+                            bat '''
+			        signtool sign -v -f ${WIN_CERT_FILE} -p ${WIN_CERT_PASSWD} -tr http://timestamp.comodoca.com/rfc3161 tmp/studio/studio.exe
+			    '''
+			}
+
                         script {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'tmp'
