@@ -120,6 +120,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
+    mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
@@ -159,12 +160,15 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
                 FileSystemContext::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
+                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
+                connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
-
 
             if (codecMip == -1)
                 fc->load(encodingMIBs(), true);
@@ -1429,6 +1433,8 @@ void MainWindow::execute(QString commandLineStr)
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->newGamsProcess();
+    if (!process) return;
+
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
@@ -1696,7 +1702,7 @@ void MainWindow::on_actionSearch_triggered()
         mSearchWidget->hide();
     } else {
         QPoint p(0,0);
-        QPoint newP(ui->mainTab->currentWidget()->mapToGlobal(p));
+        QPoint newP(this->mapToGlobal(p));
 
         if (ui->mainTab->currentWidget()) {
             int sbs;
@@ -1705,7 +1711,7 @@ void MainWindow::on_actionSearch_triggered()
             else
                 sbs = 2;
 
-            int offset = (ui->mainTab->currentWidget()->width() - mSearchWidget->width() - sbs);
+            int offset = (this->width() - mSearchWidget->width() - sbs);
             mSearchWidget->move(newP.x() + offset, newP.y());
         }
         mSearchWidget->show();
@@ -1869,27 +1875,41 @@ void MainWindow::on_actionCopy_triggered()
     if (focusWidget() == nullptr)
         return;
 
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (!ae) return;
+    FileContext *fc = mFileRepo.fileContext(mRecent.editor);
+    if (!fc) return;
 
-    if (ae->type() == AbstractEditor::CodeEditor) {
-        CodeEditor *ce = static_cast<CodeEditor*>(ae);
+    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (!ae) return;
 
-        if (ce->blockEdit()) {
-            ce->blockEdit()->selectionToClipboard();
-            return;
+        if (ae->type() == AbstractEditor::CodeEditor) {
+            CodeEditor *ce = static_cast<CodeEditor*>(ae);
+
+            if (ce->blockEdit()) {
+                ce->blockEdit()->selectionToClipboard();
+                return;
+            }
         }
+        ae->copy();
+    } else if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->copyAction();
     }
-    ae->copy();
 }
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    if (focusWidget() == nullptr)
-        return;
-    CodeEditor* ce= static_cast<CodeEditor*>(focusWidget());
-    if (!ce) return;
-    ce->selectAll();
+    FileContext *fc = mFileRepo.fileContext(mRecent.editor);
+    if (!fc || focusWidget() == nullptr) return;
+
+    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+        CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
+        if (!ce) return;
+        ce->selectAll();
+    } else if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->selectAllAction();
+    }
 }
 
 void MainWindow::on_actionCut_triggered()
@@ -1981,8 +2001,8 @@ void MainWindow::on_actionIndent_triggered()
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (ce->isReadOnly()) return;
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
         int col = ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
@@ -1997,8 +2017,8 @@ void MainWindow::on_actionOutdent_triggered()
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (ce->isReadOnly()) return;
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
         int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());

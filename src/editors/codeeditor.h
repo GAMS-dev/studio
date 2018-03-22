@@ -78,6 +78,8 @@ signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
     void requestSyntaxState(int position, int &intState);
+    void searchFindNextPressed();
+    void searchFindPrevPressed();
 
 public slots:
     void clearSelection();
