@@ -156,9 +156,8 @@ pipeline {
                                 echo Setting up environment for VS2017 usage...
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
-                                cd %WORKSPACE%
-				echo %WIN_KEYSTORE_VAR%
-			        signtool sign /v /s ${WIN_KEYSTORE_VAR} /tr http://timestamp.comodoca.com/rfc3161 tmp/studio/studio.exe
+                                cd %WORKSPACE%\\tmp\\studio
+			        signtool sign /v /tr http://timestamp.comodoca.com/rfc3161 studio.exe
 			    '''
 			}
                         script {
