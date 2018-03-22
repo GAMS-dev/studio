@@ -224,6 +224,31 @@ void StudioSettings::setHistorySize(int historySize)
     mHistorySize = historySize;
 }
 
+void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    if(restoreTabs()) {
+        int size = mAppSettings->beginReadArray("openedTabs");
+        for (int i = 0; i < size; i++) {
+            mAppSettings->setArrayIndex(i);
+            QString value = mAppSettings->value("location").toString();
+            if(QFileInfo(value).exists())
+                main->openFile(value);
+        }
+        mAppSettings->endArray();
+    }
+
+    // history
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    main->history()->lastOpenedFiles.clear();
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+}
+
 void StudioSettings::loadSettings(MainWindow *main)
 {
     if (mResetSettings)
@@ -305,16 +330,6 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // save settings directly after loading in order to reset
     if (mResetSettings) saveSettings(main);
-
-    // history
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    main->history()->lastOpenedFiles.clear();
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-
     mAppSettings->endGroup();
 }
 
