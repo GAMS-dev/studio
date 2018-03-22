@@ -964,7 +964,6 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget(mDockOptionView);
     QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
-    commandHLayout->setContentsMargins(4, 4, 4, 4);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -999,7 +998,6 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     commandHLayout->addWidget(mCommandLineOption);
 
-
     QPushButton* helpButton = new QPushButton(this);
     QPixmap helpPixmap(":/img/question");
     QIcon helpButtonIcon(helpPixmap);
@@ -1015,6 +1013,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     sizePolicy.setVerticalStretch(0);
     optionWidget->setSizePolicy(sizePolicy);
+    optionWidget->setFixedHeight(mRunToolButton->sizeHint().height()+10);
     optionWidget->setLayout(commandHLayout);
 
     mOptionSplitter = new QSplitter(mDockOptionView);
@@ -1027,11 +1026,11 @@ void MainWindow::createRunAndCommandLineWidgets()
     mOptionSplitter->addWidget(mOptionEditor);
     mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
     mDockOptionView->setWindowTitle("Option");
+    mOptionSplitter->setStretchFactor(0, 1);
+    mOptionSplitter->setStretchFactor(1, 0);
     mOptionSplitter->widget(1)->hide();
 
     mDockOptionView->setSizePolicy(sizePolicy);
-//    mDockOptionView->setMinimumSize(commandHLayout->sizeHint());
-//    mDockOptionView->resize(commandHLayout->minimumSize());
 
     mDockOptionView->show();
     ui->actionOption_View->setChecked(true);
