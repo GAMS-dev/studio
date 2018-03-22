@@ -980,6 +980,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mRunToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     mRunToolButton->setMenu(runMenu);
     mRunToolButton->setDefaultAction(ui->actionRun);
+    mRunToolButton->setFixedHeight(mCommandLineOption->size().height());
     commandHLayout->addWidget(mRunToolButton);
 
     interruptToolButton = new QToolButton(this);
@@ -992,6 +993,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
     connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
     interruptToolButton->setMenu(interruptMenu);
+    interruptToolButton->setFixedHeight(mCommandLineOption->size().height());
     interruptToolButton->setDefaultAction(interruptAction);
 
     commandHLayout->addWidget(interruptToolButton);
@@ -1003,6 +1005,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     QIcon helpButtonIcon(helpPixmap);
     helpButton->setIcon(helpButtonIcon);
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
+    helpButton->setFixedHeight(mCommandLineOption->size().height());
     commandHLayout->addWidget(helpButton);
 
     showOptionDefintionCheckBox = new QCheckBox(this);
@@ -1013,7 +1016,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     sizePolicy.setVerticalStretch(0);
     optionWidget->setSizePolicy(sizePolicy);
-    optionWidget->setFixedHeight(mRunToolButton->sizeHint().height()+10);
+    optionWidget->setFixedHeight(mCommandLineOption->size().height()+10);
     optionWidget->setLayout(commandHLayout);
 
     mOptionSplitter = new QSplitter(mDockOptionView);
