@@ -134,8 +134,8 @@ pipeline {
                                 echo Setting up environment for VS 2015 usage...
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
                                 call vcvars32.bat
-                                cd %WORKSPACE%
-			        signtool sign -v -f ${WIN_CERT_FILE} -p ${WIN_CERT_PASSWD} -tr http://timestamp.comodoca.com/rfc3161 tmp/studio/studio.exe
+                                cd %WORKSPACE%\\tmp\\studio
+			        signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
 			    '''
 			}
                         script {
@@ -151,13 +151,13 @@ pipeline {
                     node('windowsX64') {
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
-			withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_KEYSTORE_VAR', passwordVariable: 'WIN_CERT_PASSWD')]) {
+			withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
                             bat '''
                                 echo Setting up environment for VS2017 usage...
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
                                 cd %WORKSPACE%\\tmp\\studio
-			        signtool sign /v /tr http://timestamp.comodoca.com/rfc3161 studio.exe
+			        signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
 			    '''
 			}
                         script {
