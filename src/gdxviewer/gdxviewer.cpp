@@ -47,7 +47,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     mGdxMutex = new QMutex();
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg))) {
-        //TODO(CW): raise exception wit proper message
         EXCEPT() << "Could not load GDX library: " << msg;
     }
     init();
@@ -120,12 +119,12 @@ bool GdxViewer::reload()
         bool initSuccess = init();
         if (initSuccess) {
             mHasChanged = false;
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("GDX File Reloaded");
-            msgBox.setText("GDX file has been modified and was reloaded.");
-            msgBox.setStandardButtons(QMessageBox::Ok);
-            msgBox.setIcon(QMessageBox::Information);
-            msgBox.exec();
+            //QMessageBox msgBox;
+            //msgBox.setWindowTitle("GDX File Reloaded");
+            //msgBox.setText("GDX file has been modified and was reloaded.");
+            //msgBox.setStandardButtons(QMessageBox::Ok);
+            //msgBox.setIcon(QMessageBox::Information);
+            //msgBox.exec();
         }
         return initSuccess;
     }
