@@ -35,9 +35,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->setupUi(this);
 
     //create context menu
-    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)", [this]() { copySelectionToClipboard(",");  });
+    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
+    cpComma->setShortcutContext(Qt::WidgetShortcut);
     ui->tableView->addAction(cpComma);
 
     QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
