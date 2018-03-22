@@ -35,6 +35,7 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
     connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
+    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
@@ -67,6 +68,14 @@ void LxiViewer::loadLxiFile()
         else
             ui->splitter->widget(0)->hide();
     }
+}
+
+void LxiViewer::loadLstFile()
+{
+    if (QProcess::NotRunning == mFileContext->parentEntry()->gamsProcessState()) {
+        mFileContext->load(mFileContext->codecMib());
+    }
+
 }
 
 void LxiViewer::jumpToTreeItem()
