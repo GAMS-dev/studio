@@ -17,30 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LXIPARSER_H
-#define LXIPARSER_H
+#ifndef UPDATEDIALOG_H
+#define UPDATEDIALOG_H
 
-#include "lxitreemodel.h"
-#include <QMap>
+#include "c4umcc.h"
+
+#include <QtWidgets>
+
+namespace Ui {
+class UpdateDialog;
+}
 
 namespace gams {
 namespace studio {
-namespace lxiviewer {
 
-class LxiParser
+class UpdateDialog : public QDialog
 {
+    Q_OBJECT
 
 public:
-    static LxiTreeModel* parseFile(QString lxiFile);
+    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    ~UpdateDialog();
 
 private:
-    LxiParser();
-    static QMap<QString, QString> initCaptions();
-    static QMap<QString, QString> mCaptions;
+    void setUpdateInfo();
+    void getMessages(int &messageIndex, char *buffer);
+
+private:
+    Ui::UpdateDialog *ui;
+    c4uHandle_t mC4UHandle;
+    QStringList mMessages;
 };
 
-} // namespace lxiviewer
-} // namespace studio
-} // namespace gams
+}
+}
 
-#endif // LXIPARSER_H
+#endif // UPDATEDIALOG_H

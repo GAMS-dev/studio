@@ -73,6 +73,9 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
 void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
     if (!QFileInfo(filePath).exists()) {
+        filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
+    }
+    if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
     }
     if (!fileGroup)
@@ -435,11 +438,12 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
     return fileContext(index.internalId());
 }
 
-FileContext* FileRepository::fileContext(QWidget* edit)
+FileContext* FileRepository::fileContext(QWidget* edit) const
 {
+    QWidget *parentEdit = edit ? edit->parentWidget() : nullptr;
     for (FileSystemContext *fsc: mContext) {
         FileContext *file = fileContext(fsc->id());
-        if (file && file->hasEditor(edit)) return file;
+        if (file && (file->hasEditor(edit) || file->hasEditor(parentEdit))) return file;
     }
     return nullptr;
 }

@@ -152,7 +152,7 @@ QTextBlock TextMark::textBlock()
 {
     if (!document())
         return QTextBlock();
-    return document()->findBlock(mPosition);
+    return document()->findBlock(qMin(mPosition, document()->characterCount()-1));
 }
 
 QTextCursor TextMark::textCursor()
@@ -160,7 +160,8 @@ QTextCursor TextMark::textCursor()
     if (!document())
         return QTextCursor();
     QTextCursor cursor(document());
-    cursor.setPosition(mPosition);
+    int pos = qMin(mPosition, document()->characterCount()-1);
+    cursor.setPosition(pos);
     return cursor;
 }
 
@@ -176,7 +177,8 @@ void TextMark::move(int delta)
 
     mPosition += delta;
     updateLineCol();
-    if (mMarks && mMarks->fileContext()) mMarks->fileContext()->rehighlightAt(mPosition - delta+1);
+    if (mMarks && mMarks->fileContext())
+        mMarks->fileContext()->rehighlightAt(qMin(mPosition-delta+1, document()->characterCount()-1));
     rehighlight();
 }
 
@@ -184,6 +186,7 @@ void TextMark::updatePos()
 {
     if (document()) {
         QTextBlock block = document()->findBlockByNumber(mLine);
+        if (block.blockNumber() != mLine) block = document()->lastBlock();
         int col = (mColumn>=0 ? mColumn : 0);
         mPosition = block.position() + col;
         if (mSize <= 0) {
@@ -201,7 +204,7 @@ void TextMark::updateLineCol()
 {
     if (document()) {
         QTextCursor cursor(document());
-        cursor.setPosition(mPosition);
+        cursor.setPosition(qMin(mPosition, document()->characterCount()-1));
         mLine = cursor.blockNumber();
         if (mColumn >= 0) mColumn = cursor.positionInBlock();
     }

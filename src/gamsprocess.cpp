@@ -78,7 +78,7 @@ void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
     QStringList args({QDir::toNativeSeparators(mInputFile)});
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1";
+    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0";
     if (!mCommandLineStr.isEmpty()) {
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
         args.append(paramList);
@@ -90,13 +90,17 @@ QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"?", "lo=3", "curdir=" + tempDir});
+    QStringList args({"/??", "lo=3", "curdir=" + tempDir});
     process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();
     }
-    return about;
+    QStringList lines = about.split('\n', QString::SkipEmptyParts, Qt::CaseInsensitive);
+    lines.removeFirst();
+    lines.removeLast();
+    lines.removeLast();
+    return lines.join("\n");
 }
 
 QString GamsProcess::commandLineStr() const

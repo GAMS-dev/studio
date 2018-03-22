@@ -152,7 +152,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         }
         QTextCursor cursor(mDocument);
         cursor.movePosition(QTextCursor::End);
-        if (mConceal) {
+        if (mConceal && !newLine.isNull()) {
             cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
             cursor.removeSelectedText();
         }
@@ -167,19 +167,21 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
             QTextCharFormat fmt;
             cursor.insertText("\n", fmt);
         }
-        int lineNr = mDocument->blockCount()-1;
-        cursor.insertText(newLine+"\n");
-        int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
-        for (LinkData mark: marks) {
-            TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
-            if (mark.textMark) {
-                tm->setRefMark(mark.textMark);
-                if (mark.textMark->fileKind() == FileType::Lst)
-                    mLastLstLink = mark.textMark;
-                mark.textMark->rehighlight();
+        if (!newLine.isNull())  {
+            int lineNr = mDocument->blockCount()-1;
+            cursor.insertText(newLine+"\n");
+            int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
+            for (LinkData mark: marks) {
+                TextMark* tm = generateTextMark(TextMark::link, mCurrentErrorHint.lstLine, lineNr, mark.col, size);
+                if (mark.textMark) {
+                    tm->setRefMark(mark.textMark);
+                    if (mark.textMark->fileKind() == FileType::Lst)
+                        mLastLstLink = mark.textMark;
+                    mark.textMark->rehighlight();
+                }
+                tm->rehighlight();
+                size = -1;
             }
-            tm->rehighlight();
-            size = -1;
         }
 
         int i = 0;
@@ -207,6 +209,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
         return QString();
     }
     if (!mInErrorDescription) {
+        if (line.isEmpty()) return QString("");
         QRegularExpression errRX1("^([\\*\\-]{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+)|FIL:\"([^\"]+)\",(\\d+),(\\d+))");
         // look for the start of an error
         QRegularExpression exp("(\\[|]\\[|])");
@@ -219,7 +222,7 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
             trailingBrace = false;
             QRegularExpressionMatch match = exp.match(line, pos);
             int posEnd = match.hasMatch() ? match.capturedStart() : line.length();
-            if (posEnd <= pos) break;
+            if (posEnd <= pos && posEnd == line.length()) break;
             QString part = line.mid(pos, posEnd-pos);
             bool ok;
             QRegularExpressionMatch errMatch = errRX1.match(part);
@@ -294,7 +297,9 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     state = Outside;
                 }
                 marks << mark;
-            } else {
+            } else if (part.startsWith("TIT")) {
+                // skip this braced entry
+            } else if (!(capturedBraces+part).isEmpty()) {
                 result += capturedBraces+part;
                 trailingBrace = true;
             }

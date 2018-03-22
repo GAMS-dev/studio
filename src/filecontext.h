@@ -56,11 +56,11 @@ public:
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
-    QString codec() const;
+    int codecMib() const;
 
     /// Changes the codec for this file.
     /// \param codec The name of the new codec.
-    void setCodec(const QString& codec);
+    void setCodecMib(int mib);
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -83,9 +83,12 @@ public:
     /// \param filePath new location for file
     void save(QString filePath);
 
+
     /// Loads the file into the current QTextDocument.
-    /// \param codecName The text-codec to use.
-    void load(QString codecName = QString(), bool keepMarks = false);
+    /// \param codecMibs The codec-MIBs to try for loading the file.
+    /// \param keepMarks true, if the TextMarks should be kept.
+    void load(QList<int> codecMibs = QList<int>(), bool keepMarks = false);
+    void load(int codecMib, bool keepMarks = false);
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
@@ -150,7 +153,7 @@ signals:
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
-    void openFileContext(FileContext* fileContext, bool focus = true);
+    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
     void documentClosed();
 
@@ -174,7 +177,7 @@ private:
 
 private:
     FileMetrics mMetrics;
-    QString mCodec = "UTF-8";
+    QTextCodec *mCodec = nullptr;
     FileContext *mLinkFile = nullptr;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
@@ -184,7 +187,7 @@ private:
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
     bool mMarksEnhanced = true;
 
-    static const QStringList mDefaulsCodecs;
+    static const QList<int> mDefaulsCodecs;
 
 };
 

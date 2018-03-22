@@ -5,8 +5,8 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeModel::LxiTreeModel(LxiTreeItem *root, QObject *parent)
-    : mRootItem(root)
+LxiTreeModel::LxiTreeModel(LxiTreeItem *root, QVector<int> lineNrs, QVector<LxiTreeItem*> treeItems, QObject *parent)
+    : QAbstractItemModel(parent), mRootItem(root), mLineNrs(lineNrs), mTreeItems(treeItems)
 {
 
 }
@@ -29,8 +29,11 @@ QModelIndex LxiTreeModel::index(int row, int column, const QModelIndex &parent) 
         parentItem = static_cast<LxiTreeItem*>(parent.internalPointer());
 
     LxiTreeItem *childItem = parentItem->child(row);
-    if (childItem)
-        return createIndex(row, column, childItem);
+    if (childItem) {
+        QModelIndex modelIndex = createIndex(row, column, childItem);
+        childItem->setModelIndex(modelIndex);
+        return modelIndex;
+    }
     else
         return QModelIndex();
 }
@@ -46,7 +49,9 @@ QModelIndex LxiTreeModel::parent(const QModelIndex &index) const
     if (parentItem == mRootItem)
         return QModelIndex();
 
-    return createIndex(parentItem->row(), 0, parentItem);
+    QModelIndex modelIndex = createIndex(parentItem->row(), 0, parentItem);
+    parentItem->setModelIndex(modelIndex);
+    return modelIndex;
 }
 
 int LxiTreeModel::rowCount(const QModelIndex &parent) const
@@ -65,6 +70,7 @@ int LxiTreeModel::rowCount(const QModelIndex &parent) const
 
 int LxiTreeModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 1;
 }
 
@@ -79,6 +85,16 @@ QVariant LxiTreeModel::data(const QModelIndex &index, int role) const
     LxiTreeItem *item = static_cast<LxiTreeItem*>(index.internalPointer());
 
     return item->text();
+}
+
+QVector<int> LxiTreeModel::lineNrs() const
+{
+    return mLineNrs;
+}
+
+QVector<LxiTreeItem *> LxiTreeModel::treeItems() const
+{
+    return mTreeItems;
 }
 
 } // namespace lxiviewer
