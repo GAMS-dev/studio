@@ -153,11 +153,11 @@ pipeline {
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
 			withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_KEYSTORE_VAR', passwordVariable: 'WIN_CERT_PASSWD')]) {
                             bat '''
-                                @echo off
                                 echo Setting up environment for VS2017 usage...
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
-                                cd %WORKSPACE%\
+                                cd %WORKSPACE%
+				echo ${WIN_KEYSTORE_VAR}
 			        signtool sign /v /s ${WIN_KEYSTORE_VAR} /p ${WIN_CERT_PASSWD} /tr http://timestamp.comodoca.com/rfc3161 tmp/studio/studio.exe
 			    '''
 			}
