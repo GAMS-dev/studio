@@ -52,14 +52,12 @@ GdxSymbolTable::~GdxSymbolTable()
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole)
-    {
+    if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal)
             if (section < mHeaderText.size())
                 return mHeaderText.at(section);
     }
-    else if (role == Qt::ToolTipRole)
-    {
+    else if (role == Qt::ToolTipRole) {
         QString description("<html><head/><body>");
         description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the column in alphanumerical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p></p>";
         description += "</body></html>";
@@ -86,33 +84,29 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    if (role == Qt::DisplayRole)
-    {
+    if (role == Qt::DisplayRole) {
         GdxSymbol* symbol = mGdxSymbols.at(index.row());
-        switch(index.column())
-        {
-        case 0: return symbol->nr(); break;
-        case 1: return symbol->name(); break;
-        case 2: return typeAsString(symbol->type()); break;
-        case 3: return symbol->dim(); break;
-        case 4: return symbol->recordCount(); break;
-        case 5: return symbol->isLoaded(); break;
-        case 6: return symbol->explText(); break;
+        switch(index.column()) {
+            case 0: return symbol->nr(); break;
+            case 1: return symbol->name(); break;
+            case 2: return typeAsString(symbol->type()); break;
+            case 3: return symbol->dim(); break;
+            case 4: return symbol->recordCount(); break;
+            case 5: return symbol->isLoaded(); break;
+            case 6: return symbol->explText(); break;
         }
     }
-    else if (role == Qt::TextAlignmentRole)
-    {
+    else if (role == Qt::TextAlignmentRole) {
         Qt::AlignmentFlag aFlag;
-        switch(index.column())
-        {
-        case 0: aFlag = Qt::AlignRight; break;
-        case 1: aFlag = Qt::AlignLeft; break;
-        case 2: aFlag = Qt::AlignLeft; break;
-        case 3: aFlag = Qt::AlignRight; break;
-        case 4: aFlag = Qt::AlignRight; break;
-        case 5: aFlag = Qt::AlignLeft; break;
-        case 6: aFlag = Qt::AlignLeft; break;
-        default: aFlag = Qt::AlignLeft; break;
+        switch(index.column()) {
+            case 0: aFlag = Qt::AlignRight; break;
+            case 1: aFlag = Qt::AlignLeft; break;
+            case 2: aFlag = Qt::AlignLeft; break;
+            case 3: aFlag = Qt::AlignRight; break;
+            case 4: aFlag = Qt::AlignRight; break;
+            case 5: aFlag = Qt::AlignLeft; break;
+            case 6: aFlag = Qt::AlignLeft; break;
+            default: aFlag = Qt::AlignLeft; break;
         }
         return QVariant(aFlag | Qt::AlignVCenter);
     }
@@ -137,8 +131,7 @@ void GdxSymbolTable::createSortIndex()
 
     mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
-    for(QPair<QString, int> p : l)
-    {
+    for (QPair<QString, int> p : l) {
         mLabelCompIdx[p.second] = idx;
         idx++;
     }
@@ -166,8 +159,7 @@ void GdxSymbolTable::loadUel2Label()
 {
     char label[GMS_UEL_IDENT_SIZE];
     int map;
-    for(int i=0; i<=mUelCount; i++)
-    {
+    for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
         mUel2Label.append(QString(label));
     }
@@ -180,8 +172,7 @@ void GdxSymbolTable::loadStringPool()
     int node;
     char text[GMS_SSSIZE];
 
-    while(gdxGetElemText(mGdx, strNr, text, &node))
-    {
+    while (gdxGetElemText(mGdx, strNr, text, &node)) {
         mStrPool.append(QString(text));
         strNr++;
     }
@@ -194,7 +185,7 @@ void GdxSymbolTable::reportIoError(int errNr, QString message)
 
 std::vector<int> GdxSymbolTable::labelCompIdx()
 {
-    if(!mIsSortIndexCreated) {
+    if (!mIsSortIndexCreated) {
         this->createSortIndex();
         mIsSortIndexCreated = true;
     }
@@ -219,8 +210,7 @@ QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
 
 QString GdxSymbolTable::typeAsString(int type) const
 {
-    switch(type)
-    {
+    switch(type) {
         case GMS_DT_SET: return "Set"; break;
         case GMS_DT_PAR: return "Parameter"; break;
         case GMS_DT_VAR: return "Variable"; break;
