@@ -5,7 +5,7 @@
 #include "gamspaths.h"
 #include "checkforupdatewrapper.h"
 
-#include <cstring>
+#include <QString>
 
 namespace gams {
 namespace studio {
