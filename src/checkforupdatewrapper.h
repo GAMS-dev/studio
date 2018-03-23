@@ -51,8 +51,18 @@ public:
     ///
     bool isValid() const;
 
+    ///
+    /// \brief Get c4u library messages.
+    /// \return c4u library messages as one string,
+    ///         which is joined by <c>"\\n"</c>.
+    ///
     QString message() const;
 
+    ///
+    /// \brief Check for GAMS Sutdio and distribution updates.
+    /// \return The update check messages.
+    /// \remark This function connects to <c>gams.com</c>.
+    ///
     QString checkForUpdate();
 
     ///
@@ -70,18 +80,21 @@ public:
     ///
     /// \brief Get latest GAMS distribution version as integer.
     /// \return Latest version integer, like <c>2510</c>.
+    /// \remark This function connects to <c>gams.com</c>.
     ///
     int lastDistribVersion();
 
     ///
     /// \brief Get latest GAMS distribution version as short string.
     /// \return Short version string, like <c>"25.1"</c> (MAJOR.MINOR).
+    /// \remark This function connects to <c>gams.com</c>.
     ///
     QString lastDistribVersionShort();
 
     ///
     /// \brief Check if the used GAMS distribution is the latest one.
     /// \return <c>true</c> if it is the latest GAMS distribution; otherwise <c>false</c>.
+    /// \remark This function connects to <c>gams.com</c>.
     ///
     bool distribIsLatest();
 
