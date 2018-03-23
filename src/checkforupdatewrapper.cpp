@@ -66,10 +66,9 @@ QString CheckForUpdateWrapper::checkForUpdate()
         return QString();
 
     char buffer[GMS_SSSIZE];
-    c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
-    if (!c4uIsValid(mC4UHandle)) {
-        c4uCreateMsg(mC4UHandle);
-    }
+    c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(),
+                GAMSPaths::systemDir().append("/gamslice.txt").toLatin1(), false);
+    c4uCreateMsg(mC4UHandle);
 
     int messageIndex=0;
     mMessages << "GAMS Distribution";
