@@ -32,8 +32,8 @@ class SyntaxData
 {
     SyntaxData() {}
 public:
-    static QList<QStringList> directives() {
-        QList<QStringList> list = {
+    static QList<QPair<QString, QString>> directives() {
+        QList<QPair<QString, QString>> list = {
             {"onMargin", "Margin marking on"},
             {"offMargin", "Margin marking off"},
             {"minCol", "Set left data margin"},
@@ -237,126 +237,126 @@ public:
         return list;
     }
 
-    static QList<QStringList> reserved() {
-        QList<QStringList> list = {
-            {"ABORT", ""},
-            {"ACRONYM", ""},
-            {"ACRONYMS", ""},
-            {"ALIAS", ""},
-            {"ALL", ""},
-            {"AND", ""},
-            {"BREAK", ""},
-            {"CARD", ""},
-            {"CONTINUE", ""},
-            {"DISPLAY", ""},
-            {"DO", ""},
-            {"ELSE", ""},
-            {"ELSEIF", ""},
-            {"ENDFOR", ""},
-            {"ENDIF", ""},
-            {"ENDLOOP", ""},
-            {"ENDWHILE", ""},
-            {"EPS", ""},
-            {"EXECUTE", ""},
-            {"EXECUTE_LOAD", ""},
-            {"EXECUTE_LOADDC", ""},
-            {"EXECUTE_LOADHANDLE", ""},
-            {"EXECUTE_LOADPOINT", ""},
-            {"EXECUTE_UNLOAD", ""},
-            {"EXECUTE_UNLOADDI", ""},
-            {"EXECUTE_UNLOADIDX", ""},
-            {"FOR", ""},
-            {"FUNCTION", ""},
-            {"FUNCTIONS", ""},
-            {"IF", ""},
-            {"INF", ""},
-            {"LOGIC", ""},
-            {"LOOP", ""},
-            {"NA", ""},
-            {"NO", ""},
-            {"NOT", ""},
-            {"OPTION", ""},
-            {"OPTIONS", ""},
-            {"ORD", ""},
-            {"OR", ""},
-            {"ORDASCII", ""},
-            {"ORDEBCDIC", ""},
-            {"PROCEDURE", ""},
-            {"PROCEDURES", ""},
-            {"PROD", ""},
-            {"PUT", ""},
-            {"PUT_UTILITIES", ""},
-            {"PUT_UTILITY", ""},
-            {"PUTCLEAR", ""},
-            {"PUTCLOSE", ""},
-            {"PUTFMCL", ""},
-            {"PUTHD", ""},
-            {"PUTHEADER", ""},
-            {"PUTPAGE", ""},
-            {"PUTTITLE", ""},
-            {"PUTTL", ""},
-            {"REPEAT", ""},
-            {"SMAX", ""},
-            {"SMIN", ""},
-            {"SOLVE", ""},
-            {"SUM", ""},
-            {"SYSTEM", ""},
-            {"THEN", ""},
-            {"UNDF", ""},
-            {"UNTIL", ""},
-            {"WHILE", ""},
-            {"XOR", ""},
-            {"YES", ""},
+    static QList<QPair<QString, QString>> reserved() {
+        QList<QPair<QString, QString>> list = {
+            {"abort", ""},
+            {"Acronym", ""},
+            {"Acronyms", ""},
+            {"Alias", ""},
+            {"all", ""},
+            {"and", ""},
+            {"break", ""},
+            {"card", ""},
+            {"continue", ""},
+            {"display", ""},
+            {"do", ""},
+            {"else", ""},
+            {"elseif", ""},
+            {"endfor", ""},
+            {"endif", ""},
+            {"endloop", ""},
+            {"endwhile", ""},
+            {"eps", ""},
+            {"execute", ""},
+            {"execute_load", ""},
+            {"execute_loaddc", ""},
+            {"execute_loadhandle", ""},
+            {"execute_loadpoint", ""},
+            {"execute_unload", ""},
+            {"execute_unloaddi", ""},
+            {"execute_unloadidx", ""},
+            {"for", ""},
+            {"function", ""},
+            {"functions", ""},
+            {"if", ""},
+            {"inf", ""},
+            {"logic", ""},
+            {"loop", ""},
+            {"na", ""},
+            {"no", ""},
+            {"not", ""},
+            {"option", ""},
+            {"options", ""},
+            {"ord", ""},
+            {"or", ""},
+            {"ordascii", ""},
+            {"ordebcdic", ""},
+            {"procedure", ""},
+            {"procedures", ""},
+            {"prod", ""},
+            {"put", ""},
+            {"put_utilities", ""},
+            {"put_utility", ""},
+            {"putclear", ""},
+            {"putclose", ""},
+            {"putfmcl", ""},
+            {"puthd", ""},
+            {"putheader", ""},
+            {"putpage", ""},
+            {"puttitle", ""},
+            {"puttl", ""},
+            {"repeat", ""},
+            {"smax", ""},
+            {"smin", ""},
+            {"solve", ""},
+            {"sum", ""},
+            {"system", ""},
+            {"then", ""},
+            {"undf", ""},
+            {"until", ""},
+            {"while", ""},
+            {"xor", ""},
+            {"yes", ""},
         };
         return list;
     }
 
-    static QList<QStringList> declaration4Set() {
-        QList<QStringList> list = {
-            {"SINGLETON", ""},
+    static QList<QPair<QString, QString>> declaration4Set() {
+        QList<QPair<QString, QString>> list = {
+            {"singleton", ""},
         };
         return list;
     }
 
-    static QList<QStringList> declaration4Var() {
-        QList<QStringList> list = {
-            {"BINARY", ""},
-            {"FREE", ""},
-            {"INTEGER", ""},
-            {"NEGATIVE", ""},
-            {"NONNEGATIVE", ""},
-            {"POSITIVE", ""},
-            {"SEMICONT", ""},
-            {"SEMIINT", ""},
-            {"SOS1", ""},
-            {"SOS2", ""},
+    static QList<QPair<QString, QString>> declaration4Var() {
+        QList<QPair<QString, QString>> list = {
+            {"binary", ""},
+            {"free", ""},
+            {"integer", ""},
+            {"negative", ""},
+            {"nonnegative", ""},
+            {"positive", ""},
+            {"semicont", ""},
+            {"semiint", ""},
+            {"sos1", ""},
+            {"sos2", ""},
         };
         return list;
     }
 
-    static QList<QStringList> declaration() {
-        QList<QStringList> list = {
-            {"EQUATION", ""},
-            {"EQUATIONS", ""},
-            {"FILE", ""},
-            {"FILES", ""},
-            {"MODEL", ""},
-            {"MODELS", ""},
-            {"PARAMETER", ""},
-            {"PARAMETERS", ""},
-            {"SCALAR", ""},
-            {"SCALARS", ""},
-            {"SET", ""},
-            {"SETS", ""},
-            {"VARIABLE", ""},
-            {"VARIABLES", ""},
+    static QList<QPair<QString, QString>> declaration() {
+        QList<QPair<QString, QString>> list = {
+            {"Equation", ""},
+            {"Equations", ""},
+            {"File", ""},
+            {"Files", ""},
+            {"Model", ""},
+            {"Models", ""},
+            {"Parameter", ""},
+            {"Parameters", ""},
+            {"Scalar", ""},
+            {"Scalars", ""},
+            {"Set", ""},
+            {"Sets", ""},
+            {"Variable", ""},
+            {"Variables", ""},
         };
         return list;
     }
 
-    static QList<QStringList> declarationTable() {
-        QList<QStringList> list = {
-            {"TABLE", ""}
+    static QList<QPair<QString, QString>> declarationTable() {
+        QList<QPair<QString, QString>> list = {
+            {"Table", ""},
         };
         return list;
     }

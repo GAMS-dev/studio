@@ -27,10 +27,12 @@ namespace studio {
 
 class SyntaxIdentifier : public SyntaxAbstract
 {
+    SyntaxState mState;
 public:
-    SyntaxIdentifier();
-    inline SyntaxState state() override { return SyntaxState::Identifier; }
+    SyntaxIdentifier(SyntaxState state);
+    inline SyntaxState state() override { return mState; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index) override;
 };
 
 } // namespace studio

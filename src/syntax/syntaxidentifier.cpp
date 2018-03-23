@@ -18,12 +18,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "syntaxidentifier.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-SyntaxIdentifier::SyntaxIdentifier()
+SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : mState(state)
 {
+    if (state == SyntaxState::Identifier) {
+        mSubStates << SyntaxState::IdentifierDescription << SyntaxState::IdentifierAssignment << SyntaxState::Directive
+                   << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+
+    } else if (state == SyntaxState::IdentifierTable) {
+        mSubStates << SyntaxState::IdentifierTableDescription << SyntaxState::IdentifierTableAssignment
+                   << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
+                   << SyntaxState::CommentInline;
+    } else {
+        FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration: " << syntaxStateName(state);
+    }
 //    mSubStates << SyntaxState::
 }
 
@@ -33,7 +45,17 @@ SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, 
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    return SyntaxBlock();
+    int end = line.indexOf(';', start);
+    if (end >= 0)
+        return SyntaxBlock(this, start, end, SyntaxStateShift::out);
+    else
+        return SyntaxBlock(this, start, line.length(), SyntaxStateShift::shift);
+}
+
+SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index)
+{
+    Q_UNUSED(index)
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
 }
 
 } // namespace studio

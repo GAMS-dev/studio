@@ -21,7 +21,6 @@
 #define SYNTAXDECLARATION_H
 
 #include "syntaxformats.h"
-#include <QtCore>
 
 namespace gams {
 namespace studio {
@@ -47,15 +46,7 @@ private:
 class DictList
 {
 public:
-    DictList(QStringList list) {
-        list.sort(Qt::CaseInsensitive);
-        QString last;
-        for (QString s: list)  {
-            mEntries << new DictEntry(s);
-            mEqualStart << equalStart(last,s);
-            last = s;
-        }
-    }
+    DictList(QList<QPair<QString, QString>> list);
     virtual ~DictList() { while (!mEntries.isEmpty()) delete mEntries.takeFirst(); }
     inline int equalToPrevious(int i) const { return mEqualStart.at(i); }
     inline const DictEntry &at(int i) const { return *mEntries.at(i); }
@@ -72,25 +63,46 @@ private:
 
 
 /// \brief Defines the syntax for a declaration.
-class SyntaxDeclaration: public SyntaxAbstract
+class SyntaxKeywordBase: public SyntaxAbstract
 {
+    const SyntaxState mState;
 public:
-    SyntaxDeclaration(SyntaxState state);
-    ~SyntaxDeclaration();
+    ~SyntaxKeywordBase();
+    SyntaxKeywordBase(SyntaxState state) : mState(state) {}
+    SyntaxBlock validTail(const QString &line, int index) override;
+
+protected:
     inline SyntaxState state() override { return mState; }
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    int findEnd(SyntaxState state, const QString& line, int index);
+    QHash<SyntaxState, DictList*> mKeywords;
 
 private:
     inline QStringList swapStringCase(QStringList list);
-//    inline bool isWhitechar(const QString& line, int index);
-    int findEnd(SyntaxState state, const QString& line, int index);
-
-private:
-    const SyntaxState mState;
-    QRegularExpression mRex;
-    QHash<SyntaxState, DictList*> mKeywords;
-
 };
+
+class SyntaxDeclaration: public SyntaxKeywordBase
+{
+public:
+    SyntaxDeclaration();
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index);
+};
+
+class SyntaxPreDeclaration: public SyntaxKeywordBase
+{
+public:
+    SyntaxPreDeclaration(SyntaxState state);
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index);
+};
+
+
+class SyntaxDeclarationTable: public SyntaxKeywordBase
+{
+public:
+    SyntaxDeclarationTable();
+    inline SyntaxState state() override { return SyntaxState::DeclarationTable; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+};
+
 
 constexpr inline uint qHash(SyntaxState key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 

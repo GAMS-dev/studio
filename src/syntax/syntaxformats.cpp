@@ -93,12 +93,20 @@ SyntaxStandard::SyntaxStandard()
 
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
 {
+    static QVector<SyntaxState> invalidEntries {SyntaxState::Declaration, SyntaxState::DeclarationSetType,
+                SyntaxState::DeclarationTable, SyntaxState::DeclarationVariableType};
     Q_UNUSED(entryState);
     int i = line.indexOf(';', index);
+    bool error = invalidEntries.contains(entryState);
     if (i>-1)
-        return SyntaxBlock(this, index, i+1);
+        return SyntaxBlock(this, index, i+1, error);
     else
-        return SyntaxBlock(this, index, line.length());
+        return SyntaxBlock(this, index, line.length(), error);
+}
+
+SyntaxBlock SyntaxStandard::validTail(const QString &line, int index)
+{
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
 }
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar)
@@ -106,10 +114,10 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar)
     mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
     // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
-    QList<QStringList> data = SyntaxData::directives();
-    for (const QStringList &list: data) {
-        mDirectives << list.first();
-        mDescription << list.last();
+    QList<QPair<QString, QString>> data = SyntaxData::directives();
+    for (const QPair<QString, QString> &list: data) {
+        mDirectives << list.first;
+        mDescription << list.second;
     }
     // offtext is checked separately, so remove it here
     int i = mDirectives.indexOf(QRegExp("offText", Qt::CaseInsensitive));
@@ -126,11 +134,11 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar)
 SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, int index)
 {
     QRegularExpressionMatch match = mRex.match(line, index);
-    if (!match.hasMatch()) return SyntaxBlock();
+    if (!match.hasMatch()) return SyntaxBlock(this);
     if (entryState == SyntaxState::CommentBlock) {
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
-        return SyntaxBlock();
+        return SyntaxBlock(this);
     }
     SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
@@ -138,6 +146,13 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     } else {
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);
     }
+}
+
+SyntaxBlock SyntaxDirective::validTail(const QString &line, int index)
+{
+    int end = index;
+    while (isWhitechar(line, end)) end++;
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
 
@@ -153,6 +168,11 @@ SyntaxBlock SyntaxDirectiveBody::find(SyntaxState entryState, const QString& lin
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
 }
 
+SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index)
+{
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+}
+
 
 SyntaxCommentLine::SyntaxCommentLine(QChar commentChar): mCommentChar(commentChar)
 { }
@@ -163,6 +183,11 @@ SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line,
     if (entryState == SyntaxState::CommentLine || (index==0 && line.startsWith(mCommentChar)))
         return SyntaxBlock(this, index, line.length(), false, SyntaxStateShift::skip);
     return SyntaxBlock();
+}
+
+SyntaxBlock SyntaxCommentLine::validTail(const QString &line, int index)
+{
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
 }
 
 
@@ -177,13 +202,23 @@ SyntaxBlock SyntaxCommentBlock::find(SyntaxState entryState, const QString& line
     return SyntaxBlock(this, index, line.length());
 }
 
-SyntaxBlock SyntaxError::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index)
 {
-    // This state won't be 'found'. It exists to mark the error properly and to initialize the SyntaxBlock
-    Q_UNUSED(entryState)
-    Q_UNUSED(line)
-    return SyntaxBlock(this, index, index, SyntaxStateShift::reset, true);
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
 }
+
+//SyntaxBlock SyntaxError::find(SyntaxState entryState, const QString &line, int index)
+//{
+//    // This state won't be 'found'. It exists to mark the error properly and to initialize the SyntaxBlock
+//    Q_UNUSED(entryState)
+//    Q_UNUSED(line)
+//    return SyntaxBlock(this, index, index, SyntaxStateShift::reset, true);
+//}
+
+//int SyntaxError::lastValid(const QString &line, int index)
+//{
+
+//}
 
 
 } // namespace studio
