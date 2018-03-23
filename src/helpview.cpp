@@ -38,16 +38,13 @@ HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
     CheckForUpdateWrapper c4uWrapper;
-    mThisRelease = c4uWrapper.currentDistribVersion();
-    mLastRelease = c4uWrapper.lastDistribVersion();
-    // TODO remove this line when release!!!
-    mThisRelease = 2502;
+    mThisRelease = c4uWrapper.currentDistribVersionShort();
+    mLastRelease = c4uWrapper.lastDistribVersionShort();
 
     if (c4uWrapper.distribIsLatest())
         onlineStartPageUrl = QUrl(LATEST_ONLINE_HELP_URL);
     else
-        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1.%2")
-                              .arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10)) );
+        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1").arg(mThisRelease) );
 
     QDir dir = QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER);
     baseLocation = QDir(GAMSPaths::systemDir()).absolutePath();
@@ -135,9 +132,8 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+version+"/", this);
-    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+version+"/");
+    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+mThisRelease+"/", this);
+    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
     actionOnlineHelp->setCheckable(true);
     connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
     helpMenu->addAction(actionOnlineHelp);
@@ -288,8 +284,7 @@ void HelpView::on_loadFinished(bool ok)
     actionOnlineHelp->setChecked( false );
     if (ok) {
        if ( mHelpView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
-           QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-           if (mHelpView->url().path().contains(version))
+           if (mHelpView->url().path().contains(mThisRelease))
                actionOnlineHelp->setChecked( true );
            else if (mHelpView->url().path().contains("latest") && (mThisRelease == mLastRelease))
                actionOnlineHelp->setChecked( true );
@@ -429,7 +424,7 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
 
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 {
-    QString downloadPage = QString("https://www.gams.com/%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
+    QString downloadPage = QString("https://www.gams.com/%1").arg(mThisRelease);
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
     htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";

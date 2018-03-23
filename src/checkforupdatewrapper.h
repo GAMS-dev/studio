@@ -20,21 +20,35 @@
 #ifndef CHECKFORUPDATEWRAPPER_H
 #define CHECKFORUPDATEWRAPPER_H
 
-#include "c4umcc.h"
-
 #include <QStringList>
+
+struct c4uRec;
+typedef struct c4uRec *c4uHandle_t;
 
 namespace gams {
 namespace studio {
 
-// TODO find other c4u calls
-
 class CheckForUpdateWrapper
 {
 public:
+    ///
+    /// \brief CheckForUpdateWrapper.
+    /// \remark Loads the c4u library.
+    ///
     CheckForUpdateWrapper();
+
+    ///
+    /// \brief CheckForUpdateWrapper.
+    /// \remark Frees the c4u library.
+    ///
     ~CheckForUpdateWrapper();
 
+    ///
+    /// \brief Checks if the wrapper state is valid.
+    /// \return <c>true</c> if the c4u library has been sucessfully
+    ///         loaded and the libary version matches the required
+    ///         version; otherwise <c>false</c>.
+    ///
     bool isValid() const;
 
     QString message() const;

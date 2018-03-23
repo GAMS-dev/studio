@@ -19,6 +19,7 @@
  */
 #include "checkforupdatewrapper.h"
 #include "gclgms.h"
+#include "c4umcc.h"
 #include "gamspaths.h"
 #include "exception.h"
 
