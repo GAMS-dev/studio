@@ -252,13 +252,13 @@ void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
 
 void MainWindow::checkOptionDefinition(bool checked)
 {
-    showOptionDefintionCheckBox->setChecked(checked);
+    mShowOptionDefintionCheckBox->setChecked(checked);
     toggleOptionDefinition(checked);
 }
 
 bool MainWindow::isOptionDefinitionChecked()
 {
-    return showOptionDefintionCheckBox->isChecked();
+    return mShowOptionDefintionCheckBox->isChecked();
 }
 
 CommandLineHistory *MainWindow::commandLineHistory()
@@ -436,12 +436,12 @@ void MainWindow::toggleOptionDefinition(bool checked)
 {
     if (checked) {
         mCommandLineOption->lineEdit()->setEnabled( false );
-        mOptionSplitter->widget(1)->show();
+        mOptionEditor->show();
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
-        mOptionSplitter->widget(1)->hide();
-        mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
-        this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
+        mOptionEditor->hide();
+        mDockOptionView->widget()->resize( mCommandWidget->size() );
+        this->resizeDocks({mDockOptionView}, {mCommandWidget->size().height()}, Qt::Vertical);
     }
 }
 
@@ -961,9 +961,14 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView = new QDockWidget(this);
     mDockOptionView->setObjectName(QStringLiteral("mDockOptionView"));
     mDockOptionView->setEnabled(true);
+    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+    mDockOptionView->setWindowTitle("Option");
+    mDockOptionView->setFloating(false);
 
-    QWidget* optionWidget = new QWidget(mDockOptionView);
-    QHBoxLayout* commandHLayout = new QHBoxLayout(optionWidget);
+    QWidget* optionWidget = new QWidget;
+    QVBoxLayout* widgetVLayout = new QVBoxLayout;
+
+    QHBoxLayout* commandHLayout = new QHBoxLayout;
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -980,7 +985,10 @@ void MainWindow::createRunAndCommandLineWidgets()
     mRunToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     mRunToolButton->setMenu(runMenu);
     mRunToolButton->setDefaultAction(ui->actionRun);
-    mRunToolButton->setFixedHeight(mCommandLineOption->size().height());
+    QSizePolicy buttonSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    buttonSizePolicy.setVerticalStretch(0);
+    mRunToolButton->setSizePolicy(buttonSizePolicy);
+
     commandHLayout->addWidget(mRunToolButton);
 
     interruptToolButton = new QToolButton(this);
@@ -993,8 +1001,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
     connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
     interruptToolButton->setMenu(interruptMenu);
-    interruptToolButton->setFixedHeight(mCommandLineOption->size().height());
     interruptToolButton->setDefaultAction(interruptAction);
+    interruptToolButton->setSizePolicy(buttonSizePolicy);
 
     commandHLayout->addWidget(interruptToolButton);
 
@@ -1005,47 +1013,42 @@ void MainWindow::createRunAndCommandLineWidgets()
     QIcon helpButtonIcon(helpPixmap);
     helpButton->setIcon(helpButtonIcon);
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
-    helpButton->setFixedHeight(mCommandLineOption->size().height());
+    helpButton->setSizePolicy(buttonSizePolicy);
     commandHLayout->addWidget(helpButton);
 
-    showOptionDefintionCheckBox = new QCheckBox(this);
-    showOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
-    showOptionDefintionCheckBox->setEnabled(true);
-    showOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
-    commandHLayout->addWidget(showOptionDefintionCheckBox);
-    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+    mShowOptionDefintionCheckBox = new QCheckBox(this);
+    mShowOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
+    mShowOptionDefintionCheckBox->setEnabled(true);
+    mShowOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
+    mShowOptionDefintionCheckBox->setSizePolicy(buttonSizePolicy);
+    commandHLayout->addWidget(mShowOptionDefintionCheckBox);
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     sizePolicy.setVerticalStretch(0);
     optionWidget->setSizePolicy(sizePolicy);
-    optionWidget->setFixedHeight(mCommandLineOption->size().height()+10);
-    optionWidget->setLayout(commandHLayout);
-
-    mOptionSplitter = new QSplitter(mDockOptionView);
-    sizePolicy.setHeightForWidth(mOptionSplitter->sizePolicy().hasHeightForWidth());
-    mOptionSplitter->setSizePolicy(sizePolicy);
-    mOptionSplitter->setOrientation(Qt::Vertical);
-    mOptionSplitter->addWidget(optionWidget);
 
     mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer, mDockOptionView);
-    mOptionSplitter->addWidget(mOptionEditor);
-    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    mDockOptionView->setWindowTitle("Option");
-    mOptionSplitter->setStretchFactor(0, 1);
-    mOptionSplitter->setStretchFactor(1, 0);
-    mOptionSplitter->widget(1)->hide();
+    mOptionEditor->hide();
 
-    mDockOptionView->setSizePolicy(sizePolicy);
+    mCommandWidget = new QWidget;
+    mCommandWidget->setLayout( commandHLayout );
+    QSizePolicy commandSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    commandSizePolicy.setVerticalStretch(0);
+    mCommandWidget->setSizePolicy(commandSizePolicy);
+
+    widgetVLayout->addWidget( mCommandWidget );
+    widgetVLayout->addWidget( mOptionEditor );
+    optionWidget->setLayout( widgetVLayout );
+
+    mDockOptionView->setWidget( optionWidget );
 
     mDockOptionView->show();
     ui->actionOption_View->setChecked(true);
 
-    mDockOptionView->setWidget( mOptionSplitter );
     this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
-    mDockOptionView->setFloating(false);
+    mDockOptionView->widget()->resize( mCommandWidget->size() );
+    this->resizeDocks({mDockOptionView}, {mCommandWidget->size().height()}, Qt::Vertical);
 
-    mDockOptionView->widget()->resize( mOptionSplitter->widget(0)->sizeHint() );
-    this->resizeDocks({mDockOptionView}, {mOptionSplitter->widget(0)->sizeHint().height()}, Qt::Vertical);
-
-    connect(showOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
+    connect(mShowOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
 }
 

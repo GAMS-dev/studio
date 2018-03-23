@@ -247,8 +247,8 @@ private:
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
-    QSplitter* mOptionSplitter;
-    QCheckBox* showOptionDefintionCheckBox;
+    QWidget* mCommandWidget;
+    QCheckBox* mShowOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
 
