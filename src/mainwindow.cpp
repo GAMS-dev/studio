@@ -45,6 +45,7 @@
 #include "editors/selectencodings.h"
 #include "tool.h"
 #include "updatedialog.h"
+#include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
@@ -838,8 +839,7 @@ void MainWindow::on_actionAbout_triggered()
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
     about += "<br/><br/><b><big>GAMS Distribution ";
-    char version[16];
-    about += gams::studio::Version::distribVersion(version);
+    about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";

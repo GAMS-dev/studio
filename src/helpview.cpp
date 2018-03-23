@@ -37,7 +37,6 @@ const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    // TODO(AF) Do not throw an exception... probably use a message box as a temporary solution.
     CheckForUpdateWrapper c4uWrapper;
     mThisRelease = c4uWrapper.currentDistribVersion();
     mLastRelease = c4uWrapper.lastDistribVersion();

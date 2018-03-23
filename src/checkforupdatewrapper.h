@@ -36,11 +36,10 @@ public:
     ~CheckForUpdateWrapper();
 
     bool isValid() const;
+
     QString message() const;
 
     QString checkForUpdate();
-
-    char* distribVersion(char *version, size_t length);
 
     int currentDistribVersion();
 
@@ -48,7 +47,24 @@ public:
 
     bool distribIsLatest();
 
+    ///
+    /// \brief Get GAMS Studio version.
+    /// \return GAMS Studio version as <c>int</c>.
+    /// \remark Used to check for updates.
+    ///
+    static int studioVersion();
+
+    ///
+    /// \brief Get GAMS Distribution version number.
+    /// \param version Version string buffer.
+    /// \param length Length of the version string buffer.
+    /// \return The GAMS Distribution version number as string. The
+    ///         same as the <c>version</c> argument.
+    ///
+    static QString distribVersionString();
+
 private:
+    char* distribVersionString(char *version, size_t length);
     void getMessages(int &messageIndex, char *buffer);
 
 private:

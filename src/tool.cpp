@@ -10,19 +10,6 @@
 namespace gams {
 namespace studio {
 
-int Version::versionToNumber()
-{
-    return QString(STUDIO_VERSION).replace(".", "", Qt::CaseInsensitive).toInt();
-}
-
-char* Version::distribVersion(char *version, size_t length)
-{
-    CheckForUpdateWrapper c4uWrapper;
-    if (c4uWrapper.isValid())
-        return c4uWrapper.distribVersion(version, length);
-    EXCEPT() << c4uWrapper.message();
-}
-
 int Tool::findAlphaNum(const QString &text, int start, bool back)
 {
     QChar c = ' ';

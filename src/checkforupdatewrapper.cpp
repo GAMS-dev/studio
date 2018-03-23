@@ -20,6 +20,7 @@
 #include "checkforupdatewrapper.h"
 #include "gclgms.h"
 #include "gamspaths.h"
+#include "exception.h"
 #include "tool.h"
 
 #include <cstring>
@@ -27,6 +28,9 @@
 
 namespace gams {
 namespace studio {
+
+// TODO(AF) isValid checks
+// TODO(AF) clear messages
 
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
@@ -69,18 +73,10 @@ QString CheckForUpdateWrapper::checkForUpdate()
     getMessages(messageIndex, buffer);
 
     mMessages << "\nGAMS Studio";
-    c4uCheck4NewStudio(mC4UHandle, gams::studio::Version::versionToNumber());
+    c4uCheck4NewStudio(mC4UHandle, studioVersion());
     getMessages(messageIndex, buffer);
 
     return message();
-}
-
-char* CheckForUpdateWrapper::distribVersion(char *version, size_t length)
-{
-    char buffer[GMS_SSSIZE];
-    c4uThisRelStr(mC4UHandle, buffer);
-    std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
-    return version;
 }
 
 int CheckForUpdateWrapper::currentDistribVersion()
@@ -92,7 +88,7 @@ int CheckForUpdateWrapper::currentDistribVersion()
 
 int CheckForUpdateWrapper::lastDistribVersion()
 {
-    if (c4uCheck4Update(mC4UHandle))
+    if (isValid() && c4uCheck4Update(mC4UHandle))
         return c4uLastRel(mC4UHandle);
     return -1;
 }
@@ -103,6 +99,29 @@ bool CheckForUpdateWrapper::distribIsLatest()
     if (currentDistribVersion() < 0 || lastDistrib < 0)
         return false;
     return currentDistribVersion() == lastDistrib;
+}
+
+int CheckForUpdateWrapper::studioVersion()
+{
+    return QString(STUDIO_VERSION).replace(".", "", Qt::CaseInsensitive).toInt();
+}
+
+QString CheckForUpdateWrapper::distribVersionString()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid()) {
+        char version[16];
+        return c4uWrapper.distribVersionString(version, 16);
+    }
+    EXCEPT() << c4uWrapper.message();
+}
+
+char* CheckForUpdateWrapper::distribVersionString(char *version, size_t length)
+{
+    char buffer[GMS_SSSIZE];
+    c4uThisRelStr(mC4UHandle, buffer);
+    std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
+    return version;
 }
 
 void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
