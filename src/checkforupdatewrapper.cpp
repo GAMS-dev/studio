@@ -23,13 +23,13 @@
 #include "exception.h"
 
 #include <cstring>
-#include <QStringList>
 
 namespace gams {
 namespace studio {
 
 // TODO(AF) isValid checks
 // TODO(AF) clear messages
+// TODO(AF) html for checkForUpdate
 
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
@@ -61,6 +61,9 @@ QString CheckForUpdateWrapper::message() const
 
 QString CheckForUpdateWrapper::checkForUpdate()
 {
+    if (!isValid())
+        return QString();
+
     char buffer[GMS_SSSIZE];
     c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
     if (!c4uIsValid(mC4UHandle)) {
@@ -85,11 +88,34 @@ int CheckForUpdateWrapper::currentDistribVersion()
     return -1;
 }
 
+QString CheckForUpdateWrapper::currentDistribVersionShort()
+{
+    if (!isValid())
+        return QString();
+    char buffer[16];
+    distribVersionString(buffer, 16);
+    QString version(buffer);
+    int index = version.lastIndexOf('.');
+    return version.remove(index, version.size());
+}
+
 int CheckForUpdateWrapper::lastDistribVersion()
 {
     if (isValid() && c4uCheck4Update(mC4UHandle))
         return c4uLastRel(mC4UHandle);
     return -1;
+}
+
+QString CheckForUpdateWrapper::lastDistribVersionShort()
+{// TODO(AF) wait for new distrib
+//    if (!isValid())
+//        return QString();
+//    char buffer[16];
+//    distribVersionString(buffer, 16);
+//    QString version(buffer);
+//    int index = version.lastIndexOf('.');
+//    return version.remove(index, version.size());
+    return QString();
 }
 
 bool CheckForUpdateWrapper::distribIsLatest()

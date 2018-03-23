@@ -30,7 +30,7 @@ namespace studio {
 // TODO find other c4u calls
 
 class CheckForUpdateWrapper
-{// TODO html?
+{
 public:
     CheckForUpdateWrapper();
     ~CheckForUpdateWrapper();
@@ -41,25 +41,46 @@ public:
 
     QString checkForUpdate();
 
+    ///
+    /// \brief Get current GAMS distribution version as integer.
+    /// \return Latest version integer, like <c>2510</c>.
+    ///
     int currentDistribVersion();
 
+    ///
+    /// \brief Get current GAMS distribution version as short string.
+    /// \return Short version string, like <c>"25.1"</c> (MAJOR.MINOR).
+    ///
+    QString currentDistribVersionShort();
+
+    ///
+    /// \brief Get latest GAMS distribution version as integer.
+    /// \return Latest version integer, like <c>2510</c>.
+    ///
     int lastDistribVersion();
 
+    ///
+    /// \brief Get latest GAMS distribution version as short string.
+    /// \return Short version string, like <c>"25.1"</c> (MAJOR.MINOR).
+    ///
+    QString lastDistribVersionShort();
+
+    ///
+    /// \brief Check if the used GAMS distribution is the latest one.
+    /// \return <c>true</c> if it is the latest GAMS distribution; otherwise <c>false</c>.
+    ///
     bool distribIsLatest();
 
     ///
-    /// \brief Get GAMS Studio version.
-    /// \return GAMS Studio version as <c>int</c>.
+    /// \brief Get current GAMS Studio version.
+    /// \return GAMS Studio version as <c>int</c>, like <c>120</c>.
     /// \remark Used to check for updates.
     ///
     static int studioVersion();
 
     ///
     /// \brief Get GAMS Distribution version number.
-    /// \param version Version string buffer.
-    /// \param length Length of the version string buffer.
-    /// \return The GAMS Distribution version number as string. The
-    ///         same as the <c>version</c> argument.
+    /// \return The GAMS Distribution version number as string.
     ///
     static QString distribVersionString();
 
