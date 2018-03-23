@@ -98,6 +98,9 @@ void LxiViewer::loadLstFile()
 
 void LxiViewer::jumpToTreeItem()
 {
+    if (ui->splitter->widget(0)->isHidden())
+        return;
+
     int lineNr  = mCodeEditor->textCursor().block().blockNumber();
     LxiTreeModel* lxiTreeModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
     int itemIdx = 0;
