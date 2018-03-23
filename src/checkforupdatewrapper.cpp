@@ -28,7 +28,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF) clear messages
 // TODO(AF) html for checkForUpdate
 
 CheckForUpdateWrapper::CheckForUpdateWrapper()
@@ -59,6 +58,11 @@ bool CheckForUpdateWrapper::isValid() const
 QString CheckForUpdateWrapper::message() const
 {
     return mMessages.join("\n");
+}
+
+void CheckForUpdateWrapper::clearMessages()
+{
+    mMessages.clear();
 }
 
 QString CheckForUpdateWrapper::checkForUpdate()

@@ -59,6 +59,12 @@ public:
     QString message() const;
 
     ///
+    /// \brief Clear all c4u library message.
+    /// \remark Use this function to make a instance of this class reusable.
+    ///
+    void clearMessages();
+
+    ///
     /// \brief Check for GAMS Sutdio and distribution updates.
     /// \return The update check messages.
     /// \remark This function connects to <c>gams.com</c>.
