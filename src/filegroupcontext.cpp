@@ -22,8 +22,8 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "gamsprocess.h"
+#include "gamspaths.h"
 #include "logger.h"
-#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -256,7 +256,7 @@ void FileGroupContext::updateChildNodes()
     // add newly appeared files and directories
     for (QFileInfo fi: addList) {
         if (fi.exists())
-            emit requestNode(fi.fileName(), Tool::absolutePath(fi.filePath()), this);
+            emit requestNode(fi.fileName(), GAMSPaths::filePath(fi.filePath()), this);
     }
 }
 

@@ -93,5 +93,11 @@ QString GAMSPaths::defaultWorkingDir()
     return defWorkingDir.path();
 }
 
+QString GAMSPaths::filePath(const QString &path)
+{
+    QFileInfo fi(path);
+    return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
+}
+
 }
 }

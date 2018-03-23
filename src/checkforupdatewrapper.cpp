@@ -21,7 +21,6 @@
 #include "gclgms.h"
 #include "gamspaths.h"
 #include "exception.h"
-#include "tool.h"
 
 #include <cstring>
 #include <QStringList>

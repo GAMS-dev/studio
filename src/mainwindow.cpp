@@ -43,7 +43,6 @@
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "editors/selectencodings.h"
-#include "tool.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
 
@@ -1338,7 +1337,7 @@ void MainWindow::openFiles(QStringList pathList)
     for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(Tool::absolutePath(fName), nullptr, true);
+            openFilePath(GAMSPaths::filePath(fName), nullptr, true);
         else
             filesNotFound.append(fName);
     }
@@ -1626,7 +1625,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
     if (!fc) { // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(Tool::absolutePath(filePath));
+        FileGroupContext* group = mFileRepo.ensureGroup(GAMSPaths::filePath(filePath));
         mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;

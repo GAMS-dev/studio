@@ -31,11 +31,5 @@ int Tool::findAlphaNum(const QString &text, int start, bool back)
     return pos;
 }
 
-QString Tool::absolutePath(const QString &path)
-{
-    QFileInfo fi(path);
-    return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
-}
-
 } // namespace studio
 } // namespace gams
