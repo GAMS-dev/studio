@@ -167,7 +167,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
     connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
 
-    tableView->horizontalHeader()->setResizeContentsPrecision(20);
+    tableView->horizontalHeader()->setResizeContentsPrecision(100);
     tableView->resizeColumnsToContents();
 }
 
