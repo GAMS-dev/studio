@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxsymbol.h"
+#include "exception.h"
 #include <memory>
 #include <QThread>
 #include <QtConcurrent>
@@ -204,9 +205,13 @@ void GdxSymbol::loadData()
         int dummy;
         int* keys = new int[GMS_MAX_INDEX_DIM];
         double* values = new double[GMS_VAL_MAX];
-        gdxDataReadRawStart(mGdx, mNr, &dummy);
+        if (!gdxDataReadRawStart(mGdx, mNr, &dummy)) {
+            char msg[GMS_SSSIZE];
+            gdxErrorStr(mGdx, gdxGetLastError(mGdx), msg);
+            EXCEPT() << "Problems reading GDX file: " << msg;
+        }
 
-        //skip records that has already been loaded
+        //skip records that have already been loaded
         for(int i=0; i<mLoadedRecCount; i++) {
             gdxDataReadRaw(mGdx, keys, values, &dummy);
             //TODO(CW): redundant code (see below)
