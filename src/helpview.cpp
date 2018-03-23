@@ -18,11 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "bookmarkdialog.h"
-#include "c4umcc.h"
 #include "exception.h"
 #include "gamspaths.h"
 #include "gclgms.h"
 #include "helpview.h"
+#include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
@@ -37,12 +37,14 @@ const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    getGAMSVersion();
-
+    // TODO(AF) Do not throw an exception... probably use a message box as a temporary solution.
+    CheckForUpdateWrapper c4uWrapper;
+    mThisRelease = c4uWrapper.currentDistribVersion();
+    mLastRelease = c4uWrapper.lastDistribVersion();
     // TODO remove this line when release!!!
     mThisRelease = 2502;
 
-    if (mThisRelease == mLastRelease)
+    if (c4uWrapper.distribIsLatest())
         onlineStartPageUrl = QUrl(LATEST_ONLINE_HELP_URL);
     else
         onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1.%2")
@@ -424,22 +426,6 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     }
     connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
     mBookmarkMenu->addAction(action);
-}
-
-void HelpView::getGAMSVersion()
-{
-    c4uHandle_t c4UHandle;
-    char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&c4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library in HelpView: " << buffer;
-    }
-
-    mThisRelease = c4uThisRel(c4UHandle);
-
-    c4uCheck4Update(c4UHandle);
-    mLastRelease = c4uLastRel(c4UHandle);
-
-    c4uFree(&c4UHandle);
 }
 
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)

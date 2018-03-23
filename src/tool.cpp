@@ -1,9 +1,9 @@
 #include "tool.h"
 #include "logger.h"
 #include "gclgms.h"
-#include "c4umcc.h"
 #include "exception.h"
 #include "gamspaths.h"
+#include "checkforupdatewrapper.h"
 
 #include <cstring>
 
@@ -15,17 +15,12 @@ int Version::versionToNumber()
     return QString(STUDIO_VERSION).replace(".", "", Qt::CaseInsensitive).toInt();
 }
 
-char* Version::currentGAMSDistribVersion(char *version, int length)
+char* Version::distribVersion(char *version, size_t length)
 {
-    c4uHandle_t c4uHandle;
-    char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&c4uHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library: " << buffer;
-    }
-    c4uThisRelStr(c4uHandle, buffer);
-    std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
-    c4uFree(&c4uHandle);
-    return version;
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid())
+        return c4uWrapper.distribVersion(version, length);
+    EXCEPT() << c4uWrapper.message();
 }
 
 int Tool::findAlphaNum(const QString &text, int start, bool back)

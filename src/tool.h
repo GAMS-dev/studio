@@ -1,13 +1,13 @@
 #ifndef TOOL_H
 #define TOOL_H
 
-#include <QtCore>
+#include <QString>
 
 namespace gams {
 namespace studio {
 
 class Version
-{
+{// TODO keep this?
 private:
     Version();
 
@@ -20,13 +20,13 @@ public:
     static int versionToNumber();
 
     ///
-    /// \brief Get current GAMS Distribution version number.
+    /// \brief Get GAMS Distribution version number.
     /// \param version Version string buffer.
     /// \param length Length of the version string buffer.
     /// \return The GAMS Distribution version number as string. The
     ///         same as the <c>version</c> argument.
     ///
-    static char* currentGAMSDistribVersion(char* version, int length=16);
+    static char* distribVersion(char* version, size_t length=16);
 };
 
 class Tool

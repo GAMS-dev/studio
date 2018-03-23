@@ -1,8 +1,28 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "checkforupdatewrapper.h"
 #include "gclgms.h"
 #include "gamspaths.h"
 #include "tool.h"
 
+#include <cstring>
 #include <QStringList>
 
 namespace gams {
@@ -53,6 +73,36 @@ QString CheckForUpdateWrapper::checkForUpdate()
     getMessages(messageIndex, buffer);
 
     return message();
+}
+
+char* CheckForUpdateWrapper::distribVersion(char *version, size_t length)
+{
+    char buffer[GMS_SSSIZE];
+    c4uThisRelStr(mC4UHandle, buffer);
+    std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
+    return version;
+}
+
+int CheckForUpdateWrapper::currentDistribVersion()
+{
+    if (isValid())
+        return c4uThisRel(mC4UHandle);
+    return -1;
+}
+
+int CheckForUpdateWrapper::lastDistribVersion()
+{
+    if (c4uCheck4Update(mC4UHandle))
+        return c4uLastRel(mC4UHandle);
+    return -1;
+}
+
+bool CheckForUpdateWrapper::distribIsLatest()
+{
+    int lastDistrib = lastDistribVersion();
+    if (currentDistribVersion() < 0 || lastDistrib < 0)
+        return false;
+    return currentDistribVersion() == lastDistrib;
 }
 
 void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)

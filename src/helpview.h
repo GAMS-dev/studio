@@ -92,7 +92,6 @@ private:
     int mLastRelease = 0;
     bool mOfflineHelpAvailable = false;
 
-    void getGAMSVersion();
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
 };
 
