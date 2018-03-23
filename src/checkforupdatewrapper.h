@@ -68,12 +68,14 @@ public:
     ///
     /// \brief Get current GAMS distribution version as integer.
     /// \return Latest version integer, like <c>2510</c>.
+    ///         <c>-1</c> in case of an error.
     ///
     int currentDistribVersion();
 
     ///
     /// \brief Get current GAMS distribution version as short string.
     /// \return Short version string, like <c>"25.1"</c> (MAJOR.MINOR).
+    ///         <c>""</c> in case of an error.
     ///
     QString currentDistribVersionShort();
 
@@ -81,6 +83,7 @@ public:
     /// \brief Get latest GAMS distribution version as integer.
     /// \return Latest version integer, like <c>2510</c>.
     /// \remark This function connects to <c>gams.com</c>.
+    ///         <c>-1</c> in case of an error.
     ///
     int lastDistribVersion();
 
@@ -88,6 +91,7 @@ public:
     /// \brief Get latest GAMS distribution version as short string.
     /// \return Short version string, like <c>"25.1"</c> (MAJOR.MINOR).
     /// \remark This function connects to <c>gams.com</c>.
+    ///         <c>""</c> in case of an error.
     ///
     QString lastDistribVersionShort();
 

@@ -28,7 +28,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF) isValid checks
 // TODO(AF) clear messages
 // TODO(AF) html for checkForUpdate
 
@@ -40,14 +39,16 @@ CheckForUpdateWrapper::CheckForUpdateWrapper()
         mValid = false;
     }
     if (isValid() && !c4uCorrectLibraryVersion(buffer, GMS_SSSIZE)) {
-        mMessages << "Incompatible GAMS versions: " << buffer;
+        mMessages << "Incompatible GAMS distribution: " << buffer;
+        c4uFree(&mC4UHandle);
         mValid = false;
     }
 }
 
 CheckForUpdateWrapper::~CheckForUpdateWrapper()
 {
-    c4uFree(&mC4UHandle);
+    if (isValid())
+        c4uFree(&mC4UHandle);
 }
 
 bool CheckForUpdateWrapper::isValid() const
