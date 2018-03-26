@@ -1936,33 +1936,36 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
-    getDockHelpView()->resetZoom(); // reset help view
+    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
+        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
+        getDockHelpView()->resetZoom(); // reset help view
+    } else {
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
+    }
+
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
+        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomOut();
     } else {
-        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(QApplication::focusWidget());
         if (ae) {
-            if (getDockHelpView()->isAncestorOf(focusWidget())) {
-                getDockHelpView()->zoomIn();
-            } else {
-                int pix = ae->fontInfo().pixelSize();
-                if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
-            }
+            int pix = ae->fontInfo().pixelSize();
+            if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
     }
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(focusWidget())) {
+    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
+        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomIn();
     } else {
-        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
