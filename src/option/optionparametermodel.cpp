@@ -120,7 +120,7 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
                       )  {
                          return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
             } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
-                      return QString("Option '%1' is deprecated, will be ignored").arg(mOptionItem.at(row).key);
+                      return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key);
             }
         } else if (col==1) {
             switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
@@ -145,25 +145,24 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
                  return QVariant::fromValue(QColor(Qt::black));
         }
         if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
-           if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
-               return QVariant::fromValue(QColor(Qt::gray));
-           } else { // valid and not deprected Option
-                if (col==0) {
-                   return  QVariant::fromValue(QColor(Qt::black));
+            if (col==0) { // key
+                if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
+                    return QVariant::fromValue(QColor(Qt::gray));
                 } else {
-
-                    switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-                     case Incorrect_Value_Type:
-                           return QVariant::fromValue(QColor(Qt::red/*Qt::blue*/));
-                     case Value_Out_Of_Range:
-                           return QVariant::fromValue(QColor(Qt::red/*Qt::blue*/));
-                     case No_Error:
-                           return QVariant::fromValue(QColor(Qt::black));
-                     default:
-                          return QVariant::fromValue(QColor(Qt::black));
-                    }
+                    return  QVariant::fromValue(QColor(Qt::black));
                 }
-           }
+            } else { // value
+                  switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                      case Incorrect_Value_Type:
+                            return QVariant::fromValue(QColor(Qt::red));
+                      case Value_Out_Of_Range:
+                            return QVariant::fromValue(QColor(Qt::red));
+                      case No_Error:
+                            return QVariant::fromValue(QColor(Qt::black));
+                      default:
+                           return QVariant::fromValue(QColor(Qt::black));
+                  }
+            }
         } else { // invalid option
             if (col == 0)
                return QVariant::fromValue(QColor(Qt::red));
