@@ -43,9 +43,8 @@
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "editors/selectencodings.h"
-#include "c4umcc.h"
-#include "tool.h"
 #include "updatedialog.h"
+#include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
@@ -839,8 +838,7 @@ void MainWindow::on_actionAbout_triggered()
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
     about += "<br/><br/><b><big>GAMS Distribution ";
-    char version[16];
-    about += gams::studio::Version::currentGAMSDistribVersion(version);
+    about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
     about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
@@ -856,6 +854,7 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionUpdate_triggered()
 {
     UpdateDialog updateDialog(this);
+    updateDialog.checkForUpdate();
     updateDialog.exec();
 }
 
@@ -1344,7 +1343,7 @@ void MainWindow::openFiles(QStringList pathList)
     for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(Tool::absolutePath(fName), nullptr, true);
+            openFilePath(GAMSPaths::filePath(fName), nullptr, true);
         else
             filesNotFound.append(fName);
     }
@@ -1632,7 +1631,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
     if (!fc) { // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(Tool::absolutePath(filePath));
+        FileGroupContext* group = mFileRepo.ensureGroup(GAMSPaths::filePath(filePath));
         mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;

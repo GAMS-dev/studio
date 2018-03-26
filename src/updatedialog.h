@@ -20,8 +20,6 @@
 #ifndef UPDATEDIALOG_H
 #define UPDATEDIALOG_H
 
-#include "c4umcc.h"
-
 #include <QtWidgets>
 
 namespace Ui {
@@ -37,16 +35,11 @@ class UpdateDialog : public QDialog
 
 public:
     explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~UpdateDialog();
 
-private:
-    void setUpdateInfo();
-    void getMessages(int &messageIndex, char *buffer);
+    void checkForUpdate();
 
 private:
     Ui::UpdateDialog *ui;
-    c4uHandle_t mC4UHandle;
-    QStringList mMessages;
 };
 
 }

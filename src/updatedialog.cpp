@@ -19,10 +19,8 @@
  */
 #include "updatedialog.h"
 #include "ui_updatedialog.h"
-#include "gclgms.h"
-#include "gamspaths.h"
+#include "checkforupdatewrapper.h"
 #include "exception.h"
-#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -32,42 +30,15 @@ UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
       ui(new Ui::UpdateDialog)
 {
     ui->setupUi(this);
-    setUpdateInfo();
 }
 
-UpdateDialog::~UpdateDialog()
+void UpdateDialog::checkForUpdate()
 {
-    c4uFree(&mC4UHandle);
-}
-
-void UpdateDialog::setUpdateInfo()
-{
-    char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&mC4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library: " << buffer;
-    }
-
-    c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(), "gamslice.txt", false);
-    if (!c4uIsValid(mC4UHandle)) {
-        c4uCreateMsg(mC4UHandle);
-    }
-
-    int messageIndex=0;
-    mMessages << "GAMS Distribution";
-    getMessages(messageIndex, buffer);
-
-    mMessages << "\nGAMS Studio";
-    c4uCheck4NewStudio(mC4UHandle, gams::studio::Version::versionToNumber());
-    getMessages(messageIndex, buffer);
-
-    ui->updateInfo->setText(mMessages.join("\n"));
-}
-
-void UpdateDialog::getMessages(int &messageIndex, char *buffer)
-{
-    for (int c=c4uMsgCount(mC4UHandle); messageIndex<c; ++messageIndex) {
-        if (c4uGetMsg(mC4UHandle, messageIndex, buffer))
-            mMessages.append(buffer);
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid()) {
+        ui->updateInfo->setText(c4uWrapper.checkForUpdate());
+    } else {
+        EXCEPT() << c4uWrapper.message();
     }
 }
 

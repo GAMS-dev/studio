@@ -1,33 +1,10 @@
 #ifndef TOOL_H
 #define TOOL_H
 
-#include <QtCore>
+class QString;
 
 namespace gams {
 namespace studio {
-
-class Version
-{
-private:
-    Version();
-
-public:
-    ///
-    /// \brief Converts the STUDIO_VERSION into an number.
-    /// \return The STUDIO_VERSION as number.
-    /// \remark Used to check for updates.
-    ///
-    static int versionToNumber();
-
-    ///
-    /// \brief Get current GAMS Distribution version number.
-    /// \param version Version string buffer.
-    /// \param length Length of the version string buffer.
-    /// \return The GAMS Distribution version number as string. The
-    ///         same as the <c>version</c> argument.
-    ///
-    static char* currentGAMSDistribVersion(char* version, int length=16);
-};
 
 class Tool
 {
@@ -35,15 +12,8 @@ private:
     Tool() {}
 
 public:
+    // TODO(AF) rename tool and document this function
     static int findAlphaNum(const QString &text, int start, bool back);
-
-    ///
-    /// \brief Get the file path even if the file does not exists.
-    /// \param path Path to the file.
-    /// \return Returns the canonical path if the file exists;
-    ///         otherwise the absolute path.
-    ///
-    static QString absolutePath(const QString &path);
 };
 
 } // namespace studio

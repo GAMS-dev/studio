@@ -88,11 +88,10 @@ private:
     QUrl startPageUrl;
     QUrl onlineStartPageUrl;
 
-    int mThisRelease = 0;
-    int mLastRelease = 0;
+    QString mThisRelease;
+    QString mLastRelease;
     bool mOfflineHelpAvailable = false;
 
-    void getGAMSVersion();
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
 };
 
