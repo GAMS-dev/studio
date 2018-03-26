@@ -98,7 +98,7 @@ QString CheckForUpdateWrapper::currentDistribVersionShort()
     if (!isValid())
         return QString();
     char buffer[16];
-    distribVersionString(buffer, 16);
+    c4uThisRelStr(mC4UHandle, buffer);
     QString version(buffer);
     int index = version.lastIndexOf('.');
     return version.remove(index, version.size());
@@ -112,15 +112,14 @@ int CheckForUpdateWrapper::lastDistribVersion()
 }
 
 QString CheckForUpdateWrapper::lastDistribVersionShort()
-{// TODO(AF) wait for new distrib
-//    if (!isValid())
-//        return QString();
-//    char buffer[16];
-//    distribVersionString(buffer, 16);
-//    QString version(buffer);
-//    int index = version.lastIndexOf('.');
-//    return version.remove(index, version.size());
-    return QString();
+{
+    if (!isValid())
+        return QString();
+    char buffer[16];
+    c4uLastRelStr(mC4UHandle, buffer);
+    QString version(buffer);
+    int index = version.lastIndexOf('.');
+    return version.remove(index, version.size());
 }
 
 bool CheckForUpdateWrapper::distribIsLatest()
