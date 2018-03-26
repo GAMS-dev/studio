@@ -19,7 +19,6 @@
  */
 #include "syntaxhighlighter.h"
 #include "syntaxformats.h"
-#include "syntaxreserved.h"
 #include "syntaxdeclaration.h"
 #include "syntaxidentifier.h"
 #include "textmark.h"
@@ -124,14 +123,17 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     initState(new SyntaxDirective(), Qt::darkMagenta);
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), Qt::darkBlue);
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), Qt::darkGreen, true, false);
-    initState(new SyntaxDirectiveBody(SyntaxState::Title), Qt::darkBlue, true, true);
+    initState(new SyntaxDirectiveBody(SyntaxState::Title), Qt::darkBlue, true, true, true);
     initState(new SyntaxCommentLine(), Qt::darkGreen, true, false);
     initState(new SyntaxCommentBlock(), Qt::darkGreen, true, false);
+    initState(new SyntaxReserved(), Qt::darkBlue, false, true, true);
+    initState(new SyntaxReservedBody(), Qt::darkCyan, false, true, true);
     initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), Qt::darkBlue, false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), Qt::darkBlue, false, true);
     initState(new SyntaxDeclarationTable(), Qt::darkBlue, false, true);
-    initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(), false, true, true);
+    initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(), false, true);
+    initState(new SyntaxIdentifier(SyntaxState::IdentifierDone), QColor(Qt::cyan).darker(), false, true);
 
 }
 
@@ -248,7 +250,7 @@ void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
 
 QColor nextColor() {
     static int debIndex = -1;
-    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(),
+    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(175),
                                   QColor(Qt::green).lighter()};
     debIndex = (debIndex+1) % debColor.size();
     return debColor.at(debIndex);

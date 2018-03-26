@@ -25,18 +25,26 @@ namespace studio {
 
 SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : mState(state)
 {
-    if (state == SyntaxState::Identifier) {
+    switch (state) {
+    case SyntaxState::IdentifierDone:
+        mSubStates << SyntaxState::Declaration << SyntaxState::DeclarationTable << SyntaxState::DeclarationSetType
+                   << SyntaxState::DeclarationVariableType;
+    case SyntaxState::Identifier:
         mSubStates << SyntaxState::IdentifierDescription << SyntaxState::IdentifierAssignment << SyntaxState::Directive
                    << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+        break;
 
-    } else if (state == SyntaxState::IdentifierTable) {
+    case SyntaxState::IdentifierTableDone:
+        mSubStates << SyntaxState::Declaration << SyntaxState::DeclarationTable << SyntaxState::DeclarationSetType
+                   << SyntaxState::DeclarationVariableType;
+    case SyntaxState::IdentifierTable:
         mSubStates << SyntaxState::IdentifierTableDescription << SyntaxState::IdentifierTableAssignment
                    << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
                    << SyntaxState::CommentInline;
-    } else {
+    default:
         FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration: " << syntaxStateName(state);
+        break;
     }
-//    mSubStates << SyntaxState::
 }
 
 SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, int index)
@@ -46,10 +54,8 @@ SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, 
     while (isWhitechar(line, start))
         ++start;
     int end = line.indexOf(';', start);
-    if (end >= 0)
-        return SyntaxBlock(this, start, end, SyntaxStateShift::out);
-    else
-        return SyntaxBlock(this, start, line.length(), SyntaxStateShift::shift);
+    if (end >= 0) return SyntaxBlock(this, start, end, SyntaxStateShift::out);
+    return SyntaxBlock(this, start, line.length(), SyntaxStateShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index)

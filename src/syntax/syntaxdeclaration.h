@@ -103,6 +103,22 @@ public:
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 
+class SyntaxReserved: public SyntaxKeywordBase
+{
+public:
+    SyntaxReserved();
+    inline SyntaxState state() override { return SyntaxState::Reserved; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+};
+
+class SyntaxReservedBody: public SyntaxAbstract
+{
+public:
+    SyntaxReservedBody() {}
+    inline SyntaxState state() override { return SyntaxState::ReservedBody; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index) override;
+};
 
 constexpr inline uint qHash(SyntaxState key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 

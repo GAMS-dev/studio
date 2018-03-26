@@ -31,25 +31,31 @@ namespace studio {
 enum class SyntaxState {
     Standard,
     Directive,
-    DirectiveBody,              // text following the Directive
-    DirectiveComment,           // a DirectiveBody formatted as comment
-    Title,                      // a DirectiveBody formatted as title
+    DirectiveBody,                  // text following the Directive
+    DirectiveComment,               // a DirectiveBody formatted as comment
+    Title,                          // a DirectiveBody formatted as title
     CommentLine,
     CommentBlock,
     CommentEndline,
     CommentInline,
-    CommentMargin,
-    DeclarationSetType,         // must be followed by Declaration
-    DeclarationVariableType,    // must be followed by Declaration
+    DeclarationSetType,             // must be followed by Declaration
+    DeclarationVariableType,        // must be followed by Declaration
     Declaration,
     DeclarationTable,
     Identifier,
+    IdentifierDone,                 // ..Done: identifier was a former line
     IdentifierDescription,
+    IdentifierDescriptionDone,
     IdentifierAssignment,
+    IdentifierAssignmentDone,
     IdentifierTable,
+    IdentifierTableDone,
     IdentifierTableDescription,
+    IdentifierTableDescriptionDone,
     IdentifierTableAssignment,
+    IdentifierTableAssignmentDone,
     Reserved,
+    ReservedBody,
     Error,
     StateCount
 };

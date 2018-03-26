@@ -199,6 +199,38 @@ SyntaxBlock SyntaxDeclarationTable::find(SyntaxState entryState, const QString &
     return SyntaxBlock(this);
 }
 
+SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
+{
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::reserved();
+    mKeywords.insert(state(), new DictList(list));
+    mSubStates << SyntaxState::ReservedBody << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+}
+
+SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    end = findEnd(state(), line, start);
+    SyntaxStateShift shift = (end >= line.length()) ? SyntaxStateShift::out : SyntaxStateShift::in;
+    if (end > start) return SyntaxBlock(this, start, end, false, shift, state());
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+}
+
+SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index)
+{
+    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+}
+
 
 } // namespace studio
 } // namespace gans

@@ -38,7 +38,6 @@ QString syntaxStateName(SyntaxState state)
         {static_cast<int>(SyntaxState::CommentBlock), "CommentBlock"},
         {static_cast<int>(SyntaxState::CommentEndline), "CommentEndline"},
         {static_cast<int>(SyntaxState::CommentInline), "CommentInline"},
-        {static_cast<int>(SyntaxState::CommentMargin), "CommentMargin"},
         {static_cast<int>(SyntaxState::DeclarationSetType), "DeclarationSetType"},
         {static_cast<int>(SyntaxState::DeclarationVariableType), "DeclarationVariableType"},
         {static_cast<int>(SyntaxState::Declaration), "Declaration"},
@@ -142,7 +141,9 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     }
     SyntaxState next = mSpecialStates.value(match.captured(2).toLower(), SyntaxState::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
-        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, SyntaxStateShift::in, next);
+        bool atEnd = match.capturedEnd(0) >= line.length()-1;
+        SyntaxStateShift shift = (atEnd && next != SyntaxState::CommentBlock) ? SyntaxStateShift::out : SyntaxStateShift::in;
+        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);
     }
