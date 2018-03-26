@@ -162,7 +162,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     connect(ui.pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
     connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterWildcard);
 
     connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
     connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
@@ -198,14 +198,14 @@ void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
     if (checked) {
         for (auto proxy : proxyModelList) {
-            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
             connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
         }
     }
     else {
         for (auto proxy : proxyModelList) {
             disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
-            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
         }
     }
     emit ui.lineEdit->textChanged(ui.lineEdit->text());
