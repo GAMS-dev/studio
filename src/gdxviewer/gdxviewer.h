@@ -44,12 +44,14 @@ public:
     GdxSymbol* selectedSymbol();
     bool reload();
     void setHasChanged(bool value);
+    void copyAction();
+    void selectAllAction();
 
 private:
     QString mGdxFile;
     QString mSystemDirectory;
 
-    bool mHasChanged=false;
+    bool mHasChanged = false;
 
     Ui::GdxViewer ui;
     void reportIoError(int errNr, QString message);
@@ -58,7 +60,7 @@ private:
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
 
     gdxHandle_t mGdx;
-    QMutex* mGdxMutex;
+    QMutex* mGdxMutex = nullptr;
 
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();

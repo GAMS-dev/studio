@@ -147,12 +147,13 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
             continue;
         }
         if (gamsOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
-            if (!item.key.mid(2).contains(QRegExp("^[a-zA-Z]")) )  {
+            QString optionKey = gamsOption->getOptionKey(item.key);
+            if (!gamsOption->isDoubleDashedOptionNameValid( optionKey ))   {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
                 fr.length = item.key.length();
                 fr.format = mInvalidKeyFormat;
-                optionErrorList.append(OptionError(fr, item.key.mid(2) + QString(" (Expect only alphabetic character, a-z or A-Z, after \"%1\")").arg(item.key.left(2))) );
+                optionErrorList.append(OptionError(fr, optionKey + QString(" (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))") ) );
             }
             continue;
         }
@@ -186,7 +187,17 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                 else
                    fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
                 fr.format = mDeprecateOptionFormat;
-                optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
+
+                switch (gamsOption->getValueErrorType(key, item.value)) {
+                case Incorrect_Value_Type:
+                case Value_Out_Of_Range:
+                    optionErrorList.append(OptionError(fr, item.value + QString(" (Invalid value for deprecated option \"%1\", option will be eventually ignored)").arg(key)) );
+                    break;
+                case No_Error:
+                default:
+                    optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
+                    break;
+                }
             } else { // neither invalid nor deprecated key
 
                 QString keyStr = key;

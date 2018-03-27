@@ -97,6 +97,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("helpView", main->helpViewVisibility());
     mAppSettings->setValue("optionView", main->optionEditorVisibility());
     mAppSettings->setValue("optionEditor", main->isOptionDefinitionChecked());
+    mAppSettings->setValue("encodingMIBs", main->encodingMIBsString());
 
     mAppSettings->endGroup();
 
@@ -133,22 +134,16 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QJsonObject json;
-    main->fileRepository()->write(json);
-    QJsonDocument saveDoc(json);
+    QJsonObject jsonProject;
+    main->fileRepository()->write(jsonProject);
+    QJsonDocument saveDoc(jsonProject);
     mAppSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
-//    FileSystemContext* root = mMain->fileRepository()->treeModel()->serialize();
-//    mAppSettings->endGroup();
 
-    mAppSettings->beginWriteArray("openedTabs");
-    QWidgetList editList = main->fileRepository()->editors();
-    for (int i = 0; i < editList.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        FileContext *fc = main->fileRepository()->fileContext(editList.at(i));
-        mAppSettings->setValue("location", fc->location());
-    }
+    QJsonObject jsonTabs;
+    main->writeTabs(jsonTabs);
+    saveDoc = QJsonDocument(jsonTabs);
+    mAppSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
 
-    mAppSettings->endArray();
     mAppSettings->endGroup();
 
     // User Settings
@@ -229,6 +224,31 @@ void StudioSettings::setHistorySize(int historySize)
     mHistorySize = historySize;
 }
 
+void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    if(restoreTabs()) {
+        int size = mAppSettings->beginReadArray("openedTabs");
+        for (int i = 0; i < size; i++) {
+            mAppSettings->setArrayIndex(i);
+            QString value = mAppSettings->value("location").toString();
+            if(QFileInfo(value).exists())
+                main->openFile(value);
+        }
+        mAppSettings->endArray();
+    }
+
+    // history
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    main->history()->lastOpenedFiles.clear();
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+}
+
 void StudioSettings::loadSettings(MainWindow *main)
 {
     if (mResetSettings)
@@ -258,6 +278,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView").toBool());
     main->checkOptionDefinition(mAppSettings->value("optionEditor").toBool());
+    main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();
 
@@ -297,33 +318,18 @@ void StudioSettings::loadSettings(MainWindow *main)
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->fileRepository()->read(loadDoc.object());
 
+    saveData = mAppSettings->value("openTabs", "").toByteArray();
+    loadDoc = QJsonDocument::fromJson(saveData);
+    main->readTabs(loadDoc.object());
+
+    loadUserSettings();
+
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
     // save settings directly after loading in order to reset
     if (mResetSettings) saveSettings(main);
-
-    if(restoreTabs()) {
-        size = mAppSettings->beginReadArray("openedTabs");
-        for (int i = 0; i < size; i++) {
-            mAppSettings->setArrayIndex(i);
-            QString value = mAppSettings->value("location").toString();
-            if(QFileInfo(value).exists())
-                main->openFileSkipSettings(value);
-        }
-        mAppSettings->endArray();
-    }
-
-    // history
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    main->history()->lastOpenedFiles.clear();
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-
     mAppSettings->endGroup();
 }
 

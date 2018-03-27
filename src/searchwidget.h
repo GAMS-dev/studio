@@ -56,6 +56,10 @@ public:
     void clearResults();
     void updateReplaceActionAvailability();
 
+public slots:
+    void on_searchNext();
+    void on_searchPrev();
+
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();

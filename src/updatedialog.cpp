@@ -17,39 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
-
-#include <QCommandLineParser>
-
+#include "updatedialog.h"
+#include "ui_updatedialog.h"
+#include "checkforupdatewrapper.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-enum CommandLineParseResult
+UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
+    : QDialog(parent, f),
+      ui(new Ui::UpdateDialog)
 {
-    CommandLineOk,
-    CommandLineError,
-    CommandLineVersionRequested,
-    CommandLineHelpRequested
-};
+    ui->setupUi(this);
+}
 
-class CommandLineParser  : public QCommandLineParser
+void UpdateDialog::checkForUpdate()
 {
-public:
-    CommandLineParser();
-    CommandLineParseResult parseCommandLine();
-    QStringList files() const;
-    bool ignoreSettings() const;
-    bool resetSettings() const;
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid()) {
+        ui->updateInfo->setText(c4uWrapper.checkForUpdate());
+    } else {
+        EXCEPT() << c4uWrapper.message();
+    }
+}
 
-private:
-    QStringList mFiles;
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
-};
-
-} // namespace studio
-} // namespace gams
-
-#endif // COMMANDLINEPARSER_H
+}
+}

@@ -18,11 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "bookmarkdialog.h"
-#include "c4umcc.h"
 #include "exception.h"
 #include "gamspaths.h"
 #include "gclgms.h"
 #include "helpview.h"
+#include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
@@ -37,16 +37,14 @@ const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    getGAMSVersion();
+    CheckForUpdateWrapper c4uWrapper;
+    mThisRelease = c4uWrapper.currentDistribVersionShort();
+    mLastRelease = c4uWrapper.lastDistribVersionShort();
 
-    // TODO remove this line when release!!!
-    mThisRelease = 2502;
-
-    if (mThisRelease == mLastRelease)
+    if (c4uWrapper.distribIsLatest())
         onlineStartPageUrl = QUrl(LATEST_ONLINE_HELP_URL);
     else
-        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1.%2")
-                              .arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10)) );
+        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1").arg(mThisRelease) );
 
     QDir dir = QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER);
     baseLocation = QDir(GAMSPaths::systemDir()).absolutePath();
@@ -134,9 +132,8 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+version+"/", this);
-    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+version+"/");
+    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+mThisRelease+"/", this);
+    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
     actionOnlineHelp->setCheckable(true);
     connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
     helpMenu->addAction(actionOnlineHelp);
@@ -287,8 +284,7 @@ void HelpView::on_loadFinished(bool ok)
     actionOnlineHelp->setChecked( false );
     if (ok) {
        if ( mHelpView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
-           QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-           if (mHelpView->url().path().contains(version))
+           if (mHelpView->url().path().contains(mThisRelease))
                actionOnlineHelp->setChecked( true );
            else if (mHelpView->url().path().contains("latest") && (mThisRelease == mLastRelease))
                actionOnlineHelp->setChecked( true );
@@ -426,25 +422,9 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     mBookmarkMenu->addAction(action);
 }
 
-void HelpView::getGAMSVersion()
-{
-    c4uHandle_t c4UHandle;
-    char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&c4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library in HelpView: " << buffer;
-    }
-
-    mThisRelease = c4uThisRel(c4UHandle);
-
-    c4uCheck4Update(c4UHandle);
-    mLastRelease = c4uLastRel(c4UHandle);
-
-    c4uFree(&c4UHandle);
-}
-
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 {
-    QString downloadPage = QString("https://www.gams.com/%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
+    QString downloadPage = QString("https://www.gams.com/%1").arg(mThisRelease);
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
     htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";

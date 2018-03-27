@@ -33,9 +33,7 @@ FilterUelModel::FilterUelModel(GdxSymbol *symbol, int column, QObject *parent)
     mChecked = new bool[mUels->size()];
     bool* showUelInColumn = mSymbol->showUelInColumn().at(column);
     for(size_t idx=0; idx<mUels->size(); idx++)
-    {
         mChecked[idx] = showUelInColumn[mUels->at(idx)];
-    }
 }
 
 FilterUelModel::~FilterUelModel()
@@ -54,8 +52,6 @@ QVariant FilterUelModel::headerData(int section, Qt::Orientation orientation, in
 
 int FilterUelModel::rowCount(const QModelIndex &parent) const
 {
-    // For list models only the root node (an invalid parent) should return the list's size. For all
-    // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
     return (int) mUels->size();
@@ -63,17 +59,14 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const
 {
-    //qDebug() << "data: " << index.row();
     if (!index.isValid())
         return QVariant();
 
-    if(role == Qt::DisplayRole)
-    {
+    if(role == Qt::DisplayRole) {
         int uel = mUels->at(index.row());
         return mSymbol->gdxSymbolTable()->uel2Label(uel);
     }
-    else if(role == Qt::CheckStateRole)
-    {
+    else if(role == Qt::CheckStateRole) {
         if(mChecked[index.row()])
             return Qt::Checked;
         else
@@ -85,7 +78,7 @@ QVariant FilterUelModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags FilterUelModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags f = QAbstractListModel::flags(index);
-    if(index.isValid())
+    if (index.isValid())
         f |= Qt::ItemIsUserCheckable;
     return f;
 }
@@ -106,27 +99,22 @@ bool *FilterUelModel::checked() const
 
 void FilterUelModel::filterLabels(QString filterString)
 {
-    QTime t;
-    t.start();
     bool checkedOld, checkedNew;
     QRegExp regExp(filterString);
     regExp.setCaseSensitivity(Qt::CaseInsensitive);
     regExp.setPatternSyntax(QRegExp::Wildcard);
-    for(size_t idx=0; idx<mUels->size(); idx++)
-    {
+    for(size_t idx=0; idx<mUels->size(); idx++) {
         int uel = mUels->at(idx);
         checkedOld = mChecked[idx];
         if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label(uel)))
             checkedNew = true;
         else
             checkedNew = false;
-        if(checkedNew != checkedOld)
-        {
+        if(checkedNew != checkedOld) {
             mChecked[idx] = checkedNew;
             dataChanged(index(idx,0), index(idx,0));
         }
     }
-    qDebug() << "fitler elapsed: " << t.elapsed();
 }
 
 

@@ -37,15 +37,15 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"ignore-settings", "Completely ignore settings files."});
     addOption({"reset-settings", "Reset all settings to default."});
 
-    if(!parse(QCoreApplication::arguments()))
+    if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
-    if(isSet(versionOption))
+    if (isSet(versionOption))
         return CommandLineVersionRequested;
-    if(isSet(helpOption))
+    if (isSet(helpOption))
         return CommandLineHelpRequested;
-    if(isSet("ignore-settings"))
+    if (isSet("ignore-settings"))
         mIgnoreSettings = true;
-    if(isSet("reset-settings"))
+    if (isSet("reset-settings"))
         mResetSettings = true;
     mFiles = positionalArguments();
 
