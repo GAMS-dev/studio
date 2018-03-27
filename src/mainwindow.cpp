@@ -123,7 +123,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
     mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
-    Checking_Autosavefiles();
+
+    QStringList files = checkForAutosaveFiles();
+    recoverAutosaveFiles(files);
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
 }
@@ -147,86 +150,71 @@ void MainWindow::initTabs()
         createWelcomePage();
 }
 
-
-void MainWindow::Checking_Autosavefiles()
+QStringList MainWindow::checkForAutosaveFiles()
 {
+    const QString tmpFileMarker = "~$";
+    QStringList filters { "*.gms", "*.txt" };
+
+    QStringList autsaveFiles;
     QStringList pathes { mRecent.path };
     for (auto file : history()->lastOpenedFiles)
     {
         QString path = GAMSPaths::path(file);
-        if (!path.isEmpty() && path != mRecent.path)
-            pathes << path;
+        if (!path.isEmpty() && path != mRecent.path) {
+            QDir dir(path);
+            dir.setNameFilters(filters);
+            QStringList files = dir.entryList(filters);
+            for (auto file : files) {
+                if (file.startsWith(tmpFileMarker)) {
+                    autsaveFiles << path+"/"+file;
+                }
+            }
+        }
     }
+    return autsaveFiles;
+}
+
+void MainWindow::recoverAutosaveFiles(const QStringList &autosaveFiles)
+{
+    if (autosaveFiles.isEmpty()) return;
     const QString tmpFileMarker = "~$";
-    bool showedonce = false;
-    for (auto path : pathes)
-    {
-        QDir dir(path);
-        QStringList filters { "*.gms", "*.txt" };
-        dir.setNameFilters(filters);
-        QStringList filesList = dir.entryList(filters);
-        if (filesList.isEmpty())
-            return;
-        bool exist=false;
-        for (const auto& file : filesList)
+    QMessageBox msgBox; // TODO review static method?
+    msgBox.setWindowTitle("Data Recovery");
+    msgBox.setText("Studio has shut down unexpectedly. Some files were not saved correctly. Do you want to recover your last modifications?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int decision = msgBox.exec();
+    if (QMessageBox::Yes == decision) {
+        for (const auto& autosaveFile : autosaveFiles)
         {
-            if (file.startsWith(tmpFileMarker))
-                exist = true;
-        }
-        if (exist)
-        {
-            int decision;
-            if (!showedonce)
+            QString originalversion = autosaveFile;
+            originalversion.replace(tmpFileMarker, "");
+            QFile destFile(originalversion);
+            QFile srcFile(autosaveFile);
+            MainWindow::openFile(destFile.fileName());
+            if (srcFile.open(QIODevice::ReadWrite))
             {
-                QMessageBox msgBox;
-                msgBox.setWindowTitle("Data Recovery");
-                msgBox.setText("Studio has shut down unexpectedly.Some files were not saved correctly. Do you want to recover your last modifications ?");
-                msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                decision = msgBox.exec();
-                showedonce = true;
-            }
-            if (decision == QMessageBox::Yes)
-            {
-                for (const auto& file : filesList)
+                if (destFile.open(QIODevice::ReadWrite))
                 {
-                    if (file.startsWith(tmpFileMarker))
-                    {
-                        QString originalversion = file;
-                        originalversion.replace(tmpFileMarker, "");
-                        QFile srcFile(path+"/"+file);
-                        QFile destFile(path+"/"+originalversion);
-                        MainWindow::openFile(destFile.fileName());
-                        if (srcFile.open(QIODevice::ReadWrite))
-                        {
-                            if (destFile.open(QIODevice::ReadWrite))
-                            {
-                                QTextStream in(&srcFile);
-                                QString line = in.readAll() ;
-                                FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-                                QTextCursor curs(fc->document());
-                                curs.select(QTextCursor::Document);
-                                curs.insertText(line);
-                                destFile.close();
-                            }
-                            srcFile.close();
-                        }
-                    }
+                    QTextStream in(&srcFile);
+                    QString line = in.readAll() ;
+                    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+                    QTextCursor curs(fc->document());
+                    curs.select(QTextCursor::Document);
+                    curs.insertText(line);
+                    destFile.close();
                 }
-                AbstractEditor *editor = dynamic_cast<AbstractEditor*>(focusWidget());
-                if (editor) {
-                    editor->moveCursor(QTextCursor::Start);
-                }
-                else
-                    qDebug() << "null exception.";
-            }
-            else
-            {
-                for (const auto& file : filesList){
-                    if (file.startsWith(tmpFileMarker))
-                        QFile::remove(path+"/"+file);
-                }
+                srcFile.close();
             }
         }
+        AbstractEditor *editor = dynamic_cast<AbstractEditor*>(focusWidget());
+        if (editor) { // TODO review
+            editor->moveCursor(QTextCursor::Start);
+        }
+        else
+            qDebug() << "null exception.";
+    } else {
+        for (const auto& file : autosaveFiles)
+            QFile::remove(file);
     }
 }
 
@@ -294,28 +282,25 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    if (!mRecent.editor)
+    if (!mRecent.editor || ui->mainTab->currentWidget() == mWp)
         return;
-    if (ui->mainTab->currentWidget() == mWp)
-        return;
+    const QString tmpFileMarker = "~$";
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     QString filepath = QFileInfo(fc->location()).path();
     QString filename = filepath+fc->name();
     FileMetrics metrics = FileMetrics(QFileInfo(filename));
-    QString filename1 = filepath+"/~$"+fc->name();
+    QString autosaveFile = filepath+"/"+tmpFileMarker+fc->name();
     if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
     {
-        QFile file(filename1);
+        QFile file(autosaveFile);
         file.open(QIODevice::WriteOnly);
         QTextStream out(&file);
         out << fc->document()->toPlainText();
         out.flush();
         file.close();
-        qDebug() << "autosave done";
     }
-    else {
-        if (QFileInfo::exists(filename1))
-            QFile::remove(filename1);
+    else if (QFileInfo::exists(autosaveFile)) {
+            QFile::remove(autosaveFile);
     }
 }
 

@@ -221,7 +221,8 @@ protected:
     void timerEvent(QTimerEvent *event);
 
 private:
-    void Checking_Autosavefiles();
+    QStringList checkForAutosaveFiles();
+    void recoverAutosaveFiles(const QStringList &autosaveFiles);
     void initTabs();
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
