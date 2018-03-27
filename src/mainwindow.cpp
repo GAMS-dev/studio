@@ -45,8 +45,6 @@
 #include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
-#include "tool.h"
-
 
 namespace gams {
 namespace studio {
@@ -155,7 +153,7 @@ void MainWindow::Checking_Autosavefiles()
     QStringList pathes { mRecent.path };
     for (auto file : history()->lastOpenedFiles)
     {
-        QString path = Tool::getPath(file);
+        QString path = GAMSPaths::path(file);
         if (!path.isEmpty() && path != mRecent.path)
             pathes << path;
     }
@@ -231,7 +229,7 @@ void MainWindow::Checking_Autosavefiles()
         }
     }
 }
-  
+
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
 {
     FileContext *fc = mFileRepo.fileContext(id);
@@ -320,7 +318,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
             QFile::remove(filename1);
     }
 }
-  
+
 void MainWindow::updateMenuToCodec(int mib)
 {
     ui->menuEncoding->setEnabled(mib != -1);
