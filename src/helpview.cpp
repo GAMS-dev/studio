@@ -524,6 +524,16 @@ void HelpView::resetZoom()
     mHelpView->page()->setZoomFactor(1.0);
 }
 
+void HelpView::setZoomFactor(qreal factor)
+{
+    mHelpView->page()->setZoomFactor(factor);
+}
+
+qreal HelpView::getZoomFactor()
+{
+    return mHelpView->page()->zoomFactor();
+}
+
 void HelpView::addBookmarkAction(const QString &objectName, const QString &title)
 {
     QAction* action = new QAction(this);

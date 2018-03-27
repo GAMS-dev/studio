@@ -72,6 +72,9 @@ public slots:
     void zoomOut();
     void resetZoom();
 
+    void setZoomFactor(qreal factor);
+    qreal getZoomFactor();
+
     void addBookmarkAction(const QString& objectName, const QString& title);
 
 private:

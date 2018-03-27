@@ -113,6 +113,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
+    mAppSettings->setValue("zoomFactor", main->getDockHelpView()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
@@ -293,8 +294,12 @@ void StudioSettings::loadSettings(MainWindow *main)
     }
     mAppSettings->endArray();
     main->getDockHelpView()->setBookmarkMap(bookmarkMap);
-
+    if (mAppSettings->value("zoomFactor") > 0.0)
+        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+    else
+        main->getDockHelpView()->setZoomFactor(1.0);
     mAppSettings->endGroup();
+
     mAppSettings->beginGroup("fileHistory");
 
     mAppSettings->beginReadArray("lastOpenedFiles");
