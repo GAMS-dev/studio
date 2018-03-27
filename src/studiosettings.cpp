@@ -66,6 +66,11 @@ void StudioSettings::resetSettings()
     mUserSettings->sync();
 }
 
+bool StudioSettings::resetSettingsSwitch()
+{
+    return mResetSettings;
+}
+
 void StudioSettings::saveSettings(MainWindow *main)
 {
     // return directly only if settings are ignored and not resettet
@@ -328,8 +333,6 @@ void StudioSettings::loadSettings(MainWindow *main)
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
-    // save settings directly after loading in order to reset
-    if (mResetSettings) saveSettings(main);
     mAppSettings->endGroup();
 }
 
