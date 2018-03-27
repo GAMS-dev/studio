@@ -45,6 +45,7 @@
 #include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
+#include "tool.h"
 
 
 namespace gams {
