@@ -836,7 +836,9 @@ void MainWindow::on_actionAbout_triggered()
     about += "GNU General Public License for more details.<br/><br/>";
     about += "You should have received a copy of the GNU General Public License ";
     about += "along with this program. If not, see ";
-    about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>. ";
+    about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>.<br/><br/>";
+    about += "The source code of the program can be accessed at ";
+    about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a>.";
     about += "<br/><br/><b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
