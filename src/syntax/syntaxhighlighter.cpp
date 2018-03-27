@@ -135,18 +135,18 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
     initState(new SyntaxDeclarationTable(), Qt::darkBlue, false, true);
 
-    initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(), false, true);
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), QColor(Qt::darkGreen).darker(100));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), QColor(Qt::darkGreen).darker(100));
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), QColor(Qt::blue).darker());
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(220), false, true);
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), QColor(Qt::darkGreen).darker(100));
 
-    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable), QColor(Qt::cyan).darker(), false, true);
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), QColor(Qt::darkGreen).darker(100));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable), QColor(Qt::cyan).darker(220), false, true);
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), QColor(Qt::blue).darker());
     // TODO(JM) table-assignment has no '/' character
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignment), QColor(Qt::blue).darker());
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignmentEnd), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignment), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignmentEnd), QColor(Qt::darkGreen).darker(100));
 
 }
 

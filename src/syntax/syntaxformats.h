@@ -86,15 +86,21 @@ class SyntaxAbstract;
 
 struct SyntaxBlock
 {
-    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool _error = false
-            , SyntaxStateShift _shift = SyntaxStateShift::shift, SyntaxState _next = SyntaxState::Standard)
-        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(_next)
+    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool hasContent = true
+            , bool _error = false, SyntaxStateShift _shift = SyntaxStateShift::shift
+            , SyntaxState _next = SyntaxState::Standard)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift)
+        , next(_next), contentInCurrentLine(hasContent)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool _error = false)
-        : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in), next(_next)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool hasContent = true
+            , bool _error = false)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in)
+        , next(_next), contentInCurrentLine(hasContent)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool _error = false)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool hasContent = true
+            , bool _error = false)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(SyntaxState::Standard)
+        , contentInCurrentLine(hasContent)
     { }
     SyntaxAbstract *syntax;
     int start;
@@ -102,6 +108,7 @@ struct SyntaxBlock
     bool error;
     SyntaxStateShift shift;
     SyntaxState next;
+    bool contentInCurrentLine = false;
     int length() { return end-start; }
     bool isValid() { return syntax && start<end; }
 };

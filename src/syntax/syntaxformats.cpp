@@ -110,9 +110,9 @@ SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, in
     int i = line.indexOf(';', index);
     bool error = invalidEntries.contains(entryState);
     if (i>-1)
-        return SyntaxBlock(this, index, i+1, error);
+        return SyntaxBlock(this, index, i+1, true, error);
     else
-        return SyntaxBlock(this, index, line.length(), error);
+        return SyntaxBlock(this, index, line.length(), true, error);
 }
 
 SyntaxBlock SyntaxStandard::validTail(const QString &line, int index)
@@ -155,9 +155,9 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length()-1;
         SyntaxStateShift shift = (atEnd && next != SyntaxState::CommentBlock) ? SyntaxStateShift::out : SyntaxStateShift::in;
-        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
+        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), true, false, shift, next);
     } else {
-        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);
+        return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, false, true);
     }
 }
 
@@ -195,7 +195,7 @@ SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line,
 {
     Q_UNUSED(entryState)
     if (entryState == SyntaxState::CommentLine || (index==0 && line.startsWith(mCommentChar)))
-        return SyntaxBlock(this, index, line.length(), false, SyntaxStateShift::skip);
+        return SyntaxBlock(this, index, line.length(), true, false, SyntaxStateShift::skip);
     return SyntaxBlock();
 }
 
