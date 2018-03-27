@@ -12,6 +12,7 @@ class Tool
 public:
     static int findAlphaNum(QString text, int start, bool back);
     static QString absolutePath(QString path);
+    static QString getPath(const QString &file);
 };
 
 } // namespace studio
