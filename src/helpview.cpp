@@ -455,6 +455,7 @@ void HelpView::on_searchHelp()
     findText("", Forward);
     if (mSearchBar->isVisible()) {
         mSearchBar->hide();
+        mHelpView->setFocus();
     } else {
         mSearchBar->show();
         mSearchLineEdit->setFocus();
@@ -558,6 +559,7 @@ void HelpView::keyPressEvent(QKeyEvent *e)
 {
     if (mSearchBar->isVisible()) {
         if (e->key() == Qt::Key_Escape) {
+           findText("", Forward);
            mSearchBar->hide();
            mHelpView->setFocus();
         } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
