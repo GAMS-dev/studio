@@ -101,8 +101,8 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxState::Declarat
 
     list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
     mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
-    mSubStates << SyntaxState::Identifier << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
+               << SyntaxState::CommentInline << SyntaxState::Identifier;
 }
 
 SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line, int index)

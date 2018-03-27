@@ -30,29 +30,40 @@ QString syntaxStateName(SyntaxState state)
 {
     static const QHash<int, QString> syntaxStateName {
         {static_cast<int>(SyntaxState::Standard), "Standard"},
+        {static_cast<int>(SyntaxState::Semicolon), "Semicolon"},
         {static_cast<int>(SyntaxState::Directive), "Directive"},
         {static_cast<int>(SyntaxState::DirectiveBody), "DirectiveBody"},
         {static_cast<int>(SyntaxState::DirectiveComment), "DirectiveComment"},
         {static_cast<int>(SyntaxState::Title), "Title"},
+
         {static_cast<int>(SyntaxState::CommentLine), "CommentLine"},
         {static_cast<int>(SyntaxState::CommentBlock), "CommentBlock"},
         {static_cast<int>(SyntaxState::CommentEndline), "CommentEndline"},
         {static_cast<int>(SyntaxState::CommentInline), "CommentInline"},
+
         {static_cast<int>(SyntaxState::DeclarationSetType), "DeclarationSetType"},
         {static_cast<int>(SyntaxState::DeclarationVariableType), "DeclarationVariableType"},
         {static_cast<int>(SyntaxState::Declaration), "Declaration"},
         {static_cast<int>(SyntaxState::DeclarationTable), "DeclarationTable"},
+
         {static_cast<int>(SyntaxState::Identifier), "Identifier"},
-        {static_cast<int>(SyntaxState::IdentifierDescription), "IdentifierDescription"},
+        {static_cast<int>(SyntaxState::IdentifierDescription1), "IdentifierDescription1"},
+        {static_cast<int>(SyntaxState::IdentifierDescription2), "IdentifierDescription2"},
         {static_cast<int>(SyntaxState::IdentifierAssignment), "IdentifierAssignment"},
+        {static_cast<int>(SyntaxState::IdentifierAssignmentEnd), "IdentifierAssignmentEnd"},
+
         {static_cast<int>(SyntaxState::IdentifierTable), "IdentifierTable"},
-        {static_cast<int>(SyntaxState::IdentifierTableDescription), "IdentifierTableDescription"},
+        {static_cast<int>(SyntaxState::IdentifierTableDescription1), "IdentifierTableDescription1"},
+        {static_cast<int>(SyntaxState::IdentifierTableDescription2), "IdentifierTableDescription2"},
         {static_cast<int>(SyntaxState::IdentifierTableAssignment), "IdentifierTableAssignment"},
+        {static_cast<int>(SyntaxState::IdentifierTableAssignmentEnd), "IdentifierTableAssignmentEnd"},
+
         {static_cast<int>(SyntaxState::Reserved), "Reserved"},
+        {static_cast<int>(SyntaxState::ReservedBody), "ReservedBody"},
 
         {static_cast<int>(SyntaxState::StateCount), "StateCount"},
     };
-    return syntaxStateName.value(static_cast<int>(state), "-- unassigned --");
+    return syntaxStateName.value(static_cast<int>(state), QString("--unassigned(%1)--").arg(static_cast<int>(state)));
 }
 
 
@@ -79,9 +90,10 @@ SyntaxState SyntaxAbstract::intToState(int intState)
 }
 
 
-SyntaxStandard::SyntaxStandard()
+SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxState::Standard)
 {
-    mSubStates << SyntaxState::CommentLine
+    mSubStates << SyntaxState::Semicolon
+               << SyntaxState::CommentLine
                << SyntaxState::Declaration
                << SyntaxState::DeclarationSetType
                << SyntaxState::DeclarationVariableType
@@ -108,7 +120,7 @@ SyntaxBlock SyntaxStandard::validTail(const QString &line, int index)
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
 }
 
-SyntaxDirective::SyntaxDirective(QChar directiveChar)
+SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxState::Directive)
 {
     mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
@@ -157,7 +169,7 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index)
 }
 
 
-SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxState state) : mState(state)
+SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxState state) : SyntaxAbstract(state)
 {
     if (state != SyntaxState::DirectiveBody && state != SyntaxState::DirectiveComment && state != SyntaxState::Title)
         FATAL() << "invalid SyntaxState to initialize SyntaxDirectiveBody: " << syntaxStateName(state);
@@ -175,7 +187,8 @@ SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index)
 }
 
 
-SyntaxCommentLine::SyntaxCommentLine(QChar commentChar): mCommentChar(commentChar)
+SyntaxCommentLine::SyntaxCommentLine(QChar commentChar)
+    : SyntaxAbstract(SyntaxState::CommentLine), mCommentChar(commentChar)
 { }
 
 SyntaxBlock SyntaxCommentLine::find(SyntaxState entryState, const QString& line, int index)
@@ -192,7 +205,7 @@ SyntaxBlock SyntaxCommentLine::validTail(const QString &line, int index)
 }
 
 
-SyntaxCommentBlock::SyntaxCommentBlock()
+SyntaxCommentBlock::SyntaxCommentBlock() : SyntaxAbstract(SyntaxState::CommentBlock)
 {
     mSubStates << SyntaxState::Directive;
 }
@@ -208,19 +221,22 @@ SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index)
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
 }
 
-//SyntaxBlock SyntaxError::find(SyntaxState entryState, const QString &line, int index)
-//{
-//    // This state won't be 'found'. It exists to mark the error properly and to initialize the SyntaxBlock
-//    Q_UNUSED(entryState)
-//    Q_UNUSED(line)
-//    return SyntaxBlock(this, index, index, SyntaxStateShift::reset, true);
-//}
+SyntaxBlock SyntaxSemicolon::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState)
+    int end = index;
+    while (isWhitechar(line, end)) end++;
+    if (end < line.length() && line.at(end) == ';')
+        return SyntaxBlock(this, index, end+1, SyntaxStateShift::reset);
+    return SyntaxBlock(this);
+}
 
-//int SyntaxError::lastValid(const QString &line, int index)
-//{
-
-//}
-
+SyntaxBlock SyntaxSemicolon::validTail(const QString &line, int index)
+{
+    int end = index;
+    while (isWhitechar(line, end)) end++;
+    return SyntaxBlock(this, index, end, SyntaxStateShift::reset);
+}
 
 } // namespace studio
 } // namespace gams

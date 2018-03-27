@@ -27,10 +27,28 @@ namespace studio {
 
 class SyntaxIdentifier : public SyntaxAbstract
 {
-    SyntaxState mState;
+    QRegularExpression mRex;
 public:
     SyntaxIdentifier(SyntaxState state);
-    inline SyntaxState state() override { return mState; }
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index) override;
+};
+
+class SyntaxIdentDescript : public SyntaxAbstract
+{
+    QChar mDelimiter;
+    bool mTable;
+public:
+    SyntaxIdentDescript(SyntaxState state);
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index) override;
+};
+
+class SyntaxIdentAssign : public SyntaxAbstract
+{
+    QChar mDelimiter;
+public:
+    SyntaxIdentAssign(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 };

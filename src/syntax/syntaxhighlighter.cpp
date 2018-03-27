@@ -120,20 +120,33 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     : ErrorHighlighter(context)
 {
     initState(new SyntaxStandard());
+    initState(new SyntaxSemicolon());
     initState(new SyntaxDirective(), Qt::darkMagenta);
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), Qt::darkBlue);
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), Qt::darkGreen, true, false);
-    initState(new SyntaxDirectiveBody(SyntaxState::Title), Qt::darkBlue, true, true, true);
-    initState(new SyntaxCommentLine(), Qt::darkGreen, true, false);
-    initState(new SyntaxCommentBlock(), Qt::darkGreen, true, false);
-    initState(new SyntaxReserved(), Qt::darkBlue, false, true, true);
-    initState(new SyntaxReservedBody(), Qt::darkCyan, false, true, true);
-    initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
+    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), Qt::darkGreen, true);
+    initState(new SyntaxDirectiveBody(SyntaxState::Title), Qt::darkBlue, true, true);
+    initState(new SyntaxCommentLine(), Qt::darkGreen, true);
+    initState(new SyntaxCommentBlock(), Qt::darkGreen, true);
+
+    initState(new SyntaxReserved(), Qt::darkBlue, false, true);
+    initState(new SyntaxReservedBody(), Qt::darkCyan, false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), Qt::darkBlue, false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), Qt::darkBlue, false, true);
+    initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
     initState(new SyntaxDeclarationTable(), Qt::darkBlue, false, true);
+
     initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(), false, true);
-    initState(new SyntaxIdentifier(SyntaxState::IdentifierDone), QColor(Qt::cyan).darker(), false, true);
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), QColor(Qt::blue).darker());
+
+    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable), QColor(Qt::cyan).darker(), false, true);
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), QColor(Qt::darkGreen).darker(100));
+    // TODO(JM) table-assignment has no '/' character
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignment), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignmentEnd), QColor(Qt::blue).darker());
 
 }
 
@@ -159,7 +172,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         QString debString = QString("  %1").arg(textBlock.blockNumber()).right(3) + ", " + QString(" %1").arg(index).right(2) + "-";
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
-
+        QString syntaxDebug = syntaxStateName(syntax->state())+ QString(" %1").arg(index);
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index);
 
@@ -248,17 +261,21 @@ void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
     addCode(mStates.length()-1, ci);
 }
 
-QColor nextColor() {
-    static int debIndex = -1;
-    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(175),
+QColor backColor(int index) {
+    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(170),
                                   QColor(Qt::green).lighter()};
-    debIndex = (debIndex+1) % debColor.size();
-    return debColor.at(debIndex);
+    index = (qAbs(index)-1) % debColor.size();
+    return debColor.at(index);
 }
 
-void SyntaxHighlighter::initState(SyntaxAbstract *syntax, QColor color, bool italic, bool bold, bool debug)
+void SyntaxHighlighter::initState(int debug, SyntaxAbstract *syntax, QColor color, bool bold, bool italic)
 {
-    if (debug) syntax->charFormat().setBackground(nextColor());
+    initState(syntax, color, bold, italic, debug);
+}
+
+void SyntaxHighlighter::initState(SyntaxAbstract *syntax, QColor color, bool italic, bool bold, int debug)
+{
+    if (debug) syntax->charFormat().setBackground(backColor(debug));
 
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     if (color.isValid()) syntax->charFormat().setForeground(color);

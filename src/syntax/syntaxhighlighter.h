@@ -79,7 +79,8 @@ private:
     /// \param syntax The syntax to be added to the stack
     /// \param ci The index in mStates of the previous syntax
     void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void initState(SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false, bool debug = false);
+    void initState(int debug, SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false);
+    void initState(SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false, int debug = 0);
 
     int addCode(StateIndex si, CodeIndex ci);
     int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);

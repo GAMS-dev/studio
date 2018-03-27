@@ -30,33 +30,37 @@ namespace studio {
 
 enum class SyntaxState {
     Standard,
+    Semicolon,
     Directive,
     DirectiveBody,                  // text following the Directive
     DirectiveComment,               // a DirectiveBody formatted as comment
     Title,                          // a DirectiveBody formatted as title
+
     CommentLine,
     CommentBlock,
     CommentEndline,
     CommentInline,
+
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
     Declaration,
     DeclarationTable,
+
     Identifier,
-    IdentifierDone,                 // ..Done: identifier was a former line
-    IdentifierDescription,
-    IdentifierDescriptionDone,
+    IdentifierDescription1,         // description started with single quote '
+    IdentifierDescription2,         // description started with double quote "
     IdentifierAssignment,
-    IdentifierAssignmentDone,
+    IdentifierAssignmentEnd,        // after assignment to keep declaration-level
+
     IdentifierTable,
-    IdentifierTableDone,
-    IdentifierTableDescription,
-    IdentifierTableDescriptionDone,
+    IdentifierTableDescription1,
+    IdentifierTableDescription2,
     IdentifierTableAssignment,
-    IdentifierTableAssignmentDone,
+    IdentifierTableAssignmentEnd,   // after assignment to keep declaration-level
+
     Reserved,
     ReservedBody,
-    Error,
+
     StateCount
 };
 QString syntaxStateName(SyntaxState state);
@@ -106,8 +110,9 @@ struct SyntaxBlock
 class SyntaxAbstract
 {
 public:
+    SyntaxAbstract(SyntaxState state) : mState(state) {}
     virtual ~SyntaxAbstract() {}
-    virtual SyntaxState state() = 0;
+    SyntaxState state() { return mState; }
 
     /// Finds the begin of this syntax
     virtual SyntaxBlock find(SyntaxState entryState, const QString &line, int index) = 0;
@@ -127,6 +132,7 @@ protected:
                                        || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
     }
 protected:
+    SyntaxState mState;
     QTextCharFormat mCharFormat;
     SyntaxTransitions mSubStates;
 };
@@ -137,7 +143,6 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    inline SyntaxState state() override { return SyntaxState::Standard; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 };
@@ -148,7 +153,6 @@ class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    inline SyntaxState state() override { return SyntaxState::Directive; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 private:
@@ -162,10 +166,8 @@ private:
 /// \brief Defines the syntax for a single comment line.
 class SyntaxDirectiveBody: public SyntaxAbstract
 {
-    SyntaxState mState;
 public:
     SyntaxDirectiveBody(SyntaxState state);
-    inline SyntaxState state() override { return mState; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 };
@@ -175,7 +177,6 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    inline SyntaxState state() override { return SyntaxState::CommentLine; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 private:
@@ -187,20 +188,17 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    inline SyntaxState state() override { return SyntaxState::CommentBlock; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 };
 
-///// \brief Defines the syntax for an error.
-//class SyntaxError: public SyntaxAbstract
-//{
-//public:
-//    SyntaxError();
-//    inline SyntaxState state() override { return SyntaxState::Error; }
-//    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-//    int lastValid(const QString &line, int index) override;
-//};
+class SyntaxSemicolon: public SyntaxAbstract
+{
+public:
+    SyntaxSemicolon() : SyntaxAbstract(SyntaxState::Semicolon) {}
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index) override;
+};
 
 } // namespace studio
 } // namespace gams

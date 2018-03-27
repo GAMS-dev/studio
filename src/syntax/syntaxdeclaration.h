@@ -65,14 +65,12 @@ private:
 /// \brief Defines the syntax for a declaration.
 class SyntaxKeywordBase: public SyntaxAbstract
 {
-    const SyntaxState mState;
 public:
     ~SyntaxKeywordBase();
-    SyntaxKeywordBase(SyntaxState state) : mState(state) {}
+    SyntaxKeywordBase(SyntaxState state) : SyntaxAbstract(state) {}
     SyntaxBlock validTail(const QString &line, int index) override;
 
 protected:
-    inline SyntaxState state() override { return mState; }
     int findEnd(SyntaxState state, const QString& line, int index);
     QHash<SyntaxState, DictList*> mKeywords;
 
@@ -99,7 +97,6 @@ class SyntaxDeclarationTable: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclarationTable();
-    inline SyntaxState state() override { return SyntaxState::DeclarationTable; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 
@@ -107,15 +104,13 @@ class SyntaxReserved: public SyntaxKeywordBase
 {
 public:
     SyntaxReserved();
-    inline SyntaxState state() override { return SyntaxState::Reserved; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
 };
 
 class SyntaxReservedBody: public SyntaxAbstract
 {
 public:
-    SyntaxReservedBody() {}
-    inline SyntaxState state() override { return SyntaxState::ReservedBody; }
+    SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody) {}
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index) override;
 };
