@@ -117,6 +117,8 @@ public:
     void resetSettings();
     bool resetSettingsSwitch();
 
+    void restoreFiles(MainWindow *main);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;

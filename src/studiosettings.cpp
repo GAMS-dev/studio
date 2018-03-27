@@ -254,6 +254,19 @@ void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
     mAppSettings->endGroup();
 }
 
+void StudioSettings::restoreFiles(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    main->fileRepository()->read(loadDoc.object());
+
+    saveData = mAppSettings->value("openTabs", "").toByteArray();
+    loadDoc = QJsonDocument::fromJson(saveData);
+    main->readTabs(loadDoc.object());
+    mAppSettings->endGroup();
+}
+
 void StudioSettings::loadSettings(MainWindow *main)
 {
     if (mResetSettings)
@@ -318,14 +331,6 @@ void StudioSettings::loadSettings(MainWindow *main)
     }
     mAppSettings->endArray();
     main->commandLineHistory()->setAllHistory(map);
-
-    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
-    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->fileRepository()->read(loadDoc.object());
-
-    saveData = mAppSettings->value("openTabs", "").toByteArray();
-    loadDoc = QJsonDocument::fromJson(saveData);
-    main->readTabs(loadDoc.object());
 
     loadUserSettings();
 

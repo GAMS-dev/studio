@@ -122,6 +122,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
+    mSettings->restoreFiles(this);
     mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
