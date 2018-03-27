@@ -23,6 +23,7 @@
 #include "exception.h"
 #include "gamsprocess.h"
 #include "logger.h"
+#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -227,7 +228,7 @@ void FileGroupContext::updateChildNodes()
     QList<IndexedFSContext> vanishedEntries;
     for (int i = 0; i < childCount(); ++i) {
         FileSystemContext *entry = childEntry(i);
-        if (entry->location().isEmpty())
+        if (entry->type() == FileSystemContext::Log)
             continue;
         QFileInfo fi(entry->location());
         int pos = addList.indexOf(fi);
@@ -255,7 +256,7 @@ void FileGroupContext::updateChildNodes()
     // add newly appeared files and directories
     for (QFileInfo fi: addList) {
         if (fi.exists())
-            emit requestNode(fi.fileName(), fi.canonicalFilePath(), this);
+            emit requestNode(fi.fileName(), Tool::absolutePath(fi.filePath()), this);
     }
 }
 
@@ -299,6 +300,19 @@ bool FileGroupContext::hasLstErrorText(int line)
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
+void FileGroupContext::saveGroup()
+{
+    foreach (FileSystemContext* child, mChildList) {
+        if (child->type() == ContextType::FileGroup) {
+            FileGroupContext *fgc = static_cast<FileGroupContext*>(child);
+            fgc->saveGroup();
+        } else if (child->type() == ContextType::File) {
+            FileContext *fc = static_cast<FileContext*>(child);
+            fc->save();
+        }
+    }
+}
+
 QString FileGroupContext::runableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
@@ -313,7 +327,7 @@ QString FileGroupContext::lstFileName()
     return mLstFileName;
 }
 
-LogContext*FileGroupContext::logContext()
+LogContext*FileGroupContext::logContext() const
 {
     return mLogContext;
 }
@@ -370,7 +384,7 @@ void FileGroupContext::processDeleted()
 {
     mGamsProcess = nullptr;
     updateRunState(QProcess::NotRunning);
-    emit gamsProcessStateChanged(this);
+    //emit gamsProcessStateChanged(this);
 }
 
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)

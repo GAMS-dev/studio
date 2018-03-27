@@ -32,6 +32,16 @@
         <file alias="compile">compile.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
         <file alias="compile-gdx">compile-gdx.svg</file>
+        <file alias="plus">plus.svg</file>
+        <file alias="minus">minus.svg</file>
+        <file alias="delete-all">trash.svg</file>
+        <file alias="move-up">move-up.svg</file>
+        <file alias="move-down">move-down.svg</file>
+        <file alias="delete">remove.svg</file>
+        <file>square-red.svg</file>
+        <file>square-green.svg</file>
+        <file>square-gray.svg</file>
+        <file>insert.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

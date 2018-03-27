@@ -53,7 +53,7 @@ public:
 
     QString runableGms();
     QString lstFileName();
-    LogContext* logContext();
+    LogContext* logContext() const;
 
     GamsProcess* newGamsProcess();
     GamsProcess* gamsProcess();
@@ -68,6 +68,7 @@ public:
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
+    void saveGroup();
 
     void dumpMarks();
 
@@ -75,7 +76,7 @@ signals:
     void gamsProcessStateChanged(FileGroupContext* group);
     void removeNode(FileSystemContext *node);
     void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

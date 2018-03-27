@@ -24,7 +24,6 @@
 #include "filecontext.h"
 #include "filesystemcontext.h"
 #include "filegroupcontext.h"
-#include "fileactioncontext.h"
 #include "logger.h"
 
 namespace gams {
@@ -107,11 +106,6 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
 //        if (mFileRepo->context(index)->flags().testFlag(FileSystemContext::cfActive)) {
             QFont f;
             f.setBold(true);
-            return f;
-        }
-        if (mFileRepo->context(ind)->type() == FileSystemContext::FileAction) {
-            QFont f;
-            f.setItalic(true);
             return f;
         }
     }

@@ -32,7 +32,10 @@ TextMarkList::TextMarkList(FileGroupContext* group, const QString& fileName)
 
 void TextMarkList::unbind()
 {
-    mFileContext = nullptr;
+    if (mFileContext) {
+        mFileContext->unbindMarks();
+        mFileContext = nullptr;
+    }
 }
 
 void TextMarkList::bind(FileContext* fc)
@@ -60,10 +63,11 @@ void TextMarkList::rehighlight()
     }
 }
 
-void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks)
+void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter)
 {
     for (TextMark* mark: mMarks) {
-        marks->insert(mark->line(), mark);
+        if ((mark->type() == filter) || filter == TextMark::all)
+            marks->insert(mark->line(), mark);
     }
 }
 
@@ -137,8 +141,8 @@ QTextDocument*TextMarkList::document() const
 FileContext* TextMarkList::openFileContext()
 {
     if (!mFileContext) {
-        DEB() << "!!! Error !!! FileContext should be already bound:" << mFileName;
-        emit getFileContext(mFileName, &mFileContext, mGroupContext);
+        DEB() << "Creating FileContext for missing " << mFileName;
+        emit getFileContext(mFileName, mFileContext, mGroupContext);
         if (!mFileContext) EXCEPT() << "Error creating FileContext " << mFileName;
     }
     if (!mFileContext->document()) {

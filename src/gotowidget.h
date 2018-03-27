@@ -49,7 +49,6 @@ private:
     Ui::GoToWidget *ui;
     MainWindow *mMain;
     QTextCursor mSelection;
-    QList<TextMark*> mAllTextMarks;
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *event);
 
