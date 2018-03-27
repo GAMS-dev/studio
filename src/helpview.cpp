@@ -160,7 +160,83 @@ void HelpView::setupUi(QWidget *parent)
     helpVLayout->addWidget( toolbar );
     helpVLayout->addWidget( mHelpView );
 
+    createSearchBar();
+    helpVLayout->addWidget(mSearchBar);
+
     this->setWidget( helpWidget );
+}
+
+void HelpView::createSearchBar()
+{
+    QWidget* searchWidget = new QWidget(this);
+    QHBoxLayout* layout = new QHBoxLayout;
+    searchWidget->setLayout(layout);
+    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sizePolicy.setVerticalStretch(0);
+    searchWidget->setSizePolicy(sizePolicy);
+
+    mSearchLineEdit = new QLineEdit(this);
+    mSearchLineEdit->setPlaceholderText(tr("Find in page..."));
+    mSearchLineEdit->setClearButtonEnabled(true);
+    connect(mSearchLineEdit, &QLineEdit::textChanged, this, &HelpView::searchText);
+    layout->addWidget(mSearchLineEdit);
+
+    QSizePolicy buttonSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    buttonSizePolicy.setVerticalStretch(0);
+
+    QPushButton* backButton = new QPushButton(this);
+    QPushButton* forwardButton = new QPushButton(this);
+    QIcon backButtonIcon(QPixmap(":/img/backward"));
+    QIcon forwardButtonIcon(QPixmap(":/img/forward"));
+    backButton->setIcon(backButtonIcon);
+    backButton->setSizePolicy(buttonSizePolicy);
+    backButton->setToolTip(tr("Find the previous occurrence"));
+    forwardButton->setIcon(forwardButtonIcon);
+    forwardButton->setSizePolicy(buttonSizePolicy);
+    forwardButton->setToolTip(tr("Find the next occurrence"));
+    connect(backButton, &QPushButton::clicked, this, &HelpView::on_backButtonTriggered);
+    connect(forwardButton, &QPushButton::clicked, this, &HelpView::on_forwardButtonTriggered);
+
+    layout->addWidget(backButton);
+    layout->addWidget(forwardButton);
+
+    QCheckBox* caseSensitivity = new QCheckBox(this);
+    caseSensitivity->setText(tr("Case Sensitivity"));
+    caseSensitivity->setSizePolicy(buttonSizePolicy);
+    caseSensitivity->setToolTip(tr("Find with Case Sensitvity"));
+    connect(caseSensitivity, &QCheckBox::clicked, this, &HelpView::on_caseSensitivityToggled);
+    layout->addWidget(caseSensitivity);
+
+    QWidget* statusWidget = new QWidget(this);
+    QHBoxLayout* statusWidgetLayout = new QHBoxLayout;
+    statusWidget->setSizePolicy(sizePolicy);
+    statusWidget->setLayout(statusWidgetLayout);
+    mStatusText = new QLabel("", this);
+    mStatusText->setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+    statusWidgetLayout->addWidget(mStatusText);
+
+    QWidget* closeWidget = new QWidget(this);
+    QHBoxLayout* closeWidgetlayout = new QHBoxLayout;
+    closeWidget->setLayout(closeWidgetlayout);
+    closeWidget->setSizePolicy(sizePolicy);
+
+    QPushButton* closeButton = new QPushButton(this);
+    QPixmap closePixmap(":/img/delete");
+    QIcon closeButtonIcon(closePixmap);
+    closeButton->setIcon(closeButtonIcon);
+
+    closeButton->setSizePolicy(buttonSizePolicy);
+    closeButton->setToolTip(QStringLiteral("Close Find Help"));
+    connect(closeButton, &QPushButton::clicked, this, &HelpView::on_closeButtonTriggered);
+
+    closeWidgetlayout->addWidget(closeButton);
+
+    mSearchBar = new QStatusBar(this);
+    mSearchBar->addPermanentWidget(searchWidget, 2);
+    mSearchBar->addPermanentWidget(statusWidget, 1);
+    mSearchBar->addPermanentWidget(closeWidget, 0);
+
+    mSearchBar->hide();
 }
 
 void HelpView::on_urlOpened(const QUrl& location)
@@ -373,6 +449,60 @@ void HelpView::on_actionOpenInBrowser_triggered()
     QDesktopServices::openUrl( mHelpView->url() );
 }
 
+void HelpView::on_searchHelp()
+{
+    mSearchLineEdit->clear();
+    findText("", Forward);
+    if (mSearchBar->isVisible()) {
+        mSearchBar->hide();
+    } else {
+        mSearchBar->show();
+        mSearchLineEdit->setFocus();
+    }
+}
+
+void HelpView::on_backButtonTriggered()
+{
+    findText(mSearchLineEdit->text(), Backward);
+}
+
+void HelpView::on_forwardButtonTriggered()
+{
+    findText(mSearchLineEdit->text(), Forward);
+}
+
+void HelpView::on_closeButtonTriggered()
+{
+    on_searchHelp();
+}
+
+void HelpView::on_caseSensitivityToggled(bool checked)
+{
+    mSearchCaseSensitivity = checked;
+    findText("", Forward);
+    findText(mSearchLineEdit->text(), Forward);
+}
+
+void HelpView::searchText(const QString &text)
+{
+    findText(text, Forward);
+}
+
+void HelpView::findText(const QString &text, SearchDirection direction)
+{
+    QWebEnginePage::FindFlags flags = (mSearchCaseSensitivity ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
+    if (direction == Backward)
+        flags = flags | QWebEnginePage::FindBackward;
+    mHelpView->page()->findText(text, flags, [this](bool found) {
+        if (found)
+            mStatusText->setText("");
+        else
+            mStatusText->setText("No occurrences found");
+    });
+    if (text.isEmpty())
+        mStatusText->setText("");
+}
+
 void HelpView::copyURLToClipboard()
 {
     QClipboard* clip = QApplication::clipboard();;
@@ -394,14 +524,6 @@ void HelpView::resetZoom()
     mHelpView->page()->setZoomFactor(1.0);
 }
 
-void HelpView::findText(const QString& word, QWebEnginePage::FindFlags options)
-{
-    mHelpView->page()->findText(word, options);
-//    mHelpView->page()->findText(word, options, [this](bool found) {
-//        if (!found) QMessageBox::information(mHelpView, QString(), QStringLiteral("No occurrences found"));
-//    });
-}
-
 void HelpView::addBookmarkAction(const QString &objectName, const QString &title)
 {
     QAction* action = new QAction(this);
@@ -420,6 +542,19 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     }
     connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
     mBookmarkMenu->addAction(action);
+}
+
+void HelpView::keyPressEvent(QKeyEvent *e)
+{
+    if (mSearchBar->isVisible()) {
+        if (e->key() == Qt::Key_Escape) {
+           mSearchBar->hide();
+           mHelpView->setFocus();
+        } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+                  on_forwardButtonTriggered();
+        }
+    }
+     QDockWidget::keyPressEvent(e);
 }
 
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)

@@ -42,6 +42,8 @@
         <file>square-green.svg</file>
         <file>square-gray.svg</file>
         <file>insert.svg</file>
+        <file alias="forward">angle-down.svg</file>
+        <file alias="backward">angle-up.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

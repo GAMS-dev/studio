@@ -806,7 +806,6 @@ void MainWindow::on_actionHelp_triggered()
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
-//        qDebug() << "word=[" << word << "], State=" << istate;
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
             mDockHelpView->on_dollarControlHelpRequested("title");
@@ -1703,24 +1702,29 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    // toggle visibility
-    if (mSearchWidget->isVisible()) {
-        mSearchWidget->hide();
+    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
+        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
+        getDockHelpView()->on_searchHelp();
     } else {
-        QPoint p(0,0);
-        QPoint newP(this->mapToGlobal(p));
+       // toggle visibility
+       if (mSearchWidget->isVisible()) {
+           mSearchWidget->hide();
+       } else {
+           QPoint p(0,0);
+           QPoint newP(this->mapToGlobal(p));
 
-        if (ui->mainTab->currentWidget()) {
-            int sbs;
-            if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
-                sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
-            else
-                sbs = 2;
+           if (ui->mainTab->currentWidget()) {
+               int sbs;
+               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+                   sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+               else
+                   sbs = 2;
 
-            int offset = (this->width() - mSearchWidget->width() - sbs);
-            mSearchWidget->move(newP.x() + offset, newP.y());
-        }
-        mSearchWidget->show();
+               int offset = (this->width() - mSearchWidget->width() - sbs);
+               mSearchWidget->move(newP.x() + offset, newP.y());
+           }
+           mSearchWidget->show();
+       }
     }
 }
 
