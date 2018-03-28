@@ -226,7 +226,10 @@ SyntaxBlock SyntaxTableAssign::find(SyntaxState entryState, const QString &line,
         if (start >= line.length() || line.at(start) != '+')
             return SyntaxBlock(this);
     }
-    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
+    int end = line.indexOf(';', index);
+    if (end < 0)
+        return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
 }
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &hasContent)
