@@ -20,51 +20,80 @@
 #ifndef SYNTAXFORMATS_H
 #define SYNTAXFORMATS_H
 
-#include <QtGui>
+#include <QTextCharFormat>
+#include <QHash>
+#include <QStringList>
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 
 enum class SyntaxState {
     Standard,
+    Semicolon,
     Directive,
-    Title,
+    DirectiveBody,                  // text following the Directive
+    DirectiveComment,               // a DirectiveBody formatted as comment
+    Title,                          // a DirectiveBody formatted as title
+
     CommentLine,
     CommentBlock,
     CommentEndline,
     CommentInline,
-    CommentMargin,
-    DeclarationSetType,         // must be followed by Declaration
-    DeclarationVariableType,    // must be followed by Declaration
+
+    DeclarationSetType,             // must be followed by Declaration
+    DeclarationVariableType,        // must be followed by Declaration
     Declaration,
+    DeclarationTable,
+
     Identifier,
-    IdentifierDescription,
+    IdentifierDescription1,         // description started with single quote '
+    IdentifierDescription2,         // description started with double quote "
     IdentifierAssignment,
+    IdentifierAssignmentEnd,        // after assignment to keep declaration-level
+
+    IdentifierTable,
+    IdentifierTableDescription1,
+    IdentifierTableDescription2,
+    IdentifierTableAssignmentHead,
+    IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
+
+    Reserved,
+    ReservedBody,
 
     StateCount
 };
 QString syntaxStateName(SyntaxState state);
 
-typedef QList<SyntaxState> SyntaxStates;
-
 enum class SyntaxStateShift {
-    stay,
-    in,
-    out
+    shift,      ///> shifts from the previous state to the current state
+    skip,       ///> skips the current state
+    in,         ///> stacks the nextState on top
+    out,        ///> steps out of the state (unstacks current state)
+    reset,      ///> steps out of the whole stack until SyntaxState::Standard is reached
 };
+
+struct SyntaxTransition
+{
+    SyntaxTransition(SyntaxState _state, SyntaxStateShift _shift) : state(_state), shift(_shift) {}
+    const SyntaxState state;
+    const SyntaxStateShift shift;
+};
+
+typedef QList<SyntaxState> SyntaxTransitions;
 
 class SyntaxAbstract;
 
 struct SyntaxBlock
 {
-    SyntaxBlock(SyntaxAbstract* _syntax=nullptr, int _start=0, int _end=0, bool _error=false
-            , SyntaxStateShift _shift = SyntaxStateShift::stay, SyntaxState _next=SyntaxState::Standard)
+    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool _error = false
+            , SyntaxStateShift _shift = SyntaxStateShift::shift, SyntaxState _next = SyntaxState::Standard)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool _error=false)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool _error = false)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool _error=false)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool _error = false)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(SyntaxState::Standard)
     { }
     SyntaxAbstract *syntax;
@@ -74,17 +103,23 @@ struct SyntaxBlock
     SyntaxStateShift shift;
     SyntaxState next;
     int length() { return end-start; }
-    bool isValid() { return syntax; }
+    bool isValid() { return syntax && start<end; }
 };
 
 /// \brief An abstract class to be used inside the <c>SyntaxHighlighter</c>.
 class SyntaxAbstract
 {
 public:
+    SyntaxAbstract(SyntaxState state) : mState(state) {}
     virtual ~SyntaxAbstract() {}
-    virtual SyntaxState state() = 0;
+    SyntaxState state() { return mState; }
+
+    /// Finds the begin of this syntax
     virtual SyntaxBlock find(SyntaxState entryState, const QString &line, int index) = 0;
-    virtual SyntaxStates subStates() { return mSubStates; }
+
+    /// Finds the end of valid trailing characters for this syntax
+    virtual SyntaxBlock validTail(const QString &line, int index, bool &hasContent) = 0;
+    virtual SyntaxTransitions nextStates(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
@@ -97,8 +132,10 @@ protected:
                                        || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
     }
 protected:
+    SyntaxState mState;
     QTextCharFormat mCharFormat;
-    SyntaxStates mSubStates;
+    SyntaxTransitions mSubStates;
+    SyntaxTransitions mEmptyLineStates;
 };
 
 
@@ -107,8 +144,8 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    inline SyntaxState state() override { return SyntaxState::Standard; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 
@@ -117,8 +154,8 @@ class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    inline SyntaxState state() override { return SyntaxState::Directive; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
@@ -128,12 +165,12 @@ private:
 
 
 /// \brief Defines the syntax for a single comment line.
-class SyntaxTitle: public SyntaxAbstract
+class SyntaxDirectiveBody: public SyntaxAbstract
 {
 public:
-    SyntaxTitle();
-    inline SyntaxState state() override { return SyntaxState::Title; }
+    SyntaxDirectiveBody(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 /// \brief Defines the syntax for a single comment line.
@@ -141,8 +178,8 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    inline SyntaxState state() override { return SyntaxState::CommentLine; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
 };
@@ -152,8 +189,16 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    inline SyntaxState state() override { return SyntaxState::CommentBlock; }
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxSemicolon: public SyntaxAbstract
+{
+public:
+    SyntaxSemicolon() : SyntaxAbstract(SyntaxState::Semicolon) {}
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 } // namespace studio

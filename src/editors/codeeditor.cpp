@@ -160,10 +160,8 @@ void CodeEditor::pasteClipboard()
     if (!mBlockEdit) {
         if (isBlock) {
             QTextCursor c = textCursor();
-            QTextCursor anc = c;
-            anc.setPosition(c.anchor());
-            startBlockEdit(anc.blockNumber(), anc.columnNumber());
-            mBlockEdit->selectTo(c.blockNumber(), c.columnNumber());
+            if (c.hasSelection()) c.removeSelectedText();
+            startBlockEdit(c.blockNumber(), c.columnNumber());
             mBlockEdit->replaceBlockText(texts);
         } else {
             paste();
@@ -978,20 +976,22 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
     bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
     // append empty lines if needed
-    int missingLines = texts.count() - (qAbs(mStartLine - mCurrentLine) % texts.count()) - 1;
+    int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
-        QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mStartLine, mCurrentLine));
+        QTextBlock block = mEdit->document()->lastBlock();
         QTextCursor cursor(block);
-        cursor.setPosition(block.position() + block.length());
+        cursor.movePosition(QTextCursor::End);
         cursor.beginEditBlock();
         cursor.insertText(QString(missingLines, '\n'));
-        if (mStartLine > mCurrentLine) mStartLine += missingLines;
-        else mCurrentLine += missingLines;
         cursor.endEditBlock();
         newUndoBlock = false;
     }
+    if (qAbs(mStartLine-mCurrentLine) < texts.count() - 1) {
+        if (mStartLine > mCurrentLine) mStartLine = mCurrentLine + texts.count() - 1;
+        else mCurrentLine = mStartLine + texts.count() - 1;
+    }
 
-    int i = texts.count()-1;
+    int i = (qAbs(mStartLine-mCurrentLine)) % texts.count();
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
@@ -1001,7 +1001,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
         if (maxLen < s.length()) maxLen = s.length();
     }
 
-    if (newUndoBlock)  cursor.beginEditBlock();
+    if (newUndoBlock) cursor.beginEditBlock();
     else cursor.joinPreviousEditBlock();
 
     QChar ch(' ');
