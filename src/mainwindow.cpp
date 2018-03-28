@@ -108,10 +108,12 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSearchWidget = new SearchWidget(this);
-    mGoto= new GoToWidget(this);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
+    mSearchWidget = new SearchWidget(this);
+    mGoto= new GoToWidget(this);
+
+    if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
     if (mSettings->lineWrapProcess()) // set wrapping for system log
         ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -119,6 +121,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
+    mSettings->restoreFiles(this);
     mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));

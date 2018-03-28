@@ -66,6 +66,11 @@ void StudioSettings::resetSettings()
     mUserSettings->sync();
 }
 
+bool StudioSettings::resetSettingsSwitch()
+{
+    return mResetSettings;
+}
+
 void StudioSettings::saveSettings(MainWindow *main)
 {
     // return directly only if settings are ignored and not resettet
@@ -250,6 +255,19 @@ void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
     mAppSettings->endGroup();
 }
 
+void StudioSettings::restoreFiles(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    main->fileRepository()->read(loadDoc.object());
+
+    saveData = mAppSettings->value("openTabs", "").toByteArray();
+    loadDoc = QJsonDocument::fromJson(saveData);
+    main->readTabs(loadDoc.object());
+    mAppSettings->endGroup();
+}
+
 void StudioSettings::loadSettings(MainWindow *main)
 {
     if (mResetSettings)
@@ -319,22 +337,12 @@ void StudioSettings::loadSettings(MainWindow *main)
     mAppSettings->endArray();
     main->commandLineHistory()->setAllHistory(map);
 
-    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
-    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->fileRepository()->read(loadDoc.object());
-
-    saveData = mAppSettings->value("openTabs", "").toByteArray();
-    loadDoc = QJsonDocument::fromJson(saveData);
-    main->readTabs(loadDoc.object());
-
     loadUserSettings();
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
-    // save settings directly after loading in order to reset
-    if (mResetSettings) saveSettings(main);
     mAppSettings->endGroup();
 }
 
