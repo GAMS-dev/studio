@@ -229,7 +229,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
-        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
+//        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
 
         if (posForSyntaxState <= index) {
             mLastSyntaxState = nextBlock.syntax->intSyntaxType();
