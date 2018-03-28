@@ -1021,6 +1021,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->save();
 
     if (ret != QMessageBox::Cancel) {
+        for (const auto& file : checkForAutosaveFiles())
+            QFile::remove(file);
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
 //            if (!QFileInfo(fc->location()).exists()) {
