@@ -178,11 +178,14 @@ void MainWindow::recoverAutosaveFiles(const QStringList &autosaveFiles)
 {
     if (autosaveFiles.isEmpty()) return;
     const QString tmpFileMarker = "~$";
-    QMessageBox msgBox; // TODO review static method?
-    msgBox.setWindowTitle("Data Recovery");
-    msgBox.setText("Studio has shut down unexpectedly. Some files were not saved correctly. Do you want to recover your last modifications?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    int decision = msgBox.exec();
+    int decision = QMessageBox::question(this,
+                                         "Recover autosave files",
+                                         "Studio has shut down unexpectedly. Some"
+                                         "files were not saved correctly. Do you "
+                                         "want to recover your last modifications?",
+                                         QMessageBox::Yes | QMessageBox::No,
+                                         QMessageBox::Yes);
+
     if (QMessageBox::Yes == decision) {
         for (const auto& autosaveFile : autosaveFiles)
         {
