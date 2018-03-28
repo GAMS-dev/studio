@@ -201,12 +201,10 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxState state) : SyntaxAbstract(state)
                << SyntaxState::CommentEndline << SyntaxState::CommentInline;
     switch (state) {
     case SyntaxState::IdentifierTableAssignmentHead:
-        // TODO(JM) special format for tables maybe other class!
         mSubStates << SyntaxState::IdentifierTableAssignmentRow;
         break;
     case SyntaxState::IdentifierTableAssignmentRow:
-        mSubStates << SyntaxState::IdentifierTableAssignmentRow;
-        // TODO(JM) special format for tables maybe other class!
+        mSubStates << SyntaxState::IdentifierTableAssignmentHead;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxTableAssign: " << syntaxStateName(state);
