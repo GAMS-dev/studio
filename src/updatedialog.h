@@ -17,45 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSINFO_H
-#define GAMSINFO_H
+#ifndef UPDATEDIALOG_H
+#define UPDATEDIALOG_H
 
-#include <QString>
+#include <QtWidgets>
+
+namespace Ui {
+class UpdateDialog;
+}
 
 namespace gams {
 namespace studio {
 
-class GAMSPaths
+class UpdateDialog : public QDialog
 {
+    Q_OBJECT
+
 public:
-    ///
-    /// \brief Get GAMS system directory.
-    /// \return Returns the GAMS system directory.
-    /// \remark If GAMS Studio is part of the GAMS distribution a relateive
-    ///         path based on the executable location is returned;
-    ///         otherwise the PATH environment variable used to find GAMS.
-    ///
-    static QString systemDir();
+    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
-    static QString defaultWorkingDir();
-
-    static QString userDocumentsDir();
-
-    static QString userModelLibraryDir();
-
-    ///
-    /// \brief Get the file path even if the file does not exists.
-    /// \param path Path to the file.
-    /// \return Returns the canonical file path if the file exists;
-    ///         otherwise the absolute file path.
-    ///
-    static QString filePath(const QString &path);
+    void checkForUpdate();
 
 private:
-    GAMSPaths();
+    Ui::UpdateDialog *ui;
 };
 
 }
 }
 
-#endif // GAMSINFO_H
+#endif // UPDATEDIALOG_H

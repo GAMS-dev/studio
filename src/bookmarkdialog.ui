@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>438</height>
+    <width>416</width>
+    <height>353</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,29 +55,19 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="nameHlLayout">
+    <layout class="QHBoxLayout" name="nameHlLayout" stretch="1,5">
      <item>
       <widget class="QLabel" name="nameLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
-        <string>Name:</string>
+        <string>Name :</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="nameHSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>25</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QLineEdit" name="nameLineEdit"/>
@@ -85,29 +75,19 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="locationHLayout">
+    <layout class="QHBoxLayout" name="locationHLayout" stretch="1,5">
      <item>
       <widget class="QLabel" name="locationLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
-        <string>Location:</string>
+        <string>Location :</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="locationHSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>8</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QLineEdit" name="locationLineEdit"/>

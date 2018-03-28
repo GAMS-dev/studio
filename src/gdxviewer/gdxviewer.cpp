@@ -46,10 +46,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
 
     mGdxMutex = new QMutex();
     char msg[GMS_SSSIZE];
-    if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg))) {
-        //TODO(CW): raise exception wit proper message
+    if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
         EXCEPT() << "Could not load GDX library: " << msg;
-    }
     init();
 
     QAction* cpAction = new QAction("Copy");
@@ -57,6 +55,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui.tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
+
+    ui.tvSymbols->setColumnHidden(5,true);
 }
 
 GdxViewer::~GdxViewer()
@@ -80,19 +80,19 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
 
         //aliases are also aliases in the sense of the view
-        if(selectedSymbol->type() == GMS_DT_ALIAS) {
+        if (selectedSymbol->type() == GMS_DT_ALIAS) {
             selectedIdx = selectedSymbol->subType();
             selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
         }
 
         // create new GdxSymbolView if the symbol is selected for the first time
-        if(!mSymbolViews.at(selectedIdx)) {
+        if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
             mSymbolViews.replace(selectedIdx, symView);
             symView->setSym(selectedSymbol);
         }
 
-        if(!selectedSymbol->isLoaded())
+        if (!selectedSymbol->isLoaded())
             QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
 
         ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
@@ -102,8 +102,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 GdxSymbol *GdxViewer::selectedSymbol()
 {
     GdxSymbol* selected = nullptr;
-    if(ui.tvSymbols->selectionModel())
-    {
+    if (ui.tvSymbols->selectionModel()) {
         QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
         if(!selectedIdx.isEmpty())
             selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
@@ -120,12 +119,12 @@ bool GdxViewer::reload()
         bool initSuccess = init();
         if (initSuccess) {
             mHasChanged = false;
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("GDX File Reloaded");
-            msgBox.setText("GDX file has been modified and was reloaded.");
-            msgBox.setStandardButtons(QMessageBox::Ok);
-            msgBox.setIcon(QMessageBox::Information);
-            msgBox.exec();
+            //QMessageBox msgBox;
+            //msgBox.setWindowTitle("GDX File Reloaded");
+            //msgBox.setText("GDX file has been modified and was reloaded.");
+            //msgBox.setStandardButtons(QMessageBox::Ok);
+            //msgBox.setIcon(QMessageBox::Information);
+            //msgBox.exec();
         }
         return initSuccess;
     }
@@ -137,6 +136,26 @@ void GdxViewer::setHasChanged(bool value)
     mHasChanged = value;
 }
 
+void GdxViewer::copyAction()
+{
+    QWidget *source = focusWidget();
+
+    if (static_cast<QTableView*>(source) == ui.tvSymbols)
+        copySelectionToClipboard();
+    else if (static_cast<GdxSymbolView*>(source->parent())) {
+        GdxSymbolView* gdxView = static_cast<GdxSymbolView*>(source->parent());
+        gdxView->copySelectionToClipboard(",");
+    }
+}
+
+void GdxViewer::selectAllAction()
+{
+    QWidget *source = focusWidget();
+
+    QTableView* view = dynamic_cast<QTableView*>(source);
+    if (!view) return;
+    view->selectAll();
+}
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
@@ -176,8 +195,7 @@ bool GdxViewer::init()
         msgBox.setText("Unable to open GDX file: " + mGdxFile + "\nError: " + msg);
         msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
-        if (QMessageBox::Retry == msgBox.exec())
-        {
+        if (QMessageBox::Retry == msgBox.exec()) {
             mHasChanged = true;
             reload();
         }
@@ -223,7 +241,7 @@ void GdxViewer::free()
     gdxClose(mGdx);
     locker.unlock();
 
-    for(GdxSymbolView* view : mSymbolViews) {
+    for (GdxSymbolView* view : mSymbolViews) {
         if(view)
             delete view;
     }
@@ -233,7 +251,6 @@ void GdxViewer::free()
 void GdxViewer::reportIoError(int errNr, QString message)
 {
     // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
-
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 

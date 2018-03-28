@@ -35,19 +35,20 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->setupUi(this);
 
     //create context menu
-    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)", [this]() { copySelectionToClipboard(",");  }, QKeySequence(tr("Ctrl+C")));
+    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
+    cpComma->setShortcutContext(Qt::WidgetShortcut);
     ui->tableView->addAction(cpComma);
 
-    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence(tr("Ctrl+Shift+C")));
+    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(cpTab);
 
     mContextMenu.addSeparator();
 
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll, QKeySequence(tr("Ctrl+A")));
+    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll);
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     selectAll->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(selectAll);
@@ -80,8 +81,7 @@ GdxSymbolView::~GdxSymbolView()
 void GdxSymbolView::showColumnFilter(QPoint p)
 {
     int column = ui->tableView->horizontalHeader()->logicalIndexAt(p);
-    if(mSym->isLoaded() && column>=0 && column<mSym->dim())
-    {
+    if(mSym->isLoaded() && column>=0 && column<mSym->dim()) {
         QMenu m(this);
         m.addAction(new ColumnFilter(mSym, column, this));
         m.exec(ui->tableView->mapToGlobal(p));
@@ -91,21 +91,17 @@ void GdxSymbolView::showColumnFilter(QPoint p)
 
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
-    if(mSym)
-    {
+    if (mSym) {
         ui->tableView->setUpdatesEnabled(false);
-        if(checked)
-        {
-            for(int i=0; i<GMS_VAL_MAX; i++)
-            {
+        if (checked) {
+            for (int i=0; i<GMS_VAL_MAX; i++) {
                 if (mSym->isAllDefault(i))
                     ui->tableView->setColumnHidden(mSym->dim()+i, true);
                 else
                     ui->tableView->setColumnHidden(mSym->dim()+i, false);
             }
         }
-        else
-        {
+        else {
             for(int i=0; i<GMS_VAL_MAX; i++)
                 ui->tableView->setColumnHidden(mSym->dim()+i, false);
         }
@@ -115,8 +111,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 
 void GdxSymbolView::resetSortFilter()
 {
-    if(mSym)
-    {
+    if(mSym) {
         mSym->resetSortFilter();
         ui->tableView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
@@ -140,7 +135,7 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym)
 {
     mSym = sym;
-    if(mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
+    if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tableView->setModel(mSym);
     refreshView();
@@ -161,8 +156,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     int minCol = std::numeric_limits<int>::max();
     int maxCol = std::numeric_limits<int>::min();
 
-    for (QModelIndex idx : selection)
-    {
+    for (QModelIndex idx : selection) {
         int currentRow = idx.row();
         int currentCol = idx.column();
         currentCol = ui->tableView->horizontalHeader()->visualIndex(currentCol);

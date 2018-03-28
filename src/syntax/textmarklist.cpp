@@ -66,7 +66,7 @@ void TextMarkList::rehighlight()
 void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter)
 {
     for (TextMark* mark: mMarks) {
-        if ((mark->type() == filter) || mark->type() == TextMark::all)
+        if ((mark->type() == filter) || filter == TextMark::all)
             marks->insert(mark->line(), mark);
     }
 }

@@ -71,12 +71,11 @@ void ColumnFilterFrame::apply()
     bool checked;
     std::vector<bool> filterActive = mSymbol->filterActive();
     filterActive[mColumn] = false;
-    for (size_t idx=0; idx<uelsInColumn->size(); idx++)
-    {
+    for (size_t idx=0; idx<uelsInColumn->size(); idx++) {
         checked = mModel->checked()[idx];
         showUelInColumn[uelsInColumn->at(idx)] = checked;
         if(!checked)
-            filterActive[mColumn] = true; //TODO(CW): set this only once
+            filterActive[mColumn] = true;
     }
     mSymbol->setFilterActive(filterActive);
     mSymbol->filterRows();
@@ -86,13 +85,13 @@ void ColumnFilterFrame::apply()
 void ColumnFilterFrame::selectAll()
 {
     for(int row=0; row<mModel->rowCount(); row++)
-        mModel->setData(mModel->index(row,0), true, Qt::CheckStateRole); //TODO: do not call setData multipe times but one function for setAll
+        mModel->setData(mModel->index(row,0), true, Qt::CheckStateRole);
 }
 
 void ColumnFilterFrame::deselectAll()
 {
     for(int row=0; row<mModel->rowCount(); row++)
-        mModel->setData(mModel->index(row,0), false, Qt::CheckStateRole); //TODO: do not call setData multipe times but one function for setAll
+        mModel->setData(mModel->index(row,0), false, Qt::CheckStateRole);
 }
 
 void ColumnFilterFrame::filterLabels()
@@ -105,15 +104,9 @@ void ColumnFilterFrame::filterLabels()
 
 void ColumnFilterFrame::toggleHideUnselected(bool checked)
 {
-    if (checked)
-    {
+    if (checked) {
         for(int row=0; row<mModel->rowCount(); row++)
-        {
-            if(mModel->checked()[row])
-                ui.lvLabels->setRowHidden(row, false);
-            else
-                ui.lvLabels->setRowHidden(row, true);
-        }
+            ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
     }
     else
         ui.lvLabels->reset();
@@ -122,15 +115,9 @@ void ColumnFilterFrame::toggleHideUnselected(bool checked)
 void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     Q_UNUSED(roles)
-    if (ui.cbToggleHideUnselected->isChecked())
-    {
+    if (ui.cbToggleHideUnselected->isChecked()) {
         for(int row=topLeft.row(); row<=bottomRight.row(); row++)
-        {
-            if(mModel->checked()[row])
-                ui.lvLabels->setRowHidden(row, false);
-            else
-                ui.lvLabels->setRowHidden(row, true);
-        }
+            ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
     }
 }
 

@@ -101,9 +101,14 @@ bool Option::isDeprecated(const QString &optionName) const
     return false;
 }
 
-bool Option::isDoubleDashedOption(const QString &optionName) const
+bool Option::isDoubleDashedOption(const QString &option) const
 {
-    return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
+    return QRegExp("^[-/][-/](\\S*)").exactMatch(option);
+}
+
+bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
+{
+    return QRegExp("^[a-zA-Z]+[_a-zA-Z0-9]*").exactMatch(optionName) ;
 }
 
 OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
@@ -252,6 +257,16 @@ QList<OptionGroup> Option::getOptionGroupList() const
 QString Option::getOptionTypeName(int type) const
 {
     return mOptionTypeNameMap[type];
+}
+
+QString Option::getOptionKey(const QString &option)
+{
+    QRegExp regexp("^([-/]+)");
+    int pos = regexp.indexIn(option);
+    if (pos != -1)
+       return QString(option.mid(regexp.matchedLength()));
+    else
+       return QString(option);
 }
 
 bool Option::available() const

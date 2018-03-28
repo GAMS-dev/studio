@@ -18,11 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "bookmarkdialog.h"
-#include "c4umcc.h"
 #include "exception.h"
 #include "gamspaths.h"
 #include "gclgms.h"
 #include "helpview.h"
+#include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
@@ -37,16 +37,14 @@ const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 HelpView::HelpView(QWidget *parent) :
     QDockWidget(parent)
 {
-    getGAMSVersion();
+    CheckForUpdateWrapper c4uWrapper;
+    mThisRelease = c4uWrapper.currentDistribVersionShort();
+    mLastRelease = c4uWrapper.lastDistribVersionShort();
 
-    // TODO remove this line when release!!!
-    mThisRelease = 2502;
-
-    if (mThisRelease == mLastRelease)
+    if (c4uWrapper.distribIsLatest())
         onlineStartPageUrl = QUrl(LATEST_ONLINE_HELP_URL);
     else
-        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1.%2")
-                              .arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10)) );
+        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1").arg(mThisRelease) );
 
     QDir dir = QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER);
     baseLocation = QDir(GAMSPaths::systemDir()).absolutePath();
@@ -134,9 +132,8 @@ void HelpView::setupUi(QWidget *parent)
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+version+"/", this);
-    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+version+"/");
+    actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+mThisRelease+"/", this);
+    actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
     actionOnlineHelp->setCheckable(true);
     connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
     helpMenu->addAction(actionOnlineHelp);
@@ -163,7 +160,83 @@ void HelpView::setupUi(QWidget *parent)
     helpVLayout->addWidget( toolbar );
     helpVLayout->addWidget( mHelpView );
 
+    createSearchBar();
+    helpVLayout->addWidget(mSearchBar);
+
     this->setWidget( helpWidget );
+}
+
+void HelpView::createSearchBar()
+{
+    QWidget* searchWidget = new QWidget(this);
+    QHBoxLayout* layout = new QHBoxLayout;
+    searchWidget->setLayout(layout);
+    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sizePolicy.setVerticalStretch(0);
+    searchWidget->setSizePolicy(sizePolicy);
+
+    mSearchLineEdit = new QLineEdit(this);
+    mSearchLineEdit->setPlaceholderText(tr("Find in page..."));
+    mSearchLineEdit->setClearButtonEnabled(true);
+    connect(mSearchLineEdit, &QLineEdit::textChanged, this, &HelpView::searchText);
+    layout->addWidget(mSearchLineEdit);
+
+    QSizePolicy buttonSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    buttonSizePolicy.setVerticalStretch(0);
+
+    QPushButton* backButton = new QPushButton(this);
+    QPushButton* forwardButton = new QPushButton(this);
+    QIcon backButtonIcon(QPixmap(":/img/backward"));
+    QIcon forwardButtonIcon(QPixmap(":/img/forward"));
+    backButton->setIcon(backButtonIcon);
+    backButton->setSizePolicy(buttonSizePolicy);
+    backButton->setToolTip(tr("Find the previous occurrence"));
+    forwardButton->setIcon(forwardButtonIcon);
+    forwardButton->setSizePolicy(buttonSizePolicy);
+    forwardButton->setToolTip(tr("Find the next occurrence"));
+    connect(backButton, &QPushButton::clicked, this, &HelpView::on_backButtonTriggered);
+    connect(forwardButton, &QPushButton::clicked, this, &HelpView::on_forwardButtonTriggered);
+
+    layout->addWidget(backButton);
+    layout->addWidget(forwardButton);
+
+    QCheckBox* caseSensitivity = new QCheckBox(this);
+    caseSensitivity->setText(tr("Case Sensitivity"));
+    caseSensitivity->setSizePolicy(buttonSizePolicy);
+    caseSensitivity->setToolTip(tr("Find with Case Sensitvity"));
+    connect(caseSensitivity, &QCheckBox::clicked, this, &HelpView::on_caseSensitivityToggled);
+    layout->addWidget(caseSensitivity);
+
+    QWidget* statusWidget = new QWidget(this);
+    QHBoxLayout* statusWidgetLayout = new QHBoxLayout;
+    statusWidget->setSizePolicy(sizePolicy);
+    statusWidget->setLayout(statusWidgetLayout);
+    mStatusText = new QLabel("", this);
+    mStatusText->setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+    statusWidgetLayout->addWidget(mStatusText);
+
+    QWidget* closeWidget = new QWidget(this);
+    QHBoxLayout* closeWidgetlayout = new QHBoxLayout;
+    closeWidget->setLayout(closeWidgetlayout);
+    closeWidget->setSizePolicy(sizePolicy);
+
+    QPushButton* closeButton = new QPushButton(this);
+    QPixmap closePixmap(":/img/delete");
+    QIcon closeButtonIcon(closePixmap);
+    closeButton->setIcon(closeButtonIcon);
+
+    closeButton->setSizePolicy(buttonSizePolicy);
+    closeButton->setToolTip(QStringLiteral("Close Find Help"));
+    connect(closeButton, &QPushButton::clicked, this, &HelpView::on_closeButtonTriggered);
+
+    closeWidgetlayout->addWidget(closeButton);
+
+    mSearchBar = new QStatusBar(this);
+    mSearchBar->addPermanentWidget(searchWidget, 2);
+    mSearchBar->addPermanentWidget(statusWidget, 1);
+    mSearchBar->addPermanentWidget(closeWidget, 0);
+
+    mSearchBar->hide();
 }
 
 void HelpView::on_urlOpened(const QUrl& location)
@@ -287,8 +360,7 @@ void HelpView::on_loadFinished(bool ok)
     actionOnlineHelp->setChecked( false );
     if (ok) {
        if ( mHelpView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
-           QString version = QString("%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
-           if (mHelpView->url().path().contains(version))
+           if (mHelpView->url().path().contains(mThisRelease))
                actionOnlineHelp->setChecked( true );
            else if (mHelpView->url().path().contains("latest") && (mThisRelease == mLastRelease))
                actionOnlineHelp->setChecked( true );
@@ -377,6 +449,61 @@ void HelpView::on_actionOpenInBrowser_triggered()
     QDesktopServices::openUrl( mHelpView->url() );
 }
 
+void HelpView::on_searchHelp()
+{
+    mSearchLineEdit->clear();
+    findText("", Forward);
+    if (mSearchBar->isVisible()) {
+        mSearchBar->hide();
+        mHelpView->setFocus();
+    } else {
+        mSearchBar->show();
+        mSearchLineEdit->setFocus();
+    }
+}
+
+void HelpView::on_backButtonTriggered()
+{
+    findText(mSearchLineEdit->text(), Backward);
+}
+
+void HelpView::on_forwardButtonTriggered()
+{
+    findText(mSearchLineEdit->text(), Forward);
+}
+
+void HelpView::on_closeButtonTriggered()
+{
+    on_searchHelp();
+}
+
+void HelpView::on_caseSensitivityToggled(bool checked)
+{
+    mSearchCaseSensitivity = checked;
+    findText("", Forward);
+    findText(mSearchLineEdit->text(), Forward);
+}
+
+void HelpView::searchText(const QString &text)
+{
+    findText(text, Forward);
+}
+
+void HelpView::findText(const QString &text, SearchDirection direction)
+{
+    QWebEnginePage::FindFlags flags = (mSearchCaseSensitivity ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
+    if (direction == Backward)
+        flags = flags | QWebEnginePage::FindBackward;
+    mHelpView->page()->findText(text, flags, [this](bool found) {
+        if (found)
+            mStatusText->setText("");
+        else
+            mStatusText->setText("No occurrences found");
+    });
+    if (text.isEmpty())
+        mStatusText->setText("");
+}
+
 void HelpView::copyURLToClipboard()
 {
     QClipboard* clip = QApplication::clipboard();;
@@ -398,12 +525,14 @@ void HelpView::resetZoom()
     mHelpView->page()->setZoomFactor(1.0);
 }
 
-void HelpView::findText(const QString& word, QWebEnginePage::FindFlags options)
+void HelpView::setZoomFactor(qreal factor)
 {
-    mHelpView->page()->findText(word, options);
-//    mHelpView->page()->findText(word, options, [this](bool found) {
-//        if (!found) QMessageBox::information(mHelpView, QString(), QStringLiteral("No occurrences found"));
-//    });
+    mHelpView->page()->setZoomFactor(factor);
+}
+
+qreal HelpView::getZoomFactor()
+{
+    return mHelpView->page()->zoomFactor();
 }
 
 void HelpView::addBookmarkAction(const QString &objectName, const QString &title)
@@ -426,25 +555,23 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     mBookmarkMenu->addAction(action);
 }
 
-void HelpView::getGAMSVersion()
+void HelpView::keyPressEvent(QKeyEvent *e)
 {
-    c4uHandle_t c4UHandle;
-    char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&c4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
-        EXCEPT() << "Could not load c4u library in HelpView: " << buffer;
+    if (mSearchBar->isVisible()) {
+        if (e->key() == Qt::Key_Escape) {
+           findText("", Forward);
+           mSearchBar->hide();
+           mHelpView->setFocus();
+        } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+                  on_forwardButtonTriggered();
+        }
     }
-
-    mThisRelease = c4uThisRel(c4UHandle);
-
-    c4uCheck4Update(c4UHandle);
-    mLastRelease = c4uLastRel(c4UHandle);
-
-    c4uFree(&c4UHandle);
+     QDockWidget::keyPressEvent(e);
 }
 
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 {
-    QString downloadPage = QString("https://www.gams.com/%1.%2").arg((int)(mThisRelease/100)).arg((int)((int)(mThisRelease%100)/10));
+    QString downloadPage = QString("https://www.gams.com/%1").arg(mThisRelease);
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
     htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";

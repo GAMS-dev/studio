@@ -56,7 +56,7 @@ public:
     /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
     /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(QWidget* edit);
+    FileContext* fileContext(QWidget* edit) const;
 
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
@@ -118,7 +118,7 @@ signals:
     void fileClosed(FileId fileId, QPrivateSignal);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void openFileContext(FileContext* fileContext, bool focus = true);
+    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
     void gamsProcessStateChanged(FileGroupContext* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void getNodeExpanded(const QModelIndex &mi, bool *expanded);
