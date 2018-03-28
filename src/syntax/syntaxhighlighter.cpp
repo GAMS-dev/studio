@@ -135,18 +135,18 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
     initState(new SyntaxDeclarationTable(), Qt::darkBlue, false, true);
 
-    initState(new SyntaxIdentifier(SyntaxState::Identifier), QColor(Qt::cyan).darker(220), false, true);
+    initState(new SyntaxIdentifier(SyntaxState::Identifier));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), QColor(Qt::blue).darker());
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), QColor(Qt::blue).darker());
     initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), QColor(Qt::darkGreen).darker(100));
     initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), QColor(Qt::darkGreen).darker(100));
 
-    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable), QColor(Qt::cyan).darker(220), false, true);
+    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), QColor(Qt::blue).darker());
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), QColor(Qt::blue).darker());
-    // TODO(JM) table-assignment has no '/' character
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignment), QColor(Qt::darkGreen).darker(100));
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierTableAssignmentEnd), QColor(Qt::darkGreen).darker(100));
+
+    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), QColor(Qt::darkGreen).darker(100), false, true);
+    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentRow), QColor(Qt::darkGreen).darker(100));
 
 }
 
@@ -167,21 +167,23 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QTextBlock textBlock = currentBlock();
     int posForSyntaxState = mPositionForSyntaxState - textBlock.position();
     if (posForSyntaxState < 0) posForSyntaxState = text.length();
+    QVector<SyntaxState> stateStack;
 
     while (index < text.length()) {
         QString debString = QString("  %1").arg(textBlock.blockNumber()).right(3) + ", " + QString(" %1").arg(index).right(2) + "-";
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
-        QString syntaxDebug = syntaxStateName(syntax->state())+ QString(" %1").arg(index);
+        bool stack = true;
          // detect end of valid trailing characters for current syntax
-        SyntaxBlock tailBlock = syntax->validTail(text, index);
+        SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
+        if (stack && !stateStack.contains(syntax->state())) stateStack << syntax->state();
 
         // TODO(JM) For states redefined with directives:
         //   - add new Syntax to mStates
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxState nextState: syntax->nextStates()) {
+        for (SyntaxState nextState: syntax->nextStates(stateStack.isEmpty())) {
             SyntaxAbstract* testSyntax = getSyntax(nextState);
             if (testSyntax) {
                 SyntaxBlock testBlock = testSyntax->find(syntax->state(), text, index);
@@ -202,24 +204,32 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 continue;
             }
             nextBlock = tailBlock;
-        } else if (tailBlock.isValid()) {
-            if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
+        } else {
+            if (!stateStack.contains(nextBlock.syntax->state())) stateStack << nextBlock.syntax->state();
             if (tailBlock.isValid()) {
-                if (tailBlock.syntax->state() != SyntaxState::Standard)
-                    setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
-                code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
+                if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
+                if (tailBlock.isValid()) {
+                    if (tailBlock.syntax->state() != SyntaxState::Standard)
+                        setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
+                    code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
+                }
             }
         }
 
         if (nextBlock.error && nextBlock.length() > 0)
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
-        else if (nextBlock.syntax->state() != SyntaxState::Standard)
+        else if (nextBlock.syntax->state() != SyntaxState::Standard) {
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
+            if (nextBlock.syntax->state() == SyntaxState::Semicolon) stateStack.clear();
+        }
         index = nextBlock.end;
+        debString += QString(" %1").arg(index).right(2) + ": " ; // + codeDeb(code);
+        foreach (SyntaxState s, stateStack) {
+            debString += syntaxStateName(s) + " ";
+        }
 
-        debString += QString(" %1").arg(index).right(2) + ": " + codeDeb(code);
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
-        DEB() << debString << "   (" << codeDeb(code) << ")";
+        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
 
         if (posForSyntaxState <= index) {
             mLastSyntaxState = nextBlock.syntax->intSyntaxType();

@@ -55,8 +55,8 @@ enum class SyntaxState {
     IdentifierTable,
     IdentifierTableDescription1,
     IdentifierTableDescription2,
-    IdentifierTableAssignment,
-    IdentifierTableAssignmentEnd,   // after assignment to keep declaration-level
+    IdentifierTableAssignmentHead,
+    IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
     Reserved,
     ReservedBody,
@@ -86,21 +86,15 @@ class SyntaxAbstract;
 
 struct SyntaxBlock
 {
-    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool hasContent = true
-            , bool _error = false, SyntaxStateShift _shift = SyntaxStateShift::shift
-            , SyntaxState _next = SyntaxState::Standard)
-        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift)
-        , next(_next), contentInCurrentLine(hasContent)
+    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool _error = false
+            , SyntaxStateShift _shift = SyntaxStateShift::shift, SyntaxState _next = SyntaxState::Standard)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool hasContent = true
-            , bool _error = false)
-        : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in)
-        , next(_next), contentInCurrentLine(hasContent)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxState _next, bool _error = false)
+        : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxStateShift::in), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool hasContent = true
-            , bool _error = false)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxStateShift _shift, bool _error = false)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(SyntaxState::Standard)
-        , contentInCurrentLine(hasContent)
     { }
     SyntaxAbstract *syntax;
     int start;
@@ -108,7 +102,6 @@ struct SyntaxBlock
     bool error;
     SyntaxStateShift shift;
     SyntaxState next;
-    bool contentInCurrentLine = false;
     int length() { return end-start; }
     bool isValid() { return syntax && start<end; }
 };
@@ -125,8 +118,8 @@ public:
     virtual SyntaxBlock find(SyntaxState entryState, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
-    virtual SyntaxBlock validTail(const QString &line, int index) = 0;
-    virtual SyntaxTransitions nextStates() { return mSubStates; }
+    virtual SyntaxBlock validTail(const QString &line, int index, bool &hasContent) = 0;
+    virtual SyntaxTransitions nextStates(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
@@ -142,6 +135,7 @@ protected:
     SyntaxState mState;
     QTextCharFormat mCharFormat;
     SyntaxTransitions mSubStates;
+    SyntaxTransitions mEmptyLineStates;
 };
 
 
@@ -151,7 +145,7 @@ class SyntaxStandard : public SyntaxAbstract
 public:
     SyntaxStandard();
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 
@@ -161,7 +155,7 @@ class SyntaxDirective : public SyntaxAbstract
 public:
     SyntaxDirective(QChar directiveChar = '$');
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
@@ -176,7 +170,7 @@ class SyntaxDirectiveBody: public SyntaxAbstract
 public:
     SyntaxDirectiveBody(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 /// \brief Defines the syntax for a single comment line.
@@ -185,7 +179,7 @@ class SyntaxCommentLine: public SyntaxAbstract
 public:
     SyntaxCommentLine(QChar commentChar = '*');
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
 };
@@ -196,7 +190,7 @@ class SyntaxCommentBlock: public SyntaxAbstract
 public:
     SyntaxCommentBlock();
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxSemicolon: public SyntaxAbstract
@@ -204,7 +198,7 @@ class SyntaxSemicolon: public SyntaxAbstract
 public:
     SyntaxSemicolon() : SyntaxAbstract(SyntaxState::Semicolon) {}
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 } // namespace studio

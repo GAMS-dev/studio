@@ -46,8 +46,9 @@ SyntaxKeywordBase::~SyntaxKeywordBase()
         delete mKeywords.take(mKeywords.keys().first());
 }
 
-SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index)
+SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, bool &hasContent)
 {
+    hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) end++;
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
@@ -119,15 +120,15 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line,
 
         // search for invalid new declaration keyword
         end = findEnd(state(), line, start);
-        if (end > start) return SyntaxBlock(this, start, end, true, true, SyntaxStateShift::reset);
+        if (end > start) return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
         return SyntaxBlock(this);
     }
 
     end = findEnd(state(), line, start);
     if (end > start) {
         if (entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
-            return SyntaxBlock(this, start, end, false, true, SyntaxStateShift::reset);
-        return SyntaxBlock(this, start, end, true, false, SyntaxStateShift::in, state());
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
     }
     return SyntaxBlock(this);
 }
@@ -165,8 +166,8 @@ SyntaxBlock SyntaxPreDeclaration::find(SyntaxState entryState, const QString &li
     if (end > start) {
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType
                 || entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
-            return SyntaxBlock(this, start, end, true, true, SyntaxStateShift::reset);
-        return SyntaxBlock(this, start, end, true, false, SyntaxStateShift::in, state());
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end,  false, SyntaxStateShift::in, state());
     } else if (entryState == state()) {
         return SyntaxBlock(this, index, start, SyntaxStateShift::shift);
     }
@@ -193,8 +194,8 @@ SyntaxBlock SyntaxDeclarationTable::find(SyntaxState entryState, const QString &
     if (end > start) {
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType
                 || entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
-            return SyntaxBlock(this, start, end, true, true, SyntaxStateShift::reset);
-        return SyntaxBlock(this, start, end, true, false, SyntaxStateShift::in, state());
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
     }
     return SyntaxBlock(this);
 }
@@ -216,7 +217,7 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
         ++start;
     end = findEnd(state(), line, start);
     SyntaxStateShift shift = (end >= line.length()) ? SyntaxStateShift::out : SyntaxStateShift::in;
-    if (end > start) return SyntaxBlock(this, start, end, true, false, shift, state());
+    if (end > start) return SyntaxBlock(this, start, end, false, shift, state());
     return SyntaxBlock(this);
 }
 
@@ -226,8 +227,12 @@ SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
 }
 
-SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index)
+SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &hasContent)
 {
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    hasContent = start < line.length();
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
 }
 

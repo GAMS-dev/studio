@@ -31,7 +31,7 @@ class SyntaxIdentifier : public SyntaxAbstract
 public:
     SyntaxIdentifier(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxIdentDescript : public SyntaxAbstract
@@ -41,7 +41,7 @@ class SyntaxIdentDescript : public SyntaxAbstract
 public:
     SyntaxIdentDescript(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxIdentAssign : public SyntaxAbstract
@@ -50,7 +50,16 @@ class SyntaxIdentAssign : public SyntaxAbstract
 public:
     SyntaxIdentAssign(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxTableAssign : public SyntaxAbstract
+{
+    QChar mDelimiter;
+public:
+    SyntaxTableAssign(SyntaxState state);
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 } // namespace studio
