@@ -991,7 +991,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
         else mCurrentLine = mStartLine + texts.count() - 1;
     }
 
-    int i = texts.count()-1;
+    int i = (qAbs(mStartLine-mCurrentLine)) % texts.count();
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
