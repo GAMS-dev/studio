@@ -161,7 +161,6 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
             int pos = tm->position();
             TextMark* mark = mMarks.takeAt(i);
             mark->clearBackRefs();
-            // TODO(JM) Somehow this cannot be deleted, as if it's already done
             delete mark;
             if (fileContext() && fileContext()->document()) fileContext()->rehighlightAt(pos);
         }
