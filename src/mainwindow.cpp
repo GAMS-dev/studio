@@ -205,16 +205,13 @@ void MainWindow::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     curs.select(QTextCursor::Document);
                     curs.insertText(line);
                     destFile.close();
+                    AbstractEditor *editor = dynamic_cast<AbstractEditor*>(mRecent.editor);
+                    if (editor)
+                        editor->moveCursor(QTextCursor::Start);
                 }
                 srcFile.close();
             }
         }
-        AbstractEditor *editor = dynamic_cast<AbstractEditor*>(focusWidget());
-        if (editor) { // TODO review
-            editor->moveCursor(QTextCursor::Start);
-        }
-        else
-            qDebug() << "null exception.";
     } else {
         for (const auto& file : autosaveFiles)
             QFile::remove(file);
