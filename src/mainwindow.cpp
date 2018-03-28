@@ -644,6 +644,10 @@ void MainWindow::activeTabChanged(int index)
     } else if (FileContext::toGdxViewer(editWidget)) {
         ui->menuEncoding->setEnabled(false);
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
+        mRecent.editor = gdxViewer;
+        FileContext* fc = mFileRepo.fileContext(gdxViewer);
+        mRecent.editFileId = fc->id();
+        mRecent.group = fc->parentEntry();
         gdxViewer->reload();
     } else {
         ui->menuEncoding->setEnabled(false);
