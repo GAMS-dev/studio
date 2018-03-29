@@ -232,10 +232,11 @@ SyntaxBlock SyntaxTableAssign::find(SyntaxState entryState, const QString &line,
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &hasContent)
 {
+    Q_UNUSED(hasContent)
     int end = line.indexOf(';', index);
     if (end < 0)
         return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
-    SyntaxBlock(this, index, end, SyntaxStateShift::out);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
 }
 
 } // namespace studio
