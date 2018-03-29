@@ -183,6 +183,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->endGroup();
 
+    mUserSettings->sync();
     mAppSettings->sync();
 }
 
