@@ -486,11 +486,10 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QFileDialog openDialog(this, "Open file", mRecent.path, tr("GAMS code (*.gms *.inc *.gdx);;"
-                                                               "Text files (*.txt);;"
-                                                               "All files (*.*)"));
-    openDialog.setFileMode(QFileDialog::ExistingFiles);
-    QStringList fNames = openDialog.getOpenFileNames();
+    QString path = QFileInfo(mRecent.path).path();
+    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                            "Text files (*.txt);;"
+                                                            "All files (*.*)"));
 
     foreach (QString item, fNames) {
         addContext("", item);
