@@ -350,7 +350,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     QWidget *widget = mMain->recent()->editor;
     QPlainTextEdit *edit = FileContext::toPlainEdit(widget);
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
-    if (!fsc) return;
+    if (!fsc || !edit) return;
 
     ui->combo_search->setFocus();
     if (edit->textCursor().hasSelection())
@@ -363,14 +363,30 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    // TODO: add something for gdx and others...
     QPlainTextEdit *edit = FileContext::toPlainEdit(mMain->recent()->editor);
-    if (!edit) return;
+    bool isSourceCode = FileContext::editorType(mMain->recent()->editor) == FileSystemContext::etSourceCode;
 
-    bool activated = !edit->isReadOnly();
-    ui->txt_replace->setEnabled(activated);
-    ui->btn_Replace->setEnabled(activated);
-    ui->btn_ReplaceAll->setEnabled(activated);
+    bool activateSearch = isSourceCode || FileContext::editorType(mMain->recent()->editor) == FileSystemContext::etLxiLst;
+    bool activateReplace = (isSourceCode && !edit->isReadOnly());
+
+    // replace actions (!readonly):
+    ui->txt_replace->setEnabled(activateReplace);
+    ui->btn_Replace->setEnabled(activateReplace);
+    ui->btn_ReplaceAll->setEnabled(activateReplace);
+
+    // search actions (!gdx || !lst):
+    ui->combo_search->setEnabled(activateSearch);
+    ui->btn_FindAll->setEnabled(activateSearch);
+    ui->btn_forward->setEnabled(activateSearch);
+    ui->btn_back->setEnabled(activateSearch);
+    ui->btn_clear->setEnabled(activateSearch);
+
+    ui->cb_caseSens->setEnabled(activateSearch);
+    ui->cb_regex->setEnabled(activateSearch);
+    ui->cb_wholeWords->setEnabled(activateSearch);
+
+    ui->combo_filePattern->setEnabled(activateSearch);
+    ui->combo_scope->setEnabled(activateSearch);
 }
 
 void SearchWidget::on_searchNext()
