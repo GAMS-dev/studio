@@ -1718,7 +1718,8 @@ void MainWindow::on_actionSearch_triggered()
 
            if (ui->mainTab->currentWidget()) {
                int sbs;
-               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)
+                       && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
                    sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
                else
                    sbs = 2;
