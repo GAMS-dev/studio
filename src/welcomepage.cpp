@@ -54,15 +54,16 @@ void WelcomePage::historyChanged(HistoryData *history)
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                   + "<small>" + file.filePath() + "</small>", file.filePath());
             tmpLabel->setToolTip(file.filePath());
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
             tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>");
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
             tmpLabel->setToolTip("File has been deleted or moved");
         }
+        ui->layout_lastFiles->addWidget(tmpLabel);
+    }
+    if (ui->layout_lastFiles->children().size() == 0) {
+        tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
+                                       "<small>Start using GAMS Studio to populate this list.</small>"), QString());
         ui->layout_lastFiles->addWidget(tmpLabel);
     }
 }
