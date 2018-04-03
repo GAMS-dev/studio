@@ -97,6 +97,7 @@ private:
         OpenTabs = 2,
         AllFiles = 3
     };
+    void setSearchStatus();
 };
 
 }

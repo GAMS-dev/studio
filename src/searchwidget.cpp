@@ -101,6 +101,8 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
     insertHistory();
 
+    setSearchStatus();
+
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor)
@@ -327,6 +329,13 @@ void SearchWidget::simpleReplaceAll()
     }
 }
 
+void SearchWidget::setSearchStatus()
+{
+    ui->lbl_nrResults->setText("Searching...");
+    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+    QApplication::processEvents(QEventLoop::AllEvents, 20);
+}
+
 void SearchWidget::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor) return;
@@ -337,9 +346,7 @@ void SearchWidget::findNext(SearchDirection direction)
     if (!edit) return;
 
     if (hasChanged) {
-        ui->lbl_nrResults->setText("Searching...");
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
-        QApplication::processEvents();
+        setSearchStatus();
         cachedResults = findInFile(fc);
         hasChanged = false;
     }
