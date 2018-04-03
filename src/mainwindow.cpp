@@ -121,10 +121,15 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
-    mSettings->restoreFiles(this);
-    mSettings->restoreTabsAndLastUsed(this);
+    QTimer::singleShot(100, this, &MainWindow::delayedFileRestoration);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
+}
+
+void MainWindow::delayedFileRestoration()
+{
+    mSettings->restoreFiles(this);
+    mSettings.get()->restoreTabsAndLastUsed(this);
 }
 
 MainWindow::~MainWindow()
@@ -612,7 +617,8 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match << TextMark::wordUnderCursor, false);
+    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>()
+                                        << TextMark::match << TextMark::wordUnderCursor, false);
 
     mRecent.editor = nullptr;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
@@ -1805,8 +1811,9 @@ void MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
-                DEB() << "trigger load with codec " << mib;
+//                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
+                QApplication::processEvents();
             }
         }
     }

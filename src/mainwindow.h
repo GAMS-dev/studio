@@ -115,6 +115,7 @@ public:
     HelpView *getDockHelpView() const;
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
+    void delayedFileRestoration();
 
 public slots:
     void receiveAction(QString action);
@@ -207,7 +208,6 @@ private slots:
     void interruptTriggered();
     void stopTriggered();
     void toggleLogDebug();
-
 
 protected:
     void closeEvent(QCloseEvent *event);
