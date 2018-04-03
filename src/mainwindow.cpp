@@ -128,8 +128,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 void MainWindow::delayedFileRestoration()
 {
-    mSettings->restoreFiles(this);
-    mSettings.get()->restoreTabsAndLastUsed(this);
+    mSettings->restoreTabsAndProjects(this);
+    mSettings.get()->restoreLastFilesUsed(this);
 }
 
 MainWindow::~MainWindow()

@@ -116,10 +116,10 @@ public:
     void resetSettings();
     bool resetSettingsSwitch();
 
-    void restoreFiles(MainWindow *main);
+    void restoreTabsAndProjects(MainWindow *main);
 
 public slots:
-    void restoreTabsAndLastUsed(MainWindow *main);
+    void restoreLastFilesUsed(MainWindow *main);
 
 private:
     QSettings *mAppSettings = nullptr;
