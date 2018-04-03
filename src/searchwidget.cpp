@@ -31,6 +31,7 @@ namespace studio {
 SearchWidget::SearchWidget(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchWidget), mMain(parent)
 {
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     StudioSettings *mSettings = mMain->settings();
 
     ui->setupUi(this);
