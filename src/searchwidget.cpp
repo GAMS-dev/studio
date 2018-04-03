@@ -537,7 +537,7 @@ void SearchWidget::clearResults()
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
     if (!fc) return;
 
-    fc->removeTextMarks(TextMark::match);
+    fc->removeTextMarks(TextMark::match, false);
     updateMatchAmount(0, 0, true);
 }
 
@@ -547,9 +547,10 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
     Q_UNUSED(arg1);
     hasChanged = true;
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    if (fc)
-        fc->removeTextMarks(TextMark::match);
+// removed due to performance issues in larger files:
+//    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+//    if (fc)
+//        fc->removeTextMarks(TextMark::match);
 }
 
 void SearchWidget::insertHistory()

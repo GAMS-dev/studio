@@ -428,15 +428,18 @@ ErrorHighlighter *FileContext::highlighter()
     return mSyntaxHighlighter;
 }
 
-void FileContext::removeTextMarks(TextMark::Type tmType)
+void FileContext::removeTextMarks(TextMark::Type tmType, bool rehighlight)
 {
-    removeTextMarks(QSet<TextMark::Type>() << tmType);
+    removeTextMarks(QSet<TextMark::Type>() << tmType, rehighlight);
 }
 
-void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
+void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight)
 {
     if (!mMarks) return;
     mMarks->removeTextMarks(tmTypes);
+    if (!rehighlight) return;
+
+    // what do we need this for?
     if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
     for (QWidget* ed: mEditors) {
         ed->update(); // trigger delayed repaint

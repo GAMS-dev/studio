@@ -135,8 +135,8 @@ public:
     int textMarkCount(QSet<TextMark::Type> tmTypes);
     ErrorHighlighter* highlighter();
 
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMarks(TextMark::Type tmType, bool rehighlight = true);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
     
     TextMarkList* marks() const { return mMarks; }
