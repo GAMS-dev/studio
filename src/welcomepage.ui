@@ -200,7 +200,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>308</width>
+              <width>269</width>
               <height>543</height>
              </rect>
             </property>
@@ -309,7 +309,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>307</width>
+              <width>270</width>
               <height>543</height>
              </rect>
             </property>
@@ -639,6 +639,28 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QWebEngineView" name="webwidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>150</height>
+              </size>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
@@ -690,6 +712,12 @@
     <signal>relayActionLab(QString)</signal>
     <signal>relayModLibLoad(QString)</signal>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header>qwebengineview.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
