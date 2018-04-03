@@ -244,6 +244,10 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
 
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
+    if (!visibility)
+        getDockHelpView()->clearSearchBar();
+    else
+        getDockHelpView()->setFocus();
     ui->actionHelp_View->setChecked(visibility);
 }
 
