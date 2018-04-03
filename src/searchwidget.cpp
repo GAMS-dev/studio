@@ -337,6 +337,9 @@ void SearchWidget::findNext(SearchDirection direction)
     if (!edit) return;
 
     if (hasChanged) {
+        ui->lbl_nrResults->setText("Searching...");
+        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        QApplication::processEvents();
         cachedResults = findInFile(fc);
         hasChanged = false;
     }
@@ -559,9 +562,11 @@ void SearchWidget::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
+        bool state = hasChanged;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
+        hasChanged = state;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());
