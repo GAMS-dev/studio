@@ -1899,7 +1899,10 @@ void MainWindow::on_actionCopy_triggered()
     FileContext *fc = mFileRepo.fileContext(mRecent.editor);
     if (!fc) return;
 
-    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+    if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->copyAction();
+    } else {
         AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
         if (!ae) return;
 
@@ -1912,9 +1915,6 @@ void MainWindow::on_actionCopy_triggered()
             }
         }
         ae->copy();
-    } else if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
-        gdx->copyAction();
     }
 }
 
@@ -1923,13 +1923,13 @@ void MainWindow::on_actionSelect_All_triggered()
     FileContext *fc = mFileRepo.fileContext(mRecent.editor);
     if (!fc || focusWidget() == nullptr) return;
 
-    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+    if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->selectAllAction();
+    } else {
         CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
         if (!ce) return;
         ce->selectAll();
-    } else if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
-        gdx->selectAllAction();
     }
 }
 
