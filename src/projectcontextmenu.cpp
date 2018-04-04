@@ -64,15 +64,35 @@ void ProjectContextMenu::onOpenFileLoc()
     QString openLoc;
     if (mNode->type() == FileSystemContext::File) {
         FileContext *file = static_cast<FileContext*>(mNode);
+
+// select file on windows by calling explorer.exe with parameter /select
+#ifdef _WIN32
+        QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
+        if (explorerPath.isEmpty()) {
+            FileGroupContext *parent = file->parentEntry();
+            if (parent) openLoc = parent->location();
+            QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+        } else {
+            QProcess proc;
+            proc.setProgram(explorerPath);
+            QStringList args;
+            args << "/select";
+            args << ",";
+            args << QDir::toNativeSeparators(file->location());
+            proc.setArguments(args);
+            proc.start();
+            proc.waitForFinished();
+        }
+#else
         FileGroupContext *parent = file->parentEntry();
-
         if (parent) openLoc = parent->location();
-
+        QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+#endif
     } else if (mNode->type() == FileSystemContext::FileGroup) {
         FileGroupContext *group = static_cast<FileGroupContext*>(mNode);
         if (group) openLoc = group->location();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
-    QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 }
 
 void ProjectContextMenu::onRunGroup()
