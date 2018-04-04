@@ -200,7 +200,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>269</width>
+              <width>285</width>
               <height>543</height>
              </rect>
             </property>
@@ -309,7 +309,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>270</width>
+              <width>284</width>
               <height>543</height>
              </rect>
             </property>
@@ -554,7 +554,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Documentation &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Website &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
@@ -563,7 +563,7 @@
               <number>8</number>
              </property>
              <property name="link" stdset="0">
-              <string>https://www.gams.com/latest/docs/</string>
+              <string>https://www.gams.com/</string>
              </property>
             </widget>
            </item>
@@ -576,7 +576,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS World&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS World Forum&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
@@ -640,24 +640,21 @@
             </widget>
            </item>
            <item>
-            <widget class="QWebEngineView" name="webwidget" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+            <widget class="gams::studio::WpLabel" name="label_tutvid">
+             <property name="mouseTracking">
+              <bool>true</bool>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>150</height>
-              </size>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="link" stdset="0">
+              <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
              </property>
             </widget>
            </item>
@@ -712,12 +709,6 @@
     <signal>relayActionLab(QString)</signal>
     <signal>relayModLibLoad(QString)</signal>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>qwebengineview.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

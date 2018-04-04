@@ -35,9 +35,6 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
     ui->setupUi(this);
     historyChanged(history);
 
-    ui->webwidget->load(QUrl("https://www.youtube-nocookie.com/embed/ZZ5LpwO-An4"));
-    ui->webwidget->setContentsMargins(2, 2, 2, 2);
-
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
 }

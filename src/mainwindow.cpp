@@ -1181,16 +1181,16 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (history()->lastOpenedFiles.size() >= mSettings->historySize()) {
+    if (filePath.startsWith("[")) return; // invalid
+
+    if (history()->lastOpenedFiles.size() >= mSettings->historySize())
         history()->lastOpenedFiles.removeLast();
-    }
     if (!history()->lastOpenedFiles.contains(filePath))
         history()->lastOpenedFiles.insert(0, filePath);
     else
         history()->lastOpenedFiles.move(history()->lastOpenedFiles.indexOf(filePath), 0);
 
-    if(mWp)
-        mWp->historyChanged(history());
+    if(mWp) mWp->historyChanged(history());
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
