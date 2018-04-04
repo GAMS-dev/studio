@@ -51,8 +51,8 @@ void WelcomePage::historyChanged(HistoryData *history)
     }
 
     QLabel *tmpLabel;
-    int i = 0;
-    for (i = 0; i < history->lastOpenedFiles.size(); i++) {
+    int j = 0;
+    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
@@ -65,8 +65,9 @@ void WelcomePage::historyChanged(HistoryData *history)
             tmpLabel->setToolTip("File has been deleted or moved");
         }
         ui->layout_lastFiles->addWidget(tmpLabel);
+        j++;
     }
-    if (i == 0) {
+    if (j == 0) {
         tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
                                        "<small>Start using GAMS Studio to populate this list.</small>"), QString());
         ui->layout_lastFiles->addWidget(tmpLabel);
