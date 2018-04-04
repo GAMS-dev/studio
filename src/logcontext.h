@@ -51,6 +51,7 @@ protected:
         int size = 1;
     };
     QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
+    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
     struct ErrorData {
