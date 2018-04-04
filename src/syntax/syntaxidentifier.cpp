@@ -33,16 +33,21 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : SyntaxAbstract(state)
 
     switch (state) {
     case SyntaxState::Identifier:
-        mEmptyLineStates << SyntaxState::Declaration << SyntaxState::DeclarationTable  << SyntaxState::Identifier;
-        mSubStates << SyntaxState::IdentifierDescription1
+        mSubStates << SyntaxState::Comma
+                   << SyntaxState::IdentifierDescription1
                    << SyntaxState::IdentifierDescription2
                    << SyntaxState::IdentifierAssignment;
+        mEmptyLineStates << mSubStates
+                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
         break;
     case SyntaxState::IdentifierTable:
-        mEmptyLineStates << SyntaxState::Declaration << SyntaxState::DeclarationTable  << SyntaxState::IdentifierTable;
         mSubStates << SyntaxState::IdentifierTableDescription1
                    << SyntaxState::IdentifierTableDescription2
                    << SyntaxState::IdentifierTableAssignmentHead;
+        mEmptyLineStates << mSubStates
+                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentifier: " << syntaxStateName(state);
