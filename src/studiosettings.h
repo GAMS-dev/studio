@@ -113,11 +113,13 @@ public:
     int historySize() const;
     void setHistorySize(int historySize);
 
-    void restoreTabsAndLastUsed(MainWindow *main);
     void resetSettings();
     bool resetSettingsSwitch();
 
-    void restoreFiles(MainWindow *main);
+    void restoreTabsAndProjects(MainWindow *main);
+
+public slots:
+    void restoreLastFilesUsed(MainWindow *main);
 
 private:
     QSettings *mAppSettings = nullptr;

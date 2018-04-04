@@ -53,7 +53,7 @@ StudioSettings *AbstractEditor::settings() const
     return mSettings;
 }
 
-void AbstractEditor::afterContentsChanged()
+void AbstractEditor::afterContentsChanged(int, int, int)
 {
     QTextCursor tc = textCursor();
     int pos = tc.position();

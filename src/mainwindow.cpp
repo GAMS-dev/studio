@@ -121,10 +121,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     initTabs();
-    mSettings->restoreFiles(this);
-    mSettings->restoreTabsAndLastUsed(this);
+
+    QTimer::singleShot(100, this, &MainWindow::delayedFileRestoration);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
+}
+
+void MainWindow::delayedFileRestoration()
+{
+    mSettings->restoreTabsAndProjects(this);
+    mSettings.get()->restoreLastFilesUsed(this);
 }
 
 MainWindow::~MainWindow()
@@ -615,7 +621,7 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match);
+    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
 
     mRecent.editor = nullptr;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
@@ -1725,7 +1731,8 @@ void MainWindow::on_actionSearch_triggered()
 
            if (ui->mainTab->currentWidget()) {
                int sbs;
-               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)
+                       && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
                    sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
                else
                    sbs = 2;
@@ -1811,8 +1818,9 @@ void MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
-                DEB() << "trigger load with codec " << mib;
+//                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
+                QApplication::processEvents();
             }
         }
     }
@@ -1898,7 +1906,10 @@ void MainWindow::on_actionCopy_triggered()
     FileContext *fc = mFileRepo.fileContext(mRecent.editor);
     if (!fc) return;
 
-    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+    if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->copyAction();
+    } else {
         AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
         if (!ae) return;
 
@@ -1911,9 +1922,6 @@ void MainWindow::on_actionCopy_triggered()
             }
         }
         ae->copy();
-    } else if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
-        gdx->copyAction();
     }
 }
 
@@ -1922,13 +1930,13 @@ void MainWindow::on_actionSelect_All_triggered()
     FileContext *fc = mFileRepo.fileContext(mRecent.editor);
     if (!fc || focusWidget() == nullptr) return;
 
-    if ((fc->metrics().fileType() == FileType::Gms) || (fc->metrics().fileType() == FileType::Lst)) {
+    if (fc->metrics().fileType() == FileType::Gdx) {
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdx->selectAllAction();
+    } else {
         CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
         if (!ce) return;
         ce->selectAll();
-    } else if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
-        gdx->selectAllAction();
     }
 }
 

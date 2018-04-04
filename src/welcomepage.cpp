@@ -24,6 +24,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDebug>
+#include <QtWebView/QtWebView>
 
 namespace gams {
 namespace studio {
@@ -33,6 +34,9 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
 {
     ui->setupUi(this);
     historyChanged(history);
+
+    ui->webwidget->load(QUrl("https://www.youtube-nocookie.com/embed/ZZ5LpwO-An4"));
+    ui->webwidget->setContentsMargins(2, 2, 2, 2);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -47,22 +51,24 @@ void WelcomePage::historyChanged(HistoryData *history)
     }
 
     QLabel *tmpLabel;
-    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
+    int i = 0;
+    for (i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                   + "<small>" + file.filePath() + "</small>", file.filePath());
             tmpLabel->setToolTip(file.filePath());
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
             tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>");
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
             tmpLabel->setToolTip("File has been deleted or moved");
         }
+        ui->layout_lastFiles->addWidget(tmpLabel);
+    }
+    if (i == 0) {
+        tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
+                                       "<small>Start using GAMS Studio to populate this list.</small>"), QString());
         ui->layout_lastFiles->addWidget(tmpLabel);
     }
 }
