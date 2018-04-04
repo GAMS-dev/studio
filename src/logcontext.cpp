@@ -114,7 +114,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     if (!mDocument)
         EXCEPT() << "no explicit document to add process data";
 
-    ExtractionState state;
+    ExtractionState state = Outside;
     QRegularExpressionMatch match;
     QRegularExpression rEx("(\\r\\n?|\\n)");
     int from = 0;
