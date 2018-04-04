@@ -30,7 +30,6 @@ namespace studio {
 
 enum class SyntaxState {
     Standard,
-    Semicolon,
     Directive,
     DirectiveBody,                  // text following the Directive
     DirectiveComment,               // a DirectiveBody formatted as comment
@@ -41,6 +40,8 @@ enum class SyntaxState {
     CommentEndline,
     CommentInline,
 
+    Semicolon,
+    Comma,
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
     Declaration,
@@ -193,10 +194,11 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
-class SyntaxSemicolon: public SyntaxAbstract
+class SyntaxDelimiter: public SyntaxAbstract
 {
+    QChar mDelimiter;
 public:
-    SyntaxSemicolon() : SyntaxAbstract(SyntaxState::Semicolon) {}
+    SyntaxDelimiter(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };

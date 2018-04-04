@@ -119,7 +119,6 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     : ErrorHighlighter(context)
 {
     initState(new SyntaxStandard());
-    initState(new SyntaxSemicolon());
     initState(new SyntaxDirective(), Qt::darkMagenta);
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), Qt::darkBlue);
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), Qt::darkGreen, true);
@@ -127,6 +126,8 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     initState(new SyntaxCommentLine(), Qt::darkGreen, true);
     initState(new SyntaxCommentBlock(), Qt::darkGreen, true);
 
+    initState(new SyntaxDelimiter(SyntaxState::Semicolon));
+    initState(new SyntaxDelimiter(SyntaxState::Comma));
     initState(new SyntaxReserved(), Qt::darkBlue, false, true);
     initState(new SyntaxReservedBody(), Qt::darkCyan, false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), Qt::darkBlue, false, true);
@@ -166,7 +167,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QTextBlock textBlock = currentBlock();
     int posForSyntaxState = mPositionForSyntaxState - textBlock.position();
     if (posForSyntaxState < 0) posForSyntaxState = text.length();
-    QVector<SyntaxState> stateStack;
+    bool extendSearch = true;
 
     while (index < text.length()) {
         QString debString = QString("  %1").arg(textBlock.blockNumber()).right(3) + ", " + QString(" %1").arg(index).right(2) + "-";
@@ -175,21 +176,20 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
-        if (stack && !stateStack.contains(syntax->state())) stateStack << syntax->state();
+        if (stack) extendSearch = false;
 
         // TODO(JM) For states redefined with directives:
         //   - add new Syntax to mStates
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxState nextState: syntax->nextStates(stateStack.isEmpty())) {
+        for (SyntaxState nextState: syntax->nextStates(extendSearch)) {
             SyntaxAbstract* testSyntax = getSyntax(nextState);
             if (testSyntax) {
                 SyntaxBlock testBlock = testSyntax->find(syntax->state(), text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
-
                     }
                 }
             }
@@ -204,7 +204,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             }
             nextBlock = tailBlock;
         } else {
-            if (!stateStack.contains(nextBlock.syntax->state())) stateStack << nextBlock.syntax->state();
+            extendSearch = false;
             if (tailBlock.isValid()) {
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
@@ -219,13 +219,10 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
         else if (nextBlock.syntax->state() != SyntaxState::Standard) {
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
-            if (nextBlock.syntax->state() == SyntaxState::Semicolon) stateStack.clear();
+            if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
         index = nextBlock.end;
         debString += QString(" %1").arg(index).right(2) + ": " ; // + codeDeb(code);
-        foreach (SyntaxState s, stateStack) {
-            debString += syntaxStateName(s) + " ";
-        }
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
 //        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
