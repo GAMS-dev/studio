@@ -1392,19 +1392,40 @@ void MainWindow::customEvent(QEvent *event)
         ((LineEditCompleteEvent*)event)->complete();
 }
 
+void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
+{
+    QList<OptionItem> items = mOptionEditor->getCurrentListOfOptionItems();
+    foreach (OptionItem item, items) {
+
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+
+            // default value?
+//            if (QString::compare(item.value, "default", Qt::CaseInsensitive) == 0) {
+//                fgc->setLstFileName(fgc->name() + ".lst");
+//            } else {
+                fgc->setLstFileName(item.value);
+//            }
+        }
+
+    }
+}
+
 void MainWindow::execute(QString commandLineStr)
 {
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
+
+    parseFilesFromCommandLine(group);
 
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         group->saveGroup();
 
-    if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
+    if (fc->editors().size() > 0 && fc->isModified()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText(fc->location()+" has been modified.");

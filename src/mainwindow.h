@@ -236,6 +236,7 @@ private:
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
+    void parseFilesFromCommandLine(FileGroupContext *fgc);
 
 private:
     Ui::MainWindow *ui;

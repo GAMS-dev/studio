@@ -181,6 +181,15 @@ void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
 }
 
+void FileGroupContext::setLstFileName(const QString &lstFileName)
+{
+    QFileInfo fi(lstFileName);
+    if (fi.isRelative())
+        mLstFileName = location() + "/" + lstFileName;
+    else
+        mLstFileName = lstFileName;
+}
+
 void FileGroupContext::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
