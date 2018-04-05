@@ -24,7 +24,6 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDebug>
-#include <QtWebView/QtWebView>
 
 namespace gams {
 namespace studio {
