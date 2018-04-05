@@ -178,7 +178,7 @@ void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
 void FileGroupContext::dumpMarks()

@@ -343,7 +343,7 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
     }
 }
 
-void FileContext::showToolTip(const QList<TextMark*> marks)
+void FileContext::showToolTip(const QVector<TextMark*> marks)
 {
     if (mEditors.size() && marks.size() > 0) {
         QTextCursor cursor(marks.first()->textCursor());
@@ -436,14 +436,7 @@ void FileContext::removeTextMarks(TextMark::Type tmType, bool rehighlight)
 void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight)
 {
     if (!mMarks) return;
-    mMarks->removeTextMarks(tmTypes);
-    if (!rehighlight) return;
-
-    // what do we need this for?
-    if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
-    for (QWidget* ed: mEditors) {
-        ed->update(); // trigger delayed repaint
-    }
+    mMarks->removeTextMarks(tmTypes, rehighlight);
 }
 
 void FileContext::addFileWatcherForGdx()
@@ -525,7 +518,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
-        mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QList<TextMark*>();
+        mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea

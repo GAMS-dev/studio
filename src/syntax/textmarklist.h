@@ -37,8 +37,8 @@ public:
     void bind(FileContext* fc);
     void updateMarks();
     void rehighlight();
-    QList<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
-    QList<TextMark*> marks() { return mMarks;}
+    QVector<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
+    QVector<TextMark*> marks() { return mMarks;}
     int textMarkCount(QSet<TextMark::Type> tmTypes);
     FileContext* fileContext();
     QTextDocument* document() const;
@@ -59,9 +59,9 @@ protected:
     friend class FileContext;
     friend class FileGroupContext;
     TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighlight = false);
     void removeTextMark(TextMark* mark);
-    QList<TextMark*> findMarks(const QTextCursor& cursor);
+    QVector<TextMark*> findMarks(const QTextCursor& cursor);
     TextMark* firstErrorMark();
     void connectDoc();
 
@@ -69,7 +69,7 @@ private:
     FileGroupContext* mGroupContext = nullptr;
     FileContext* mFileContext = nullptr;
     QString mFileName;
-    QList<TextMark*> mMarks;
+    QVector<TextMark*> mMarks;
 };
 
 } // namespace studio

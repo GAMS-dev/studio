@@ -1463,7 +1463,7 @@ void MainWindow::execute(QString commandLineStr)
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
-    connect(process, &GamsProcess::newStdChannelData, logProc, &LogContext::addProcessData);
+    connect(process, &GamsProcess::newStdChannelData, logProc, &LogContext::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
 }
 

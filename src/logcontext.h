@@ -36,7 +36,6 @@ public:
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
-    bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void setJumpToLogEnd(bool state);
@@ -58,6 +57,7 @@ private:
         int errNr = 0;
         QString text;
     };
+    bool mJumpToLogEnd = true;
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
@@ -67,7 +67,7 @@ private:
     bool mConceal = false;
     bool mDebugLog = false;
     QString mDashLine;
-    FileContext *mLstCondext = nullptr;
+    FileContext *mLstContext = nullptr;
 };
 
 } // namespace studio

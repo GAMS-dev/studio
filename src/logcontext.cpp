@@ -300,12 +300,12 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                 LinkData mark;
                 mark.col = lstColStart;
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col;
-                if (!mLstCondext) {
-                    emit findFileContext(fName, &mLstCondext, parentEntry());
+                if (!mLstContext) {
+                    emit findFileContext(fName, &mLstContext, parentEntry());
                 }
-                if (mLstCondext) {
-                    mark.textMark = mLstCondext->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                         , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                if (mLstContext) {
+                    mark.textMark = mLstContext->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                                                                  , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                     errFound = false;
                 } else {
                     result += line;
