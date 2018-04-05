@@ -334,6 +334,13 @@ void MainWindow::receiveModLibLoad(QString model)
     openModelFromLib(glbFile, model);
 }
 
+void MainWindow::receiveOpenDoc(QString doc)
+{
+    // TODO: add to QDir::toNativeSeparators(path)
+    if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
+    getDockHelpView()->on_urlOpened("file://" + GAMSPaths::systemDir() + "/" + doc);
+}
+
 SearchWidget* MainWindow::searchWidget() const
 {
     return mSearchWidget;

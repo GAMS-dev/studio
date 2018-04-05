@@ -44,6 +44,7 @@ private:
 signals:
     void relayActionLab(QString action);
     void relayModLibLoad(QString lib);
+    void relayOpenDoc(QString doc);
 };
 
 }

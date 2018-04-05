@@ -37,6 +37,7 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
+    connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
 }
 
 void WelcomePage::historyChanged(HistoryData *history)
@@ -89,6 +90,11 @@ void WelcomePage::on_relayAction(QString action)
 void WelcomePage::on_relayModLibLoad(QString lib)
 {
     emit relayModLibLoad(lib);
+}
+
+void WelcomePage::on_relayOpenDoc(QString doc)
+{
+    emit relayDocOpen(doc);
 }
 
 void WelcomePage::showEvent(QShowEvent *event)

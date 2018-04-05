@@ -182,6 +182,13 @@
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QScrollArea" name="sa_lastFiles">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -201,7 +208,7 @@
               <x>0</x>
               <y>0</y>
               <width>285</width>
-              <height>531</height>
+              <height>522</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -274,10 +281,23 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Getting Started</string>
+            <string>Quick Start</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
          </item>
@@ -310,7 +330,7 @@
               <x>0</x>
               <y>0</y>
               <width>284</width>
-              <height>531</height>
+              <height>522</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -397,6 +417,13 @@
                 </widget>
                </item>
                <item>
+                <widget class="Line" name="line">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="gams::studio::WpLabel" name="label_trnsport">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -425,7 +452,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="gams::studio::WpLabel" name="label_embeddedSort">
+                <widget class="gams::studio::WpLabel" name="label_EMBMIEX1">
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
@@ -516,6 +543,13 @@
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QVBoxLayout" name="vl_linklist">
            <item>
             <widget class="gams::studio::WpLabel" name="label_tutvid">
@@ -590,6 +624,25 @@
             </widget>
            </item>
            <item>
+            <widget class="gams::studio::WpLabel" name="label_gamsyoutube">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="link" stdset="0">
+              <string>https://www.youtube.com/user/GAMSLessons</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="gams::studio::WpLabel" name="label_documentation">
              <property name="minimumSize">
               <size>
@@ -617,26 +670,32 @@
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_gamsyoutube">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="link" stdset="0">
-              <string>https://www.youtube.com/user/GAMSLessons</string>
-             </property>
-            </widget>
-           </item>
           </layout>
+         </item>
+         <item>
+          <widget class="gams::studio::WpLabel" name="label_doc_release">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="mouseTracking">
+            <bool>true</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="text">
+            <string>Docutest</string>
+           </property>
+           <property name="margin">
+            <number>8</number>
+           </property>
+           <property name="documentation" stdset="0">
+            <string>docs/RN_MAIN.html</string>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="spacer_discover_bot">
@@ -648,8 +707,8 @@
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>1</width>
-             <height>5</height>
+             <width>13</width>
+             <height>13</height>
             </size>
            </property>
           </spacer>
@@ -686,6 +745,7 @@
    <slots>
     <signal>relayActionLab(QString)</signal>
     <signal>relayModLibLoad(QString)</signal>
+    <signal>relayOpenDoc(QString)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -740,7 +800,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>label_embeddedSort</sender>
+   <sender>label_EMBMIEX1</sender>
    <signal>relayModLibLoad(QString)</signal>
    <receiver>WelcomePage</receiver>
    <slot>on_relayModLibLoad(QString)</slot>
@@ -755,11 +815,29 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>label_doc_release</sender>
+   <signal>relayOpenDoc(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayOpenDoc(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>814</x>
+     <y>472</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>relayActionWp(QString)</signal>
   <signal>relayModLibLoad(QString)</signal>
+  <signal>relayOpenDoc(QString)</signal>
   <slot>on_relayAction(QString)</slot>
   <slot>on_relayModLibLoad(QString)</slot>
+  <slot>on_relayOpenDoc(QString)</slot>
  </slots>
 </ui>
