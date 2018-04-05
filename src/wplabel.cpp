@@ -31,8 +31,8 @@ WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
     setStyleSheet("QLabel { background-color : white; }");
 }
 
-WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent, bool inactive)
-    : QLabel(parent), mContent(content), mLink(link), mInactive(inactive)
+WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
+    : QLabel(parent), mContent(content), mLink(link)
 {
     QLabel::setText(mContent);
     setStyleSheet("QLabel { background-color : white; }");
@@ -54,6 +54,11 @@ void WpLabel::leaveEvent(QEvent *event)
     if (mInactive) return;
     setFrameShape(QFrame::StyledPanel);
     setStyleSheet("QLabel { background-color : white; }");
+}
+
+void WpLabel::setInactive(bool inactive)
+{
+    mInactive = inactive;
 }
 
 void WpLabel::mousePressEvent(QMouseEvent *event)
