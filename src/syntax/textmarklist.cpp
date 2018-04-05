@@ -212,7 +212,10 @@ QVector<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type 
 {
 //    DEB() << block.blockNumber() << ", " << block.position() << "    " << mFileName;//<< __FUNCSIG__;
     QVector<TextMark*> marks;
-    for (TextMark* tm: mMarks) {
+//    int i = 0;
+    int i = block.blockNumber()+2 < block.document()->blockCount() ? 0 : qMax(mMarks.size()-4, 0);
+    for (i ; i < mMarks.size() ; i++) {
+        TextMark* tm = mMarks.at(i);
         int hit = tm->in(block.position(), block.length()-1);
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
             marks << tm;

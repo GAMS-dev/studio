@@ -308,9 +308,9 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                                                                   , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                     errFound = false;
                 } else {
-                    result += line;
-                    state = Outside;
-                    break;
+                    mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
+                                                     , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                    errFound = false;
                 }
                 if (errMark) {
                     errMark->setValue(mCurrentErrorHint.lstLine);
