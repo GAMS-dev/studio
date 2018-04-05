@@ -207,7 +207,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>285</width>
+              <width>308</width>
               <height>522</height>
              </rect>
             </property>
@@ -281,7 +281,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Quick Start</string>
+            <string>Getting Started</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -329,7 +329,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>284</width>
+              <width>307</width>
               <height>522</height>
              </rect>
             </property>
@@ -474,6 +474,57 @@
                 </widget>
                </item>
                <item>
+                <widget class="Line" name="line_8">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_tutvid">
+                 <property name="mouseTracking">
+                  <bool>true</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="link" stdset="0">
+                  <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="gams::studio::WpLabel" name="label_doc_studio">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="mouseTracking">
+                  <bool>true</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="text">
+                  <string>Studio Documentation</string>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="documentation" stdset="0">
+                  <string>docs/T_STUDIO.html</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <spacer name="verticalSpacer_3">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -535,7 +586,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Help &amp; Tutorials</string>
+            <string>Further Help</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -551,57 +602,6 @@
          </item>
          <item>
           <layout class="QVBoxLayout" name="vl_linklist">
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_tutvid">
-             <property name="mouseTracking">
-              <bool>true</bool>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="link" stdset="0">
-              <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_doc_studio">
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="mouseTracking">
-              <bool>true</bool>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="text">
-              <string>Studio Documentation</string>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="documentation" stdset="0">
-              <string>docs/T_STUDIO.html</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line_5">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="gams::studio::WpLabel" name="label_doc_release">
              <property name="font">
