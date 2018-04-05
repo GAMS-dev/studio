@@ -336,9 +336,7 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc)
 {
-    // TODO: add to QDir::toNativeSeparators(path)
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
-
     getDockHelpView()->on_urlOpened(QDir::toNativeSeparators("file://" + GAMSPaths::systemDir() + "/" + doc));
 }
 

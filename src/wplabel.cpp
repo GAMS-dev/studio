@@ -31,8 +31,8 @@ WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
     setStyleSheet("QLabel { background-color : white; }");
 }
 
-WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
-    : QLabel(parent), mContent(content), mLink(link)
+WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent, bool inactive)
+    : QLabel(parent), mContent(content), mLink(link), mInactive(inactive)
 {
     QLabel::setText(mContent);
     setStyleSheet("QLabel { background-color : white; }");
@@ -43,6 +43,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
 void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
     setFrameShape(QFrame::Box);
     setStyleSheet("QLabel { background-color : #f39619; }");
 }
@@ -50,6 +51,7 @@ void WpLabel::enterEvent(QEvent *event)
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
     setFrameShape(QFrame::StyledPanel);
     setStyleSheet("QLabel { background-color : white; }");
 }
@@ -57,6 +59,8 @@ void WpLabel::leaveEvent(QEvent *event)
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
+
     if (!mLink.isNull()) { // file history
         QLabel::linkActivated(mLink);
 

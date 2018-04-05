@@ -31,7 +31,7 @@ class WpLabel : public QLabel
 
 public:
     WpLabel(QWidget *parent = nullptr);
-    WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr);
+    WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr, bool inactive = false);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -40,6 +40,7 @@ protected:
 private:
     QString mContent;
     QString mLink;
+    bool mInactive;
 
 signals:
     void relayActionLab(QString action);
