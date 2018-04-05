@@ -338,7 +338,8 @@ void MainWindow::receiveOpenDoc(QString doc)
 {
     // TODO: add to QDir::toNativeSeparators(path)
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
-    getDockHelpView()->on_urlOpened("file://" + GAMSPaths::systemDir() + "/" + doc);
+
+    getDockHelpView()->on_urlOpened(QDir::toNativeSeparators("file://" + GAMSPaths::systemDir() + "/" + doc));
 }
 
 SearchWidget* MainWindow::searchWidget() const
