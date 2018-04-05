@@ -237,6 +237,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
     if (line.isEmpty()) return QString("");
     TextMark* errMark = nullptr;
     bool errFound = false;
+    int lstColStart = 4;
     int posA = 0;
     int posB = 0;
     if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
@@ -263,6 +264,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             colNr = -1;
             colStart = -1;
         } else {
+            lstColStart = -1;
             mCurrentErrorHint.errNr = ok ? errNr : 0;
             result = capture(line, posA, posB, 0, '[').toString();
             fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
@@ -296,8 +298,8 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 posB++;
                 LinkData mark;
-                mark.col = 4;
-                mark.size = result.length() - mark.col;
+                mark.col = lstColStart;
+                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col;
                 if (!mLstCondext) {
                     emit findFileContext(fName, &mLstCondext, parentEntry());
                 }
