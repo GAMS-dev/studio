@@ -209,6 +209,7 @@ void TextMarkList::connectDoc()
 
 QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
 {
+//    DEB() << __FUNCDNAME__;
     QList<TextMark*> marks;
     for (TextMark* tm: mMarks) {
         int hit = tm->in(block.position(), block.length()-1);
@@ -216,6 +217,7 @@ QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type re
             marks << tm;
         }
     }
+
 //    if (marks.size() && mFileName.isEmpty()) {
 //        QString res;
 //        for (TextMark *mark: marks) {

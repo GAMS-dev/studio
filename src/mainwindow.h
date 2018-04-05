@@ -270,6 +270,7 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
+    QTime mPerformanceTime;
 
 };
 
