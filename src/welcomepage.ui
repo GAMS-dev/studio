@@ -535,7 +535,7 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Discover GAMS</string>
+            <string>Help &amp; Tutorials</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -567,6 +567,95 @@
              </property>
              <property name="link" stdset="0">
               <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="gams::studio::WpLabel" name="label_doc_studio">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="mouseTracking">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="text">
+              <string>Studio Documentation</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="documentation" stdset="0">
+              <string>docs/T_STUDIO.html</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="gams::studio::WpLabel" name="label_doc_release">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="mouseTracking">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="text">
+              <string>Release Notes</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="documentation" stdset="0">
+              <string>docs/RN_MAIN.html</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="gams::studio::WpLabel" name="label_doc_tut">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="mouseTracking">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="text">
+              <string>GAMS Tutorials</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="documentation" stdset="0">
+              <string>docs/UG_MAIN.html#UG_Tutorial_Examples</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
@@ -624,26 +713,14 @@
             </widget>
            </item>
            <item>
-            <widget class="gams::studio::WpLabel" name="label_gamsyoutube">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="link" stdset="0">
-              <string>https://www.youtube.com/user/GAMSLessons</string>
+            <widget class="Line" name="line_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="gams::studio::WpLabel" name="label_documentation">
+            <widget class="gams::studio::WpLabel" name="label_contact">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -657,7 +734,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Website &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;  Contact&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
@@ -666,36 +743,11 @@
               <number>8</number>
              </property>
              <property name="link" stdset="0">
-              <string>https://www.gams.com/</string>
+              <string>https://www.gams.com/contact/</string>
              </property>
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="gams::studio::WpLabel" name="label_doc_release">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="mouseTracking">
-            <bool>true</bool>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="text">
-            <string>Docutest</string>
-           </property>
-           <property name="margin">
-            <number>8</number>
-           </property>
-           <property name="documentation" stdset="0">
-            <string>docs/RN_MAIN.html</string>
-           </property>
-          </widget>
          </item>
          <item>
           <spacer name="spacer_discover_bot">
@@ -824,6 +876,38 @@
     <hint type="sourcelabel">
      <x>814</x>
      <y>472</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_doc_tut</sender>
+   <signal>relayOpenDoc(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayOpenDoc(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>814</x>
+     <y>292</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_doc_studio</sender>
+   <signal>relayOpenDoc(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayOpenDoc(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>814</x>
+     <y>295</y>
     </hint>
     <hint type="destinationlabel">
      <x>485</x>
