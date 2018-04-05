@@ -200,7 +200,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>269</width>
+              <width>285</width>
               <height>531</height>
              </rect>
             </property>
@@ -309,7 +309,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>270</width>
+              <width>284</width>
               <height>531</height>
              </rect>
             </property>
@@ -372,6 +372,31 @@
                 </widget>
                </item>
                <item>
+                <widget class="gams::studio::WpLabel" name="label_browseLib">
+                 <property name="mouseTracking">
+                  <bool>true</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse GAMS Libraries&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;The GAMS libraries contain an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="margin">
+                  <number>8</number>
+                 </property>
+                 <property name="action" stdset="0">
+                  <string>browseModLib</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="gams::studio::WpLabel" name="label_trnsport">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -400,28 +425,6 @@
                 </widget>
                </item>
                <item>
-                <widget class="gams::studio::WpLabel" name="label_magic">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Power Generation Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;Example for power demand and -generation with three different kinds of generators which have minimum and maximum output constraints.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                 <property name="margin">
-                  <number>8</number>
-                 </property>
-                 <property name="modlib" stdset="0">
-                  <string>magic</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="gams::studio::WpLabel" name="label_embeddedSort">
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
@@ -430,7 +433,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;An example showing how to use GAMS together with embedded Python code to sort randomly generated numerical values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;This example shows the embedded code facility with the GAMS Python OO-API class GAMSModelInstance. An instance of this class provides access to a model instance that can be modified and resolved without regenerating the model over and over.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -439,32 +442,7 @@
                   <number>8</number>
                  </property>
                  <property name="modlib" stdset="0">
-                  <string>embeddedSort</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="gams::studio::WpLabel" name="label_browseLib">
-                 <property name="mouseTracking">
-                  <bool>true</bool>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse Model Library&lt;/span&gt;&lt;br/&gt;&lt;small&gt;The model library contains an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/small&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                 <property name="margin">
-                  <number>8</number>
-                 </property>
-                 <property name="action" stdset="0">
-                  <string>browseModLib</string>
+                  <string>EMBMIEX1</string>
                  </property>
                 </widget>
                </item>
@@ -540,30 +518,21 @@
          <item>
           <layout class="QVBoxLayout" name="vl_linklist">
            <item>
-            <widget class="gams::studio::WpLabel" name="label_documentation">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
+            <widget class="gams::studio::WpLabel" name="label_tutvid">
+             <property name="mouseTracking">
+              <bool>true</bool>
              </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Website &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="scaledContents">
-              <bool>false</bool>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
              </property>
              <property name="link" stdset="0">
-              <string>https://www.gams.com/</string>
+              <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
              </property>
             </widget>
            </item>
@@ -583,25 +552,6 @@
              </property>
              <property name="link" stdset="0">
               <string>https://forum.gamsworld.org/</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="gams::studio::WpLabel" name="label_gamsyoutube">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="margin">
-              <number>8</number>
-             </property>
-             <property name="link" stdset="0">
-              <string>https://www.youtube.com/user/GAMSLessons</string>
              </property>
             </widget>
            </item>
@@ -640,21 +590,49 @@
             </widget>
            </item>
            <item>
-            <widget class="gams::studio::WpLabel" name="label_tutvid">
-             <property name="mouseTracking">
-              <bool>true</bool>
+            <widget class="gams::studio::WpLabel" name="label_documentation">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
              </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Website &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="scaledContents">
+              <bool>false</bool>
              </property>
              <property name="margin">
               <number>8</number>
              </property>
              <property name="link" stdset="0">
-              <string>https://www.youtube.com/watch?v=ZZ5LpwO-An4</string>
+              <string>https://www.gams.com/</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="gams::studio::WpLabel" name="label_gamsyoutube">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS on YouTube&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="margin">
+              <number>8</number>
+             </property>
+             <property name="link" stdset="0">
+              <string>https://www.youtube.com/user/GAMSLessons</string>
              </property>
             </widget>
            </item>
@@ -754,22 +732,6 @@
     <hint type="sourcelabel">
      <x>431</x>
      <y>294</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>485</x>
-     <y>383</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>label_magic</sender>
-   <signal>relayModLibLoad(QString)</signal>
-   <receiver>WelcomePage</receiver>
-   <slot>on_relayModLibLoad(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>431</x>
-     <y>365</y>
     </hint>
     <hint type="destinationlabel">
      <x>485</x>
