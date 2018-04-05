@@ -67,6 +67,7 @@ private:
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
     bool mDebugLog = false;
+    QString mDashLine;
 };
 
 } // namespace studio

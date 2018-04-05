@@ -126,7 +126,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         }
         QString line = mLineBuffer.mid(from, match.capturedStart());
         QList<LinkData> marks;
-        QString newLine = extractError(line, state, marks);
+        QString newLine = extractLinks(line, state, marks);
         // store count of followup lines
         if (mLastLstLink && state == FileContext::Inside) {
             mLastLstLink->incSpread();
@@ -136,7 +136,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         if (state >= FileContext::Exiting)
             parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
         if (state == FileContext::FollowupError)
-            newLine = extractError(line, state, marks);
+            newLine = extractLinks(line, state, marks);
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: editors()) {
@@ -328,9 +328,18 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
     return result;
 }
 
+
+inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
+{
+    a = b + offset;
+    b = line.indexOf(ch, a);
+    if (b < 0) b = line.length();
+    return line.midRef(a, b-a);
+}
+
+
 QString LogContext::extractLinks(const QString &line, FileContext::ExtractionState &state, QList<LogContext::LinkData> &marks)
 {
-    QString result;
     if (mInErrorDescription) {
         if (line.startsWith("***") || line.startsWith("---")) {
             state = FollowupError;
@@ -345,69 +354,128 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             } else
                 mCurrentErrorHint.text += "\n\t"+line.trimmed();
             state = Inside;
-            result += line;
         } else {
-            result += line;
             state = Exiting;
             mInErrorDescription = false;
         }
-    } else {
-        if (line.isEmpty()) return QString("");
-        TextMark* errMark = nullptr;
-        bool errFound = false;
-        bool trailingBrace = false;
-        int pos = 0;
-        if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
-            bool ok = false;
-            pos = 10;
-            while (pos < line.length() && (line.at(pos)<'0' || line.at(pos)>'9')) pos++;
-            int pos2 = pos;
-            while (pos2 < line.length() && line.at(pos2)>='0' && line.at(pos2)<='9') pos2++;
-            int errNr = line.midRef(pos, pos2-pos).toInt(&ok);
+        return line;
+    }
+
+    QString result;
+    if (line.isEmpty()) return QString("");
+    TextMark* errMark = nullptr;
+    bool errFound = false;
+    int posA = 0;
+    int posB = 0;
+    if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
+        bool ok = false;
+        posA = 9;
+        while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
+        posB = posA;
+        while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
+        int errNr = line.midRef(posA, posB-posA).toInt(&ok);
+        mCurrentErrorHint.lstLine = 0;
+        mCurrentErrorHint.text = "";
+
+        QString fName;
+        int lineNr;
+        int colNr;
+        posB = 0;
+        if (line.midRef(9, 9) == " at line ") {
+            mCurrentErrorHint.errNr = 0;
+            result = capture(line, posA, posB, 0, ':').toString();
+            int from = mDashLine.indexOf(' ')+1;
+            fName = parentEntry()->location() + '/' + mDashLine.mid(from, mDashLine.indexOf('(')-from);
+            lineNr = errNr;
+            colNr = -1;
+        } else {
             mCurrentErrorHint.errNr = ok ? errNr : 0;
-            mCurrentErrorHint.lstLine = 0;
-            mCurrentErrorHint.text = "";
-
-            pos = line.indexOf('[', 0);
-            result = line.left(pos);
-            pos += 6;
-            pos2 = line.indexOf('\"',pos);
-            QString fName = QDir::fromNativeSeparators(line.midRef(pos, pos2-pos));
-            pos = pos2+2;
-            pos2 = line.indexOf(',', pos);
-            int lineNr = line.mid(pos, pos2-pos).toInt()-1;
-            pos = pos2+1;
-            pos2 = line.indexOf(']', pos);
-            int colNr = line.mid(pos, pos2-pos).toInt()-1;
-            pos = pos2+1;
-            LinkData mark;
-            mark.col = line.indexOf(" ")+1;
-            mark.size = result.length() - mark.col;
-            FileContext *fc;
-            emit findFileContext(fName, &fc, parentEntry());
-            if (fc) {
-                mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, colNr);
-            } else {
-                mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, colNr);
-            }
-            errMark = mark.textMark;
-            marks << mark;
-            errFound = true;
-            mInErrorDescription = true;
+            result = capture(line, posA, posB, 0, '[').toString();
+            fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
+            lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
+            colNr = capture(line, posA, posB, 1, ']').toInt()-1;
+            posB++;
         }
-        if (line.length()>pos+5 && line.at(pos) == '[') {
-            if (line.midRef(pos+1,4) == "LST:") {
 
-            } else if (line.midRef(pos+1,4) == "FIL:" || line.midRef(pos+1,4) == "REF:") {
+        LinkData mark;
+        mark.col = line.indexOf(" ")+1;
+        mark.size = result.length() - mark.col;
+        FileContext *fc;
+        emit findFileContext(fName, &fc, parentEntry());
+        if (fc) {
+            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, colNr);
+        } else {
+            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, colNr);
+        }
+        errMark = mark.textMark;
+        marks << mark;
+        errFound = true;
+        mInErrorDescription = true;
+    }
+    if (line.startsWith("--- ")) mDashLine = line;
+    while (posA < line.length()) {
+        result += capture(line, posA, posB, 0, '[');
 
-            } else if (line.midRef(pos+1,4) == "TIT:") {
+        if (posB+5 < line.length()) {
+            if (line.midRef(posB+1,4) == "LST:") {
+                QString fName = parentEntry()->lstFileName();
+                int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
+                posB++;
+                LinkData mark;
+                mark.col = 4;
+                mark.size = result.length() - mark.col;
+                FileContext *fc;
+                emit findOrCreateFileContext(fName, fc, parentEntry());
+                if (fc) {
+                    mCurrentErrorHint.lstLine = lineNr;
+                    mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                                                         , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                    errFound = false;
+                } else {
+                    result += line;
+                    state = Outside;
+                    break;
+                }
+                if (errMark) {
+                    errMark->setValue(mCurrentErrorHint.lstLine);
+                    mark.textMark->setRefMark(errMark);
+                    errMark->setRefMark(mark.textMark);
+                }
+                marks << mark;
+
+            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
+                LinkData mark;
+                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
+                int lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
+                int col = capture(line, posA, posB, 1, ']').toInt()-1;
+                posB++;
+
+                mark.col = 4;
+                mark.size = result.length() - mark.col - 1;
+
+                FileContext *fc;
+                emit findFileContext(fName, &fc, parentEntry());
+                if (fc) {
+                    mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                                                         , mCurrentErrorHint.lstLine, lineNr, 0, col);
+                    errFound = false;
+                } else {
+                    mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
+                                                     , mCurrentErrorHint.lstLine, lineNr, 0, col);
+                    state = Outside;
+                }
+                marks << mark;
+
+            } else if (line.midRef(posB+1,4) == "TIT:") {
                 return QString();
             } else {
-                // return full line
-                return line;
+                result += capture(line, posA, posB, 1, ']');
+                posB++;
             }
+        } else {
+            if (posB < line.length()) result += line.right(line.length() - posB);
+            break;
         }
-
     }
     return result;
 }
