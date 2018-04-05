@@ -460,7 +460,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;This example shows the embedded code facility with the GAMS Python OO-API class GAMSModelInstance. An instance of this class provides access to a model instance that can be modified and resolved without regenerating the model over and over.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Embedded Code Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;This example shows the embedded code facility with the GAMS Python OO-API class GAMSModelInstance.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -489,7 +489,7 @@
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Studio Introduction Video&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Introduction Video&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;External link to youtube.com&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="margin">
                   <number>8</number>
@@ -503,8 +503,8 @@
                 <widget class="gams::studio::WpLabel" name="label_doc_studio">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="mouseTracking">
@@ -514,7 +514,7 @@
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="text">
-                  <string>Studio Documentation</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Documentation&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;Opens integrated help.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="margin">
                   <number>8</number>
@@ -606,8 +606,8 @@
             <widget class="gams::studio::WpLabel" name="label_doc_release">
              <property name="font">
               <font>
-               <weight>75</weight>
-               <bold>true</bold>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="mouseTracking">
@@ -617,7 +617,7 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
-              <string>Release Notes</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Release Notes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
@@ -631,8 +631,8 @@
             <widget class="gams::studio::WpLabel" name="label_doc_tut">
              <property name="font">
               <font>
-               <weight>75</weight>
-               <bold>true</bold>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="mouseTracking">
@@ -642,7 +642,7 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
-              <string>GAMS Tutorials</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/img/gamsicon_16x16.png&quot;/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Tutorial&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>8</number>
