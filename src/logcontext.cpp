@@ -112,7 +112,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
-        EXCEPT() << "no explicit document to add process data";
+        EXCEPT() << "no log-document to add process data";
 
     ExtractionState state = Outside;
     QRegularExpressionMatch match;
@@ -126,7 +126,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         }
         QString line = mLineBuffer.mid(from, match.capturedStart());
         QList<LinkData> marks;
-        QString newLine = extractError(line, state, marks);
+        QString newLine = extractLinks(line, state, marks);
         // store count of followup lines
         if (mLastLstLink && state == FileContext::Inside) {
             mLastLstLink->incSpread();
@@ -135,8 +135,9 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         }
         if (state >= FileContext::Exiting)
             parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
-        if (state == FileContext::FollowupError)
-            newLine = extractError(line, state, marks);
+        if (state == FileContext::FollowupError) {
+            newLine = extractLinks(line, state, marks);
+        }
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: editors()) {
@@ -200,76 +201,116 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     }
 }
 
-QString LogContext::extractError(QString line, FileContext::ExtractionState& state, QList<LogContext::LinkData>& marks)
+inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
 {
-    QString result;
-    if (mInErrorDescription && (line.startsWith("***") || line.startsWith("---"))) {
-        state = FollowupError;
-        mInErrorDescription = false;
-        return QString();
+    a = b + offset;
+    b = line.indexOf(ch, a);
+    if (b < 0) b = line.length();
+    return line.midRef(a, b-a);
+}
+
+
+QString LogContext::extractLinks(const QString &line, FileContext::ExtractionState &state, QList<LogContext::LinkData> &marks)
+{
+    if (mInErrorDescription) {
+        if (line.startsWith("***") || line.startsWith("---")) {
+            state = FollowupError;
+            mInErrorDescription = false;
+            return QString();
+        } else if (line.startsWith(" ")) {
+            if (mCurrentErrorHint.text.isEmpty()) {
+                if (mCurrentErrorHint.errNr)
+                    mCurrentErrorHint.text += QString("%1\t").arg(mCurrentErrorHint.errNr)+line.trimmed();
+                else
+                    mCurrentErrorHint.text += '\t'+line.trimmed();
+            } else
+                mCurrentErrorHint.text += "\n\t"+line.trimmed();
+            state = Inside;
+        } else {
+            state = Exiting;
+            mInErrorDescription = false;
+        }
+        return line;
     }
-    if (!mInErrorDescription) {
-        if (line.isEmpty()) return QString("");
-        QRegularExpression errRX1("^([\\*\\-]{3} Error +(\\d+) in (.*)|ERR:\"([^\"]+)\",(\\d+),(\\d+)|LST:(\\d+)|FIL:\"([^\"]+)\",(\\d+),(\\d+))");
-        // look for the start of an error
-        QRegularExpression exp("(\\[|]\\[|])");
-        TextMark* errMark = nullptr;
-        bool errFound = false;
-        bool trailingBrace = false;
-        int pos = 0;
-        QString capturedBraces;
-        while (pos < line.length()) {
-            trailingBrace = false;
-            QRegularExpressionMatch match = exp.match(line, pos);
-            int posEnd = match.hasMatch() ? match.capturedStart() : line.length();
-            if (posEnd <= pos && posEnd == line.length()) break;
-            QString part = line.mid(pos, posEnd-pos);
-            bool ok;
-            QRegularExpressionMatch errMatch = errRX1.match(part);
-            if (part.startsWith("***") || part.startsWith("---")) {
-                result += part;
-                int errNr = errMatch.captured(2).toInt(&ok);
-                mCurrentErrorHint.errNr = ok ? errNr : 0;
-                mCurrentErrorHint.lstLine = 0;
-                mCurrentErrorHint.text = "";
 
-            } else if (part.startsWith("ERR")) {
-                QString fName = QDir::fromNativeSeparators(errMatch.captured(4));
-                int lineNr = errMatch.captured(5).toInt()-1;
-                int col = errMatch.captured(6).toInt()-1;
-                LinkData mark;
-                mark.col = result.indexOf(" ")+1;
-                result += " ";
-                mark.size = result.length() - mark.col - 1;
-                FileContext *fc;
-                emit findFileContext(fName, &fc, parentEntry());
-                if (fc) {
-                    mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
-                } else {
-                    mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, 0, col);
-                }
-                errMark = mark.textMark;
-                marks << mark;
-                errFound = true;
-                mInErrorDescription = true;
+    QString result;
+    if (line.isEmpty()) return QString("");
+    TextMark* errMark = nullptr;
+    bool errFound = false;
+    int lstColStart = 4;
+    int posA = 0;
+    int posB = 0;
+    if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
+        bool ok = false;
+        posA = 9;
+        while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
+        posB = posA;
+        while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
+        int errNr = line.midRef(posA, posB-posA).toInt(&ok);
+        mCurrentErrorHint.lstLine = 0;
+        mCurrentErrorHint.text = "";
 
-            } else if (part.startsWith("LST")) {
+        QString fName;
+        int lineNr;
+        int colNr = -1;
+        int colStart = 0;
+        posB = 0;
+        if (line.midRef(9, 9) == " at line ") {
+            mCurrentErrorHint.errNr = 0;
+            result = capture(line, posA, posB, 0, ':').toString();
+            int from = mDashLine.indexOf(' ')+1;
+            fName = parentEntry()->location() + '/' + mDashLine.mid(from, mDashLine.indexOf('(')-from);
+            lineNr = errNr;
+            colNr = -1;
+            colStart = -1;
+        } else {
+            lstColStart = -1;
+            mCurrentErrorHint.errNr = ok ? errNr : 0;
+            result = capture(line, posA, posB, 0, '[').toString();
+            fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
+            lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
+            colNr = capture(line, posA, posB, 1, ']').toInt()-1;
+            posB++;
+        }
+
+        LinkData mark;
+        mark.col = line.indexOf(" ")+1;
+        mark.size = result.length() - mark.col;
+        FileContext *fc = nullptr;
+        emit findFileContext(fName, &fc, parentEntry());
+        if (fc) {
+            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, colNr);
+        } else {
+            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, colNr);
+        }
+        errMark = mark.textMark;
+        marks << mark;
+        errFound = true;
+        mInErrorDescription = true;
+    }
+    if (line.startsWith("--- ")) mDashLine = line;
+    while (posA < line.length()) {
+        result += capture(line, posA, posB, 0, '[');
+
+        if (posB+5 < line.length()) {
+            if (line.midRef(posB+1,4) == "LST:") {
                 QString fName = parentEntry()->lstFileName();
-                int lineNr = errMatch.captured(7).toInt()-1;
+                int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
+                posB++;
                 LinkData mark;
-                mark.col = 4;
-                mark.size = result.length() - mark.col - 1;
-                FileContext *fc;
-                emit findOrCreateFileContext(fName, fc, parentEntry());
-                if (fc) {
-                    mCurrentErrorHint.lstLine = lineNr;
-                    mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
-                                                         , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                mark.col = lstColStart;
+                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col;
+                if (!mLstContext) {
+                    emit findFileContext(fName, &mLstContext, parentEntry());
+                }
+                if (mLstContext) {
+                    mark.textMark = mLstContext->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                                                                  , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                     errFound = false;
                 } else {
-                    result += line;
-                    state = Outside;
-                    break;
+                    mark.textMark = generateTextMark(fName, (errFound ? TextMark::link : TextMark::none)
+                                                     , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                    errFound = false;
                 }
                 if (errMark) {
                     errMark->setValue(mCurrentErrorHint.lstLine);
@@ -277,15 +318,18 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     errMark->setRefMark(mark.textMark);
                 }
                 marks << mark;
-            } else if (part.startsWith("FIL") || part.startsWith("REF")) {
-                QString fName = QDir::fromNativeSeparators(errMatch.captured(8));
+
+            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
                 LinkData mark;
-                int lineNr = errMatch.captured(9).toInt()-1;
-                int col = errMatch.captured(10).toInt()-1;
+                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
+                int lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
+                int col = capture(line, posA, posB, 1, ']').toInt()-1;
+                posB++;
+
                 mark.col = 4;
                 mark.size = result.length() - mark.col - 1;
 
-                FileContext *fc;
+                FileContext *fc = nullptr;
                 emit findFileContext(fName, &fc, parentEntry());
                 if (fc) {
                     mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
@@ -297,32 +341,16 @@ QString LogContext::extractError(QString line, FileContext::ExtractionState& sta
                     state = Outside;
                 }
                 marks << mark;
-            } else if (part.startsWith("TIT")) {
-                // skip this braced entry
-            } else if (!(capturedBraces+part).isEmpty()) {
-                result += capturedBraces+part;
-                trailingBrace = true;
-            }
-            pos = match.hasMatch() ? match.capturedEnd() : line.length();
-            capturedBraces = match.captured();
-        }
-        if (trailingBrace) result += capturedBraces;
 
-    } else {
-        if (line.startsWith(" ")) {
-            if (mCurrentErrorHint.text.isEmpty()) {
-                if (mCurrentErrorHint.errNr)
-                    mCurrentErrorHint.text += QString("%1\t").arg(mCurrentErrorHint.errNr)+line.trimmed();
-                else
-                    mCurrentErrorHint.text += '\t'+line.trimmed();
-            } else
-                mCurrentErrorHint.text += "\n\t"+line.trimmed();
-            state = Inside;
-            result += line;
+            } else if (line.midRef(posB+1,4) == "TIT:") {
+                return QString();
+            } else {
+                result += capture(line, posA, posB, 1, ']');
+                posB++;
+            }
         } else {
-            result += line;
-            state = Exiting;
-            mInErrorDescription = false;
+            if (posB < line.length()) result += line.right(line.length() - posB);
+            break;
         }
     }
     return result;

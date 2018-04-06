@@ -151,7 +151,7 @@ FileContext* TextMarkList::openFileContext()
     return mFileContext;
 }
 
-void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
+void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighlight)
 {
     int i = mMarks.size();
     while (i > 0) {
@@ -162,7 +162,8 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes)
             TextMark* mark = mMarks.takeAt(i);
             mark->clearBackRefs();
             delete mark;
-            if (fileContext() && fileContext()->document()) fileContext()->rehighlightAt(pos);
+            if (doRehighlight && fileContext() && fileContext()->document())
+                fileContext()->rehighlightAt(pos);
         }
     }
 }
@@ -172,9 +173,9 @@ void TextMarkList::removeTextMark(TextMark* mark)
     mMarks.removeAll(mark);
 }
 
-QList<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
+QVector<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
 {
-    QList<TextMark*> res;
+    QVector<TextMark*> res;
     for (TextMark* mark: mMarks) {
         QTextCursor tc = mark->textCursor();
         if (tc.isNull()) break;
@@ -207,22 +208,17 @@ void TextMarkList::connectDoc()
     }
 }
 
-QList<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
+QVector<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
 {
-    QList<TextMark*> marks;
-    for (TextMark* tm: mMarks) {
+    QVector<TextMark*> marks;
+    int i = block.blockNumber()+2 < block.document()->blockCount() ? 0 : qMax(mMarks.size()-4, 0);
+    for (i ; i < mMarks.size() ; i++) {
+        TextMark* tm = mMarks.at(i);
         int hit = tm->in(block.position(), block.length()-1);
         if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
             marks << tm;
         }
     }
-//    if (marks.size() && mFileName.isEmpty()) {
-//        QString res;
-//        for (TextMark *mark: marks) {
-//            res += "  " + mark->dump();
-//        }
-//        DEB() << "at " << block.position() << ":  line " << block.blockNumber() << "(" << block.length() << ")  -- MARKS FOR LOG: " << res;
-//    }
     return marks;
 }
 

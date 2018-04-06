@@ -768,6 +768,7 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
+//    DEB() << "run timer: " << mPerformanceTime.elapsed();
     FileGroupContext* groupContext = process ? process->context() : nullptr;
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
@@ -1394,6 +1395,7 @@ void MainWindow::customEvent(QEvent *event)
 
 void MainWindow::execute(QString commandLineStr)
 {
+    mPerformanceTime.start();
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group)
@@ -1461,8 +1463,8 @@ void MainWindow::execute(QString commandLineStr)
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
-    connect(process, &GamsProcess::newStdChannelData, logProc, &LogContext::addProcessData);
-    connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun);
+    connect(process, &GamsProcess::newStdChannelData, logProc, &LogContext::addProcessData, Qt::UniqueConnection);
+    connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 }
 
 void MainWindow::interruptTriggered()
