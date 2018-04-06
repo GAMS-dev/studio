@@ -1758,7 +1758,8 @@ void MainWindow::on_actionSearch_triggered()
     } else {
        // toggle visibility
        if (mSearchWidget->isVisible()) {
-           mSearchWidget->hide();
+           mSearchWidget->activateWindow();
+           mSearchWidget->focusSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));

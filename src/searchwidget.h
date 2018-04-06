@@ -56,6 +56,8 @@ public:
     void clearResults();
     void updateReplaceActionAvailability();
 
+    void focusSearchField();
+    
 public slots:
     void on_searchNext();
     void on_searchPrev();
