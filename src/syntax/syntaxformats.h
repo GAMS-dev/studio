@@ -133,9 +133,9 @@ protected:
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
     }
     inline bool isWhitechar(const QString& line, int index) {
+        if (index >= line.length()) return false;
         const QChar& ch(line.at(index));
-        return index<line.length() && (ch.category()==QChar::Separator_Space
-                                       || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
+        return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
 protected:
     SyntaxState mState;

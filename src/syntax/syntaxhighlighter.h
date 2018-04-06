@@ -30,6 +30,19 @@ class FileContext;
 class TextMarkList;
 class TextMark;
 
+enum ColorEnum {
+    SyntaxDirex,
+    SyntaxDiBdy,
+    SyntaxComnt,
+    SyntaxTitle,
+    SyntaxDeclr,
+    SyntaxIdent,
+    SyntaxKeywd,
+    SyntaxDescr,
+    SyntaxAssgn,
+    SyntaxTabHd,
+};
+
 class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT

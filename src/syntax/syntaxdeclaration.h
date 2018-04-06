@@ -110,7 +110,7 @@ public:
 class SyntaxReservedBody: public SyntaxAbstract
 {
 public:
-    SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody) {}
+    SyntaxReservedBody();
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
