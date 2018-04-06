@@ -128,8 +128,13 @@ public:
     static int stateToInt(SyntaxState _state);
     static SyntaxState intToState(int intState);
 protected:
+
+    inline bool isKeywordChar(const QChar& ch) {
+        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    }
     inline bool isWhitechar(const QString& line, int index) {
-        return index<line.length() && (line.at(index).category()==QChar::Separator_Space
+        const QChar& ch(line.at(index));
+        return index<line.length() && (ch.category()==QChar::Separator_Space
                                        || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
     }
 protected:

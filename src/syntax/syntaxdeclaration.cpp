@@ -72,7 +72,7 @@ int SyntaxKeywordBase::findEnd(SyntaxState state, const QString& line, int index
     int iKey = 0;
     int iChar = 0;
     while (true) {
-        if (iChar+index >= line.length() || isWhitechar(line, iChar+index)) {
+        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
             if (mKeywords.value(state)->at(iKey).length() > iChar) return -1;
             return iChar+index; // reached an valid end
         } else if (iChar < mKeywords.value(state)->at(iKey).length()
