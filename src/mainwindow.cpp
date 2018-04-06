@@ -337,7 +337,7 @@ void MainWindow::receiveModLibLoad(QString model)
 void MainWindow::receiveOpenDoc(QString doc)
 {
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
-    getDockHelpView()->on_urlOpened(QDir::toNativeSeparators("file://" + GAMSPaths::systemDir() + "/" + doc));
+    getDockHelpView()->on_urlOpened( QUrl(GAMSPaths::systemDir() + "/" + doc));
 }
 
 SearchWidget* MainWindow::searchWidget() const
