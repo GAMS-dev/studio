@@ -64,7 +64,7 @@ void WpLabel::setInactive(bool inactive)
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    if (mInactive) return;
+    if (mInactive || event->button() == Qt::RightButton) return;
 
     if (!mLink.isNull()) { // file history
         QLabel::linkActivated(mLink);
