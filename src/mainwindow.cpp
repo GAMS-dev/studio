@@ -309,7 +309,7 @@ void MainWindow::receiveAction(QString action)
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
     if (gmsFileName == "")
-        gmsFileName = model + ".gms";
+        gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(GAMSPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
@@ -327,13 +327,24 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
 void MainWindow::receiveModLibLoad(QString model)
 {
     QString glbFile;
-    if (model != "embeddedSort")
-        glbFile = "gamslib_ml/gamslib.glb";
-    else
-        glbFile = "datalib_ml/datalib.glb";
-
+//    if (model != "embeddedSort")
+    glbFile = "gamslib_ml/gamslib.glb";
+//    else
+//      glbFile = "datalib_ml/datalib.glb";
     openModelFromLib(glbFile, model);
+}
 
+void MainWindow::receiveOpenDoc(QString doc, QString anchor)
+{
+    if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
+
+    QString link = GAMSPaths::systemDir() + "/" + doc;
+    QUrl result = QUrl::fromLocalFile(link);
+
+    if (anchor != "")
+        result = QUrl(result.toString() + "#" + anchor);
+
+    getDockHelpView()->on_urlOpened(result);
 }
 
 SearchWidget* MainWindow::searchWidget() const

@@ -43,6 +43,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
 void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
     setFrameShape(QFrame::Box);
     setStyleSheet("QLabel { background-color : #f39619; }");
 }
@@ -50,13 +51,21 @@ void WpLabel::enterEvent(QEvent *event)
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
     setFrameShape(QFrame::StyledPanel);
     setStyleSheet("QLabel { background-color : white; }");
+}
+
+void WpLabel::setInactive(bool inactive)
+{
+    mInactive = inactive;
 }
 
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
+    if (mInactive) return;
+
     if (!mLink.isNull()) { // file history
         QLabel::linkActivated(mLink);
 
@@ -72,6 +81,10 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
     } else if (!this->property("modlib").isNull()) { // load item from model library
         QString lib = this->property("modlib").toString();
         emit relayModLibLoad(lib);
+    } else if (!this->property("documentation").isNull()) { // open integrated documentation
+        QString doc = this->property("documentation").toString();
+        QString anchor = this->property("anchor").toString();
+        emit relayOpenDoc(doc, anchor);
     }
 }
 
