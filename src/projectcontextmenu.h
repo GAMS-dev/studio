@@ -48,6 +48,7 @@ private slots:
     void onRunGroup();
     void onCloseFile();
     void onAddExisitingFile();
+    void onAddNewFile();
 
 private:
     FileSystemContext* mNode;
