@@ -339,13 +339,11 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
 
     QString link = GAMSPaths::systemDir() + "/" + doc;
-    QUrl result;
-    if (anchor != "") {
-        result = QUrl::fromLocalFile(link);
+    QUrl result = QUrl::fromLocalFile(link);
+
+    if (anchor != "")
         result = QUrl(result.toString() + "#" + anchor);
-    } else {
-        result = QUrl::fromLocalFile(link);
-    }
+
     getDockHelpView()->on_urlOpened(result);
 }
 
