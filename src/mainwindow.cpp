@@ -104,6 +104,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
+
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     setEncodingMIBs(encodingMIBs());
@@ -209,6 +212,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             mRecent.editFileId = fc->id();
         }
     }
+}
+
+void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
+{
+    group->attachFile(filepath);
+}
+
+void MainWindow::sendSourcePath(QString &source)
+{
+    source = mRecent.path;
 }
 
 void MainWindow::updateMenuToCodec(int mib)

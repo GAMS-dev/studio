@@ -135,6 +135,8 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void addToGroup(FileGroupContext *group, const QString &filepath);
+    void sendSourcePath(QString &source);
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View

@@ -26,13 +26,14 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(1, addAction("Close &file",  this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(0, addAction("&Add existing file", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(1, addSeparator());
+    mActions.insert(2, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(3, addAction("Close &file",  this, &ProjectContextMenu::onCloseFile));
 //    mActions.insert(0, addAction("&Run group",  this, &ProjectContextMenu::onRunGroup));
 
-    mActions.insert(2, addSeparator());
-    mActions.insert(3, addAction("&Open file location",  this, &ProjectContextMenu::onOpenFileLoc));
-//    mActions.insert(1, addSeparator());
+    mActions.insert(4, addSeparator());
+    mActions.insert(5, addAction("&Open file location",  this, &ProjectContextMenu::onOpenFileLoc));
 //    mActions.insert(1, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
 
 //    mActions.insert(2, addSeparator());
@@ -50,6 +51,21 @@ void ProjectContextMenu::onCloseFile()
 {
     FileContext *file = (mNode->type() == FileSystemContext::File) ? static_cast<FileContext*>(mNode) : nullptr;
     if (file) emit closeFile(file);
+}
+
+void ProjectContextMenu::onAddExisitingFile()
+{
+    QString sourcePath = "";
+    emit getSourcePath(sourcePath);
+
+    QString filePath = QFileDialog::getOpenFileName(this, "Add existing file", sourcePath,
+                                                    tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                       "Text files (*.txt);;"
+                                                       "All files (*.*)"));
+    if (filePath == "") return;
+    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
+                                                                              : mNode->parentEntry();
+    emit addExistingFile(group, filePath);
 }
 
 void ProjectContextMenu::onCloseGroup()
