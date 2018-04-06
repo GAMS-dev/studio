@@ -210,9 +210,7 @@ void TextMarkList::connectDoc()
 
 QVector<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type refType)
 {
-//    DEB() << block.blockNumber() << ", " << block.position() << "    " << mFileName;//<< __FUNCSIG__;
     QVector<TextMark*> marks;
-//    int i = 0;
     int i = block.blockNumber()+2 < block.document()->blockCount() ? 0 : qMax(mMarks.size()-4, 0);
     for (i ; i < mMarks.size() ; i++) {
         TextMark* tm = mMarks.at(i);
@@ -221,14 +219,6 @@ QVector<TextMark*> TextMarkList::marksForBlock(QTextBlock block, TextMark::Type 
             marks << tm;
         }
     }
-
-//    if (marks.size() && mFileName.isEmpty()) {
-//        QString res;
-//        for (TextMark *mark: marks) {
-//            res += "  " + mark->dump();
-//        }
-//        DEB() << "at " << block.position() << ":  line " << block.blockNumber() << "(" << block.length() << ")  -- MARKS FOR LOG: " << res;
-//    }
     return marks;
 }
 

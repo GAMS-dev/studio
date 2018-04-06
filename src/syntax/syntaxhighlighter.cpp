@@ -170,7 +170,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     bool extendSearch = true;
 
     while (index < text.length()) {
-        QString debString = QString("  %1").arg(textBlock.blockNumber()).right(3) + ", " + QString(" %1").arg(index).right(2) + "-";
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
         bool stack = true;
@@ -222,10 +221,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
         index = nextBlock.end;
-        debString += QString(" %1").arg(index).right(2) + ": " ; // + codeDeb(code);
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
-//        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
 
         if (posForSyntaxState <= index) {
             mLastSyntaxState = nextBlock.syntax->intSyntaxType();

@@ -112,7 +112,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
-        EXCEPT() << "no explicit document to add process data";
+        EXCEPT() << "no log-document to add process data";
 
     ExtractionState state = Outside;
     QRegularExpressionMatch match;
