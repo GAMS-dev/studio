@@ -334,10 +334,19 @@ void MainWindow::receiveModLibLoad(QString model)
     openModelFromLib(glbFile, model);
 }
 
-void MainWindow::receiveOpenDoc(QString doc)
+void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
-    getDockHelpView()->on_urlOpened( QUrl(GAMSPaths::systemDir() + "/" + doc));
+
+    QString link = GAMSPaths::systemDir() + "/" + doc;
+    QUrl result;
+    if (anchor != "") {
+        result = QUrl::fromLocalFile(link);
+        result = QUrl(result.toString() + "#" + anchor);
+    } else {
+        result = QUrl::fromLocalFile(link);
+    }
+    getDockHelpView()->on_urlOpened(result);
 }
 
 SearchWidget* MainWindow::searchWidget() const

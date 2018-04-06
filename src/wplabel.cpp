@@ -83,7 +83,8 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
         emit relayModLibLoad(lib);
     } else if (!this->property("documentation").isNull()) { // open integrated documentation
         QString doc = this->property("documentation").toString();
-        emit relayOpenDoc(doc);
+        QString anchor = this->property("anchor").toString();
+        emit relayOpenDoc(doc, anchor);
     }
 }
 

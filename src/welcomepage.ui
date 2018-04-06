@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>972</width>
-    <height>767</height>
+    <height>1114</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -207,8 +207,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>308</width>
-              <height>522</height>
+              <width>191</width>
+              <height>731</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -329,8 +329,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>307</width>
-              <height>522</height>
+              <width>321</width>
+              <height>731</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -522,6 +522,9 @@
                  <property name="documentation" stdset="0">
                   <string>docs/T_STUDIO.html</string>
                  </property>
+                 <property name="anchor" stdset="0">
+                  <string/>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -625,6 +628,9 @@
              <property name="documentation" stdset="0">
               <string>docs/RN_MAIN.html</string>
              </property>
+             <property name="anchor" stdset="0">
+              <string/>
+             </property>
             </widget>
            </item>
            <item>
@@ -648,7 +654,10 @@
               <number>8</number>
              </property>
              <property name="documentation" stdset="0">
-              <string>docs/UG_MAIN.html#UG_Tutorial_Examples</string>
+              <string>docs/UG_MAIN.html</string>
+             </property>
+             <property name="anchor" stdset="0">
+              <string>UG_Tutorial_Examples</string>
              </property>
             </widget>
            </item>
@@ -797,7 +806,7 @@
    <slots>
     <signal>relayActionLab(QString)</signal>
     <signal>relayModLibLoad(QString)</signal>
-    <signal>relayOpenDoc(QString)</signal>
+    <signal>relayOpenDoc(QString,QString)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -869,9 +878,9 @@
   </connection>
   <connection>
    <sender>label_doc_release</sender>
-   <signal>relayOpenDoc(QString)</signal>
+   <signal>relayOpenDoc(QString,QString)</signal>
    <receiver>WelcomePage</receiver>
-   <slot>on_relayOpenDoc(QString)</slot>
+   <slot>on_relayOpenDoc(QString,QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>814</x>
@@ -885,9 +894,9 @@
   </connection>
   <connection>
    <sender>label_doc_tut</sender>
-   <signal>relayOpenDoc(QString)</signal>
+   <signal>relayOpenDoc(QString,QString)</signal>
    <receiver>WelcomePage</receiver>
-   <slot>on_relayOpenDoc(QString)</slot>
+   <slot>on_relayOpenDoc(QString,QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>814</x>
@@ -901,9 +910,9 @@
   </connection>
   <connection>
    <sender>label_doc_studio</sender>
-   <signal>relayOpenDoc(QString)</signal>
+   <signal>relayOpenDoc(QString,QString)</signal>
    <receiver>WelcomePage</receiver>
-   <slot>on_relayOpenDoc(QString)</slot>
+   <slot>on_relayOpenDoc(QString,QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>814</x>
@@ -919,9 +928,9 @@
  <slots>
   <signal>relayActionWp(QString)</signal>
   <signal>relayModLibLoad(QString)</signal>
-  <signal>relayOpenDoc(QString)</signal>
+  <signal>relayOpenDoc(QString,QString)</signal>
   <slot>on_relayAction(QString)</slot>
   <slot>on_relayModLibLoad(QString)</slot>
-  <slot>on_relayOpenDoc(QString)</slot>
+  <slot>on_relayOpenDoc(QString,QString)</slot>
  </slots>
 </ui>

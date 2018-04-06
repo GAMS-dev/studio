@@ -120,7 +120,7 @@ public:
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
-    void receiveOpenDoc(QString doc);
+    void receiveOpenDoc(QString doc, QString anchor);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);

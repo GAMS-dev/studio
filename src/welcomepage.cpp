@@ -94,9 +94,9 @@ void WelcomePage::on_relayModLibLoad(QString lib)
     emit relayModLibLoad(lib);
 }
 
-void WelcomePage::on_relayOpenDoc(QString doc)
+void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
 {
-    emit relayDocOpen(doc);
+    emit relayDocOpen(doc, anchor);
 }
 
 void WelcomePage::showEvent(QShowEvent *event)
