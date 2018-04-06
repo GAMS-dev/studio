@@ -354,6 +354,11 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, cachedResults);
 }
 
+void SearchWidget::focusSearchField()
+{
+    ui->combo_search->setFocus();
+}
+
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
@@ -363,7 +368,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
     if (!fsc || !edit) return;
 
-    ui->combo_search->setFocus();
+    focusSearchField();
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
@@ -412,8 +417,7 @@ void SearchWidget::on_searchPrev()
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && (e->key() == Qt::Key_Escape
-                         || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
+    if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
         hide();
         if (mMain->fileRepository()->fileContext(mMain->recent()->editor))
             mMain->recent()->editor->setFocus();

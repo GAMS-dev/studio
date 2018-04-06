@@ -104,6 +104,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
+
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     setEncodingMIBs(encodingMIBs());
@@ -209,6 +212,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             mRecent.editFileId = fc->id();
         }
     }
+}
+
+void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
+{
+    group->attachFile(filepath);
+}
+
+void MainWindow::sendSourcePath(QString &source)
+{
+    source = mRecent.path;
 }
 
 void MainWindow::updateMenuToCodec(int mib)
@@ -1404,20 +1417,41 @@ void MainWindow::customEvent(QEvent *event)
         ((LineEditCompleteEvent*)event)->complete();
 }
 
+void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
+{
+    QList<OptionItem> items = mOptionEditor->getCurrentListOfOptionItems();
+    foreach (OptionItem item, items) {
+
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+
+            // default value?
+//            if (QString::compare(item.value, "default", Qt::CaseInsensitive) == 0) {
+//                fgc->setLstFileName(fgc->name() + ".lst");
+//            } else {
+                fgc->setLstFileName(item.value);
+//            }
+        }
+
+    }
+}
+
 void MainWindow::execute(QString commandLineStr)
 {
     mPerformanceTime.start();
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
+
+    parseFilesFromCommandLine(group);
 
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         group->saveGroup();
 
-    if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
+    if (fc->editors().size() > 0 && fc->isModified()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText(fc->location()+" has been modified.");
@@ -1737,7 +1771,8 @@ void MainWindow::on_actionSearch_triggered()
     } else {
        // toggle visibility
        if (mSearchWidget->isVisible()) {
-           mSearchWidget->hide();
+           mSearchWidget->activateWindow();
+           mSearchWidget->focusSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
