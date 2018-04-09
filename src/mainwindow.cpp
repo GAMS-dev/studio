@@ -2129,6 +2129,16 @@ void MainWindow::on_actionRemove_Line_triggered()
         ce->removeLine();
 }
 
+void MainWindow::on_actionComment_triggered()
+{
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+        return;
+
+    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce->isReadOnly())
+        ce->commentLine();
+}
+
 void MainWindow::toggleLogDebug()
 {
     mLogDebugLines = !mLogDebugLines;
@@ -2153,4 +2163,5 @@ void MainWindow::on_actionSelect_encodings_triggered()
 
 }
 }
+
 

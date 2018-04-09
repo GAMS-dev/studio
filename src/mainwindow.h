@@ -206,11 +206,13 @@ private slots:
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
+    void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
 
     void interruptTriggered();
     void stopTriggered();
     void toggleLogDebug();
+
 
 protected:
     void closeEvent(QCloseEvent *event);

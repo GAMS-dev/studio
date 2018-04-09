@@ -433,6 +433,36 @@ void CodeEditor::removeLine()
     cursor.endEditBlock();
 }
 
+void CodeEditor::commentLine()
+{
+    QTextCursor cursor = textCursor();
+    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+    bool removeComment = true;
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.text().startsWith('*')) {
+            removeComment = false;
+            break;
+        }
+    }
+    cursor.beginEditBlock();
+    QTextCursor anchor = cursor;
+    anchor.setPosition(anchor.anchor());
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        cursor.setPosition(block.position());
+        if (removeComment) {
+            cursor.deleteChar();
+        } else {
+            cursor.insertText("*");
+        }
+    }
+    cursor.setPosition(anchor.position());
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+    recalcExtraSelections();
+}
+
 int CodeEditor::minIndentCount(int fromLine, int toLine)
 {
     QTextCursor cursor = textCursor();

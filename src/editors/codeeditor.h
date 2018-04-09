@@ -60,6 +60,7 @@ public:
     int indent(int size, int fromLine = -1, int toLine = -1);
     void duplicateLine();
     void removeLine();
+    void commentLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
 
