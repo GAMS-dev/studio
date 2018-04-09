@@ -63,7 +63,7 @@ QString GAMSPaths::systemDir() {
         EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << gamsPath;
 #endif
 
-    return gamsPath;
+    return QDir::cleanPath(gamsPath);
 }
 
 QString GAMSPaths::userDocumentsDir()
