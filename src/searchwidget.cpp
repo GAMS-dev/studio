@@ -98,6 +98,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
+    clearResults();
     SearchResultList matches(searchTerm());
     insertHistory();
 
@@ -321,6 +322,7 @@ void SearchWidget::simpleReplaceAll()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
+        clearResults();
         edit->textCursor().beginEditBlock();
         foreach (QTextCursor tc, hits) {
             tc.insertText(replaceTerm);
@@ -477,12 +479,14 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 void SearchWidget::on_btn_back_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Forward);
 }
 
@@ -540,19 +544,23 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
 void SearchWidget::on_btn_clear_clicked()
 {
-    clearResults();
+    clearSearch();
 }
 
 void SearchWidget::clearResults()
 {
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    if (!fc) return;
+    fc->removeTextMarks(TextMark::match, true);
+    updateMatchAmount(0, 0, true);
+}
+
+void SearchWidget::clearSearch()
+{
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    if (!fc) return;
-
-    fc->removeTextMarks(TextMark::match, false);
-    updateMatchAmount(0, 0, true);
+    clearResults();
 }
 
 

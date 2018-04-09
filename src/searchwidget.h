@@ -58,6 +58,8 @@ public:
 
     void focusSearchField();
     
+    void clearSearch();
+    
 public slots:
     void on_searchNext();
     void on_searchPrev();

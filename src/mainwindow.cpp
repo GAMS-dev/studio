@@ -1280,6 +1280,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 
 bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
 {
+    // TODO: make clear that this saves/discrads all modified files?
     if (changedFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;

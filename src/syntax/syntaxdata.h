@@ -34,6 +34,11 @@ class SyntaxData
 public:
     static QList<QPair<QString, QString>> directives() {
         QList<QPair<QString, QString>> list = {
+            {"onExternalInput", "External input on"},
+            {"offExternalInput", "External input off"},
+            {"onExternalOutput", "External output on"},
+            {"offExternalOutput", "External output off"},
+            {"killUel", "Remove UEL List"},
             {"onMargin", "Margin marking on"},
             {"offMargin", "Margin marking off"},
             {"minCol", "Set left data margin"},
