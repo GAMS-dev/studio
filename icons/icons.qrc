@@ -43,9 +43,8 @@
         <file alias="times">times.svg</file>
         <file alias="user">user.svg</file>
         <file alias="video">video.svg</file>
-
-        <file>gamsicon_16x16.png</file>
-        <file>gamsworld_16x16.gif</file>
+        <file alias="gamsicon">gamsicon_16x16.png</file>
+        <file alias="gamsworld">gamsworld_16x16.gif</file>
         <file>square-red.svg</file>
         <file>square-green.svg</file>
         <file>square-gray.svg</file>
