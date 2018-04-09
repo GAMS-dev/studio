@@ -653,20 +653,24 @@ void MainWindow::activeTabChanged(int index)
 
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
+
         if (fc) {
             mRecent.editFileId = fc->id();
             mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
-                mDockOptionView->setEnabled(true);
-                QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
-                mCommandLineOption->clear();
-                foreach(QString str, option) {
-                   mCommandLineOption->insertItem(0, str );
+                FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
+                if (group) {
+                    mDockOptionView->setEnabled(true);
+                    mCommandLineOption->clear();
+                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runableGms());
+                    foreach(QString str, option) {
+                       mCommandLineOption->insertItem(0, str );
+                    }
+                    mCommandLineOption->setCurrentIndex(0);
+                    mCommandLineOption->setEnabled(true);
+                    mCommandLineOption->setCurrentContext(fc->location());
                 }
-                mCommandLineOption->setCurrentIndex(0);
-                mCommandLineOption->setEnabled(true);
-                mCommandLineOption->setCurrentContext(fc->location());
                 setRunActionsEnabled(true);
                 ui->menuEncoding->setEnabled(true);
             }
@@ -1565,7 +1569,7 @@ void MainWindow::on_actionRun_triggered()
 {
     if (isActiveTabEditable()) {
        emit mCommandLineOption->optionRunChanged();
-      mRunToolButton->setDefaultAction( ui->actionRun );
+       mRunToolButton->setDefaultAction( ui->actionRun );
     }
 }
 
