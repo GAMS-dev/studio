@@ -205,11 +205,19 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     if (!isReadOnly()) {
         if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
+            int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
-            cursor.insertText("\n");
-            if (cursor.block().previous().isValid())
-                truncate(cursor.block().previous());
-            adjustIndent(cursor);
+            QString leadingText = cursor.block().text().left(pos).trimmed();
+            if (leadingText.isEmpty()) {
+                cursor.movePosition(QTextCursor::StartOfBlock);
+                cursor.insertText("\n");
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos);
+            } else {
+                cursor.insertText("\n");
+                if (cursor.block().previous().isValid())
+                    truncate(cursor.block().previous());
+                adjustIndent(cursor);
+            }
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
@@ -232,7 +240,7 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
         QPlainTextEdit::keyReleaseEvent(e);
         return;
     }
-    // return pressed, if current block consists of whitespaces only: ignore here
+    // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
         return;
