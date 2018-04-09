@@ -37,7 +37,8 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     QLabel::setText(mContent);
     setStyleSheet("QLabel { background-color : white; }");
     setFrameShape(QFrame::StyledPanel);
-    setMargin(8);
+    setMargin(4);
+    setWordWrap(true);
 }
 
 void WpLabel::enterEvent(QEvent *event)
