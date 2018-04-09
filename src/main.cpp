@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(STUDIO_VERSION);
 
     try {
-        app.openAssociatedFiles();
         app.mainWindow()->show();
+        QTimer::singleShot(0, &app, &Application::openAssociatedFiles); //CW: do we need this singleShot?
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());

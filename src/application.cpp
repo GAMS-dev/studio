@@ -67,6 +67,7 @@ bool Application::notify(QObject* object, QEvent* event)
 
 void Application::openAssociatedFiles()
 {
+    mMainWindow->delayedFileRestoration();
     mMainWindow->openFiles(mCmdParser.files());
 }
 

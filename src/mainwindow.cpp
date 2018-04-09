@@ -125,7 +125,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     initTabs();
 
-    QTimer::singleShot(100, this, &MainWindow::delayedFileRestoration);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
