@@ -147,6 +147,9 @@ private slots:
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
 
+    void updateEditorPos();
+    void updateEditorMode();
+
 private slots:
     // File
     void on_actionNew_triggered();
@@ -278,6 +281,8 @@ private:
     bool mLogDebugLines = false;
     bool mInsertMode = false;
     QTime mPerformanceTime;
+    QVector<QLabel*> mEditInfo;
+
 
 };
 

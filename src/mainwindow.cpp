@@ -63,6 +63,13 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
+    QFont font = ui->statusBar->font();
+    font.setPointSizeF(font.pointSizeF()*0.9);
+    ui->statusBar->setFont(font);
+    mEditInfo << new QLabel("0 / 0") << new QLabel("INS");
+    foreach (QLabel* la, mEditInfo) {
+        ui->statusBar->addPermanentWidget(la);
+    }
 
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
@@ -207,8 +214,18 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
             tabWidget->setCurrentIndex(tabIndex);
+            QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+            if (edit) {
+                disconnect(edit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::updateEditorPos);
+            }
             mRecent.editor = tabWidget->currentWidget();
             mRecent.editFileId = fc->id();
+            updateEditorMode();
+            updateEditorPos();
+            edit = FileSystemContext::toPlainEdit(mRecent.editor);
+            if (edit) {
+                connect(edit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::updateEditorPos);
+            }
         }
     }
 }
@@ -487,6 +504,38 @@ void MainWindow::closeHelpView()
         mDockHelpView->close();
 }
 
+void MainWindow::updateEditorPos()
+{
+    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor);
+    if (!edit) {
+        mEditInfo.at(0)->setText(QString("     "));
+    } else {
+        QTextCursor cursor = edit->textCursor();
+        QString posText("%1 / %2");
+        if (cursor.hasSelection()) {
+            QTextCursor anc = cursor;
+            anc.setPosition(anc.anchor());
+
+            mEditInfo.at(0)->setText(QString("%1 (%2)")
+                                     .arg(posText.arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1))
+                                     .arg(posText.arg(qAbs(cursor.blockNumber()-anc.blockNumber()))
+                                          .arg(qAbs(cursor.positionInBlock()-anc.positionInBlock()))));
+        } else {
+            mEditInfo.at(0)->setText(posText.arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1));
+        }
+    }
+}
+
+void MainWindow::updateEditorMode()
+{
+    CodeEditor* edit = FileSystemContext::toCodeEdit(mRecent.editor);
+    if (!edit || edit->isReadOnly()) {
+        mEditInfo.at(1)->setText("R/O");
+    } else {
+        mEditInfo.at(1)->setText(edit->overwriteMode() ? "OVR" : "INS");
+    }
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -648,6 +697,7 @@ void MainWindow::activeTabChanged(int index)
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
 
     mRecent.editor = nullptr;
+    updateEditorMode();
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
