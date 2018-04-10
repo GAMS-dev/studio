@@ -1011,8 +1011,10 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget;
     QVBoxLayout* widgetVLayout = new QVBoxLayout;
+    widgetVLayout->setContentsMargins(0,0,0,0);
 
     QHBoxLayout* commandHLayout = new QHBoxLayout;
+    commandHLayout->setContentsMargins(-1,0,-1,0);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);

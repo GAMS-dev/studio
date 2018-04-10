@@ -53,6 +53,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     verticalLayout = new QVBoxLayout(optionEditor);
     verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+    verticalLayout->setContentsMargins(-1,0,-1,0);
 
     splitter = new QSplitter(optionEditor);
     splitter->setObjectName(QStringLiteral("splitter"));
