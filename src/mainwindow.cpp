@@ -1924,16 +1924,16 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->redo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->redo();
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->undo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
