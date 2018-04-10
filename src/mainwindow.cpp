@@ -686,6 +686,10 @@ void MainWindow::activeTabChanged(int index)
     }
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+
+    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
+        ae->setOverwriteMode(mInsertMode);
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -1742,15 +1746,15 @@ void MainWindow::openContext(const QModelIndex& index)
 void MainWindow::on_mainTab_currentChanged(int index)
 {
     QWidget* edit = ui->mainTab->widget(index);
-    if (edit) {
-        mFileRepo.editorActivated(edit);
-        FileContext* fc = mFileRepo.fileContext(edit);
-        if (fc && mRecent.group != fc->parentEntry()) {
-            mRecent.group = fc->parentEntry();
-            updateRunState();
-        }
-        changeToLog(fc);
+    if (!edit) return;
+
+    mFileRepo.editorActivated(edit);
+    FileContext* fc = mFileRepo.fileContext(edit);
+    if (fc && mRecent.group != fc->parentEntry()) {
+        mRecent.group = fc->parentEntry();
+        updateRunState();
     }
+    changeToLog(fc);
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -2072,6 +2076,7 @@ void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
     AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
     if (ae->type() == AbstractEditor::CodeEditor) {
         ae->setOverwriteMode(arg1);
+        mInsertMode = arg1;
     }
 }
 
