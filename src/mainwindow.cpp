@@ -472,6 +472,7 @@ void MainWindow::toggleOptionDefinition(bool checked)
     if (checked) {
         mCommandLineOption->lineEdit()->setEnabled( false );
         mOptionEditor->show();
+        emit mOptionEditor->optionTableModelChanged(mCommandLineOption->lineEdit()->text());
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionEditor->hide();

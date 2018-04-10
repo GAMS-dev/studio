@@ -148,6 +148,9 @@ QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
 void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
+    if (isHidden())
+        return;
+
     emit optionTableModelChanged(commandLineStr);
 }
 
