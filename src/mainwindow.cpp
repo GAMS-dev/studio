@@ -1498,7 +1498,6 @@ void MainWindow::execute(QString commandLineStr)
         logProc->clearLog();
     }
 
-
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
@@ -1552,13 +1551,14 @@ void MainWindow::updateRunState()
 void MainWindow::on_runWithChangedOptions()
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems()) );
+    execute( mCommandLineOption->getCurrentOption() );
 }
 
 void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems(), forcedOptionItems) );
+    execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
+                                   forcedOptionItems) );
 }
 
 void MainWindow::on_commandLineHelpTriggered()
