@@ -496,24 +496,24 @@ void MainWindow::closeHelpView()
 
 void MainWindow::updateEditorPos()
 {
+    QString posText;
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mRecent.editor());
+    CodeEditor *ce = FileSystemContext::toCodeEdit(edit);
     if (!edit) {
-        mEditInfo.at(0)->setText(QString("     "));
+       posText = "     ";
+    } else if (ce) {
+        QPoint pos;
+        QPoint anchor;
+        ce->getPositionAndAnchor(pos, anchor);
+        posText = QString("%1 / %2").arg(pos.y()).arg(pos.x());
+        if (!anchor.isNull()) {
+            posText += QString(" (%1 / %2)").arg(qAbs(pos.y()-anchor.y())).arg(qAbs(pos.x()-anchor.x()));
+        }
     } else {
         QTextCursor cursor = edit->textCursor();
-        QString posText("%1 / %2");
-        if (cursor.hasSelection()) {
-            QTextCursor anc = cursor;
-            anc.setPosition(anc.anchor());
-
-            mEditInfo.at(0)->setText(QString("%1 (%2)")
-                                     .arg(posText.arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1))
-                                     .arg(posText.arg(qAbs(cursor.blockNumber()-anc.blockNumber()))
-                                          .arg(qAbs(cursor.positionInBlock()-anc.positionInBlock()))));
-        } else {
-            mEditInfo.at(0)->setText(posText.arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1));
-        }
+        posText = QString("%1 / %2").arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1);
     }
+    mEditInfo.at(0)->setText(posText);
 }
 
 void MainWindow::updateEditorMode()
@@ -2120,8 +2120,10 @@ void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
 {
     mInsertMode = arg1;
     AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
-    if (ae && ae->type() == AbstractEditor::CodeEditor)
+    if (ae && ae->type() == AbstractEditor::CodeEditor) {
         ae->setOverwriteMode(arg1);
+        updateEditorMode();
+    }
 }
 
 void MainWindow::on_actionIndent_triggered()
@@ -2220,7 +2222,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &QPlainTextEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        CodeEditor* ce = FileSystemContext::toCodeEdit(mEditor);
     }
     mEditor = editor;
     edit = FileSystemContext::toPlainEdit(mEditor);

@@ -318,6 +318,7 @@ void CodeEditor::mousePressEvent(QMouseEvent* e)
         }
         if (mBlockEdit) {
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
+            emit cursorPositionChanged();
         }
     } else {
         if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
@@ -620,6 +621,21 @@ void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
     }
 }
 
+void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
+{
+    if (mBlockEdit) {
+        pos = QPoint(mBlockEdit->colTo()+1, mBlockEdit->currentLine()+1);
+        anchor = QPoint(mBlockEdit->colFrom()+1, mBlockEdit->startLine()+1);
+    } else {
+        QTextCursor cursor = textCursor();
+        pos = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        if (cursor.hasSelection()) {
+            cursor.setPosition(cursor.anchor());
+            anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        }
+    }
+}
+
 void CodeEditor::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -859,6 +875,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
+        emit mEdit->cursorPositionChanged();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
