@@ -687,7 +687,7 @@ void MainWindow::activeTabChanged(int index)
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 
-    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
     if (ae && ae->type() == AbstractEditor::CodeEditor)
         ae->setOverwriteMode(mInsertMode);
 }
@@ -2071,13 +2071,12 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
 {
-    if (mRecent.editor == nullptr) return;
+    mInsertMode = arg1;
 
-    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
-    if (ae->type() == AbstractEditor::CodeEditor) {
+    if (mRecent.editor == nullptr) return;
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
         ae->setOverwriteMode(arg1);
-        mInsertMode = arg1;
-    }
 }
 
 void MainWindow::on_actionIndent_triggered()
