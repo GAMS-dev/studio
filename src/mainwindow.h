@@ -53,10 +53,16 @@ class Result;
 class GoToWidget;
 
 struct RecentData {
+
+    QWidget *editor() const;
+    void setEditor(QWidget *editor, MainWindow* window);
+
     FileId editFileId = -1;
-    QWidget* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
+
+private:
+    QWidget* mEditor = nullptr;
 };
 
 struct HistoryData {
@@ -121,6 +127,8 @@ public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
     void receiveOpenDoc(QString doc, QString anchor);
+    void updateEditorPos();
+    void updateEditorMode();
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -146,9 +154,6 @@ private slots:
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
-
-    void updateEditorPos();
-    void updateEditorMode();
 
 private slots:
     // File
