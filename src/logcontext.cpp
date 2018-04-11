@@ -141,7 +141,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: editors()) {
-            QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+            AbstractEditor* ed = FileContext::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -187,7 +187,7 @@ void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
 
         int i = 0;
         for (QWidget* w: editors()) {
-            QPlainTextEdit* ed = FileSystemContext::toPlainEdit(w);
+            AbstractEditor* ed = FileContext::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;

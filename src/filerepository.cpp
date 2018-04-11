@@ -328,7 +328,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
+void FileRepository::updateLinkDisplay(AbstractEditor *editUnderCursor)
 {
     if (editUnderCursor) {
         FileContext *fc = fileContext(editUnderCursor);

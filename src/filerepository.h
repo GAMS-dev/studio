@@ -53,8 +53,8 @@ public:
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
     FileContext* fileContext(const QModelIndex& index) const;
 
-    /// \brief Get the <c>FileContext</c> related to a <c>QPlainTextEdit</c>.
-    /// \param edit The <c>QPlainTextEdit</c> assigned to the <c>FileContext</c>.
+    /// \brief Get the <c>FileContext</c> related to a <c>QWidget</c>.
+    /// \param edit The <c>QWidget</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
     FileContext* fileContext(QWidget* edit) const;
 
@@ -94,7 +94,7 @@ public:
     LogContext* logContext(FileSystemContext* node);
     void removeMarks(FileGroupContext* group);
 
-    void updateLinkDisplay(QPlainTextEdit* editUnderCursor);
+    void updateLinkDisplay(AbstractEditor* editUnderCursor);
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 

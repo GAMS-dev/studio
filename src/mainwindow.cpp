@@ -63,6 +63,13 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
+    QFont font = ui->statusBar->font();
+    font.setPointSizeF(font.pointSizeF()*0.9);
+    ui->statusBar->setFont(font);
+    mEditInfo << new QLabel("0 / 0") << new QLabel("INS");
+    foreach (QLabel* la, mEditInfo) {
+        ui->statusBar->addPermanentWidget(la);
+    }
 
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
@@ -119,9 +126,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
     if (mSettings->lineWrapProcess()) // set wrapping for system log
-        ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+        ui->logView->setLineWrapMode(AbstractEditor::WidgetWidth);
     else
-        ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
+        ui->logView->setLineWrapMode(AbstractEditor::NoWrap);
 
     initTabs();
 
@@ -207,7 +214,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
             tabWidget->setCurrentIndex(tabIndex);
-            mRecent.editor = tabWidget->currentWidget();
+            mRecent.setEditor(tabWidget->currentWidget(), this);
             mRecent.editFileId = fc->id();
         }
     }
@@ -300,11 +307,11 @@ QWidgetList MainWindow::openEditors()
     return mFileRepo.editors();
 }
 
-QList<QPlainTextEdit*> MainWindow::openLogs()
+QList<AbstractEditor*> MainWindow::openLogs()
 {
-    QList<QPlainTextEdit*> resList;
+    QList<AbstractEditor*> resList;
     for (int i = 0; i < ui->logTab->count(); i++) {
-        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(ui->logTab->widget(i));
+        AbstractEditor* ed = FileContext::toAbstractEdit(ui->logTab->widget(i));
         if (ed) resList << ed;
     }
     return resList;
@@ -488,6 +495,38 @@ void MainWindow::closeHelpView()
         mDockHelpView->close();
 }
 
+void MainWindow::updateEditorPos()
+{
+    QString posText;
+    AbstractEditor* edit = FileContext::toAbstractEdit(mRecent.editor());
+    CodeEditor *ce = FileContext::toCodeEdit(edit);
+    if (!edit) {
+       posText = "     ";
+    } else if (ce) {
+        QPoint pos;
+        QPoint anchor;
+        ce->getPositionAndAnchor(pos, anchor);
+        posText = QString("%1 / %2").arg(pos.y()).arg(pos.x());
+        if (!anchor.isNull()) {
+            posText += QString(" (%1 / %2)").arg(qAbs(pos.y()-anchor.y()+1)).arg(qAbs(pos.x()-anchor.x()));
+        }
+    } else {
+        QTextCursor cursor = edit->textCursor();
+        posText = QString("%1 / %2").arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1);
+    }
+    mEditInfo.at(0)->setText(posText);
+}
+
+void MainWindow::updateEditorMode()
+{
+    CodeEditor* edit = FileSystemContext::toCodeEdit(mRecent.editor());
+    if (!edit || edit->isReadOnly()) {
+        mEditInfo.at(1)->setText("R/O");
+    } else {
+        mEditInfo.at(1)->setText(edit->overwriteMode() ? "OVR" : "INS");
+    }
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -645,12 +684,13 @@ void MainWindow::activeTabChanged(int index)
     setRunActionsEnabled( false );
 
     // remove highlights from old tab
-    FileContext* oldTab = mFileRepo.fileContext(mRecent.editor);
+    FileContext* oldTab = mFileRepo.fileContext(mRecent.editor());
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
 
-    mRecent.editor = nullptr;
+    mRecent.setEditor(nullptr, this);
+    updateEditorMode();
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(editWidget);
+    AbstractEditor* edit = FileContext::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
 
     if (edit) {
@@ -658,7 +698,7 @@ void MainWindow::activeTabChanged(int index)
 
         if (fc) {
             mRecent.editFileId = fc->id();
-            mRecent.editor = lxiViewer ? editWidget : edit;
+            mRecent.setEditor(lxiViewer ? editWidget : edit, this);
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
@@ -682,7 +722,7 @@ void MainWindow::activeTabChanged(int index)
     } else if (FileContext::toGdxViewer(editWidget)) {
         ui->menuEncoding->setEnabled(false);
         gdxviewer::GdxViewer* gdxViewer = FileContext::toGdxViewer(editWidget);
-        mRecent.editor = gdxViewer;
+        mRecent.setEditor(gdxViewer, this);
         FileContext* fc = mFileRepo.fileContext(gdxViewer);
         mRecent.editFileId = fc->id();
         mRecent.group = fc->parentEntry();
@@ -693,9 +733,8 @@ void MainWindow::activeTabChanged(int index)
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 
-    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
-    if (ae && ae->type() == AbstractEditor::CodeEditor)
-        ae->setOverwriteMode(mInsertMode);
+    CodeEditor* ce = FileSystemContext::toCodeEdit(mRecent.editor());
+    if (ce) ce->setOverwriteMode(mInsertMode);
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -851,8 +890,8 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
-    if ( (mRecent.editor != nullptr) && (focusWidget() == mRecent.editor) ) {
-        CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+    if ( (mRecent.editor() != nullptr) && (focusWidget() == mRecent.editor()) ) {
+        CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
@@ -1128,7 +1167,7 @@ void MainWindow::setRunActionsEnabled(bool enable)
 bool MainWindow::isActiveTabEditable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit( editWidget );
+    AbstractEditor* edit = FileContext::toAbstractEdit( editWidget );
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(edit);
         return (fc && !edit->isReadOnly());
@@ -1279,8 +1318,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
-                                                                  : QPlainTextEdit::NoWrap);
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
+                                                                  : AbstractEditor::NoWrap);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -1452,7 +1491,7 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 void MainWindow::execute(QString commandLineStr)
 {
     mPerformanceTime.start();
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
@@ -1525,7 +1564,7 @@ void MainWindow::execute(QString commandLineStr)
 
 void MainWindow::interruptTriggered()
 {
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group)
         return;
@@ -1536,7 +1575,7 @@ void MainWindow::interruptTriggered()
 
 void MainWindow::stopTriggered()
 {
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group)
         return;
@@ -1617,7 +1656,7 @@ void MainWindow::changeToLog(FileContext* fileContext)
     LogContext* logContext = mFileRepo.logContext(fileContext);
     if (logContext && !logContext->editors().isEmpty()) {
         logContext->setDebugLog(mLogDebugLines);
-        QPlainTextEdit* logEdit = FileSystemContext::toPlainEdit(logContext->editors().first());
+        AbstractEditor* logEdit = FileContext::toAbstractEdit(logContext->editors().first());
         if (logEdit && ui->logTab->currentWidget() != logEdit) {
             if (ui->logTab->currentWidget() != mResultsView)
                 ui->logTab->setCurrentWidget(logEdit);
@@ -1797,8 +1836,8 @@ void MainWindow::on_actionSearch_triggered()
 
            if (ui->mainTab->currentWidget()) {
                int sbs;
-               if (mRecent.editor && FileContext::toPlainEdit(mRecent.editor)
-                       && FileContext::toPlainEdit(mRecent.editor)->verticalScrollBar()->isVisible())
+               if (mRecent.editor() && FileContext::toAbstractEdit(mRecent.editor())
+                       && FileContext::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
                    sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
                else
                    sbs = 2;
@@ -1832,7 +1871,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
         if (!FileContext::toGdxViewer(edit))
-            FileContext::toPlainEdit(edit)->setFont(font);
+            FileContext::toAbstractEdit(edit)->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
@@ -1850,7 +1889,7 @@ void MainWindow::updateEditorLineWrapping()
 
     QWidgetList editList = mFileRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
-        QPlainTextEdit* ed = FileSystemContext::toPlainEdit(editList.at(i));
+        AbstractEditor* ed = FileContext::toAbstractEdit(editList.at(i));
         if (ed) {
             ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(wrapModeEditor);
@@ -1863,7 +1902,7 @@ void MainWindow::updateEditorLineWrapping()
     else
         wrapModeProcess = QPlainTextEdit::NoWrap;
 
-    QList<QPlainTextEdit*> logList = openLogs();
+    QList<AbstractEditor*> logList = openLogs();
     for (int i = 0; i < logList.size(); i++) {
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
@@ -1911,7 +1950,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
-    FileContext *fc = mRecent.editor ? mFileRepo.fileContext(mRecent.editor) : nullptr;
+    FileContext *fc = mRecent.editor() ? mFileRepo.fileContext(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
 }
 
@@ -1926,7 +1965,7 @@ void MainWindow::on_actionGo_To_triggered()
         mGoto->hide();
     } else {
         mGoto->setGeometry((screenWidth/2)-(width/2),(screenHeight/2)-(height/2),width,height);
-        if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor == nullptr))
+        if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
             return;
         mGoto->show();
         mGoto->focusTextBox();
@@ -1936,82 +1975,66 @@ void MainWindow::on_actionGo_To_triggered()
 
 void MainWindow::on_actionRedo_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (ce) ce->redo();
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
 {
-    if (focusWidget() == nullptr)
-        return;
-
-    AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
-    if (!ae || ae->isReadOnly()) return;
-
-    if (ae->type() == AbstractEditor::CodeEditor) {
-        CodeEditor *ce = static_cast<CodeEditor*>(ae);
-        ce->pasteClipboard();
-    }
+    CodeEditor *ce = FileContext::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce->pasteClipboard();
 }
 
 void MainWindow::on_actionCopy_triggered()
 {
-    if (focusWidget() == nullptr)
-        return;
+    if (!focusWidget()) return;
 
-    FileContext *fc = mFileRepo.fileContext(mRecent.editor);
+    FileContext *fc = mFileRepo.fileContext(mRecent.editor());
     if (!fc) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor());
         gdx->copyAction();
     } else {
-        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(focusWidget());
+        AbstractEditor *ae = FileContext::toAbstractEdit(focusWidget());
         if (!ae) return;
-
-        if (ae->type() == AbstractEditor::CodeEditor) {
-            CodeEditor *ce = static_cast<CodeEditor*>(ae);
-
-            if (ce->blockEdit()) {
-                ce->blockEdit()->selectionToClipboard();
-                return;
-            }
+        CodeEditor *ce = FileContext::toCodeEdit(ae);
+        if (ce && ce->blockEdit()) {
+            ce->blockEdit()->selectionToClipboard();
+        } else {
+            ae->copy();
         }
-        ae->copy();
     }
 }
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    FileContext *fc = mFileRepo.fileContext(mRecent.editor);
-    if (!fc || focusWidget() == nullptr) return;
+    FileContext *fc = mFileRepo.fileContext(mRecent.editor());
+    if (!fc || !focusWidget()) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor);
+        gdxviewer::GdxViewer *gdx = FileContext::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
     } else {
-        CodeEditor* ce = dynamic_cast<CodeEditor*>(focusWidget());
-        if (!ce) return;
-        ce->selectAll();
+        CodeEditor* ce = FileContext::toCodeEdit(focusWidget());
+        if (ce) ce->selectAll();
     }
 }
 
 void MainWindow::on_actionCut_triggered()
 {
-    if (focusWidget() == nullptr)
-        return;
-
-    CodeEditor* ce= dynamic_cast<CodeEditor*>(focusWidget());
+    CodeEditor* ce= FileContext::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2040,7 +2063,7 @@ void MainWindow::on_actionZoom_Out_triggered()
         getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomOut();
     } else {
-        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(QApplication::focusWidget());
+        AbstractEditor *ae = FileContext::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
@@ -2054,7 +2077,7 @@ void MainWindow::on_actionZoom_In_triggered()
         getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomIn();
     } else {
-        AbstractEditor *ae = dynamic_cast<AbstractEditor*>(QApplication::focusWidget());
+        AbstractEditor *ae = FileContext::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
@@ -2065,40 +2088,42 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    QTextCursor c = ce->textCursor();
-    if (!ce->isReadOnly())
+    CodeEditor* ce= FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly()) {
+        QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toUpper());
+    }
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    QTextCursor c = ce->textCursor();
-    if (!ce->isReadOnly())
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly()) {
+        QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toLower());
+    }
 }
 
-void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
+void MainWindow::on_actionInsert_Mode_toggled(bool insertMode)
 {
-    mInsertMode = arg1;
-
-    if (mRecent.editor == nullptr) return;
-    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
-    if (ae && ae->type() == AbstractEditor::CodeEditor)
-        ae->setOverwriteMode(arg1);
+    mInsertMode = insertMode;
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly()) {
+        ce->setOverwriteMode(insertMode);
+        updateEditorMode();
+    }
 }
 
 void MainWindow::on_actionIndent_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2111,10 +2136,10 @@ void MainWindow::on_actionIndent_triggered()
 
 void MainWindow::on_actionOutdent_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor);
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2129,31 +2154,31 @@ void MainWindow::on_actionOutdent_triggered()
 
 void MainWindow::on_actionDuplicate_Line_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly())
         ce->duplicateLine();
 }
 
 void MainWindow::on_actionRemove_Line_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly())
         ce->removeLine();
 }
 
 void MainWindow::on_actionComment_triggered()
 {
-    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
-    if (!ce->isReadOnly())
+    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
+    if (ce && !ce->isReadOnly())
         ce->commentLine();
 }
 
@@ -2177,6 +2202,27 @@ void MainWindow::on_actionSelect_encodings_triggered()
     se.exec();
     setEncodingMIBs(se.selectedMibs());
     mSettings->saveSettings(this);
+}
+
+QWidget *RecentData::editor() const
+{
+    return mEditor;
+}
+
+void RecentData::setEditor(QWidget *editor, MainWindow* window)
+{
+    AbstractEditor* edit = FileContext::toAbstractEdit(mEditor);
+    if (edit) {
+        MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+    }
+    mEditor = editor;
+    edit = FileContext::toAbstractEdit(mEditor);
+    if (edit) {
+        MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+    }
+    window->updateEditorMode();
+    window->updateEditorPos();
+
 }
 
 }
