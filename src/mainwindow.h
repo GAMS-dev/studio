@@ -115,7 +115,7 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
     HelpView *getDockHelpView() const;
-    void readTabs(const QJsonObject &json);
+    QStringList readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
 
 public slots:
@@ -279,6 +279,7 @@ private:
     FileMetrics mMetrics;
     bool mCheckOnce = true;
     bool mLogDebugLines = false;
+    const QString mAutosavedFileMarker = "~$";
 
 };
 
