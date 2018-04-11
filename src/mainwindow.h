@@ -209,7 +209,7 @@ private slots:
     void on_actionReset_Zoom_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
-    void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionInsert_Mode_toggled(bool insertMode);
     void on_actionIndent_triggered();
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();

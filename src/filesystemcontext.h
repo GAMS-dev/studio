@@ -142,11 +142,11 @@ public: // static convenience methods
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? v.toInt() : etUndefined);
     }
-    inline static QPlainTextEdit* toPlainEdit(QWidget* w) {
+    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
             return toLxiViewer(w)->codeEditor();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<QPlainTextEdit*>(w) : nullptr;
+        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
     }
     inline static CodeEditor* toCodeEdit(QWidget* w) {
         int t = editorType(w);
