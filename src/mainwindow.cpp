@@ -216,28 +216,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    if (!mRecent.editor || ui->mainTab->currentWidget() == mWp)
-        return;
-    const QString tmpFileMarker = "~$";
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-    QString filepath = QFileInfo(fc->location()).path();
-    QString filename = filepath+fc->name();
-    FileMetrics metrics = FileMetrics(QFileInfo(filename));
-    QString autosaveFile = filepath+"/"+tmpFileMarker+fc->name();
-    if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
-    {
-        QFile file(autosaveFile);
-        file.open(QIODevice::WriteOnly);
-        QTextStream out(&file);
-        out << fc->document()->toPlainText();
-        out.flush();
-        file.close();
-    }
-    else if (QFileInfo::exists(autosaveFile)) {
-            QFile::remove(autosaveFile);
-    }
+    mAutosaveHandler->saveChangedFiles();
     mSettings->saveSettings(this);
-    qDebug() << "timer cycle";
 }
 
 void MainWindow::updateMenuToCodec(int mib)
@@ -1874,6 +1854,11 @@ void MainWindow::writeTabs(QJsonObject &json) const
     json["mainTabs"] = tabArray;
     FileContext *fc = mRecent.editor ? mFileRepo.fileContext(mRecent.editor) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
+}
+
+QWidget *MainWindow::welcomePage() const
+{
+    return mWp;
 }
 
 void MainWindow::on_actionGo_To_triggered()

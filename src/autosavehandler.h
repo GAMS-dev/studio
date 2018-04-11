@@ -17,6 +17,8 @@ public:
 
     void recoverAutosaveFiles(const QStringList &autosaveFiles);
 
+    void saveChangedFiles();
+
 private:
     MainWindow *mMainWindow;
     const QString mAutosavedFileMarker = "~$";

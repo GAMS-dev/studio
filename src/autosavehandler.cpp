@@ -83,6 +83,31 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
     }
 }
 
+void AutosaveHandler::saveChangedFiles()
+{
+    QWidget *editor = mMainWindow->recent()->editor;
+    if (!editor || editor == mMainWindow->welcomePage())
+        return;
+    FileContext* fc = mMainWindow->fileRepository()->fileContext(editor);
+    QString filepath = QFileInfo(fc->location()).path();
+    QString filename = filepath+fc->name();
+    FileMetrics metrics = FileMetrics(QFileInfo(filename));
+    QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fc->name();
+    if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
+    {
+        QFile file(autosaveFile);
+        file.open(QIODevice::WriteOnly);
+        QTextStream out(&file);
+        out << fc->document()->toPlainText();
+        out.flush();
+        file.close();
+    }
+    else if (QFileInfo::exists(autosaveFile)) {
+            QFile::remove(autosaveFile);
+    }
+    qDebug() << "timer cycle";
+}
+
 
 } // namespace studio
 } // namespace gams

@@ -118,6 +118,7 @@ public:
     HelpView *getDockHelpView() const;
     QStringList readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
+    QWidget *welcomePage() const;
 
 public slots:
     void receiveAction(QString action);
