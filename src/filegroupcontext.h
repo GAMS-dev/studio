@@ -72,6 +72,8 @@ public:
 
     void dumpMarks();
 
+    void setLstFileName(const QString &lstFileName);
+
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
     void removeNode(FileSystemContext *node);
@@ -102,7 +104,6 @@ protected:
 
 private:
     QList<FileSystemContext*> mChildList;
-    QFileSystemWatcher *mDirWatcher = nullptr;
     QString mRunInfo;
     LogContext* mLogContext = nullptr;
     GamsProcess* mGamsProcess = nullptr;

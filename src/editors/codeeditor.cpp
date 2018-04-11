@@ -205,11 +205,19 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     if (!isReadOnly()) {
         if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
+            int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
-            cursor.insertText("\n");
-            if (cursor.block().previous().isValid())
-                truncate(cursor.block().previous());
-            adjustIndent(cursor);
+            QString leadingText = cursor.block().text().left(pos).trimmed();
+            if (leadingText.isEmpty()) {
+                cursor.movePosition(QTextCursor::StartOfBlock);
+                cursor.insertText("\n");
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos);
+            } else {
+                cursor.insertText("\n");
+                if (cursor.block().previous().isValid())
+                    truncate(cursor.block().previous());
+                adjustIndent(cursor);
+            }
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
@@ -232,7 +240,7 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
         QPlainTextEdit::keyReleaseEvent(e);
         return;
     }
-    // return pressed, if current block consists of whitespaces only: ignore here
+    // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
         return;
@@ -423,6 +431,36 @@ void CodeEditor::removeLine()
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.endEditBlock();
+}
+
+void CodeEditor::commentLine()
+{
+    QTextCursor cursor = textCursor();
+    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+    bool removeComment = true;
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.text().startsWith('*')) {
+            removeComment = false;
+            break;
+        }
+    }
+    cursor.beginEditBlock();
+    QTextCursor anchor = cursor;
+    anchor.setPosition(anchor.anchor());
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        cursor.setPosition(block.position());
+        if (removeComment) {
+            cursor.deleteChar();
+        } else {
+            cursor.insertText("*");
+        }
+    }
+    cursor.setPosition(anchor.position());
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+    recalcExtraSelections();
 }
 
 int CodeEditor::minIndentCount(int fromLine, int toLine)

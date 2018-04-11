@@ -80,6 +80,10 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
 
+    items = GlbParser::parseFile(gamsSysDir.filePath("psoptlib_ml/psoptlib.glb"));
+    items.at(0).library()->setName("PSO Library");
+    addLibrary(items);
+
     if (!mUserLibPath.isEmpty())
         loadUserLibs();
 
@@ -154,7 +158,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
         tabIdx = ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
     else
         tabIdx = ui.tabWidget->addTab(tableView, label);
-    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->name());
+    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 

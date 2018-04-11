@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(STUDIO_VERSION);
 
     try {
-        app.openAssociatedFiles();
         app.mainWindow()->show();
+        app.openAssociatedFiles();
         return app.exec();
     } catch (gams::studio::FatalException &e) {
         Application::showExceptionMessage(QObject::tr("fatal exception"), e.what());

@@ -72,7 +72,7 @@ int SyntaxKeywordBase::findEnd(SyntaxState state, const QString& line, int index
     int iKey = 0;
     int iChar = 0;
     while (true) {
-        if (iChar+index >= line.length() || isWhitechar(line, iChar+index)) {
+        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
             if (mKeywords.value(state)->at(iKey).length() > iChar) return -1;
             return iChar+index; // reached an valid end
         } else if (iChar < mKeywords.value(state)->at(iKey).length()
@@ -181,7 +181,6 @@ SyntaxDeclarationTable::SyntaxDeclarationTable() : SyntaxKeywordBase(SyntaxState
     mKeywords.insert(state(), new DictList(list));
     mSubStates << SyntaxState::IdentifierTable << SyntaxState::Directive
                << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
-
 }
 
 SyntaxBlock SyntaxDeclarationTable::find(SyntaxState entryState, const QString &line, int index)
@@ -205,7 +204,8 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
-    mSubStates << SyntaxState::ReservedBody << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::ReservedBody << SyntaxState::Directive << SyntaxState::CommentLine
+               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
 SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)
@@ -216,15 +216,28 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
     while (isWhitechar(line, start))
         ++start;
     end = findEnd(state(), line, start);
-    SyntaxStateShift shift = (end >= line.length()) ? SyntaxStateShift::out : SyntaxStateShift::in;
-    if (end > start) return SyntaxBlock(this, start, end, false, shift, state());
+    if (end > start) return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
     return SyntaxBlock(this);
+}
+
+SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
+{
+    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
+               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
 SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)
 {
     Q_UNUSED(entryState);
-    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
+    if (end < line.length()) {
+        if (line.at(end)=='(')
+            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
+        end++;
+    }
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
 SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &hasContent)
@@ -232,8 +245,13 @@ SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    hasContent = start < line.length();
-    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::out);
+    int end = index;
+    while (end<line.length() && line.at(end)!=';' && line.at(end)!='(') end++;
+    if (end<line.length() && line.at(end)=='(') end++;
+    hasContent = start < end;
+    if (end < line.length())
+        return SyntaxBlock(this, index, end, SyntaxStateShift::out);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
 

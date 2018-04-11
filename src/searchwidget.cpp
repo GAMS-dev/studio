@@ -98,6 +98,7 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
+    clearResults();
     SearchResultList matches(searchTerm());
     insertHistory();
 
@@ -321,6 +322,7 @@ void SearchWidget::simpleReplaceAll()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
+        clearResults();
         edit->textCursor().beginEditBlock();
         foreach (QTextCursor tc, hits) {
             tc.insertText(replaceTerm);
@@ -354,6 +356,11 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, cachedResults);
 }
 
+void SearchWidget::focusSearchField()
+{
+    ui->combo_search->setFocus();
+}
+
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
@@ -363,7 +370,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
     if (!fsc || !edit) return;
 
-    ui->combo_search->setFocus();
+    focusSearchField();
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
@@ -412,8 +419,7 @@ void SearchWidget::on_searchPrev()
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && (e->key() == Qt::Key_Escape
-                         || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
+    if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
         hide();
         if (mMain->fileRepository()->fileContext(mMain->recent()->editor))
             mMain->recent()->editor->setFocus();
@@ -427,7 +433,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
 }
 
 void SearchWidget::closeEvent(QCloseEvent *e) {
-    updateMatchAmount(0, true);
+    updateMatchAmount(0, 0, true);
     QDialog::closeEvent(e);
 }
 
@@ -473,12 +479,14 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 void SearchWidget::on_btn_back_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Forward);
 }
 
@@ -536,19 +544,23 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
 void SearchWidget::on_btn_clear_clicked()
 {
-    clearResults();
+    clearSearch();
 }
 
 void SearchWidget::clearResults()
 {
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    if (!fc) return;
+    fc->removeTextMarks(TextMark::match, true);
+    updateMatchAmount(0, 0, true);
+}
+
+void SearchWidget::clearSearch()
+{
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    if (!fc) return;
-
-    fc->removeTextMarks(TextMark::match, false);
-    updateMatchAmount(0, 0, true);
+    clearResults();
 }
 
 

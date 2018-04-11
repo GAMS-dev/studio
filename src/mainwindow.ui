@@ -142,6 +142,7 @@
      <addaction name="actionOutdent"/>
      <addaction name="actionDuplicate_Line"/>
      <addaction name="actionRemove_Line"/>
+     <addaction name="actionComment"/>
     </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
@@ -284,7 +285,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Process</string>
+    <string>Output</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -745,6 +746,17 @@
   <action name="actionSwitchEncoding">
    <property name="text">
     <string>System</string>
+   </property>
+  </action>
+  <action name="actionComment">
+   <property name="text">
+    <string>Comment</string>
+   </property>
+   <property name="toolTip">
+    <string>(Un)Comment Line(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+*</string>
    </property>
   </action>
  </widget>

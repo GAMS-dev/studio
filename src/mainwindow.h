@@ -120,6 +120,7 @@ public:
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
+    void receiveOpenDoc(QString doc, QString anchor);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -135,6 +136,8 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void addToGroup(FileGroupContext *group, const QString &filepath);
+    void sendSourcePath(QString &source);
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View
@@ -203,11 +206,13 @@ private slots:
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
+    void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
 
     void interruptTriggered();
     void stopTriggered();
     void toggleLogDebug();
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -236,6 +241,7 @@ private:
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
+    void parseFilesFromCommandLine(FileGroupContext *fgc);
 
 private:
     Ui::MainWindow *ui;
@@ -270,6 +276,7 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
+    bool mInsertMode = false;
     QTime mPerformanceTime;
 
 };

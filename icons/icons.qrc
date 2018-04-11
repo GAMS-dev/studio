@@ -1,49 +1,54 @@
 <RCC>
     <qresource prefix="/img">
+        <file alias="backward">angle-up.svg</file>
+        <file alias="book">book.svg</file>
         <file alias="bookmark">bookmark.svg</file>
         <file alias="bug-r">bug-r.svg</file>
+        <file alias="config">gear.svg</file>
+        <file alias="compile">compile.svg</file>
+        <file alias="compile-gdx">compile-gdx.svg</file>
         <file alias="database">database.svg</file>
+        <file alias="delete">remove.svg</file>
+        <file alias="delete-all">trash.svg</file>
+        <file alias="envelope">envelope.svg</file>
         <file alias="err-ref">err-ref.svg</file>
         <file alias="err-ref-missing">err-ref-missing.svg</file>
         <file alias="exclam-circle-r">exclam-circle-r.svg</file>
         <file alias="exclam-triangle-y">exclam-triangle-y.svg</file>
+        <file alias="external-link">external-link.svg</file>
         <file alias="file-alt">file-alt.svg</file>
+        <file alias="filter">filter.svg</file>
+        <file alias="filter-off">filter-off.svg</file>
         <file alias="folder">folder.svg</file>
         <file alias="folder-open">folder-open.svg</file>
+        <file alias="fork">code-fork.svg</file>
+        <file alias="forward">angle-down.svg</file>
         <file alias="gams">gamslogo.svg</file>
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w24">gams-w24.svg</file>
         <file alias="home">home.svg</file>
         <file alias="interrupt">interrupt.svg</file>
-        <file alias="play">play.svg</file>
-        <file alias="pause">pause.svg</file>
-        <file alias="question">question.svg</file>
-        <file alias="stop">stop.svg</file>
-        <file alias="filter">filter.svg</file>
-        <file alias="filter-off">filter-off.svg</file>
-        <file alias="times">times.svg</file>
-        <file alias="user">user.svg</file>
         <file alias="link">link.svg</file>
-        <file alias="external-link">external-link.svg</file>
-        <file alias="fork">code-fork.svg</file>
-        <file alias="config">gear.svg</file>
-        <file>gamsicon_16x16.png</file>
-        <file>gamsworld_16x16.gif</file>
-        <file alias="compile">compile.svg</file>
-        <file alias="run-gdx">play-gdx.svg</file>
-        <file alias="compile-gdx">compile-gdx.svg</file>
-        <file alias="plus">plus.svg</file>
         <file alias="minus">minus.svg</file>
-        <file alias="delete-all">trash.svg</file>
         <file alias="move-up">move-up.svg</file>
         <file alias="move-down">move-down.svg</file>
-        <file alias="delete">remove.svg</file>
+        <file alias="pause">pause.svg</file>
+        <file alias="pen">pen-alt.svg</file>
+        <file alias="play">play.svg</file>
+        <file alias="plus">plus.svg</file>
+        <file alias="question">question.svg</file>
+        <file alias="run-gdx">play-gdx.svg</file>
+        <file alias="stackoverflow">so-icon.svg</file>
+        <file alias="stop">stop.svg</file>
+        <file alias="times">times.svg</file>
+        <file alias="user">user.svg</file>
+        <file alias="gamsicon">gamsicon_16x16.png</file>
+        <file alias="gamsworld">gamsworld_16x16.gif</file>
         <file>square-red.svg</file>
         <file>square-green.svg</file>
         <file>square-gray.svg</file>
         <file>insert.svg</file>
-        <file alias="forward">angle-down.svg</file>
-        <file alias="backward">angle-up.svg</file>
+        <file alias="camera">camera.png</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

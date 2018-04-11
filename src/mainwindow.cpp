@@ -104,6 +104,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
+
 //    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
 
     setEncodingMIBs(encodingMIBs());
@@ -122,7 +125,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     initTabs();
 
-    QTimer::singleShot(100, this, &MainWindow::delayedFileRestoration);
     connectCommandLineWidgets();
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 }
@@ -209,6 +211,16 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             mRecent.editFileId = fc->id();
         }
     }
+}
+
+void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
+{
+    group->attachFile(filepath);
+}
+
+void MainWindow::sendSourcePath(QString &source)
+{
+    source = mRecent.path;
 }
 
 void MainWindow::updateMenuToCodec(int mib)
@@ -309,7 +321,7 @@ void MainWindow::receiveAction(QString action)
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
     if (gmsFileName == "")
-        gmsFileName = model + ".gms";
+        gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(GAMSPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
@@ -327,13 +339,24 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
 void MainWindow::receiveModLibLoad(QString model)
 {
     QString glbFile;
-    if (model != "embeddedSort")
-        glbFile = "gamslib_ml/gamslib.glb";
-    else
-        glbFile = "datalib_ml/datalib.glb";
-
+//    if (model != "embeddedSort")
+    glbFile = "gamslib_ml/gamslib.glb";
+//    else
+//      glbFile = "datalib_ml/datalib.glb";
     openModelFromLib(glbFile, model);
+}
 
+void MainWindow::receiveOpenDoc(QString doc, QString anchor)
+{
+    if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
+
+    QString link = GAMSPaths::systemDir() + "/" + doc;
+    QUrl result = QUrl::fromLocalFile(link);
+
+    if (anchor != "")
+        result = QUrl(result.toString() + "#" + anchor);
+
+    getDockHelpView()->on_urlOpened(result);
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -449,6 +472,7 @@ void MainWindow::toggleOptionDefinition(bool checked)
     if (checked) {
         mCommandLineOption->lineEdit()->setEnabled( false );
         mOptionEditor->show();
+        emit mOptionEditor->optionTableModelChanged(mCommandLineOption->lineEdit()->text());
     } else {
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionEditor->hide();
@@ -630,20 +654,24 @@ void MainWindow::activeTabChanged(int index)
 
     if (edit) {
         FileContext* fc = mFileRepo.fileContext(lxiViewer ? editWidget : edit);
+
         if (fc) {
             mRecent.editFileId = fc->id();
             mRecent.editor = lxiViewer ? editWidget : edit;
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
-                mDockOptionView->setEnabled(true);
-                QStringList option = mCommandLineHistory->getHistoryFor(fc->location());
-                mCommandLineOption->clear();
-                foreach(QString str, option) {
-                   mCommandLineOption->insertItem(0, str );
+                FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
+                if (group) {
+                    mDockOptionView->setEnabled(true);
+                    mCommandLineOption->clear();
+                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runableGms());
+                    foreach(QString str, option) {
+                       mCommandLineOption->insertItem(0, str );
+                    }
+                    mCommandLineOption->setCurrentIndex(0);
+                    mCommandLineOption->setEnabled(true);
+                    mCommandLineOption->setCurrentContext(fc->location());
                 }
-                mCommandLineOption->setCurrentIndex(0);
-                mCommandLineOption->setEnabled(true);
-                mCommandLineOption->setCurrentContext(fc->location());
                 setRunActionsEnabled(true);
                 ui->menuEncoding->setEnabled(true);
             }
@@ -663,6 +691,10 @@ void MainWindow::activeTabChanged(int index)
     }
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
+        ae->setOverwriteMode(mInsertMode);
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -984,8 +1016,10 @@ void MainWindow::createRunAndCommandLineWidgets()
 
     QWidget* optionWidget = new QWidget;
     QVBoxLayout* widgetVLayout = new QVBoxLayout;
+    widgetVLayout->setContentsMargins(0,0,0,0);
 
     QHBoxLayout* commandHLayout = new QHBoxLayout;
+    commandHLayout->setContentsMargins(-1,0,-1,0);
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(ui->actionRun);
@@ -1257,6 +1291,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 
 bool MainWindow::requestCloseChanged(QList<FileContext*> changedFiles)
 {
+    // TODO: make clear that this saves/discrads all modified files?
     if (changedFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
@@ -1393,20 +1428,41 @@ void MainWindow::customEvent(QEvent *event)
         ((LineEditCompleteEvent*)event)->complete();
 }
 
+void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
+{
+    QList<OptionItem> items = mOptionEditor->getCurrentListOfOptionItems();
+    foreach (OptionItem item, items) {
+
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+
+            // default value?
+//            if (QString::compare(item.value, "default", Qt::CaseInsensitive) == 0) {
+//                fgc->setLstFileName(fgc->name() + ".lst");
+//            } else {
+                fgc->setLstFileName(item.value);
+//            }
+        }
+
+    }
+}
+
 void MainWindow::execute(QString commandLineStr)
 {
     mPerformanceTime.start();
     FileContext* fc = mFileRepo.fileContext(mRecent.editor);
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
+
+    parseFilesFromCommandLine(group);
 
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
         group->saveGroup();
 
-    if (fc->editors().size() == 1 && fc->isModified()) { // TODO(JM) Why not for multiple editors
+    if (fc->editors().size() > 0 && fc->isModified()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText(fc->location()+" has been modified.");
@@ -1445,7 +1501,6 @@ void MainWindow::execute(QString commandLineStr)
     } else {
         logProc->clearLog();
     }
-
 
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
@@ -1500,13 +1555,14 @@ void MainWindow::updateRunState()
 void MainWindow::on_runWithChangedOptions()
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems()) );
+    execute( mCommandLineOption->getCurrentOption() );
 }
 
 void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
 {
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mOptionEditor->getCurrentListOfOptionItems(), forcedOptionItems) );
+    execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
+                                   forcedOptionItems) );
 }
 
 void MainWindow::on_commandLineHelpTriggered()
@@ -1520,7 +1576,7 @@ void MainWindow::on_actionRun_triggered()
 {
     if (isActiveTabEditable()) {
        emit mCommandLineOption->optionRunChanged();
-      mRunToolButton->setDefaultAction( ui->actionRun );
+       mRunToolButton->setDefaultAction( ui->actionRun );
     }
 }
 
@@ -1697,15 +1753,15 @@ void MainWindow::openContext(const QModelIndex& index)
 void MainWindow::on_mainTab_currentChanged(int index)
 {
     QWidget* edit = ui->mainTab->widget(index);
-    if (edit) {
-        mFileRepo.editorActivated(edit);
-        FileContext* fc = mFileRepo.fileContext(edit);
-        if (fc && mRecent.group != fc->parentEntry()) {
-            mRecent.group = fc->parentEntry();
-            updateRunState();
-        }
-        changeToLog(fc);
+    if (!edit) return;
+
+    mFileRepo.editorActivated(edit);
+    FileContext* fc = mFileRepo.fileContext(edit);
+    if (fc && mRecent.group != fc->parentEntry()) {
+        mRecent.group = fc->parentEntry();
+        updateRunState();
     }
+    changeToLog(fc);
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -1726,7 +1782,8 @@ void MainWindow::on_actionSearch_triggered()
     } else {
        // toggle visibility
        if (mSearchWidget->isVisible()) {
-           mSearchWidget->hide();
+           mSearchWidget->activateWindow();
+           mSearchWidget->focusSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
@@ -1874,16 +1931,16 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->redo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->redo();
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->undo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
@@ -2021,12 +2078,12 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
 {
-    if (mRecent.editor == nullptr) return;
+    mInsertMode = arg1;
 
-    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
-    if (ae->type() == AbstractEditor::CodeEditor) {
+    if (mRecent.editor == nullptr) return;
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
         ae->setOverwriteMode(arg1);
-    }
 }
 
 void MainWindow::on_actionIndent_triggered()
@@ -2083,6 +2140,16 @@ void MainWindow::on_actionRemove_Line_triggered()
         ce->removeLine();
 }
 
+void MainWindow::on_actionComment_triggered()
+{
+    if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
+        return;
+
+    CodeEditor* ce = static_cast<CodeEditor*>(mRecent.editor);
+    if (!ce->isReadOnly())
+        ce->commentLine();
+}
+
 void MainWindow::toggleLogDebug()
 {
     mLogDebugLines = !mLogDebugLines;
@@ -2107,4 +2174,5 @@ void MainWindow::on_actionSelect_encodings_triggered()
 
 }
 }
+
 

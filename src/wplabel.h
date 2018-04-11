@@ -33,6 +33,8 @@ public:
     WpLabel(QWidget *parent = nullptr);
     WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr);
 
+    void setInactive(bool inactive);
+
 protected:
     void mousePressEvent(QMouseEvent *event);
     void enterEvent(QEvent* event);
@@ -40,10 +42,12 @@ protected:
 private:
     QString mContent;
     QString mLink;
+    bool mInactive = false;
 
 signals:
     void relayActionLab(QString action);
     void relayModLibLoad(QString lib);
+    void relayOpenDoc(QString doc, QString anchor);
 };
 
 }
