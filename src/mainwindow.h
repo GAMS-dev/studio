@@ -112,7 +112,7 @@ public:
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
-    QList<QPlainTextEdit*> openLogs();
+    QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();

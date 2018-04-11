@@ -111,9 +111,9 @@ public:
     /// \param edit The <c>CodeEditor</c> to be removed.
     void removeAllEditors();
 
-    /// Tests, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
-    /// \param edit The <c>QPlainTextEdit</c> to be find.
-    /// \return TRUE, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
+    /// Tests, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
+    /// \param edit The <c>QWidget</c> to be find.
+    /// \return TRUE, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
     bool hasEditor(QWidget* edit);
 
     /// The current QTextDocument assigned to this file.

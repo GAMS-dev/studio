@@ -80,7 +80,7 @@ void SearchWidget::setSelectedScope(int index)
 
 void SearchWidget::on_btn_Replace_clicked()
 {
-    QPlainTextEdit* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -282,7 +282,7 @@ void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
 
 void SearchWidget::simpleReplaceAll()
 {
-    QPlainTextEdit* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -344,7 +344,7 @@ void SearchWidget::findNext(SearchDirection direction)
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
-    QPlainTextEdit* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
     if (hasChanged) {
@@ -366,7 +366,7 @@ void SearchWidget::showEvent(QShowEvent *event)
     Q_UNUSED(event);
 
     QWidget *widget = mMain->recent()->editor();
-    QPlainTextEdit *edit = FileContext::toAbstractEdit(widget);
+    AbstractEditor *edit = FileContext::toAbstractEdit(widget);
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
     if (!fsc || !edit) return;
 
@@ -381,7 +381,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    QPlainTextEdit *edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    AbstractEditor *edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     bool isSourceCode = FileContext::editorType(mMain->recent()->editor()) == FileSystemContext::etSourceCode;
 
     bool activateSearch = isSourceCode || FileContext::editorType(mMain->recent()->editor()) == FileSystemContext::etLxiLst;
@@ -504,7 +504,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
     if (regex()) searchRegex.setPattern(searchTerm);
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
-    QPlainTextEdit* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
         matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);

@@ -126,7 +126,7 @@ public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(QPlainTextEdit* w) { // obsolete?
+    inline static void initEditorType(AbstractEditor* w) { // obsolete?
         if(w) w->setProperty("EditorType", etPlainText);
     }
     inline static void initEditorType(LogEditor* w) {

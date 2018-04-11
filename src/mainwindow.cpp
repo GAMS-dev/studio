@@ -126,9 +126,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
     if (mSettings->lineWrapProcess()) // set wrapping for system log
-        ui->logView->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+        ui->logView->setLineWrapMode(AbstractEditor::WidgetWidth);
     else
-        ui->logView->setLineWrapMode(QPlainTextEdit::NoWrap);
+        ui->logView->setLineWrapMode(AbstractEditor::NoWrap);
 
     initTabs();
 
@@ -307,9 +307,9 @@ QWidgetList MainWindow::openEditors()
     return mFileRepo.editors();
 }
 
-QList<QPlainTextEdit*> MainWindow::openLogs()
+QList<AbstractEditor*> MainWindow::openLogs()
 {
-    QList<QPlainTextEdit*> resList;
+    QList<AbstractEditor*> resList;
     for (int i = 0; i < ui->logTab->count(); i++) {
         AbstractEditor* ed = FileContext::toAbstractEdit(ui->logTab->widget(i));
         if (ed) resList << ed;
@@ -1317,8 +1317,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             FileSystemContext::initEditorType(logEdit);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
-                                                                  : QPlainTextEdit::NoWrap);
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
+                                                                  : AbstractEditor::NoWrap);
             int ind = ui->logTab->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTab->setCurrentIndex(ind);
@@ -1895,7 +1895,7 @@ void MainWindow::updateEditorLineWrapping()
     else
         wrapModeProcess = QPlainTextEdit::NoWrap;
 
-    QList<QPlainTextEdit*> logList = openLogs();
+    QList<AbstractEditor*> logList = openLogs();
     for (int i = 0; i < logList.size(); i++) {
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
