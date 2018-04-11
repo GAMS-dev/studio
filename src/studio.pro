@@ -138,7 +138,8 @@ SOURCES += \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreemodel.cpp \
     lxiviewer/lxiviewer.cpp \
-    checkforupdatewrapper.cpp
+    checkforupdatewrapper.cpp \
+    autosavehandler.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -217,7 +218,8 @@ HEADERS += \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreemodel.h \
     lxiviewer/lxiviewer.h \
-    checkforupdatewrapper.h
+    checkforupdatewrapper.h \
+    autosavehandler.h
 
 FORMS += \
     welcomepage.ui  \
