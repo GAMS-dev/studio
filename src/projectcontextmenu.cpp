@@ -26,18 +26,20 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
-    mActions.insert(1, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(0, addAction("&Open file location",  this, &ProjectContextMenu::onOpenFileLoc));
 
-    mActions.insert(2, addSeparator());
-    mActions.insert(3, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(4, addAction("Close &file",  this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(1, addSeparator());
+
+    mActions.insert(2, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(3, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+
+    mActions.insert(4, addSeparator());
+
+    mActions.insert(5, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(6, addAction("Close &file",  this, &ProjectContextMenu::onCloseFile));
+
 //    mActions.insert(0, addAction("&Run group",  this, &ProjectContextMenu::onRunGroup));
-
-    mActions.insert(5, addSeparator());
-    mActions.insert(6, addAction("&Open file location",  this, &ProjectContextMenu::onOpenFileLoc));
 //    mActions.insert(1, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
-
 //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
@@ -46,7 +48,7 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
 {
     mNode = context;
 //    mActions[0]->setVisible(true);
-//    mActions[1]->setVisible(mNode->type() == FileSystemContext::File);
+    mActions[6]->setVisible(mNode->type() == FileSystemContext::File);
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -60,7 +62,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
-    QString filePath = QFileDialog::getOpenFileName(this, "Add existing file", sourcePath,
+    QString filePath = QFileDialog::getOpenFileName(mParent, "Add existing file", sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"));
@@ -75,7 +77,7 @@ void ProjectContextMenu::onAddNewFile()
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
-    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", sourcePath,
+    QString filePath = QFileDialog::getSaveFileName(mParent, "Create new file...", sourcePath,
                                                     tr("GAMS code (*.gms *.inc );;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"));
@@ -96,6 +98,11 @@ void ProjectContextMenu::onAddNewFile()
     FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
                                                                               : mNode->parentEntry();
     emit addExistingFile(group, filePath);
+}
+
+void ProjectContextMenu::setParent(QWidget *parent)
+{
+    mParent = parent;
 }
 
 void ProjectContextMenu::onCloseGroup()

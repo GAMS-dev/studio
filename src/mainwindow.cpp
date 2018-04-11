@@ -459,6 +459,7 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     QModelIndex index = ui->projectView->indexAt(pos);
     if (!index.isValid()) return;
     mProjectContextMenu.setNode(mFileRepo.context(index));
+    mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
 
