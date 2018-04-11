@@ -51,6 +51,7 @@ class SearchWidget;
 class SearchResultList;
 class Result;
 class GoToWidget;
+class AutosaveHandler;
 
 struct RecentData {
     FileId editFileId = -1;
@@ -221,8 +222,6 @@ protected:
     void timerEvent(QTimerEvent *event);
 
 private:
-    QStringList checkForAutosaveFiles();
-    void recoverAutosaveFiles(const QStringList &autosaveFiles);
     void initTabs();
     FileContext* addContext(const QString &path, const QString &fileName);
     void openContext(const QModelIndex& index);
@@ -264,6 +263,7 @@ private:
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
+    std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
@@ -279,8 +279,6 @@ private:
     FileMetrics mMetrics;
     bool mCheckOnce = true;
     bool mLogDebugLines = false;
-    const QString mAutosavedFileMarker = "~$";
-
 };
 
 }

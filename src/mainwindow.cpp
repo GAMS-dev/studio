@@ -45,6 +45,7 @@
 #include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
+#include "autosavehandler.h"
 
 namespace gams {
 namespace studio {
@@ -52,7 +53,8 @@ namespace studio {
 MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mSettings(settings)
+      mSettings(settings),
+      mAutosaveHandler(new AutosaveHandler(this))
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -124,7 +126,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSettings->restoreTabsAndLastUsed(this);
     connectCommandLineWidgets();
 
-    recoverAutosaveFiles(checkForAutosaveFiles());
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -149,74 +151,6 @@ void MainWindow::initTabs()
         createWelcomePage();
 }
 
-QStringList MainWindow::checkForAutosaveFiles()
-{
-    QStringList filters { "*.gms", "*.txt" };
-    QStringList autsaveFiles;
-
-    for (auto file : history()->lastOpenedFiles)
-    {
-        QString path = GAMSPaths::path(file);
-        if (!path.isEmpty()) {
-            QDir dir(path);
-            dir.setNameFilters(filters);
-            QStringList files = dir.entryList(filters);
-            for (auto file : files) {
-                if (file.startsWith(mAutosavedFileMarker)) {
-                    autsaveFiles << path+"/"+file;
-                }
-            }
-        }
-    }
-    QJsonObject json;
-    qDebug() << readTabs(json);
-    autsaveFiles << readTabs(json);
-    autsaveFiles.removeDuplicates();
-    return autsaveFiles;
-}
-
-void MainWindow::recoverAutosaveFiles(const QStringList &autosaveFiles)
-{
-    if (autosaveFiles.isEmpty()) return;
-    int decision = QMessageBox::question(this,
-                                         "Recover autosave files",
-                                         "Studio has shut down unexpectedly. Some"
-                                         "files were not saved correctly. Do you "
-                                         "want to recover your last modifications?",
-                                         QMessageBox::Yes | QMessageBox::No,
-                                         QMessageBox::Yes);
-
-    if (QMessageBox::Yes == decision) {
-        for (const auto& autosaveFile : autosaveFiles)
-        {
-            QString originalversion = autosaveFile;
-            originalversion.replace(mAutosavedFileMarker, "");
-            QFile destFile(originalversion);
-            QFile srcFile(autosaveFile);
-            MainWindow::openFile(destFile.fileName());
-            if (srcFile.open(QIODevice::ReadWrite))
-            {
-                if (destFile.open(QIODevice::ReadWrite))
-                {
-                    QTextStream in(&srcFile);
-                    QString line = in.readAll() ;
-                    FileContext* fc = mFileRepo.fileContext(mRecent.editor);
-                    QTextCursor curs(fc->document());
-                    curs.select(QTextCursor::Document);
-                    curs.insertText(line);
-                    destFile.close();
-                    AbstractEditor *editor = dynamic_cast<AbstractEditor*>(mRecent.editor);
-                    if (editor)
-                        editor->moveCursor(QTextCursor::Start);
-                }
-                srcFile.close();
-            }
-        }
-    } else {
-        for (const auto& file : autosaveFiles)
-            QFile::remove(file);
-    }
-}
 
 
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
@@ -278,7 +212,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         }
     }
 }
-
 
 void MainWindow::timerEvent(QTimerEvent *event)
 {
@@ -1025,7 +958,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->save();
 
     if (ret != QMessageBox::Cancel) {
-        for (const auto& file : checkForAutosaveFiles())
+        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles())
             QFile::remove(file);
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
