@@ -463,7 +463,7 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>General Settings</string>
+          <string>Miscellaneous Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
