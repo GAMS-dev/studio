@@ -691,6 +691,10 @@ void MainWindow::activeTabChanged(int index)
     }
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
+        ae->setOverwriteMode(mInsertMode);
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -1749,15 +1753,15 @@ void MainWindow::openContext(const QModelIndex& index)
 void MainWindow::on_mainTab_currentChanged(int index)
 {
     QWidget* edit = ui->mainTab->widget(index);
-    if (edit) {
-        mFileRepo.editorActivated(edit);
-        FileContext* fc = mFileRepo.fileContext(edit);
-        if (fc && mRecent.group != fc->parentEntry()) {
-            mRecent.group = fc->parentEntry();
-            updateRunState();
-        }
-        changeToLog(fc);
+    if (!edit) return;
+
+    mFileRepo.editorActivated(edit);
+    FileContext* fc = mFileRepo.fileContext(edit);
+    if (fc && mRecent.group != fc->parentEntry()) {
+        mRecent.group = fc->parentEntry();
+        updateRunState();
     }
+    changeToLog(fc);
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -1927,16 +1931,16 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->redo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->redo();
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
     if ( (mRecent.editor == nullptr) || (focusWidget() != mRecent.editor) )
         return;
-    CodeEditor* ce= static_cast<CodeEditor*>(mRecent.editor);
-    ce->undo();
+    CodeEditor* ce= dynamic_cast<CodeEditor*>(mRecent.editor);
+    if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
@@ -2074,12 +2078,12 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionInsert_Mode_toggled(bool arg1)
 {
-    if (mRecent.editor == nullptr) return;
+    mInsertMode = arg1;
 
-    AbstractEditor* ae = static_cast<AbstractEditor*>(mRecent.editor);
-    if (ae->type() == AbstractEditor::CodeEditor) {
+    if (mRecent.editor == nullptr) return;
+    AbstractEditor* ae = dynamic_cast<AbstractEditor*>(mRecent.editor);
+    if (ae && ae->type() == AbstractEditor::CodeEditor)
         ae->setOverwriteMode(arg1);
-    }
 }
 
 void MainWindow::on_actionIndent_triggered()

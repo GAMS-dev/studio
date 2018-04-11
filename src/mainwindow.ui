@@ -285,7 +285,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Process</string>
+    <string>Output</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
