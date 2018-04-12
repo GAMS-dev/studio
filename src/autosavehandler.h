@@ -2,7 +2,6 @@
 #define AUTOSAVEHANDLER_H
 
 #include <QStringList>
-#include <QWidget>
 
 namespace gams {
 namespace studio {
