@@ -77,8 +77,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
         setFormat(start, len, charFormat);
         return;
     }
-    if (marksStart > start) setFormat(start, marksStart-start, charFormat);
-    if (marksEnd < end) setFormat(marksEnd, end-marksEnd, charFormat);
+    setFormat(start, len, charFormat);
     start = marksStart;
     end = marksEnd;
 
