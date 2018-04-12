@@ -36,6 +36,7 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
+    connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
 }
 
 void WelcomePage::historyChanged(HistoryData *history)
@@ -46,23 +47,28 @@ void WelcomePage::historyChanged(HistoryData *history)
         delete item;
     }
 
-    QLabel *tmpLabel;
+    WpLabel *tmpLabel;
+    int j = 0;
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
-                                  + "<small>" + file.filePath() + "</small>", file.filePath());
+                                  + "<small>" + file.filePath() + "</small>", file.filePath(), this);
             tmpLabel->setToolTip(file.filePath());
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
         } else {
-            tmpLabel = new QLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>");
-            tmpLabel->setFrameShape(QFrame::StyledPanel);
-            tmpLabel->setMargin(8);
+            tmpLabel = new WpLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>"
+                                   "<small>File was deleted or moved.</small>", "", this);
+            tmpLabel->setInactive(true);
             tmpLabel->setToolTip("File has been deleted or moved");
         }
+        ui->layout_lastFiles->addWidget(tmpLabel);
+        j++;
+    }
+    if (j == 0) {
+        tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
+                                       "<small>Start using GAMS Studio to populate this list.</small>"), "", this);
         ui->layout_lastFiles->addWidget(tmpLabel);
     }
 }
@@ -85,6 +91,11 @@ void WelcomePage::on_relayAction(QString action)
 void WelcomePage::on_relayModLibLoad(QString lib)
 {
     emit relayModLibLoad(lib);
+}
+
+void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
+{
+    emit relayDocOpen(doc, anchor);
 }
 
 void WelcomePage::showEvent(QShowEvent *event)

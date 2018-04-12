@@ -140,6 +140,7 @@ SOURCES += \
     lxiviewer/lxiviewer.cpp \
     checkforupdatewrapper.cpp \
     autosavehandler.cpp
+    statuswidgets.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -220,6 +221,7 @@ HEADERS += \
     lxiviewer/lxiviewer.h \
     checkforupdatewrapper.h \
     autosavehandler.h
+    statuswidgets.h
 
 FORMS += \
     welcomepage.ui  \

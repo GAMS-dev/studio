@@ -97,9 +97,6 @@ QColor TextMark::color()
     if (type() == TextMark::match)
         return Qt::yellow;
 
-    if (type() == TextMark::wordUnderCursor)
-        return Qt::gray;
-
     if (!mReference) return Qt::white;
     if (mReference->type() == TextMark::error)
         return Qt::darkRed;
@@ -160,7 +157,7 @@ QTextCursor TextMark::textCursor()
     if (!document())
         return QTextCursor();
     QTextCursor cursor(document());
-    int pos = qMin(mPosition, document()->characterCount()-1);
+    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
     cursor.setPosition(pos);
     return cursor;
 }

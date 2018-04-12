@@ -66,6 +66,11 @@ void StudioSettings::resetSettings()
     mUserSettings->sync();
 }
 
+bool StudioSettings::resetSettingsSwitch()
+{
+    return mResetSettings;
+}
+
 void StudioSettings::saveSettings(MainWindow *main)
 {
     // return directly only if settings are ignored and not resettet
@@ -113,6 +118,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
+    mAppSettings->setValue("zoomFactor", main->getDockHelpView()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
@@ -177,6 +183,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->endGroup();
 
+    mUserSettings->sync();
     mAppSettings->sync();
 }
 
@@ -224,21 +231,9 @@ void StudioSettings::setHistorySize(int historySize)
     mHistorySize = historySize;
 }
 
-void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
+void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 {
     mAppSettings->beginGroup("fileHistory");
-    if(restoreTabs()) {
-        int size = mAppSettings->beginReadArray("openedTabs");
-        for (int i = 0; i < size; i++) {
-            mAppSettings->setArrayIndex(i);
-            QString value = mAppSettings->value("location").toString();
-            if(QFileInfo(value).exists())
-                main->openFile(value);
-        }
-        mAppSettings->endArray();
-    }
-
-    // history
     mAppSettings->beginReadArray("lastOpenedFiles");
     main->history()->lastOpenedFiles.clear();
     for (int i = 0; i < historySize(); i++) {
@@ -246,6 +241,22 @@ void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
         main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
+
+}
+
+void StudioSettings::restoreTabsAndProjects(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    main->fileRepository()->read(loadDoc.object());
+
+    if (restoreTabs()) {
+        saveData = mAppSettings->value("openTabs", "").toByteArray();
+        loadDoc = QJsonDocument::fromJson(saveData);
+        main->readTabs(loadDoc.object());
+    }
     mAppSettings->endGroup();
 }
 
@@ -293,8 +304,12 @@ void StudioSettings::loadSettings(MainWindow *main)
     }
     mAppSettings->endArray();
     main->getDockHelpView()->setBookmarkMap(bookmarkMap);
-
+    if (mAppSettings->value("zoomFactor") > 0.0)
+        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+    else
+        main->getDockHelpView()->setZoomFactor(1.0);
     mAppSettings->endGroup();
+
     mAppSettings->beginGroup("fileHistory");
 
     mAppSettings->beginReadArray("lastOpenedFiles");
@@ -314,22 +329,12 @@ void StudioSettings::loadSettings(MainWindow *main)
     mAppSettings->endArray();
     main->commandLineHistory()->setAllHistory(map);
 
-    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
-    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->fileRepository()->read(loadDoc.object());
-
-    saveData = mAppSettings->value("openTabs", "").toByteArray();
-    loadDoc = QJsonDocument::fromJson(saveData);
-    main->readTabs(loadDoc.object());
-
     loadUserSettings();
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
 
-    // save settings directly after loading in order to reset
-    if (mResetSettings) saveSettings(main);
     mAppSettings->endGroup();
 }
 

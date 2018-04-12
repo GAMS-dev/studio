@@ -178,7 +178,16 @@ void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
+}
+
+void FileGroupContext::setLstFileName(const QString &lstFileName)
+{
+    QFileInfo fi(lstFileName);
+    if (fi.isRelative())
+        mLstFileName = location() + "/" + lstFileName;
+    else
+        mLstFileName = lstFileName;
 }
 
 void FileGroupContext::dumpMarks()
@@ -339,12 +348,10 @@ GamsProcess*FileGroupContext::newGamsProcess()
         msgBox.setText("This group already has an active process. Terminate existing job?");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setIcon(QMessageBox::Critical);
-        int answer = msgBox.exec();
-
-        if (answer == QMessageBox::Ok)
-            mGamsProcess->stop();
-        else
+        if (msgBox.exec() != QMessageBox::Ok)
             return nullptr;
+        mGamsProcess->stop();
+        mGamsProcess->deleteLater();
     }
 
     mGamsProcess = new GamsProcess();

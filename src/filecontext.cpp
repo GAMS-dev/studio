@@ -160,8 +160,8 @@ void FileContext::addEditor(QWidget* edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
     bool newlyOpen = !document();
     mEditors.prepend(edit);
-    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
-    CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
+    AbstractEditor* ptEdit = FileContext::toAbstractEdit(edit);
+    CodeEditor* scEdit = FileContext::toCodeEdit(edit);
 
     if (mEditors.size() == 1) {
         if (ptEdit) {
@@ -188,8 +188,7 @@ void FileContext::addEditor(QWidget* edit)
     if (scEdit && mMarks) {
         connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
         connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
-        connect(scEdit->document(), &QTextDocument::contentsChanged, scEdit, &CodeEditor::afterContentsChanged);
-//        connect(scEdit, &CodeEditor::highlightWordUnderCursor, this, &FileContext::highlightWordUnderCursor);
+        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
     }
     setFlag(FileSystemContext::cfActive);
 }
@@ -205,8 +204,8 @@ void FileContext::removeEditor(QWidget* edit)
     if (i < 0)
         return;
     bool wasModified = isModified();
-    QPlainTextEdit* ptEdit = FileSystemContext::toPlainEdit(edit);
-    CodeEditor* scEdit = FileSystemContext::toCodeEdit(edit);
+    AbstractEditor* ptEdit = FileContext::toAbstractEdit(edit);
+    CodeEditor* scEdit = FileContext::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
         emit documentClosed();
@@ -249,15 +248,15 @@ QTextDocument*FileContext::document() const
 {
     if (mEditors.isEmpty())
         return nullptr;
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mEditors.first());
     return edit ? edit->document() : nullptr;
 }
 
 bool FileContext::isReadOnly()
 {
-    QPlainTextEdit* edit = nullptr;
+    AbstractEditor* edit = nullptr;
     if (mEditors.size()) {
-        edit = toPlainEdit(mEditors.first());
+        edit = toAbstractEdit(mEditors.first());
     }
     return edit && edit->isReadOnly();
 }
@@ -321,7 +320,7 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
 {
     emit openFileContext(this, focus);
     if (mEditors.size()) {
-        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+        AbstractEditor* edit = FileSystemContext::toAbstractEdit(mEditors.first());
         if (!edit) return;
 
         QTextCursor tc;
@@ -344,12 +343,12 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
     }
 }
 
-void FileContext::showToolTip(const QList<TextMark*> marks)
+void FileContext::showToolTip(const QVector<TextMark*> marks)
 {
     if (mEditors.size() && marks.size() > 0) {
         QTextCursor cursor(marks.first()->textCursor());
         if (cursor.isNull()) return;
-        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+        AbstractEditor* edit = FileSystemContext::toAbstractEdit(mEditors.first());
         if (!edit) return;
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
@@ -429,19 +428,15 @@ ErrorHighlighter *FileContext::highlighter()
     return mSyntaxHighlighter;
 }
 
-void FileContext::removeTextMarks(TextMark::Type tmType)
+void FileContext::removeTextMarks(TextMark::Type tmType, bool rehighlight)
 {
-    removeTextMarks(QSet<TextMark::Type>() << tmType);
+    removeTextMarks(QSet<TextMark::Type>() << tmType, rehighlight);
 }
 
-void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes)
+void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight)
 {
     if (!mMarks) return;
-    mMarks->removeTextMarks(tmTypes);
-    if (mSyntaxHighlighter) mSyntaxHighlighter->rehighlight();
-    for (QWidget* ed: mEditors) {
-        ed->update(); // trigger delayed repaint
-    }
+    mMarks->removeTextMarks(tmTypes, rehighlight);
 }
 
 void FileContext::addFileWatcherForGdx()
@@ -474,7 +469,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
     // TODO(JM) use updateLinkDisplay
 
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mEditors.first());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mEditors.first());
     if (!edit) FileSystemContext::eventFilter(watched, event);
 
     QMouseEvent* mouseEvent = (evCheckMouse.contains(event->type())) ? static_cast<QMouseEvent*>(event) : nullptr;
@@ -523,7 +518,7 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
-        mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QList<TextMark*>();
+        mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
 
         // if in CodeEditors lineNumberArea
@@ -563,7 +558,7 @@ QVector<QPoint> FileContext::getEditPositions()
 {
     QVector<QPoint> res;
     foreach (QWidget* widget, mEditors) {
-        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        AbstractEditor* edit = FileContext::toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
             res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
@@ -578,7 +573,7 @@ void FileContext::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
     foreach (QWidget* widget, mEditors) {
-        QPlainTextEdit* edit = FileSystemContext::toPlainEdit(widget);
+        AbstractEditor* edit = FileContext::toAbstractEdit(widget);
         QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
         if (edit) {
             QTextCursor cursor(edit->document());

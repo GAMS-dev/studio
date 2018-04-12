@@ -60,8 +60,10 @@ public:
     int indent(int size, int fromLine = -1, int toLine = -1);
     void duplicateLine();
     void removeLine();
+    void commentLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
+    void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -117,8 +119,8 @@ private:
         void keyPressEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
             return blockNr>=qMin(mCurrentLine,mStartLine) && blockNr<=qMax(mCurrentLine,mStartLine); }
-        int colFrom() { return 0; }
-        int colTo() { return 0; }
+        int colFrom() { return mColumn+mSize; }
+        int colTo() { return mColumn; }
         void startCursorTimer();
         void stopCursorTimer();
         void refreshCursors();

@@ -53,9 +53,9 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
     viewport()->setMouseTracking(true);
 
     if(mSettings->lineWrapEditor())
-        setLineWrapMode(QPlainTextEdit::WidgetWidth);
+        setLineWrapMode(AbstractEditor::WidgetWidth);
     else
-        setLineWrapMode(QPlainTextEdit::NoWrap);
+        setLineWrapMode(AbstractEditor::NoWrap);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -160,10 +160,8 @@ void CodeEditor::pasteClipboard()
     if (!mBlockEdit) {
         if (isBlock) {
             QTextCursor c = textCursor();
-            QTextCursor anc = c;
-            anc.setPosition(c.anchor());
-            startBlockEdit(anc.blockNumber(), anc.columnNumber());
-            mBlockEdit->selectTo(c.blockNumber(), c.columnNumber());
+            if (c.hasSelection()) c.removeSelectedText();
+            startBlockEdit(c.blockNumber(), c.columnNumber());
             mBlockEdit->replaceBlockText(texts);
         } else {
             paste();
@@ -175,7 +173,7 @@ void CodeEditor::pasteClipboard()
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
-    QPlainTextEdit::resizeEvent(e);
+    AbstractEditor::resizeEvent(e);
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
@@ -207,11 +205,19 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     if (!isReadOnly()) {
         if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
+            int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
-            cursor.insertText("\n");
-            if (cursor.block().previous().isValid())
-                truncate(cursor.block().previous());
-            adjustIndent(cursor);
+            QString leadingText = cursor.block().text().left(pos).trimmed();
+            if (leadingText.isEmpty()) {
+                cursor.movePosition(QTextCursor::StartOfBlock);
+                cursor.insertText("\n");
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos);
+            } else {
+                cursor.insertText("\n");
+                if (cursor.block().previous().isValid())
+                    truncate(cursor.block().previous());
+                adjustIndent(cursor);
+            }
             cursor.endEditBlock();
             setTextCursor(cursor);
             e->accept();
@@ -224,22 +230,22 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     else if (e->key() == Qt::Key_F3)
         emit searchFindNextPressed();
 
-    QPlainTextEdit::keyPressEvent(e);
+    AbstractEditor::keyPressEvent(e);
 }
 
 
 void CodeEditor::keyReleaseEvent(QKeyEvent* e)
 {
     if (isReadOnly()) {
-        QPlainTextEdit::keyReleaseEvent(e);
+        AbstractEditor::keyReleaseEvent(e);
         return;
     }
-    // return pressed, if current block consists of whitespaces only: ignore here
+    // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
         return;
     } else {
-        QPlainTextEdit::keyReleaseEvent(e);
+        AbstractEditor::keyReleaseEvent(e);
     }
 }
 
@@ -312,11 +318,12 @@ void CodeEditor::mousePressEvent(QMouseEvent* e)
         }
         if (mBlockEdit) {
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
+            emit cursorPositionChanged();
         }
     } else {
         if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
             endBlockEdit();
-        QPlainTextEdit::mousePressEvent(e);
+        AbstractEditor::mousePressEvent(e);
     }
 }
 
@@ -327,7 +334,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* e)
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
         }
     } else
-        QPlainTextEdit::mouseMoveEvent(e);
+        AbstractEditor::mouseMoveEvent(e);
 }
 
 void CodeEditor::wheelEvent(QWheelEvent *e) {
@@ -345,14 +352,14 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
         updateTabSize();
         return;
     }
-    QPlainTextEdit::wheelEvent(e);
+    AbstractEditor::wheelEvent(e);
 }
 
 void CodeEditor::paintEvent(QPaintEvent* e)
 {
     int cw = mBlockEdit ? 0 : 2;
     if (cursorWidth()!=cw) setCursorWidth(cw);
-    QPlainTextEdit::paintEvent(e);
+    AbstractEditor::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
     }
@@ -404,7 +411,7 @@ void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
     if (e->mimeData()->hasUrls()) {
         e->ignore(); // paste to parent widget
     } else {
-        QPlainTextEdit::dragEnterEvent(e);
+        AbstractEditor::dragEnterEvent(e);
     }
 }
 
@@ -425,6 +432,36 @@ void CodeEditor::removeLine()
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.endEditBlock();
+}
+
+void CodeEditor::commentLine()
+{
+    QTextCursor cursor = textCursor();
+    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+    bool removeComment = true;
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.text().startsWith('*')) {
+            removeComment = false;
+            break;
+        }
+    }
+    cursor.beginEditBlock();
+    QTextCursor anchor = cursor;
+    anchor.setPosition(anchor.anchor());
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        cursor.setPosition(block.position());
+        if (removeComment) {
+            cursor.deleteChar();
+        } else {
+            cursor.insertText("*");
+        }
+    }
+    cursor.setPosition(anchor.position());
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+    recalcExtraSelections();
 }
 
 int CodeEditor::minIndentCount(int fromLine, int toLine)
@@ -581,6 +618,21 @@ void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
     } else {
         word = "";
         intState = 0;
+    }
+}
+
+void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
+{
+    if (mBlockEdit) {
+        pos = QPoint(mBlockEdit->colTo()+1, mBlockEdit->currentLine()+1);
+        anchor = QPoint(mBlockEdit->colFrom()+1, mBlockEdit->startLine()+1);
+    } else {
+        QTextCursor cursor = textCursor();
+        pos = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        if (cursor.hasSelection()) {
+            cursor.setPosition(cursor.anchor());
+            anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        }
     }
 }
 
@@ -823,6 +875,7 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
+        emit mEdit->cursorPositionChanged();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
@@ -978,20 +1031,22 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
     bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
     // append empty lines if needed
-    int missingLines = texts.count() - (qAbs(mStartLine - mCurrentLine) % texts.count()) - 1;
+    int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
-        QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mStartLine, mCurrentLine));
+        QTextBlock block = mEdit->document()->lastBlock();
         QTextCursor cursor(block);
-        cursor.setPosition(block.position() + block.length());
+        cursor.movePosition(QTextCursor::End);
         cursor.beginEditBlock();
         cursor.insertText(QString(missingLines, '\n'));
-        if (mStartLine > mCurrentLine) mStartLine += missingLines;
-        else mCurrentLine += missingLines;
         cursor.endEditBlock();
         newUndoBlock = false;
     }
+    if (qAbs(mStartLine-mCurrentLine) < texts.count() - 1) {
+        if (mStartLine > mCurrentLine) mStartLine = mCurrentLine + texts.count() - 1;
+        else mCurrentLine = mStartLine + texts.count() - 1;
+    }
 
-    int i = texts.count()-1;
+    int i = (qAbs(mStartLine-mCurrentLine)) % texts.count();
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
@@ -1001,7 +1056,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
         if (maxLen < s.length()) maxLen = s.length();
     }
 
-    if (newUndoBlock)  cursor.beginEditBlock();
+    if (newUndoBlock) cursor.beginEditBlock();
     else cursor.joinPreviousEditBlock();
 
     QChar ch(' ');

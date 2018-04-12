@@ -111,9 +111,9 @@ public:
     /// \param edit The <c>CodeEditor</c> to be removed.
     void removeAllEditors();
 
-    /// Tests, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
-    /// \param edit The <c>QPlainTextEdit</c> to be find.
-    /// \return TRUE, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
+    /// Tests, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
+    /// \param edit The <c>QWidget</c> to be find.
+    /// \return TRUE, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
     bool hasEditor(QWidget* edit);
 
     /// The current QTextDocument assigned to this file.
@@ -124,7 +124,7 @@ public:
 
     const FileMetrics& metrics() const;
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const QList<TextMark*> marks);
+    void showToolTip(const QVector<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
@@ -135,8 +135,8 @@ public:
     int textMarkCount(QSet<TextMark::Type> tmTypes);
     ErrorHighlighter* highlighter();
 
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMarks(TextMark::Type tmType, bool rehighlight = true);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
     
     TextMarkList* marks() const { return mMarks; }
@@ -181,7 +181,7 @@ private:
     FileContext *mLinkFile = nullptr;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QList<TextMark*> mMarksAtMouse;
+    QVector<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     TextMarkList *mMarks = nullptr;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;

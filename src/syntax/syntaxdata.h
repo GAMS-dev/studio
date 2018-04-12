@@ -32,8 +32,13 @@ class SyntaxData
 {
     SyntaxData() {}
 public:
-    static QList<QStringList> directives() {
-        QList<QStringList> list = {
+    static QList<QPair<QString, QString>> directives() {
+        QList<QPair<QString, QString>> list = {
+            {"onExternalInput", "External input on"},
+            {"offExternalInput", "External input off"},
+            {"onExternalOutput", "External output on"},
+            {"offExternalOutput", "External output off"},
+            {"killUel", "Remove UEL List"},
             {"onMargin", "Margin marking on"},
             {"offMargin", "Margin marking off"},
             {"minCol", "Set left data margin"},
@@ -236,6 +241,131 @@ public:
         };
         return list;
     }
+
+    static QList<QPair<QString, QString>> reserved() {
+        QList<QPair<QString, QString>> list = {
+            {"abort", ""},
+            {"Acronym", ""},
+            {"Acronyms", ""},
+            {"Alias", ""},
+            {"all", ""},
+            {"and", ""},
+            {"break", ""},
+            {"card", ""},
+            {"continue", ""},
+            {"display", ""},
+            {"do", ""},
+            {"else", ""},
+            {"elseif", ""},
+            {"endfor", ""},
+            {"endif", ""},
+            {"endloop", ""},
+            {"endwhile", ""},
+            {"eps", ""},
+            {"execute", ""},
+            {"execute_load", ""},
+            {"execute_loaddc", ""},
+            {"execute_loadhandle", ""},
+            {"execute_loadpoint", ""},
+            {"execute_unload", ""},
+            {"execute_unloaddi", ""},
+            {"execute_unloadidx", ""},
+            {"for", ""},
+            {"function", ""},
+            {"functions", ""},
+            {"if", ""},
+            {"inf", ""},
+            {"logic", ""},
+            {"loop", ""},
+            {"na", ""},
+            {"no", ""},
+            {"not", ""},
+            {"option", ""},
+            {"options", ""},
+            {"ord", ""},
+            {"or", ""},
+            {"ordascii", ""},
+            {"ordebcdic", ""},
+            {"procedure", ""},
+            {"procedures", ""},
+            {"prod", ""},
+            {"put", ""},
+            {"put_utilities", ""},
+            {"put_utility", ""},
+            {"putclear", ""},
+            {"putclose", ""},
+            {"putfmcl", ""},
+            {"puthd", ""},
+            {"putheader", ""},
+            {"putpage", ""},
+            {"puttitle", ""},
+            {"puttl", ""},
+            {"repeat", ""},
+            {"smax", ""},
+            {"smin", ""},
+            {"solve", ""},
+            {"sum", ""},
+            {"system", ""},
+            {"then", ""},
+            {"undf", ""},
+            {"until", ""},
+            {"while", ""},
+            {"xor", ""},
+            {"yes", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> declaration4Set() {
+        QList<QPair<QString, QString>> list = {
+            {"singleton", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> declaration4Var() {
+        QList<QPair<QString, QString>> list = {
+            {"binary", ""},
+            {"free", ""},
+            {"integer", ""},
+            {"negative", ""},
+            {"nonnegative", ""},
+            {"positive", ""},
+            {"semicont", ""},
+            {"semiint", ""},
+            {"sos1", ""},
+            {"sos2", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> declaration() {
+        QList<QPair<QString, QString>> list = {
+            {"Equation", ""},
+            {"Equations", ""},
+            {"File", ""},
+            {"Files", ""},
+            {"Model", ""},
+            {"Models", ""},
+            {"Parameter", ""},
+            {"Parameters", ""},
+            {"Scalar", ""},
+            {"Scalars", ""},
+            {"Set", ""},
+            {"Sets", ""},
+            {"Variable", ""},
+            {"Variables", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> declarationTable() {
+        QList<QPair<QString, QString>> list = {
+            {"Table", ""},
+        };
+        return list;
+    }
+
 };
 
 }

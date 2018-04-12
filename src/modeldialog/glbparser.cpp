@@ -34,7 +34,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     glbFile = QDir::toNativeSeparators(glbFile);
     QFile file(glbFile);
     if (!file.open(QIODevice::ReadOnly))
-         EXCEPT() << "GLB file not found";
+        EXCEPT() << "GLB file '" << file.fileName() << "' not found";
     QTextStream in(&file);
 
     // create Library object containing library meta data like library name and column names

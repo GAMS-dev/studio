@@ -34,10 +34,9 @@ public:
     HelpView(QWidget* parent = nullptr);
     ~HelpView();
 
-    void setupUi(QWidget *parent);
-
     QMultiMap<QString, QString> getBookmarkMap() const;
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
+    void clearSearchBar();
 
 public slots:
     void on_urlOpened(const QUrl& location);
@@ -57,13 +56,26 @@ public slots:
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
 
+    void on_searchHelp();
+    void on_backButtonTriggered();
+    void on_forwardButtonTriggered();
+    void on_searchCloseButtonTriggered();
+    void on_caseSensitivityToggled(bool checked);
+    void searchText(const QString& text);
+
     void copyURLToClipboard();
     void zoomIn();
     void zoomOut();
     void resetZoom();
 
-    void findText(const QString& word, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags());
+    void setZoomFactor(qreal factor);
+    qreal getZoomFactor();
+
     void addBookmarkAction(const QString& objectName, const QString& title);
+
+protected:
+    void closeEvent(QCloseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     static const QString START_CHAPTER;
@@ -83,6 +95,10 @@ private:
     QAction* actionCopyPageURL;
 
     QWebEngineView* mHelpView;
+    QLineEdit* mSearchLineEdit;
+    QStatusBar* mSearchBar;
+    QLabel* mStatusText;
+    bool mSearchCaseSensitivity = false;
 
     QString baseLocation;
     QUrl startPageUrl;
@@ -92,7 +108,14 @@ private:
     QString mLastRelease;
     bool mOfflineHelpAvailable = false;
 
+    void setupUi(QWidget *parent);
+    void createSearchBar();
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
+    void findText(const QString &text, SearchDirection direction);
 };
 
 } // namespace studio

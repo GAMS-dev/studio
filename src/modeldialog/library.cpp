@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 
 Library::Library(QString name, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder, QString glbFile):
-    mName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mtoolTips(toolTips), mColOrder(colOrder), mGlbFile(glbFile)
+    mName(name), mLongName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mtoolTips(toolTips), mColOrder(colOrder), mGlbFile(glbFile)
 {
 }
 
@@ -65,6 +65,16 @@ void Library::setName(const QString &name)
 QString Library::glbFile() const
 {
     return mGlbFile;
+}
+
+QString Library::longName() const
+{
+    return mLongName;
+}
+
+void Library::setLongName(const QString &longName)
+{
+    mLongName = longName;
 }
 
 } // namespace studio

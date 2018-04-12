@@ -50,7 +50,7 @@ public:
     StudioSettings *settings() const;
 
 public slots:
-    void afterContentsChanged();
+    void afterContentsChanged(int, int, int);
 };
 
 }

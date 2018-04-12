@@ -31,6 +31,7 @@ namespace studio {
 SearchWidget::SearchWidget(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchWidget), mMain(parent)
 {
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     StudioSettings *mSettings = mMain->settings();
 
     ui->setupUi(this);
@@ -79,7 +80,7 @@ void SearchWidget::setSelectedScope(int index)
 
 void SearchWidget::on_btn_Replace_clicked()
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -97,13 +98,16 @@ void SearchWidget::on_btn_ReplaceAll_clicked()
 
 void SearchWidget::on_btn_FindAll_clicked()
 {
+    clearResults();
     SearchResultList matches(searchTerm());
     insertHistory();
 
+    setSearchStatus();
+
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
-        if (mMain->recent()->editor)
-            matches.addResultList(findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor)));
+        if (mMain->recent()->editor())
+            matches.addResultList(findInFile(mMain->fileRepository()->fileContext(mMain->recent()->editor())));
         break;
     case SearchScope::ThisGroup:
         matches.addResultList(findInGroup());
@@ -154,7 +158,7 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
 
     FileGroupContext *fgc = nullptr;
     if (!fsc) {
-        FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+        FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
         fgc = (fc ? fc->parentEntry() : nullptr); // TODO: refactor
 
         if (!fgc) return QList<Result>();
@@ -231,7 +235,7 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
         } else { // read from editor document(s)
 
             // if currently in foreground
-            bool isOpenFile = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor));
+            bool isOpenFile = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor()));
 
             lastItem = QTextCursor(fc->document());
             do {
@@ -278,7 +282,7 @@ void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
 
 void SearchWidget::simpleReplaceAll()
 {
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -306,18 +310,19 @@ void SearchWidget::simpleReplaceAll()
     QMessageBox msgBox;
     if (hits.length() == 1) {
         msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->fileRepository()->fileContext(mMain->recent()->editor)->location()
+                       + mMain->fileRepository()->fileContext(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     } else {
         msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->fileRepository()->fileContext(mMain->recent()->editor)->location()
+                       + mMain->fileRepository()->fileContext(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     }
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
+        clearResults();
         edit->textCursor().beginEditBlock();
         foreach (QTextCursor tc, hits) {
             tc.insertText(replaceTerm);
@@ -326,16 +331,24 @@ void SearchWidget::simpleReplaceAll()
     }
 }
 
+void SearchWidget::setSearchStatus()
+{
+    ui->lbl_nrResults->setText("Searching...");
+    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+    QApplication::processEvents(QEventLoop::AllEvents, 20);
+}
+
 void SearchWidget::findNext(SearchDirection direction)
 {
-    if (!mMain->recent()->editor) return;
+    if (!mMain->recent()->editor()) return;
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
     if (hasChanged) {
+        setSearchStatus();
         cachedResults = findInFile(fc);
         hasChanged = false;
     }
@@ -343,16 +356,21 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, cachedResults);
 }
 
+void SearchWidget::focusSearchField()
+{
+    ui->combo_search->setFocus();
+}
+
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    QWidget *widget = mMain->recent()->editor;
-    QPlainTextEdit *edit = FileContext::toPlainEdit(widget);
+    QWidget *widget = mMain->recent()->editor();
+    AbstractEditor *edit = FileContext::toAbstractEdit(widget);
     FileSystemContext *fsc = mMain->fileRepository()->fileContext(widget);
-    if (!fsc) return;
+    if (!fsc || !edit) return;
 
-    ui->combo_search->setFocus();
+    focusSearchField();
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
@@ -363,14 +381,30 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    // TODO: add something for gdx and others...
-    QPlainTextEdit *edit = FileContext::toPlainEdit(mMain->recent()->editor);
-    if (!edit) return;
+    AbstractEditor *edit = FileContext::toAbstractEdit(mMain->recent()->editor());
+    bool isSourceCode = FileContext::editorType(mMain->recent()->editor()) == FileSystemContext::etSourceCode;
 
-    bool activated = !edit->isReadOnly();
-    ui->txt_replace->setEnabled(activated);
-    ui->btn_Replace->setEnabled(activated);
-    ui->btn_ReplaceAll->setEnabled(activated);
+    bool activateSearch = isSourceCode || FileContext::editorType(mMain->recent()->editor()) == FileSystemContext::etLxiLst;
+    bool activateReplace = (isSourceCode && !edit->isReadOnly());
+
+    // replace actions (!readonly):
+    ui->txt_replace->setEnabled(activateReplace);
+    ui->btn_Replace->setEnabled(activateReplace);
+    ui->btn_ReplaceAll->setEnabled(activateReplace);
+
+    // search actions (!gdx || !lst):
+    ui->combo_search->setEnabled(activateSearch);
+    ui->btn_FindAll->setEnabled(activateSearch);
+    ui->btn_forward->setEnabled(activateSearch);
+    ui->btn_back->setEnabled(activateSearch);
+    ui->btn_clear->setEnabled(activateSearch);
+
+    ui->cb_caseSens->setEnabled(activateSearch);
+    ui->cb_regex->setEnabled(activateSearch);
+    ui->cb_wholeWords->setEnabled(activateSearch);
+
+    ui->combo_filePattern->setEnabled(activateSearch);
+    ui->combo_scope->setEnabled(activateSearch);
 }
 
 void SearchWidget::on_searchNext()
@@ -385,11 +419,10 @@ void SearchWidget::on_searchPrev()
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && (e->key() == Qt::Key_Escape
-                         || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
+    if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
         hide();
-        if (mMain->fileRepository()->fileContext(mMain->recent()->editor))
-            mMain->recent()->editor->setFocus();
+        if (mMain->fileRepository()->fileContext(mMain->recent()->editor()))
+            mMain->recent()->editor()->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
         on_searchPrev();
@@ -400,7 +433,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
 }
 
 void SearchWidget::closeEvent(QCloseEvent *e) {
-    updateMatchAmount(0, true);
+    updateMatchAmount(0, 0, true);
     QDialog::closeEvent(e);
 }
 
@@ -446,12 +479,14 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 void SearchWidget::on_btn_back_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
 {
     insertHistory();
+    if (hasChanged) clearResults();
     findNext(SearchWidget::Forward);
 }
 
@@ -468,8 +503,8 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     if (regex()) searchRegex.setPattern(searchTerm);
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    QPlainTextEdit* edit = FileSystemContext::toPlainEdit(mMain->recent()->editor);
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
+    AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
         matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
@@ -509,19 +544,23 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
 void SearchWidget::on_btn_clear_clicked()
 {
-    clearResults();
+    clearSearch();
 }
 
 void SearchWidget::clearResults()
 {
+    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
+    if (!fc) return;
+    fc->removeTextMarks(TextMark::match, true);
+    updateMatchAmount(0, 0, true);
+}
+
+void SearchWidget::clearSearch()
+{
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    if (!fc) return;
-
-    fc->removeTextMarks(TextMark::match);
-    updateMatchAmount(0, 0, true);
+    clearResults();
 }
 
 
@@ -530,9 +569,10 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
     Q_UNUSED(arg1);
     hasChanged = true;
 
-    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
-    if (fc)
-        fc->removeTextMarks(TextMark::match);
+// removed due to performance issues in larger files:
+//    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+//    if (fc)
+//        fc->removeTextMarks(TextMark::match);
 }
 
 void SearchWidget::insertHistory()
@@ -541,9 +581,11 @@ void SearchWidget::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
+        bool state = hasChanged;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
+        hasChanged = state;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());

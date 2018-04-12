@@ -53,6 +53,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     verticalLayout = new QVBoxLayout(optionEditor);
     verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+    verticalLayout->setContentsMargins(-1,0,-1,0);
 
     splitter = new QSplitter(optionEditor);
     splitter->setObjectName(QStringLiteral("splitter"));
@@ -147,6 +148,9 @@ QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
 void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
+    if (isHidden())
+        return;
+
     emit optionTableModelChanged(commandLineStr);
 }
 

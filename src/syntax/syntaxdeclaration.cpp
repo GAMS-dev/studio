@@ -20,51 +20,41 @@
 #include "syntaxdeclaration.h"
 #include "logger.h"
 #include "exception.h"
+#include "syntaxdata.h"
 
 namespace gams {
 namespace studio {
 
-SyntaxDeclaration::SyntaxDeclaration(SyntaxState state): mState(state)
+bool cmpStr(const QPair<QString, QString>& lhs,const QPair<QString, QString>& rhs)
 {
-    QStringList list;
-    switch (state) {
-    case SyntaxState::DeclarationSetType:
-        list = QStringList() << "Singleton";
-        mKeywords.insert(state, new DictList(list));
-        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline;
-        break;
-    case SyntaxState::DeclarationVariableType:
-        list = QStringList() << "free" << "positive" << "nonnegative" << "negative"
-                             << "binary" << "integer" << "sos1" << "sos2" << "semicont" << "semiint";
-        mKeywords.insert(state, new DictList(list));
-        mSubStates << SyntaxState::Declaration << SyntaxState::CommentEndline << SyntaxState::CommentInline;
-        break;
-    case SyntaxState::Declaration:
-        list = QStringList() << "Table" << "Scalar" << "Scalars" << "Acronym" << "Alias" << "Set" << "Sets"
-                             << "Variable" << "Variables" << "Parameter" << "Parameters" << "Equation" << "Equations"
-                             << "Model" << "Solve" << "Display";
-        mKeywords.insert(state, new DictList(list));
+    return lhs.first.compare(rhs.first, Qt::CaseInsensitive) < 0;
+}
 
-        list = QStringList() << "Set" << "Sets";
-        mKeywords.insert(SyntaxState::DeclarationSetType, new DictList(list));
-
-        list = QStringList() << "Variable" << "Variables";
-        mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
-        mSubStates << SyntaxState::Identifier << SyntaxState::CommentEndline << SyntaxState::CommentInline << SyntaxState::Directive;
-        break;
-    default:
-        FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
-        break;
+DictList::DictList(QList<QPair<QString, QString> > list) : mEntries(QVector<DictEntry*>(list.size())), mEqualStart(QVector<int>(list.size()))
+{
+    std::sort(list.begin(), list.end(), cmpStr);
+    for (int i = 0; i < list.size(); ++i) {
+        const QString &s(list.at(i).first);
+        mEntries[i] = new DictEntry(s);
+        mEqualStart[i] = equalStart(s, s);
     }
 }
 
-SyntaxDeclaration::~SyntaxDeclaration()
+SyntaxKeywordBase::~SyntaxKeywordBase()
 {
     while (!mKeywords.isEmpty())
         delete mKeywords.take(mKeywords.keys().first());
 }
 
-QStringList SyntaxDeclaration::swapStringCase(QStringList list)
+SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, bool &hasContent)
+{
+    hasContent = false;
+    int end = index;
+    while (isWhitechar(line, end)) end++;
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+}
+
+QStringList SyntaxKeywordBase::swapStringCase(QStringList list)
 {
     QStringList res;
     for (QString s: list) {
@@ -77,60 +67,12 @@ QStringList SyntaxDeclaration::swapStringCase(QStringList list)
     return res;
 }
 
-
-SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line, int index)
-{
-    // skip whitespaces
-    int start = index;
-    int end = -1;
-    while (isWhitechar(line, start))
-        ++start;
-    if (entryState != state()) {
-        if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType) {
-            end = findEnd(entryState, line, start);
-
-//            check syntax coordination;
-
-
-            if (end > start)
-                return SyntaxBlock(this, start, end, SyntaxStateShift::out);
-            else
-                return SyntaxBlock(this, start, end, SyntaxStateShift::stay, true);
-        } else {
-            end = findEnd(state(), line, start);
-            if (end > start) {
-                // TODO(JM) if not in SyntaxState::Declaration mark following as error if not an SyntaxState::Declaration keyword
-                if (state() != SyntaxState::Declaration)
-                    return SyntaxBlock(this, start, end, SyntaxState::Declaration);
-                else
-                    return SyntaxBlock(this, start, end, SyntaxStateShift::out);
-            }
-        }
-    } else {
-        end = findEnd(state(), line, start);
-        if (end > start) {
-            return SyntaxBlock(this, start, end, SyntaxStateShift::out);
-        } else {
-            return SyntaxBlock(this, start, start, SyntaxStateShift::out);
-        }
-    }
-    return SyntaxBlock();
-}
-
-//bool SyntaxDeclaration::isWhitechar(const QString& line, int index)
-//{
-//    return index<line.length() && (line.at(index).category()==QChar::Separator_Space
-//                                   || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
-//}
-
-int SyntaxDeclaration::findEnd(SyntaxState state, const QString& line, int index)
+int SyntaxKeywordBase::findEnd(SyntaxState state, const QString& line, int index)
 {
     int iKey = 0;
     int iChar = 0;
     while (true) {
-
-        // TODO(JM) capture line-end
-        if (iChar+index >= line.length() || isWhitechar(line, iChar+index)) {
+        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
             if (mKeywords.value(state)->at(iKey).length() > iChar) return -1;
             return iChar+index; // reached an valid end
         } else if (iChar < mKeywords.value(state)->at(iKey).length()
@@ -146,6 +88,170 @@ int SyntaxDeclaration::findEnd(SyntaxState state, const QString& line, int index
         }
     }
     return -1;
+}
+
+
+SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxState::Declaration)
+{
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::declaration();
+    mKeywords.insert(state(), new DictList(list));
+
+    list = QList<QPair<QString, QString>> {{"Set", ""}, {"Sets", ""}};
+    mKeywords.insert(SyntaxState::DeclarationSetType, new DictList(list));
+
+    list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
+    mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
+    mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
+               << SyntaxState::CommentInline << SyntaxState::Identifier;
+}
+
+SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line, int index)
+{
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType) {
+
+        // search for state-valid declaration keyword
+        end = findEnd(entryState, line, start);
+        if (end > start) return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+
+        // search for invalid new declaration keyword
+        end = findEnd(state(), line, start);
+        if (end > start) return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this);
+    }
+
+    end = findEnd(state(), line, start);
+    if (end > start) {
+        if (entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxState state) : SyntaxKeywordBase(state)
+{
+    QList<QPair<QString, QString>> list;
+    switch (state) {
+    case SyntaxState::DeclarationSetType:
+        list = SyntaxData::declaration4Set();
+        mKeywords.insert(state, new DictList(list));
+        mSubStates << SyntaxState::Declaration;
+        break;
+    case SyntaxState::DeclarationVariableType:
+        list = SyntaxData::declaration4Var();
+        mKeywords.insert(state, new DictList(list));
+        mSubStates << SyntaxState::Declaration;
+        break;
+    default:
+        FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
+        break;
+    }
+    mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
+               << SyntaxState::CommentInline;
+
+}
+
+SyntaxBlock SyntaxPreDeclaration::find(SyntaxState entryState, const QString &line, int index)
+{
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    end = findEnd(state(), line, start);
+    if (end > start) {
+        if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType
+                || entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end,  false, SyntaxStateShift::in, state());
+    } else if (entryState == state()) {
+        return SyntaxBlock(this, index, start, SyntaxStateShift::shift);
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxDeclarationTable::SyntaxDeclarationTable() : SyntaxKeywordBase(SyntaxState::DeclarationTable)
+{
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::declarationTable();
+    mKeywords.insert(state(), new DictList(list));
+    mSubStates << SyntaxState::IdentifierTable << SyntaxState::Directive
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+}
+
+SyntaxBlock SyntaxDeclarationTable::find(SyntaxState entryState, const QString &line, int index)
+{
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    end = findEnd(state(), line, start);
+    if (end > start) {
+        if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType
+                || entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
+            return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
+        return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
+{
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::reserved();
+    mKeywords.insert(state(), new DictList(list));
+    mSubStates << SyntaxState::ReservedBody << SyntaxState::Directive << SyntaxState::CommentLine
+               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+}
+
+SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    end = findEnd(state(), line, start);
+    if (end > start) return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
+    return SyntaxBlock(this);
+}
+
+SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
+{
+    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
+               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+}
+
+SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
+    if (end < line.length()) {
+        if (line.at(end)=='(')
+            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
+        end++;
+    }
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+}
+
+SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &hasContent)
+{
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    int end = index;
+    while (end<line.length() && line.at(end)!=';' && line.at(end)!='(') end++;
+    if (end<line.length() && line.at(end)=='(') end++;
+    hasContent = start < end;
+    if (end < line.length())
+        return SyntaxBlock(this, index, end, SyntaxStateShift::out);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
 
