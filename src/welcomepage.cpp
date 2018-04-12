@@ -57,12 +57,12 @@ void WelcomePage::historyChanged(HistoryData *history)
                                   + "<small>" + file.filePath() + "</small>", file.filePath(), this);
             tmpLabel->setToolTip(file.filePath());
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
-        } else {
+        }/* else {
             tmpLabel = new WpLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>"
                                    "<small>File was deleted or moved.</small>", "", this);
             tmpLabel->setInactive(true);
             tmpLabel->setToolTip("File has been deleted or moved");
-        }
+        }*/
         ui->layout_lastFiles->addWidget(tmpLabel);
         j++;
     }

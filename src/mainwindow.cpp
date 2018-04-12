@@ -860,7 +860,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->openLst())
             openFileContext(lstCtx, true);
 
-
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
