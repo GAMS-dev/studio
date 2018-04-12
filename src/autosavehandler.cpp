@@ -83,11 +83,8 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
     }
 }
 
-void AutosaveHandler::saveChangedFiles()
+void AutosaveHandler::saveChangedFiles(QWidget *editor)
 {
-    QWidget *editor = mMainWindow->recent()->editor;
-    if (!editor || editor == mMainWindow->welcomePage())
-        return;
     FileContext* fc = mMainWindow->fileRepository()->fileContext(editor);
     QString filepath = QFileInfo(fc->location()).path();
     QString filename = filepath+fc->name();
@@ -105,7 +102,6 @@ void AutosaveHandler::saveChangedFiles()
     else if (QFileInfo::exists(autosaveFile)) {
             QFile::remove(autosaveFile);
     }
-    qDebug() << "timer cycle";
 }
 
 

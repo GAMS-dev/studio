@@ -2,6 +2,7 @@
 #define AUTOSAVEHANDLER_H
 
 #include <QStringList>
+#include <QWidget>
 
 namespace gams {
 namespace studio {
@@ -17,7 +18,7 @@ public:
 
     void recoverAutosaveFiles(const QStringList &autosaveFiles);
 
-    void saveChangedFiles();
+    void saveChangedFiles(QWidget *editor);
 
 private:
     MainWindow *mMainWindow;

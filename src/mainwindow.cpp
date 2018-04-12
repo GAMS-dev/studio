@@ -216,7 +216,8 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    mAutosaveHandler->saveChangedFiles();
+    for (auto editor : openEditors())
+        mAutosaveHandler->saveChangedFiles(editor);
     mSettings->saveSettings(this);
 }
 
