@@ -66,11 +66,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
-    mEditInfo << new QLabel("0 / 0") << new QLabel("INS");
-    foreach (QLabel* la, mEditInfo) {
-        ui->statusBar->addPermanentWidget(la);
-    }
-
+    mStatusWidgets = new StatusWidgets(this);
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
@@ -496,33 +492,31 @@ void MainWindow::closeHelpView()
 
 void MainWindow::updateEditorPos()
 {
-    QString posText;
+    QPoint pos;
+    QPoint anchor;
     AbstractEditor* edit = FileContext::toAbstractEdit(mRecent.editor());
     CodeEditor *ce = FileContext::toCodeEdit(edit);
-    if (!edit) {
-       posText = "     ";
-    } else if (ce) {
-        QPoint pos;
-        QPoint anchor;
+    if (ce) {
         ce->getPositionAndAnchor(pos, anchor);
-        posText = QString("%1 / %2").arg(pos.y()).arg(pos.x());
-        if (!anchor.isNull()) {
-            posText += QString(" (%1 / %2)").arg(qAbs(pos.y()-anchor.y()+1)).arg(qAbs(pos.x()-anchor.x()));
-        }
-    } else {
+        mStatusWidgets->setPosAndAnchor(pos, anchor);
+    } else if (edit) {
         QTextCursor cursor = edit->textCursor();
-        posText = QString("%1 / %2").arg(cursor.blockNumber()+1).arg(cursor.positionInBlock()+1);
+        pos = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        if (cursor.hasSelection()) {
+            cursor.setPosition(cursor.anchor());
+            anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
+        }
     }
-    mEditInfo.at(0)->setText(posText);
+    mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
 
 void MainWindow::updateEditorMode()
 {
     CodeEditor* edit = FileSystemContext::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
-        mEditInfo.at(1)->setText("R/O");
+        mStatusWidgets->setEditMode(EditMode::Readonly);
     } else {
-        mEditInfo.at(1)->setText(edit->overwriteMode() ? "OVR" : "INS");
+        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
     }
 }
 
@@ -2207,11 +2201,13 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     AbstractEditor* edit = FileContext::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
     }
     mEditor = editor;
     edit = FileContext::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
     }
     window->updateEditorMode();
     window->updateEditorPos();

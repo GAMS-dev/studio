@@ -34,6 +34,7 @@
 #include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
+#include "statuswidgets.h"
 
 namespace Ui {
 class MainWindow;
@@ -286,8 +287,7 @@ private:
     bool mLogDebugLines = false;
     bool mInsertMode = false;
     QTime mPerformanceTime;
-    QVector<QLabel*> mEditInfo;
-
+    StatusWidgets* mStatusWidgets;
 
 };
 
