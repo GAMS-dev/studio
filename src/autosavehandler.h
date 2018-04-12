@@ -18,7 +18,7 @@ public:
 
     void recoverAutosaveFiles(const QStringList &autosaveFiles);
 
-    void saveChangedFiles(QWidget *editor);
+    void saveChangedFiles();
 
 private:
     MainWindow *mMainWindow;
