@@ -29,6 +29,7 @@ namespace studio {
 GoToWidget::GoToWidget(MainWindow *parent) :
     QDialog(parent), ui(new Ui::GoToWidget), mMain(parent)
 {
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
     setFixedSize(size());
@@ -49,7 +50,7 @@ void GoToWidget::on_GoTo_clicked()
 {
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
-    FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
+    FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
     fc->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->setText("");

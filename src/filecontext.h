@@ -56,11 +56,11 @@ public:
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
-    QString codec() const;
+    int codecMib() const;
 
     /// Changes the codec for this file.
     /// \param codec The name of the new codec.
-    void setCodec(const QString& codec);
+    void setCodecMib(int mib);
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -83,9 +83,12 @@ public:
     /// \param filePath new location for file
     void save(QString filePath);
 
+
     /// Loads the file into the current QTextDocument.
-    /// \param codecName The text-codec to use.
-    void load(QString codecName = QString(), bool keepMarks = false);
+    /// \param codecMibs The codec-MIBs to try for loading the file.
+    /// \param keepMarks true, if the TextMarks should be kept.
+    void load(QList<int> codecMibs = QList<int>(), bool keepMarks = false);
+    void load(int codecMib, bool keepMarks = false);
 
     /// Gets the list of assigned editors.
     /// \return The list of assigned editors.
@@ -108,9 +111,9 @@ public:
     /// \param edit The <c>CodeEditor</c> to be removed.
     void removeAllEditors();
 
-    /// Tests, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
-    /// \param edit The <c>QPlainTextEdit</c> to be find.
-    /// \return TRUE, if a <c>QPlainTextEdit</c> is assigned to this <c>FileContext</c>.
+    /// Tests, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
+    /// \param edit The <c>QWidget</c> to be find.
+    /// \return TRUE, if a <c>QWidget</c> is assigned to this <c>FileContext</c>.
     bool hasEditor(QWidget* edit);
 
     /// The current QTextDocument assigned to this file.
@@ -121,7 +124,7 @@ public:
 
     const FileMetrics& metrics() const;
     void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-    void showToolTip(const QList<TextMark*> marks);
+    void showToolTip(const QVector<TextMark*> marks);
 
     void rehighlightAt(int pos);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
@@ -132,8 +135,8 @@ public:
     int textMarkCount(QSet<TextMark::Type> tmTypes);
     ErrorHighlighter* highlighter();
 
-    void removeTextMarks(TextMark::Type tmType);
-    void removeTextMarks(QSet<TextMark::Type> tmTypes);
+    void removeTextMarks(TextMark::Type tmType, bool rehighlight = true);
+    void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
     
     TextMarkList* marks() const { return mMarks; }
@@ -150,7 +153,7 @@ signals:
 
     void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
     void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
-    void openFileContext(FileContext* fileContext, bool focus = true);
+    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
     void documentClosed();
 
@@ -174,17 +177,17 @@ private:
 
 private:
     FileMetrics mMetrics;
-    QString mCodec = "UTF-8";
+    QTextCodec *mCodec = nullptr;
     FileContext *mLinkFile = nullptr;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
-    QList<TextMark*> mMarksAtMouse;
+    QVector<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     TextMarkList *mMarks = nullptr;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
     bool mMarksEnhanced = true;
 
-    static const QStringList mDefaulsCodecs;
+    static const QList<int> mDefaulsCodecs;
 
 };
 

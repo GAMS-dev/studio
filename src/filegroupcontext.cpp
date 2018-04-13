@@ -22,8 +22,8 @@
 #include "logcontext.h"
 #include "exception.h"
 #include "gamsprocess.h"
+#include "gamspaths.h"
 #include "logger.h"
-#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -178,7 +178,16 @@ void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes);
+    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
+}
+
+void FileGroupContext::setLstFileName(const QString &lstFileName)
+{
+    QFileInfo fi(lstFileName);
+    if (fi.isRelative())
+        mLstFileName = location() + "/" + lstFileName;
+    else
+        mLstFileName = lstFileName;
 }
 
 void FileGroupContext::dumpMarks()
@@ -256,7 +265,7 @@ void FileGroupContext::updateChildNodes()
     // add newly appeared files and directories
     for (QFileInfo fi: addList) {
         if (fi.exists())
-            emit requestNode(fi.fileName(), Tool::absolutePath(fi.filePath()), this);
+            emit requestNode(fi.fileName(), GAMSPaths::filePath(fi.filePath()), this);
     }
 }
 
@@ -334,8 +343,17 @@ LogContext*FileGroupContext::logContext() const
 
 GamsProcess*FileGroupContext::newGamsProcess()
 {
-    if (mGamsProcess)
-        EXCEPT() << "Cannot create process. This group already has an active process.";
+    if (mGamsProcess) {
+        QMessageBox msgBox;
+        msgBox.setText("This group already has an active process. Terminate existing job?");
+        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        msgBox.setIcon(QMessageBox::Critical);
+        if (msgBox.exec() != QMessageBox::Ok)
+            return nullptr;
+        mGamsProcess->stop();
+        mGamsProcess->deleteLater();
+    }
+
     mGamsProcess = new GamsProcess();
     mGamsProcess->setContext(this);
     connect(mGamsProcess, &GamsProcess::destroyed, this, &FileGroupContext::processDeleted);

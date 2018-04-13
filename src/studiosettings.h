@@ -113,6 +113,14 @@ public:
     int historySize() const;
     void setHistorySize(int historySize);
 
+    void resetSettings();
+    bool resetSettingsSwitch();
+
+    void restoreTabsAndProjects(MainWindow *main);
+
+public slots:
+    void restoreLastFilesUsed(MainWindow *main);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -151,7 +159,6 @@ private:
     // user model library directory
     QString mUserModelLibraryDir;
     void initSettingsFiles();
-    void resetSettings();
 };
 
 }

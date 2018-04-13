@@ -39,11 +39,8 @@ class CommandLineParser  : public QCommandLineParser
 public:
     CommandLineParser();
     CommandLineParseResult parseCommandLine();
-
     QStringList files() const;
-
     bool ignoreSettings() const;
-
     bool resetSettings() const;
 
 private:

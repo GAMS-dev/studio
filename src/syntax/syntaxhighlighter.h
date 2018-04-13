@@ -20,14 +20,28 @@
 #ifndef SYNTAXHIGHLIGHTER_H
 #define SYNTAXHIGHLIGHTER_H
 
-#include <QtGui>
+#include <QSyntaxHighlighter>
 #include "syntaxformats.h"
-#include "syntaxdeclaration.h"
-#include "textmark.h"
-#include "textmarklist.h"
 
 namespace gams {
 namespace studio {
+
+class FileContext;
+class TextMarkList;
+class TextMark;
+
+enum ColorEnum {
+    SyntaxDirex,
+    SyntaxDiBdy,
+    SyntaxComnt,
+    SyntaxTitle,
+    SyntaxDeclr,
+    SyntaxIdent,
+    SyntaxKeywd,
+    SyntaxDescr,
+    SyntaxAssgn,
+    SyntaxTabHd,
+};
 
 class ErrorHighlighter : public QSyntaxHighlighter
 {
@@ -42,7 +56,7 @@ public slots:
     void syntaxState(int position, int &intState);
 
 protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QList<TextMark*> markList);
+    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QVector<TextMark*> markList);
 
 protected:
     int mPositionForSyntaxState = -1;
@@ -74,9 +88,16 @@ private:
     typedef QList<SyntaxAbstract*> States;
     typedef QList<StateCode> Codes;
 
+    /// \brief addState
+    /// \param syntax The syntax to be added to the stack
+    /// \param ci The index in mStates of the previous syntax
     void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
+    void initState(int debug, SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false);
+    void initState(SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false, int debug = 0);
+
     int addCode(StateIndex si, CodeIndex ci);
-    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state);
+    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);
+    QString codeDeb(int code);
 
     States mStates;
     Codes mCodes;

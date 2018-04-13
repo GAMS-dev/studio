@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>913</width>
+    <width>963</width>
     <height>539</height>
    </rect>
   </property>
@@ -24,12 +24,19 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search simultaneously in all tabs using &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; syntax.&lt;/p&gt;&lt;p&gt;Checking/unchecking the &lt;span style=&quot; font-weight:600;&quot;&gt;Regular Expression &lt;/span&gt;checkbox toggles the used search format between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;regular expression&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="cbRegEx">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and&lt;span style=&quot; font-weight:600;&quot;&gt; regular expression&lt;/span&gt; syntax&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
-        <string>Regular expression</string>
+        <string>Regular Expression</string>
        </property>
       </widget>
      </item>
@@ -68,6 +75,9 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Load model</string>
+       </property>
        <property name="text">
         <string>Load</string>
        </property>
@@ -75,6 +85,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pbCancel">
+       <property name="toolTip">
+        <string>Cancel</string>
+       </property>
        <property name="text">
         <string>Cancel</string>
        </property>
@@ -84,6 +97,9 @@
       <widget class="QPushButton" name="pbDescription">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Show model description</string>
        </property>
        <property name="text">
         <string>Description</string>

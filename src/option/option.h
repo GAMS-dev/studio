@@ -105,7 +105,8 @@ public:
     bool isValid(const QString &optionName) const;
     bool isThereASynonym(const QString &optionName) const;
     bool isDeprecated(const QString &optionName) const;
-    bool isDoubleDashedOption(const QString &optionName) const;
+    bool isDoubleDashedOption(const QString &option) const;
+    bool isDoubleDashedOptionNameValid(const QString &optionName) const;
     OptionErrorType getValueErrorType(const QString &optionName, const QString &value) const;
 
     QString getSynonym(const QString &optionName) const;
@@ -126,6 +127,7 @@ public:
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
+    QString getOptionKey(const QString &option);
 
     bool available() const;
 
@@ -134,13 +136,18 @@ public:
 private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
-//    QMap<QString, QString> mDeprecatedMap;
     QMap<int, QString> mOptionTypeNameMap;
     QList<OptionGroup> mOptionGroupList;
 
     bool mAvailable;
     bool readDefinition(const QString &systemPath, const QString &optionFileName);
 };
+
+const double OPTION_VALUE_MAXDOUBLE = 1e+299;
+const double OPTION_VALUE_MINDOUBLE = -1e+299;
+const int OPTION_VALUE_MAXINT = INT_MAX;
+const int OPTION_VALUE_MININT = INT_MIN;
+const int OPTION_VALUE_DECIMALS = 20;
 
 } // namespace studio
 } // namespace gams

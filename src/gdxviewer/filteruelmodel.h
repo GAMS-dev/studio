@@ -35,27 +35,19 @@ public:
     explicit FilterUelModel(GdxSymbol* symbol, int column, QObject *parent = 0);
     ~FilterUelModel();
 
-    // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
     Qt::ItemFlags flags(const QModelIndex& index) const override;
-
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-
     bool *checked() const;
-
     void filterLabels(QString filterString);
 
 private:
-    GdxSymbol* mSymbol;
+    GdxSymbol* mSymbol = nullptr;
     int mColumn;
     std::vector<int>* mUels;
-    bool* mChecked;
+    bool* mChecked = nullptr;
 };
 
 } // namespace gdxviewer

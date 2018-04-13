@@ -26,7 +26,7 @@ namespace studio {
 LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
 {
     setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth : AbstractEditor::NoWrap);
 }
 
 AbstractEditor::EditorType LogEditor::type()

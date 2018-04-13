@@ -29,7 +29,7 @@ CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
     this->setDisabled(true);
     this->setEditable(true);
     this->setCurrentIndex(-1);
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     this->setInsertPolicy(QComboBox::InsertAtTop);
     this->lineEdit()->setClearButtonEnabled(true);
     this->mCurrentContext = "";

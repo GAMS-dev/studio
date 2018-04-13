@@ -1,10 +1,16 @@
 #include "tool.h"
 #include "logger.h"
+#include "gclgms.h"
+#include "exception.h"
+#include "gamspaths.h"
+#include "checkforupdatewrapper.h"
+
+#include <QString>
 
 namespace gams {
 namespace studio {
 
-int Tool::findAlphaNum(QString text, int start, bool back)
+int Tool::findAlphaNum(const QString &text, int start, bool back)
 {
     QChar c = ' ';
     int pos = (back && start == text.length()) ? start-1 : start;
@@ -23,12 +29,6 @@ int Tool::findAlphaNum(QString text, int start, bool back)
         if (!c.isLetter() && c != '_') return -1;
     }
     return pos;
-}
-
-QString Tool::absolutePath(QString path)
-{
-    QFileInfo fi(path);
-    return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
 }
 
 } // namespace studio

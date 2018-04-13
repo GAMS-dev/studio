@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "syntax.h"
 #include "logger.h"
+#include "gamspaths.h"
 #include"tool.h"
 
 namespace gams {
@@ -73,6 +74,9 @@ void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGr
 void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
 {
     if (!QFileInfo(filePath).exists()) {
+        filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
+    }
+    if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
     }
     if (!fileGroup)
@@ -80,7 +84,7 @@ void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& res
     FileSystemContext* fsc = findContext(filePath, fileGroup);
     if (!fsc) {
         QFileInfo fi(filePath);
-        resultFile = addFile(fi.fileName(), Tool::absolutePath(filePath), fileGroup);
+        resultFile = addFile(fi.fileName(), GAMSPaths::filePath(filePath), fileGroup);
     } else if (fsc->type() == FileSystemContext::File) {
         resultFile = static_cast<FileContext*>(fsc);
     } else {
@@ -144,7 +148,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     connect(group, &FileGroupContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     for (QString suff: mSuffixFilter) {
         QFileInfo fi(location, group->name() + suff);
-        group->attachFile(fi.filePath());
+        if (fi.exists()) group->attachFile(fi.filePath());
     }
     return group;
 }
@@ -182,7 +186,7 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     FileGroupContext* group = nullptr;
 
     QFileInfo fi(filePath);
-    QFileInfo di(Tool::absolutePath(fi.path()));
+    QFileInfo di(GAMSPaths::filePath(fi.path()));
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
@@ -324,7 +328,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
+void FileRepository::updateLinkDisplay(AbstractEditor *editUnderCursor)
 {
     if (editUnderCursor) {
         FileContext *fc = fileContext(editUnderCursor);
@@ -435,11 +439,12 @@ FileContext*FileRepository::fileContext(const QModelIndex& index) const
     return fileContext(index.internalId());
 }
 
-FileContext* FileRepository::fileContext(QWidget* edit)
+FileContext* FileRepository::fileContext(QWidget* edit) const
 {
+    QWidget *parentEdit = edit ? edit->parentWidget() : nullptr;
     for (FileSystemContext *fsc: mContext) {
         FileContext *file = fileContext(fsc->id());
-        if (file && file->hasEditor(edit)) return file;
+        if (file && (file->hasEditor(edit) || file->hasEditor(parentEdit))) return file;
     }
     return nullptr;
 }

@@ -80,18 +80,21 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
     items.at(0).library()->setName("NOA Library");
     addLibrary(items);
 
-    if(!mUserLibPath.isEmpty())
+    items = GlbParser::parseFile(gamsSysDir.filePath("psoptlib_ml/psoptlib.glb"));
+    items.at(0).library()->setName("PSO Library");
+    addLibrary(items);
+
+    if (!mUserLibPath.isEmpty())
         loadUserLibs();
 
     connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
 }
 
-//TODO(CW): updating the header and displaying the number of models in a library works for now but this solution is not optimal
+//TODO(CW): updating the header and displaying the number of models in a library works but this solution is not optimal
 void ModelDialog::changeHeader()
 {
-    for(int i=0; i<ui.tabWidget->count(); i++)
-    {
+    for (int i=0; i<ui.tabWidget->count(); i++) {
         QTableView *tv = tableViewList.at(i);
         int rowCount = tv->model()->rowCount();
         QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
@@ -103,19 +106,17 @@ void ModelDialog::updateSelectedLibraryItem()
 {
     int idx = ui.tabWidget->currentIndex();
     QModelIndexList modelIndexList = tableViewList.at(idx)->selectionModel()->selectedIndexes();
-    if(modelIndexList.size()>0)
-    {
+    if (modelIndexList.size()>0) {
         QModelIndex index = modelIndexList.at(0);
         index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
         mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
         ui.pbLoad->setEnabled(true);
-        if(mSelectedLibraryItem->longDescription().isEmpty()) //enable button only if a long description is available
+        if (mSelectedLibraryItem->longDescription().isEmpty()) //enable button only if a long description is available
             ui.pbDescription->setEnabled(false);
         else
             ui.pbDescription->setEnabled(true);
     }
-    else
-    {
+    else {
         mSelectedLibraryItem = nullptr;
         ui.pbLoad->setEnabled(false);
         ui.pbDescription->setEnabled(false);
@@ -124,7 +125,7 @@ void ModelDialog::updateSelectedLibraryItem()
 
 void ModelDialog::clearSelections()
 {
-    for(auto tv : tableViewList)
+    for (auto tv : tableViewList)
         tv->clearSelection();
 }
 
@@ -153,11 +154,11 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     tableView->setModel(proxyModel);
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
     int tabIdx=0;
-    if(isUserLibrary)
+    if (isUserLibrary)
         tabIdx = ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
     else
         tabIdx = ui.tabWidget->addTab(tableView, label);
-    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->name());
+    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
@@ -165,20 +166,19 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     connect(ui.pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
     connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterFixedString);
+    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterWildcard);
 
     connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
     connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
 
-    tableView->horizontalHeader()->setResizeContentsPrecision(20); //use only ten rows for faster calculation
+    tableView->horizontalHeader()->setResizeContentsPrecision(100);
     tableView->resizeColumnsToContents();
 }
 
 void ModelDialog::loadUserLibs()
 {
     QDirIterator iter(mUserLibPath, QDirIterator::Subdirectories);
-    while (!iter.next().isEmpty())
-    {
+    while (!iter.next().isEmpty()) {
         if (QFileInfo(iter.filePath()).suffix() == "glb")
             addLibrary(GlbParser::parseFile(iter.filePath()), true);
     }
@@ -200,20 +200,16 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
-    if(checked)
-    {
-        for(auto proxy : proxyModelList)
-        {
-            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+    if (checked) {
+        for (auto proxy : proxyModelList) {
+            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
             connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
         }
     }
-    else
-    {
-        for(auto proxy : proxyModelList)
-        {
+    else {
+        for (auto proxy : proxyModelList) {
             disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
-            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
+            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
         }
     }
     emit ui.lineEdit->textChanged(ui.lineEdit->text());

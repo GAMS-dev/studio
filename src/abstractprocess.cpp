@@ -103,5 +103,15 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
     }
 }
 
+QString AbstractProcess::lstFile() const
+{
+    return mLstFile;
+}
+
+void AbstractProcess::setLstFile(const QString &lstFile)
+{
+    mLstFile = lstFile;
+}
+
 } // namespace studio
 } // namespace gams

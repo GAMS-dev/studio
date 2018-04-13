@@ -52,10 +52,9 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
-    if(logicalIndex < symbol->dim())
-    {
+    if (logicalIndex < symbol->dim()) {
         QString iconRes;
-        if(symbol->filterActive()[logicalIndex])
+        if (symbol->filterActive()[logicalIndex])
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
@@ -90,13 +89,10 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
-    if (index < symbol->dim())
-    {
+    if (index < symbol->dim()) {
         if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth[index] &&
            p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth[index])
-        {
             return true;
-        }
     }
     return false;
 }

@@ -2,6 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+        <key>CFBundleDocumentTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeName</key>
+                <string>GAMS Modeling System</string>
+                <key>CFBundleTypeExtensions</key>
+                <array>
+                    <string>gms</string>
+                </array>
+                <key>CFBundleTypeIconFile</key>
+                <string>studio.icns</string>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>LSTypeIsPackage</key>
+                <false />
+                <key>NSPersistentStoreTypeKey</key>
+                <string>Binary</string>
+            </dict>
+        </array>
         <key>CFBundleExecutable</key>
         <string>studio</string>
         <key>CFBundleGetInfoString</key>

@@ -53,6 +53,7 @@ void OptionEditor::setupUi(QWidget* optionEditor)
 
     verticalLayout = new QVBoxLayout(optionEditor);
     verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+    verticalLayout->setContentsMargins(-1,0,-1,0);
 
     splitter = new QSplitter(optionEditor);
     splitter->setObjectName(QStringLiteral("splitter"));
@@ -147,6 +148,9 @@ QList<OptionItem> OptionEditor::getCurrentListOfOptionItems()
 void OptionEditor::updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
+    if (isHidden())
+        return;
+
     emit optionTableModelChanged(commandLineStr);
 }
 
@@ -233,10 +237,9 @@ void OptionEditor::showOptionContextMenu(const QPoint &pos)
 
 void OptionEditor::addOptionFromDefinition(const QModelIndex &index)
 {
-    QVariant data = optionDefinitionTreeView->model()->data(index);
+    QVariant data = optionDefinitionTreeView->model()->data(index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME));
     QModelIndex defValueIndex = optionDefinitionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
     QModelIndex  parentIndex =  optionDefinitionTreeView->model()->parent(index);
-//    qDebug() <<  "parentIndex=" << parentIndex.row();
     // TODO insert before selected  or at the end when no selection
     commandLineTableView->model()->insertRows(commandLineTableView->model()->rowCount(), 1, QModelIndex());
     QModelIndex insertKeyIndex = commandLineTableView->model()->index(commandLineTableView->model()->rowCount()-1, 0);

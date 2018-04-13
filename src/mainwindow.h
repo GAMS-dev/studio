@@ -34,6 +34,7 @@
 #include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
+#include "statuswidgets.h"
 
 namespace Ui {
 class MainWindow;
@@ -53,10 +54,16 @@ class Result;
 class GoToWidget;
 
 struct RecentData {
+
+    QWidget *editor() const;
+    void setEditor(QWidget *editor, MainWindow* window);
+
     FileId editFileId = -1;
-    QWidget* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
+
+private:
+    QWidget* mEditor = nullptr;
 };
 
 struct HistoryData {
@@ -80,9 +87,8 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, bool focus, QString codecName = QString());
-    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, QString codecName = QString());
-    void ensureCodecMenu(QString codecName);
+    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
+    void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
@@ -91,6 +97,11 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    QString encodingMIBsString();
+    QList<int> encodingMIBs();
+    void setEncodingMIBs(QString mibList, int active = -1);
+    void setEncodingMIBs(QList<int> mibs, int active = -1);
+    void setActiveMIB(int active = -1);
     HistoryData* history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
@@ -102,22 +113,29 @@ public:
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
-    QList<QPlainTextEdit*> openLogs();
+    QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
-
     HelpView *getDockHelpView() const;
+    void readTabs(const QJsonObject &json);
+    void writeTabs(QJsonObject &json) const;
+    void delayedFileRestoration();
 
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
+    void receiveOpenDoc(QString doc, QString anchor);
+    void updateEditorPos();
+    void updateEditorMode();
+    void updateEditorBlockCount();
 
 private slots:
-    void openFileContext(FileContext *fileContext, bool focus = true);
+    void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
+    void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
@@ -128,7 +146,9 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus);
+    void addToGroup(FileGroupContext *group, const QString &filepath);
+    void sendSourcePath(QString &source);
+    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -191,18 +211,18 @@ private slots:
     void on_actionReset_Zoom_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
-    void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionOverwrite_Mode_toggled(bool overwriteMode);
     void on_actionIndent_triggered();
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
-
+    void on_actionComment_triggered();
+    void on_actionSelect_encodings_triggered();
     void interruptTriggered();
     void stopTriggered();
-
     void toggleLogDebug();
-
     void on_actionRestore_Recently_Closed_Tab_triggered();
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -231,6 +251,7 @@ private:
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
+    void parseFilesFromCommandLine(FileGroupContext *fgc);
 
 private:
     Ui::MainWindow *ui;
@@ -242,14 +263,15 @@ private:
     CommandLineHistory* mCommandLineHistory;
     CommandLineOption* mCommandLineOption;
     CommandLineTokenizer* mCommandLineTokenizer;
-    QSplitter* mOptionSplitter;
-    QCheckBox* showOptionDefintionCheckBox;
+    QWidget* mCommandWidget;
+    QCheckBox* mShowOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
-    QActionGroup *mCodecGroup;
+    QActionGroup *mCodecGroupSwitch;
+    QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
@@ -265,6 +287,9 @@ private:
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
+    bool mOverwriteMode = false;
+    QTime mPerformanceTime;
+    StatusWidgets* mStatusWidgets;
 
 };
 

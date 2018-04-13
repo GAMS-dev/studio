@@ -43,6 +43,14 @@ public:
 
     static QString userModelLibraryDir();
 
+    ///
+    /// \brief Get the file path even if the file does not exists.
+    /// \param path Path to the file.
+    /// \return Returns the canonical file path if the file exists;
+    ///         otherwise the absolute file path.
+    ///
+    static QString filePath(const QString &path);
+
 private:
     GAMSPaths();
 };

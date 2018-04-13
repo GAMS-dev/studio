@@ -123,7 +123,14 @@
      <property name="title">
       <string>Encoding</string>
      </property>
-     <addaction name="actionSystem_2"/>
+     <widget class="QMenu" name="menureload_with">
+      <property name="title">
+       <string>reload with ...</string>
+      </property>
+     </widget>
+     <addaction name="menureload_with"/>
+     <addaction name="actionSelect_encodings"/>
+     <addaction name="separator"/>
     </widget>
     <widget class="QMenu" name="menuAdvanced">
      <property name="title">
@@ -136,6 +143,7 @@
      <addaction name="actionOutdent"/>
      <addaction name="actionDuplicate_Line"/>
      <addaction name="actionRemove_Line"/>
+     <addaction name="actionComment"/>
     </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
@@ -147,7 +155,7 @@
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
     <addaction name="separator"/>
-    <addaction name="actionInsert_Mode"/>
+    <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
@@ -278,7 +286,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Process</string>
+    <string>Output</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -465,7 +473,7 @@
     <string>Close All Except Visible</string>
    </property>
   </action>
-  <action name="actionSystem_2">
+  <action name="actionReloadEncoding">
    <property name="text">
     <string>System</string>
    </property>
@@ -650,10 +658,10 @@
   </action>
   <action name="actionUpdate">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Update</string>
+    <string>Check for Update</string>
    </property>
   </action>
   <action name="actionHelp_View">
@@ -664,12 +672,12 @@
     <string>Help</string>
    </property>
   </action>
-  <action name="actionInsert_Mode">
+  <action name="actionOverwrite_Mode">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Insert Mode</string>
+    <string>Overwrite Mode</string>
    </property>
    <property name="shortcut">
     <string>Ins</string>
@@ -731,6 +739,7 @@
     <string>Ctrl+0</string>
    </property>
   </action>
+
   <action name="actionRestore_Recently_Closed_Tab">
    <property name="text">
     <string>Restore Recently Closed Tab</string>
@@ -740,6 +749,25 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
+  <action name="actionSelect_encodings">
+   <property name="text">
+    <string>Select encodings</string>
+   </property>
+  </action>
+  <action name="actionSwitchEncoding">
+   <property name="text">
+    <string>System</string>
+   </property>
+  </action>
+  <action name="actionComment">
+   <property name="text">
+    <string>Comment</string>
+   </property>
+   <property name="toolTip">
+    <string>(Un)Comment Line(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+*</string>
    </property>
   </action>
  </widget>

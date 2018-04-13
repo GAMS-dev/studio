@@ -36,7 +36,6 @@ public:
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
-    bool mJumpToLogEnd = true;
 public slots:
     void addProcessData(QProcess::ProcessChannel channel, QString text);
     void setJumpToLogEnd(bool state);
@@ -50,7 +49,7 @@ protected:
         int col = 0;
         int size = 1;
     };
-    QString extractError(QString text, ExtractionState &state, QList<LinkData>& marks);
+    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
     struct ErrorData {
@@ -58,6 +57,7 @@ private:
         int errNr = 0;
         QString text;
     };
+    bool mJumpToLogEnd = true;
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
@@ -66,6 +66,8 @@ private:
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
     bool mDebugLog = false;
+    QString mDashLine;
+    FileContext *mLstContext = nullptr;
 };
 
 } // namespace studio

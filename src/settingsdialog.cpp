@@ -32,6 +32,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     // load from settings to UI
     loadSettings();
     setModifiedStatus(false);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
@@ -50,6 +51,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    adjustSize();
 }
 
 void SettingsDialog::loadSettings()

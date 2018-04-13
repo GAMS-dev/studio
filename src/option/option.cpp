@@ -24,7 +24,6 @@
 namespace gams {
 namespace studio {
 
-
 Option::Option(const QString &systemPath, const QString &optionFileName)
 {
     mAvailable = readDefinition(systemPath, optionFileName);
@@ -101,9 +100,14 @@ bool Option::isDeprecated(const QString &optionName) const
     return false;
 }
 
-bool Option::isDoubleDashedOption(const QString &optionName) const
+bool Option::isDoubleDashedOption(const QString &option) const
 {
-    return (optionName.startsWith("--") || optionName.startsWith("-/") || optionName.startsWith("/-") || optionName.startsWith("//") );
+    return QRegExp("^[-/][-/](\\S*)").exactMatch(option);
+}
+
+bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
+{
+    return QRegExp("^[a-zA-Z]+[_a-zA-Z0-9]*").exactMatch(optionName) ;
 }
 
 OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
@@ -138,26 +142,59 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
      case optTypeInteger: {
         bool isCorrectDataType = false;
         int n = value.toInt(&isCorrectDataType);
-        if (isCorrectDataType) {
-            if ((n < getLowerBound(key).toInt()) || (getUpperBound(key).toInt() < n)) {
-                return Value_Out_Of_Range;
-            }
-            return No_Error;
-        } else {
-             return Incorrect_Value_Type;
+        if (!isCorrectDataType) {
+           if (value.compare("maxint", Qt::CaseInsensitive)==0) {
+               n = OPTION_VALUE_MAXINT;
+           } else if (value.compare("minint", Qt::CaseInsensitive)==0) {
+                     n = OPTION_VALUE_MININT;
+           } else {
+               QIntValidator intv(getLowerBound(key).toInt(), getUpperBound(key).toInt());
+               QString v = value;
+              int pos = 0;
+              if (intv.validate(v, pos) != QValidator::Acceptable) {
+                 QDoubleValidator doublev;
+                 doublev.setNotation(QDoubleValidator::ScientificNotation);
+                 doublev.setDecimals(OPTION_VALUE_DECIMALS);
+                 doublev.setTop(GMS_SV_PINF);
+                 if (doublev.validate(v, pos) != QValidator::Acceptable)
+                    return Incorrect_Value_Type;
+
+                 bool isCorrectDataType = false;
+                 double d = value.toDouble(&isCorrectDataType);
+                 if (d != (int)d)
+                    return Incorrect_Value_Type;
+                 else
+                     n = (int)d;
+             }
+          }
         }
-     }
-     case optTypeDouble: {
+        if ((n < getLowerBound(key).toInt()) || (getUpperBound(key).toInt() < n))
+            return Value_Out_Of_Range;
+        else
+             return No_Error;
+    }
+    case optTypeDouble: {
         bool isCorrectDataType = false;
         double d = value.toDouble(&isCorrectDataType);
-        if (isCorrectDataType) {
-            if ((d < getLowerBound(key).toDouble()) || (getUpperBound(key).toDouble() < d)) {
-                return Value_Out_Of_Range;
+        if (!isCorrectDataType) {
+           if (value.compare("eps", Qt::CaseInsensitive)==0) {
+               return No_Error;
+           } else if (value.compare("maxdouble", Qt::CaseInsensitive)==0) {
+                      d = OPTION_VALUE_MAXDOUBLE;
+           } else if (value.compare("mindouble", Qt::CaseInsensitive)==0) {
+                     d = -OPTION_VALUE_MINDOUBLE;
+           } else {
+                QDoubleValidator doublev(getLowerBound(key).toDouble(), getUpperBound(key).toDouble(), OPTION_VALUE_DECIMALS);
+                QString v = value;
+                int pos = 0;
+                if (doublev.validate(v, pos) != QValidator::Acceptable)
+                   return Incorrect_Value_Type;
             }
-            return No_Error;
-        } else {
-             return Incorrect_Value_Type;
         }
+        if ((d < getLowerBound(key).toDouble()) || (getUpperBound(key).toDouble() < d))
+            return Value_Out_Of_Range;
+        else
+            return No_Error;
      }
      default:
         break;
@@ -252,6 +289,16 @@ QList<OptionGroup> Option::getOptionGroupList() const
 QString Option::getOptionTypeName(int type) const
 {
     return mOptionTypeNameMap[type];
+}
+
+QString Option::getOptionKey(const QString &option)
+{
+    QRegExp regexp("^([-/]+)");
+    int pos = regexp.indexIn(option);
+    if (pos != -1)
+       return QString(option.mid(regexp.matchedLength()));
+    else
+       return QString(option);
 }
 
 bool Option::available() const
