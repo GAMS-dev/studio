@@ -12,7 +12,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mEditLines = new QLabel("0 lines ");
     mStatusBar->addPermanentWidget(mEditLines);
     mEditLines->setMinimumWidth(mEditLines->height()*2);
-    mEditLines->setAlignment(Qt::AlignRight);
+    mEditLines->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     mEditPosAnsSel = new QLabel(" 0 / 0 ");
     mStatusBar->addPermanentWidget(mEditPosAnsSel);
@@ -24,7 +24,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mEditMode->setMinimumWidth(mEditMode->height()*0.8);
     mEditMode->setAlignment(Qt::AlignCenter);
 
-    mEditEncode = new QLabel("x");
+    mEditEncode = new QLabel("");
     mStatusBar->addPermanentWidget(mEditEncode);
     mEditEncode->setMinimumWidth(mEditEncode->height()*3);
 
