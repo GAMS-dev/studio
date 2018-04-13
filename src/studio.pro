@@ -139,6 +139,7 @@ SOURCES += \
     lxiviewer/lxitreemodel.cpp \
     lxiviewer/lxiviewer.cpp \
     checkforupdatewrapper.cpp \
+    autosavehandler.cpp \
     statuswidgets.cpp
 
 HEADERS += \
@@ -219,6 +220,7 @@ HEADERS += \
     lxiviewer/lxitreemodel.h \
     lxiviewer/lxiviewer.h \
     checkforupdatewrapper.h \
+    autosavehandler.h \
     statuswidgets.h
 
 FORMS += \

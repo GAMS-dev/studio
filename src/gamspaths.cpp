@@ -99,5 +99,11 @@ QString GAMSPaths::filePath(const QString &path)
     return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
 }
 
+QString GAMSPaths::path(const QString &file)
+{
+    QFileInfo fi(file);
+    return fi.exists() ? fi.canonicalPath() : fi.absolutePath();
+}
+
 }
 }

@@ -52,6 +52,7 @@ class SearchWidget;
 class SearchResultList;
 class Result;
 class GoToWidget;
+class AutosaveHandler;
 
 struct RecentData {
 
@@ -91,7 +92,9 @@ public:
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
+
 
     bool outputViewVisibility();
     bool projectViewVisibility();
@@ -120,8 +123,9 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
     HelpView *getDockHelpView() const;
-    void readTabs(const QJsonObject &json);
+    QStringList readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
+    QWidget *welcomePage() const;
     void delayedFileRestoration();
 
 public slots:
@@ -231,6 +235,7 @@ protected:
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
+    void timerEvent(QTimerEvent *event);
 
 private:
     void initTabs();
@@ -275,6 +280,7 @@ private:
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
+    std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
@@ -289,7 +295,9 @@ private:
     bool mOverwriteMode = false;
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
-
+    int TimerID;
+    FileMetrics mMetrics;
+    bool mCheckOnce = true;
 };
 
 }

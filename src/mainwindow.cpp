@@ -45,6 +45,7 @@
 #include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
+#include "autosavehandler.h"
 
 namespace gams {
 namespace studio {
@@ -52,7 +53,8 @@ namespace studio {
 MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mSettings(settings)
+      mSettings(settings),
+      mAutosaveHandler(new AutosaveHandler(this))
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -63,6 +65,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
+
+    TimerID = startTimer(12000);
+
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
@@ -129,7 +134,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
 
     connectCommandLineWidgets();
+
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles());
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
+
 }
 
 void MainWindow::delayedFileRestoration()
@@ -141,6 +150,7 @@ void MainWindow::delayedFileRestoration()
 MainWindow::~MainWindow()
 {
     delete ui;
+    killTimer(TimerID);
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
     //          may not be in the ui, delete and remove them from ui before the ui is deleted.
     delete mGamsOption;
@@ -155,6 +165,8 @@ void MainWindow::initTabs()
     if (!mSettings->skipWelcomePage())
         createWelcomePage();
 }
+
+
 
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
 {
@@ -206,7 +218,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
-
+        //mSettings->saveSettings(this);
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
             tabWidget->setCurrentIndex(tabIndex);
@@ -216,6 +228,13 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
     }
 }
 
+
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    Q_UNUSED(event)
+    mAutosaveHandler->saveChangedFiles();
+    mSettings->saveSettings(this);
+}
 void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
 {
     group->attachFile(filepath);
@@ -999,6 +1018,7 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
+    QJsonObject json;
     QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -1022,6 +1042,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->save();
 
     if (ret != QMessageBox::Cancel) {
+        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles())
+            QFile::remove(file);
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
 //            if (!QFileInfo(fc->location()).exists()) {
@@ -1259,7 +1281,12 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true);
+    openFilePath(filePath, nullptr, true, true);
+}
+
+void MainWindow::openFileSkipSettings(const QString &filePath)
+{
+    openFilePath(filePath, nullptr, true, false);
 }
 
 HistoryData *MainWindow::history()
@@ -1922,8 +1949,9 @@ HelpView *MainWindow::getDockHelpView() const
     return mDockHelpView;
 }
 
-void MainWindow::readTabs(const QJsonObject &json)
+QStringList MainWindow::readTabs(const QJsonObject &json)
 {
+    QStringList tabs;
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -1931,6 +1959,11 @@ void MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
+                DEB() << "trigger load with codec " << mib;
+                if (QFileInfo(location).exists()) {
+                    openFilePath(location, nullptr, true, mib);
+                    tabs << location;
+                }
 //                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
                 QApplication::processEvents();
@@ -1941,6 +1974,7 @@ void MainWindow::readTabs(const QJsonObject &json)
         QString location = json["mainTabRecent"].toString();
         if (QFileInfo(location).exists()) openFilePath(location, nullptr, true);
     }
+    return tabs;
 }
 
 void MainWindow::writeTabs(QJsonObject &json) const
@@ -1960,6 +1994,11 @@ void MainWindow::writeTabs(QJsonObject &json) const
     json["mainTabs"] = tabArray;
     FileContext *fc = mRecent.editor() ? mFileRepo.fileContext(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
+}
+
+QWidget *MainWindow::welcomePage() const
+{
+    return mWp;
 }
 
 void MainWindow::on_actionGo_To_triggered()
