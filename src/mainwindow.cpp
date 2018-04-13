@@ -1901,7 +1901,16 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
     if (mClosedTabs.isEmpty())
         return;
-    //TODO check if the files qre deleted before opening
+    QFile file(mClosedTabs.last());
+    if (!file.exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File not found");
+        msgBox.setText("Studio can't open the corresponding tab. The file might have deleted or moved.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        mClosedTabs.removeLast();
+        return;
+    }
     openFile(mClosedTabs.last());
     mClosedTabs.removeLast();
 }
