@@ -624,8 +624,8 @@ void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
 void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 {
     if (mBlockEdit) {
-        pos = QPoint(mBlockEdit->colTo()+1, mBlockEdit->currentLine()+1);
-        anchor = QPoint(mBlockEdit->colFrom()+1, mBlockEdit->startLine()+1);
+        pos = QPoint(mBlockEdit->colFrom()+1, mBlockEdit->currentLine()+1);
+        anchor = QPoint(mBlockEdit->colTo()+1, mBlockEdit->startLine()+1);
     } else {
         QTextCursor cursor = textCursor();
         pos = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
