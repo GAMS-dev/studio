@@ -54,6 +54,9 @@ public:
     virtual FileGroupContext* context();
     QProcess::ProcessState state() const;
 
+    QString lstFile() const;
+    void setLstFile(const QString &lstFile);
+
 signals:
     void finished(AbstractProcess *process, int exitCode);
     void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
@@ -68,6 +71,7 @@ protected slots:
 protected:
     QString mSystemDir;
     QString mInputFile;
+    QString mLstFile;
     QProcess mProcess;
     QMutex mOutputMutex;
 };

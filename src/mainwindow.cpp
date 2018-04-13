@@ -70,7 +70,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mFileRepo.treeModel());
     ui->projectView->setRootIndex(mFileRepo.treeModel()->rootModelIndex());
-    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".lst");
+    mFileRepo.setSuffixFilter(QStringList() << ".gms" << ".lst" << ".gdx");
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
@@ -461,6 +461,7 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     QModelIndex index = ui->projectView->indexAt(pos);
     if (!index.isValid()) return;
     mProjectContextMenu.setNode(mFileRepo.context(index));
+    mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
 
@@ -837,27 +838,25 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-//    DEB() << "run timer: " << mPerformanceTime.elapsed();
     FileGroupContext* groupContext = process ? process->context() : nullptr;
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
-    if(groupContext && fileInfo.exists()) {// TODO: add .log and others)
-        QString lstFile = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".lst";
+    if(groupContext && fileInfo.exists()) {
+        QString lstFile = process->lstFile();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
 
         bool doFocus = groupContext == mRecent.group;
-        if (mSettings->openLst())
-            openFilePath(lstFile, groupContext, doFocus);
 
         if (mSettings->jumpToError())
             groupContext->jumpToFirstError(doFocus);
 
         FileContext* lstCtx = nullptr;
-        // TODO(JM) Use mFileRepo.findOrCreateFileContext instead!
-        mFileRepo.findFile(lstFile, &lstCtx, groupContext);
-        if (lstCtx) {
-            lstCtx->updateMarks();
-        }
+        mFileRepo.findOrCreateFileContext(lstFile, lstCtx, groupContext);
+
+        if (lstCtx) lstCtx->updateMarks();
+
+        if (mSettings->openLst())
+            openFileContext(lstCtx, true);
 
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
@@ -1467,21 +1466,15 @@ void MainWindow::customEvent(QEvent *event)
 
 void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 {
-    QList<OptionItem> items = mOptionEditor->getCurrentListOfOptionItems();
-    foreach (OptionItem item, items) {
+    QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
-        // output (o) found
+    foreach (OptionItem item, items) {
+        // output (o) found, case-insensitive
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
-            // default value?
-//            if (QString::compare(item.value, "default", Qt::CaseInsensitive) == 0) {
-//                fgc->setLstFileName(fgc->name() + ".lst");
-//            } else {
-                fgc->setLstFileName(item.value);
-//            }
+            fgc->setLstFileName(item.value);
         }
-
     }
 }
 
@@ -1552,6 +1545,7 @@ void MainWindow::execute(QString commandLineStr)
 
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
+    process->setLstFile(group->lstFileName());
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
@@ -1728,8 +1722,14 @@ void MainWindow::closeFile(FileContext* file)
 {
     if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
         ui->projectView->setCurrentIndex(QModelIndex());
-        fileClosed(file->id());
-        mFileRepo.removeFile(file);
+
+        if (file->parentEntry()->childCount() > 1) {
+            fileClosed(file->id());
+            mFileRepo.removeFile(file);
+        } else {
+            closeGroup(file->parentEntry());
+        }
+
         mSettings->saveSettings(this);
     }
 }

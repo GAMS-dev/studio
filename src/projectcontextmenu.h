@@ -36,6 +36,8 @@ public:
     ProjectContextMenu();
     void setNode(FileSystemContext* context);
 
+    void setParent(QWidget *parent);
+
 signals:
     void closeGroup(FileGroupContext* group);
     void runGroup(FileGroupContext* group);
@@ -53,6 +55,7 @@ private slots:
 private:
     FileSystemContext* mNode;
     QHash<int, QAction*> mActions;
+    QWidget *mParent = nullptr;
     void onOpenFileLoc();
 };
 
