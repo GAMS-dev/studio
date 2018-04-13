@@ -294,11 +294,9 @@ private:
     bool mInsertMode = false;
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
-
     int TimerID;
     FileMetrics mMetrics;
     bool mCheckOnce = true;
-    bool mLogDebugLines = false;
 };
 
 }

@@ -64,7 +64,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                 {
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
-                    QWidget* editor = mMainWindow->recent()->editor;
+                    QWidget* editor = mMainWindow->recent()->editor();
                     FileContext* fc = mMainWindow->fileRepository()->fileContext(editor);
                     QTextCursor curs(fc->document());
                     curs.select(QTextCursor::Document);
