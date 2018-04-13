@@ -154,7 +154,7 @@
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
     <addaction name="separator"/>
-    <addaction name="actionInsert_Mode"/>
+    <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
@@ -671,12 +671,12 @@
     <string>Help</string>
    </property>
   </action>
-  <action name="actionInsert_Mode">
+  <action name="actionOverwrite_Mode">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Insert Mode</string>
+    <string>Overwrite Mode</string>
    </property>
    <property name="shortcut">
     <string>Ins</string>

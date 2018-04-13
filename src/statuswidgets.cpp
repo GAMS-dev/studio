@@ -12,6 +12,13 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mStatusBar->addPermanentWidget(mEditPosAnsSel);
     mEditMode = new QLabel("INS");
     mStatusBar->addPermanentWidget(mEditMode);
+    mFileName = new QLabel("Filename");
+    mStatusBar->addWidget(mFileName);
+}
+
+void StatusWidgets::setFileName(const QString &fileName)
+{
+    mFileName->setText(fileName);
 }
 
 void StatusWidgets::setEditMode(EditMode mode)

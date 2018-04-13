@@ -18,6 +18,7 @@ class StatusWidgets : public QObject
     Q_OBJECT
 public:
     explicit StatusWidgets(QMainWindow *parent);
+    void setFileName(const QString &fileName);
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
 

@@ -680,7 +680,6 @@ void MainWindow::activeTabChanged(int index)
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
 
     mRecent.setEditor(nullptr, this);
-    updateEditorMode();
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     AbstractEditor* edit = FileContext::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = FileContext::toLxiViewer(editWidget);
@@ -709,6 +708,9 @@ void MainWindow::activeTabChanged(int index)
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
+            mStatusWidgets->setFileName(fc->location());
+        } else {
+            mStatusWidgets->setFileName("");
         }
         ui->menuEncoding->setEnabled(fc && !edit->isReadOnly());
     } else if (FileContext::toGdxViewer(editWidget)) {
@@ -718,15 +720,18 @@ void MainWindow::activeTabChanged(int index)
         FileContext* fc = mFileRepo.fileContext(gdxViewer);
         mRecent.editFileId = fc->id();
         mRecent.group = fc->parentEntry();
+        mStatusWidgets->setFileName(fc->location());
         gdxViewer->reload();
     } else {
         ui->menuEncoding->setEnabled(false);
+        mStatusWidgets->setFileName("");
     }
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 
     CodeEditor* ce = FileSystemContext::toCodeEdit(mRecent.editor());
-    if (ce) ce->setOverwriteMode(mInsertMode);
+    if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
+    updateEditorMode();
 }
 
 void MainWindow::fileChanged(FileId fileId)
@@ -2094,12 +2099,12 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     }
 }
 
-void MainWindow::on_actionInsert_Mode_toggled(bool insertMode)
+void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
-    mInsertMode = insertMode;
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
-        ce->setOverwriteMode(insertMode);
+        mOverwriteMode = overwriteMode;
+        ce->setOverwriteMode(overwriteMode);
         updateEditorMode();
     }
 }

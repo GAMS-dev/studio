@@ -210,7 +210,7 @@ private slots:
     void on_actionReset_Zoom_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
-    void on_actionInsert_Mode_toggled(bool insertMode);
+    void on_actionOverwrite_Mode_toggled(bool overwriteMode);
     void on_actionIndent_triggered();
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
@@ -285,7 +285,7 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
-    bool mInsertMode = false;
+    bool mOverwriteMode = false;
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
 
