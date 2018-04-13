@@ -30,7 +30,6 @@ QString syntaxStateName(SyntaxState state)
 {
     static const QHash<int, QString> syntaxStateName {
         {static_cast<int>(SyntaxState::Standard), "Standard"},
-        {static_cast<int>(SyntaxState::Semicolon), "Semicolon"},
         {static_cast<int>(SyntaxState::Directive), "Directive"},
         {static_cast<int>(SyntaxState::DirectiveBody), "DirectiveBody"},
         {static_cast<int>(SyntaxState::DirectiveComment), "DirectiveComment"},
@@ -41,6 +40,8 @@ QString syntaxStateName(SyntaxState state)
         {static_cast<int>(SyntaxState::CommentEndline), "CommentEndline"},
         {static_cast<int>(SyntaxState::CommentInline), "CommentInline"},
 
+        {static_cast<int>(SyntaxState::Semicolon), "Semicolon"},
+        {static_cast<int>(SyntaxState::Comma), "Comma"},
         {static_cast<int>(SyntaxState::DeclarationSetType), "DeclarationSetType"},
         {static_cast<int>(SyntaxState::DeclarationVariableType), "DeclarationVariableType"},
         {static_cast<int>(SyntaxState::Declaration), "Declaration"},
@@ -69,7 +70,7 @@ QString syntaxStateName(SyntaxState state)
 
 SyntaxTransitions SyntaxAbstract::nextStates(bool emptyLine)
 {
-//    if (emptyLine) return mEmptyLineStates;
+    if (emptyLine && !mEmptyLineStates.isEmpty()) return mEmptyLineStates;
     return mSubStates;
 }
 
@@ -240,22 +241,38 @@ SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index, bool &
     return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
 }
 
-SyntaxBlock SyntaxSemicolon::find(SyntaxState entryState, const QString &line, int index)
+SyntaxDelimiter::SyntaxDelimiter(SyntaxState state)
+    : SyntaxAbstract(state)
+{
+    if (state == SyntaxState::Semicolon) {
+        mDelimiter = ';';
+    } else if (state == SyntaxState::Comma) {
+        mDelimiter = ',';
+        mSubStates << SyntaxState::Identifier;
+    } else FATAL() << "invalid SyntaxState to initialize SyntaxDelimiter: " << syntaxStateName(state);
+}
+
+SyntaxBlock SyntaxDelimiter::find(SyntaxState entryState, const QString &line, int index)
 {
     Q_UNUSED(entryState)
     int end = index;
     while (isWhitechar(line, end)) end++;
-    if (end < line.length() && line.at(end) == ';')
-        return SyntaxBlock(this, index, end+1, SyntaxStateShift::reset);
+    if (end < line.length() && line.at(end) == mDelimiter) {
+        if (state() == SyntaxState::Semicolon)
+            return SyntaxBlock(this, index, end+1, SyntaxStateShift::reset);
+        return SyntaxBlock(this, index, end+1, SyntaxStateShift::shift);
+    }
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxSemicolon::validTail(const QString &line, int index, bool &hasContent)
+SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &hasContent)
 {
     hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) end++;
-    return SyntaxBlock(this, index, end, SyntaxStateShift::reset);
+    if (state() == SyntaxState::Semicolon)
+        return SyntaxBlock(this, index, end, SyntaxStateShift::reset);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
 } // namespace studio

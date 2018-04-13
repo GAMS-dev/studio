@@ -56,6 +56,10 @@ public:
     void clearResults();
     void updateReplaceActionAvailability();
 
+    void focusSearchField();
+    
+    void clearSearch();
+    
 public slots:
     void on_searchNext();
     void on_searchPrev();
@@ -97,6 +101,7 @@ private:
         OpenTabs = 2,
         AllFiles = 3
     };
+    void setSearchStatus();
 };
 
 }

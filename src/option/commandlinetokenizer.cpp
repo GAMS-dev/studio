@@ -265,50 +265,46 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
                        optionErrorList.append(OptionError(fr, errorMessage));
                    }
                 } else { // not enum
-
-                    bool foundError = false;
-                    bool isCorrectDataType = false;
-                    QString errorMessage = value + " (value error ";
-                    switch(gamsOption->getOptionType(key)) {
-                     case optTypeInteger:
-                        int n;
-                         n = value.toInt(&isCorrectDataType);
-                         if (isCorrectDataType) {
-                            if ((n < gamsOption->getLowerBound(key).toInt()) ||
-                                (gamsOption->getUpperBound(key).toInt() < n)) {
-                                errorMessage.append( QString("for option \"%1\"), not in range [%2,%3]").arg(keyStr).arg(gamsOption->getLowerBound(key).toInt()).arg(gamsOption->getUpperBound(key).toInt()) );
+                    switch(gamsOption->getValueErrorType(key, item.value)) {
+                    case Value_Out_Of_Range: {
+                        QString errorMessage = value + " (value error for option ";
+                        errorMessage.append( QString("\"%1\"), not in range [%2,%3]").arg(keyStr).arg(gamsOption->getLowerBound(key).toDouble()).arg(gamsOption->getUpperBound(key).toDouble()) );
+                        QTextLayout::FormatRange fr;
+                        fr.start = item.valuePosition;
+                        fr.length = item.value.length();
+                        fr.format = mInvalidValueFormat;
+                        optionErrorList.append(OptionError(fr, errorMessage));
+                        break;
+                    }
+                    case Incorrect_Value_Type: {
+                        bool foundError = false;
+                        bool isCorrectDataType = false;
+                        QString errorMessage = value + " (value error for option ";
+                        if (gamsOption->getOptionType(key) == optTypeInteger) {
+                            value.toInt(&isCorrectDataType);
+                            if (!isCorrectDataType) {
+                                errorMessage.append( QString("\"%1\"), Integer expected").arg(keyStr) );
                                 foundError = true;
                             }
-                         } else {
-                             errorMessage.append( QString("for option \"%1\"), Integer expected").arg(keyStr) );
-                             foundError = true;
-                         }
-                         break;
-                     case optTypeDouble:
-                         double d;
-                         d = value.toDouble(&isCorrectDataType);
-                         if (isCorrectDataType) {
-                            if ((d < gamsOption->getLowerBound(key).toDouble()) ||
-                                (gamsOption->getUpperBound(key).toDouble() < d)) {
-                                errorMessage.append( QString("for option \"%1\"), not in range [%2,%3]").arg(keyStr).arg(gamsOption->getLowerBound(key).toDouble()).arg(gamsOption->getUpperBound(key).toDouble()) );
+                        } else {
+                            value.toDouble(&isCorrectDataType);
+                            if (!isCorrectDataType) {
+                                errorMessage.append( QString("\"%1\"), Double expected").arg(keyStr) );
                                 foundError = true;
                             }
-                         } else {
-                             errorMessage.append( QString("for option \"%1\"), Double expected").arg(keyStr) );
-                             foundError = true;
-                         }
-                         break;
-                     default:
-                         foundError = false;  // do nothing for the moment
-                         break;
-                     }
-
-                    if (foundError) {
-                       QTextLayout::FormatRange fr;
-                       fr.start = item.valuePosition;
-                       fr.length = item.value.length();
-                       fr.format = mInvalidValueFormat;
-                       optionErrorList.append(OptionError(fr, errorMessage));
+                        }
+                        if (foundError) {
+                            QTextLayout::FormatRange fr;
+                            fr.start = item.valuePosition;
+                            fr.length = item.value.length();
+                            fr.format = mInvalidValueFormat;
+                            optionErrorList.append(OptionError(fr, errorMessage));
+                        }
+                        break;
+                    }
+                    case No_Error:
+                    default:
+                        break;
                     }
                  }
               }

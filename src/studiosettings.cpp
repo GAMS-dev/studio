@@ -183,6 +183,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->endGroup();
 
+    mUserSettings->sync();
     mAppSettings->sync();
 }
 
@@ -230,21 +231,9 @@ void StudioSettings::setHistorySize(int historySize)
     mHistorySize = historySize;
 }
 
-void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
+void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 {
     mAppSettings->beginGroup("fileHistory");
-    if(restoreTabs()) {
-        int size = mAppSettings->beginReadArray("openedTabs");
-        for (int i = 0; i < size; i++) {
-            mAppSettings->setArrayIndex(i);
-            QString value = mAppSettings->value("location").toString();
-            if(QFileInfo(value).exists())
-                main->openFile(value);
-        }
-        mAppSettings->endArray();
-    }
-
-    // history
     mAppSettings->beginReadArray("lastOpenedFiles");
     main->history()->lastOpenedFiles.clear();
     for (int i = 0; i < historySize(); i++) {
@@ -253,18 +242,21 @@ void StudioSettings::restoreTabsAndLastUsed(MainWindow *main)
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+
 }
 
-void StudioSettings::restoreFiles(MainWindow *main)
+void StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
     mAppSettings->beginGroup("fileHistory");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->fileRepository()->read(loadDoc.object());
 
-    saveData = mAppSettings->value("openTabs", "").toByteArray();
-    loadDoc = QJsonDocument::fromJson(saveData);
-    main->readTabs(loadDoc.object());
+    if (restoreTabs()) {
+        saveData = mAppSettings->value("openTabs", "").toByteArray();
+        loadDoc = QJsonDocument::fromJson(saveData);
+        main->readTabs(loadDoc.object());
+    }
     mAppSettings->endGroup();
 }
 

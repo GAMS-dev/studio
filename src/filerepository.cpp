@@ -148,7 +148,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     connect(group, &FileGroupContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
     for (QString suff: mSuffixFilter) {
         QFileInfo fi(location, group->name() + suff);
-        group->attachFile(fi.filePath());
+        if (fi.exists()) group->attachFile(fi.filePath());
     }
     return group;
 }
@@ -328,7 +328,7 @@ void FileRepository::removeMarks(FileGroupContext* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void FileRepository::updateLinkDisplay(QPlainTextEdit* editUnderCursor)
+void FileRepository::updateLinkDisplay(AbstractEditor *editUnderCursor)
 {
     if (editUnderCursor) {
         FileContext *fc = fileContext(editUnderCursor);

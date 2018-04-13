@@ -55,7 +55,6 @@ public:
 
 class SyntaxTableAssign : public SyntaxAbstract
 {
-    QChar mDelimiter;
 public:
     SyntaxTableAssign(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;

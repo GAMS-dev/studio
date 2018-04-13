@@ -48,7 +48,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     mContextMenu.addSeparator();
 
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->tableView, &QTableView::selectAll);
+    QAction* selectAll = mContextMenu.addAction("Select All\tCtrl+A", ui->tableView, &QTableView::selectAll);
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     selectAll->setShortcutVisibleInContextMenu(true);
     ui->tableView->addAction(selectAll);

@@ -32,6 +32,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     // load from settings to UI
     loadSettings();
     setModifiedStatus(false);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);

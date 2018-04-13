@@ -143,6 +143,12 @@ private:
     bool readDefinition(const QString &systemPath, const QString &optionFileName);
 };
 
+const double OPTION_VALUE_MAXDOUBLE = 1e+299;
+const double OPTION_VALUE_MINDOUBLE = -1e+299;
+const int OPTION_VALUE_MAXINT = INT_MAX;
+const int OPTION_VALUE_MININT = INT_MIN;
+const int OPTION_VALUE_DECIMALS = 20;
+
 } // namespace studio
 } // namespace gams
 

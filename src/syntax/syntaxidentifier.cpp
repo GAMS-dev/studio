@@ -33,16 +33,21 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : SyntaxAbstract(state)
 
     switch (state) {
     case SyntaxState::Identifier:
-        mEmptyLineStates << SyntaxState::Declaration << SyntaxState::DeclarationTable  << SyntaxState::Identifier;
-        mSubStates << SyntaxState::IdentifierDescription1
+        mSubStates << SyntaxState::Comma
+                   << SyntaxState::IdentifierDescription1
                    << SyntaxState::IdentifierDescription2
                    << SyntaxState::IdentifierAssignment;
+        mEmptyLineStates << mSubStates
+                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
         break;
     case SyntaxState::IdentifierTable:
-        mEmptyLineStates << SyntaxState::Declaration << SyntaxState::DeclarationTable  << SyntaxState::IdentifierTable;
         mSubStates << SyntaxState::IdentifierTableDescription1
                    << SyntaxState::IdentifierTableDescription2
                    << SyntaxState::IdentifierTableAssignmentHead;
+        mEmptyLineStates << mSubStates
+                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentifier: " << syntaxStateName(state);
@@ -52,19 +57,10 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : SyntaxAbstract(state)
 
 SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, int index)
 {
-    bool commaOnly = false;
-    if (state() == SyntaxState::Identifier && entryState >= state() && entryState <= SyntaxState::IdentifierAssignment)
-        commaOnly = true;
-    if (state() == SyntaxState::IdentifierTable && entryState >= state() && entryState <= SyntaxState::IdentifierTableAssignmentHead)
-        commaOnly = true;
+    Q_UNUSED(entryState);
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (commaOnly) {
-        if (start < line.length() && line.at(start) == ',')
-            return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
-        return SyntaxBlock(this);
-    }
     if (start<line.length() && !mRex.match(line.midRef(start,1)).hasMatch())
         return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
     return SyntaxBlock(this);
@@ -98,8 +94,8 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxState state) : SyntaxAbstract(sta
     case SyntaxState::IdentifierDescription2:
         mEmptyLineStates << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
                          << SyntaxState::Declaration << SyntaxState::DeclarationTable
-                         << SyntaxState::IdentifierAssignment << SyntaxState::Identifier;
-        mSubStates << SyntaxState::IdentifierAssignment << SyntaxState::Identifier;
+                         << SyntaxState::Comma << SyntaxState::IdentifierAssignment << SyntaxState::Identifier;
+        mSubStates << SyntaxState::Comma << SyntaxState::IdentifierAssignment;
         mTable = false;
         break;
     case SyntaxState::IdentifierTableDescription1:
@@ -148,18 +144,16 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxState state) : SyntaxAbstract(state)
 {
     mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
                << SyntaxState::CommentEndline << SyntaxState::CommentInline;
-    mEmptyLineStates = mSubStates;
 
     mDelimiter = '/';
     switch (state) {
     case SyntaxState::IdentifierAssignment:
-        mEmptyLineStates << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-                         << SyntaxState::Declaration << SyntaxState::DeclarationTable
-                         << SyntaxState::IdentifierAssignmentEnd;
+        mEmptyLineStates << SyntaxState::IdentifierAssignmentEnd;
         mSubStates << SyntaxState::IdentifierAssignmentEnd;
         break;
     case SyntaxState::IdentifierAssignmentEnd:
-        mSubStates << SyntaxState::Identifier;
+        mSubStates << SyntaxState::Comma;
+        mEmptyLineStates = mSubStates << SyntaxState::Identifier;
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentAssign: " << syntaxStateName(state);
@@ -232,10 +226,11 @@ SyntaxBlock SyntaxTableAssign::find(SyntaxState entryState, const QString &line,
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &hasContent)
 {
+    Q_UNUSED(hasContent)
     int end = line.indexOf(';', index);
     if (end < 0)
         return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
-    SyntaxBlock(this, index, end, SyntaxStateShift::out);
+    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
 }
 
 } // namespace studio

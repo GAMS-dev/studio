@@ -36,19 +36,26 @@ public:
     ProjectContextMenu();
     void setNode(FileSystemContext* context);
 
+    void setParent(QWidget *parent);
+
 signals:
     void closeGroup(FileGroupContext* group);
     void runGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void addExistingFile(FileGroupContext* group, const QString& file);
+    void getSourcePath(QString& source);
 
 private slots:
     void onCloseGroup();
     void onRunGroup();
     void onCloseFile();
+    void onAddExisitingFile();
+    void onAddNewFile();
 
 private:
     FileSystemContext* mNode;
     QHash<int, QAction*> mActions;
+    QWidget *mParent = nullptr;
     void onOpenFileLoc();
 };
 

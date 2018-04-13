@@ -30,7 +30,6 @@ namespace studio {
 
 enum class SyntaxState {
     Standard,
-    Semicolon,
     Directive,
     DirectiveBody,                  // text following the Directive
     DirectiveComment,               // a DirectiveBody formatted as comment
@@ -41,6 +40,8 @@ enum class SyntaxState {
     CommentEndline,
     CommentInline,
 
+    Semicolon,
+    Comma,
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
     Declaration,
@@ -127,9 +128,14 @@ public:
     static int stateToInt(SyntaxState _state);
     static SyntaxState intToState(int intState);
 protected:
+
+    inline bool isKeywordChar(const QChar& ch) {
+        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    }
     inline bool isWhitechar(const QString& line, int index) {
-        return index<line.length() && (line.at(index).category()==QChar::Separator_Space
-                                       || line.at(index) == '\t' || line.at(index) == '\n' || line.at(index) == '\r');
+        if (index >= line.length()) return false;
+        const QChar& ch(line.at(index));
+        return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
 protected:
     SyntaxState mState;
@@ -193,10 +199,11 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
-class SyntaxSemicolon: public SyntaxAbstract
+class SyntaxDelimiter: public SyntaxAbstract
 {
+    QChar mDelimiter;
 public:
-    SyntaxSemicolon() : SyntaxAbstract(SyntaxState::Semicolon) {}
+    SyntaxDelimiter(SyntaxState state);
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };

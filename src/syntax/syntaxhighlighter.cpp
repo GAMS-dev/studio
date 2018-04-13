@@ -60,11 +60,11 @@ void ErrorHighlighter::highlightBlock(const QString& text)
         DEB() << "trying to highlight without marks!";
         return;
     }
-    QList<TextMark*> markList = marks()->marksForBlock(currentBlock());
+    QVector<TextMark*> markList = marks()->marksForBlock(currentBlock());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QList<TextMark*> markList)
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QVector<TextMark*> markList)
 {
     int end = start+len;
     int marksStart = end;
@@ -77,8 +77,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
         setFormat(start, len, charFormat);
         return;
     }
-    if (marksStart > start) setFormat(start, marksStart-start, charFormat);
-    if (marksEnd < end) setFormat(marksEnd, end-marksEnd, charFormat);
+    setFormat(start, len, charFormat);
     start = marksStart;
     end = marksEnd;
 
@@ -118,34 +117,48 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
 SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     : ErrorHighlighter(context)
 {
-    initState(new SyntaxStandard());
-    initState(new SyntaxSemicolon());
-    initState(new SyntaxDirective(), Qt::darkMagenta);
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), Qt::darkBlue);
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), Qt::darkGreen, true);
-    initState(new SyntaxDirectiveBody(SyntaxState::Title), Qt::darkBlue, true, true);
-    initState(new SyntaxCommentLine(), Qt::darkGreen, true);
-    initState(new SyntaxCommentBlock(), Qt::darkGreen, true);
+    QHash<ColorEnum, QColor> cl {
+        {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
+        {SyntaxDiBdy, QColor(Qt::darkBlue)},
+        {SyntaxComnt, QColor(80, 145, 75)},
+        {SyntaxTitle, QColor(Qt::darkBlue)},
+        {SyntaxKeywd, QColor(Qt::darkBlue)},
+        {SyntaxDeclr, QColor(Qt::darkBlue)},
+        {SyntaxIdent, QColor(Qt::black)},
+        {SyntaxDescr, QColor(Qt::darkBlue).lighter(120)},
+        {SyntaxAssgn, QColor(Qt::darkGreen).darker(130)},
+        {SyntaxTabHd, QColor(Qt::darkGreen).darker(145)},
+    };
+    // To visualize one format: add color index at start e.g. initState(1, new SyntaxReservedBody());
+    initState(new SyntaxStandard(), Qt::red);
+    initState(new SyntaxDirective(), cl.value(SyntaxDirex));
+    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), cl.value(SyntaxDiBdy));
+    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), cl.value(SyntaxComnt), true);
+    initState(new SyntaxDirectiveBody(SyntaxState::Title), cl.value(SyntaxTitle), true, true);
+    initState(new SyntaxCommentLine(), cl.value(SyntaxComnt), true);
+    initState(new SyntaxCommentBlock(), cl.value(SyntaxComnt), true);
 
-    initState(new SyntaxReserved(), Qt::darkBlue, false, true);
-    initState(new SyntaxReservedBody(), Qt::darkCyan, false, true);
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), Qt::darkBlue, false, true);
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), Qt::darkBlue, false, true);
-    initState(new SyntaxDeclaration(), Qt::darkBlue, false, true);
-    initState(new SyntaxDeclarationTable(), Qt::darkBlue, false, true);
+    initState(new SyntaxDelimiter(SyntaxState::Semicolon));
+    initState(new SyntaxDelimiter(SyntaxState::Comma));
+    initState(new SyntaxReserved(), cl.value(SyntaxKeywd), false, true);
+    initState(new SyntaxReservedBody());
+    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), cl.value(SyntaxDeclr), false, true);
+    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), cl.value(SyntaxDeclr), false, true);
+    initState(new SyntaxDeclaration(), cl.value(SyntaxDeclr), false, true);
+    initState(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), false, true);
 
     initState(new SyntaxIdentifier(SyntaxState::Identifier));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), QColor(Qt::blue).darker());
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), QColor(Qt::blue).darker());
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), QColor(Qt::darkGreen).darker(100));
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), cl.value(SyntaxDescr));
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), cl.value(SyntaxDescr));
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), cl.value(SyntaxAssgn));
+    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), cl.value(SyntaxAssgn));
 
     initState(new SyntaxIdentifier(SyntaxState::IdentifierTable));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), QColor(Qt::blue).darker());
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), QColor(Qt::blue).darker());
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), cl.value(SyntaxDescr));
+    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), cl.value(SyntaxDescr));
 
-    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), QColor(Qt::darkGreen).darker(100), false, true);
-    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentRow), QColor(Qt::darkGreen).darker(100));
+    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), false, true);
+    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentRow), cl.value(SyntaxAssgn));
 
 }
 
@@ -158,38 +171,36 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
-    ErrorHighlighter::highlightBlock(text);
-    QList<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QList<TextMark*>();
+    QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
+    setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
     int index = 0;
     QTextBlock textBlock = currentBlock();
     int posForSyntaxState = mPositionForSyntaxState - textBlock.position();
     if (posForSyntaxState < 0) posForSyntaxState = text.length();
-    QVector<SyntaxState> stateStack;
+    bool extendSearch = true;
 
     while (index < text.length()) {
-        QString debString = QString("  %1").arg(textBlock.blockNumber()).right(3) + ", " + QString(" %1").arg(index).right(2) + "-";
         StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
         SyntaxAbstract* syntax = mStates.at(stateCode.first);
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
-        if (stack && !stateStack.contains(syntax->state())) stateStack << syntax->state();
+        if (stack) extendSearch = false;
 
         // TODO(JM) For states redefined with directives:
         //   - add new Syntax to mStates
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxState nextState: syntax->nextStates(stateStack.isEmpty())) {
+        for (SyntaxState nextState: syntax->nextStates(extendSearch)) {
             SyntaxAbstract* testSyntax = getSyntax(nextState);
             if (testSyntax) {
                 SyntaxBlock testBlock = testSyntax->find(syntax->state(), text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
-
                     }
                 }
             }
@@ -204,7 +215,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             }
             nextBlock = tailBlock;
         } else {
-            if (!stateStack.contains(nextBlock.syntax->state())) stateStack << nextBlock.syntax->state();
+            extendSearch = false;
             if (tailBlock.isValid()) {
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
@@ -219,16 +230,11 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
         else if (nextBlock.syntax->state() != SyntaxState::Standard) {
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
-            if (nextBlock.syntax->state() == SyntaxState::Semicolon) stateStack.clear();
+            if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
         index = nextBlock.end;
-        debString += QString(" %1").arg(index).right(2) + ": " ; // + codeDeb(code);
-        foreach (SyntaxState s, stateStack) {
-            debString += syntaxStateName(s) + " ";
-        }
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
-//        DEB() << debString ; // << "   (" << codeDeb(code) << ")";
 
         if (posForSyntaxState <= index) {
             mLastSyntaxState = nextBlock.syntax->intSyntaxType();

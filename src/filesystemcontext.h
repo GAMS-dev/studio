@@ -126,7 +126,7 @@ public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(QPlainTextEdit* w) { // obsolete?
+    inline static void initEditorType(AbstractEditor* w) { // obsolete?
         if(w) w->setProperty("EditorType", etPlainText);
     }
     inline static void initEditorType(LogEditor* w) {
@@ -142,11 +142,11 @@ public: // static convenience methods
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? v.toInt() : etUndefined);
     }
-    inline static QPlainTextEdit* toPlainEdit(QWidget* w) {
+    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
             return toLxiViewer(w)->codeEditor();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<QPlainTextEdit*>(w) : nullptr;
+        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
     }
     inline static CodeEditor* toCodeEdit(QWidget* w) {
         int t = editorType(w);

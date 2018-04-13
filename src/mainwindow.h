@@ -34,6 +34,7 @@
 #include "helpview.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
+#include "statuswidgets.h"
 
 namespace Ui {
 class MainWindow;
@@ -53,10 +54,16 @@ class Result;
 class GoToWidget;
 
 struct RecentData {
+
+    QWidget *editor() const;
+    void setEditor(QWidget *editor, MainWindow* window);
+
     FileId editFileId = -1;
-    QWidget* editor = nullptr;
     QString path = ".";
     FileGroupContext* group = nullptr;
+
+private:
+    QWidget* mEditor = nullptr;
 };
 
 struct HistoryData {
@@ -106,7 +113,7 @@ public:
     CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
-    QList<QPlainTextEdit*> openLogs();
+    QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
@@ -115,10 +122,15 @@ public:
     HelpView *getDockHelpView() const;
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
+    void delayedFileRestoration();
 
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
+    void receiveOpenDoc(QString doc, QString anchor);
+    void updateEditorPos();
+    void updateEditorMode();
+    void updateEditorBlockCount();
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -134,6 +146,8 @@ private slots:
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
     void closeFile(FileContext* file);
+    void addToGroup(FileGroupContext *group, const QString &filepath);
+    void sendSourcePath(QString &source);
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
 
     // View
@@ -197,11 +211,12 @@ private slots:
     void on_actionReset_Zoom_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionZoom_In_triggered();
-    void on_actionInsert_Mode_toggled(bool arg1);
+    void on_actionOverwrite_Mode_toggled(bool overwriteMode);
     void on_actionIndent_triggered();
     void on_actionOutdent_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
+    void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
 
     void interruptTriggered();
@@ -236,6 +251,7 @@ private:
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
+    void parseFilesFromCommandLine(FileGroupContext *fgc);
 
 private:
     Ui::MainWindow *ui;
@@ -270,6 +286,9 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
+    bool mOverwriteMode = false;
+    QTime mPerformanceTime;
+    StatusWidgets* mStatusWidgets;
 
 };
 

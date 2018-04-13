@@ -157,7 +157,7 @@ QTextCursor TextMark::textCursor()
     if (!document())
         return QTextCursor();
     QTextCursor cursor(document());
-    int pos = qMin(mPosition, document()->characterCount()-1);
+    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
     cursor.setPosition(pos);
     return cursor;
 }

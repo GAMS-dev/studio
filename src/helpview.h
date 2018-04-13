@@ -36,10 +36,7 @@ public:
 
     QMultiMap<QString, QString> getBookmarkMap() const;
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
-    enum SearchDirection {
-        Forward = 0,
-        Backward = 1
-    };
+    void clearSearchBar();
 
 public slots:
     void on_urlOpened(const QUrl& location);
@@ -62,10 +59,9 @@ public slots:
     void on_searchHelp();
     void on_backButtonTriggered();
     void on_forwardButtonTriggered();
-    void on_closeButtonTriggered();
+    void on_searchCloseButtonTriggered();
     void on_caseSensitivityToggled(bool checked);
     void searchText(const QString& text);
-    void findText(const QString& text, SearchDirection direction);
 
     void copyURLToClipboard();
     void zoomIn();
@@ -76,6 +72,10 @@ public slots:
     qreal getZoomFactor();
 
     void addBookmarkAction(const QString& objectName, const QString& title);
+
+protected:
+    void closeEvent(QCloseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     static const QString START_CHAPTER;
@@ -108,11 +108,14 @@ private:
     QString mLastRelease;
     bool mOfflineHelpAvailable = false;
 
-    void keyPressEvent(QKeyEvent *e);
-
     void setupUi(QWidget *parent);
     void createSearchBar();
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
+    void findText(const QString &text, SearchDirection direction);
 };
 
 } // namespace studio

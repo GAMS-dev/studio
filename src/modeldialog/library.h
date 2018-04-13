@@ -40,9 +40,12 @@ public:
     QStringList toolTips() const;
     void setName(const QString &name);
     QString glbFile() const;
+    QString longName() const;
+    void setLongName(const QString &longName);
 
 private:
     QString mName;
+    QString mLongName;
     int mVersion;
     int mNrColumns;
     QStringList mColumns;

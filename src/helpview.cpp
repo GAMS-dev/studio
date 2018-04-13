@@ -227,7 +227,7 @@ void HelpView::createSearchBar()
 
     closeButton->setSizePolicy(buttonSizePolicy);
     closeButton->setToolTip(QStringLiteral("Close Find Help"));
-    connect(closeButton, &QPushButton::clicked, this, &HelpView::on_closeButtonTriggered);
+    connect(closeButton, &QPushButton::clicked, this, &HelpView::on_searchCloseButtonTriggered);
 
     closeWidgetlayout->addWidget(closeButton);
 
@@ -236,6 +236,13 @@ void HelpView::createSearchBar()
     mSearchBar->addPermanentWidget(statusWidget, 1);
     mSearchBar->addPermanentWidget(closeWidget, 0);
 
+    clearSearchBar();
+}
+
+void HelpView::clearSearchBar()
+{
+    mSearchLineEdit->clear();
+    findText("", Forward);
     mSearchBar->hide();
 }
 
@@ -451,10 +458,8 @@ void HelpView::on_actionOpenInBrowser_triggered()
 
 void HelpView::on_searchHelp()
 {
-    mSearchLineEdit->clear();
-    findText("", Forward);
     if (mSearchBar->isVisible()) {
-        mSearchBar->hide();
+        clearSearchBar();
         mHelpView->setFocus();
     } else {
         mSearchBar->show();
@@ -472,7 +477,7 @@ void HelpView::on_forwardButtonTriggered()
     findText(mSearchLineEdit->text(), Forward);
 }
 
-void HelpView::on_closeButtonTriggered()
+void HelpView::on_searchCloseButtonTriggered()
 {
     on_searchHelp();
 }
@@ -555,18 +560,23 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     mBookmarkMenu->addAction(action);
 }
 
-void HelpView::keyPressEvent(QKeyEvent *e)
+void HelpView::closeEvent(QCloseEvent *event)
+{
+    clearSearchBar();
+    QDockWidget::closeEvent(event);
+}
+
+void HelpView::keyPressEvent(QKeyEvent *event)
 {
     if (mSearchBar->isVisible()) {
-        if (e->key() == Qt::Key_Escape) {
-           findText("", Forward);
-           mSearchBar->hide();
+        if (event->key() == Qt::Key_Escape) {
+           clearSearchBar();
            mHelpView->setFocus();
-        } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
                   on_forwardButtonTriggered();
         }
     }
-     QDockWidget::keyPressEvent(e);
+     QDockWidget::keyPressEvent(event);
 }
 
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)

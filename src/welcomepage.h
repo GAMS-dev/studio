@@ -51,11 +51,12 @@ signals:
     void linkActivated(const QString &link);
     void relayActionWp(QString action);
     void relayModLibLoad(QString lib);
+    void relayDocOpen(QString doc, QString anchor);
 
 public slots:
     void on_relayAction(QString action);
     void on_relayModLibLoad(QString lib);
-
+    void on_relayOpenDoc(QString doc, QString anchor);
 
     // QWidget interface
 protected:
