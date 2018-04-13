@@ -39,8 +39,6 @@ public:
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 
-    void setOutputVisible(bool outputVisible);
-
 private:
     Ui::WelcomePage *ui;
     QList<QLabel*> mFileHistory;

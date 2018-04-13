@@ -257,6 +257,7 @@ private:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(FileGroupContext *fgc);
+    void dockWidgetShow(QDockWidget* dw, bool show);
 
 private:
     Ui::MainWindow *ui;
