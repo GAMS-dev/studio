@@ -265,21 +265,18 @@ void MainWindow::setOutputViewVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(ui->dockLogView).count();
     ui->actionOutput_View->setChecked(visibility);
-    emit ui->actionOutput_View->triggered(visibility);
 }
 
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(ui->dockProjectView).count();
     ui->actionProject_View->setChecked(visibility);
-    emit ui->actionProject_View->triggered(visibility);
 }
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(mDockOptionView).count();
     ui->actionOption_View->setChecked(visibility);
-    emit ui->actionOption_View->triggered(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -290,7 +287,6 @@ void MainWindow::setHelpViewVisibility(bool visibility)
     else
         getDockHelpView()->setFocus();
     ui->actionHelp_View->setChecked(visibility);
-    emit ui->actionHelp_View->triggered(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
@@ -313,23 +309,23 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-void MainWindow::on_actionOutput_View_triggered(bool checked)
+void MainWindow::on_actionOutput_View_toggled(bool checked)
 {
     dockWidgetShow(ui->dockLogView, checked);
 }
 
-void MainWindow::on_actionProject_View_triggered(bool checked)
+void MainWindow::on_actionProject_View_toggled(bool checked)
 {
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_triggered(bool checked)
+void MainWindow::on_actionOption_View_toggled(bool checked)
 {
     dockWidgetShow(mDockOptionView, checked);
     if(!checked) mDockOptionView->setFloating(false);
 }
 
-void MainWindow::on_actionHelp_View_triggered(bool checked)
+void MainWindow::on_actionHelp_View_toggled(bool checked)
 {
     dockWidgetShow(mDockHelpView, checked);
 }
