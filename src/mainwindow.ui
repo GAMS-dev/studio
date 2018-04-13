@@ -739,16 +739,14 @@
     <string>Ctrl+0</string>
    </property>
   </action>
-
   <action name="actionRestore_Recently_Closed_Tab">
-   <property name="text">
-    <string>Restore Recently Closed Tab</string>
-   </property>
-   <property name="toolTip">
-    <string>Restore recently closed tab</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+T</string>
+     <property name="text">
+      <string>Restore Recently Closed Tab</string>
+     </property>
+     <property name="shortcut">
+      <string>Ctrl+Shift+T</string>
+     </property>
+    </action>
   <action name="actionSelect_encodings">
    <property name="text">
     <string>Select encodings</string>

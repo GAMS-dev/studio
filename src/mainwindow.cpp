@@ -2257,9 +2257,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 
 }
 
-
-}
-
 }
 }
 
