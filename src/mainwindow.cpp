@@ -520,6 +520,12 @@ void MainWindow::updateEditorMode()
     }
 }
 
+void MainWindow::updateEditorBlockCount()
+{
+    AbstractEditor* edit = FileContext::toAbstractEdit(mRecent.editor());
+    if (edit) mStatusWidgets->setLineCount(edit->blockCount());
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -603,6 +609,7 @@ void MainWindow::on_actionSave_As_triggered()
 
         fc->save(filePath);
         openFilePath(filePath, fc->parentEntry(), true);
+        mStatusWidgets->setFileName(fc->location());
     }
 }
 
@@ -639,6 +646,7 @@ void MainWindow::codecChanged(QAction *action)
     if (fc) {
         if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
         updateMenuToCodec(action->data().toInt());
+        mStatusWidgets->setEncoding(fc->codecMib());
     }
 }
 
@@ -662,6 +670,7 @@ void MainWindow::codecReload(QAction *action)
         if (reload) {
             fc->load(action->data().toInt(), true);
             updateMenuToCodec(action->data().toInt());
+            mStatusWidgets->setEncoding(fc->codecMib());
         }
     }
 }
@@ -710,8 +719,12 @@ void MainWindow::activeTabChanged(int index)
             }
             updateMenuToCodec(fc->codecMib());
             mStatusWidgets->setFileName(fc->location());
+            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setLineCount(edit->blockCount());
         } else {
             mStatusWidgets->setFileName("");
+            mStatusWidgets->setEncoding(-1);
+            mStatusWidgets->setLineCount(-1);
         }
         ui->menuEncoding->setEnabled(fc && !edit->isReadOnly());
     } else if (FileContext::toGdxViewer(editWidget)) {
@@ -722,10 +735,14 @@ void MainWindow::activeTabChanged(int index)
         mRecent.editFileId = fc->id();
         mRecent.group = fc->parentEntry();
         mStatusWidgets->setFileName(fc->location());
+        mStatusWidgets->setEncoding(fc->codecMib());
+        mStatusWidgets->setLineCount(-1);
         gdxViewer->reload();
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
+        mStatusWidgets->setEncoding(-1);
+        mStatusWidgets->setLineCount(-1);
     }
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
@@ -2206,12 +2223,14 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
     }
     mEditor = editor;
     edit = FileContext::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
     }
     window->updateEditorMode();
     window->updateEditorPos();

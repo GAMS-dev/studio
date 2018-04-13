@@ -130,6 +130,7 @@ public slots:
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
+    void updateEditorBlockCount();
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);

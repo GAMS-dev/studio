@@ -19,6 +19,8 @@ class StatusWidgets : public QObject
 public:
     explicit StatusWidgets(QMainWindow *parent);
     void setFileName(const QString &fileName);
+    void setEncoding(int encodingMib);
+    void setLineCount(int lines);
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
 
@@ -29,7 +31,9 @@ public slots:
 private:
     QStatusBar* mStatusBar;
     QLabel* mEditMode = nullptr;
+    QLabel* mEditEncode = nullptr;
     QLabel* mEditPosAnsSel = nullptr;
+    QLabel* mEditLines = nullptr;
     QLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
 };
