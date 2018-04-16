@@ -126,7 +126,7 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
         return mFileRepo->context(ind)->icon();
 
     case Qt::ToolTipRole:
-        return mFileRepo->context(ind)->location();
+        return mFileRepo->context(ind)->tooltip();
 
     default:
         break;

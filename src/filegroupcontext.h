@@ -69,10 +69,10 @@ public:
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
     void saveGroup();
+    void setLstFileName(const QString &lstFileName);
 
     void dumpMarks();
-
-    void setLstFileName(const QString &lstFileName);
+    QString tooltip();
 
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -111,6 +111,7 @@ private:
     QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
     QHash<QString, TextMarkList*> mMarksForFilenames;
+
 };
 
 } // namespace studio

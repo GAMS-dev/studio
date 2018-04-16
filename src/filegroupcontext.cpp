@@ -202,6 +202,13 @@ void FileGroupContext::dumpMarks()
     }
 }
 
+QString FileGroupContext::tooltip()
+{
+    QString tooltip(location());
+    tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runableGms()).fileName());
+    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    return tooltip;
+}
 
 void FileGroupContext::attachFile(const QString &filepath)
 {
@@ -211,7 +218,6 @@ void FileGroupContext::attachFile(const QString &filepath)
         mAttachedFiles << fi;
         FileSystemContext* fsc = findContext(filepath);
         if (!fsc && fi.exists()) {
-            // TODO(JM) create individual node?
             updateChildNodes();
         }
     }
