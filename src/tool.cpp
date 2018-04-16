@@ -26,7 +26,7 @@ int Tool::findAlphaNum(const QString &text, int start, bool back)
     }
     if (pos >= 0 && pos < text.length()) { // must not start with number
         c = text.at(pos);
-        if (!c.isLetter() && c != '_') return -1;
+        if (!c.isLetterOrNumber() && c != '_') return -1;
     }
     return pos;
 }
