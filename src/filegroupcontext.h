@@ -51,8 +51,10 @@ public:
     FileContext* findFile(QString filePath);
     QIcon icon();
 
-    QString runableGms();
+    QString runnableGms();
+    void setRunnableGms(FileContext *gmsFileContext);
     QString lstFileName();
+    void setLstFileName(const QString &lstFileName);
     LogContext* logContext() const;
 
     GamsProcess* newGamsProcess();
@@ -69,7 +71,6 @@ public:
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
     void saveGroup();
-    void setLstFileName(const QString &lstFileName);
 
     void dumpMarks();
     QString tooltip();
@@ -104,11 +105,12 @@ protected:
 
 private:
     QList<FileSystemContext*> mChildList;
-    QString mRunInfo;
     LogContext* mLogContext = nullptr;
     GamsProcess* mGamsProcess = nullptr;
     QString mLstFileName;
+    QString mGmsFileName;
     QFileInfoList mAttachedFiles;
+
     QHash<int, QString> mLstErrorTexts;
     QHash<QString, TextMarkList*> mMarksForFilenames;
 

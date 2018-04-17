@@ -32,7 +32,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
     mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
-    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onRunFile));
+    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onChangeMainFile));
 
     mActions.insert(5, addSeparator());
 
@@ -65,9 +65,8 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
     mActions[4]->setVisible(isGmsFile);
     mActions[5]->setVisible(isGmsFile);
 
-    // TODO: remove
+    // TODO: enable
     mActions[3]->setEnabled(false);
-    mActions[4]->setEnabled(false);
 
     // all files
     mActions[10]->setVisible(mNode->type() == FileSystemContext::File);
@@ -138,6 +137,12 @@ void ProjectContextMenu::onRunFile()
 {
     FileContext *file = static_cast<FileContext*>(mNode);
     emit runFile(file);
+}
+
+void ProjectContextMenu::onChangeMainFile()
+{
+    FileContext *file = static_cast<FileContext*>(mNode);
+    emit changeMainFile(file);
 }
 
 void ProjectContextMenu::onOpenFileLoc()

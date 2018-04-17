@@ -110,6 +110,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -705,7 +706,7 @@ void MainWindow::activeTabChanged(int index)
                 if (group) {
                     mDockOptionView->setEnabled(true);
                     mCommandLineOption->clear();
-                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runableGms());
+                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
                     foreach(QString str, option) {
                        mCommandLineOption->insertItem(0, str );
                     }
@@ -1554,7 +1555,7 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runableGms());
+    QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runnableGms());
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
@@ -1623,6 +1624,11 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
 void MainWindow::on_runGmsFile(FileContext *fc)
 {
     execute("", fc);
+}
+
+void MainWindow::on_changeMainGms(FileContext *fc)
+{
+    fc->parentEntry()->setRunnableGms(fc);
 }
 
 void MainWindow::on_commandLineHelpTriggered()

@@ -132,6 +132,7 @@ public slots:
     void updateEditorMode();
     void updateEditorBlockCount();
     void on_runGmsFile(FileContext *fc);
+    void on_changeMainGms(FileContext *fc);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
