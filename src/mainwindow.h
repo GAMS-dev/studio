@@ -131,6 +131,7 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void on_runGmsFile(FileContext *fc);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -223,7 +224,6 @@ private slots:
     void stopTriggered();
     void toggleLogDebug();
 
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -239,7 +239,7 @@ private:
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
-    void execute(QString commandLineStr);
+    void execute(QString commandLineStr, FileContext *gmsFileContext = nullptr);
     void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();

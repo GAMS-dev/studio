@@ -109,8 +109,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
-
-//    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
+    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -1498,10 +1497,10 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
     }
 }
 
-void MainWindow::execute(QString commandLineStr)
+void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
 {
     mPerformanceTime.start();
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
+    FileContext* fc = (gmsFileContext ? gmsFileContext : mFileRepo.fileContext(mRecent.editor()));
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
@@ -1555,7 +1554,7 @@ void MainWindow::execute(QString commandLineStr)
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = group->runableGms();
+    QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runableGms());
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
@@ -1563,9 +1562,14 @@ void MainWindow::execute(QString commandLineStr)
     GamsProcess* process = group->newGamsProcess();
     if (!process) return;
 
+    QString lstFileName = group->lstFileName();
+    if (gmsFileContext) {
+        QFileInfo fi(gmsFilePath);
+        lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
+    }
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
-    process->setLstFile(group->lstFileName());
+    process->setLstFile(lstFileName);
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
@@ -1614,6 +1618,11 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
                                    forcedOptionItems) );
+}
+
+void MainWindow::on_runGmsFile(FileContext *fc)
+{
+    execute("", fc);
 }
 
 void MainWindow::on_commandLineHelpTriggered()

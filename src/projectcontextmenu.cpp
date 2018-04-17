@@ -26,19 +26,24 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("&Open file location",  this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
 
     mActions.insert(1, addSeparator());
 
-    mActions.insert(2, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
-    mActions.insert(3, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
+    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
+    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onRunFile));
 
-    mActions.insert(4, addSeparator());
+    mActions.insert(5, addSeparator());
 
-    mActions.insert(5, addAction("Close &group",  this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(6, addAction("Close &file",  this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(6, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(7, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
 
-//    mActions.insert(0, addAction("&Run group",  this, &ProjectContextMenu::onRunGroup));
+    mActions.insert(8, addSeparator());
+
+    mActions.insert(9, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(10, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
+
 //    mActions.insert(1, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
 //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
@@ -48,7 +53,24 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
 {
     mNode = context;
 //    mActions[0]->setVisible(true);
-    mActions[6]->setVisible(mNode->type() == FileSystemContext::File);
+
+    bool isGmsFile = false;
+    if (mNode->type() == FileSystemContext::File) {
+        FileContext *fc = static_cast<FileContext*>(mNode);
+        isGmsFile = (fc->metrics().fileType() == FileType::Gms);
+    }
+
+    mActions[2]->setVisible(isGmsFile);
+    mActions[3]->setVisible(isGmsFile);
+    mActions[4]->setVisible(isGmsFile);
+    mActions[5]->setVisible(isGmsFile);
+
+    // TODO: remove
+    mActions[3]->setEnabled(false);
+    mActions[4]->setEnabled(false);
+
+    // all files
+    mActions[10]->setVisible(mNode->type() == FileSystemContext::File);
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -112,6 +134,12 @@ void ProjectContextMenu::onCloseGroup()
     if (group) emit closeGroup(group);
 }
 
+void ProjectContextMenu::onRunFile()
+{
+    FileContext *file = static_cast<FileContext*>(mNode);
+    emit runFile(file);
+}
+
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
@@ -145,15 +173,6 @@ void ProjectContextMenu::onOpenFileLoc()
         FileGroupContext *group = static_cast<FileGroupContext*>(mNode);
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
-    }
-}
-
-void ProjectContextMenu::onRunGroup()
-{
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
-                                                                              : mNode->parentEntry();
-    if (group) {
-        emit runGroup(group);
     }
 }
 
