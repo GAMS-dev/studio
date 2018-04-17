@@ -341,29 +341,9 @@ LogContext*FileGroupContext::logContext() const
     return mLogContext;
 }
 
-GamsProcess*FileGroupContext::newGamsProcess()
-{
-    if (mGamsProcess) {
-        QMessageBox msgBox;
-        msgBox.setText("This group already has an active process. Terminate existing job?");
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setIcon(QMessageBox::Critical);
-        if (msgBox.exec() != QMessageBox::Ok)
-            return nullptr;
-        mGamsProcess->stop();
-        mGamsProcess->deleteLater();
-    }
-
-    mGamsProcess = new GamsProcess();
-    mGamsProcess->setContext(this);
-    connect(mGamsProcess, &GamsProcess::destroyed, this, &FileGroupContext::processDeleted);
-    connect(mGamsProcess, &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
-    return mGamsProcess;
-}
-
 GamsProcess*FileGroupContext::gamsProcess()
 {
-    return mGamsProcess;
+    return mGamsProcess.get();
 }
 
 QProcess::ProcessState FileGroupContext::gamsProcessState() const
@@ -398,15 +378,9 @@ void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState
     emit gamsProcessStateChanged(this);
 }
 
-void FileGroupContext::processDeleted()
-{
-    mGamsProcess = nullptr;
-    updateRunState(QProcess::NotRunning);
-    //emit gamsProcessStateChanged(this);
-}
-
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
-    : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
+    : FileSystemContext(id, name, location, FileSystemContext::FileGroup),
+      mGamsProcess(new GamsProcess)
 {
     if (runInfo == "") return;
 
@@ -422,6 +396,9 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
     } else {
         mRunInfo = runnableFile.canonicalFilePath();
     }
+
+    //mGamsProcess->setContext(this);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
 }
 
 } // namespace studio

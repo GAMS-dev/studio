@@ -922,9 +922,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
-    if (process) {
-        process->deleteLater();
-    }
     ui->dockLogView->raise();
 //    setRunActionsEnabled(true);
 }
@@ -1585,9 +1582,7 @@ void MainWindow::execute(QString commandLineStr)
     //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
-    GamsProcess* process = group->newGamsProcess();
-    if (!process) return;
-
+    GamsProcess* process = group->gamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setLstFile(group->lstFileName());

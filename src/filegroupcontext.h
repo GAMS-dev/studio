@@ -23,6 +23,8 @@
 #include "filesystemcontext.h"
 #include "syntax.h"
 
+#include <memory>
+
 namespace gams {
 namespace studio {
 
@@ -55,7 +57,6 @@ public:
     QString lstFileName();
     LogContext* logContext() const;
 
-    GamsProcess* newGamsProcess();
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
 
@@ -82,7 +83,6 @@ signals:
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
-    void processDeleted();
 
 protected:
     friend class FileRepository;
@@ -106,7 +106,7 @@ private:
     QList<FileSystemContext*> mChildList;
     QString mRunInfo;
     LogContext* mLogContext = nullptr;
-    GamsProcess* mGamsProcess = nullptr;
+    std::unique_ptr<GamsProcess> mGamsProcess;
     QString mLstFileName;
     QFileInfoList mAttachedFiles;
     QHash<int, QString> mLstErrorTexts;
