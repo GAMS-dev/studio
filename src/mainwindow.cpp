@@ -2218,6 +2218,16 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
         mClosedTabs.removeLast();
+        bool fileexists = true;
+        do {
+            QFile file2(mClosedTabs.last());
+            if (!file2.exists()) {
+                mClosedTabs.removeLast();
+                fileexists = false;
+            }
+            else
+                fileexists = true;
+        } while(!fileexists);
         return;
     }
     openFile(mClosedTabs.last());
