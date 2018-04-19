@@ -185,16 +185,16 @@ private slots:
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
-    void on_actionOutput_View_triggered(bool checked);
-    void on_actionOption_View_triggered(bool checked);
-    void on_actionHelp_View_triggered(bool checked);
+    void on_actionOutput_View_toggled(bool checked);
+    void on_actionOption_View_toggled(bool checked);
+    void on_actionHelp_View_toggled(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTab_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
-    void on_actionProject_View_triggered(bool checked);
+    void on_actionProject_View_toggled(bool checked);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();
@@ -257,6 +257,7 @@ private:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(FileGroupContext *fgc);
+    void dockWidgetShow(QDockWidget* dw, bool show);
 
 private:
     Ui::MainWindow *ui;

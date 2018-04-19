@@ -263,7 +263,30 @@ void MainWindow::updateMenuToCodec(int mib)
 
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
+    visibility = visibility || tabifiedDockWidgets(ui->dockLogView).count();
     ui->actionOutput_View->setChecked(visibility);
+}
+
+void MainWindow::setProjectViewVisibility(bool visibility)
+{
+    visibility = visibility || tabifiedDockWidgets(ui->dockProjectView).count();
+    ui->actionProject_View->setChecked(visibility);
+}
+
+void MainWindow::setOptionEditorVisibility(bool visibility)
+{
+    visibility = visibility || tabifiedDockWidgets(mDockOptionView).count();
+    ui->actionOption_View->setChecked(visibility);
+}
+
+void MainWindow::setHelpViewVisibility(bool visibility)
+{
+    visibility = visibility || tabifiedDockWidgets(mDockHelpView).count();
+    if (!visibility)
+        getDockHelpView()->clearSearchBar();
+    else
+        getDockHelpView()->setFocus();
+    ui->actionHelp_View->setChecked(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
@@ -271,23 +294,40 @@ bool MainWindow::outputViewVisibility()
     return ui->actionOutput_View->isChecked();
 }
 
-void MainWindow::setProjectViewVisibility(bool visibility)
+bool MainWindow::projectViewVisibility()
 {
-    ui->actionProject_View->setChecked(visibility);
+    return ui->actionProject_View->isChecked();
 }
 
-void MainWindow::setOptionEditorVisibility(bool visibility)
+bool MainWindow::optionEditorVisibility()
 {
-    ui->actionOption_View->setChecked(visibility);
+    return ui->actionOption_View->isChecked();
 }
 
-void MainWindow::setHelpViewVisibility(bool visibility)
+bool MainWindow::helpViewVisibility()
 {
-    if (!visibility)
-        getDockHelpView()->clearSearchBar();
-    else
-        getDockHelpView()->setFocus();
-    ui->actionHelp_View->setChecked(visibility);
+    return ui->actionHelp_View->isChecked();
+}
+
+void MainWindow::on_actionOutput_View_toggled(bool checked)
+{
+    dockWidgetShow(ui->dockLogView, checked);
+}
+
+void MainWindow::on_actionProject_View_toggled(bool checked)
+{
+    dockWidgetShow(ui->dockProjectView, checked);
+}
+
+void MainWindow::on_actionOption_View_toggled(bool checked)
+{
+    dockWidgetShow(mDockOptionView, checked);
+    if(!checked) mDockOptionView->setFloating(false);
+}
+
+void MainWindow::on_actionHelp_View_toggled(bool checked)
+{
+    dockWidgetShow(mDockHelpView, checked);
 }
 
 void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
@@ -383,21 +423,6 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 SearchWidget* MainWindow::searchWidget() const
 {
     return mSearchWidget;
-}
-
-bool MainWindow::projectViewVisibility()
-{
-    return ui->actionProject_View->isChecked();
-}
-
-bool MainWindow::optionEditorVisibility()
-{
-    return ui->actionOption_View->isChecked();
-}
-
-bool MainWindow::helpViewVisibility()
-{
-    return ui->actionHelp_View->isChecked();
 }
 
 QString MainWindow::encodingMIBsString()
@@ -897,9 +922,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
     } else {
         qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
-    if (process) {
-        process->deleteLater();
-    }
     ui->dockLogView->raise();
 //    setRunActionsEnabled(true);
 }
@@ -938,6 +960,8 @@ void MainWindow::on_actionHelp_triggered()
     }
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
+    if (tabifiedDockWidgets(mDockHelpView).count())
+        mDockHelpView->raise();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -978,42 +1002,6 @@ void MainWindow::on_actionUpdate_triggered()
     UpdateDialog updateDialog(this);
     updateDialog.checkForUpdate();
     updateDialog.exec();
-}
-
-void MainWindow::on_actionOutput_View_triggered(bool checked)
-{
-    if(checked)
-        ui->dockLogView->show();
-    else
-        ui->dockLogView->hide();
-
-    if (mWp) mWp->setOutputVisible(checked);
-}
-
-void MainWindow::on_actionOption_View_triggered(bool checked)
-{
-    if(checked) {
-        mDockOptionView->show();
-    } else {
-        mDockOptionView->hide();
-        mDockOptionView->setFloating(false);
-    }
-}
-
-void MainWindow::on_actionHelp_View_triggered(bool checked)
-{
-    if (checked)
-        mDockHelpView->show();
-    else
-        mDockHelpView->hide();
-}
-
-void MainWindow::on_actionProject_View_triggered(bool checked)
-{
-    if(checked)
-        ui->dockProjectView->show();
-    else
-        ui->dockProjectView->hide();
 }
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
@@ -1522,6 +1510,16 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
     }
 }
 
+void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
+{
+    if (show) {
+        if (tabifiedDockWidgets(dw).count()) dw->raise();
+        else dw->show();
+    } else {
+        dw->hide();
+    }
+}
+
 void MainWindow::execute(QString commandLineStr)
 {
     mPerformanceTime.start();
@@ -1584,9 +1582,7 @@ void MainWindow::execute(QString commandLineStr)
     //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
-    GamsProcess* process = group->newGamsProcess();
-    if (!process) return;
-
+    GamsProcess* process = group->gamsProcess();
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setLstFile(group->lstFileName());
@@ -1645,6 +1641,8 @@ void MainWindow::on_commandLineHelpTriggered()
     mDockHelpView->on_commandLineHelpRequested();
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
+    if (tabifiedDockWidgets(mDockHelpView).count())
+        mDockHelpView->raise();
 }
 
 void MainWindow::on_actionRun_triggered()
