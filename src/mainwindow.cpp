@@ -2006,12 +2006,15 @@ void MainWindow::on_actionGo_To_triggered()
     int width = mGoto->frameGeometry().width();
     int height = mGoto->frameGeometry().height();
     QDesktopWidget wid;
-    int screenWidth = wid.screen()->width();
-    int screenHeight = wid.screen()->height();
+    int thisscreen = QApplication::desktop()->screenNumber(this);
+    int screenWidth = wid.screen(thisscreen)->width();
+    int screenHeight = wid.screen(thisscreen)->height();
+    int x = wid.availableGeometry(thisscreen).x();
+    int y = wid.availableGeometry(thisscreen).y();
     if (mGoto->isVisible()) {
         mGoto->hide();
     } else {
-        mGoto->setGeometry((screenWidth/2)-(width/2),(screenHeight/2)-(height/2),width,height);
+        mGoto->setGeometry(x+(screenWidth/2)-(width/2),y+(screenHeight/2)-(height/2),width,height);
         if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
             return;
         mGoto->show();
