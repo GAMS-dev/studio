@@ -38,9 +38,9 @@ QString GAMSPaths::systemDir() {
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
-    gamsPath = "/Applications/GAMS" + GAMS_DISTRIB_VERSION_SHORT;
+    gamsPath = QString("/Applications/GAMS") + GAMS_DISTRIB_VERSION_SHORT + "/sysdir";
     if (!QDir(gamsPath).exists())
-        gamsPath = "/Applications/GAMS" + GAMS_DISTRIB_VERSION_NEXT_SHORT;
+        gamsPath = QString("/Applications/GAMS") + GAMS_DISTRIB_VERSION_NEXT_SHORT + "/sysdir";
 #elif __unix__
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);

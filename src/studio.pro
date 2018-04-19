@@ -43,8 +43,8 @@ macx {
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
     ICON = studio.icns
     QMAKE_INFO_PLIST=Info.plist
-    DEFINES += 'GAMS_DISTRIB_VERSION_SHORT=$$GAMS_DISTRIB_MAJOR.$$GAMS_DISTRIB_MINOR'
-    DEFINES += 'GAMS_DISTRIB_VERSION_NEXT_SHORT=$$GAMS_DISTRIB_NEXT_MAJOR.$$GAMS_DISTRIB_NEXT_MINOR'
+    DEFINES += 'GAMS_DISTRIB_VERSION_SHORT=\\"'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'\\"'
+    DEFINES += 'GAMS_DISTRIB_VERSION_NEXT_SHORT=\\"'$$GAMS_DISTRIB_NEXT_MAJOR'.'$$GAMS_DISTRIB_NEXT_MINOR'\\"'
 }
 unix {
     LIBS += -ldl
