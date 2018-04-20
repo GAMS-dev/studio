@@ -88,8 +88,7 @@ void HelpView::setupUi(QWidget *parent)
     actionHome->setObjectName(QStringLiteral("actionHome"));
     actionHome->setToolTip("Start page ("+ QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER)+")");
     actionHome->setStatusTip("Start page ("+ QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER)+")");
-    QPixmap homePixmap(":/img/home");
-    QIcon homeButtonIcon(homePixmap);
+    QIcon homeButtonIcon(":/img/home");
     actionHome->setIcon(homeButtonIcon);
     connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
 
@@ -117,8 +116,7 @@ void HelpView::setupUi(QWidget *parent)
     mBookmarkMenu->addAction(actionOrganizeBookmark);
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
-    QPixmap bookmarkPixmap(":/img/bookmark");
-    QIcon bookmarkButtonIcon(bookmarkPixmap);
+    QIcon bookmarkButtonIcon(":/img/bookmark");
     bookmarkToolButton->setToolTip("Bookmarks");
     bookmarkToolButton->setIcon(bookmarkButtonIcon);
     bookmarkToolButton->setIcon(bookmarkButtonIcon);
@@ -149,8 +147,7 @@ void HelpView::setupUi(QWidget *parent)
     actionCopyPageURL->setStatusTip(tr("Copy URL of this page to Clipboard"));
 
     QToolButton* helpToolButton = new QToolButton(this);
-    QPixmap toolPixmap(":/img/config");
-    QIcon toolButtonIcon(toolPixmap);
+    QIcon toolButtonIcon(":/img/config");
     helpToolButton->setToolTip("Help Option");
     helpToolButton->setIcon(toolButtonIcon);
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -186,8 +183,8 @@ void HelpView::createSearchBar()
 
     QPushButton* backButton = new QPushButton(this);
     QPushButton* forwardButton = new QPushButton(this);
-    QIcon backButtonIcon(QPixmap(":/img/backward"));
-    QIcon forwardButtonIcon(QPixmap(":/img/forward"));
+    QIcon backButtonIcon(":/img/backward");
+    QIcon forwardButtonIcon(":/img/forward");
     backButton->setIcon(backButtonIcon);
     backButton->setSizePolicy(buttonSizePolicy);
     backButton->setToolTip(tr("Find the previous occurrence"));
@@ -221,8 +218,7 @@ void HelpView::createSearchBar()
     closeWidget->setSizePolicy(sizePolicy);
 
     QPushButton* closeButton = new QPushButton(this);
-    QPixmap closePixmap(":/img/delete");
-    QIcon closeButtonIcon(closePixmap);
+    QIcon closeButtonIcon(":/img/delete");
     closeButton->setIcon(closeButtonIcon);
 
     closeButton->setSizePolicy(buttonSizePolicy);
@@ -548,12 +544,10 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
     action->setToolTip(objectName);
 
     if (objectName.startsWith("file")) {
-           QPixmap linkPixmap(":/img/link");
-           QIcon linkButtonIcon(linkPixmap);
+           QIcon linkButtonIcon(":/img/link");
            action->setIcon(linkButtonIcon);
     } else if (objectName.startsWith("http")) {
-           QPixmap linkPixmap(":/img/external-link");
-           QIcon linkButtonIcon(linkPixmap);
+           QIcon linkButtonIcon(":/img/external-link");
            action->setIcon(linkButtonIcon);
     }
     connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);

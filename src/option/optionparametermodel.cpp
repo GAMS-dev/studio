@@ -52,17 +52,11 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            QIcon icon(":/img/square-red");
-            QPixmap p = icon.pixmap(12,12);
-            return p;
+            return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            QIcon icon(":/img/square-gray");
-            QPixmap p = icon.pixmap(12,12);
-            return p;
+            return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            QIcon icon(":/img/square-green");
-            QPixmap p = icon.pixmap(12,12);
-            return p;
+            return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     }
 
