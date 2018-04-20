@@ -41,17 +41,17 @@ class FileGroupContext : public FileSystemContext
 
 public:
     virtual ~FileGroupContext();
-    void setFlag(ContextFlag flag, bool value = true);
-    void unsetFlag(ContextFlag flag);
+    void setFlag(ContextFlag flag, bool value = true) override;
+    void unsetFlag(ContextFlag flag) override;
 
-    void setLocation(const QString &location);
+    void setLocation(const QString &location) override;
 
-    int childCount() const;
+    int childCount() const override;
     int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index) const;
+    FileSystemContext* childEntry(int index) const override;
     FileSystemContext* findContext(QString filePath);
     FileContext* findFile(QString filePath);
-    QIcon icon();
+    QIcon icon() override;
 
     QString runnableGms();
     void setRunnableGms(FileContext *gmsFileContext);
@@ -74,7 +74,7 @@ public:
     void saveGroup();
 
     void dumpMarks();
-    QString tooltip();
+    QString tooltip() override;
 
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
