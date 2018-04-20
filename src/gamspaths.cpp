@@ -19,7 +19,6 @@
  */
 #include "gamspaths.h"
 #include "exception.h"
-#include "gclgms.h"
 
 #include <QApplication>
 #include <QDir>
@@ -39,8 +38,9 @@ QString GAMSPaths::systemDir() {
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
-    gamsPath = "/Applications/GAMS" + QString::number(GAMSMAJOR) + "." +
-               QString::number(GAMSMINOR) + "/sysdir";
+    gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
+    if (!QDir(gamsPath).exists())
+        gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
 #elif __unix__
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);
@@ -97,6 +97,12 @@ QString GAMSPaths::filePath(const QString &path)
 {
     QFileInfo fi(path);
     return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
+}
+
+QString GAMSPaths::path(const QString &file)
+{
+    QFileInfo fi(file);
+    return fi.exists() ? fi.canonicalPath() : fi.absolutePath();
 }
 
 }

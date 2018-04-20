@@ -52,6 +52,7 @@ class SearchWidget;
 class SearchResultList;
 class Result;
 class GoToWidget;
+class AutosaveHandler;
 
 struct RecentData {
 
@@ -91,7 +92,9 @@ public:
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
+    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
+
 
     bool outputViewVisibility();
     bool projectViewVisibility();
@@ -120,8 +123,9 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
     HelpView *getDockHelpView() const;
-    void readTabs(const QJsonObject &json);
+    QStringList readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
+    QWidget *welcomePage() const;
     void delayedFileRestoration();
 
 public slots:
@@ -183,16 +187,16 @@ private slots:
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
-    void on_actionOutput_View_triggered(bool checked);
-    void on_actionOption_View_triggered(bool checked);
-    void on_actionHelp_View_triggered(bool checked);
+    void on_actionOutput_View_toggled(bool checked);
+    void on_actionOption_View_toggled(bool checked);
+    void on_actionHelp_View_toggled(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTab_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
-    void on_actionProject_View_triggered(bool checked);
+    void on_actionProject_View_toggled(bool checked);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();
@@ -232,6 +236,7 @@ protected:
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
+    void timerEvent(QTimerEvent *event);
 
 private:
     void initTabs();
@@ -253,6 +258,7 @@ private:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(FileGroupContext *fgc);
+    void dockWidgetShow(QDockWidget* dw, bool show);
 
 private:
     Ui::MainWindow *ui;
@@ -276,6 +282,7 @@ private:
     RecentData mRecent;
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
+    std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
@@ -290,7 +297,9 @@ private:
     bool mOverwriteMode = false;
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
-
+    int TimerID;
+    FileMetrics mMetrics;
+    bool mCheckOnce = true;
 };
 
 }

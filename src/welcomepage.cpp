@@ -33,6 +33,7 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
 {
     ui->setupUi(this);
     historyChanged(history);
+    mOutputVisible = mMain->outputViewVisibility();
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -76,11 +77,6 @@ void WelcomePage::historyChanged(HistoryData *history)
 WelcomePage::~WelcomePage()
 {
     delete ui;
-}
-
-void WelcomePage::setOutputVisible(bool outputVisible)
-{
-    mOutputVisible = outputVisible;
 }
 
 void WelcomePage::on_relayAction(QString action)

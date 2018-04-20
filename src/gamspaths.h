@@ -51,6 +51,8 @@ public:
     ///
     static QString filePath(const QString &path);
 
+    static QString path(const QString &file);
+
 private:
     GAMSPaths();
 };
