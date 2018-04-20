@@ -2211,21 +2211,13 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     if (mClosedTabs.isEmpty())
         return;
     QFile file(mClosedTabs.last());
-    if (!file.exists()) {
-        mClosedTabs.removeLast();
-        QFile file(mClosedTabs.last());
-        if (!file.exists())
-            on_actionRestore_Recently_Closed_Tab_triggered();
-        else {
-            openFile(mClosedTabs.last());
-            mClosedTabs.removeLast();
-        }
-        return;
-    }
-    openFile(mClosedTabs.last());
     mClosedTabs.removeLast();
+    if (file.exists())
+        openFile(file.fileName());
+    else
+        on_actionRestore_Recently_Closed_Tab_triggered();
 }
-  
+
 void MainWindow::on_actionSelect_encodings_triggered()
 {
     SelectEncodings se(encodingMIBs(), this);
