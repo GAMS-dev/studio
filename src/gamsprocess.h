@@ -25,8 +25,8 @@
 namespace gams {
 namespace studio {
 
-class FileGroupContext;
-class LogContext;
+//class FileGroupContext;
+//class LogContext;
 
 class GamsProcess
         : public AbstractProcess
@@ -42,9 +42,9 @@ public:
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
 
-    void setContext(FileGroupContext *context);
-    FileGroupContext* context() override;
-    LogContext* logContext() const;
+//    void setContext(FileGroupContext *context);
+//    FileGroupContext* context() override;
+//    LogContext* logContext() const;
 
     void execute() override;
 
@@ -60,8 +60,9 @@ private:
     static const QString App;
     QString mWorkingDir;
     QString mCommandLineStr;
-    FileGroupContext *mContext = nullptr;
-    LogContext *mLogContext = nullptr;
+    // TODO(AF) Why is this context stuff part of the process?
+    //FileGroupContext *mContext = nullptr;
+    //LogContext *mLogContext = nullptr;
 };
 
 } // namespace studio

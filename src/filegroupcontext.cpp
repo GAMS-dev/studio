@@ -202,6 +202,13 @@ void FileGroupContext::dumpMarks()
     }
 }
 
+QString FileGroupContext::tooltip()
+{
+    QString tooltip(location());
+    tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
+    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    return tooltip;
+}
 
 void FileGroupContext::attachFile(const QString &filepath)
 {
@@ -211,7 +218,6 @@ void FileGroupContext::attachFile(const QString &filepath)
         mAttachedFiles << fi;
         FileSystemContext* fsc = findContext(filepath);
         if (!fsc && fi.exists()) {
-            // TODO(JM) create individual node?
             updateChildNodes();
         }
     }
@@ -322,10 +328,15 @@ void FileGroupContext::saveGroup()
     }
 }
 
-QString FileGroupContext::runableGms()
+QString FileGroupContext::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return QDir(location()).filePath(mRunInfo);
+    return QDir(location()).filePath(mGmsFileName);
+}
+
+void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
+{
+    mGmsFileName = gmsFileContext->location();
 }
 
 QString FileGroupContext::lstFileName()
@@ -341,34 +352,14 @@ LogContext*FileGroupContext::logContext() const
     return mLogContext;
 }
 
-GamsProcess*FileGroupContext::newGamsProcess()
-{
-    if (mGamsProcess) {
-        QMessageBox msgBox;
-        msgBox.setText("This group already has an active process. Terminate existing job?");
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setIcon(QMessageBox::Critical);
-        if (msgBox.exec() != QMessageBox::Ok)
-            return nullptr;
-        mGamsProcess->stop();
-        mGamsProcess->deleteLater();
-    }
-
-    mGamsProcess = new GamsProcess();
-    mGamsProcess->setContext(this);
-    connect(mGamsProcess, &GamsProcess::destroyed, this, &FileGroupContext::processDeleted);
-    connect(mGamsProcess, &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
-    return mGamsProcess;
-}
-
 GamsProcess*FileGroupContext::gamsProcess()
 {
-    return mGamsProcess;
+    return mGamsProcess.get();
 }
 
 QProcess::ProcessState FileGroupContext::gamsProcessState() const
 {
-    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
+    return mGamsProcess->state();
 }
 
 int FileGroupContext::childCount() const
@@ -398,15 +389,9 @@ void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState
     emit gamsProcessStateChanged(this);
 }
 
-void FileGroupContext::processDeleted()
-{
-    mGamsProcess = nullptr;
-    updateRunState(QProcess::NotRunning);
-    //emit gamsProcessStateChanged(this);
-}
-
 FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
-    : FileSystemContext(id, name, location, FileSystemContext::FileGroup)
+    : FileSystemContext(id, name, location, FileSystemContext::FileGroup),
+      mGamsProcess(new GamsProcess)
 {
     if (runInfo == "") return;
 
@@ -416,12 +401,15 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
 
     // fix for .lst-as-basefile bug
     if (runnableFile.suffix() == "gms") {
-        mRunInfo = runInfo;
+        mGmsFileName = runnableFile.canonicalFilePath();
     } else if (alternateFile.exists()) {
-        mRunInfo = alternateFile.fileName();
+        mGmsFileName = alternateFile.fileName();
     } else {
-        mRunInfo = runnableFile.canonicalFilePath();
+        mGmsFileName = runnableFile.canonicalFilePath();
     }
+
+    //mGamsProcess->setContext(this);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
 }
 
 } // namespace studio

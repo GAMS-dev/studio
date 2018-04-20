@@ -448,6 +448,11 @@ void FileContext::addFileWatcherForGdx()
     }
 }
 
+QString FileContext::tooltip()
+{
+    return location();
+}
+
 int FileContext::textMarkCount(QSet<TextMark::Type> tmTypes)
 {
     return mMarks->textMarkCount(tmTypes);
