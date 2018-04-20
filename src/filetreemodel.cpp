@@ -99,11 +99,13 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
         if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
-        return mFileRepo->context(ind)->caption();
+        if (mFileRepo->context(ind)->location() == mFileRepo->context(ind)->parentEntry()->runnableGms())
+            return mFileRepo->context(ind)->caption() + " [active]";
+        else
+            return mFileRepo->context(ind)->caption();
 
     case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
-//        if (mFileRepo->context(index)->flags().testFlag(FileSystemContext::cfActive)) {
             QFont f;
             f.setBold(true);
             return f;
