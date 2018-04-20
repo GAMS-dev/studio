@@ -359,7 +359,7 @@ GamsProcess*FileGroupContext::gamsProcess()
 
 QProcess::ProcessState FileGroupContext::gamsProcessState() const
 {
-    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
+    return mGamsProcess->state();
 }
 
 int FileGroupContext::childCount() const

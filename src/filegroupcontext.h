@@ -95,7 +95,7 @@ protected:
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
-    void checkFlags();
+    void checkFlags() override;
     void setLogContext(LogContext* logContext);
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);

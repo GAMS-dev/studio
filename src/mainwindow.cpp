@@ -1586,8 +1586,6 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->gamsProcess();
-    if (!process) return;
-
     QString lstFileName = group->lstFileName();
     if (gmsFileContext) {
         QFileInfo fi(gmsFilePath);
@@ -1610,8 +1608,7 @@ void MainWindow::interruptTriggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    if (process)
-        QtConcurrent::run(process, &GamsProcess::interrupt);
+    QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
 void MainWindow::stopTriggered()
@@ -1621,8 +1618,7 @@ void MainWindow::stopTriggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    if (process)
-        QtConcurrent::run(process, &GamsProcess::stop);
+    QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::updateRunState()
