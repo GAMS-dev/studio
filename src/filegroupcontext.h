@@ -41,20 +41,22 @@ class FileGroupContext : public FileSystemContext
 
 public:
     virtual ~FileGroupContext();
-    void setFlag(ContextFlag flag, bool value = true);
-    void unsetFlag(ContextFlag flag);
+    void setFlag(ContextFlag flag, bool value = true) override;
+    void unsetFlag(ContextFlag flag) override;
 
-    void setLocation(const QString &location);
+    void setLocation(const QString &location) override;
 
-    int childCount() const;
+    int childCount() const override;
     int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index) const;
+    FileSystemContext* childEntry(int index) const override;
     FileSystemContext* findContext(QString filePath);
     FileContext* findFile(QString filePath);
-    QIcon icon();
+    QIcon icon() override;
 
-    QString runableGms();
+    QString runnableGms();
+    void setRunnableGms(FileContext *gmsFileContext);
     QString lstFileName();
+    void setLstFileName(const QString &lstFileName);
     LogContext* logContext() const;
 
     GamsProcess* gamsProcess();
@@ -72,8 +74,7 @@ public:
     void saveGroup();
 
     void dumpMarks();
-
-    void setLstFileName(const QString &lstFileName);
+    QString tooltip() override;
 
 signals:
     void gamsProcessStateChanged(FileGroupContext* group);
@@ -94,7 +95,7 @@ protected:
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(FileSystemContext *child);
     void removeChild(FileSystemContext *child);
-    void checkFlags();
+    void checkFlags() override;
     void setLogContext(LogContext* logContext);
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);
@@ -104,13 +105,15 @@ protected:
 
 private:
     QList<FileSystemContext*> mChildList;
-    QString mRunInfo;
     LogContext* mLogContext = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
     QString mLstFileName;
+    QString mGmsFileName;
     QFileInfoList mAttachedFiles;
+
     QHash<int, QString> mLstErrorTexts;
     QHash<QString, TextMarkList*> mMarksForFilenames;
+
 };
 
 } // namespace studio

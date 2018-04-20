@@ -117,7 +117,8 @@ public:
     FileGroupContext* parentEntry() const;
     virtual void setParentEntry(FileGroupContext *parent);
     virtual FileSystemContext* childEntry(int index) const;
-    virtual int childCount() const;
+    virtual int childCount() const;    
+    virtual QString tooltip()=0;
 
     FileSystemContext *findFile(QString filePath);
 

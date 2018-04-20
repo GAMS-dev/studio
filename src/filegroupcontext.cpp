@@ -202,6 +202,13 @@ void FileGroupContext::dumpMarks()
     }
 }
 
+QString FileGroupContext::tooltip()
+{
+    QString tooltip(location());
+    tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
+    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    return tooltip;
+}
 
 void FileGroupContext::attachFile(const QString &filepath)
 {
@@ -211,7 +218,6 @@ void FileGroupContext::attachFile(const QString &filepath)
         mAttachedFiles << fi;
         FileSystemContext* fsc = findContext(filepath);
         if (!fsc && fi.exists()) {
-            // TODO(JM) create individual node?
             updateChildNodes();
         }
     }
@@ -322,10 +328,15 @@ void FileGroupContext::saveGroup()
     }
 }
 
-QString FileGroupContext::runableGms()
+QString FileGroupContext::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return QDir(location()).filePath(mRunInfo);
+    return QDir(location()).filePath(mGmsFileName);
+}
+
+void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
+{
+    mGmsFileName = gmsFileContext->location();
 }
 
 QString FileGroupContext::lstFileName()
@@ -348,7 +359,7 @@ GamsProcess*FileGroupContext::gamsProcess()
 
 QProcess::ProcessState FileGroupContext::gamsProcessState() const
 {
-    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
+    return mGamsProcess->state();
 }
 
 int FileGroupContext::childCount() const
@@ -390,11 +401,11 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
 
     // fix for .lst-as-basefile bug
     if (runnableFile.suffix() == "gms") {
-        mRunInfo = runInfo;
+        mGmsFileName = runnableFile.canonicalFilePath();
     } else if (alternateFile.exists()) {
-        mRunInfo = alternateFile.fileName();
+        mGmsFileName = alternateFile.fileName();
     } else {
-        mRunInfo = runnableFile.canonicalFilePath();
+        mGmsFileName = runnableFile.canonicalFilePath();
     }
 
     //mGamsProcess->setContext(this);

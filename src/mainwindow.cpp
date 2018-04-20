@@ -114,8 +114,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
-
-//    connect(&mProjectContextMenu, &ProjectContextMenu::runGroup, this, &MainWindow::)
+    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -750,7 +750,7 @@ void MainWindow::activeTabChanged(int index)
                 if (group) {
                     mDockOptionView->setEnabled(true);
                     mCommandLineOption->clear();
-                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runableGms());
+                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
                     foreach(QString str, option) {
                        mCommandLineOption->insertItem(0, str );
                     }
@@ -1501,6 +1501,9 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 {
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
+    // set default lst file name in case outout option changed back to default
+    fgc->setLstFileName(fgc->location() + "/" + fgc->name() + ".lst");
+
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
@@ -1521,10 +1524,10 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(QString commandLineStr)
+void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
 {
     mPerformanceTime.start();
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
+    FileContext* fc = (gmsFileContext ? gmsFileContext : mFileRepo.fileContext(mRecent.editor()));
     FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
@@ -1578,15 +1581,20 @@ void MainWindow::execute(QString commandLineStr)
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = group->runableGms();
+    QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runnableGms());
     QFileInfo gmsFileInfo(gmsFilePath);
     //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->gamsProcess();
+    QString lstFileName = group->lstFileName();
+    if (gmsFileContext) {
+        QFileInfo fi(gmsFilePath);
+        lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
+    }
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
-    process->setLstFile(group->lstFileName());
+    process->setLstFile(lstFileName);
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
@@ -1601,8 +1609,7 @@ void MainWindow::interruptTriggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    if (process)
-        QtConcurrent::run(process, &GamsProcess::interrupt);
+    QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
 void MainWindow::stopTriggered()
@@ -1612,8 +1619,7 @@ void MainWindow::stopTriggered()
     if (!group)
         return;
     GamsProcess* process = group->gamsProcess();
-    if (process)
-        QtConcurrent::run(process, &GamsProcess::stop);
+    QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::updateRunState()
@@ -1635,6 +1641,16 @@ void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forced
     mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
     execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
                                    forcedOptionItems) );
+}
+
+void MainWindow::on_runGmsFile(FileContext *fc)
+{
+    execute("", fc);
+}
+
+void MainWindow::on_changeMainGms(FileContext *fc)
+{
+    fc->parentEntry()->setRunnableGms(fc);
 }
 
 void MainWindow::on_commandLineHelpTriggered()

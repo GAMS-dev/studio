@@ -142,6 +142,8 @@ public:
     TextMarkList* marks() const { return mMarks; }
     void unbindMarks() { mMarks = nullptr; }
 
+    QString tooltip();
+
 signals:
     /// Signal is emitted when the file has been modified externally.
     /// \param fileId The file identifier
