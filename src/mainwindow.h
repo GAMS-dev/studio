@@ -222,10 +222,10 @@ private slots:
     void on_actionRemove_Line_triggered();
     void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
-
     void interruptTriggered();
     void stopTriggered();
     void toggleLogDebug();
+    void on_actionRestore_Recently_Closed_Tab_triggered();
 
 
 protected:
@@ -293,6 +293,7 @@ private:
     QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
+    QStringList mClosedTabs;
     bool mOverwriteMode = false;
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;

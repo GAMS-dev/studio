@@ -867,6 +867,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 void MainWindow::fileClosed(FileId fileId)
 {
     FileContext* fc = mFileRepo.fileContext(fileId);
+    mClosedTabs << fc->location();
     if (!fc)
         FATAL() << "FileId " << fileId << " is not of class FileContext.";
     while (!fc->editors().isEmpty()) {
@@ -2244,6 +2245,19 @@ void MainWindow::toggleLogDebug()
     }
 }
 
+
+void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
+{
+    if (mClosedTabs.isEmpty())
+        return;
+    QFile file(mClosedTabs.last());
+    mClosedTabs.removeLast();
+    if (file.exists())
+        openFile(file.fileName());
+    else
+        on_actionRestore_Recently_Closed_Tab_triggered();
+}
+
 void MainWindow::on_actionSelect_encodings_triggered()
 {
     SelectEncodings se(encodingMIBs(), this);
@@ -2279,5 +2293,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 
 }
 }
+
 
 
