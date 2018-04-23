@@ -116,9 +116,9 @@ pipeline {
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-x64.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio.AppImage"
                             } else {
-                                sh "mv GAMS_Studio-x86_64.AppImage studio-x64.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage studio.AppImage"
                             }
                         }
                         archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
