@@ -513,10 +513,12 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
 void MainWindow::toggleOptionDefinition(bool checked)
 {
     if (checked) {
+        updateRunState();
         mCommandLineOption->lineEdit()->setEnabled( false );
         mOptionEditor->show();
         emit mOptionEditor->optionTableModelChanged(mCommandLineOption->lineEdit()->text());
     } else {
+        updateRunState();
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionEditor->hide();
         mDockOptionView->widget()->resize( mCommandWidget->size() );
@@ -1621,6 +1623,9 @@ void MainWindow::updateRunState()
     setRunActionsEnabled(state != QProcess::Running);
     interruptToolButton->setEnabled(state == QProcess::Running);
     interruptToolButton->menu()->setEnabled(state == QProcess::Running);
+    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
+    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
+    mOptionEditor->setEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()
