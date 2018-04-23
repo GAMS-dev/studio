@@ -92,11 +92,11 @@ void Application::parseCmdArgs()
             break;
         case gams::studio::CommandLineError:
             std::cerr << mCmdParser.errorText().toStdString() << std::endl;
+            mCmdParser.showHelp();
         case gams::studio::CommandLineVersionRequested:
             mCmdParser.showVersion();
         case gams::studio::CommandLineHelpRequested:
             mCmdParser.showHelp();
-            break;
     }
 }
 
