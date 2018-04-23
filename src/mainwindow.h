@@ -21,7 +21,7 @@
 #define MAINWINDOW_H
 
 #include <memory>
-#include <QtWidgets>
+#include <QMainWindow>
 
 #include "editors/codeeditor.h"
 #include "filerepository.h"
@@ -86,7 +86,7 @@ public:
     /// \param parent The parent widget.
     /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
-    explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
+    explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
     void updateMenuToCodec(int mib);
