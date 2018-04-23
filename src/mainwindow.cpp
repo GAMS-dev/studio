@@ -27,7 +27,6 @@
 #include "exception.h"
 #include "treeitemdelegate.h"
 #include "gamspaths.h"
-#include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
