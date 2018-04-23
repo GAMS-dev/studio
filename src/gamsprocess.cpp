@@ -19,11 +19,7 @@
  */
 #include "gamsprocess.h"
 #include "gamspaths.h"
-//#include "filegroupcontext.h"
-//#include "logcontext.h"
 #include <QStandardPaths>
-#include <QDebug>
-#include <QProcess>
 #include <QDir>
 
 #ifdef _WIN32
@@ -59,21 +55,6 @@ QString GamsProcess::workingDir() const
 {
     return mWorkingDir;
 }
-
-//void GamsProcess::setContext(FileGroupContext *context)
-//{
-//    mContext = context;
-//}
-
-//FileGroupContext* GamsProcess::context()
-//{
-//    return mContext;
-//}
-
-//LogContext*GamsProcess::logContext() const
-//{
-//    return mContext ? mContext->logContext() : nullptr;
-//}
 
 void GamsProcess::execute()
 {

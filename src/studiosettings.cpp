@@ -284,11 +284,11 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
-    main->setProjectViewVisibility(mAppSettings->value("projectView").toBool());
-    main->setOutputViewVisibility(mAppSettings->value("outputView").toBool());
-    main->setHelpViewVisibility(mAppSettings->value("helpView").toBool());
-    main->setOptionEditorVisibility(mAppSettings->value("optionView").toBool());
-    main->checkOptionDefinition(mAppSettings->value("optionEditor").toBool());
+    main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
+    main->setOutputViewVisibility(mAppSettings->value("outputView", true).toBool());
+    main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
+    main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
+    main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
     main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();

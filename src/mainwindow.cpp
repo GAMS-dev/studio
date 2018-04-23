@@ -754,7 +754,7 @@ void MainWindow::activeTabChanged(int index)
                     mCommandLineOption->setEnabled(true);
                     mCommandLineOption->setCurrentContext(fc->location());
                 }
-                setRunActionsEnabled(true);
+                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -896,13 +896,12 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    FileGroupContext* groupContext = process ? process->context() : nullptr;
+    FileGroupContext* groupContext = mFileRepo.ensureGroup(process->inputFile());
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupContext && fileInfo.exists()) {
-        QString lstFile = process->lstFile();
+        QString lstFile = groupContext->lstFileName();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
-
         bool doFocus = groupContext == mRecent.group;
 
         if (mSettings->jumpToError())
@@ -1589,7 +1588,6 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     }
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
-    process->setLstFile(lstFileName);
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
@@ -1808,7 +1806,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
-    } else if (fc) {
+    } else {
         openFileContext(fc, focus, codecMip);
     }
     if (!fc) {
