@@ -62,11 +62,6 @@ QString AbstractProcess::inputFile() const
     return mInputFile;
 }
 
-FileGroupContext*AbstractProcess::context()
-{
-    return nullptr;
-}
-
 QProcess::ProcessState AbstractProcess::state() const
 {
     return mProcess.state();
@@ -101,16 +96,6 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
         avail = mProcess.bytesAvailable();
         mOutputMutex.unlock();
     }
-}
-
-QString AbstractProcess::lstFile() const
-{
-    return mLstFile;
-}
-
-void AbstractProcess::setLstFile(const QString &lstFile)
-{
-    mLstFile = lstFile;
 }
 
 } // namespace studio

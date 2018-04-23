@@ -51,11 +51,7 @@ public:
     QString inputFile() const;
 
     virtual void execute() = 0;
-    virtual FileGroupContext* context();
     QProcess::ProcessState state() const;
-
-    QString lstFile() const;
-    void setLstFile(const QString &lstFile);
 
 signals:
     void finished(AbstractProcess *process, int exitCode);
