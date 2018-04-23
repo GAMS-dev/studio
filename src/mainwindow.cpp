@@ -1969,13 +1969,10 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
-                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, nullptr, true, mib);
                     tabs << location;
                 }
-//                DEB() << "trigger load with codec " << mib;
-                if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
                 QApplication::processEvents();
             }
         }

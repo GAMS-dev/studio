@@ -401,11 +401,11 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
 
     // fix for .lst-as-basefile bug
     if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.canonicalFilePath();
+        mGmsFileName = runnableFile.absoluteFilePath();
     } else if (alternateFile.exists()) {
         mGmsFileName = alternateFile.fileName();
     } else {
-        mGmsFileName = runnableFile.canonicalFilePath();
+        mGmsFileName = runnableFile.absoluteFilePath();
     }
 
     //mGamsProcess->setContext(this);
