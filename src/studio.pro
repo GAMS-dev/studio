@@ -77,7 +77,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    newdialog.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/libraryitem.cpp \
@@ -155,7 +154,6 @@ HEADERS += \
     exception.h \
     treeitemdelegate.h \
     version.h \
-    newdialog.h \
     modeldialog/modeldialog.h   \
     modeldialog/glbparser.h     \
     modeldialog/libraryitem.h   \
