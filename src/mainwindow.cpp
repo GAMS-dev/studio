@@ -754,7 +754,7 @@ void MainWindow::activeTabChanged(int index)
                     mCommandLineOption->setEnabled(true);
                     mCommandLineOption->setCurrentContext(fc->location());
                 }
-                setRunActionsEnabled(true);
+                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
