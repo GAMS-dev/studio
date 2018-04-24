@@ -46,7 +46,7 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(FileSystemContext *fsc);
+    QList<Result> findInFile(FileSystemContext *fsc, bool skipFilters = false);
 
     enum SearchDirection {
         Forward = 0,
@@ -91,7 +91,7 @@ private:
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
-    void updateMatchAmount(int hits, int current = 0, bool clear = false);
+    void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
     void insertHistory();
 
@@ -101,7 +101,14 @@ private:
         OpenTabs = 2,
         AllFiles = 3
     };
-    void setSearchStatus();
+
+    enum SearchStatus {
+        Searching = 0,
+        NoResults = 1,
+        Clear = 2
+    };
+
+    void setSearchStatus(SearchStatus status);
 };
 
 }

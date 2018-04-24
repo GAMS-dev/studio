@@ -102,7 +102,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
     insertHistory();
 
-    setSearchStatus();
+    setSearchStatus(SearchStatus::Clear);
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -175,7 +175,7 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
     return matches;
 }
 
-QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
+QList<Result> SearchWidget::findInFile(FileSystemContext *fsc, bool skipFilters)
 {
     if (!fsc) return QList<Result>();
 
@@ -183,9 +183,11 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     // (scope not current file && wildcard not matching) || has gdx extension
-    if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fsc->location()) == -1))
-            || fsc->location().endsWith("gdx")) {
-        return QList<Result>(); // dont search here, return empty
+    if (!skipFilters) {
+        if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fsc->location()) == -1))
+                || fsc->location().endsWith("gdx")) {
+            return QList<Result>(); // dont search here, return empty
+        }
     }
 
     QString searchTerm = ui->combo_search->currentText();
@@ -260,14 +262,8 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc)
     return matches.resultList();
 }
 
-void SearchWidget::updateMatchAmount(int hits, int current, bool clear)
+void SearchWidget::updateMatchAmount(int hits, int current)
 {
-    if (clear) {
-        ui->lbl_nrResults->setText("");
-        ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
-        return;
-    }
-
     if (current == 0) {
         if (hits == 1)
             ui->lbl_nrResults->setText(QString::number(hits) + " match");
@@ -331,11 +327,27 @@ void SearchWidget::simpleReplaceAll()
     }
 }
 
-void SearchWidget::setSearchStatus()
+void SearchWidget::setSearchStatus(SearchStatus status)
 {
-    ui->lbl_nrResults->setText("Searching...");
-    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
-    QApplication::processEvents(QEventLoop::AllEvents, 20);
+    switch (status) {
+    case SearchStatus::Searching:
+        ui->lbl_nrResults->setText("Searching...");
+        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        break;
+
+    case SearchStatus::NoResults:
+        ui->lbl_nrResults->setText("No results.");
+        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        break;
+
+    case SearchStatus::Clear:
+        ui->lbl_nrResults->setText("");
+        ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
+        break;
+
+    default:
+        break;
+    }
 }
 
 void SearchWidget::findNext(SearchDirection direction)
@@ -348,8 +360,8 @@ void SearchWidget::findNext(SearchDirection direction)
     if (!edit) return;
 
     if (hasChanged) {
-        setSearchStatus();
-        cachedResults = findInFile(fc);
+        setSearchStatus(SearchStatus::Searching);
+        cachedResults = findInFile(fc, true);
         hasChanged = false;
     }
 
@@ -433,7 +445,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
 }
 
 void SearchWidget::closeEvent(QCloseEvent *e) {
-    updateMatchAmount(0, 0, true);
+    setSearchStatus(SearchStatus::Clear);
     QDialog::closeEvent(e);
 }
 
@@ -526,6 +538,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
             edit->setTextCursor(matchSelection);
         }
     } else {
+        setSearchStatus(SearchStatus::NoResults);
         return; // search had no matches anyway, so do nothing at all
     }
 
@@ -552,7 +565,7 @@ void SearchWidget::clearResults()
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
     fc->removeTextMarks(TextMark::match, true);
-    updateMatchAmount(0, 0, true);
+    setSearchStatus(SearchStatus::Clear);
 }
 
 void SearchWidget::clearSearch()
