@@ -87,7 +87,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QString filePath = QFileDialog::getOpenFileName(mParent, "Add existing file", sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx);;"
                                                        "Text files (*.txt);;"
-                                                       "All files (*.*)"), 0, DONTRESOLVESYMLINKSONMACOS);
+                                                       "All files (*.*)"), 0, DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
     FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
                                                                               : mNode->parentEntry();
@@ -102,7 +102,7 @@ void ProjectContextMenu::onAddNewFile()
     QString filePath = QFileDialog::getSaveFileName(mParent, "Create new file...", sourcePath,
                                                     tr("GAMS code (*.gms *.inc );;"
                                                        "Text files (*.txt);;"
-                                                       "All files (*.*)"), 0, DONTRESOLVESYMLINKSONMACOS);
+                                                       "All files (*.*)"), 0, DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     if (filePath == "") return;
 

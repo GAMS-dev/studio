@@ -25,6 +25,16 @@
 namespace gams {
 namespace studio {
 
+/// this macro is needed to deactivate resolving of symlinks on macos.
+/// if not deactivated a workaround breaks that allows users to circumvent file naming limitations.
+/// to be specific, files or pathes containing spaces.
+/// however, if deactivated on other platforms, shortcuts will be opened as textfile instead of being followed.
+#ifdef __APPLE__
+#define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::DontResolveSymlinks
+#else
+#define DONT_RESOLVE_SYMLINKS_ON_MACOS 0
+#endif
+
 class GAMSPaths
 {
 public:
@@ -52,17 +62,6 @@ public:
     static QString filePath(const QString &path);
 
     static QString path(const QString &file);
-
-
-    // this macro is needed to deactivate resolving of symlinks on macos.
-    // if not deactivated a workaround breaks that allows users to circumvent file naming limitations.
-    // to be specific, files or pathes containing spaces.
-    // however, if deactivated on other platforms, shortcuts will be opened as textfile instead of being followed.
-#ifdef __APPLE__
-#define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::DontResolveSymlinks
-#else
-#define DONT_RESOLVE_SYMLINKS_ON_MACOS 0
-#endif
 
 private:
     GAMSPaths();
