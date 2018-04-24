@@ -2272,7 +2272,6 @@ void MainWindow::toggleLogDebug()
     }
 }
 
-
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
     if (mClosedTabs.isEmpty())
