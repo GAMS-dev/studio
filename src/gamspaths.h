@@ -32,7 +32,7 @@ namespace studio {
 #ifdef __APPLE__
 #define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::DontResolveSymlinks
 #else
-#define DONT_RESOLVE_SYMLINKS_ON_MACOS 0
+#define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::Option()
 #endif
 
 class GAMSPaths

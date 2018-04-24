@@ -57,10 +57,12 @@ private slots:
     void onChangeMainFile();
 
 private:
+    void onOpenFileLoc();
+
+private:
     FileSystemContext* mNode;
     QHash<int, QAction*> mActions;
     QWidget *mParent = nullptr;
-    void onOpenFileLoc();
 };
 
 } // namespace studio

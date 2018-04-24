@@ -604,7 +604,8 @@ void MainWindow::on_actionOpen_triggered()
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS code (*.gms *.inc *.gdx);;"
                                                           "Text files (*.txt);;"
-                                                          "All files (*.*)"), 0,
+                                                          "All files (*.*)"),
+                                                       nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     foreach (QString item, fNames) {
