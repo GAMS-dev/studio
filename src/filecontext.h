@@ -142,7 +142,7 @@ public:
     TextMarkList* marks() const { return mMarks; }
     void unbindMarks() { mMarks = nullptr; }
 
-    QString tooltip();
+    QString tooltip() override;
 
 signals:
     /// Signal is emitted when the file has been modified externally.
