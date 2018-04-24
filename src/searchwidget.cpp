@@ -143,7 +143,6 @@ QList<Result> SearchWidget::findInOpenFiles()
     QList<Result> matches;
     QWidgetList editList = mMain->fileRepository()->editors();
     FileContext *fc;
-    // TODO: search FCs, because 1 fc can have n editors
     for (int i = 0; i < editList.size(); i++) {
         fc = mMain->fileRepository()->fileContext(editList.at(i));
         if (fc == nullptr) break;
@@ -159,9 +158,9 @@ QList<Result> SearchWidget::findInGroup(FileSystemContext *fsc)
     FileGroupContext *fgc = nullptr;
     if (!fsc) {
         FileContext* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
-        fgc = (fc ? fc->parentEntry() : nullptr); // TODO: refactor
-
+        fgc = (fc ? fc->parentEntry() : nullptr);
         if (!fgc) return QList<Result>();
+
     } else {
         if (fsc->type() == FileGroupContext::FileGroup)
             fgc = static_cast<FileGroupContext*>(fsc);

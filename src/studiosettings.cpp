@@ -124,8 +124,9 @@ void StudioSettings::saveSettings(MainWindow *main)
     // history
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < main->settings()->historySize(); i++) {
-        if (i >= main->history()->lastOpenedFiles.length()) break;
+    for (int i = 0; i < main->history()->lastOpenedFiles.length(); i++) {
+
+        if (main->history()->lastOpenedFiles.at(i) == "") break;
         mAppSettings->setArrayIndex(i);
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }

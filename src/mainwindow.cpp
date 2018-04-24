@@ -1287,6 +1287,7 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (history()->lastOpenedFiles.size() >= mSettings->historySize())
         history()->lastOpenedFiles.removeLast();
+
     if (!history()->lastOpenedFiles.contains(filePath))
         history()->lastOpenedFiles.insert(0, filePath);
     else
