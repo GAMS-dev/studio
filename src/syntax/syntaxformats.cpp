@@ -20,7 +20,6 @@
 #include "syntaxformats.h"
 #include "logger.h"
 #include "syntaxdata.h"
-#include "tool.h"
 #include "exception.h"
 
 namespace gams {

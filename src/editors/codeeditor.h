@@ -110,6 +110,8 @@ private:
     CharType charType(QChar c);
     void updateTabSize();
 
+    static int findAlphaNum(const QString &text, int start, bool back);
+
 private:
     class BlockEdit
     {

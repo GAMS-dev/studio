@@ -25,7 +25,6 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
-#include "tool.h"
 
 namespace gams {
 namespace studio {
@@ -593,6 +592,27 @@ void CodeEditor::updateTabSize()
     setTabStopDistance(8*metric.width(' '));
 }
 
+int CodeEditor::findAlphaNum(const QString &text, int start, bool back)
+{
+    QChar c = ' ';
+    int pos = (back && start == text.length()) ? start-1 : start;
+    while (pos >= 0 && pos < text.length()) {
+        c = text.at(pos);
+        if (!c.isLetterOrNumber() && c != '_' && (pos != start || !back)) break;
+        pos = pos + (back?-1:1);
+    }
+    pos = pos - (back?-1:1);
+    if (pos == start) {
+        c = (pos >= 0 && pos < text.length()) ? text.at(pos) : ' ';
+        if (!c.isLetterOrNumber() && c != '_') return -1;
+    }
+    if (pos >= 0 && pos < text.length()) { // must not start with number
+        c = text.at(pos);
+        if (!c.isLetterOrNumber() && c != '_') return -1;
+    }
+    return pos;
+}
+
 CodeEditor::BlockEdit *CodeEditor::blockEdit() const
 {
     return mBlockEdit;
@@ -607,8 +627,8 @@ void CodeEditor::wordInfo(QTextCursor cursor, QString &word, int &intState)
 {
     QString text = cursor.block().text();
     int start = cursor.positionInBlock();
-    int from = Tool::findAlphaNum(text, start, true);
-    int to = Tool::findAlphaNum(text, from, false);
+    int from = findAlphaNum(text, start, true);
+    int to = findAlphaNum(text, from, false);
     if (from >= 0 && from <= to) {
         word = text.mid(from, to-from+1);
         start = from + cursor.block().position();
@@ -648,8 +668,8 @@ void CodeEditor::recalcExtraSelections()
         selection.cursor = textCursor();
         QString text = selection.cursor.block().text();
         int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
-        int from = Tool::findAlphaNum(text, start, true);
-        int to = Tool::findAlphaNum(text, from, false);
+        int from = findAlphaNum(text, start, true);
+        int to = findAlphaNum(text, from, false);
         if (from >= 0 && from <= to) {
             if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
                 mWordUnderCursor = text.mid(from, to-from+1);

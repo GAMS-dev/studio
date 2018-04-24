@@ -132,7 +132,6 @@ SOURCES += \
     gotowidget.cpp \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
-    tool.cpp \
     editors/selectencodings.cpp \
     updatedialog.cpp \
     lxiviewer/lxitreeitem.cpp \
@@ -212,7 +211,6 @@ HEADERS += \
     gotowidget.h \
     editors/logeditor.h \
     editors/abstracteditor.h \
-    tool.h \
     editors/selectencodings.h \
     updatedialog.h \
     lxiviewer/lxitreeitem.h \

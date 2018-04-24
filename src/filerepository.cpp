@@ -22,7 +22,6 @@
 #include "syntax.h"
 #include "logger.h"
 #include "gamspaths.h"
-#include"tool.h"
 
 namespace gams {
 namespace studio {
