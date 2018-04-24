@@ -20,7 +20,7 @@
 #ifndef PROJECTCONTEXTMENU_H
 #define PROJECTCONTEXTMENU_H
 
-#include <QtWidgets>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -32,6 +32,7 @@ class FileContext;
 class ProjectContextMenu : public QMenu
 {
     Q_OBJECT
+
 public:
     ProjectContextMenu();
     void setNode(FileSystemContext* context);
