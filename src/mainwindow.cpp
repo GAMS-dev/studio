@@ -1783,12 +1783,13 @@ void MainWindow::closeFile(FileContext* file)
     if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
         ui->projectView->setCurrentIndex(QModelIndex());
 
-        if (file->parentEntry()->childCount() > 1) {
-            fileClosed(file->id());
-            mFileRepo.removeFile(file);
-        } else {
-            closeGroup(file->parentEntry());
-        }
+        FileGroupContext *parent = file->parentEntry();
+
+        fileClosed(file->id());
+        mFileRepo.removeFile(file);
+
+        if (parent->childCount() == 0)
+            closeGroup(parent);
 
         mSettings->saveSettings(this);
     }
