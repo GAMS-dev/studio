@@ -53,6 +53,17 @@ public:
 
     static QString path(const QString &file);
 
+
+    // this macro is needed to deactivate resolving of symlinks on macos.
+    // if not deactivated a workaround breaks that allows users to circumvent file naming limitations.
+    // to be specific, files or pathes containing spaces.
+    // however, if deactivated on other platforms, shortcuts will be opened as textfile instead of being followed.
+#ifdef __APPLE__
+#define DONTRESOLVESYMLINKSONMACOS QFileDialog::DontResolveSymLinks
+#else
+#define DONTRESOLVESYMLINKSONMACOS 0
+#endif
+
 private:
     GAMSPaths();
 };

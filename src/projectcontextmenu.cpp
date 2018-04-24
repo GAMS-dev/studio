@@ -20,6 +20,7 @@
 #include "projectcontextmenu.h"
 #include "filegroupcontext.h"
 #include "logcontext.h"
+#include "gamspaths.h"
 
 namespace gams {
 namespace studio {
@@ -86,7 +87,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QString filePath = QFileDialog::getOpenFileName(mParent, "Add existing file", sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx);;"
                                                        "Text files (*.txt);;"
-                                                       "All files (*.*)"), 0, QFileDialog::DontResolveSymlinks);
+                                                       "All files (*.*)"), 0, DONTRESOLVESYMLINKSONMACOS);
     if (filePath == "") return;
     FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
                                                                               : mNode->parentEntry();
@@ -101,7 +102,7 @@ void ProjectContextMenu::onAddNewFile()
     QString filePath = QFileDialog::getSaveFileName(mParent, "Create new file...", sourcePath,
                                                     tr("GAMS code (*.gms *.inc );;"
                                                        "Text files (*.txt);;"
-                                                       "All files (*.*)"), 0, QFileDialog::DontResolveSymlinks);
+                                                       "All files (*.*)"), 0, DONTRESOLVESYMLINKSONMACOS);
 
     if (filePath == "") return;
 

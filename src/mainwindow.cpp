@@ -604,7 +604,7 @@ void MainWindow::on_actionOpen_triggered()
                                                        tr("GAMS code (*.gms *.inc *.gdx);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"), 0,
-                                                       QFileDialog::DontResolveSymlinks);
+                                                       DONTRESOLVESYMLINKSONMACOS);
 
     foreach (QString item, fNames) {
         addContext("", item);
