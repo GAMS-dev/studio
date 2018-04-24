@@ -105,7 +105,6 @@ void AutosaveHandler::saveChangedFiles()
                 QFile::remove(autosaveFile);
         }
     }
-    qDebug() << "saved";
 }
 
 

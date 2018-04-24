@@ -601,9 +601,11 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,tr("GAMS code (*.gms *.inc *.gdx);;"
-                                                            "Text files (*.txt);;"
-                                                            "All files (*.*)"));
+    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
+                                                       tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                          "Text files (*.txt);;"
+                                                          "All files (*.*)"), 0,
+                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     foreach (QString item, fNames) {
         addContext("", item);
@@ -1810,7 +1812,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
-    } else if (fc) {
+    } else {
         openFileContext(fc, focus, codecMip);
     }
     if (!fc) {
@@ -1971,13 +1973,10 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
-                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, nullptr, true, mib);
                     tabs << location;
                 }
-//                DEB() << "trigger load with codec " << mib;
-                if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
                 QApplication::processEvents();
             }
         }
