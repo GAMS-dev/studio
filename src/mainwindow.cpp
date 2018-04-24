@@ -528,9 +528,13 @@ void MainWindow::toggleOptionDefinition(bool checked)
 
 void MainWindow::closeHelpView()
 {
-    qDebug() << "closeHelpView";
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::optionViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOption_View->setChecked(visibility);
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
@@ -1083,6 +1087,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
     mDockOptionView->setWindowTitle("Option");
     mDockOptionView->setFloating(false);
+    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     QWidget* optionWidget = new QWidget;
     QVBoxLayout* widgetVLayout = new QVBoxLayout;

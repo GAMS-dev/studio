@@ -162,6 +162,7 @@ private slots:
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
+    void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
 
 private slots:
