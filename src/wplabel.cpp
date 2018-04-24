@@ -89,6 +89,5 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
     }
 }
 
-
 }
 }

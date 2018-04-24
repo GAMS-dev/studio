@@ -36,7 +36,7 @@ class GoToWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = 0);
+    explicit GoToWidget(MainWindow *parent = nullptr);
 
     ~GoToWidget();
 

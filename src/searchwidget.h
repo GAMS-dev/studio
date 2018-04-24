@@ -35,7 +35,7 @@ class SearchWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchWidget(MainWindow *parent = 0);
+    explicit SearchWidget(MainWindow *parent = nullptr);
     ~SearchWidget();
 
     bool regex();
@@ -57,9 +57,9 @@ public:
     void updateReplaceActionAvailability();
 
     void focusSearchField();
-    
+
     void clearSearch();
-    
+
 public slots:
     void on_searchNext();
     void on_searchPrev();

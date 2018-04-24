@@ -34,7 +34,7 @@ public:
     enum EditorType { BaseEditor, CodeEditor, LogEditor };
 
 public:
-    virtual ~AbstractEditor();
+    virtual ~AbstractEditor() override;
     virtual EditorType type();
 
 protected:

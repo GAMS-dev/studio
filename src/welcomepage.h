@@ -35,7 +35,7 @@ class WelcomePage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WelcomePage(HistoryData *history, MainWindow *parent = 0);
+    explicit WelcomePage(HistoryData *history, MainWindow *parent = nullptr);
     void historyChanged(HistoryData *history);
     ~WelcomePage();
 

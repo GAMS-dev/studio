@@ -51,7 +51,7 @@ class CodeEditor : public AbstractEditor
     Q_OBJECT
 
 public:
-    CodeEditor(StudioSettings *settings, QWidget *parent = 0);
+    CodeEditor(StudioSettings *settings, QWidget *parent = nullptr);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();

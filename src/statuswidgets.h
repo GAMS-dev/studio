@@ -16,6 +16,7 @@ enum class EditMode {Readonly, Insert, Overwrite};
 class StatusWidgets : public QObject
 {
     Q_OBJECT
+
 public:
     explicit StatusWidgets(QMainWindow *parent);
     void setFileName(const QString &fileName);
@@ -23,10 +24,6 @@ public:
     void setLineCount(int lines);
     void setEditMode(EditMode mode);
     void setPosAndAnchor(QPoint pos = QPoint(), QPoint anchor = QPoint());
-
-signals:
-
-public slots:
 
 private:
     QStatusBar* mStatusBar;

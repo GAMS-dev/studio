@@ -36,7 +36,7 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(StudioSettings* settings, MainWindow *parent = 0);
+    explicit SettingsDialog(StudioSettings* settings, MainWindow *parent = nullptr);
     ~SettingsDialog();
 
 protected:

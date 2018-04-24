@@ -40,7 +40,7 @@ class FileGroupContext : public FileSystemContext
     Q_OBJECT
 
 public:
-    virtual ~FileGroupContext();
+    virtual ~FileGroupContext() override;
     void setFlag(ContextFlag flag, bool value = true) override;
     void unsetFlag(ContextFlag flag) override;
 

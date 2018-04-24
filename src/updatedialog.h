@@ -20,7 +20,7 @@
 #ifndef UPDATEDIALOG_H
 #define UPDATEDIALOG_H
 
-#include <QtWidgets>
+#include <QDialog>
 
 namespace Ui {
 class UpdateDialog;
