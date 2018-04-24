@@ -1523,8 +1523,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 {
     if (show) {
-        if (tabifiedDockWidgets(dw).count()) dw->raise();
-        else dw->show();
+        dw->setVisible(show);
+        dw->raise();
     } else {
         dw->hide();
     }
