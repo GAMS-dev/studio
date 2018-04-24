@@ -59,9 +59,9 @@ public:
     // to be specific, files or pathes containing spaces.
     // however, if deactivated on other platforms, shortcuts will be opened as textfile instead of being followed.
 #ifdef __APPLE__
-#define DONTRESOLVESYMLINKSONMACOS QFileDialog::DontResolveSymLinks
+#define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::DontResolveSymlinks
 #else
-#define DONTRESOLVESYMLINKSONMACOS 0
+#define DONT_RESOLVE_SYMLINKS_ON_MACOS 0
 #endif
 
 private:
