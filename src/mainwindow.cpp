@@ -88,6 +88,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     mDockHelpView->hide();
 
     createRunAndCommandLineWidgets();
@@ -527,8 +528,14 @@ void MainWindow::toggleOptionDefinition(bool checked)
 
 void MainWindow::closeHelpView()
 {
+    qDebug() << "closeHelpView";
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::helpViewVisibilityChanged(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility);
 }
 
 void MainWindow::updateEditorPos()
