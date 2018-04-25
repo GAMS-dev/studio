@@ -113,6 +113,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
+    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -306,7 +307,7 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-void MainWindow::on_actionOutput_View_toggled(bool checked)
+void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockLogView, checked);
 }
@@ -531,6 +532,11 @@ void MainWindow::closeHelpView()
 {
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::outputViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOutput_View->setChecked(visibility);
 }
 
 void MainWindow::projectViewVisibiltyChanged(bool visibility)
