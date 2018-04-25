@@ -190,7 +190,7 @@ private slots:
     void on_actionUpdate_triggered();
     // View
     void on_actionOutput_View_toggled(bool checked);
-    void on_actionOption_View_toggled(bool checked);
+    void on_actionOption_View_triggered(bool checked);
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();

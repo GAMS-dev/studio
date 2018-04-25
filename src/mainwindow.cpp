@@ -315,7 +315,7 @@ void MainWindow::on_actionProject_View_toggled(bool checked)
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_toggled(bool checked)
+void MainWindow::on_actionOption_View_triggered(bool checked)
 {
     dockWidgetShow(mDockOptionView, checked);
     if(!checked) mDockOptionView->setFloating(false);
@@ -539,7 +539,6 @@ void MainWindow::optionViewVisibiltyChanged(bool visibility)
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
-    qDebug() << "helpViewVisibilityChanged(bool visibility) >> " << visibility;
     ui->actionHelp_View->setChecked(visibility);
 }
 
