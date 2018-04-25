@@ -78,7 +78,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
