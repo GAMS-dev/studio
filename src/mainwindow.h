@@ -92,7 +92,6 @@ public:
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
-    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
 
 

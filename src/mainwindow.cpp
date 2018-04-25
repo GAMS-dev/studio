@@ -1267,12 +1267,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true, true);
-}
-
-void MainWindow::openFileSkipSettings(const QString &filePath)
-{
-    openFilePath(filePath, nullptr, true, false);
+    openFilePath(filePath, nullptr, true, -1);
 }
 
 HistoryData *MainWindow::history()
