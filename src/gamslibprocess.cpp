@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslibprocess.h"
+#include "gamspaths.h"
 
 #include <QDebug>
 #include <QDir>
@@ -38,7 +39,7 @@ QString GAMSLibProcess::app()
 
 QString GAMSLibProcess::nativeAppPath()
 {
-    return AbstractProcess::nativeAppPath(mSystemDir, mApp);
+    return AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), mApp);
 }
 
 void GAMSLibProcess::setTargetDir(const QString &targetDir)

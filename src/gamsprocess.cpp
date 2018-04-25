@@ -19,6 +19,7 @@
  */
 #include "gamsprocess.h"
 #include "gamspaths.h"
+
 #include <QStandardPaths>
 #include <QDir>
 
@@ -43,7 +44,7 @@ QString GamsProcess::app()
 
 QString GamsProcess::nativeAppPath()
 {
-    return AbstractProcess::nativeAppPath(mSystemDir, App);
+    return AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App);
 }
 
 void GamsProcess::setWorkingDir(const QString &workingDir)

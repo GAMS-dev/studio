@@ -44,10 +44,6 @@ public:
     virtual QString nativeAppPath() = 0;
     static QString nativeAppPath(const QString &dir, const QString &app);
 
-    // TODO(AF) remove?
-    void setSystemDir(const QString &systemDir);
-    QString systemDir() const;
-
     void setInputFile(const QString &file);
     QString inputFile() const;
 
@@ -66,7 +62,6 @@ protected slots:
     void readStdChannel(QProcess::ProcessChannel channel);
 
 protected:
-    QString mSystemDir;
     QString mInputFile;
     QString mLstFile;
     QProcess mProcess;

@@ -27,7 +27,6 @@ namespace studio {
 
 AbstractProcess::AbstractProcess(QObject *parent)
     : QObject (parent),
-      mSystemDir(GAMSPaths::systemDir()),
       mProcess(this)
 {
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
@@ -40,16 +39,6 @@ QString AbstractProcess::nativeAppPath(const QString &dir, const QString &app)
 {
     auto appPath = QDir(dir).filePath(app);
     return QDir::toNativeSeparators(appPath);
-}
-
-void AbstractProcess::setSystemDir(const QString &systemDir)
-{
-    mSystemDir = systemDir;
-}
-
-QString AbstractProcess::systemDir() const
-{
-    return mSystemDir;
 }
 
 void AbstractProcess::setInputFile(const QString &file)
