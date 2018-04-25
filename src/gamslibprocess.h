@@ -33,10 +33,6 @@ class GAMSLibProcess
 public:
     GAMSLibProcess(QObject *parent = Q_NULLPTR);
 
-    QString app() override;
-
-    QString nativeAppPath() override;
-
     void setTargetDir(const QString &targetDir);
     QString targetDir() const;
 
@@ -51,7 +47,6 @@ public:
     void setGlbFile(const QString &glbFile);
 
 private:
-    QString mApp = "gamslib";
     QString mTargetDir;
     int mModelNumber = -1;
     QString mModelName;

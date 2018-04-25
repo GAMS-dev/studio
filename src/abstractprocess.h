@@ -35,14 +35,11 @@ class AbstractProcess
     Q_OBJECT
 
 protected:
-    AbstractProcess(QObject *parent = Q_NULLPTR);
+    AbstractProcess(const QString &app, QObject *parent = Q_NULLPTR);
     virtual ~AbstractProcess() {}
 
 public:
-    virtual QString app() = 0;
-
-    virtual QString nativeAppPath() = 0;
-    static QString nativeAppPath(const QString &dir, const QString &app);
+    QString app() const;
 
     void setInputFile(const QString &file);
     QString inputFile() const;
@@ -62,10 +59,16 @@ protected slots:
     void readStdChannel(QProcess::ProcessChannel channel);
 
 protected:
+    QString nativeAppPath();
+
+protected:
     QString mInputFile;
     QString mLstFile;
     QProcess mProcess;
     QMutex mOutputMutex;
+
+private:
+    QString mApp;
 };
 
 } // namespace studio

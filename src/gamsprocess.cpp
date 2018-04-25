@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsprocess.h"
-#include "gamspaths.h"
 
 #include <QStandardPaths>
 #include <QDir>
@@ -30,21 +29,9 @@
 namespace gams {
 namespace studio {
 
-const QString GamsProcess::App = "gams";
-
 GamsProcess::GamsProcess(QObject *parent)
-    : AbstractProcess(parent)
+    : AbstractProcess("gams", parent)
 {
-}
-
-QString GamsProcess::app()
-{
-    return App;
-}
-
-QString GamsProcess::nativeAppPath()
-{
-    return AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App);
 }
 
 void GamsProcess::setWorkingDir(const QString &workingDir)
@@ -74,7 +61,7 @@ QString GamsProcess::aboutGAMS()
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     QStringList args({"/??", "lo=3", "curdir=" + tempDir});
-    process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
+    process.start(nativeAppPath(), args);
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();

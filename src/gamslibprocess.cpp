@@ -27,19 +27,9 @@ namespace gams {
 namespace studio {
 
 GAMSLibProcess::GAMSLibProcess(QObject *parent)
-    : AbstractProcess(parent)
+    : AbstractProcess("gamslib", parent)
 {
 
-}
-
-QString GAMSLibProcess::app()
-{
-    return mApp;
-}
-
-QString GAMSLibProcess::nativeAppPath()
-{
-    return AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), mApp);
 }
 
 void GAMSLibProcess::setTargetDir(const QString &targetDir)

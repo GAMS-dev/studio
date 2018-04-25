@@ -25,9 +25,10 @@
 namespace gams {
 namespace studio {
 
-AbstractProcess::AbstractProcess(QObject *parent)
+AbstractProcess::AbstractProcess(const QString &app, QObject *parent)
     : QObject (parent),
-      mProcess(this)
+      mProcess(this),
+      mApp(app)
 {
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);
@@ -35,10 +36,9 @@ AbstractProcess::AbstractProcess(QObject *parent)
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
-QString AbstractProcess::nativeAppPath(const QString &dir, const QString &app)
+QString AbstractProcess::app() const
 {
-    auto appPath = QDir(dir).filePath(app);
-    return QDir::toNativeSeparators(appPath);
+    return mApp;
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -85,6 +85,12 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
         avail = mProcess.bytesAvailable();
         mOutputMutex.unlock();
     }
+}
+
+QString AbstractProcess::nativeAppPath()
+{
+    auto appPath = QDir(GAMSPaths::systemDir()).filePath(mApp);
+    return QDir::toNativeSeparators(appPath);
 }
 
 } // namespace studio

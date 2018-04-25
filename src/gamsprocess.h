@@ -33,15 +33,12 @@ class GamsProcess
 public:
     GamsProcess(QObject *parent = Q_NULLPTR);
 
-    QString app() override;
-    QString nativeAppPath() override;
-
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
 
     void execute() override;
 
-    static QString aboutGAMS();
+    QString aboutGAMS();
 
     QString commandLineStr() const;
     void setCommandLineStr(const QString &commandLineStr);
@@ -50,7 +47,6 @@ public:
     void stop();
 
 private:
-    static const QString App;
     QString mWorkingDir;
     QString mCommandLineStr;
 };
