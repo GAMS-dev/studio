@@ -112,6 +112,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
+    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -310,7 +311,7 @@ void MainWindow::on_actionOutput_View_toggled(bool checked)
     dockWidgetShow(ui->dockLogView, checked);
 }
 
-void MainWindow::on_actionProject_View_toggled(bool checked)
+void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockProjectView, checked);
 }
@@ -530,6 +531,11 @@ void MainWindow::closeHelpView()
 {
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::projectViewVisibiltyChanged(bool visibility)
+{
+    ui->actionProject_View->setChecked(visibility);
 }
 
 void MainWindow::optionViewVisibiltyChanged(bool visibility)

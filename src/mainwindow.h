@@ -162,6 +162,7 @@ private slots:
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
+    void projectViewVisibiltyChanged(bool visibility);
     void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
 
@@ -190,6 +191,7 @@ private slots:
     void on_actionUpdate_triggered();
     // View
     void on_actionOutput_View_toggled(bool checked);
+    void on_actionProject_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
@@ -198,7 +200,6 @@ private slots:
     void on_mainTab_tabCloseRequested(int index);
     void on_logTab_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
-    void on_actionProject_View_toggled(bool checked);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();
