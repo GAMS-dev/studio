@@ -536,22 +536,22 @@ void MainWindow::closeHelpView()
 
 void MainWindow::outputViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOutput_View->setChecked(visibility);
+    ui->actionOutput_View->setChecked(visibility || tabifiedDockWidgets(ui->dockLogView).count());
 }
 
 void MainWindow::projectViewVisibiltyChanged(bool visibility)
 {
-    ui->actionProject_View->setChecked(visibility);
+    ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
 }
 
 void MainWindow::optionViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility);
+    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(mDockOptionView).count());
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
-    ui->actionHelp_View->setChecked(visibility);
+    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(mDockHelpView).count());
 }
 
 void MainWindow::updateEditorPos()
