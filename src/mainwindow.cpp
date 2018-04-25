@@ -923,7 +923,7 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    FileGroupContext* groupContext = mFileRepo.ensureGroup(process->inputFile());
+    FileGroupContext* groupContext = mFileRepo.findGroup(process->inputFile());
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupContext && fileInfo.exists()) {

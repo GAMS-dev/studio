@@ -44,6 +44,7 @@ public:
     virtual QString nativeAppPath() = 0;
     static QString nativeAppPath(const QString &dir, const QString &app);
 
+    // TODO(AF) remove?
     void setSystemDir(const QString &systemDir);
     QString systemDir() const;
 
