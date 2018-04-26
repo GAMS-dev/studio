@@ -59,10 +59,12 @@ public:
     void focusSearchField();
 
     void clearSearch();
+    void invalidateCache();
 
 public slots:
     void on_searchNext();
     void on_searchPrev();
+    void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -79,8 +81,8 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool hasChanged = false;
-    QList<Result> cachedResults;
+    bool mHasChanged = false;
+    QList<Result> mCachedResults;
 
 
     void showEvent(QShowEvent *event);

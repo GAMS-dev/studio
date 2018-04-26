@@ -566,6 +566,11 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
+void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
+{
+    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -2287,6 +2292,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
     edit = FileContext::toAbstractEdit(mEditor);
@@ -2294,7 +2300,9 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
+    window->searchWidget()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 
