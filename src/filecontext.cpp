@@ -142,11 +142,12 @@ void FileContext::setLocation(const QString& _location)
 
 QIcon FileContext::icon()
 {
+    QString runMark = (location() == parentEntry()->runnableGms()) ? "-run" : "";
     if (mMetrics.fileType() == FileType::Gms)
-        return QIcon(":/img/gams-w");
+        return QIcon(":/img/gams-w"+runMark);
     if (mMetrics.fileType() == FileType::Gdx)
         return QIcon(":/img/database");
-    return QIcon(":/img/file-alt");
+    return QIcon(":/img/file-alt"+runMark);
 }
 
 void FileContext::addEditor(QWidget* edit)
