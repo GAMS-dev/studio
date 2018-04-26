@@ -304,6 +304,9 @@ int CodeEditor::textCursorColumn(QPoint mousePos)
 
 void CodeEditor::mousePressEvent(QMouseEvent* e)
 {
+    this->setContextMenuPolicy(Qt::DefaultContextMenu);
+    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
+        this->setContextMenuPolicy(Qt::PreventContextMenu);
     if (e->modifiers() & Qt::AltModifier) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
