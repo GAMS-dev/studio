@@ -57,6 +57,12 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
+FileGroupContext* FileRepository::findGroup(const QString &fileName)
+{
+    FileSystemContext* context = findContext(fileName);
+    return context->parentEntry();
+}
+
 FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
 {
     FileGroupContext *group = fileGroup ? fileGroup : mTreeModel->rootContext();

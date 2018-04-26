@@ -87,6 +87,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     mDockHelpView->hide();
 
     createRunAndCommandLineWidgets();
@@ -110,6 +111,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
+    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
+    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -303,23 +306,23 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-void MainWindow::on_actionOutput_View_toggled(bool checked)
+void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockLogView, checked);
 }
 
-void MainWindow::on_actionProject_View_toggled(bool checked)
+void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_toggled(bool checked)
+void MainWindow::on_actionOption_View_triggered(bool checked)
 {
     dockWidgetShow(mDockOptionView, checked);
     if(!checked) mDockOptionView->setFloating(false);
 }
 
-void MainWindow::on_actionHelp_View_toggled(bool checked)
+void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
     dockWidgetShow(mDockHelpView, checked);
 }
@@ -528,6 +531,26 @@ void MainWindow::closeHelpView()
 {
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::outputViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOutput_View->setChecked(visibility || tabifiedDockWidgets(ui->dockLogView).count());
+}
+
+void MainWindow::projectViewVisibiltyChanged(bool visibility)
+{
+    ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
+}
+
+void MainWindow::optionViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(mDockOptionView).count());
+}
+
+void MainWindow::helpViewVisibilityChanged(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(mDockHelpView).count());
 }
 
 void MainWindow::updateEditorPos()
@@ -904,7 +927,7 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    FileGroupContext* groupContext = mFileRepo.ensureGroup(process->inputFile());
+    FileGroupContext* groupContext = mFileRepo.findGroup(process->inputFile());
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupContext && fileInfo.exists()) {
@@ -934,7 +957,14 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     Q_UNUSED(process);
-    openFileContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    FileContext *fc = nullptr;
+    mFileRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
+    if (!fc)
+        fc = addContext(mLibProcess->targetDir(), mLibProcess->inputFile());
+    if (fc && !fc->editors().isEmpty()) {
+        fc->load(fc->codecMib());
+    }
+    openFileContext(fc);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -990,7 +1020,8 @@ void MainWindow::on_actionAbout_triggered()
     about += "<br/><br/><b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
-    about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
+    GamsProcess gproc;
+    about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
     QMessageBox::about(this, "About GAMS Studio", about);
@@ -1080,6 +1111,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
     mDockOptionView->setWindowTitle("Option");
     mDockOptionView->setFloating(false);
+    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     QWidget* optionWidget = new QWidget;
     QVBoxLayout* widgetVLayout = new QVBoxLayout;
@@ -1251,6 +1283,10 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::renameToBackup(QFile *file)
 {
+    FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
+    FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+    if (fc) fc->unwatch();
+
     int suffix = 1;
     QString filename = file->fileName();
     if(!file->rename(filename + ".bak")) {
@@ -1517,8 +1553,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 {
     if (show) {
-        if (tabifiedDockWidgets(dw).count()) dw->raise();
-        else dw->show();
+        dw->setVisible(show);
+        dw->raise();
     } else {
         dw->hide();
     }
@@ -2260,7 +2296,6 @@ void MainWindow::toggleLogDebug()
         }
     }
 }
-
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {

@@ -31,6 +31,13 @@
 namespace gams {
 namespace studio {
 
+// TODO(AF)
+// - a file which is in different groups
+// - naming and documentation of functions
+// - function to find a group for a GAMSProcess
+// - review class dependencies of FileRepository
+// - review function argument, i.e. const strings
+
 ///
 /// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
@@ -86,6 +93,7 @@ public:
     void dump(FileSystemContext* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
     FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
+    FileGroupContext* findGroup(const QString &fileName);
     QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QWidget* edit);

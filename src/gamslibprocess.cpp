@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslibprocess.h"
+#include "gamspaths.h"
 
 #include <QDebug>
 #include <QDir>
@@ -26,19 +27,9 @@ namespace gams {
 namespace studio {
 
 GAMSLibProcess::GAMSLibProcess(QObject *parent)
-    : AbstractProcess(parent)
+    : AbstractProcess("gamslib", parent)
 {
 
-}
-
-QString GAMSLibProcess::app()
-{
-    return mApp;
-}
-
-QString GAMSLibProcess::nativeAppPath()
-{
-    return AbstractProcess::nativeAppPath(mSystemDir, mApp);
 }
 
 void GAMSLibProcess::setTargetDir(const QString &targetDir)

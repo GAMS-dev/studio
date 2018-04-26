@@ -448,6 +448,15 @@ void FileContext::addFileWatcherForGdx()
     }
 }
 
+void FileContext::unwatch()
+{
+    if (mWatcher) {
+        mWatcher->removePath(location());
+        mWatcher->deleteLater();
+        mWatcher = nullptr;
+    }
+}
+
 QString FileContext::tooltip()
 {
     return location();
