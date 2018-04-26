@@ -370,6 +370,7 @@ void SearchWidget::findNext(SearchDirection direction)
 void SearchWidget::focusSearchField()
 {
     ui->combo_search->setFocus();
+    ui->combo_search->lineEdit()->selectAll();
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
