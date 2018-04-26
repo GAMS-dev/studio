@@ -601,7 +601,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -634,7 +634,7 @@ void MainWindow::on_actionSave_As_triggered()
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
-                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 tr("GAMS code (*.gms *.inc);;"
                                                  "Text files (*.txt);;"
                                                  "All files (*.*)"));
     if (!filePath.isEmpty()) {

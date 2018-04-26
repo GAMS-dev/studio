@@ -75,7 +75,9 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
 
 void ProjectContextMenu::onCloseFile()
 {
-    FileContext *file = (mNode->type() == FileSystemContext::File) ? static_cast<FileContext*>(mNode) : nullptr;
+    FileContext *file = (mNode->type() == FileSystemContext::File)
+                        ? static_cast<FileContext*>(mNode) : nullptr;
+
     if (file) emit closeFile(file);
 }
 
@@ -87,14 +89,15 @@ void ProjectContextMenu::onAddExisitingFile()
     QString filePath = QFileDialog::getOpenFileName(mParent,
                                                     "Add existing file",
                                                     sourcePath,
-                                                    tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                    tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
-                                                                              : mNode->parentEntry();
+    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup)
+                              ? static_cast<FileGroupContext*>(mNode) : mNode->parentEntry();
+
     emit addExistingFile(group, filePath);
 }
 
@@ -106,7 +109,7 @@ void ProjectContextMenu::onAddNewFile()
     QString filePath = QFileDialog::getSaveFileName(mParent,
                                                     "Create new file...",
                                                     sourcePath,
-                                                    tr("GAMS code (*.gms *.inc );;"
+                                                    tr("GAMS code (*.gms *.inc);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
