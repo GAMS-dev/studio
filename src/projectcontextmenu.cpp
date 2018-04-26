@@ -29,10 +29,10 @@ ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
 
-    mActions.insert(1, addSeparator());
+//    mActions.insert(1, addSeparator());
 
-    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
-    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
+//    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
+//    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
     mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onChangeMainFile));
 
     mActions.insert(5, addSeparator());
@@ -53,7 +53,6 @@ ProjectContextMenu::ProjectContextMenu()
 void ProjectContextMenu::setNode(FileSystemContext* context)
 {
     mNode = context;
-//    mActions[0]->setVisible(true);
 
     bool isGmsFile = false;
     if (mNode->type() == FileSystemContext::File) {
@@ -61,13 +60,10 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
         isGmsFile = (fc->metrics().fileType() == FileType::Gms);
     }
 
-    mActions[2]->setVisible(isGmsFile);
-    mActions[3]->setVisible(isGmsFile);
+//    mActions[2]->setVisible(isGmsFile);
+//    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
     mActions[5]->setVisible(isGmsFile);
-
-    // TODO: enable
-    mActions[3]->setEnabled(false);
 
     // all files
     mActions[10]->setVisible(mNode->type() == FileSystemContext::File);
