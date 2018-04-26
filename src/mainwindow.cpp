@@ -953,7 +953,14 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     Q_UNUSED(process);
-    openFileContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    FileContext *fc = nullptr;
+    mFileRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
+    if (!fc)
+        fc = addContext(mLibProcess->targetDir(), mLibProcess->inputFile());
+    if (fc && !fc->editors().isEmpty()) {
+        fc->load(fc->codecMib());
+    }
+    openFileContext(fc);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -1272,6 +1279,10 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::renameToBackup(QFile *file)
 {
+    FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
+    FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+    if (fc) fc->unwatch();
+
     int suffix = 1;
     QString filename = file->fileName();
     if(!file->rename(filename + ".bak")) {
