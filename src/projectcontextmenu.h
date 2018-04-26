@@ -43,7 +43,7 @@ signals:
     void closeGroup(FileGroupContext* group);
     void runGroup(FileGroupContext* group);
     void runFile(FileContext *fc);
-    void changeMainFile(FileContext *fc);
+    void setMainFile(FileContext *fc);
     void closeFile(FileContext* fc);
     void addExistingFile(FileGroupContext* group, const QString& file);
     void getSourcePath(QString& source);
@@ -54,7 +54,7 @@ private slots:
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();
-    void onChangeMainFile();
+    void onSetMainFile();
 
 private:
     void onOpenFileLoc();

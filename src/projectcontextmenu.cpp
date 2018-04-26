@@ -33,7 +33,7 @@ ProjectContextMenu::ProjectContextMenu()
 
 //    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
 //    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
-    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onChangeMainFile));
+    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
     mActions.insert(5, addSeparator());
 
@@ -147,10 +147,10 @@ void ProjectContextMenu::onRunFile()
     emit runFile(file);
 }
 
-void ProjectContextMenu::onChangeMainFile()
+void ProjectContextMenu::onSetMainFile()
 {
     FileContext *file = static_cast<FileContext*>(mNode);
-    emit changeMainFile(file);
+    emit setMainFile(file);
 }
 
 void ProjectContextMenu::onOpenFileLoc()

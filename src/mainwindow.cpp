@@ -110,7 +110,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
-    connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
 
@@ -1041,7 +1041,6 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QJsonObject json;
     QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -1537,8 +1536,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 {
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
-    // set default lst file name in case outout option changed back to default
-    fgc->setLstFileName(fgc->location() + "/" + fgc->name() + ".lst");
+    // set default lst file name in case output option changed back to default
+    fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
@@ -1686,7 +1685,7 @@ void MainWindow::on_runGmsFile(FileContext *fc)
     execute("", fc);
 }
 
-void MainWindow::on_changeMainGms(FileContext *fc)
+void MainWindow::on_setMainGms(FileContext *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
 }

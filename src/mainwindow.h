@@ -135,7 +135,7 @@ public slots:
     void updateEditorMode();
     void updateEditorBlockCount();
     void on_runGmsFile(FileContext *fc);
-    void on_changeMainGms(FileContext *fc);
+    void on_setMainGms(FileContext *fc);
     void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
 
 private slots:
