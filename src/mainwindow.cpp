@@ -1282,6 +1282,8 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
+    if (!QFileInfo(filePath).exists()) return;
+
     if (filePath.startsWith("[")) return; // invalid
 
     if (history()->lastOpenedFiles.size() >= mSettings->historySize())
