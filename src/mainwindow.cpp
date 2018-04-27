@@ -749,8 +749,8 @@ void MainWindow::activeTabChanged(int index)
     }
     mCommandLineOption->setCurrentIndex(-1);
     mCommandLineOption->setCurrentContext("");
-    mDockOptionView->setEnabled( false );
-    setRunActionsEnabled( false );
+    mCommandWidget->setEnabled(false);
+    mOptionEditor->setEnabled(false);
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor());
@@ -771,7 +771,6 @@ void MainWindow::activeTabChanged(int index)
             if (!edit->isReadOnly()) {
                 FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
                 if (group) {
-                    mDockOptionView->setEnabled(true);
                     mCommandLineOption->clear();
                     QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
                     foreach(QString str, option) {
@@ -781,6 +780,8 @@ void MainWindow::activeTabChanged(int index)
                     mCommandLineOption->setEnabled(true);
                     mCommandLineOption->setCurrentContext(fc->location());
                 }
+                mCommandWidget->setEnabled(true);
+                mOptionEditor->setEnabled(true);
                 updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
