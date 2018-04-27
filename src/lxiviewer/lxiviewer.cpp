@@ -103,6 +103,7 @@ void LxiViewer::jumpToTreeItem()
 
     int lineNr  = mCodeEditor->textCursor().block().blockNumber();
     LxiTreeModel* lxiTreeModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
+    if (!lxiTreeModel) return;
     int itemIdx = 0;
 
     if (lineNr >= lxiTreeModel->lineNrs().first()) {
