@@ -78,7 +78,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -111,7 +110,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
-    connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
 
@@ -590,6 +589,11 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
+void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
+{
+    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -625,7 +629,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -658,7 +662,7 @@ void MainWindow::on_actionSave_As_triggered()
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
-                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 tr("GAMS code (*.gms *.inc);;"
                                                  "Text files (*.txt);;"
                                                  "All files (*.*)"));
     if (!filePath.isEmpty()) {
@@ -1038,7 +1042,6 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QJsonObject json;
     QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -1305,12 +1308,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true, true);
-}
-
-void MainWindow::openFileSkipSettings(const QString &filePath)
-{
-    openFilePath(filePath, nullptr, true, false);
+    openFilePath(filePath, nullptr, true, -1);
 }
 
 HistoryData *MainWindow::history()
@@ -1320,6 +1318,8 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
+    if (!QFileInfo(filePath).exists()) return;
+
     if (filePath.startsWith("[")) return; // invalid
 
     if (history()->lastOpenedFiles.size() >= mSettings->historySize())
@@ -1537,8 +1537,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 {
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
-    // set default lst file name in case outout option changed back to default
-    fgc->setLstFileName(fgc->location() + "/" + fgc->name() + ".lst");
+    // set default lst file name in case output option changed back to default
+    fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
@@ -1688,7 +1688,7 @@ void MainWindow::on_runGmsFile(FileContext *fc)
     execute("", fc);
 }
 
-void MainWindow::on_changeMainGms(FileContext *fc)
+void MainWindow::on_setMainGms(FileContext *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
 }
@@ -2331,6 +2331,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
     edit = FileContext::toAbstractEdit(mEditor);
@@ -2338,7 +2339,9 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
+    window->searchWidget()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 

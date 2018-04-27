@@ -29,11 +29,11 @@ ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
 
-    mActions.insert(1, addSeparator());
+//    mActions.insert(1, addSeparator());
 
-    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
-    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
-    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onChangeMainFile));
+//    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
+//    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
+    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
     mActions.insert(5, addSeparator());
 
@@ -53,7 +53,6 @@ ProjectContextMenu::ProjectContextMenu()
 void ProjectContextMenu::setNode(FileSystemContext* context)
 {
     mNode = context;
-//    mActions[0]->setVisible(true);
 
     bool isGmsFile = false;
     if (mNode->type() == FileSystemContext::File) {
@@ -61,13 +60,10 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
         isGmsFile = (fc->metrics().fileType() == FileType::Gms);
     }
 
-    mActions[2]->setVisible(isGmsFile);
-    mActions[3]->setVisible(isGmsFile);
+//    mActions[2]->setVisible(isGmsFile);
+//    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
     mActions[5]->setVisible(isGmsFile);
-
-    // TODO: enable
-    mActions[3]->setEnabled(false);
 
     // all files
     mActions[10]->setVisible(mNode->type() == FileSystemContext::File);
@@ -75,7 +71,9 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
 
 void ProjectContextMenu::onCloseFile()
 {
-    FileContext *file = (mNode->type() == FileSystemContext::File) ? static_cast<FileContext*>(mNode) : nullptr;
+    FileContext *file = (mNode->type() == FileSystemContext::File)
+                        ? static_cast<FileContext*>(mNode) : nullptr;
+
     if (file) emit closeFile(file);
 }
 
@@ -87,14 +85,15 @@ void ProjectContextMenu::onAddExisitingFile()
     QString filePath = QFileDialog::getOpenFileName(mParent,
                                                     "Add existing file",
                                                     sourcePath,
-                                                    tr("GAMS code (*.gms *.inc *.gdx);;"
+                                                    tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
-                                                                              : mNode->parentEntry();
+    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup)
+                              ? static_cast<FileGroupContext*>(mNode) : mNode->parentEntry();
+
     emit addExistingFile(group, filePath);
 }
 
@@ -106,7 +105,7 @@ void ProjectContextMenu::onAddNewFile()
     QString filePath = QFileDialog::getSaveFileName(mParent,
                                                     "Create new file...",
                                                     sourcePath,
-                                                    tr("GAMS code (*.gms *.inc );;"
+                                                    tr("GAMS code (*.gms *.inc);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
@@ -148,10 +147,10 @@ void ProjectContextMenu::onRunFile()
     emit runFile(file);
 }
 
-void ProjectContextMenu::onChangeMainFile()
+void ProjectContextMenu::onSetMainFile()
 {
     FileContext *file = static_cast<FileContext*>(mNode);
-    emit changeMainFile(file);
+    emit setMainFile(file);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
