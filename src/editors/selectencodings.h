@@ -15,7 +15,7 @@ class SelectEncodings : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = 0);
+    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = nullptr);
     ~SelectEncodings();
     QList<int> selectedMibs();
 

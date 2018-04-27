@@ -51,7 +51,7 @@ class CodeEditor : public AbstractEditor
     Q_OBJECT
 
 public:
-    CodeEditor(StudioSettings *settings, QWidget *parent = 0);
+    CodeEditor(StudioSettings *settings, QWidget *parent = nullptr);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -109,6 +109,8 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+
+    static int findAlphaNum(const QString &text, int start, bool back);
 
 private:
     class BlockEdit

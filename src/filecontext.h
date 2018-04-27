@@ -138,11 +138,12 @@ public:
     void removeTextMarks(TextMark::Type tmType, bool rehighlight = true);
     void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
+    void unwatch();
     
     TextMarkList* marks() const { return mMarks; }
     void unbindMarks() { mMarks = nullptr; }
 
-    QString tooltip();
+    QString tooltip() override;
 
 signals:
     /// Signal is emitted when the file has been modified externally.

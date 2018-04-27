@@ -142,11 +142,12 @@ void FileContext::setLocation(const QString& _location)
 
 QIcon FileContext::icon()
 {
+    QString runMark = (location() == parentEntry()->runnableGms()) ? "-run" : "";
     if (mMetrics.fileType() == FileType::Gms)
-        return QIcon(":/img/gams-w");
+        return QIcon(":/img/gams-w"+runMark);
     if (mMetrics.fileType() == FileType::Gdx)
         return QIcon(":/img/database");
-    return QIcon(":/img/file-alt");
+    return QIcon(":/img/file-alt"+runMark);
 }
 
 void FileContext::addEditor(QWidget* edit)
@@ -445,6 +446,15 @@ void FileContext::addFileWatcherForGdx()
         mWatcher = new QFileSystemWatcher(this);
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
         mWatcher->addPath(location());
+    }
+}
+
+void FileContext::unwatch()
+{
+    if (mWatcher) {
+        mWatcher->removePath(location());
+        mWatcher->deleteLater();
+        mWatcher = nullptr;
     }
 }
 

@@ -20,6 +20,8 @@
 #include "bookmarkdialog.h"
 #include "helpview.h"
 
+#include <QStandardItemModel>
+
 namespace gams {
 namespace studio {
 

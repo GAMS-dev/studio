@@ -21,7 +21,7 @@
 #define MAINWINDOW_H
 
 #include <memory>
-#include <QtWidgets>
+#include <QMainWindow>
 
 #include "editors/codeeditor.h"
 #include "filerepository.h"
@@ -86,13 +86,12 @@ public:
     /// \param parent The parent widget.
     /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
-    explicit MainWindow(StudioSettings *settings, QWidget *parent = 0);
+    explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
-    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
 
 
@@ -136,7 +135,8 @@ public slots:
     void updateEditorMode();
     void updateEditorBlockCount();
     void on_runGmsFile(FileContext *fc);
-    void on_changeMainGms(FileContext *fc);
+    void on_setMainGms(FileContext *fc);
+    void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -162,6 +162,10 @@ private slots:
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
+    void outputViewVisibiltyChanged(bool visibility);
+    void projectViewVisibiltyChanged(bool visibility);
+    void optionViewVisibiltyChanged(bool visibility);
+    void helpViewVisibilityChanged(bool visibility);
 
 private slots:
     // File
@@ -187,16 +191,16 @@ private slots:
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
-    void on_actionOutput_View_toggled(bool checked);
-    void on_actionOption_View_toggled(bool checked);
-    void on_actionHelp_View_toggled(bool checked);
+    void on_actionOutput_View_triggered(bool checked);
+    void on_actionProject_View_triggered(bool checked);
+    void on_actionOption_View_triggered(bool checked);
+    void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTab_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
-    void on_actionProject_View_toggled(bool checked);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
     void on_runWithChangedOptions();

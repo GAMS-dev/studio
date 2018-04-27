@@ -20,9 +20,11 @@
 #ifndef BOOKMARKDIALOG_H
 #define BOOKMARKDIALOG_H
 
-#include <QtWidgets>
+#include <QDialog>
 
 #include "ui_bookmarkdialog.h"
+
+class QStandardItemModel;
 
 namespace gams {
 namespace studio {
@@ -30,8 +32,9 @@ namespace studio {
 class BookmarkDialog : public QDialog
 {
     Q_OBJECT
+
 public:
-    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = 0);
+    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = nullptr);
     ~BookmarkDialog();
 
 protected:

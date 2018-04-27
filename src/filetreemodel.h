@@ -20,7 +20,7 @@
 #ifndef FILETREEMODEL_H
 #define FILETREEMODEL_H
 
-#include <QtWidgets>
+#include <QAbstractItemModel>
 #include "filegroupcontext.h"
 
 namespace gams {

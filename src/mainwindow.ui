@@ -24,7 +24,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icons/icons.qrc">
-    <normaloff>:/img/gams-w24</normaloff>:/img/gams-w24</iconset>
+    <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -210,27 +210,6 @@
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="windowTitle">
-    <string>Toolbar</string>
-   </property>
-   <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonFollowStyle</enum>
-   </property>
-   <property name="floatable">
-    <bool>false</bool>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionGAMS_Library"/>
-  </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="mouseTracking">
     <bool>false</bool>
@@ -290,7 +269,7 @@
     <string>Output</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>8</number>
+    <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
     <layout class="QHBoxLayout" name="horizontalLayout_3">

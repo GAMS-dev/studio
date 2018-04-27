@@ -53,19 +53,15 @@ void WelcomePage::historyChanged(HistoryData *history)
     for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
         QFileInfo file(history->lastOpenedFiles.at(i));
         if (history->lastOpenedFiles.at(i) == "") continue;
+
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                   + "<small>" + file.filePath() + "</small>", file.filePath(), this);
             tmpLabel->setToolTip(file.filePath());
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
-        }/* else {
-            tmpLabel = new WpLabel(file.fileName() + "&nbsp;<b>(File missing!)</b><br/>"
-                                   "<small>File was deleted or moved.</small>", "", this);
-            tmpLabel->setInactive(true);
-            tmpLabel->setToolTip("File has been deleted or moved");
-        }*/
-        ui->layout_lastFiles->addWidget(tmpLabel);
-        j++;
+            ui->layout_lastFiles->addWidget(tmpLabel);
+            j++;
+        }
     }
     if (j == 0) {
         tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"

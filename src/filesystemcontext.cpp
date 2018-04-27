@@ -118,7 +118,7 @@ void FileSystemContext::setLocation(const QString& location)
             newFile.open(QIODevice::WriteOnly);
             newFile.close();
         }
-        mLocation = fi.canonicalFilePath();
+        mLocation = fi.absoluteFilePath();
         setName(fi.fileName());
     }
 }

@@ -204,8 +204,8 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
-    mSubStates << SyntaxState::ReservedBody << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::Semicolon << SyntaxState::ReservedBody << SyntaxState::Directive
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
 SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)

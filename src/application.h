@@ -69,7 +69,7 @@ private:
 
 private:
     CommandLineParser mCmdParser;
-    std::unique_ptr<MainWindow> mMainWindow = nullptr;
+    std::unique_ptr<MainWindow> mMainWindow;
 };
 
 } // namespace studio

@@ -27,7 +27,6 @@
 #include "exception.h"
 #include "treeitemdelegate.h"
 #include "gamspaths.h"
-#include "newdialog.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
@@ -79,7 +78,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->mainToolBar->setIconSize(QSize(iconSize,iconSize));
     ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -89,6 +87,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mDockHelpView = new HelpView(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
+    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     mDockHelpView->hide();
 
     createRunAndCommandLineWidgets();
@@ -104,18 +103,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
     connect(&mFileRepo, &FileRepository::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mFileRepo, &FileRepository::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
-    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::setOutputViewVisibility);
-    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::setProjectViewVisibility);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
-    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::setOptionEditorVisibility);
-    connect(mDockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::setHelpViewVisibility);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
-    connect(&mProjectContextMenu, &ProjectContextMenu::changeMainFile, this, &MainWindow::on_changeMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
+    connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
+    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -309,23 +306,23 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-void MainWindow::on_actionOutput_View_toggled(bool checked)
+void MainWindow::on_actionOutput_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockLogView, checked);
 }
 
-void MainWindow::on_actionProject_View_toggled(bool checked)
+void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_toggled(bool checked)
+void MainWindow::on_actionOption_View_triggered(bool checked)
 {
     dockWidgetShow(mDockOptionView, checked);
     if(!checked) mDockOptionView->setFloating(false);
 }
 
-void MainWindow::on_actionHelp_View_toggled(bool checked)
+void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
     dockWidgetShow(mDockHelpView, checked);
 }
@@ -517,10 +514,12 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
 void MainWindow::toggleOptionDefinition(bool checked)
 {
     if (checked) {
+        updateRunState();
         mCommandLineOption->lineEdit()->setEnabled( false );
         mOptionEditor->show();
         emit mOptionEditor->optionTableModelChanged(mCommandLineOption->lineEdit()->text());
     } else {
+        updateRunState();
         mCommandLineOption->lineEdit()->setEnabled( true );
         mOptionEditor->hide();
         mDockOptionView->widget()->resize( mCommandWidget->size() );
@@ -532,6 +531,26 @@ void MainWindow::closeHelpView()
 {
     if (mDockHelpView)
         mDockHelpView->close();
+}
+
+void MainWindow::outputViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOutput_View->setChecked(visibility || tabifiedDockWidgets(ui->dockLogView).count());
+}
+
+void MainWindow::projectViewVisibiltyChanged(bool visibility)
+{
+    ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
+}
+
+void MainWindow::optionViewVisibiltyChanged(bool visibility)
+{
+    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(mDockOptionView).count());
+}
+
+void MainWindow::helpViewVisibilityChanged(bool visibility)
+{
+    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(mDockHelpView).count());
 }
 
 void MainWindow::updateEditorPos()
@@ -570,6 +589,11 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
+void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
+{
+    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
@@ -604,9 +628,12 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,tr("GAMS code (*.gms *.inc *.gdx);;"
-                                                            "Text files (*.txt);;"
-                                                            "All files (*.*)"));
+    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
+                                                          "Text files (*.txt);;"
+                                                          "All files (*.*)"),
+                                                       nullptr,
+                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     foreach (QString item, fNames) {
         addContext("", item);
@@ -635,7 +662,7 @@ void MainWindow::on_actionSave_As_triggered()
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
-                                                 tr("GAMS code (*.gms *.inc );;"
+                                                 tr("GAMS code (*.gms *.inc);;"
                                                  "Text files (*.txt);;"
                                                  "All files (*.*)"));
     if (!filePath.isEmpty()) {
@@ -726,8 +753,8 @@ void MainWindow::activeTabChanged(int index)
     }
     mCommandLineOption->setCurrentIndex(-1);
     mCommandLineOption->setCurrentContext("");
-    mDockOptionView->setEnabled( false );
-    setRunActionsEnabled( false );
+    mCommandWidget->setEnabled(false);
+    mOptionEditor->setEnabled(false);
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor());
@@ -748,7 +775,6 @@ void MainWindow::activeTabChanged(int index)
             if (!edit->isReadOnly()) {
                 FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
                 if (group) {
-                    mDockOptionView->setEnabled(true);
                     mCommandLineOption->clear();
                     QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
                     foreach(QString str, option) {
@@ -758,7 +784,9 @@ void MainWindow::activeTabChanged(int index)
                     mCommandLineOption->setEnabled(true);
                     mCommandLineOption->setCurrentContext(fc->location());
                 }
-                setRunActionsEnabled(true);
+                mCommandWidget->setEnabled(true);
+                mOptionEditor->setEnabled(true);
+                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -900,13 +928,12 @@ void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    FileGroupContext* groupContext = process ? process->context() : nullptr;
+    FileGroupContext* groupContext = mFileRepo.findGroup(process->inputFile());
     // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupContext && fileInfo.exists()) {
-        QString lstFile = process->lstFile();
+        QString lstFile = groupContext->lstFileName();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
-
         bool doFocus = groupContext == mRecent.group;
 
         if (mSettings->jumpToError())
@@ -931,7 +958,14 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     Q_UNUSED(process);
-    openFileContext(addContext(mLibProcess->targetDir(), mLibProcess->inputFile()));
+    FileContext *fc = nullptr;
+    mFileRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
+    if (!fc)
+        fc = addContext(mLibProcess->targetDir(), mLibProcess->inputFile());
+    if (fc && !fc->editors().isEmpty()) {
+        fc->load(fc->codecMib());
+    }
+    openFileContext(fc);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -987,7 +1021,8 @@ void MainWindow::on_actionAbout_triggered()
     about += "<br/><br/><b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
-    about += GamsProcess::aboutGAMS().replace("\n", "<br/>");
+    GamsProcess gproc;
+    about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
     QMessageBox::about(this, "About GAMS Studio", about);
@@ -1007,7 +1042,6 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QJsonObject json;
     QWidget* edit = ui->mainTab->widget(index);
     FileContext* fc = mFileRepo.fileContext(edit);
     if (!fc) {
@@ -1077,6 +1111,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
     mDockOptionView->setWindowTitle("Option");
     mDockOptionView->setFloating(false);
+    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     QWidget* optionWidget = new QWidget;
     QVBoxLayout* widgetVLayout = new QVBoxLayout;
@@ -1124,8 +1159,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     commandHLayout->addWidget(mCommandLineOption);
 
     QPushButton* helpButton = new QPushButton(this);
-    QPixmap helpPixmap(":/img/question");
-    QIcon helpButtonIcon(helpPixmap);
+    QIcon helpButtonIcon(":/img/question");
     helpButton->setIcon(helpButtonIcon);
     helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
     helpButton->setSizePolicy(buttonSizePolicy);
@@ -1249,6 +1283,10 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::renameToBackup(QFile *file)
 {
+    FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
+    FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+    if (fc) fc->unwatch();
+
     int suffix = 1;
     QString filename = file->fileName();
     if(!file->rename(filename + ".bak")) {
@@ -1270,12 +1308,7 @@ QStringList MainWindow::openedFiles()
 
 void MainWindow::openFile(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true, true);
-}
-
-void MainWindow::openFileSkipSettings(const QString &filePath)
-{
-    openFilePath(filePath, nullptr, true, false);
+    openFilePath(filePath, nullptr, true, -1);
 }
 
 HistoryData *MainWindow::history()
@@ -1285,10 +1318,13 @@ HistoryData *MainWindow::history()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
+    if (!QFileInfo(filePath).exists()) return;
+
     if (filePath.startsWith("[")) return; // invalid
 
     if (history()->lastOpenedFiles.size() >= mSettings->historySize())
         history()->lastOpenedFiles.removeLast();
+
     if (!history()->lastOpenedFiles.contains(filePath))
         history()->lastOpenedFiles.insert(0, filePath);
     else
@@ -1501,8 +1537,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 {
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
-    // set default lst file name in case outout option changed back to default
-    fgc->setLstFileName(fgc->location() + "/" + fgc->name() + ".lst");
+    // set default lst file name in case output option changed back to default
+    fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
@@ -1517,8 +1553,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 {
     if (show) {
-        if (tabifiedDockWidgets(dw).count()) dw->raise();
-        else dw->show();
+        dw->setVisible(show);
+        dw->raise();
     } else {
         dw->hide();
     }
@@ -1577,7 +1613,9 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     } else {
         logProc->clearLog();
     }
-
+    if (!ui->logTab->children().contains(logProc->editors().first())) {
+        ui->logTab->addTab(logProc->editors().first(), logProc->caption());
+    }
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
@@ -1594,7 +1632,6 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     }
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
-    process->setLstFile(lstFileName);
     process->setCommandLineStr(commandLineStr);
     process->execute();
 
@@ -1628,6 +1665,9 @@ void MainWindow::updateRunState()
     setRunActionsEnabled(state != QProcess::Running);
     interruptToolButton->setEnabled(state == QProcess::Running);
     interruptToolButton->menu()->setEnabled(state == QProcess::Running);
+    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
+    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
+    mOptionEditor->setEnabled(state != QProcess::Running);
 }
 
 void MainWindow::on_runWithChangedOptions()
@@ -1648,7 +1688,7 @@ void MainWindow::on_runGmsFile(FileContext *fc)
     execute("", fc);
 }
 
-void MainWindow::on_changeMainGms(FileContext *fc)
+void MainWindow::on_setMainGms(FileContext *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
 }
@@ -1782,12 +1822,13 @@ void MainWindow::closeFile(FileContext* file)
     if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
         ui->projectView->setCurrentIndex(QModelIndex());
 
-        if (file->parentEntry()->childCount() > 1) {
-            fileClosed(file->id());
-            mFileRepo.removeFile(file);
-        } else {
-            closeGroup(file->parentEntry());
-        }
+        FileGroupContext *parent = file->parentEntry();
+
+        fileClosed(file->id());
+        mFileRepo.removeFile(file);
+
+        if (parent->childCount() == 0)
+            closeGroup(parent);
 
         mSettings->saveSettings(this);
     }
@@ -1813,7 +1854,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mFileRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
-    } else if (fc) {
+    } else {
         openFileContext(fc, focus, codecMip);
     }
     if (!fc) {
@@ -1974,13 +2015,10 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
-                DEB() << "trigger load with codec " << mib;
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, nullptr, true, mib);
                     tabs << location;
                 }
-//                DEB() << "trigger load with codec " << mib;
-                if (QFileInfo(location).exists()) openFilePath(location, nullptr, true, mib);
                 QApplication::processEvents();
             }
         }
@@ -2261,7 +2299,6 @@ void MainWindow::toggleLogDebug()
     }
 }
 
-
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
     if (mClosedTabs.isEmpty())
@@ -2294,6 +2331,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
     edit = FileContext::toAbstractEdit(mEditor);
@@ -2301,7 +2339,9 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
+    window->searchWidget()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 

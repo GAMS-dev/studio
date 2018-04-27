@@ -77,7 +77,6 @@ SOURCES += \
     mainwindow.cpp \
     treeitemdelegate.cpp \
     exception.cpp \
-    newdialog.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/libraryitem.cpp \
@@ -133,7 +132,6 @@ SOURCES += \
     gotowidget.cpp \
     editors/logeditor.cpp \
     editors/abstracteditor.cpp \
-    tool.cpp \
     editors/selectencodings.cpp \
     updatedialog.cpp \
     lxiviewer/lxitreeitem.cpp \
@@ -155,7 +153,6 @@ HEADERS += \
     exception.h \
     treeitemdelegate.h \
     version.h \
-    newdialog.h \
     modeldialog/modeldialog.h   \
     modeldialog/glbparser.h     \
     modeldialog/libraryitem.h   \
@@ -214,7 +211,6 @@ HEADERS += \
     gotowidget.h \
     editors/logeditor.h \
     editors/abstracteditor.h \
-    tool.h \
     editors/selectencodings.h \
     updatedialog.h \
     lxiviewer/lxitreeitem.h \

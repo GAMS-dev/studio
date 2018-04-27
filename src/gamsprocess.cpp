@@ -18,12 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsprocess.h"
-#include "gamspaths.h"
-//#include "filegroupcontext.h"
-//#include "logcontext.h"
+
 #include <QStandardPaths>
-#include <QDebug>
-#include <QProcess>
 #include <QDir>
 
 #ifdef _WIN32
@@ -33,21 +29,9 @@
 namespace gams {
 namespace studio {
 
-const QString GamsProcess::App = "gams";
-
 GamsProcess::GamsProcess(QObject *parent)
-    : AbstractProcess(parent)
+    : AbstractProcess("gams", parent)
 {
-}
-
-QString GamsProcess::app()
-{
-    return App;
-}
-
-QString GamsProcess::nativeAppPath()
-{
-    return AbstractProcess::nativeAppPath(mSystemDir, App);
 }
 
 void GamsProcess::setWorkingDir(const QString &workingDir)
@@ -59,21 +43,6 @@ QString GamsProcess::workingDir() const
 {
     return mWorkingDir;
 }
-
-//void GamsProcess::setContext(FileGroupContext *context)
-//{
-//    mContext = context;
-//}
-
-//FileGroupContext* GamsProcess::context()
-//{
-//    return mContext;
-//}
-
-//LogContext*GamsProcess::logContext() const
-//{
-//    return mContext ? mContext->logContext() : nullptr;
-//}
 
 void GamsProcess::execute()
 {
@@ -92,7 +61,7 @@ QString GamsProcess::aboutGAMS()
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     QStringList args({"/??", "lo=3", "curdir=" + tempDir});
-    process.start(AbstractProcess::nativeAppPath(GAMSPaths::systemDir(), App), args);
+    process.start(nativeAppPath(), args);
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();

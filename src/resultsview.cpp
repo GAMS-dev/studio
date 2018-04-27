@@ -62,7 +62,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->searchWidget()->findInFile(jmpFc);
+    mMain->searchWidget()->findInFile(jmpFc, true);
 
     // jump to line
     QTextCursor tc(jmpFc->document());

@@ -32,7 +32,7 @@ class LogEditor : public AbstractEditor
     Q_OBJECT
 
 public:
-    LogEditor(StudioSettings *settings, QWidget *parent = 0);
+    LogEditor(StudioSettings *settings, QWidget *parent = nullptr);
 
 public:
     EditorType type() override;

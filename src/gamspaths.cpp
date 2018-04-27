@@ -96,13 +96,13 @@ QString GAMSPaths::defaultWorkingDir()
 QString GAMSPaths::filePath(const QString &path)
 {
     QFileInfo fi(path);
-    return fi.exists() ? fi.canonicalFilePath() : fi.absoluteFilePath();
+    return fi.absoluteFilePath();
 }
 
 QString GAMSPaths::path(const QString &file)
 {
     QFileInfo fi(file);
-    return fi.exists() ? fi.canonicalPath() : fi.absolutePath();
+    return fi.absoluteFilePath();
 }
 
 }

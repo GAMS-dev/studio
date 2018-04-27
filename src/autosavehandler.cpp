@@ -33,7 +33,6 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
         }
     }
     QJsonObject json;
-    qDebug() << mMainWindow->readTabs(json);
     autsaveFiles << mMainWindow->readTabs(json);
     autsaveFiles.removeDuplicates();
     return autsaveFiles;
@@ -105,7 +104,6 @@ void AutosaveHandler::saveChangedFiles()
                 QFile::remove(autosaveFile);
         }
     }
-    qDebug() << "saved";
 }
 
 

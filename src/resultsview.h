@@ -38,7 +38,7 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList &resultList, MainWindow *parent = 0);
+    explicit ResultsView(SearchResultList &resultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
 

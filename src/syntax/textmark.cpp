@@ -47,7 +47,7 @@ void TextMark::setPosition(int line, int column, int size)
 {
     mLine = line;
     mSize = (size<0) ? -size : size;
-    mColumn = (size<0) ? column+size : column;
+    mColumn = (size<0) ? column-mSize : column;
     updatePos();
 }
 
@@ -97,7 +97,7 @@ QColor TextMark::color()
     if (type() == TextMark::match)
         return Qt::yellow;
 
-    if (!mReference) return Qt::white;
+    if (!mReference) return Qt::darkRed;
     if (mReference->type() == TextMark::error)
         return Qt::darkRed;
     if (mReference->fileKind() == FileType::Lst)

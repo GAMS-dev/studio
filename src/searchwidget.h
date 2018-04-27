@@ -35,7 +35,7 @@ class SearchWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchWidget(MainWindow *parent = 0);
+    explicit SearchWidget(MainWindow *parent = nullptr);
     ~SearchWidget();
 
     bool regex();
@@ -46,7 +46,7 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(FileSystemContext *fsc);
+    QList<Result> findInFile(FileSystemContext *fsc, bool skipFilters = false);
 
     enum SearchDirection {
         Forward = 0,
@@ -57,12 +57,14 @@ public:
     void updateReplaceActionAvailability();
 
     void focusSearchField();
-    
+
     void clearSearch();
-    
+    void invalidateCache();
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
+    void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -79,8 +81,8 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool hasChanged = false;
-    QList<Result> cachedResults;
+    bool mHasChanged = false;
+    QList<Result> mCachedResults;
 
 
     void showEvent(QShowEvent *event);
@@ -91,7 +93,7 @@ private:
     QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
-    void updateMatchAmount(int hits, int current = 0, bool clear = false);
+    void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
     void insertHistory();
 
@@ -101,7 +103,14 @@ private:
         OpenTabs = 2,
         AllFiles = 3
     };
-    void setSearchStatus();
+
+    enum SearchStatus {
+        Searching = 0,
+        NoResults = 1,
+        Clear = 2
+    };
+
+    void setSearchStatus(SearchStatus status);
 };
 
 }

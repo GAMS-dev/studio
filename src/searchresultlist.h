@@ -20,7 +20,6 @@
 #ifndef SEARCHRESULTLIST_H
 #define SEARCHRESULTLIST_H
 
-#include <QtWidgets>
 #include <QAbstractTableModel>
 
 namespace gams {
@@ -49,7 +48,7 @@ class SearchResultList : public QAbstractTableModel
 public:
     SearchResultList(SearchResultList &searchResultList);
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
-    virtual ~SearchResultList();
+    virtual ~SearchResultList() override;
     QList<Result> resultList();
     void addResult(int locLineNr, int locCol, QString locFile, QString context = "");
     void addResultList(QList<Result> resList);

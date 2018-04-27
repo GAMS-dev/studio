@@ -20,7 +20,6 @@
 #include "syntaxformats.h"
 #include "logger.h"
 #include "syntaxdata.h"
-#include "tool.h"
 #include "exception.h"
 
 namespace gams {
@@ -132,7 +131,7 @@ SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, bool &hasC
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxState::Directive)
 {
-    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w\\.]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
+    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
     // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
     QList<QPair<QString, QString>> data = SyntaxData::directives();
