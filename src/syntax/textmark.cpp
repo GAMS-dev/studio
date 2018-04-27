@@ -47,7 +47,7 @@ void TextMark::setPosition(int line, int column, int size)
 {
     mLine = line;
     mSize = (size<0) ? -size : size;
-    mColumn = (size<0) ? column+size : column;
+    mColumn = (size<0) ? column-mSize : column;
     updatePos();
 }
 
