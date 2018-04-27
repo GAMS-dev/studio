@@ -1612,7 +1612,9 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     } else {
         logProc->clearLog();
     }
-
+    if (!ui->logTab->children().contains(logProc->editors().first())) {
+        ui->logTab->addTab(logProc->editors().first(), logProc->caption());
+    }
     ui->logTab->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);

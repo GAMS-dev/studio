@@ -54,6 +54,7 @@ void LogContext::markOld()
         cur.setCharFormat(newFormat);
         cur.movePosition(QTextCursor::End);
         cur.setBlockCharFormat(oldFormat);
+        document()->setModified(false);
         mLastLstLink = nullptr;
         mConceal = false;
     }
