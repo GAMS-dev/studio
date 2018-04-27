@@ -252,7 +252,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
 
         QString fName;
         int lineNr;
-        int colNr = -1;
+        int size = -1;
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
@@ -260,8 +260,8 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             result = capture(line, posA, posB, 0, ':').toString();
             int from = mDashLine.indexOf(' ')+1;
             fName = parentEntry()->location() + '/' + mDashLine.mid(from, mDashLine.indexOf('(')-from);
-            lineNr = errNr;
-            colNr = -1;
+            lineNr = errNr-1;
+            size = -1;
             colStart = -1;
         } else {
             lstColStart = -1;
@@ -269,7 +269,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             result = capture(line, posA, posB, 0, '[').toString();
             fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
             lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
-            colNr = capture(line, posA, posB, 1, ']').toInt()-1;
+            size = capture(line, posA, posB, 1, ']').toInt()-1;
             posB++;
         }
 
@@ -279,9 +279,9 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         FileContext *fc = nullptr;
         emit findFileContext(fName, &fc, parentEntry());
         if (fc) {
-            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, colNr);
+            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
         } else {
-            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, colNr);
+            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
         }
         errMark = mark.textMark;
         marks << mark;
