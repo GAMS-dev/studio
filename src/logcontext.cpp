@@ -278,11 +278,13 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         mark.col = line.indexOf(" ")+1;
         mark.size = result.length() - mark.col;
         FileContext *fc = nullptr;
-        emit findFileContext(fName, &fc, parentEntry());
-        if (fc) {
-            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
-        } else {
-            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+        if (!fName.isEmpty()) {
+            emit findFileContext(fName, &fc, parentEntry());
+            if (fc) {
+                mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+            } else {
+                mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+            }
         }
         errMark = mark.textMark;
         marks << mark;
