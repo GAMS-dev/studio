@@ -358,18 +358,19 @@ void SearchWidget::findNext(SearchDirection direction)
     AbstractEditor* edit = FileContext::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
-    if (hasChanged) {
+    if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
-        cachedResults = findInFile(fc, true);
-        hasChanged = false;
+        mCachedResults = findInFile(fc, true);
+        mHasChanged = false;
     }
 
-    selectNextMatch(direction, cachedResults);
+    selectNextMatch(direction, mCachedResults);
 }
 
 void SearchWidget::focusSearchField()
 {
     ui->combo_search->setFocus();
+    ui->combo_search->lineEdit()->selectAll();
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
@@ -414,7 +415,7 @@ void SearchWidget::updateReplaceActionAvailability()
     ui->cb_regex->setEnabled(activateSearch);
     ui->cb_wholeWords->setEnabled(activateSearch);
 
-    ui->combo_filePattern->setEnabled(activateSearch);
+    ui->combo_filePattern->setEnabled(activateSearch && (ui->combo_scope->currentIndex() != SearchScope::ThisFile));
     ui->combo_scope->setEnabled(activateSearch);
 }
 
@@ -426,6 +427,18 @@ void SearchWidget::on_searchNext()
 void SearchWidget::on_searchPrev()
 {
     findNext(SearchWidget::Backward);
+}
+
+void SearchWidget::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
+{
+    Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
+    //TODO: make smarter
+    invalidateCache();
+}
+
+void SearchWidget::invalidateCache()
+{
+    mHasChanged = true;
 }
 
 void SearchWidget::keyPressEvent(QKeyEvent* e)
@@ -490,14 +503,14 @@ void SearchWidget::on_combo_scope_currentIndexChanged(int index)
 void SearchWidget::on_btn_back_clicked()
 {
     insertHistory();
-    if (hasChanged) clearResults();
+    if (mHasChanged) clearResults();
     findNext(SearchWidget::Backward);
 }
 
 void SearchWidget::on_btn_forward_clicked()
 {
     insertHistory();
-    if (hasChanged) clearResults();
+    if (mHasChanged) clearResults();
     findNext(SearchWidget::Forward);
 }
 
@@ -579,7 +592,7 @@ void SearchWidget::clearSearch()
 void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
-    hasChanged = true;
+    mHasChanged = true;
 
 // removed due to performance issues in larger files:
 //    FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor);
@@ -593,11 +606,11 @@ void SearchWidget::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
-        bool state = hasChanged;
+        bool state = mHasChanged;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
-        hasChanged = state;
+        mHasChanged = state;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());

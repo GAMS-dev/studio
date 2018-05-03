@@ -59,7 +59,7 @@ public:
     inline bool isValid() {return mMarks && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
     { return mReference && ((mType == error && inIconRegion) || mType == link); }
-    inline QTextBlock textBlock();
+    QTextBlock textBlock();
     QTextCursor textCursor();
     inline int in(int pos, int len) {
         if (mPosition < 0) return -2;

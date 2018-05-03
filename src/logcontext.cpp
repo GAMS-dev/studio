@@ -241,7 +241,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
+    if (line.startsWith("*** Error in") || line.startsWith("*** Error at line")) {
         bool ok = false;
         posA = 9;
         while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
@@ -259,8 +259,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         if (line.midRef(9, 9) == " at line ") {
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
-            int from = mDashLine.indexOf(' ')+1;
-            fName = parentEntry()->location() + '/' + mDashLine.mid(from, mDashLine.indexOf('(')-from);
+            fName = parentEntry()->location() + '/' + mLastSourceFile;
             lineNr = errNr-1;
             size = -1;
             colStart = -1;
@@ -273,23 +272,37 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             size = capture(line, posA, posB, 1, ']').toInt()-1;
             posB++;
         }
+        {
+            QFileInfo fi(fName);
+            if (!fi.exists() || fi.isDir()) fName = "";
+        }
 
         LinkData mark;
         mark.col = line.indexOf(" ")+1;
         mark.size = result.length() - mark.col;
         FileContext *fc = nullptr;
-        emit findFileContext(fName, &fc, parentEntry());
-        if (fc) {
-            mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
-        } else {
-            mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+        if (!fName.isEmpty()) {
+            emit findFileContext(fName, &fc, parentEntry());
+            if (fc) {
+                mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+            } else {
+                mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+            }
         }
         errMark = mark.textMark;
         marks << mark;
         errFound = true;
         mInErrorDescription = true;
     }
-    if (line.startsWith("--- ")) mDashLine = line;
+    if (line.startsWith("--- ")) {
+        int fEnd = line.indexOf('(');
+        if (fEnd >= 0) {
+            int nrEnd = line.indexOf(')', fEnd);
+            bool ok;
+            int lineNr = line.mid(fEnd+1, nrEnd-fEnd-1).toInt(&ok);
+            if (ok) mLastSourceFile = line.mid(4, fEnd-4);
+        }
+    }
     while (posA < line.length()) {
         result += capture(line, posA, posB, 0, '[');
 

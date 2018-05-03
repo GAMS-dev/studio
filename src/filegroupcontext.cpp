@@ -206,7 +206,7 @@ QString FileGroupContext::tooltip()
 {
     QString tooltip(location());
     tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
-    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+//    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
     return tooltip;
 }
 
@@ -336,14 +336,14 @@ QString FileGroupContext::runnableGms()
 
 void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
 {
-    mGmsFileName = gmsFileContext->location();
+    QString location = gmsFileContext->location();
+
+    mGmsFileName = location;
+    setLstFileName(QFileInfo(location).baseName() + ".lst");
 }
 
 QString FileGroupContext::lstFileName()
 {
-    if (mLstFileName.isNull()) {
-        mLstFileName = QDir(location()).filePath(name())+".lst";
-    }
     return mLstFileName;
 }
 

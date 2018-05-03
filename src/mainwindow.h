@@ -92,7 +92,6 @@ public:
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
-    void openFileSkipSettings(const QString &filePath);
     void openFiles(QStringList pathList);
 
 
@@ -136,7 +135,8 @@ public slots:
     void updateEditorMode();
     void updateEditorBlockCount();
     void on_runGmsFile(FileContext *fc);
-    void on_changeMainGms(FileContext *fc);
+    void on_setMainGms(FileContext *fc);
+    void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);

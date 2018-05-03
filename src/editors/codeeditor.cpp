@@ -659,6 +659,19 @@ void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
+int CodeEditor::matchingParenthesis()
+{
+    if (!mBlockEdit) {
+        QTextBlock bl; bl.text();
+        int i = QString("{[(}])").indexOf(document()->characterAt(textCursor().position()));
+        if (i >= 0) {
+            bool backward = i > 2;
+
+        }
+    }
+    return -1;
+}
+
 void CodeEditor::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
