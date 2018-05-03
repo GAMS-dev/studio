@@ -857,12 +857,20 @@ QString CodeEditor::BlockEdit::blockText()
     QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine));
     int from = qMin(mColumn, mColumn+mSize);
     int to = qMax(mColumn, mColumn+mSize);
-    for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
+
+    if (qMin(mStartLine, mCurrentLine) == qMax(mStartLine, mCurrentLine)) {
         QString text = block.text();
         if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
-        res.append(text.mid(from, to-from)+"\n");
-        block = block.next();
+        res.append(text.mid(from, to-from));
+    } else {
+        for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
+            QString text = block.text();
+            if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
+            res.append(text.mid(from, to-from)+"\n");
+            block = block.next();
+        }
     }
+
     return res;
 }
 
