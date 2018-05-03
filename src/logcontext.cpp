@@ -241,13 +241,15 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    if (line.startsWith("*** Error in") || line.startsWith("*** Error at line")) {
+    if (line.startsWith("*** Error ")) {
         bool ok = false;
         posA = 9;
         while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
         posB = posA;
         while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
         int errNr = line.midRef(posA, posB-posA).toInt(&ok);
+        bool isValidError = line.midRef(posB, 4) == " in ";
+        DEB() << "IN: '" << line.midRef(posB, 4) << "'";
         mCurrentErrorHint.lstLine = 0;
         mCurrentErrorHint.text = "";
 
@@ -257,6 +259,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
+            isValidError = true;
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             fName = parentEntry()->location() + '/' + mLastSourceFile;
@@ -277,22 +280,24 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             if (!fi.exists() || fi.isDir()) fName = "";
         }
 
-        LinkData mark;
-        mark.col = line.indexOf(" ")+1;
-        mark.size = result.length() - mark.col;
-        FileContext *fc = nullptr;
-        if (!fName.isEmpty()) {
-            emit findFileContext(fName, &fc, parentEntry());
-            if (fc) {
-                mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
-            } else {
-                mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+        if (isValidError) {
+            LinkData mark;
+            mark.col = line.indexOf(" ")+1;
+            mark.size = result.length() - mark.col;
+            FileContext *fc = nullptr;
+            if (!fName.isEmpty()) {
+                emit findFileContext(fName, &fc, parentEntry());
+                if (fc) {
+                    mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                } else {
+                    mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                }
             }
+            errMark = mark.textMark;
+            marks << mark;
+            errFound = true;
+            mInErrorDescription = true;
         }
-        errMark = mark.textMark;
-        marks << mark;
-        errFound = true;
-        mInErrorDescription = true;
     }
     if (line.startsWith("--- ")) {
         int fEnd = line.indexOf('(');
