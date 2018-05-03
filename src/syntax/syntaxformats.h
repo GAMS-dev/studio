@@ -59,6 +59,9 @@ enum class SyntaxState {
     IdentifierTableAssignmentHead,
     IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
+    Embedded,
+    EmbeddedBody,
+    EmbeddedEnd,
     Reserved,
     ReservedBody,
 

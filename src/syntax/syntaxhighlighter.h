@@ -41,6 +41,7 @@ enum ColorEnum {
     SyntaxDescr,
     SyntaxAssgn,
     SyntaxTabHd,
+    SyntaxEmbed,
 };
 
 class ErrorHighlighter : public QSyntaxHighlighter

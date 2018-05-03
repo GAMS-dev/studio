@@ -105,7 +105,8 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxState::Standard)
                << SyntaxState::DeclarationVariableType
                << SyntaxState::DeclarationTable
                << SyntaxState::Directive
-               << SyntaxState::Reserved;
+               << SyntaxState::Reserved
+               << SyntaxState::Embedded;
 }
 
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)

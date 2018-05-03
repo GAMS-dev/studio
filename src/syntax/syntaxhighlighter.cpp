@@ -128,6 +128,7 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
         {SyntaxDescr, QColor(Qt::darkBlue).lighter(120)},
         {SyntaxAssgn, QColor(Qt::darkGreen).darker(130)},
         {SyntaxTabHd, QColor(Qt::darkGreen).darker(145)},
+        {SyntaxEmbed, QColor(200, 70, 0)},
     };
     // To visualize one format: add color index at start e.g. initState(1, new SyntaxReservedBody());
     initState(new SyntaxStandard(), Qt::red);
@@ -142,6 +143,9 @@ SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
     initState(new SyntaxDelimiter(SyntaxState::Comma));
     initState(new SyntaxReserved(), cl.value(SyntaxKeywd), false, true);
     initState(new SyntaxReservedBody());
+    initState(new SyntaxEmbedded(SyntaxState::Embedded), cl.value(SyntaxKeywd), false, true);
+    initState(new SyntaxEmbedded(SyntaxState::EmbeddedEnd), cl.value(SyntaxKeywd), false, true);
+    initState(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed));
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), cl.value(SyntaxDeclr), false, true);
     initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), cl.value(SyntaxDeclr), false, true);
     initState(new SyntaxDeclaration(), cl.value(SyntaxDeclr), false, true);

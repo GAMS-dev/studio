@@ -115,6 +115,21 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+class SyntaxEmbedded: public SyntaxKeywordBase
+{
+public:
+    SyntaxEmbedded(SyntaxState state);
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+};
+
+class SyntaxEmbeddedBody: public SyntaxAbstract
+{
+public:
+    SyntaxEmbeddedBody();
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
 constexpr inline uint qHash(SyntaxState key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 
 } // namespace studio
