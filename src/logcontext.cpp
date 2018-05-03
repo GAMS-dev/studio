@@ -299,7 +299,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         if (fEnd >= 0) {
             int nrEnd = line.indexOf(')', fEnd);
             bool ok;
-            int lineNr = line.mid(fEnd+1, nrEnd-fEnd-1).toInt(&ok);
+            //int lineNr = line.mid(fEnd+1, nrEnd-fEnd-1).toInt(&ok);
             if (ok) mLastSourceFile = line.mid(4, fEnd-4);
         }
     }
