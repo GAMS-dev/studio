@@ -137,6 +137,7 @@ public slots:
     void on_runGmsFile(FileContext *fc);
     void on_setMainGms(FileContext *fc);
     void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
+    void getAdvancedActions(QList<QAction *> *actions);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);

@@ -83,6 +83,7 @@ signals:
     void requestSyntaxState(int position, int &intState);
     void searchFindNextPressed();
     void searchFindPrevPressed();
+    void requestAdvancedActions(QList<QAction*>* actions);
 
 public slots:
     void clearSelection();

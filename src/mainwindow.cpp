@@ -189,6 +189,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 fc->addEditor(codeEdit);
                 connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
                 connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
 
@@ -592,6 +593,12 @@ void MainWindow::updateEditorBlockCount()
 void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
     searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+}
+
+void MainWindow::getAdvancedActions(QList<QAction*>* actions)
+{
+    QList<QAction*> act(ui->menuAdvanced->actions());
+    *actions = act;
 }
 
 void MainWindow::on_actionNew_triggered()
