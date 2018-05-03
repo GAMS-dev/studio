@@ -102,7 +102,7 @@ QString GAMSPaths::filePath(const QString &path)
 QString GAMSPaths::path(const QString &file)
 {
     QFileInfo fi(file);
-    return fi.absoluteFilePath();
+    return fi.absolutePath();
 }
 
 }
