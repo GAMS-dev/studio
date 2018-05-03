@@ -27,7 +27,11 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
             QStringList files = dir.entryList(filters);
             for (auto file : files) {
                 if (file.startsWith(mAutosavedFileMarker)) {
-                    autsaveFiles << path+"/"+file;
+                    QString autosaveFilePath = path+"/"+file;
+                    file.remove(0,2);
+                    QString originalFilePath = path+"/"+file;
+                    QFileInfo origin(originalFilePath);
+                    if (origin.exists()) autsaveFiles << autosaveFilePath;
                 }
             }
         }
