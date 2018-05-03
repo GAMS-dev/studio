@@ -249,7 +249,6 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
         int errNr = line.midRef(posA, posB-posA).toInt(&ok);
         bool isValidError = line.midRef(posB, 4) == " in ";
-        DEB() << "IN: '" << line.midRef(posB, 4) << "'";
         mCurrentErrorHint.lstLine = 0;
         mCurrentErrorHint.text = "";
 
