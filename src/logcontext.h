@@ -66,7 +66,7 @@ private:
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
     bool mDebugLog = false;
-    QString mDashLine;
+    QString mLastSourceFile;
     FileContext *mLstContext = nullptr;
 };
 
