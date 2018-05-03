@@ -701,8 +701,8 @@ int CodeEditor::matchingParenthesis()
         if (i >= 0) {
             QTextCursor sel = cursor;
             bool back = (i > 2);
-            QStringRef parEnter = parenthesis.mid(back ? 3 : 0, 3);
-            QStringRef parLeave = parenthesis.mid(back ? 0 : 3, 3);
+            QStringRef parEnter = parenthesis.midRef(back ? 3 : 0, 3);
+            QStringRef parLeave = parenthesis.midRef(back ? 0 : 3, 3);
             QTextDocument::FindFlags findFlags = back ? QTextDocument::FindBackward : 0;
             i = i % 3;
             QVector<QChar> parStack;
