@@ -64,7 +64,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-//    int matchingParenthesis();
+    int matchingParenthesis();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -111,6 +111,7 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+    inline bool validParenthesis(int pos);
 
     static int findAlphaNum(const QString &text, int start, bool back);
 
@@ -164,6 +165,7 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
+//    static const QVector<int> mValidParenthesisSyntax;
 
 public:
     BlockEdit *blockEdit() const;

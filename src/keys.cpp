@@ -126,6 +126,9 @@ void Keys::reset()
 
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
+
+    seq = new KeySeqList("Ctrl+J","goto matching parenthesis");
+    setHotkey(Hotkey::MatchParenthesis, seq);
 }
 
 void Keys::read(const QJsonObject& json)

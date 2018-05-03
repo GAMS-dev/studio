@@ -199,6 +199,15 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             mBlockEdit->keyPressEvent(e);
             return;
         }
+    } else {
+        if (e == Hotkey::MatchParenthesis) {
+            int i = matchingParenthesis();
+            if (i >= 0) {
+                QTextCursor cur = textCursor();
+                cur.setPosition(i);
+                setTextCursor(cur);
+            }
+        }
     }
 
     if (!isReadOnly()) {
@@ -404,10 +413,6 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* e)
         }
         lastAct = act;
     }
-    QMenu *submenu = menu->addMenu(tr("Advanced"));
-    QList<QAction*> ret;
-    emit requestAdvancedActions(&ret);
-    submenu->addActions(ret);
     menu->exec(e->globalPos());
     delete menu;
 }
@@ -663,18 +668,68 @@ void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
-//int CodeEditor::matchingParenthesis()
-//{
-//    if (!mBlockEdit) {
-//        QTextBlock bl; bl.text();
-//        int i = QString("{[(}])").indexOf(document()->characterAt(textCursor().position()));
-//        if (i >= 0) {
-//            bool backward = i > 2;
+const QVector<int> validParenthesisSyntax = {
+    (int)SyntaxState::Standard,
+    (int)SyntaxState::Identifier,
+    (int)SyntaxState::IdentifierTable,
+    (int)SyntaxState::IdentifierAssignment,
+    (int)SyntaxState::IdentifierAssignmentEnd,
+    (int)SyntaxState::IdentifierTableAssignmentHead,
+    (int)SyntaxState::IdentifierTableAssignmentRow
+};
 
-//        }
-//    }
-//    return -1;
-//}
+inline bool CodeEditor::validParenthesis(int pos)
+{
+    int intState = 0;
+    emit requestSyntaxState(pos, intState);
+    DEB() << "INT State: " << intState;
+    return validParenthesisSyntax.contains(intState);
+}
+
+int CodeEditor::matchingParenthesis()
+{
+    if (!mBlockEdit) {
+        static QString parenthesis("{[(}])");
+        QTextCursor cursor = textCursor();
+        int p = cursor.position();
+        int i = parenthesis.indexOf(document()->characterAt(p));
+        if (i < 0) {
+            cursor.movePosition(QTextCursor::Left);
+            i = parenthesis.indexOf(document()->characterAt(--p));
+        }
+        if (!validParenthesis(p)) return -1;
+        if (i >= 0) {
+            QTextCursor sel = cursor;
+            bool back = (i > 2);
+            QStringRef parEnter = parenthesis.mid(back ? 3 : 0, 3);
+            QStringRef parLeave = parenthesis.mid(back ? 0 : 3, 3);
+            QTextDocument::FindFlags findFlags = back ? QTextDocument::FindBackward : 0;
+            i = i % 3;
+            QVector<QChar> parStack;
+            parStack << parLeave.at(i);
+            int docBound = back ? -1 : document()->characterCount();
+            while (!parStack.isEmpty() && (back ? p > docBound : p < docBound)) {
+                back ? p-- : p++;
+                if (parenthesis.indexOf(document()->characterAt(p)) > 0 && validParenthesis(p)) {
+                    int i = parEnter.indexOf(document()->characterAt(p));
+                    if (i < 0) {
+                        // Only last stacked character is valid
+                    } else {
+                        // Stack new character
+                    }
+                }
+            };
+
+
+            // TODO(JM) check valid inner parenthesis
+
+            if (!sel.isNull()) {
+                return sel.position()-1;
+            }
+        }
+    }
+    return -1;
+}
 
 void CodeEditor::recalcExtraSelections()
 {
