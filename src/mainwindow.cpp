@@ -597,16 +597,20 @@ void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int chars
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 {
+    bool found = false;
     foreach (QAction *action, menuBar()->actions()) {
-        if (action->text() == "Edit") {
+        if (action->text() == "&Edit") {
             foreach (QAction *subaction, action->menu()->actions()) {
-                if (subaction->text() == "Advanced") {
+                if (subaction->text() == "&Advanced") {
                     QList<QAction*> act(subaction->menu()->actions());
                     *actions = act;
+                    false = true;
                 }
             }
         }
     }
+    if (!found)
+        qDebug() << "ERROR: Advanced editor menu not found. Did the names change?";
 }
 
 void MainWindow::on_actionNew_triggered()
