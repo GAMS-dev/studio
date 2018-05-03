@@ -64,6 +64,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
+    int matchingParenthesis();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
