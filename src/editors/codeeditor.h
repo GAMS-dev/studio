@@ -49,6 +49,7 @@ enum class CharType {
 struct ParenthesisMatch {
     ParenthesisMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
         : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
+    bool isValid() {return pos>=0;}
     int pos;
     int match;
     int inOutMatch;
@@ -177,7 +178,7 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
-//    static const QVector<int> mValidParenthesisSyntax;
+    ParenthesisMatch mParenthesisMatch;
 
 public:
     BlockEdit *blockEdit() const;
