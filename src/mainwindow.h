@@ -126,7 +126,7 @@ public:
     void writeTabs(QJsonObject &json) const;
     QWidget *welcomePage() const;
     void delayedFileRestoration();
-
+    
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
@@ -260,6 +260,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void loadCommandLineOptions(FileContext* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(FileGroupContext *fgc);
