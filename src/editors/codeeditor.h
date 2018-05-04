@@ -46,6 +46,15 @@ enum class CharType {
     LetterLCase,
 };
 
+struct ParenthesisMatch {
+    ParenthesisMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
+        : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
+    int pos;
+    int match;
+    int inOutMatch;
+    bool valid;
+};
+
 class CodeEditor : public AbstractEditor
 {
     Q_OBJECT
@@ -64,7 +73,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    int matchingParenthesis();
+    ParenthesisMatch matchingParenthesis();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -105,6 +114,7 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection>& selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
@@ -112,6 +122,8 @@ private:
     CharType charType(QChar c);
     void updateTabSize();
     inline bool validParenthesis(int pos);
+    ParenthesisMatch matchAssignment();
+    inline int assignmentKind(int p);
 
     static int findAlphaNum(const QString &text, int start, bool back);
 
