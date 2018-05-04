@@ -31,7 +31,10 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
                     file.remove(0,2);
                     QString originalFilePath = path+"/"+file;
                     QFileInfo origin(originalFilePath);
-                    if (origin.exists()) autsaveFiles << autosaveFilePath;
+                    if (origin.exists())
+                        autsaveFiles << autosaveFilePath;
+                    else
+                        QFile::remove(autosaveFilePath);
                 }
             }
         }
