@@ -190,7 +190,6 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc, bool skipFilters)
     }
 
     QString searchTerm = ui->combo_search->currentText();
-    int searchLength = searchTerm.length();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
@@ -221,15 +220,15 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc, bool skipFilters)
                 while (!in.atEnd()) { // read file
                     lineCounter++;
                     QString line = in.readLine();
-                    QRegularExpressionMatch match;
 
-                    int count = line.count(searchRegex);
-                    if (count > 0) {
-                        for (int i = 0; i < count; i++) {
-                            matches.addResult(lineCounter, match.capturedEnd() - searchLength,
-                                              file.fileName(), line.trimmed());
-                        }
+                    QRegularExpressionMatch match;
+                    QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
+                    while (i.hasNext()) {
+                        match = i.next();
+                        matches.addResult(lineCounter, match.capturedStart(),
+                                          file.fileName(), line.trimmed());
                     }
+
                 }
                 file.close();
             }
