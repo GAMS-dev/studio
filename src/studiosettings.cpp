@@ -73,6 +73,14 @@ void StudioSettings::resetView()
     mAppSettings->setValue("pos", QPoint());
     mAppSettings->setValue("windowState", QByteArray());
     mAppSettings->endGroup();
+
+    mAppSettings->beginGroup("viewMenu");
+    mAppSettings->setValue("projectView", true);
+    mAppSettings->setValue("outputView", true);
+    mAppSettings->setValue("helpView", false);
+    mAppSettings->setValue("optionView", true);
+    mAppSettings->setValue("optionEditor", false);
+    mAppSettings->endGroup();
 }
 
 bool StudioSettings::resetSettingsSwitch()
@@ -91,12 +99,13 @@ void StudioSettings::saveSettings(MainWindow *main)
         return;
     }
     // Main Application Settings
-    // window
+    // main window
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", main->size());
     mAppSettings->setValue("pos", main->pos());
     mAppSettings->setValue("windowState", main->saveState());
 
+    // search window
     mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
     mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
     mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
