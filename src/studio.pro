@@ -140,7 +140,8 @@ SOURCES += \
     checkforupdatewrapper.cpp \
     autosavehandler.cpp \
     statuswidgets.cpp \
-    commonpaths.cpp
+    commonpaths.cpp \
+    distributionvalidator.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -219,7 +220,8 @@ HEADERS += \
     checkforupdatewrapper.h \
     autosavehandler.h \
     statuswidgets.h \
-    commonpaths.h
+    commonpaths.h \
+    distributionvalidator.h
 
 FORMS += \
     welcomepage.ui  \

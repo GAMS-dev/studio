@@ -45,6 +45,7 @@
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
+#include "distributionvalidator.h"
 
 namespace gams {
 namespace studio {
@@ -127,6 +128,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->logView->setLineWrapMode(AbstractEditor::WidgetWidth);
     else
         ui->logView->setLineWrapMode(AbstractEditor::NoWrap);
+
+    DistributionValidator dv;
+    ui->logView->appendPlainText(dv.checkBitness());
 
     initTabs();
 

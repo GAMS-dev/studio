@@ -54,15 +54,6 @@ QString CommonPaths::systemDir() {
         if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
     }
 
-#ifdef _WIN32
-    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
-    bool is64 = (sizeof(int*) == 8) ? true : false;
-    if (!is64 && joat64.exists())
-        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << gamsPath;
-    if (is64 && !joat64.exists())
-        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << gamsPath;
-#endif
-
     return QDir::cleanPath(gamsPath);
 }
 
