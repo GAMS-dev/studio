@@ -49,7 +49,7 @@ public:
 
 signals:
     void finished(AbstractProcess *process, int exitCode);
-    void newStdChannelData(QProcess::ProcessChannel channel, const QString &data);
+    void newStdChannelData(const QString &data);
     void stateChanged(QProcess::ProcessState newState);
 
 protected slots:

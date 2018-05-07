@@ -33,6 +33,7 @@ namespace studio {
 
 class Result;
 class MainWindow;
+
 class ResultsView : public QWidget
 {
     Q_OBJECT

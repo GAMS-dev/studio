@@ -148,7 +148,7 @@ private slots:
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     void fileClosed(FileId fileId);
-    void appendOutput(QProcess::ProcessChannel channel, QString text);
+    void appendLog(QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);

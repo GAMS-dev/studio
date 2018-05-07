@@ -391,7 +391,7 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
     mLibProcess->execute();
 
     // This log is passed to the system-wide log
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendOutput);
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendLog);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
@@ -927,9 +927,8 @@ void MainWindow::fileClosed(FileId fileId)
 
 }
 
-void MainWindow::appendOutput(QProcess::ProcessChannel channel, QString text)
+void MainWindow::appendLog(QString text)
 {
-    Q_UNUSED(channel);
     QPlainTextEdit *outWin = ui->logView;
     if (!text.isNull()) {
         outWin->moveCursor(QTextCursor::End);

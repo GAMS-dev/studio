@@ -81,7 +81,7 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
     while (avail) {
         mOutputMutex.lock();
         mProcess.setReadChannel(channel);
-        emit newStdChannelData(channel, mProcess.readLine());
+        emit newStdChannelData(mProcess.readLine());
         avail = mProcess.bytesAvailable();
         mOutputMutex.unlock();
     }
