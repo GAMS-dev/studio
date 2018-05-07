@@ -158,10 +158,6 @@
     <addaction name="separator"/>
     <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
-    <addaction name="actionZoom_In"/>
-    <addaction name="actionZoom_Out"/>
-    <addaction name="actionReset_Zoom"/>
-    <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
@@ -364,7 +360,7 @@
   </action>
   <action name="actionAbout_Qt">
    <property name="text">
-    <string>&amp;About Qt</string>
+    <string>About Qt</string>
    </property>
   </action>
   <action name="actionOutput_View">
@@ -418,7 +414,7 @@
   </action>
   <action name="actionSave_As">
    <property name="text">
-    <string>&amp;Save As...</string>
+    <string>Save As...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+S</string>
@@ -442,7 +438,7 @@
   </action>
   <action name="actionClose_All">
    <property name="text">
-    <string>&amp;Close All</string>
+    <string>Close All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+W</string>
@@ -450,7 +446,7 @@
   </action>
   <action name="actionClose_All_Except">
    <property name="text">
-    <string>&amp;Close All Except Visible</string>
+    <string>Close All Except Visible</string>
    </property>
   </action>
   <action name="actionReloadEncoding">
@@ -504,7 +500,7 @@
      <normaloff>:/img/run-gdx</normaloff>:/img/run-gdx</iconset>
    </property>
    <property name="text">
-    <string>&amp;Run with GDX Creation</string>
+    <string>Run with GDX Creation</string>
    </property>
    <property name="toolTip">
     <string>Run and Create a GDX File with gms file root name</string>
@@ -515,7 +511,7 @@
   </action>
   <action name="actionSettings">
    <property name="text">
-    <string>&amp;Settings</string>
+    <string>Settings</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+,</string>
@@ -527,7 +523,7 @@
      <normaloff>:/img/compile-gdx</normaloff>:/img/compile-gdx</iconset>
    </property>
    <property name="text">
-    <string>&amp;Compile with GDX Creation</string>
+    <string>Compile with GDX Creation</string>
    </property>
    <property name="toolTip">
     <string>Compile and Create a GDX File with gms file root name</string>
@@ -552,7 +548,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Option</string>
+    <string>Option</string>
    </property>
    <property name="toolTip">
     <string>Option</string>
@@ -697,7 +693,7 @@
   </action>
   <action name="actionZoom_In">
    <property name="text">
-    <string>&amp;Zoom In</string>
+    <string>Zoom In</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -705,7 +701,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="text">
-    <string>&amp;Zoom Out</string>
+    <string>Zoom Out</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -713,7 +709,7 @@
   </action>
   <action name="actionReset_Zoom">
    <property name="text">
-    <string>&amp;Reset Zoom</string>
+    <string>Reset Zoom</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>

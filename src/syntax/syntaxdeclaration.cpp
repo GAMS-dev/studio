@@ -204,8 +204,9 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
-    mSubStates << SyntaxState::Semicolon << SyntaxState::ReservedBody << SyntaxState::Reserved
-               << SyntaxState::Embedded << SyntaxState::Directive
+    mSubStates << SyntaxState::Semicolon << SyntaxState::Embedded << SyntaxState::Reserved
+               << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody
                << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
@@ -224,21 +225,23 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
 SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
 {
     mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon << SyntaxState::Directive
+               << SyntaxState::Declaration << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+               << SyntaxState::DeclarationTable
                << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
 SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)
 {
     Q_UNUSED(entryState);
-    int end = index;
-    while (isWhitechar(line, end))
-        ++end;
-    if (index == 0) return SyntaxBlock(this, index, end, SyntaxStateShift::out);
-    if (end < line.length()) {
-        if (line.at(end)=='(')
-            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
-        end++;
-    }
+    int end = line.length();
+//    while (isWhitechar(line, end))
+//        ++end;
+//    if (index == 0) return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+//    if (end < line.length()) {
+//        if (line.at(end)=='(')
+//            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
+//        end++;
+//    }
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 

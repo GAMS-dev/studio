@@ -753,6 +753,21 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
+void MainWindow::loadCommandLineOptions(FileContext* fc)
+{
+    FileGroupContext* group = fc->parentEntry();
+    if (!group) return;
+
+    mCommandLineOption->clear();
+    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
+    foreach(QString str, option) {
+       mCommandLineOption->insertItem(0, str );
+    }
+    mCommandLineOption->setCurrentIndex(0);
+    mCommandLineOption->setEnabled(true);
+    mCommandLineOption->setCurrentContext(fc->location());
+}
+
 void MainWindow::activeTabChanged(int index)
 {
     if (!mCommandLineOption->getCurrentContext().isEmpty()) {
@@ -780,17 +795,8 @@ void MainWindow::activeTabChanged(int index)
             mRecent.setEditor(lxiViewer ? editWidget : edit, this);
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
-                FileGroupContext* group = (fc ? fc->parentEntry() : nullptr);
-                if (group) {
-                    mCommandLineOption->clear();
-                    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
-                    foreach(QString str, option) {
-                       mCommandLineOption->insertItem(0, str );
-                    }
-                    mCommandLineOption->setCurrentIndex(0);
-                    mCommandLineOption->setEnabled(true);
-                    mCommandLineOption->setCurrentContext(fc->location());
-                }
+                loadCommandLineOptions(fc);
+
                 mCommandWidget->setEnabled(true);
                 mOptionEditor->setEnabled(true);
                 updateRunState();
@@ -1698,6 +1704,7 @@ void MainWindow::on_runGmsFile(FileContext *fc)
 void MainWindow::on_setMainGms(FileContext *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
+    loadCommandLineOptions(fc);
 }
 
 void MainWindow::on_commandLineHelpTriggered()
