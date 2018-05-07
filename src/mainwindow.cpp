@@ -163,8 +163,6 @@ void MainWindow::initTabs()
         createWelcomePage();
 }
 
-
-
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
 {
     FileContext *fc = mFileRepo.fileContext(id);
@@ -210,13 +208,12 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             if (focus) updateMenuToCodec(fc->codecMib());
 
         } else {
-            gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
+            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcherForGdx();
         }
-        //mSettings->saveSettings(this);
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
             tabWidget->setCurrentIndex(tabIndex);
@@ -397,12 +394,7 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
 
 void MainWindow::receiveModLibLoad(QString model)
 {
-    QString glbFile;
-//    if (model != "embeddedSort")
-    glbFile = "gamslib_ml/gamslib.glb";
-//    else
-//      glbFile = "datalib_ml/datalib.glb";
-    openModelFromLib(glbFile, model);
+    openModelFromLib("gamslib_ml/gamslib.glb", model);
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
