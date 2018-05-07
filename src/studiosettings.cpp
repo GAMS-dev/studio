@@ -19,7 +19,7 @@
  */
 #include "studiosettings.h"
 #include "mainwindow.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "searchwidget.h"
 
 namespace gams {
@@ -192,7 +192,7 @@ void StudioSettings::loadUserSettings()
 {
     mUserSettings->beginGroup("General");
 
-    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", CommonPaths::defaultWorkingDir()).toString());
     setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
     setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
@@ -334,7 +334,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
+    mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
 
     mAppSettings->endGroup();
 }

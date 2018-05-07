@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "commandlinetokenizer.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 namespace gams {
 namespace studio {

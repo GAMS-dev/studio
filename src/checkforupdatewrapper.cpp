@@ -20,7 +20,7 @@
 #include "checkforupdatewrapper.h"
 #include "gclgms.h"
 #include "c4umcc.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "exception.h"
 
 #include <cstring>
@@ -33,7 +33,7 @@ namespace studio {
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
     char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&mC4UHandle, GAMSPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
+    if (!c4uCreateD(&mC4UHandle, CommonPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
         mMessages << "Could not load c4u library: " << buffer;
         mValid = false;
     }
@@ -71,8 +71,8 @@ QString CheckForUpdateWrapper::checkForUpdate()
         return QString();
 
     char buffer[GMS_SSSIZE];
-    c4uReadLice(mC4UHandle, GAMSPaths::systemDir().toLatin1(),
-                GAMSPaths::systemDir().append("/gamslice.txt").toLatin1(), false);
+    c4uReadLice(mC4UHandle, CommonPaths::systemDir().toLatin1(),
+                CommonPaths::systemDir().append("/gamslice.txt").toLatin1(), false);
     c4uCreateMsg(mC4UHandle);
 
     int messageIndex=0;

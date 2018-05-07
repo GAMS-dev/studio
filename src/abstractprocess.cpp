@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "abstractprocess.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 #include <QDir>
 
@@ -89,7 +89,7 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
 
 QString AbstractProcess::nativeAppPath()
 {
-    auto appPath = QDir(GAMSPaths::systemDir()).filePath(mApp);
+    auto appPath = QDir(CommonPaths::systemDir()).filePath(mApp);
     return QDir::toNativeSeparators(appPath);
 }
 

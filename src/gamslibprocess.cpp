@@ -18,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslibprocess.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
-#include <QDebug>
 #include <QDir>
 
 namespace gams {

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSINFO_H
-#define GAMSINFO_H
+#ifndef COMMON_PATHS_H
+#define COMMON_PATHS_H
 
 #include <QString>
 
@@ -35,7 +35,7 @@ namespace studio {
 #define DONT_RESOLVE_SYMLINKS_ON_MACOS QFileDialog::Option()
 #endif
 
-class GAMSPaths
+class CommonPaths
 {
 public:
     ///
@@ -64,7 +64,7 @@ public:
     static QString path(const QString &file);
 
 private:
-    GAMSPaths();
+    CommonPaths();
 };
 
 }

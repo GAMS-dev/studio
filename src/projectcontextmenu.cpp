@@ -20,7 +20,7 @@
 #include "projectcontextmenu.h"
 #include "filegroupcontext.h"
 #include "logcontext.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 namespace gams {
 namespace studio {

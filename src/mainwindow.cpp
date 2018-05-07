@@ -26,7 +26,7 @@
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "treeitemdelegate.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "gamsprocess.h"
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
@@ -210,7 +210,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             if (focus) updateMenuToCodec(fc->codecMib());
 
         } else {
-            gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), GAMSPaths::systemDir(), this);
+            gdxviewer::GdxViewer * gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
             FileSystemContext::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
@@ -382,7 +382,7 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
     if (gmsFileName == "")
         gmsFileName = model.toLower() + ".gms";
 
-    QDir gamsSysDir(GAMSPaths::systemDir());
+    QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
     mLibProcess->setModelName(model);
@@ -409,7 +409,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
     if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
 
-    QString link = GAMSPaths::systemDir() + "/" + doc;
+    QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
     if (anchor != "")
@@ -1112,7 +1112,7 @@ void MainWindow::createWelcomePage()
 
 void MainWindow::createRunAndCommandLineWidgets()
 {
-    mGamsOption = new Option(GAMSPaths::systemDir(), QString("optgams.def"));
+    mGamsOption = new Option(CommonPaths::systemDir(), QString("optgams.def"));
     mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
     mCommandLineOption = new CommandLineOption(true, this);
     mCommandLineHistory = new CommandLineHistory(this);
@@ -1513,7 +1513,7 @@ void MainWindow::openFiles(QStringList pathList)
     for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(GAMSPaths::filePath(fName), nullptr, true);
+            openFilePath(CommonPaths::filePath(fName), nullptr, true);
         else
             filesNotFound.append(fName);
     }
@@ -1856,7 +1856,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
     if (!fc) { // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(GAMSPaths::filePath(filePath));
+        FileGroupContext* group = mFileRepo.ensureGroup(CommonPaths::filePath(filePath));
         mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
