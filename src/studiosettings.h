@@ -34,7 +34,7 @@ class StudioSettings
 {
 
 public:
-    StudioSettings(bool ignoreSettings, bool resetSettings);
+    StudioSettings(bool ignoreSettings, bool resetSettings, bool resetView);
     ~StudioSettings();
 
     void loadSettings(MainWindow *main);

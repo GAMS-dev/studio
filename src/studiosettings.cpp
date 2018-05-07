@@ -25,19 +25,19 @@
 namespace gams {
 namespace studio {
 
-StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings)
+StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool resetView)
     : mIgnoreSettings(ignoreSettings),
       mResetSettings(resetSettings)
 {
-    if (ignoreSettings && !mResetSettings)
-    {
+    if (ignoreSettings && !mResetSettings) {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
     }
-    else if (mAppSettings == nullptr)
-    {
+    else if (mAppSettings == nullptr) {
         initSettingsFiles();
     }
+    if (resetView)
+        resetView();
 }
 
 StudioSettings::~StudioSettings()
@@ -64,6 +64,15 @@ void StudioSettings::resetSettings()
     initSettingsFiles();
     mAppSettings->sync();
     mUserSettings->sync();
+}
+
+void StudioSettings::resetView()
+{
+    mAppSettings->beginGroup("mainWindow");
+    mAppSettings->setValue("size", QSize(1000, 700));
+    mAppSettings->setValue("pos", QPoint());
+    mAppSettings->setValue("windowState", QByteArray());
+    mAppSettings->endGroup();
 }
 
 bool StudioSettings::resetSettingsSwitch()

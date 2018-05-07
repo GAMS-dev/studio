@@ -34,8 +34,9 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     const QCommandLineOption helpOption = addHelpOption();
     const QCommandLineOption versionOption = addVersionOption();
     addPositionalArgument("files", "List of files to be opened.", "[files]");
-    addOption({"ignore-settings", "Completely ignore settings files."});
-    addOption({"reset-settings", "Reset all settings to default."});
+    addOption({"ignore-settings", "Ignore settings files for loading and saving."});
+    addOption({"reset-settings", "Reset all settings including views to default."});
+    addOption({"reset-view", "Reset views and window positions only."});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -47,6 +48,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mIgnoreSettings = true;
     if (isSet("reset-settings"))
         mResetSettings = true;
+    if (isSet("reset-view"))
+        mResetView = true;
     mFiles = positionalArguments();
 
     return CommandLineOk;
@@ -65,6 +68,11 @@ bool CommandLineParser::ignoreSettings() const
 bool CommandLineParser::resetSettings() const
 {
     return mResetSettings;
+}
+
+bool CommandLineParser::resetView() const
+{
+    return mResetView;
 }
 
 } // namespace studio
