@@ -30,6 +30,7 @@
 #define GAMS_PRODUCTNAME_STR         "GAMS Studio"
 #define GAMS_FILEDESCRIPTION_STR     "GAMS Studio"
 
+#define GAMS_ORGANIZATION_STR        "GAMS"
 #define GAMS_COMPANYNAME_STR         "GAMS Development Corp."
 #define GAMS_COMPANYDOMAIN_STR       "gams.com"
 #define GAMS_LEGALCOPYRIGHT_STR      "Copyright GAMS Software GmbH, Copyright GAMS Development Corp."

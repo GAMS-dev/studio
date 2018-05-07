@@ -21,6 +21,7 @@
 #include "mainwindow.h"
 #include "commonpaths.h"
 #include "searchwidget.h"
+#include "version.h"
 
 namespace gams {
 namespace studio {
@@ -55,8 +56,10 @@ StudioSettings::~StudioSettings()
 
 void StudioSettings::initSettingsFiles()
 {
-    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
-    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                 GAMS_ORGANIZATION_STR, "uistates");
+    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                  GAMS_ORGANIZATION_STR, "usersettings");
 }
 
 void StudioSettings::resetSettings()
