@@ -186,7 +186,9 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::on_btn_export_clicked()
 {
-    QString filePath = QFileDialog::getSaveFileName(this, "Export Settings", mSettings->defaultWorkspace() + "/studiosettings.gus",
+    QString filePath = QFileDialog::getSaveFileName(this, "Export Settings",
+                                                    mSettings->defaultWorkspace()
+                                                    + "/studiosettings.gus",
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
     QFileInfo fi(filePath);
@@ -209,8 +211,23 @@ void SettingsDialog::on_btn_import_clicked()
 
 void SettingsDialog::on_btn_resetView_clicked()
 {
-    mSettings->resetView();
+    mSettings->resetViewSettings();
     mSettings->loadSettings(mMain);
+    QList<QDockWidget*> dockWidgets = mMain->findChildren<QDockWidget *>();
+    foreach (QDockWidget* dock, dockWidgets) {
+        dock->setFloating(false);
+        dock->restoreGeometry(QByteArray());
+
+        if (dock->objectName() == "dockProjectView") {
+            mMain->addDockWidget(Qt::LeftDockWidgetArea, dock);
+        } else if (dock->objectName() == "dockLogView") {
+            mMain->addDockWidget(Qt::RightDockWidgetArea, dock);
+        } else if (dock->objectName() == "dockHelpView") {
+            dock->setVisible(false);
+        } else if (dock->objectName() == "mDockOptionView") {
+            mMain->addDockWidget(Qt::TopDockWidgetArea, dock);
+        }
+    }
 }
 
 }

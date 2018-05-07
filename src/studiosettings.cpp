@@ -37,7 +37,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
         initSettingsFiles();
     }
     if (resetViews)
-        resetView();
+        resetViewSettings();
 }
 
 StudioSettings::~StudioSettings()
@@ -66,7 +66,7 @@ void StudioSettings::resetSettings()
     mUserSettings->sync();
 }
 
-void StudioSettings::resetView()
+void StudioSettings::resetViewSettings()
 {
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", QSize(1000, 700));
@@ -208,6 +208,69 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->sync();
 }
 
+void StudioSettings::loadAppSettings(MainWindow *main)
+{
+    // main window
+    mAppSettings->beginGroup("mainWindow");
+    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
+    main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    main->restoreState(mAppSettings->value("windowState").toByteArray());
+
+    setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
+    setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
+    setSearchWholeWords(mAppSettings->value("searchWholeWords", false).toBool());
+    setSelectedScopeIndex(mAppSettings->value("selectedScope", 0).toInt());
+
+    mAppSettings->endGroup();
+
+    // tool-/menubar
+    mAppSettings->beginGroup("viewMenu");
+    main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
+    main->setOutputViewVisibility(mAppSettings->value("outputView", true).toBool());
+    main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
+    main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
+    main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
+    main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
+
+    mAppSettings->endGroup();
+
+    // help
+    mAppSettings->beginGroup("helpView");
+    QMultiMap<QString, QString> bookmarkMap;
+    int mapsize = mAppSettings->beginReadArray("bookmarks");
+    for (int i = 0; i < mapsize; i++) {
+        mAppSettings->setArrayIndex(i);
+        bookmarkMap.insert(mAppSettings->value("location").toString(),
+                           mAppSettings->value("name").toString());
+    }
+    mAppSettings->endArray();
+    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+    if (mAppSettings->value("zoomFactor") > 0.0)
+        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+    else
+        main->getDockHelpView()->setZoomFactor(1.0);
+    mAppSettings->endGroup();
+
+    mAppSettings->beginGroup("fileHistory");
+
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+
+    QMap<QString, QStringList> map;
+    int size = mAppSettings->beginReadArray("commandLineOptions");
+    for (int i = 0; i < size; i++) {
+        mAppSettings->setArrayIndex(i);
+        map.insert(mAppSettings->value("path").toString(),
+                   mAppSettings->value("opt").toStringList());
+    }
+    mAppSettings->endArray();
+    main->commandLineHistory()->setAllHistory(map);
+}
+
 void StudioSettings::loadUserSettings()
 {
     mUserSettings->beginGroup("General");
@@ -283,74 +346,12 @@ void StudioSettings::restoreTabsAndProjects(MainWindow *main)
 
 void StudioSettings::loadSettings(MainWindow *main)
 {
-    if (mResetSettings)
-    {
+    if (mResetSettings) {
         mAppSettings->clear();
         mUserSettings->clear();
     }
     loadUserSettings();
-
-    // window
-    mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
-    main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
-    main->restoreState(mAppSettings->value("windowState").toByteArray());
-
-    setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
-    setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
-    setSearchWholeWords(mAppSettings->value("searchWholeWords", false).toBool());
-    setSelectedScopeIndex(mAppSettings->value("selectedScope", 0).toInt());
-
-    mAppSettings->endGroup();
-
-    // tool-/menubar
-    mAppSettings->beginGroup("viewMenu");
-    main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
-    main->setOutputViewVisibility(mAppSettings->value("outputView", true).toBool());
-    main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
-    main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
-    main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
-    main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
-
-    mAppSettings->endGroup();
-
-    // help
-    mAppSettings->beginGroup("helpView");
-    QMultiMap<QString, QString> bookmarkMap;
-    int mapsize = mAppSettings->beginReadArray("bookmarks");
-    for (int i = 0; i < mapsize; i++) {
-        mAppSettings->setArrayIndex(i);
-        bookmarkMap.insert(mAppSettings->value("location").toString(),
-                           mAppSettings->value("name").toString());
-    }
-    mAppSettings->endArray();
-    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
-    if (mAppSettings->value("zoomFactor") > 0.0)
-        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
-    else
-        main->getDockHelpView()->setZoomFactor(1.0);
-    mAppSettings->endGroup();
-
-    mAppSettings->beginGroup("fileHistory");
-
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-
-    QMap<QString, QStringList> map;
-    int size = mAppSettings->beginReadArray("commandLineOptions");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        map.insert(mAppSettings->value("path").toString(),
-                   mAppSettings->value("opt").toStringList());
-    }
-    mAppSettings->endArray();
-    main->commandLineHistory()->setAllHistory(map);
-
-    loadUserSettings();
+    loadAppSettings(main);
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
