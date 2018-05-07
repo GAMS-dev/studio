@@ -32,11 +32,11 @@ class AbstractEditor : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    enum EditorType { BaseEditor, CodeEditor, LogEditor };
+    enum EditorType { CodeEditor, LogEditor };
 
 public:
     virtual ~AbstractEditor() override;
-    virtual EditorType type();
+    virtual EditorType type() = 0;
 
     bool event(QEvent *event) override;
     StudioSettings *settings() const;
