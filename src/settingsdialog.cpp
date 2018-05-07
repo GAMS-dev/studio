@@ -207,5 +207,12 @@ void SettingsDialog::on_btn_import_clicked()
     close();
 }
 
+void SettingsDialog::on_btn_resetView_clicked()
+{
+    mSettings->resetView();
+    mSettings->loadSettings(mMain);
+}
+
 }
 }
+

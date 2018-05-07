@@ -467,7 +467,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="lbl_openModLib">
             <property name="text">
              <string>User model library: </string>
             </property>
@@ -486,21 +486,8 @@
             </property>
            </spacer>
           </item>
-          <item row="2" column="1">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="lbl_wpHistorySize">
             <property name="text">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Welcome Page size of 'Last Files' list&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -523,6 +510,33 @@
             </property>
             <property name="text">
              <string>Open Location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btn_resetView">
+            <property name="text">
+             <string>Reset</string>
             </property>
            </widget>
           </item>

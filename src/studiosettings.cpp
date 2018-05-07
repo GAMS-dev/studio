@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool resetView)
+StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViews)
     : mIgnoreSettings(ignoreSettings),
       mResetSettings(resetSettings)
 {
@@ -36,7 +36,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     else if (mAppSettings == nullptr) {
         initSettingsFiles();
     }
-    if (resetView)
+    if (resetViews)
         resetView();
 }
 
@@ -81,6 +81,8 @@ void StudioSettings::resetView()
     mAppSettings->setValue("optionView", true);
     mAppSettings->setValue("optionEditor", false);
     mAppSettings->endGroup();
+
+    mAppSettings->sync();
 }
 
 bool StudioSettings::resetSettingsSwitch()
@@ -290,7 +292,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
 

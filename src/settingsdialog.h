@@ -60,6 +60,8 @@ private slots:
 
     void on_btn_import_clicked();
 
+    void on_btn_resetView_clicked();
+
 private:
     Ui::SettingsDialog *ui;
     StudioSettings *mSettings;

@@ -115,6 +115,7 @@ public:
 
     void resetSettings();
     bool resetSettingsSwitch();
+    void resetView();
 
     void restoreTabsAndProjects(MainWindow *main);
 
