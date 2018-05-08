@@ -243,6 +243,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
+    void showEvent(QShowEvent *event);
 
 private:
     void initTabs();

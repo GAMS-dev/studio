@@ -9,13 +9,14 @@ namespace studio {
 class DistributionValidator
 {
 public:
-    DistributionValidator();
-
     ///
     /// \brief Verify the GAMS Distribution bitness on Windows.
     /// \remark On Windows we support both 32 Bit and 64 Bit.
     ///
-    QString checkBitness();
+    static QString checkBitness();
+
+private:
+        DistributionValidator();
 };
 
 }

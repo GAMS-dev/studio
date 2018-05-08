@@ -129,9 +129,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     else
         ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
 
-    DistributionValidator dv;
-    ui->systemLogView->appendPlainText(dv.checkBitness());
-
     initTabs();
 
     connectCommandLineWidgets();
@@ -227,13 +224,19 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
     }
 }
 
-
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
     mSettings->saveSettings(this);
 }
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    ui->systemLogView->appendPlainText(DistributionValidator::checkBitness());
+    QMainWindow::showEvent(event);
+}
+
 void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
 {
     group->attachFile(filepath);
