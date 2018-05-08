@@ -231,12 +231,6 @@ void MainWindow::timerEvent(QTimerEvent *event)
     mSettings->saveSettings(this);
 }
 
-void MainWindow::showEvent(QShowEvent *event)
-{
-    ui->systemLogView->appendPlainText(DistributionValidator::checkBitness());
-    QMainWindow::showEvent(event);
-}
-
 void MainWindow::addToGroup(FileGroupContext* group, const QString& filepath)
 {
     group->attachFile(filepath);

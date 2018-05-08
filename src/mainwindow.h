@@ -138,6 +138,7 @@ public slots:
     void on_setMainGms(FileContext *fc);
     void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
+    void appendSystemLog(const QString &text);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -148,7 +149,6 @@ private slots:
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     void fileClosed(FileId fileId);
-    void appendSystemLog(const QString &text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
@@ -243,7 +243,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
-    void showEvent(QShowEvent *event);
 
 private:
     void initTabs();
