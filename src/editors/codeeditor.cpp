@@ -442,7 +442,20 @@ void CodeEditor::removeLine()
 
 void CodeEditor::commentLine()
 {
+    QPoint beFrom;
+    QPoint beTo;
+    bool inBlockEdit = mBlockEdit;
     QTextCursor cursor = textCursor();
+    if (inBlockEdit) {
+        beFrom.setX(mBlockEdit->colTo());
+        beTo.setX(mBlockEdit->colFrom());
+        beFrom.setY(mBlockEdit->startLine());
+        beTo.setY(mBlockEdit->currentLine());
+        QTextBlock anc = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
+        cursor.setPosition(anc.position() + mBlockEdit->colFrom());
+        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
+        endBlockEdit();
+    }
     QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
     int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
     bool removeComment = true;
@@ -467,6 +480,11 @@ void CodeEditor::commentLine()
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
     cursor.endEditBlock();
     setTextCursor(cursor);
+    if (inBlockEdit) {
+        int offset = removeComment ? -1 : 1;
+        startBlockEdit(beFrom.y(), beFrom.x()+offset);
+        mBlockEdit->selectTo(beTo.y(), beTo.x()+offset);
+    }
     recalcExtraSelections();
 }
 
