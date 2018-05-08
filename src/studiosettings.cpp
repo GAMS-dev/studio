@@ -360,7 +360,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
+    mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)
