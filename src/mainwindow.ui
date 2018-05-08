@@ -283,7 +283,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTabWidget" name="logTab">
+      <widget class="QTabWidget" name="logTabs">
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>

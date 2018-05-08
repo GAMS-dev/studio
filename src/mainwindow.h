@@ -201,7 +201,7 @@ private slots:
     void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
-    void on_logTab_tabCloseRequested(int index);
+    void on_logTabs_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
      // Command Line Option

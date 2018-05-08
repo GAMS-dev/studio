@@ -363,8 +363,8 @@ QWidgetList MainWindow::openEditors()
 QList<AbstractEditor*> MainWindow::openLogs()
 {
     QList<AbstractEditor*> resList;
-    for (int i = 0; i < ui->logTab->count(); i++) {
-        AbstractEditor* ed = FileContext::toAbstractEdit(ui->logTab->widget(i));
+    for (int i = 0; i < ui->logTabs->count(); i++) {
+        AbstractEditor* ed = FileContext::toAbstractEdit(ui->logTabs->widget(i));
         if (ed) resList << ed;
     }
     return resList;
@@ -1088,13 +1088,13 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 }
 
-void MainWindow::on_logTab_tabCloseRequested(int index)
+void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
-    QWidget* edit = ui->logTab->widget(index);
+    QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
         LogContext* log = mFileRepo.logContext(edit);
         if (log) log->removeEditor(edit);
-        ui->logTab->removeTab(index);
+        ui->logTabs->removeTab(index);
     }
 }
 
@@ -1283,8 +1283,8 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
 
 void MainWindow::on_actionShow_System_Log_triggered()
 {
-    int index = ui->logTab->indexOf(ui->log);
-    ui->logTab->setCurrentIndex(index);
+    int index = ui->logTabs->indexOf(ui->log);
+    ui->logTabs->setCurrentIndex(index);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1399,9 +1399,9 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             FileSystemContext::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
                                                                   : AbstractEditor::NoWrap);
-            int ind = ui->logTab->addTab(logEdit, logProc->caption());
+            int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
-            ui->logTab->setCurrentIndex(ind);
+            ui->logTabs->setCurrentIndex(ind);
         }
     } else {
         openContext(index);
@@ -1617,7 +1617,7 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
         LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         FileSystemContext::initEditorType(logEdit);
 
-        ui->logTab->addTab(logEdit, logProc->caption());
+        ui->logTabs->addTab(logEdit, logProc->caption());
         logProc->addEditor(logEdit);
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
@@ -1627,10 +1627,10 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     } else {
         logProc->clearLog();
     }
-    if (!ui->logTab->children().contains(logProc->editors().first())) {
-        ui->logTab->addTab(logProc->editors().first(), logProc->caption());
+    if (!ui->logTabs->children().contains(logProc->editors().first())) {
+        ui->logTabs->addTab(logProc->editors().first(), logProc->caption());
     }
-    ui->logTab->setCurrentWidget(logProc->editors().first());
+    ui->logTabs->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runnableGms());
@@ -1762,9 +1762,9 @@ void MainWindow::changeToLog(FileContext* fileContext)
     if (logContext && !logContext->editors().isEmpty()) {
         logContext->setDebugLog(mLogDebugLines);
         AbstractEditor* logEdit = FileContext::toAbstractEdit(logContext->editors().first());
-        if (logEdit && ui->logTab->currentWidget() != logEdit) {
-            if (ui->logTab->currentWidget() != mResultsView)
-                ui->logTab->setCurrentWidget(logEdit);
+        if (logEdit && ui->logTabs->currentWidget() != logEdit) {
+            if (ui->logTabs->currentWidget() != mResultsView)
+                ui->logTabs->setCurrentWidget(logEdit);
         }
     }
 }
@@ -1773,7 +1773,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus, int codec
 {
     if (!fileContext) return;
     QWidget* edit = nullptr;
-    QTabWidget* tabWidget = fileContext->type() == FileSystemContext::Log ? ui->logTab : ui->mainTab;
+    QTabWidget* tabWidget = fileContext->type() == FileSystemContext::Log ? ui->logTabs : ui->mainTab;
     if (!fileContext->editors().empty()) {
         edit = fileContext->editors().first();
     }
@@ -1790,7 +1790,7 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus, int codec
             else
                 tabWidget->currentWidget()->setFocus();
         }
-    if (tabWidget != ui->logTab) {
+    if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         changeToLog(fileContext);
     }
@@ -1821,8 +1821,8 @@ void MainWindow::closeGroup(FileGroupContext* group)
             QWidget* edit = log->editors().isEmpty() ? nullptr : log->editors().first();
             if (edit) {
                 log->removeEditor(edit);
-                int index = ui->logTab->indexOf(edit);
-                if (index >= 0) ui->logTab->removeTab(index);
+                int index = ui->logTabs->indexOf(edit);
+                if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
 
@@ -1863,7 +1863,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
         }
-        QTabWidget* tabWidget = (fc->type() == FileSystemContext::Log) ? ui->logTab : ui->mainTab;
+        QTabWidget* tabWidget = (fc->type() == FileSystemContext::Log) ? ui->logTabs : ui->mainTab;
         createEdit(tabWidget, focus, fc->id(), codecMip);
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
@@ -1958,7 +1958,7 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTab->indexOf(mResultsView); // did widget exist before?
+    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
 
     mResultsView = new ResultsView(results, this);
     QString title("Results: " + mSearchWidget->searchTerm());
@@ -1966,10 +1966,10 @@ void MainWindow::showResults(SearchResultList &results)
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();
 
-    if (index != -1) ui->logTab->removeTab(index); // remove old result page
+    if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTab->addTab(mResultsView, title); // add new result page
-    ui->logTab->setCurrentWidget(mResultsView);
+    ui->logTabs->addTab(mResultsView, title); // add new result page
+    ui->logTabs->setCurrentWidget(mResultsView);
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
