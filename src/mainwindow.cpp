@@ -392,7 +392,7 @@ void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFil
     mLibProcess->execute();
 
     // This log is passed to the system-wide log
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendLog);
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendSystemLog);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
@@ -923,7 +923,7 @@ void MainWindow::fileClosed(FileId fileId)
 
 }
 
-void MainWindow::appendLog(QString text)
+void MainWindow::appendSystemLog(const QString &text)
 {
     QPlainTextEdit *outWin = ui->logView;
     if (!text.isNull()) {
