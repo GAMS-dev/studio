@@ -314,7 +314,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPlainTextEdit" name="logView">
+          <widget class="QPlainTextEdit" name="systemLogView">
            <property name="mouseTracking">
             <bool>true</bool>
            </property>

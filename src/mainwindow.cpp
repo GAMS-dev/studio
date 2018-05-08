@@ -79,7 +79,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->logView->setTextInteractionFlags(ui->logView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+    ui->systemLogView->setTextInteractionFlags(ui->systemLogView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
@@ -125,12 +125,12 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
     if (mSettings->lineWrapProcess()) // set wrapping for system log
-        ui->logView->setLineWrapMode(AbstractEditor::WidgetWidth);
+        ui->systemLogView->setLineWrapMode(AbstractEditor::WidgetWidth);
     else
-        ui->logView->setLineWrapMode(AbstractEditor::NoWrap);
+        ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
 
     DistributionValidator dv;
-    ui->logView->appendPlainText(dv.checkBitness());
+    ui->systemLogView->appendPlainText(dv.checkBitness());
 
     initTabs();
 
@@ -925,7 +925,7 @@ void MainWindow::fileClosed(FileId fileId)
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    QPlainTextEdit *outWin = ui->logView;
+    QPlainTextEdit *outWin = ui->systemLogView;
     if (!text.isNull()) {
         outWin->moveCursor(QTextCursor::End);
         outWin->insertPlainText(text);
@@ -1982,7 +1982,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
     }
-    ui->logView->setFont(font);
+    ui->systemLogView->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()
