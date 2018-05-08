@@ -53,13 +53,9 @@ private slots:
     void setModified();
 
     void on_btn_openUserLibLocation_clicked();
-
     void on_btn_browse_clicked();
-
     void on_btn_export_clicked();
-
     void on_btn_import_clicked();
-
     void on_btn_resetView_clicked();
 
 private:
