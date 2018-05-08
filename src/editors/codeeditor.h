@@ -56,6 +56,29 @@ struct ParenthesisMatch {
     bool valid;
 };
 
+struct ParenthesisPos
+{
+    ParenthesisPos() : character(QChar()), relPos(-1) {}
+    ParenthesisPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
+    QChar character;
+    int relPos;
+};
+
+class BlockData : public QTextBlockUserData
+{
+public:
+    BlockData() { mParenthesis.reserve(10);}
+    ~BlockData() {}
+    QChar charForPos(int relPos);
+    bool isEmpty() {return mParenthesis.isEmpty();}
+    QVector<ParenthesisPos> parenthesis() const;
+    void setParenthesis(const QVector<ParenthesisPos> &parenthesis);
+
+private:
+    // if extending the data remember to enhance isEmpty()
+    QVector<ParenthesisPos> mParenthesis;
+};
+
 class CodeEditor : public AbstractEditor
 {
     Q_OBJECT
@@ -75,6 +98,7 @@ public:
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
     ParenthesisMatch matchingParenthesis();
+    ParenthesisMatch matchParenthesis();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

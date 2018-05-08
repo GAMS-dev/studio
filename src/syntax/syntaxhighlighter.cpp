@@ -175,6 +175,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
+    QVector<ParenthesisPos> parPosList;
     QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
@@ -223,19 +224,22 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (tailBlock.isValid()) {
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
-                    if (tailBlock.syntax->state() != SyntaxState::Standard)
+                    if (tailBlock.syntax->state() != SyntaxState::Standard) {
                         setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
+                        scanParenthesis(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
+                    }
                     code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
                 }
             }
         }
 
-        if (nextBlock.error && nextBlock.length() > 0)
+        if (nextBlock.error && nextBlock.length() > 0) {
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
-        else if (nextBlock.syntax->state() != SyntaxState::Standard) {
+        } else if (nextBlock.syntax->state() != SyntaxState::Standard) {
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
             if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
+        scanParenthesis(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
@@ -245,6 +249,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             mPositionForSyntaxState = -1;
             posForSyntaxState = text.length()+1;
         }
+    }
+    // update BlockData
+    if (!parPosList.isEmpty() || textBlock.userData()) {
+        BlockData* blockData = textBlock.userData() ? static_cast<BlockData*>(textBlock.userData()) : nullptr;
+        if (!parPosList.isEmpty() && !blockData) {
+            blockData = new BlockData();
+        }
+        if (blockData) blockData->setParenthesis(parPosList);
+        if (blockData && blockData->isEmpty())
+            textBlock.setUserData(nullptr);
+        else
+            textBlock.setUserData(blockData);
     }
     StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
     if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {
@@ -272,6 +288,33 @@ int SyntaxHighlighter::getStateIdx(SyntaxState state) const
         if (mStates.at(i)->state() == state) return i;
     }
     return -1;
+}
+
+const QVector<SyntaxState> validParenthesisSyntax = {
+    SyntaxState::Standard,
+    SyntaxState::Identifier,
+    SyntaxState::IdentifierTable,
+    SyntaxState::IdentifierAssignment,
+    SyntaxState::IdentifierAssignmentEnd,
+    SyntaxState::IdentifierTableAssignmentHead,
+    SyntaxState::IdentifierTableAssignmentRow,
+    SyntaxState::Reserved,
+    SyntaxState::ReservedBody,
+};
+
+const QString validParenthesis("{[(}])/");
+
+void SyntaxHighlighter::scanParenthesis(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesisPos> &parenthesis)
+{
+    if (!validParenthesisSyntax.contains(state)) return;
+    for (int i = start; i < start+len; ++i) {
+        if (validParenthesis.contains(text.at(i))) {
+            if (state == SyntaxState::IdentifierAssignmentEnd)
+                parenthesis << ParenthesisPos('\\', i);
+            else
+                parenthesis << ParenthesisPos(text.at(i), i);
+        }
+    }
 }
 
 void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)

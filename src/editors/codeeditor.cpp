@@ -201,7 +201,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
         }
     } else {
         if (e == Hotkey::MatchParenthesis || e == Hotkey::SelectParenthesis) {
-            ParenthesisMatch pm = matchingParenthesis();
+            ParenthesisMatch pm = matchParenthesis();
             QTextCursor::MoveMode mm = (e == Hotkey::SelectParenthesis) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             if (pm.inOutMatch >= 0) {
                 QTextCursor cur = textCursor();
@@ -749,6 +749,75 @@ ParenthesisMatch CodeEditor::matchingParenthesis()
     return ParenthesisMatch();
 }
 
+ParenthesisMatch CodeEditor::matchParenthesis()
+{
+    static QString parenthesis("{[(/}])\\");
+    QTextBlock block = textCursor().block();
+    if (!block.userData()) return ParenthesisMatch();
+    QVector<ParenthesisPos> parList = static_cast<BlockData*>(block.userData())->parenthesis();
+    int pos = textCursor().positionInBlock();
+    int start = -1;
+    for (int i = parList.count()-1; i >= 0; --i) {
+        if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
+            start = i;
+            break;
+        }
+    }
+    if (start < 0) return ParenthesisMatch();
+    // prepare matching search
+    int ci = parenthesis.indexOf(parList.at(start).character);
+    bool back = ci > 3;
+    ci = ci % 4;
+    bool inPar = back ^ (parList.at(start).relPos != pos);
+    ParenthesisMatch result(block.position() + parList.at(start).relPos);
+    QStringRef parEnter = parenthesis.midRef(back ? 4 : 0, 4);
+    QStringRef parLeave = parenthesis.midRef(back ? 0 : 4, 4);
+    QVector<QChar> parStack;
+    parStack << parLeave.at(ci);
+    int pi = start;
+    while (block.isValid()) {
+        // get next parenthesis entry
+        if (back ? --pi < 0 : ++pi >= parList.count()) {
+            bool isEmpty = true;
+            while (block.isValid() && isEmpty) {
+                block = back ? block.previous() : block.next();
+                if (block.isValid() && block.userData()) {
+                    parList = static_cast<BlockData*>(block.userData())->parenthesis();
+                    if (!parList.isEmpty()) isEmpty = false;
+                }
+            }
+            if (isEmpty) continue;
+            parList = static_cast<BlockData*>(block.userData())->parenthesis();
+            pi = back ? parList.count()-1 : 0;
+        }
+
+        int i = parEnter.indexOf(parList.at(pi).character);
+        if (i < 0) {
+            // Only last stacked character is valid
+            if (parList.at(pi).character == parStack.last()) {
+                parStack.removeLast();
+                if (parStack.isEmpty()) {
+                    result.valid = true;
+                    result.match = block.position() + parList.at(pi).relPos;
+                    result.inOutMatch = result.match + (inPar^back ? 0 : 1);
+                    return result;
+                }
+            } else {
+                // Mark bad parenthesis
+                parStack.clear();
+                result.match = block.position() + parList.at(pi).relPos;
+                result.inOutMatch = result.match + (inPar^back ? 0 : 1);
+                return result;
+            }
+        } else {
+            // Stack new character
+            parStack << parLeave.at(i);
+        }
+
+    }
+    return ParenthesisMatch();
+}
+
 ParenthesisMatch CodeEditor::matchAssignment()
 {
     int p = textCursor().position();
@@ -898,7 +967,7 @@ void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selection
 bool CodeEditor::extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (!mParenthesisMatch.isValid())
-        mParenthesisMatch = matchingParenthesis();
+        mParenthesisMatch = matchParenthesis();
 
     if (!mParenthesisMatch.isValid()) return false;
 
@@ -1303,6 +1372,26 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     mColumn += insertWidth;
     mSize = 0;
     mLastCharType = charType;
+}
+
+QChar BlockData::charForPos(int relPos)
+{
+    for (int i = mParenthesis.count()-1; i >= 0; --i) {
+        if (mParenthesis.at(i).relPos == relPos || mParenthesis.at(i).relPos-1 == relPos) {
+            return mParenthesis.at(i).character;
+        }
+    }
+    return QChar();
+}
+
+QVector<ParenthesisPos> BlockData::parenthesis() const
+{
+    return mParenthesis;
+}
+
+void BlockData::setParenthesis(const QVector<ParenthesisPos> &parenthesis)
+{
+    mParenthesis = parenthesis;
 }
 
 
