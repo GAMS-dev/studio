@@ -97,7 +97,6 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesisMatch matchingParenthesis();
     ParenthesisMatch matchParenthesis();
 
 protected:
@@ -146,8 +145,6 @@ private:
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
-    inline bool validParenthesis(int pos);
-    ParenthesisMatch matchAssignment();
     inline int assignmentKind(int p);
 
     static int findAlphaNum(const QString &text, int start, bool back);

@@ -669,86 +669,6 @@ void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
-const QVector<int> validParenthesisSyntax = {
-    (int)SyntaxState::Standard,
-    (int)SyntaxState::Identifier,
-    (int)SyntaxState::IdentifierTable,
-    (int)SyntaxState::IdentifierAssignment,
-    (int)SyntaxState::IdentifierAssignmentEnd,
-    (int)SyntaxState::IdentifierTableAssignmentHead,
-    (int)SyntaxState::IdentifierTableAssignmentRow,
-    (int)SyntaxState::Reserved,
-    (int)SyntaxState::ReservedBody,
-};
-
-inline bool CodeEditor::validParenthesis(int pos)
-{
-    int intState = 0;
-    emit requestSyntaxState(pos, intState);
-    return validParenthesisSyntax.contains(intState);
-}
-
-ParenthesisMatch CodeEditor::matchingParenthesis()
-{
-    if (!mBlockEdit) {
-        static QString parenthesis("{[(}])");
-        QTextCursor cursor = textCursor();
-        int p = cursor.position();
-        int i = parenthesis.indexOf(document()->characterAt(p));
-        bool inPar = i > 2;
-        if (i < 0) {
-            i = parenthesis.indexOf(document()->characterAt(--p));
-            inPar = i < 3;
-        }
-        if (i < 0) return matchAssignment();
-        if (!validParenthesis(p)) return ParenthesisMatch();
-
-        ParenthesisMatch result(p);
-        bool back = (i > 2);
-        QStringRef parEnter = parenthesis.midRef(back ? 3 : 0, 3);
-        QStringRef parLeave = parenthesis.midRef(back ? 0 : 3, 3);
-        i = i % 3;
-        QVector<QChar> parStack;
-        parStack << parLeave.at(i);
-        int docBound = back ? 0 : document()->characterCount()-1;
-        int eventCheck = 0;
-        while (p - docBound != 0) {
-            back ? p-- : p++;
-            if (++eventCheck > 1000) {
-                eventCheck = 0;
-                QApplication::instance()->processEvents();
-                if (cursor != textCursor()) return ParenthesisMatch();
-            }
-            QChar ch = document()->characterAt(p);
-            if (parenthesis.indexOf(ch) >= 0 && validParenthesis(p)) {
-                int i = parEnter.indexOf(ch);
-                if (i < 0) {
-                    // Only last stacked character is valid
-                    if (ch == parStack.last()) {
-                        parStack.removeLast();
-                        if (parStack.isEmpty()) {
-                            result.valid = true;
-                            result.match = p;
-                            result.inOutMatch = p + (inPar^back ? 0 : 1);
-                            return result;
-                        }
-                    } else {
-                        // Mark bad parenthesis
-                        parStack.clear();
-                        result.match = p;
-                        result.inOutMatch = p + (inPar^back ? 0 : 1);
-                        return result;
-                    }
-                } else {
-                    // Stack new character
-                    parStack << parLeave.at(i);
-                }
-            }
-        }
-    }
-    return ParenthesisMatch();
-}
-
 ParenthesisMatch CodeEditor::matchParenthesis()
 {
     static QString parenthesis("{[(/}])\\");
@@ -816,46 +736,6 @@ ParenthesisMatch CodeEditor::matchParenthesis()
 
     }
     return ParenthesisMatch();
-}
-
-ParenthesisMatch CodeEditor::matchAssignment()
-{
-    int p = textCursor().position();
-    int pp = p;
-    if (document()->characterAt(p) != '/' && document()->characterAt(--p) != '/')
-        return ParenthesisMatch();
-    int direction = assignmentKind(p);
-    if (!direction) return ParenthesisMatch();
-    ParenthesisMatch result(p);
-    bool inOutVal = pp == p;
-    int docBound = (direction < 0) ? 0 : document()->characterCount()-1;
-    int eventCheck = 0;
-    while (p - docBound != 0) {
-        p += direction;
-        if (++eventCheck > 1000) {
-            eventCheck = 0;
-            QApplication::instance()->processEvents();
-            if (pp != textCursor().position()) return ParenthesisMatch();
-        }
-        QChar ch = document()->characterAt(p);
-        if (ch == '/') {
-            int matchDirection = assignmentKind(p);
-            if (matchDirection == -direction) {
-                result.match = p;
-                result.inOutMatch = inOutVal ? p+1 : p;
-                result.valid = true;
-                return result;
-            } else {
-                break;
-            }
-        } else if (ch == QChar::ParagraphSeparator || ch == QChar::LineSeparator) {
-            // ensure not to stop early
-            int interState = 0;
-            emit requestSyntaxState(p, interState);
-            if (interState != (int)SyntaxState::IdentifierAssignment) break;
-        }
-    }
-    return result;
 }
 
 inline int CodeEditor::assignmentKind(int p)
