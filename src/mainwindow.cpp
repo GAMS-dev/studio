@@ -2359,6 +2359,45 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 
 }
 
+void MainWindow::on_actionReset_Views_triggered()
+{
+    resetViews();
+}
+
+void MainWindow::resetViews()
+{
+    setWindowState(Qt::WindowNoState);
+    mSettings->resetViewSettings();
+    mSettings->loadSettings(this);
+
+    QDockWidget* stackedFirst;
+    QDockWidget* stackedSecond;
+
+    QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
+    foreach (QDockWidget* dock, dockWidgets) {
+        dock->setFloating(false);
+        dock->setVisible(true);
+
+        if (dock == ui->dockProjectView) {
+            addDockWidget(Qt::LeftDockWidgetArea, dock);
+            resizeDocks(QList<QDockWidget*>() << dock, {width()/6}, Qt::Horizontal);
+        } else if (dock == ui->dockLogView) {
+            addDockWidget(Qt::RightDockWidgetArea, dock);
+            resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
+            stackedFirst = dock;
+        } else if (dock == mDockHelpView) {
+            dock->setVisible(false);
+            addDockWidget(Qt::RightDockWidgetArea, dock);
+            resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
+            stackedSecond = dock;
+        } else if (dock == mDockOptionView) {
+            addDockWidget(Qt::TopDockWidgetArea, dock);
+        }
+    }
+    // stack help over output
+    tabifyDockWidget(stackedFirst, stackedSecond);
+}
+
 }
 }
 

@@ -126,7 +126,8 @@ public:
     void writeTabs(QJsonObject &json) const;
     QWidget *welcomePage() const;
     void delayedFileRestoration();
-    
+    void resetViews();
+
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
@@ -234,6 +235,7 @@ private slots:
     void stopTriggered();
     void toggleLogDebug();
     void on_actionRestore_Recently_Closed_Tab_triggered();
+    void on_actionReset_Views_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);

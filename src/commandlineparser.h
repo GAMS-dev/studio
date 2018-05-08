@@ -42,11 +42,13 @@ public:
     QStringList files() const;
     bool ignoreSettings() const;
     bool resetSettings() const;
+    bool resetView() const;
 
 private:
     QStringList mFiles;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
+    bool mResetView = false;
 };
 
 } // namespace studio
