@@ -73,9 +73,9 @@ void LogContext::addEditor(QWidget* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    LogEditor* ptEdit = static_cast<LogEditor*>(edit);
-    if (!ptEdit) return;
-    ptEdit->setDocument(mDocument);
+    LogEditor* logEdit = toLogEdit(edit);
+    if (!logEdit) return;
+    logEdit->setDocument(mDocument);
     FileContext::addEditor(edit);
 }
 
