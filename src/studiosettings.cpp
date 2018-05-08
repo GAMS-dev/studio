@@ -268,6 +268,8 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
+
     main->commandLineHistory()->setAllHistory(map);
 }
 
@@ -349,14 +351,13 @@ void StudioSettings::loadSettings(MainWindow *main)
         mAppSettings->clear();
         mUserSettings->clear();
     }
+
     loadUserSettings();
     loadAppSettings(main);
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
-
-    mAppSettings->endGroup();
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)
