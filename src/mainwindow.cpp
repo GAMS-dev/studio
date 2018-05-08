@@ -2380,19 +2380,19 @@ void MainWindow::resetViews()
         dock->setFloating(false);
         dock->setVisible(true);
 
-        if (dock->objectName() == "dockProjectView") {
+        if (dock == ui->dockProjectView) {
             addDockWidget(Qt::LeftDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/6}, Qt::Horizontal);
-        } else if (dock->objectName() == "dockLogView") {
+        } else if (dock == ui->dockLogView) {
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedFirst = dock;
-        } else if (dock->objectName() == "dockHelpView") {
+        } else if (dock == mDockHelpView) {
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedSecond = dock;
-        } else if (dock->objectName() == "mDockOptionView") {
+        } else if (dock == mDockOptionView) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
