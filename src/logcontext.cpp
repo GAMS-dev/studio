@@ -317,7 +317,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                 posB++;
                 LinkData mark;
                 mark.col = lstColStart;
-                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col;
+                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
                 if (!mLstContext) {
                     emit findFileContext(fName, &mLstContext, parentEntry());
                 }
