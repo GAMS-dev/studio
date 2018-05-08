@@ -326,7 +326,7 @@ void SearchWidget::setSearchStatus(SearchStatus status)
 
 void SearchWidget::findNext(SearchDirection direction)
 {
-    if (!mMain->recent()->editor()) return;
+    if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
@@ -335,6 +335,7 @@ void SearchWidget::findNext(SearchDirection direction)
 
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
+        QApplication::processEvents();
         mCachedResults = findInFile(fc, true);
         mHasChanged = false;
     }
