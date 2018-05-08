@@ -135,6 +135,11 @@ protected:
     inline bool isKeywordChar(const QChar& ch) {
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
     }
+    inline bool isKeywordChar(const QString& line, int index) {
+        if (index >= line.length()) return false;
+        const QChar& ch(line.at(index));
+        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    }
     inline bool isWhitechar(const QString& line, int index) {
         if (index >= line.length()) return false;
         const QChar& ch(line.at(index));
