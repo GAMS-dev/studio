@@ -196,6 +196,7 @@ private slots:
     void on_actionProject_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
     void on_actionHelp_View_triggered(bool checked);
+    void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other

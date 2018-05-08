@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -171,6 +171,7 @@
     <addaction name="actionOption_View"/>
     <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
+    <addaction name="actionShow_System_Log"/>
     <addaction name="actionShow_Welcome_Page"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
@@ -742,6 +743,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
+   </property>
+  </action>
+  <action name="actionShow_System_Log">
+   <property name="text">
+    <string>Show System Log</string>
    </property>
   </action>
  </widget>

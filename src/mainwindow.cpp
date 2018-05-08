@@ -1281,6 +1281,12 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
     return commandLineStr.simplified();
 }
 
+void MainWindow::on_actionShow_System_Log_triggered()
+{
+    int index = ui->logTab->indexOf(ui->log);
+    ui->logTab->setCurrentIndex(index);
+}
+
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
     if(mWp == nullptr)
