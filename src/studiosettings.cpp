@@ -326,7 +326,6 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
-
 }
 
 void StudioSettings::restoreTabsAndProjects(MainWindow *main)

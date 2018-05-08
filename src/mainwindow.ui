@@ -176,6 +176,8 @@
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
     <addaction name="actionReset_Zoom"/>
+    <addaction name="separator"/>
+    <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -742,6 +744,26 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
+   </property>
+  </action>
+  <action name="actionReset_Views">
+   <property name="text">
+    <string>Reset Views to default</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+   <property name="priority">
+    <enum>QAction::HighPriority</enum>
    </property>
   </action>
  </widget>

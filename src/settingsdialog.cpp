@@ -212,34 +212,7 @@ void SettingsDialog::on_btn_import_clicked()
 
 void SettingsDialog::on_btn_resetView_clicked()
 {
-    mSettings->resetViewSettings();
-    mSettings->loadSettings(mMain);
-
-    QDockWidget* stackedFirst;
-    QDockWidget* stackedSecond;
-
-    QList<QDockWidget*> dockWidgets = mMain->findChildren<QDockWidget*>();
-    foreach (QDockWidget* dock, dockWidgets) {
-        dock->setFloating(false);
-        dock->setVisible(true);
-
-        if (dock->objectName() == "dockProjectView") {
-            mMain->addDockWidget(Qt::LeftDockWidgetArea, dock);
-            mMain->resizeDocks(QList<QDockWidget*>() << dock, {mMain->width()/6}, Qt::Horizontal);
-        } else if (dock->objectName() == "dockLogView") {
-            mMain->addDockWidget(Qt::RightDockWidgetArea, dock);
-            mMain->resizeDocks(QList<QDockWidget*>() << dock, {mMain->width()/3}, Qt::Horizontal);
-            stackedFirst = dock;
-        } else if (dock->objectName() == "dockHelpView") {
-            dock->setVisible(false);
-            mMain->addDockWidget(Qt::RightDockWidgetArea, dock);
-            mMain->resizeDocks(QList<QDockWidget*>() << dock, {mMain->width()/3}, Qt::Horizontal);
-            stackedSecond = dock;
-        } else if (dock->objectName() == "mDockOptionView") {
-            mMain->addDockWidget(Qt::TopDockWidgetArea, dock);
-        }
-    }
-    mMain->tabifyDockWidget(stackedFirst, stackedSecond);
+    mMain->resetViews();
 }
 
 }
