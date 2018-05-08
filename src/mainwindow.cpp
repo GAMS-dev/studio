@@ -1283,7 +1283,7 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
 
 void MainWindow::on_actionShow_System_Log_triggered()
 {
-    int index = ui->logTabs->indexOf(ui->log);
+    int index = ui->logTabs->indexOf(ui->systemLog);
     ui->logTabs->setCurrentIndex(index);
 }
 

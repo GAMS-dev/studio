@@ -293,7 +293,7 @@
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="log">
+       <widget class="QWidget" name="systemLog">
         <attribute name="title">
          <string>System</string>
         </attribute>
