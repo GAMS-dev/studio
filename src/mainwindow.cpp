@@ -2240,13 +2240,7 @@ void MainWindow::on_actionIndent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        int col = ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
-    } else {
-        ce->indent(mSettings->tabSize());
-    }
+    ce->indent(mSettings->tabSize());
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -2256,15 +2250,7 @@ void MainWindow::on_actionOutdent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        int col = ce->indent(qMax(-minWhiteCount, -ce->settings()->tabSize()),
-                             ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
-    } else {
-        ce->indent(-mSettings->tabSize());
-    }
+    ce->indent(-mSettings->tabSize());
 }
 
 void MainWindow::on_actionDuplicate_Line_triggered()

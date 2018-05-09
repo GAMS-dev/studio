@@ -517,32 +517,120 @@ int CodeEditor::minIndentCount(int fromLine, int toLine)
 
 int CodeEditor::indent(int size, int fromLine, int toLine)
 {
-    int res = 0;
-    QTextCursor cursor = textCursor();
-    QTextBlock block = (fromLine < 0) ? document()->findBlock(cursor.anchor()) : document()->findBlockByNumber(fromLine);
-    QTextBlock last = (toLine < 0) ? document()->findBlock(cursor.position()) : document()->findBlockByNumber(toLine);
-    if (block.blockNumber() > last.blockNumber()) qSwap(block, last);
-    cursor.beginEditBlock();
-    while (true) {
-        QTextCursor editCursor(block);
-        if (size > 0) {
-            editCursor.insertText(QString(size, ' '));
-            res = size;
+    if (!size) return 0;
+    QTextCursor savePos;
+    QTextCursor saveAnc;
+    // determine affected lines
+    bool force = true;
+    if (fromLine < 0 || toLine < 0) {
+        if (fromLine >= 0) toLine = fromLine;
+        else if (toLine >= 0) fromLine = toLine;
+        else if (mBlockEdit) {
+            force = false;
+            fromLine = mBlockEdit->startLine();
+            toLine = mBlockEdit->currentLine();
         } else {
-            int wchars = 0;
-            for (int i = 0; i < -size; ++i) {
-                if (block.text().startsWith(' ')) {
-                    editCursor.deleteChar();
-                    wchars--;
-                }
+            force = textCursor().hasSelection();
+            fromLine = document()->findBlock(textCursor().anchor()).blockNumber();
+            toLine = textCursor().block().blockNumber();
+            if (force) {
+                savePos = textCursor();
+                saveAnc = textCursor();
+                saveAnc.setPosition(saveAnc.anchor());
             }
-            if (wchars < res) res = wchars;
         }
-        if (block == last) break;
+    }
+    if (fromLine > toLine) qSwap(fromLine, toLine);
+
+    // smallest indent of affected lines
+    int minIndentPos = MAXINT;
+    QTextBlock block = document()->findBlockByNumber(fromLine);
+    while (block.isValid() && block.blockNumber() <= toLine) {
+        QString text = block.text();
+        int w = 0;
+        while (w < text.length() && text.at(w).isSpace()) w++;
+        if (w < text.length() && w < minIndentPos) minIndentPos = w;
         block = block.next();
     }
-    cursor.endEditBlock();
-    return res;
+
+    // adjust justInsert if current position is beyond minIndentPos
+    if (!force) {
+        if (mBlockEdit)
+            force = (mBlockEdit->colFrom() != mBlockEdit->colTo() || mBlockEdit->colFrom() <= minIndentPos);
+        else {
+            force = (textCursor().positionInBlock() <= minIndentPos);
+        }
+    }
+    // determine insertPos
+    int insertPos = mBlockEdit ? mBlockEdit->colFrom() : textCursor().positionInBlock();
+    if (force) insertPos = minIndentPos;
+    if (size < 0 && insertPos == 0) return 0;
+
+    // check if all lines contain enough spaces to remove them
+    if (size < 0 && !force && insertPos+size >= 0) {
+        bool canRemoveSpaces = true;
+        block = document()->findBlockByNumber(fromLine);
+        while (block.isValid() && block.blockNumber() <= toLine && canRemoveSpaces) {
+            QString text = block.text();
+            int w = insertPos + size;
+            while (w < text.length() && w < insertPos) {
+                if (!text.at(w).isSpace()) canRemoveSpaces = false;
+                w++;
+            }
+            block = block.next();
+        }
+        if (!canRemoveSpaces) return 0;
+    }
+
+    // store current blockEdit mode
+    bool inBlockEdit = mBlockEdit;
+    QPoint beFrom;
+    QPoint beTo;
+    if (mBlockEdit) {
+        beFrom = QPoint(mBlockEdit->colTo(), mBlockEdit->startLine());
+        beTo = QPoint(mBlockEdit->colFrom(), mBlockEdit->currentLine());
+        endBlockEdit();
+    }
+
+    // perform deletion
+    int charCount;
+    if (size < 0) charCount = ((insertPos-1) % qAbs(size)) + 1;
+    else charCount = size - insertPos % size;
+    QString insText(charCount, ' ');
+    block = document()->findBlockByNumber(fromLine);
+    QTextCursor editCursor = textCursor();
+    editCursor.beginEditBlock();
+    while (block.isValid() && block.blockNumber() <= toLine) {
+        editCursor.setPosition(block.position());
+        if (size < 0) {
+            if (insertPos - charCount < block.length()) {
+                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos - charCount);
+                int tempCount = qMin(charCount, block.length() - (insertPos - charCount));
+                editCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, tempCount);
+                editCursor.removeSelectedText();
+            }
+        } else {
+            if (insertPos < block.length()) {
+                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos);
+                editCursor.insertText(insText);
+            }
+        }
+        block = block.next();
+    }
+    editCursor.endEditBlock();
+    // restore normal selection
+    if (!savePos.isNull()) {
+        editCursor.setPosition(saveAnc.position());
+        editCursor.setPosition(savePos.position(), QTextCursor::KeepAnchor);
+    }
+    setTextCursor(editCursor);
+
+    if (inBlockEdit) {
+        int add = (size > 0) ? charCount : -charCount;
+        startBlockEdit(beFrom.y(), qMax(beFrom.x() + add, 0));
+        mBlockEdit->selectTo(beTo.y(), qMax(beTo.x() + add, 0));
+    }
+    return charCount;
 }
 
 void CodeEditor::startBlockEdit(int blockNr, int colNr)

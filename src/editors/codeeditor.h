@@ -90,6 +90,14 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+
+    /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
+    /// outdentation is performed at the cursor position.
+    ///
+    /// \param size The base value to indent. A negative value outdents the lines.
+    /// \param fromLine Defaults to the line with the cursors anchor
+    /// \param toLine Defaults to the line with the cursors position
+    /// \return The number of chars indented (or outdented if negative)
     int indent(int size, int fromLine = -1, int toLine = -1);
     void duplicateLine();
     void removeLine();
