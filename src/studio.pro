@@ -90,7 +90,6 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymboltable.cpp \
-    gamspaths.cpp \
     filetreemodel.cpp \
     logger.cpp \
     logcontext.cpp \
@@ -140,7 +139,9 @@ SOURCES += \
     lxiviewer/lxiviewer.cpp \
     checkforupdatewrapper.cpp \
     autosavehandler.cpp \
-    statuswidgets.cpp
+    statuswidgets.cpp \
+    commonpaths.cpp \
+    distributionvalidator.cpp
 
 HEADERS += \
     editors/codeeditor.h \
@@ -166,7 +167,6 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymboltable.h \
-    gamspaths.h \
     filetreemodel.h \
     logger.h \
     logcontext.h \
@@ -219,7 +219,9 @@ HEADERS += \
     lxiviewer/lxiviewer.h \
     checkforupdatewrapper.h \
     autosavehandler.h \
-    statuswidgets.h
+    statuswidgets.h \
+    commonpaths.h \
+    distributionvalidator.h
 
 FORMS += \
     welcomepage.ui  \

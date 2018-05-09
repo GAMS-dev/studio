@@ -37,7 +37,7 @@ public:
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
 public slots:
-    void addProcessData(QProcess::ProcessChannel channel, QString text);
+    void addProcessData(QString text);
     void setJumpToLogEnd(bool state);
 
 protected:

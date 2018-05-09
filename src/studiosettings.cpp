@@ -19,8 +19,9 @@
  */
 #include "studiosettings.h"
 #include "mainwindow.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "searchwidget.h"
+#include "version.h"
 
 namespace gams {
 namespace studio {
@@ -55,8 +56,10 @@ StudioSettings::~StudioSettings()
 
 void StudioSettings::initSettingsFiles()
 {
-    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
-    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                 GAMS_ORGANIZATION_STR, "uistates");
+    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                  GAMS_ORGANIZATION_STR, "usersettings");
 }
 
 void StudioSettings::resetSettings()
@@ -277,7 +280,7 @@ void StudioSettings::loadUserSettings()
 {
     mUserSettings->beginGroup("General");
 
-    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", CommonPaths::defaultWorkingDir()).toString());
     setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
     setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
@@ -357,7 +360,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
+    mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)

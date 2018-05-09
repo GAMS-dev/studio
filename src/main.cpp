@@ -18,21 +18,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "application.h"
+#include "distributionvalidator.h"
 #include "exception.h"
 #include "version.h"
 
 using gams::studio::Application;
+using gams::studio::DistributionValidator;
 
 int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setApplicationVersion(STUDIO_VERSION);
     Application app(argc, argv);
-    app.setOrganizationName(GAMS_COMPANYNAME_STR);
+    app.setOrganizationName(GAMS_ORGANIZATION_STR);
     app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     app.setApplicationName(GAMS_PRODUCTNAME_STR);
 
     try {
+        app.mainWindow()->appendSystemLog(DistributionValidator::checkBitness());
         app.mainWindow()->show();
         app.openAssociatedFiles();
         return app.exec();

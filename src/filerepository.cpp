@@ -21,7 +21,7 @@
 #include "exception.h"
 #include "syntax.h"
 #include "logger.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 namespace gams {
 namespace studio {
@@ -89,7 +89,7 @@ void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& res
     FileSystemContext* fsc = findContext(filePath, fileGroup);
     if (!fsc) {
         QFileInfo fi(filePath);
-        resultFile = addFile(fi.fileName(), GAMSPaths::filePath(filePath), fileGroup);
+        resultFile = addFile(fi.fileName(), CommonPaths::filePath(filePath), fileGroup);
     } else if (fsc->type() == FileSystemContext::File) {
         resultFile = static_cast<FileContext*>(fsc);
     } else {
@@ -191,7 +191,7 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     FileGroupContext* group = nullptr;
 
     QFileInfo fi(filePath);
-    QFileInfo di(GAMSPaths::filePath(fi.path()));
+    QFileInfo di(CommonPaths::filePath(fi.path()));
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
         FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
         if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {

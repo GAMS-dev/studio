@@ -19,7 +19,7 @@
  */
 #include "bookmarkdialog.h"
 #include "exception.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "gclgms.h"
 #include "helpview.h"
 #include "checkforupdatewrapper.h"
@@ -46,8 +46,8 @@ HelpView::HelpView(QWidget *parent) :
     else
         onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1").arg(mThisRelease) );
 
-    QDir dir = QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER);
-    baseLocation = QDir(GAMSPaths::systemDir()).absolutePath();
+    QDir dir = QDir(CommonPaths::systemDir()).filePath(START_CHAPTER);
+    baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
     startPageUrl = QUrl::fromLocalFile(dir.absolutePath());
     mOfflineHelpAvailable = (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath()));
 
@@ -86,8 +86,8 @@ void HelpView::setupUi(QWidget *parent)
 
     QAction* actionHome = new QAction(this);
     actionHome->setObjectName(QStringLiteral("actionHome"));
-    actionHome->setToolTip("Start page ("+ QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER)+")");
-    actionHome->setStatusTip("Start page ("+ QDir(GAMSPaths::systemDir()).filePath(START_CHAPTER)+")");
+    actionHome->setToolTip("Start page ("+ QDir(CommonPaths::systemDir()).filePath(START_CHAPTER)+")");
+    actionHome->setStatusTip("Start page ("+ QDir(CommonPaths::systemDir()).filePath(START_CHAPTER)+")");
     QIcon homeButtonIcon(":/img/home");
     actionHome->setIcon(homeButtonIcon);
     connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
@@ -579,7 +579,7 @@ void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
     htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";
-    htmlText += QDir(GAMSPaths::systemDir()).filePath(chapterText);
+    htmlText += QDir(CommonPaths::systemDir()).filePath(chapterText);
     htmlText += "</div><br/> <div>Please check your GAMS installation and configuration. You can reinstall GAMS from <a href='";
     htmlText += downloadPage;
     htmlText += "'>";

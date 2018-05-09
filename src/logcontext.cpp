@@ -107,9 +107,8 @@ TextMark*LogContext::firstErrorMark()
     return mMarks->firstErrorMark();
 }
 
-void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
+void LogContext::addProcessData(QString text)
 {
-    Q_UNUSED(channel)
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
