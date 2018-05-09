@@ -19,25 +19,26 @@
  */
 #include "studiosettings.h"
 #include "mainwindow.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "searchwidget.h"
+#include "version.h"
 
 namespace gams {
 namespace studio {
 
-StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings)
+StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViews)
     : mIgnoreSettings(ignoreSettings),
       mResetSettings(resetSettings)
 {
-    if (ignoreSettings && !mResetSettings)
-    {
+    if (ignoreSettings && !mResetSettings) {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
     }
-    else if (mAppSettings == nullptr)
-    {
+    else if (mAppSettings == nullptr) {
         initSettingsFiles();
     }
+    if (resetViews)
+        resetViewSettings();
 }
 
 StudioSettings::~StudioSettings()
@@ -55,8 +56,10 @@ StudioSettings::~StudioSettings()
 
 void StudioSettings::initSettingsFiles()
 {
-    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "uistates");
-    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "GAMS", "usersettings");
+    mAppSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                 GAMS_ORGANIZATION_STR, "uistates");
+    mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                  GAMS_ORGANIZATION_STR, "usersettings");
 }
 
 void StudioSettings::resetSettings()
@@ -64,6 +67,25 @@ void StudioSettings::resetSettings()
     initSettingsFiles();
     mAppSettings->sync();
     mUserSettings->sync();
+}
+
+void StudioSettings::resetViewSettings()
+{
+    mAppSettings->beginGroup("mainWindow");
+    mAppSettings->setValue("size", QSize(1000, 700));
+    mAppSettings->setValue("pos", QPoint());
+    mAppSettings->setValue("windowState", QByteArray());
+    mAppSettings->endGroup();
+
+    mAppSettings->beginGroup("viewMenu");
+    mAppSettings->setValue("projectView", true);
+    mAppSettings->setValue("outputView", true);
+    mAppSettings->setValue("helpView", false);
+    mAppSettings->setValue("optionView", true);
+    mAppSettings->setValue("optionEditor", false);
+    mAppSettings->endGroup();
+
+    mAppSettings->sync();
 }
 
 bool StudioSettings::resetSettingsSwitch()
@@ -82,12 +104,13 @@ void StudioSettings::saveSettings(MainWindow *main)
         return;
     }
     // Main Application Settings
-    // window
+    // main window
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", main->size());
     mAppSettings->setValue("pos", main->pos());
     mAppSettings->setValue("windowState", main->saveState());
 
+    // search window
     mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
     mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
     mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
@@ -188,91 +211,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->sync();
 }
 
-void StudioSettings::loadUserSettings()
+void StudioSettings::loadAppSettings(MainWindow *main)
 {
-    mUserSettings->beginGroup("General");
-
-    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", GAMSPaths::defaultWorkingDir()).toString());
-    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
-    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
-    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
-    setOpenLst(mUserSettings->value("openLst", false).toBool());
-    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-
-    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
-    setFontSize(mUserSettings->value("fontSize", 10).toInt());
-    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
-    setTabSize(mUserSettings->value("tabSize", 4).toInt());
-    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
-    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
-    setClearLog(mUserSettings->value("clearLog", false).toBool());
-    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
-    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
-    setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Misc");
-
-    setHistorySize(mUserSettings->value("historySize", 8).toInt());
-
-    mUserSettings->endGroup();
-}
-
-int StudioSettings::historySize() const
-{
-    return mHistorySize;
-}
-
-void StudioSettings::setHistorySize(int historySize)
-{
-    mHistorySize = historySize;
-}
-
-void StudioSettings::restoreLastFilesUsed(MainWindow *main)
-{
-    mAppSettings->beginGroup("fileHistory");
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    main->history()->lastOpenedFiles.clear();
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-}
-
-void StudioSettings::restoreTabsAndProjects(MainWindow *main)
-{
-    mAppSettings->beginGroup("fileHistory");
-    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
-    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->fileRepository()->read(loadDoc.object());
-
-    if (restoreTabs()) {
-        saveData = mAppSettings->value("openTabs", "").toByteArray();
-        loadDoc = QJsonDocument::fromJson(saveData);
-        main->readTabs(loadDoc.object());
-    }
-    mAppSettings->endGroup();
-}
-
-void StudioSettings::loadSettings(MainWindow *main)
-{
-    if (mResetSettings)
-    {
-        mAppSettings->clear();
-        mUserSettings->clear();
-    }
-    loadUserSettings();
-
-    // window
+    // main window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
 
@@ -328,15 +271,96 @@ void StudioSettings::loadSettings(MainWindow *main)
                    mAppSettings->value("opt").toStringList());
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
+
     main->commandLineHistory()->setAllHistory(map);
+}
+
+void StudioSettings::loadUserSettings()
+{
+    mUserSettings->beginGroup("General");
+
+    setDefaultWorkspace(mUserSettings->value("defaultWorkspace", CommonPaths::defaultWorkingDir()).toString());
+    setSkipWelcomePage(mUserSettings->value("skipWelcome", false).toBool());
+    setRestoreTabs(mUserSettings->value("restoreTabs", true).toBool());
+    setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
+    setOpenLst(mUserSettings->value("openLst", false).toBool());
+    setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Editor");
+
+    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    setFontSize(mUserSettings->value("fontSize", 10).toInt());
+    setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
+    setTabSize(mUserSettings->value("tabSize", 4).toInt());
+    setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
+    setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
+    setClearLog(mUserSettings->value("clearLog", false).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
+    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
+    setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
+
+    mUserSettings->endGroup();
+    mUserSettings->beginGroup("Misc");
+
+    setHistorySize(mUserSettings->value("historySize", 8).toInt());
+
+    mUserSettings->endGroup();
+}
+
+int StudioSettings::historySize() const
+{
+    return mHistorySize;
+}
+
+void StudioSettings::setHistorySize(int historySize)
+{
+    mHistorySize = historySize;
+}
+
+void StudioSettings::restoreLastFilesUsed(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    mAppSettings->beginReadArray("lastOpenedFiles");
+    main->history()->lastOpenedFiles.clear();
+    for (int i = 0; i < historySize(); i++) {
+        mAppSettings->setArrayIndex(i);
+        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+    }
+    mAppSettings->endArray();
+    mAppSettings->endGroup();
+}
+
+void StudioSettings::restoreTabsAndProjects(MainWindow *main)
+{
+    mAppSettings->beginGroup("fileHistory");
+    QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+    main->fileRepository()->read(loadDoc.object());
+
+    if (restoreTabs()) {
+        saveData = mAppSettings->value("openTabs", "").toByteArray();
+        loadDoc = QJsonDocument::fromJson(saveData);
+        main->readTabs(loadDoc.object());
+    }
+    mAppSettings->endGroup();
+}
+
+void StudioSettings::loadSettings(MainWindow *main)
+{
+    if (mResetSettings) {
+        mAppSettings->clear();
+        mUserSettings->clear();
+    }
 
     loadUserSettings();
+    loadAppSettings(main);
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mUserModelLibraryDir = GAMSPaths::userModelLibraryDir();
-
-    mAppSettings->endGroup();
+    mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)

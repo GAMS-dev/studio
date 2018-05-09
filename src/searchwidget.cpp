@@ -190,7 +190,6 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc, bool skipFilters)
     }
 
     QString searchTerm = ui->combo_search->currentText();
-    int searchLength = searchTerm.length();
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
@@ -208,55 +207,31 @@ QList<Result> SearchWidget::findInFile(FileSystemContext *fsc, bool skipFilters)
         if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
         if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
-        QTextCursor item;
-        QTextCursor lastItem;
+        bool isOpenFile = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor()));
 
-        if (!fc->document()) { // not opened in editor
+        int lineCounter = 0;
+        QFile file(fc->location());
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) { // read file
+                lineCounter++;
+                QString line = in.readLine();
 
-            int lineCounter = 0;
-
-            QFile file(fc->location());
-            if (file.open(QIODevice::ReadOnly)) {
-                QTextStream in(&file);
-                while (!in.atEnd()) { // read file
-                    lineCounter++;
-                    QString line = in.readLine();
-                    QRegularExpressionMatch match;
-
-                    int count = line.count(searchRegex);
-                    if (count > 0) {
-                        for (int i = 0; i < count; i++) {
-                            matches.addResult(lineCounter, match.capturedEnd() - searchLength,
-                                              file.fileName(), line.trimmed());
-                        }
-                    }
+                QRegularExpressionMatch match;
+                QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
+                while (i.hasNext()) {
+                    match = i.next();
+                    matches.addResult(lineCounter, match.capturedStart(),
+                                      file.fileName(), line.trimmed());
+                    if (isOpenFile)
+                        fc->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
                 }
-                file.close();
             }
-        } else { // read from editor document(s)
-
-            // if currently in foreground
-            bool isOpenFile = (fc == mMain->fileRepository()->fileContext(mMain->recent()->editor()));
-
-            lastItem = QTextCursor(fc->document());
-            do {
-                item = fc->document()->find(searchRegex, lastItem, getFlags());
-
-                if (item != lastItem) lastItem = item;
-                else break;
-
-                if (!item.isNull()) {
-                    matches.addResult(item.blockNumber()+1, item.columnNumber() - searchTerm.length(),
-                                      fc->location(), item.block().text().trimmed());
-                    if (isOpenFile) {
-                        int length = item.selectionEnd() - item.selectionStart();
-                        fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
-                                             item.columnNumber() - length, length);
-                    }
-                }
-            } while (!item.isNull());
-            if (fc->highlighter()) fc->highlighter()->rehighlight();
+            file.close();
         }
+
+        if (isOpenFile && fc->highlighter())
+            fc->highlighter()->rehighlight();
     }
     return matches.resultList();
 }
@@ -351,7 +326,7 @@ void SearchWidget::setSearchStatus(SearchStatus status)
 
 void SearchWidget::findNext(SearchDirection direction)
 {
-    if (!mMain->recent()->editor()) return;
+    if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
     FileContext *fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
     if (!fc) return;
@@ -360,6 +335,7 @@ void SearchWidget::findNext(SearchDirection direction)
 
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
+        QApplication::processEvents();
         mCachedResults = findInFile(fc, true);
         mHasChanged = false;
     }

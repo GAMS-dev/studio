@@ -126,6 +126,7 @@ public:
     void writeTabs(QJsonObject &json) const;
     QWidget *welcomePage() const;
     void delayedFileRestoration();
+    void resetViews();
 
 public slots:
     void receiveAction(QString action);
@@ -137,6 +138,8 @@ public slots:
     void on_runGmsFile(FileContext *fc);
     void on_setMainGms(FileContext *fc);
     void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
+    void getAdvancedActions(QList<QAction *> *actions);
+    void appendSystemLog(const QString &text);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -147,7 +150,6 @@ private slots:
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     void fileClosed(FileId fileId);
-    void appendOutput(QProcess::ProcessChannel channel, QString text);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
@@ -195,11 +197,12 @@ private slots:
     void on_actionProject_View_triggered(bool checked);
     void on_actionOption_View_triggered(bool checked);
     void on_actionHelp_View_triggered(bool checked);
+    void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
     void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
-    void on_logTab_tabCloseRequested(int index);
+    void on_logTabs_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
      // Command Line Option
@@ -232,6 +235,7 @@ private slots:
     void stopTriggered();
     void toggleLogDebug();
     void on_actionRestore_Recently_Closed_Tab_triggered();
+    void on_actionReset_Views_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -259,6 +263,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
+    void loadCommandLineOptions(FileContext* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(FileGroupContext *fgc);

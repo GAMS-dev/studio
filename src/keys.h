@@ -44,6 +44,8 @@ enum class Hotkey {
     RemoveLine = 102,
     Indent = 103,
     Outdent = 104,
+    MatchParenthesis = 105,
+    SelectParenthesis = 106,
 
 };
 

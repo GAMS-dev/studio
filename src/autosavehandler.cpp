@@ -1,6 +1,6 @@
 #include "autosavehandler.h"
 #include "mainwindow.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 #include <QMessageBox>
 
@@ -20,14 +20,21 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
 
     for (auto file : mMainWindow->history()->lastOpenedFiles)
     {
-        QString path = GAMSPaths::path(file);
+        QString path = CommonPaths::path(file);
         if (!path.isEmpty()) {
             QDir dir(path);
             dir.setNameFilters(filters);
             QStringList files = dir.entryList(filters);
             for (auto file : files) {
                 if (file.startsWith(mAutosavedFileMarker)) {
-                    autsaveFiles << path+"/"+file;
+                    QString autosaveFilePath = path+"/"+file;
+                    file.replace(mAutosavedFileMarker, "");
+                    QString originalFilePath = path+"/"+file;
+                    QFileInfo origin(originalFilePath);
+                    if (origin.exists())
+                        autsaveFiles << autosaveFilePath;
+                    else
+                        QFile::remove(autosaveFilePath);
                 }
             }
         }

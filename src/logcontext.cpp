@@ -73,9 +73,9 @@ void LogContext::addEditor(QWidget* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    LogEditor* ptEdit = static_cast<LogEditor*>(edit);
-    if (!ptEdit) return;
-    ptEdit->setDocument(mDocument);
+    LogEditor* logEdit = toLogEdit(edit);
+    if (!logEdit) return;
+    logEdit->setDocument(mDocument);
     FileContext::addEditor(edit);
 }
 
@@ -107,9 +107,8 @@ TextMark*LogContext::firstErrorMark()
     return mMarks->firstErrorMark();
 }
 
-void LogContext::addProcessData(QProcess::ProcessChannel channel, QString text)
+void LogContext::addProcessData(QString text)
 {
-    Q_UNUSED(channel)
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
@@ -241,13 +240,14 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    if (line.startsWith("*** Error ") || line.startsWith("--- Error ")) {
+    if (line.startsWith("*** Error ")) {
         bool ok = false;
         posA = 9;
         while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
         posB = posA;
         while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
         int errNr = line.midRef(posA, posB-posA).toInt(&ok);
+        bool isValidError = line.midRef(posB, 4) == " in ";
         mCurrentErrorHint.lstLine = 0;
         mCurrentErrorHint.text = "";
 
@@ -257,10 +257,10 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
+            isValidError = true;
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
-            int from = mDashLine.indexOf(' ')+1;
-            fName = parentEntry()->location() + '/' + mDashLine.mid(from, mDashLine.indexOf('(')-from);
+            fName = parentEntry()->location() + '/' + mLastSourceFile;
             lineNr = errNr-1;
             size = -1;
             colStart = -1;
@@ -273,25 +273,39 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             size = capture(line, posA, posB, 1, ']').toInt()-1;
             posB++;
         }
-
-        LinkData mark;
-        mark.col = line.indexOf(" ")+1;
-        mark.size = result.length() - mark.col;
-        FileContext *fc = nullptr;
-        if (!fName.isEmpty()) {
-            emit findFileContext(fName, &fc, parentEntry());
-            if (fc) {
-                mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
-            } else {
-                mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
-            }
+        {
+            QFileInfo fi(fName);
+            if (!fi.exists() || fi.isDir()) fName = "";
         }
-        errMark = mark.textMark;
-        marks << mark;
-        errFound = true;
-        mInErrorDescription = true;
+
+        if (isValidError) {
+            LinkData mark;
+            mark.col = line.indexOf(" ")+1;
+            mark.size = result.length() - mark.col;
+            FileContext *fc = nullptr;
+            if (!fName.isEmpty()) {
+                emit findFileContext(fName, &fc, parentEntry());
+                if (fc) {
+                    mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                } else {
+                    mark.textMark = generateTextMark(fName, TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                }
+            }
+            errMark = mark.textMark;
+            marks << mark;
+            errFound = true;
+            mInErrorDescription = true;
+        }
     }
-    if (line.startsWith("--- ")) mDashLine = line;
+    if (line.startsWith("--- ")) {
+        int fEnd = line.indexOf('(');
+        if (fEnd >= 0) {
+            int nrEnd = line.indexOf(')', fEnd);
+            bool ok;
+            line.mid(fEnd+1, nrEnd-fEnd-1).toInt(&ok);
+            if (ok) mLastSourceFile = line.mid(4, fEnd-4);
+        }
+    }
     while (posA < line.length()) {
         result += capture(line, posA, posB, 0, '[');
 
@@ -302,7 +316,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                 posB++;
                 LinkData mark;
                 mark.col = lstColStart;
-                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col;
+                mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
                 if (!mLstContext) {
                     emit findFileContext(fName, &mLstContext, parentEntry());
                 }

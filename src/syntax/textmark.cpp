@@ -188,7 +188,7 @@ void TextMark::updatePos()
         mPosition = block.position() + col;
         if (mSize <= 0) {
             mSize = block.next().text().indexOf('$')+1;
-            if (mSize <= 0) mSize = block.length()-col;
+            if (mSize <= 0) mSize = block.length()-col-1;
         } else {
             QString str = block.text();
             for (int i = col; i < qMin(col+mSize, str.length()); ++i)

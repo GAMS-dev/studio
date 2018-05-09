@@ -97,7 +97,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
@@ -118,11 +118,11 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>&amp;Edit</string>
     </property>
     <widget class="QMenu" name="menuEncoding">
      <property name="title">
-      <string>Encoding</string>
+      <string>&amp;Encoding</string>
      </property>
      <widget class="QMenu" name="menureload_with">
       <property name="title">
@@ -135,7 +135,7 @@
     </widget>
     <widget class="QMenu" name="menuAdvanced">
      <property name="title">
-      <string>Advanced</string>
+      <string>&amp;Advanced</string>
      </property>
      <addaction name="actionSet_to_Uppercase"/>
      <addaction name="actionSet_to_Lowercase"/>
@@ -158,32 +158,31 @@
     <addaction name="separator"/>
     <addaction name="actionOverwrite_Mode"/>
     <addaction name="separator"/>
-    <addaction name="actionZoom_In"/>
-    <addaction name="actionZoom_Out"/>
-    <addaction name="actionReset_Zoom"/>
-    <addaction name="separator"/>
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
     <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
+    <addaction name="actionShow_System_Log"/>
     <addaction name="actionShow_Welcome_Page"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
     <addaction name="actionReset_Zoom"/>
+    <addaction name="separator"/>
+    <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
@@ -194,7 +193,7 @@
    </widget>
    <widget class="QMenu" name="menu_GAMs">
     <property name="title">
-     <string>GAMS</string>
+     <string>&amp;GAMS</string>
     </property>
     <addaction name="actionRun"/>
     <addaction name="actionRun_with_GDX_Creation"/>
@@ -286,7 +285,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTabWidget" name="logTab">
+      <widget class="QTabWidget" name="logTabs">
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>
@@ -296,7 +295,7 @@
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="log">
+       <widget class="QWidget" name="systemLog">
         <attribute name="title">
          <string>System</string>
         </attribute>
@@ -317,7 +316,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPlainTextEdit" name="logView">
+          <widget class="QPlainTextEdit" name="systemLogView">
            <property name="mouseTracking">
             <bool>true</bool>
            </property>
@@ -343,7 +342,7 @@
   </action>
   <action name="actionExit_Application">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -351,7 +350,7 @@
   </action>
   <action name="actionHelp">
    <property name="text">
-    <string>Documentation</string>
+    <string>&amp;Documentation</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -359,7 +358,7 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
   </action>
   <action name="actionAbout_Qt">
@@ -378,7 +377,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Output</string>
+    <string>&amp;Output</string>
    </property>
   </action>
   <action name="actionProject_View">
@@ -389,12 +388,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Explorer</string>
+    <string>&amp;Explorer</string>
    </property>
   </action>
   <action name="actionNew">
    <property name="text">
-    <string>New...</string>
+    <string>&amp;New...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -402,7 +401,7 @@
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open...</string>
+    <string>&amp;Open...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -410,7 +409,7 @@
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -434,7 +433,7 @@
   </action>
   <action name="actionClose">
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -460,12 +459,12 @@
   </action>
   <action name="actionShow_Welcome_Page">
    <property name="text">
-    <string>Show Welcome Page</string>
+    <string>&amp;Show Welcome Page</string>
    </property>
   </action>
   <action name="actionGAMS_Library">
    <property name="text">
-    <string>Model Library Explorer</string>
+    <string>&amp;Model Library Explorer</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -477,7 +476,7 @@
      <normaloff>:/img/play</normaloff>:/img/play</iconset>
    </property>
    <property name="text">
-    <string>Run</string>
+    <string>&amp;Run</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -489,7 +488,7 @@
      <normaloff>:/img/compile</normaloff>:/img/compile</iconset>
    </property>
    <property name="text">
-    <string>Compile</string>
+    <string>&amp;Compile</string>
    </property>
    <property name="toolTip">
     <string>Compile</string>
@@ -538,7 +537,7 @@
   </action>
   <action name="actionSearch">
    <property name="text">
-    <string>Search</string>
+    <string>&amp;Search</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -560,7 +559,7 @@
   </action>
   <action name="actionSelect_All">
    <property name="text">
-    <string>Select All</string>
+    <string>&amp;Select All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
@@ -571,7 +570,7 @@
   </action>
   <action name="actionCopy">
    <property name="text">
-    <string>Copy</string>
+    <string>&amp;Copy</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -582,7 +581,7 @@
   </action>
   <action name="actionPaste">
    <property name="text">
-    <string>Paste</string>
+    <string>&amp;Paste</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
@@ -590,7 +589,7 @@
   </action>
   <action name="actionUndo">
    <property name="text">
-    <string>Undo</string>
+    <string>&amp;Undo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
@@ -598,7 +597,7 @@
   </action>
   <action name="actionRedo">
    <property name="text">
-    <string>Redo</string>
+    <string>&amp;Redo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
@@ -606,7 +605,7 @@
   </action>
   <action name="actionGo_To">
    <property name="text">
-    <string>Go To</string>
+    <string>&amp;Go To</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -614,7 +613,7 @@
   </action>
   <action name="actionCut">
    <property name="text">
-    <string>Cut</string>
+    <string>&amp;Cut</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -641,7 +640,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Check for Update</string>
+    <string>&amp;Check for Update</string>
    </property>
   </action>
   <action name="actionHelp_View">
@@ -649,7 +648,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Help</string>
+    <string>&amp;Help</string>
    </property>
   </action>
   <action name="actionOverwrite_Mode">
@@ -657,7 +656,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Overwrite Mode</string>
+    <string>&amp;Overwrite Mode</string>
    </property>
    <property name="shortcut">
     <string>Ins</string>
@@ -721,7 +720,7 @@
   </action>
   <action name="actionRestore_Recently_Closed_Tab">
    <property name="text">
-    <string>Restore Recently Closed Tab</string>
+    <string>&amp;Restore Recently Closed Tab</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
@@ -746,6 +745,46 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
+   </property>
+  </action>
+  <action name="actionShow_System_Log">
+   <property name="text">
+    <string>Show System Log</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+   <property name="priority">
+    <enum>QAction::HighPriority</enum>
+   </property>
+  </action>
+  <action name="actionReset_Views">
+   <property name="text">
+    <string>Reset Views to default</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+   <property name="priority">
+    <enum>QAction::HighPriority</enum>
    </property>
   </action>
  </widget>

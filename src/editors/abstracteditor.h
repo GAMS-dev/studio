@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,22 +20,29 @@
 #ifndef ABSTRACTEDITOR_H
 #define ABSTRACTEDITOR_H
 
-#include <QtWidgets>
+#include <QPlainTextEdit>
 
 namespace gams {
 namespace studio {
 
 class StudioSettings;
 
-
 class AbstractEditor : public QPlainTextEdit
 {
+    Q_OBJECT
+
 public:
-    enum EditorType { BaseEditor, CodeEditor, LogEditor };
+    enum EditorType { CodeEditor, LogEditor };
 
 public:
     virtual ~AbstractEditor() override;
-    virtual EditorType type();
+    virtual EditorType type() = 0;
+
+    bool event(QEvent *event) override;
+    StudioSettings *settings() const;
+
+public slots:
+    void afterContentsChanged(int, int, int);
 
 protected:
     AbstractEditor(StudioSettings *settings, QWidget *parent);
@@ -43,14 +50,6 @@ protected:
 
 protected:
     StudioSettings *mSettings = nullptr;
-
-    // QObject interface
-public:
-    bool event(QEvent *event) override;
-    StudioSettings *settings() const;
-
-public slots:
-    void afterContentsChanged(int, int, int);
 };
 
 }

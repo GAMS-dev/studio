@@ -64,6 +64,7 @@ public:
         etUndefined = 0,
         etPlainText = 1,
         etSourceCode = 2,
+        etLog = 3,
         etLastTextType = 4,
 
         etLxiLst = 5,
@@ -131,7 +132,7 @@ public: // static convenience methods
         if(w) w->setProperty("EditorType", etPlainText);
     }
     inline static void initEditorType(LogEditor* w) {
-        if(w) w->setProperty("EditorType", etPlainText);
+        if(w) w->setProperty("EditorType", etLog);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
         if(w) w->setProperty("EditorType", etGdx);
@@ -154,6 +155,9 @@ public: // static convenience methods
         if (t == etLxiLst)
             return toLxiViewer(w)->codeEditor();
         return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
+    }
+    inline static LogEditor* toLogEdit(QWidget* w) {
+        return (editorType(w) == etLog) ? static_cast<LogEditor*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

@@ -105,7 +105,9 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxState::Standard)
                << SyntaxState::DeclarationVariableType
                << SyntaxState::DeclarationTable
                << SyntaxState::Directive
-               << SyntaxState::Reserved;
+               << SyntaxState::Reserved
+               << SyntaxState::Embedded
+               << SyntaxState::Standard;
 }
 
 SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, int index)
@@ -113,20 +115,19 @@ SyntaxBlock SyntaxStandard::find(SyntaxState entryState, const QString& line, in
     static QVector<SyntaxState> invalidEntries {SyntaxState::Declaration, SyntaxState::DeclarationSetType,
                 SyntaxState::DeclarationTable, SyntaxState::DeclarationVariableType};
     Q_UNUSED(entryState);
-    int i = line.indexOf(';', index);
     bool error = invalidEntries.contains(entryState);
-    if (i>-1)
-        return SyntaxBlock(this, index, i+1, error);
-    else
-        return SyntaxBlock(this, index, line.length(), error);
+    int end = index;
+    while (isKeywordChar(line, end)) end++;
+    while (!isKeywordChar(line, end) && end < line.length()) end++;
+    return SyntaxBlock(this, index, end, error);
 }
 
 SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, bool &hasContent)
 {
-    int end = index;
-    while (isWhitechar(line, end)) end++;
-    hasContent = end < line.length();
-    return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
+    Q_UNUSED(line);
+    Q_UNUSED(index);
+    Q_UNUSED(hasContent);
+    return SyntaxBlock();
 }
 
 SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxState::Directive)

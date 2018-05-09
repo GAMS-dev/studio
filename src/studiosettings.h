@@ -34,7 +34,7 @@ class StudioSettings
 {
 
 public:
-    StudioSettings(bool ignoreSettings, bool resetSettings);
+    StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViewSettings);
     ~StudioSettings();
 
     void loadSettings(MainWindow *main);
@@ -115,6 +115,7 @@ public:
 
     void resetSettings();
     bool resetSettingsSwitch();
+    void resetViewSettings();
 
     void restoreTabsAndProjects(MainWindow *main);
 
@@ -159,6 +160,7 @@ private:
     // user model library directory
     QString mUserModelLibraryDir;
     void initSettingsFiles();
+    void loadAppSettings(MainWindow *main);
 };
 
 }

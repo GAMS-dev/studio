@@ -199,6 +199,16 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             mBlockEdit->keyPressEvent(e);
             return;
         }
+    } else {
+        if (e == Hotkey::MatchParenthesis || e == Hotkey::SelectParenthesis) {
+            ParenthesisMatch pm = matchParenthesis();
+            QTextCursor::MoveMode mm = (e == Hotkey::SelectParenthesis) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            if (pm.inOutMatch >= 0) {
+                QTextCursor cur = textCursor();
+                cur.setPosition(pm.inOutMatch, mm);
+                setTextCursor(cur);
+            }
+        }
     }
 
     if (!isReadOnly()) {
@@ -404,6 +414,10 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* e)
         }
         lastAct = act;
     }
+    QMenu *submenu = menu->addMenu(tr("Advanced"));
+    QList<QAction*> ret;
+    emit requestAdvancedActions(&ret);
+    submenu->addActions(ret);
     menu->exec(e->globalPos());
     delete menu;
 }
@@ -438,7 +452,20 @@ void CodeEditor::removeLine()
 
 void CodeEditor::commentLine()
 {
+    QPoint beFrom;
+    QPoint beTo;
+    bool inBlockEdit = mBlockEdit;
     QTextCursor cursor = textCursor();
+    if (inBlockEdit) {
+        beFrom.setX(mBlockEdit->colTo());
+        beTo.setX(mBlockEdit->colFrom());
+        beFrom.setY(mBlockEdit->startLine());
+        beTo.setY(mBlockEdit->currentLine());
+        QTextBlock anc = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
+        cursor.setPosition(anc.position() + mBlockEdit->colFrom());
+        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
+        endBlockEdit();
+    }
     QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
     int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
     bool removeComment = true;
@@ -463,6 +490,11 @@ void CodeEditor::commentLine()
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
     cursor.endEditBlock();
     setTextCursor(cursor);
+    if (inBlockEdit) {
+        int offset = removeComment ? -1 : 1;
+        startBlockEdit(beFrom.y(), beFrom.x()+offset);
+        mBlockEdit->selectTo(beTo.y(), beTo.x()+offset);
+    }
     recalcExtraSelections();
 }
 
@@ -659,10 +691,91 @@ void CodeEditor::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
+ParenthesisMatch CodeEditor::matchParenthesis()
+{
+    static QString parenthesis("{[(/}])\\");
+    QTextBlock block = textCursor().block();
+    if (!block.userData()) return ParenthesisMatch();
+    QVector<ParenthesisPos> parList = static_cast<BlockData*>(block.userData())->parenthesis();
+    int pos = textCursor().positionInBlock();
+    int start = -1;
+    for (int i = parList.count()-1; i >= 0; --i) {
+        if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
+            start = i;
+            break;
+        }
+    }
+    if (start < 0) return ParenthesisMatch();
+    // prepare matching search
+    int ci = parenthesis.indexOf(parList.at(start).character);
+    bool back = ci > 3;
+    ci = ci % 4;
+    bool inPar = back ^ (parList.at(start).relPos != pos);
+    ParenthesisMatch result(block.position() + parList.at(start).relPos);
+    QStringRef parEnter = parenthesis.midRef(back ? 4 : 0, 4);
+    QStringRef parLeave = parenthesis.midRef(back ? 0 : 4, 4);
+    QVector<QChar> parStack;
+    parStack << parLeave.at(ci);
+    int pi = start;
+    while (block.isValid()) {
+        // get next parenthesis entry
+        if (back ? --pi < 0 : ++pi >= parList.count()) {
+            bool isEmpty = true;
+            while (block.isValid() && isEmpty) {
+                block = back ? block.previous() : block.next();
+                if (block.isValid() && block.userData()) {
+                    parList = static_cast<BlockData*>(block.userData())->parenthesis();
+                    if (!parList.isEmpty()) isEmpty = false;
+                }
+            }
+            if (isEmpty) continue;
+            parList = static_cast<BlockData*>(block.userData())->parenthesis();
+            pi = back ? parList.count()-1 : 0;
+        }
+
+        int i = parEnter.indexOf(parList.at(pi).character);
+        if (i < 0) {
+            // Only last stacked character is valid
+            if (parList.at(pi).character == parStack.last()) {
+                parStack.removeLast();
+                if (parStack.isEmpty()) {
+                    result.valid = true;
+                    result.match = block.position() + parList.at(pi).relPos;
+                    result.inOutMatch = result.match + (inPar^back ? 0 : 1);
+                    return result;
+                }
+            } else {
+                // Mark bad parenthesis
+                parStack.clear();
+                result.match = block.position() + parList.at(pi).relPos;
+                result.inOutMatch = result.match + (inPar^back ? 0 : 1);
+                return result;
+            }
+        } else {
+            // Stack new character
+            parStack << parLeave.at(i);
+        }
+
+    }
+    return ParenthesisMatch();
+}
+
+inline int CodeEditor::assignmentKind(int p)
+{
+    int preState = 0;
+    int postState = 0;
+    emit requestSyntaxState(p-1, preState);
+    emit requestSyntaxState(p+1, postState);
+    if (postState == (int)SyntaxState::IdentifierAssignment) return 1;
+    if (preState == (int)SyntaxState::IdentifierAssignment) return -1;
+    if (preState == (int)SyntaxState::IdentifierAssignmentEnd) return -1;
+    return 0;
+}
+
 void CodeEditor::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
-
+    mParenthesisMatch = ParenthesisMatch();
     if (!isReadOnly() && !mBlockEdit) {
         extraSelCurrentLine(selections);
 
@@ -687,9 +800,13 @@ void CodeEditor::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
-    if (!mBlockEdit) extraSelCurrentWord(selections);
+    if (!mBlockEdit) {
+        if (!extraSelMatchParenthesis(selections))
+            extraSelCurrentWord(selections);
+    }
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
+    mWordDelay.stop();
 }
 
 void CodeEditor::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
@@ -747,6 +864,34 @@ void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selection
             block = block.next();
         }
     }
+}
+
+bool CodeEditor::extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!mParenthesisMatch.isValid())
+        mParenthesisMatch = matchParenthesis();
+
+    if (!mParenthesisMatch.isValid()) return false;
+
+    if (mParenthesisMatch.pos == mParenthesisMatch.match) mParenthesisMatch.valid = false;
+    QColor fgColor = mParenthesisMatch.valid ? QColor(Qt::red) : QColor(Qt::black);
+    QColor bgColor = mParenthesisMatch.valid ? QColor(Qt::green).lighter(170) : QColor(Qt::red).lighter(150);
+    QTextEdit::ExtraSelection selection;
+    selection.cursor = textCursor();
+    selection.cursor.setPosition(mParenthesisMatch.pos);
+    selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+    selection.format.setForeground(fgColor);
+    selection.format.setBackground(bgColor);
+    selections << selection;
+    if (mParenthesisMatch.match >= 0) {
+        selection.cursor = textCursor();
+        selection.cursor.setPosition(mParenthesisMatch.match);
+        selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+        selection.format.setForeground(fgColor);
+        selection.format.setBackground(bgColor);
+        selections << selection;
+    }
+    return true;
 }
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
@@ -840,12 +985,20 @@ QString CodeEditor::BlockEdit::blockText()
     QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine));
     int from = qMin(mColumn, mColumn+mSize);
     int to = qMax(mColumn, mColumn+mSize);
-    for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
+
+    if (qMin(mStartLine, mCurrentLine) == qMax(mStartLine, mCurrentLine)) {
         QString text = block.text();
         if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
-        res.append(text.mid(from, to-from)+"\n");
-        block = block.next();
+        res.append(text.mid(from, to-from));
+    } else {
+        for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
+            QString text = block.text();
+            if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
+            res.append(text.mid(from, to-from)+"\n");
+            block = block.next();
+        }
     }
+
     return res;
 }
 
@@ -1121,6 +1274,26 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     mColumn += insertWidth;
     mSize = 0;
     mLastCharType = charType;
+}
+
+QChar BlockData::charForPos(int relPos)
+{
+    for (int i = mParenthesis.count()-1; i >= 0; --i) {
+        if (mParenthesis.at(i).relPos == relPos || mParenthesis.at(i).relPos-1 == relPos) {
+            return mParenthesis.at(i).character;
+        }
+    }
+    return QChar();
+}
+
+QVector<ParenthesisPos> BlockData::parenthesis() const
+{
+    return mParenthesis;
+}
+
+void BlockData::setParenthesis(const QVector<ParenthesisPos> &parenthesis)
+{
+    mParenthesis = parenthesis;
 }
 
 

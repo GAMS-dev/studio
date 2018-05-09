@@ -59,6 +59,9 @@ enum class SyntaxState {
     IdentifierTableAssignmentHead,
     IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
+    Embedded,
+    EmbeddedBody,
+    EmbeddedEnd,
     Reserved,
     ReservedBody,
 
@@ -130,6 +133,11 @@ public:
 protected:
 
     inline bool isKeywordChar(const QChar& ch) {
+        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    }
+    inline bool isKeywordChar(const QString& line, int index) {
+        if (index >= line.length()) return false;
+        const QChar& ch(line.at(index));
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
     }
     inline bool isWhitechar(const QString& line, int index) {

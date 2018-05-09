@@ -316,6 +316,26 @@ public:
         return list;
     }
 
+    static QList<QPair<QString, QString>> embedded() {
+        QList<QPair<QString, QString>> list = {
+            {"embeddedCode", ""},
+            {"embeddedCodeS", ""},
+            {"embeddedCodeV", ""},
+            {"continueEmbeddedCode", ""},
+            {"continueEmbeddedCodeS", ""},
+            {"continueEmbeddedCodeV", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> embeddedEnd() {
+        QList<QPair<QString, QString>> list = {
+            {"endEmbeddedCode", ""},
+            {"pauseEmbeddedCode", ""},
+        };
+        return list;
+    }
+
     static QList<QPair<QString, QString>> declaration4Set() {
         QList<QPair<QString, QString>> list = {
             {"singleton", ""},

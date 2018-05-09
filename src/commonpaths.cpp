@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamspaths.h"
+#include "commonpaths.h"
 #include "exception.h"
 
 #include <QApplication>
@@ -29,12 +29,12 @@
 namespace gams {
 namespace studio {
 
-GAMSPaths::GAMSPaths()
+CommonPaths::CommonPaths()
 {
 
 }
 
-QString GAMSPaths::systemDir() {
+QString CommonPaths::systemDir() {
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
@@ -54,19 +54,10 @@ QString GAMSPaths::systemDir() {
         if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
     }
 
-#ifdef _WIN32
-    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
-    bool is64 = (sizeof(int*) == 8) ? true : false;
-    if (!is64 && joat64.exists())
-        EXCEPT() << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory: " << gamsPath;
-    if (is64 && !joat64.exists())
-        EXCEPT() << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory: " << gamsPath;
-#endif
-
     return QDir::cleanPath(gamsPath);
 }
 
-QString GAMSPaths::userDocumentsDir()
+QString CommonPaths::userDocumentsDir()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
@@ -77,7 +68,7 @@ QString GAMSPaths::userDocumentsDir()
     return userDocumentsDir.path();
 }
 
-QString GAMSPaths::userModelLibraryDir()
+QString CommonPaths::userModelLibraryDir()
 {
     QDir userModelLibraryDir(userDocumentsDir() + "/modellibs");
     if(!userModelLibraryDir.exists())
@@ -85,7 +76,7 @@ QString GAMSPaths::userModelLibraryDir()
     return userModelLibraryDir.path();
 }
 
-QString GAMSPaths::defaultWorkingDir()
+QString CommonPaths::defaultWorkingDir()
 {
     QDir defWorkingDir(userDocumentsDir() + "/workspace");
     if(!defWorkingDir.exists())
@@ -93,16 +84,16 @@ QString GAMSPaths::defaultWorkingDir()
     return defWorkingDir.path();
 }
 
-QString GAMSPaths::filePath(const QString &path)
+QString CommonPaths::filePath(const QString &path)
 {
     QFileInfo fi(path);
     return fi.absoluteFilePath();
 }
 
-QString GAMSPaths::path(const QString &file)
+QString CommonPaths::path(const QString &file)
 {
     QFileInfo fi(file);
-    return fi.absoluteFilePath();
+    return fi.absolutePath();
 }
 
 }

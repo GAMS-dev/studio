@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "modeldialog.h"
-#include "gamspaths.h"
+#include "commonpaths.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -49,7 +49,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
     ui.setupUi(this);
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    QDir gamsSysDir(GAMSPaths::systemDir());
+    QDir gamsSysDir(CommonPaths::systemDir());
     QList<LibraryItem> items;
 
     items = GlbParser::parseFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));

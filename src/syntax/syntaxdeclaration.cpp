@@ -204,7 +204,9 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
-    mSubStates << SyntaxState::Semicolon << SyntaxState::ReservedBody << SyntaxState::Directive
+    mSubStates << SyntaxState::Semicolon << SyntaxState::Embedded << SyntaxState::Reserved
+               << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody
                << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
@@ -222,21 +224,24 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
 
 SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
 {
-    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon << SyntaxState::Directive
+               << SyntaxState::Declaration << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
+               << SyntaxState::DeclarationTable
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
 }
 
 SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)
 {
     Q_UNUSED(entryState);
-    int end = index;
-    while (isWhitechar(line, end))
-        ++end;
-    if (end < line.length()) {
-        if (line.at(end)=='(')
-            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
-        end++;
-    }
+    int end = line.length();
+//    while (isWhitechar(line, end))
+//        ++end;
+//    if (index == 0) return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+//    if (end < line.length()) {
+//        if (line.at(end)=='(')
+//            return SyntaxBlock(this, index, end+1, SyntaxStateShift::out);
+//        end++;
+//    }
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
@@ -245,13 +250,57 @@ SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    int end = index;
+    int end = start;
     while (end<line.length() && line.at(end)!=';' && line.at(end)!='(') end++;
     if (end<line.length() && line.at(end)=='(') end++;
     hasContent = start < end;
-    if (end < line.length())
+    if (end < line.length() || index == 0)
         return SyntaxBlock(this, index, end, SyntaxStateShift::out);
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+}
+
+SyntaxEmbedded::SyntaxEmbedded(SyntaxState state) : SyntaxKeywordBase(state)
+{
+    QList<QPair<QString, QString>> list;
+    if (state == SyntaxState::Embedded) {
+        list = SyntaxData::embedded();
+        mSubStates << SyntaxState::EmbeddedBody;
+    } else {
+        list = SyntaxData::embeddedEnd();
+    }
+    mKeywords.insert(state, new DictList(list));
+}
+
+SyntaxBlock SyntaxEmbedded::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    int start = index;
+    int end = -1;
+    while (isWhitechar(line, start))
+        ++start;
+    end = findEnd(state(), line, start);
+    if (end > start) {
+        SyntaxStateShift stateShift = (state() == SyntaxState::Embedded) ? SyntaxStateShift::in : SyntaxStateShift::out;
+        return SyntaxBlock(this, start, end, false, stateShift, state());
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxState::EmbeddedBody)
+{
+    mSubStates << SyntaxState::EmbeddedEnd;
+}
+
+SyntaxBlock SyntaxEmbeddedBody::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState);
+    return SyntaxBlock(this, index, line.length());
+}
+
+SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, bool &hasContent)
+{
+    Q_UNUSED(hasContent);
+    return SyntaxBlock(this, index, line.length());
 }
 
 
