@@ -21,10 +21,10 @@ QString DistributionValidator::checkBitness()
     bool is64 = (sizeof(int*) == 8) ? true : false;
     QStringList messages;
     if (!is64 && joat64.exists())
-        messages << "ERROR GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:\n"
+        messages << "ERROR: GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
                  << gamsPath;
     if (is64 && !joat64.exists())
-        messages << "ERROR GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:\n"
+        messages << "ERROR: GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
                  << gamsPath;
     return messages.join(" ");
 #else
