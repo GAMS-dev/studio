@@ -308,11 +308,14 @@ void SyntaxHighlighter::scanParenthesis(const QString &text, int start, int len,
 {
     if (!validParenthesisSyntax.contains(state)) return;
     for (int i = start; i < start+len; ++i) {
-        if (validParenthesis.contains(text.at(i))) {
+        int kind = validParenthesis.indexOf(text.at(i));
+        if (kind == 6) {
             if (state == SyntaxState::IdentifierAssignmentEnd)
                 parenthesis << ParenthesisPos('\\', i);
-            else
+            else if (state == SyntaxState::IdentifierAssignment)
                 parenthesis << ParenthesisPos(text.at(i), i);
+        } else if (kind >= 0) {
+            parenthesis << ParenthesisPos(text.at(i), i);
         }
     }
 }
