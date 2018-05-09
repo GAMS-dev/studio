@@ -28,7 +28,7 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
             for (auto file : files) {
                 if (file.startsWith(mAutosavedFileMarker)) {
                     QString autosaveFilePath = path+"/"+file;
-                    file.remove(0,2);
+                    file.replace(mAutosavedFileMarker, "");
                     QString originalFilePath = path+"/"+file;
                     QFileInfo origin(originalFilePath);
                     if (origin.exists())
