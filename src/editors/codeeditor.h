@@ -46,6 +46,39 @@ enum class CharType {
     LetterLCase,
 };
 
+struct ParenthesisMatch {
+    ParenthesisMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
+        : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
+    bool isValid() {return pos>=0;}
+    int pos;
+    int match;
+    int inOutMatch;
+    bool valid;
+};
+
+struct ParenthesisPos
+{
+    ParenthesisPos() : character(QChar()), relPos(-1) {}
+    ParenthesisPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
+    QChar character;
+    int relPos;
+};
+
+class BlockData : public QTextBlockUserData
+{
+public:
+    BlockData() { mParenthesis.reserve(10);}
+    ~BlockData() {}
+    QChar charForPos(int relPos);
+    bool isEmpty() {return mParenthesis.isEmpty();}
+    QVector<ParenthesisPos> parenthesis() const;
+    void setParenthesis(const QVector<ParenthesisPos> &parenthesis);
+
+private:
+    // if extending the data remember to enhance isEmpty()
+    QVector<ParenthesisPos> mParenthesis;
+};
+
 class CodeEditor : public AbstractEditor
 {
     Q_OBJECT
@@ -64,7 +97,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-//    int matchingParenthesis();
+    ParenthesisMatch matchParenthesis();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -105,12 +138,14 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection>& selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
+    inline int assignmentKind(int p);
 
     static int findAlphaNum(const QString &text, int start, bool back);
 
@@ -164,6 +199,7 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
+    ParenthesisMatch mParenthesisMatch;
 
 public:
     BlockEdit *blockEdit() const;
