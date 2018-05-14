@@ -127,11 +127,11 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
 
-    seq = new KeySeqList("F8","goto matching parenthesis");
-    setHotkey(Hotkey::MatchParenthesis, seq);
+    seq = new KeySeqList("F8","goto matching parentheses");
+    setHotkey(Hotkey::MatchParentheses, seq);
 
-    seq = new KeySeqList("Shift+F8","select to matching parenthesis");
-    setHotkey(Hotkey::SelectParenthesis, seq);
+    seq = new KeySeqList("Shift+F8","select to matching parentheses");
+    setHotkey(Hotkey::SelectParentheses, seq);
 }
 
 void Keys::read(const QJsonObject& json)
