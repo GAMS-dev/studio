@@ -30,8 +30,6 @@
 namespace gams {
 namespace studio {
 
-class DistributionValidator;
-
 class Application : public QApplication
 {
     Q_OBJECT
