@@ -18,12 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "application.h"
-#include "distributionvalidator.h"
 #include "exception.h"
 #include "version.h"
 
 using gams::studio::Application;
-using gams::studio::DistributionValidator;
 
 int main(int argc, char *argv[])
 {
@@ -35,7 +33,6 @@ int main(int argc, char *argv[])
     app.setApplicationName(GAMS_PRODUCTNAME_STR);
 
     try {
-        app.mainWindow()->appendSystemLog(DistributionValidator::checkBitness());
         app.mainWindow()->show();
         app.openAssociatedFiles();
         return app.exec();
