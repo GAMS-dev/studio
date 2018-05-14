@@ -1295,17 +1295,31 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::renameToBackup(QFile *file)
 {
+    const int MAX_BACKUPS = 3;
     FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
-    FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+    FileContext *fc = mFileRepo.fileContext(fsc->id());
     if (fc) fc->unwatch();
 
-    int suffix = 1;
     QString filename = file->fileName();
-    if(!file->rename(filename + ".bak")) {
-        while (!file->rename(filename + "." + QString::number(suffix) + ".bak")) {
-            suffix++;
-        }
+
+    // find oldest backup file
+    int last = 1;
+    while (QFile(filename + "." + QString::number(last) + ".bak").exists()) {
+        if (last == MAX_BACKUPS) break; // dont exceed MAX_BACKUPS
+        last++;
     }
+    if (last == MAX_BACKUPS) { // delete if maximum reached
+        QFile(filename + "." + QString::number(last) + ".bak").remove();
+        last--; // last is now one less
+    }
+
+    // move up all by 1, starting last
+    for (int i = last; i > 0; i--) {
+        QFile(filename + "." + QString::number(i) + ".bak") // from
+                .rename(filename + "." + QString::number(i + 1) + ".bak"); // to
+    }
+    //rename to 1
+    file->rename(filename + ".1.bak");
 }
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
