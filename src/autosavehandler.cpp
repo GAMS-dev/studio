@@ -13,12 +13,13 @@ AutosaveHandler::AutosaveHandler(MainWindow *mainWindow)
 
 }
 
-QStringList AutosaveHandler::checkForAutosaveFiles()
+QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
 {
     QStringList filters { "*.gms", "*.txt" };
     QStringList autsaveFiles;
+    QStringList tabsandRecent = list << mMainWindow->history()->lastOpenedFiles;
 
-    for (auto file : mMainWindow->history()->lastOpenedFiles)
+    for (auto file : tabsandRecent)
     {
         QString path = CommonPaths::path(file);
         if (!path.isEmpty()) {
@@ -39,8 +40,6 @@ QStringList AutosaveHandler::checkForAutosaveFiles()
             }
         }
     }
-    QJsonObject json;
-    autsaveFiles << mMainWindow->readTabs(json);
     autsaveFiles.removeDuplicates();
     return autsaveFiles;
 }

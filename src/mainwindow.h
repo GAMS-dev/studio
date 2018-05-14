@@ -122,7 +122,7 @@ public:
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
     HelpView *getDockHelpView() const;
-    QStringList readTabs(const QJsonObject &json);
+    void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     QWidget *welcomePage() const;
     void delayedFileRestoration();
@@ -236,6 +236,7 @@ private slots:
     void toggleLogDebug();
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();
+    void initAutoSave();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -310,6 +311,7 @@ private:
     int TimerID;
     FileMetrics mMetrics;
     bool mCheckOnce = true;
+    QStringList mOpenTabsList;
 };
 
 }
