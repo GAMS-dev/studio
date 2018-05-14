@@ -362,8 +362,13 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
                     readGroup(subGroup, gprArray);
-                    // TODO(JM) restore expanded-state
-                    emit setNodeExpanded(mTreeModel->index(subGroup));
+
+                    if (subGroup->childCount() > 0) {
+                        // TODO(JM) restore expanded-state
+                        emit setNodeExpanded(mTreeModel->index(subGroup));
+                    } else {
+                        removeGroup(subGroup); // dont open empty groups
+                    }
                 }
             }
         } else {
