@@ -1123,19 +1123,67 @@ int CodeEditor::BlockEdit::startLine() const
     return mStartLine;
 }
 
+inline int charCategory(const QChar &ch)
+{
+    if (ch.isSpace()) return 0;
+    if (ch.isLetterOrNumber() || ch=='.' || ch==',') return 1;
+    if (ch.isPunct()) return 2;
+    return 3;
+}
+
+inline void nextCharClass(int offset,int &size, const QString &text)
+{
+    bool hadSpace = false;
+    if (size+offset < text.length()) {
+        int startCat = charCategory(text.at(size+offset));
+        while (++size+offset < text.length()) {
+            int cat = charCategory(text.at(size+offset));
+            if (startCat == 0 || cat == 0) hadSpace = true;
+            if (startCat == 0) startCat = cat;
+            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) return;
+        }
+    } else {
+        ++size;
+    }
+}
+
+inline void prevCharClass(int offset, int &size, const QString &text)
+{
+    bool hadSpace = false;
+    if (size+offset > 0) {
+        --size;
+        int startCat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
+        if (size+offset == 0) return;
+        while (--size+offset > 0) {
+            int cat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
+            if (startCat == 0 || cat == 0) hadSpace = true;
+            if (startCat == 0) startCat = cat;
+            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) {
+                ++size;
+                return;
+            }
+        }
+    }
+}
+
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
-        if (e->key() == Qt::Key_Right) mSize++;
-        if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
+
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
         if (e->key() == Qt::Key_Home) mSize = -mColumn;
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+        if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
+            nextCharClass(mColumn, mSize, block.text());
+        } else if (e->key() == Qt::Key_Right) mSize++;
+        if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
+            prevCharClass(mColumn, mSize, block.text());
+        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
             cursor.setPosition(block.position()+mColumn+mSize);
