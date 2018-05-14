@@ -543,8 +543,8 @@ int CodeEditor::indent(int size, int fromLine, int toLine)
     if (fromLine > toLine) qSwap(fromLine, toLine);
 
     // smallest indent of affected lines
-    int minIndentPos = MAXINT;
     QTextBlock block = document()->findBlockByNumber(fromLine);
+    int minIndentPos = block.length();
     while (block.isValid() && block.blockNumber() <= toLine) {
         QString text = block.text();
         int w = 0;
