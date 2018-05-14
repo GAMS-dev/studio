@@ -32,8 +32,14 @@ Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
     parseCmdArgs();
-    auto* settings = new StudioSettings(mCmdParser.ignoreSettings(), mCmdParser.resetSettings(), mCmdParser.resetView());
+    auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
+                                        mCmdParser.resetSettings(),
+                                        mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow(settings));
+
+    connect(&mDistribValidator, &DistributionValidator::messageReceived,
+            mMainWindow.get(), &MainWindow::appendSystemLog);
+    mDistribValidator.start();
 }
 
 MainWindow* Application::mainWindow() const
