@@ -37,9 +37,12 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
     mBlinkBlockEdit.setInterval(500);
+    mWordDelay.setSingleShot(true);
+    mParenthesisDelay.setSingleShot(true);
 
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEditor::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEditor::updateExtraSelections);
+    connect(&mParenthesisDelay, &QTimer::timeout, this, &CodeEditor::updateExtraSelections);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::recalcExtraSelections);
@@ -878,6 +881,7 @@ void CodeEditor::recalcExtraSelections()
             if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
                 mWordUnderCursor = text.mid(from, to-from+1);
         }
+        mParenthesisDelay.start(100);
         mWordDelay.start(500);
     }
     extraSelBlockEdit(selections);
@@ -889,12 +893,11 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        if (!extraSelMatchparentheses(selections))
+        if (!extraSelMatchParenthesis(selections, sender() == &mParenthesisDelay) && sender() == &mWordDelay)
             extraSelCurrentWord(selections);
     }
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
-    mWordDelay.stop();
 }
 
 void CodeEditor::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
@@ -954,7 +957,7 @@ void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selection
     }
 }
 
-bool CodeEditor::extraSelMatchparentheses(QList<QTextEdit::ExtraSelection> &selections)
+bool CodeEditor::extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection> &selections, bool first)
 {
     if (!mParenthesesMatch.isValid())
         mParenthesesMatch = matchParentheses();
@@ -964,6 +967,7 @@ bool CodeEditor::extraSelMatchparentheses(QList<QTextEdit::ExtraSelection> &sele
     if (mParenthesesMatch.pos == mParenthesesMatch.match) mParenthesesMatch.valid = false;
     QColor fgColor = mParenthesesMatch.valid ? QColor(Qt::red) : QColor(Qt::black);
     QColor bgColor = mParenthesesMatch.valid ? QColor(Qt::green).lighter(170) : QColor(Qt::red).lighter(150);
+    QColor bgBlinkColor = mParenthesisMatch.valid ? QColor(Qt::green).lighter(130) : QColor(Qt::red).lighter(115);
     QTextEdit::ExtraSelection selection;
     selection.cursor = textCursor();
     selection.cursor.setPosition(mParenthesesMatch.pos);
@@ -976,7 +980,7 @@ bool CodeEditor::extraSelMatchparentheses(QList<QTextEdit::ExtraSelection> &sele
         selection.cursor.setPosition(mParenthesesMatch.match);
         selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
         selection.format.setForeground(fgColor);
-        selection.format.setBackground(bgColor);
+        selection.format.setBackground(first ? bgBlinkColor : bgColor);
         selections << selection;
     }
     return true;

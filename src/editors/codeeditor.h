@@ -146,7 +146,7 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-    bool extraSelMatchparentheses(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection>& selections, bool first);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
@@ -207,7 +207,8 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
-    ParenthesesMatch mParenthesesMatch;
+    QTimer mParenthesisDelay;
+    ParenthesisMatch mParenthesisMatch;
 
 public:
     BlockEdit *blockEdit() const;
