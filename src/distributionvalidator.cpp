@@ -70,7 +70,7 @@ void DistributionValidator::checkCompatibility()
 
     QRegExp regex(".*GAMS Release\\s+:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about) && regex.captureCount() == 1) {
-        QString error = QString("ERROR: Found incompatible GAMS %1 when GAMS %2 or %3 was expected.")
+        QString error = QString("ERROR: Found incompatible GAMS %1 but GAMS %2 or %3 was expected.")
                 .arg(regex.cap(regex.captureCount()))
                 .arg(GAMS_DISTRIB_VERSION_SHORT).arg(GAMS_DISTRIB_VERSION_NEXT_SHORT);
         emit messageReceived(error);
