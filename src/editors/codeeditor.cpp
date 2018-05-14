@@ -31,6 +31,49 @@ namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
+inline int charCategory(const QChar &ch)
+{
+    if (ch.isSpace()) return 0;
+    if (ch.isLetterOrNumber() || ch=='.' || ch==',') return 1;
+    if (ch.isPunct()) return 2;
+    return 3;
+}
+
+inline void nextCharClass(int offset,int &size, const QString &text)
+{
+    bool hadSpace = false;
+    if (size+offset < text.length()) {
+        int startCat = charCategory(text.at(size+offset));
+        while (++size+offset < text.length()) {
+            int cat = charCategory(text.at(size+offset));
+            if (startCat == 0 || cat == 0) hadSpace = true;
+            if (startCat == 0) startCat = cat;
+            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) return;
+        }
+    } else {
+        ++size;
+    }
+}
+
+inline void prevCharClass(int offset, int &size, const QString &text)
+{
+    bool hadSpace = false;
+    if (size+offset > 0) {
+        --size;
+        int startCat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
+        if (size+offset == 0) return;
+        while (--size+offset > 0) {
+            int cat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
+            if (startCat == 0 || cat == 0) hadSpace = true;
+            if (startCat == 0) startCat = cat;
+            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) {
+                ++size;
+                return;
+            }
+        }
+    }
+}
+
 CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
     : AbstractEditor(settings, parent)
 {
@@ -211,6 +254,35 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
                 cur.setPosition(pm.inOutMatch, mm);
                 setTextCursor(cur);
             }
+        } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
+            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            QTextCursor cur = textCursor();
+            int p = cur.positionInBlock();
+            nextCharClass(0, p, cur.block().text());
+            if (p >= cur.block().length()) {
+                QTextBlock block = cur.block().next();
+                if (block.isValid()) cur.setPosition(block.position(), mm);
+                else cur.movePosition(QTextCursor::EndOfBlock, mm);
+            } else {
+                cur.setPosition(cur.block().position() + p, mm);
+            }
+            setTextCursor(cur);
+            e->accept();
+            return;
+        } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
+            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            QTextCursor cur = textCursor();
+            int p = cur.positionInBlock();
+            if (p == 0) {
+                QTextBlock block = cur.block().previous();
+                if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
+            } else {
+                prevCharClass(0, p, cur.block().text());
+                cur.setPosition(cur.block().position() + p, mm);
+            }
+            setTextCursor(cur);
+            e->accept();
+            return;
         }
     }
 
@@ -1121,49 +1193,6 @@ void CodeEditor::BlockEdit::setColumn(int column)
 int CodeEditor::BlockEdit::startLine() const
 {
     return mStartLine;
-}
-
-inline int charCategory(const QChar &ch)
-{
-    if (ch.isSpace()) return 0;
-    if (ch.isLetterOrNumber() || ch=='.' || ch==',') return 1;
-    if (ch.isPunct()) return 2;
-    return 3;
-}
-
-inline void nextCharClass(int offset,int &size, const QString &text)
-{
-    bool hadSpace = false;
-    if (size+offset < text.length()) {
-        int startCat = charCategory(text.at(size+offset));
-        while (++size+offset < text.length()) {
-            int cat = charCategory(text.at(size+offset));
-            if (startCat == 0 || cat == 0) hadSpace = true;
-            if (startCat == 0) startCat = cat;
-            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) return;
-        }
-    } else {
-        ++size;
-    }
-}
-
-inline void prevCharClass(int offset, int &size, const QString &text)
-{
-    bool hadSpace = false;
-    if (size+offset > 0) {
-        --size;
-        int startCat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-        if (size+offset == 0) return;
-        while (--size+offset > 0) {
-            int cat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-            if (startCat == 0 || cat == 0) hadSpace = true;
-            if (startCat == 0) startCat = cat;
-            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) {
-                ++size;
-                return;
-            }
-        }
-    }
 }
 
 void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
