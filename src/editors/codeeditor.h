@@ -106,6 +106,8 @@ public:
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
     ParenthesesMatch matchParentheses();
+    void setOverwriteMode(bool overwrite) override;
+    bool overwriteMode() const override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -185,6 +187,8 @@ private:
         int currentLine() const;
         int column() const;
         void setColumn(int column);
+        void setOverwriteMode(bool overwrite);
+        bool overwriteMode() const;
 
     private:
         CodeEditor* mEdit;
@@ -195,6 +199,7 @@ private:
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
+        bool mOverwrite = false;
     };
 
 private:

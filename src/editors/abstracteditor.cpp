@@ -33,6 +33,16 @@ AbstractEditor::~AbstractEditor()
 
 }
 
+void AbstractEditor::setOverwriteMode(bool overwrite)
+{
+    QPlainTextEdit::setOverwriteMode(overwrite);
+}
+
+bool AbstractEditor::overwriteMode() const
+{
+    return QPlainTextEdit::overwriteMode();
+}
+
 QMimeData* AbstractEditor::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();

@@ -235,11 +235,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     }
 
     if (mBlockEdit) {
-        if (e->key() == Hotkey::NewLine) {
-            endBlockEdit();
-            return;
-        }
-        if (e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
+        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
             endBlockEdit();
         } else {
             mBlockEdit->keyPressEvent(e);
@@ -711,7 +707,10 @@ int CodeEditor::indent(int size, int fromLine, int toLine)
 void CodeEditor::startBlockEdit(int blockNr, int colNr)
 {
     if (mBlockEdit) endBlockEdit();
+    bool overwrite = overwriteMode();
+    if (overwrite) setOverwriteMode(false);
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
+    mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
     updateLineNumberAreaWidth(0);
 }
@@ -720,8 +719,10 @@ void CodeEditor::endBlockEdit()
 {
     mBlockEdit->stopCursorTimer();
     mBlockEdit->adjustCursor();
+    bool overwrite = mBlockEdit->overwriteMode();
     delete mBlockEdit;
     mBlockEdit = nullptr;
+    setOverwriteMode(overwrite);
 }
 
 void dumpClipboard()
@@ -921,6 +922,18 @@ ParenthesesMatch CodeEditor::matchParentheses()
 
     }
     return ParenthesesMatch();
+}
+
+void CodeEditor::setOverwriteMode(bool overwrite)
+{
+    if (mBlockEdit) mBlockEdit->setOverwriteMode(overwrite);
+    else AbstractEditor::setOverwriteMode(overwrite);
+}
+
+bool CodeEditor::overwriteMode() const
+{
+    if (mBlockEdit) return mBlockEdit->overwriteMode();
+    return AbstractEditor::overwriteMode();
 }
 
 inline int CodeEditor::assignmentKind(int p)
@@ -1190,6 +1203,16 @@ void CodeEditor::BlockEdit::setColumn(int column)
     mColumn = column;
 }
 
+void CodeEditor::BlockEdit::setOverwriteMode(bool overwrite)
+{
+    mOverwrite = overwrite;
+}
+
+bool CodeEditor::BlockEdit::overwriteMode() const
+{
+    return mOverwrite;
+}
+
 int CodeEditor::BlockEdit::startLine() const
 {
     return mStartLine;
@@ -1201,7 +1224,6 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
              << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
-
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
         if (e->key() == Qt::Key_Home) mSize = -mColumn;
