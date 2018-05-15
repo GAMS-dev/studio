@@ -101,6 +101,11 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     mParent = parent;
 }
 
+void LogContext::fileClosed(FileContext *fc)
+{
+    if (fc == mLstContext) mLstContext = nullptr;
+}
+
 TextMark*LogContext::firstErrorMark()
 {
     if (!mMarks) return nullptr;

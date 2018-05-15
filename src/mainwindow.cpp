@@ -1851,6 +1851,8 @@ void MainWindow::closeFile(FileContext* file)
 
         FileGroupContext *parent = file->parentEntry();
 
+        if (parent->logContext())
+            parent->logContext()->fileClosed(file);
         fileClosed(file->id());
         mFileRepo.removeFile(file);
 
