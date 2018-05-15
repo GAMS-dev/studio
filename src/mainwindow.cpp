@@ -952,8 +952,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->openLst())
             openFileContext(lstCtx, true);
 
-    } else {
-        qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
     ui->dockLogView->raise();
 //    setRunActionsEnabled(true);
@@ -1647,8 +1645,11 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
 
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runnableGms());
+
+    if (gmsFilePath == "")
+        appendSystemLog("No runnable GMS file found.");
+
     QFileInfo gmsFileInfo(gmsFilePath);
-    //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->gamsProcess();
@@ -1852,8 +1853,12 @@ void MainWindow::closeFile(FileContext* file)
 
         FileGroupContext *parent = file->parentEntry();
 
+        if (parent->runnableGms() == file->location())
+            parent->removeRunnableGms();
+
         if (parent->logContext())
             parent->logContext()->fileClosed(file);
+
         fileClosed(file->id());
         mFileRepo.removeFile(file);
 

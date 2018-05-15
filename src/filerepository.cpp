@@ -60,7 +60,11 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
 FileGroupContext* FileRepository::findGroup(const QString &fileName)
 {
     FileSystemContext* context = findContext(fileName);
-    return context->parentEntry();
+    if (context)
+        return context->parentEntry();
+    else
+        return nullptr;
+
 }
 
 FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)

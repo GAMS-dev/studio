@@ -55,6 +55,7 @@ public:
 
     QString runnableGms();
     void setRunnableGms(FileContext *gmsFileContext);
+    void removeRunnableGms();
     QString lstFileName();
     void setLstFileName(const QString &lstFileName);
     LogContext* logContext() const;
