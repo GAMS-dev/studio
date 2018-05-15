@@ -1296,8 +1296,10 @@ void MainWindow::renameToBackup(QFile *file)
 {
     const int MAX_BACKUPS = 3;
     FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
-    FileContext *fc = mFileRepo.fileContext(fsc->id());
-    if (fc) fc->unwatch();
+    if (fsc) {
+        FileContext *fc = mFileRepo.fileContext(fsc->id());
+        if (fc) fc->unwatch();
+    }
 
     QString filename = file->fileName();
 
