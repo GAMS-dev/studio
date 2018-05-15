@@ -751,9 +751,6 @@
    <property name="text">
     <string>Show System Log</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+F2</string>
-   </property>
    <property name="visible">
     <bool>true</bool>
    </property>
