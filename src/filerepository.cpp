@@ -399,7 +399,8 @@ void FileRepository::writeGroup(const FileGroupContext* group, QJsonArray& jsonA
         QJsonObject nodeObject;
         if (node->type() == FileSystemContext::FileGroup) {
             FileGroupContext *subGroup = static_cast<FileGroupContext*>(node);
-            nodeObject["file"] = subGroup->runnableGms();
+            nodeObject["file"] = (subGroup->runnableGms() != "" ? subGroup->runnableGms()
+                                                                : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
