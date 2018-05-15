@@ -1007,7 +1007,8 @@ void MainWindow::on_actionHelp_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
-    about += QString("   (") + (sizeof(void*)==8 ? "64" : "32") + " bit)<br/><br/>";
+    about += "<br/><br/>Release: GAMS Studio " + QApplication::applicationVersion() + " ";
+    about += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
