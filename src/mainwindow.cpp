@@ -1565,7 +1565,7 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
     // set default lst file name in case output option changed back to default
-    if (fgc->runnableGms() != "")
+    if (!fgc->runnableGms().isEmpty())
         fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
