@@ -1324,7 +1324,7 @@ void CodeEditor::BlockEdit::paintEvent(QPaintEvent *e)
         if (block.length() <= cursorColumn) {
             cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
         }
-        cursorRect.setWidth(2);
+        cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 
         if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
             bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
@@ -1417,6 +1417,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
     QTextBlock block = mEdit->document()->findBlockByNumber(qMax(mCurrentLine, mStartLine));
     int fromCol = qMin(mColumn, mColumn+mSize);
     int toCol = qMax(mColumn, mColumn+mSize);
+    if (fromCol == toCol && mOverwrite) ++toCol;
     QTextCursor cursor = mEdit->textCursor();
     int maxLen = 0;
     for (const QString &s: texts) {
@@ -1438,7 +1439,7 @@ void CodeEditor::BlockEdit::replaceBlockText(QStringList texts)
             cursor.setPosition(block.position()+block.length()-1);
             QString s(offsetFromEnd, ch);
             addText = s + addText;
-        } else if (mSize) {
+        } else if (fromCol != toCol) {
             // block-edit contains marking -> remove to end of block/line
             int pos = block.position()+fromCol;
             int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
