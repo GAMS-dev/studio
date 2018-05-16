@@ -66,7 +66,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
 
-    TimerID = startTimer(12000);
+    TimerID = startTimer(60000);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -132,8 +132,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
 
     connectCommandLineWidgets();
-
-    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -1070,7 +1068,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->save();
 
     if (ret != QMessageBox::Cancel) {
-        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles())
+        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
@@ -2043,9 +2041,8 @@ HelpView *MainWindow::getDockHelpView() const
     return mDockHelpView;
 }
 
-QStringList MainWindow::readTabs(const QJsonObject &json)
+void MainWindow::readTabs(const QJsonObject &json)
 {
-    QStringList tabs;
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2055,7 +2052,7 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, nullptr, true, mib);
-                    tabs << location;
+                    mOpenTabsList << location;
                 }
                 QApplication::processEvents();
             }
@@ -2063,9 +2060,17 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
     }
     if (json.contains("mainTabRecent")) {
         QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) openFilePath(location, nullptr, true);
+        if (QFileInfo(location).exists()) {
+            openFilePath(location, nullptr, true);
+            mOpenTabsList << location;
+        }
     }
-    return tabs;
+    QTimer::singleShot(0,this,SLOT(initAutoSave()));
+}
+
+void MainWindow::initAutoSave()
+{
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
 void MainWindow::writeTabs(QJsonObject &json) const
