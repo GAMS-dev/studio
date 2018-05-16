@@ -20,7 +20,8 @@
 #ifndef LINEEDITCOMPLETEEVENT_H
 #define LINEEDITCOMPLETEEVENT_H
 
-#include <QtWidgets>
+#include <QLineEdit>
+#include <QEvent>
 
 namespace gams {
 namespace studio {

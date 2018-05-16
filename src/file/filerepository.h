@@ -20,7 +20,9 @@
 #ifndef FILEREPOSITORY_H
 #define FILEREPOSITORY_H
 
-#include <QtWidgets>
+#include <QStringList>
+#include <QWidgetList>
+#include <QModelIndex>
 #include "filetreemodel.h"
 #include "logcontext.h"
 #include "filesystemcontext.h"

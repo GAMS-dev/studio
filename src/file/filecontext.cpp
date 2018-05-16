@@ -1,4 +1,5 @@
 /*
+ *
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -22,6 +23,8 @@
 #include "exception.h"
 #include "editors/codeeditor.h"
 #include "logger.h"
+#include <QScrollBar>
+#include <QToolTip>
 
 namespace gams {
 namespace studio {

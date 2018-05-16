@@ -73,6 +73,8 @@ SOURCES += \
     bookmarkdialog.cpp \
     checkforupdatewrapper.cpp \
     commandlineparser.cpp \
+    commonpaths.cpp \
+    distributionvalidator.cpp \
     editors/abstracteditor.cpp \
     editors/codeeditor.cpp \
     editors/logeditor.cpp \
@@ -84,7 +86,7 @@ SOURCES += \
     file/filerepository.cpp \
     file/filesystemcontext.cpp \
     file/filetreemodel.cpp \
-    file/filetype.cpp        \
+    file/filetype.cpp \
     file/logcontext.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
@@ -139,9 +141,7 @@ SOURCES += \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp \
-    commonpaths.cpp \
-    distributionvalidator.cpp
+    wplabel.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -150,35 +150,38 @@ HEADERS += \
     bookmarkdialog.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
+    commonpaths.h \
+    distributionvalidator.h \
     editors/abstracteditor.h \
     editors/codeeditor.h \
     editors/logeditor.h \
     editors/selectencodings.h \
     exception.h \
-    file/filesystemcontext.h \
+    file.h \
     file/filecontext.h \
-    file/filerepository.h \
     file/filegroupcontext.h \
-    file/filetype.h \
     file/filemetrics.h \
+    file/filerepository.h \
+    file/filesystemcontext.h \
     file/filetreemodel.h \
+    file/filetype.h \
     file/logcontext.h \
-    gamsprocess.h \
     gamslibprocess.h \
-    gdxviewer/gdxviewer.h \
+    gamsprocess.h \
+    gdxviewer/columnfilter.h \
+    gdxviewer/columnfilterframe.h \
+    gdxviewer/filteruelmodel.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymbolheaderview.h \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
-    gdxviewer/columnfilter.h \
-    gdxviewer/columnfilterframe.h \
-    gdxviewer/filteruelmodel.h \
+    gdxviewer/gdxviewer.h \
     gotowidget.h \
     helpview.h \
     keys.h \
     logger.h \
-    lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
+    lxiviewer/lxitreeitem.h \
     lxiviewer/lxitreemodel.h \
     lxiviewer/lxiviewer.h \
     mainwindow.h \
@@ -219,27 +222,24 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h \
-    commonpaths.h \
-    distributionvalidator.h \
-    file.h
+    wplabel.h
 
 FORMS += \
     bookmarkdialog.ui \
     editors/selectencodings.ui \
-    gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
+    gdxviewer/gdxviewer.ui \
     gotowidget.ui \
-    mainwindow.ui   \
+    lxiviewer/lxiviewer.ui \
+    mainwindow.ui \
     modeldialog/modeldialog.ui \
-    newdialog.ui    \
+    newdialog.ui \
     resultsview.ui \
     searchwidget.ui \
     settingsdialog.ui \
-    welcomepage.ui  \
     updatedialog.ui \
-    lxiviewer/lxiviewer.ui
+    welcomepage.ui
 
 RESOURCES += \
     ../icons/icons.qrc

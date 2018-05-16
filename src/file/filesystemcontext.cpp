@@ -156,56 +156,5 @@ FileSystemContext* FileSystemContext::findFile(QString filePath)
         return nullptr;
 }
 
-inline void FileSystemContext::initEditorType(CodeEditor *w) {
-    if(w) w->setProperty("EditorType", etSourceCode);
-}
-
-inline void FileSystemContext::initEditorType(AbstractEditor *w) { // obsolete?
-    if(w) w->setProperty("EditorType", etPlainText);
-}
-
-inline void FileSystemContext::initEditorType(LogEditor *w) {
-    if(w) w->setProperty("EditorType", etLog);
-}
-
-inline void FileSystemContext::initEditorType(gdxviewer::GdxViewer *w) {
-    if(w) w->setProperty("EditorType", etGdx);
-}
-
-inline void FileSystemContext::initEditorType(lxiviewer::LxiViewer *w) {
-    if(w) w->setProperty("EditorType", etLxiLst);
-}
-
-inline int FileSystemContext::editorType(QWidget *w) {
-    QVariant v = w ? w->property("EditorType") : QVariant();
-    return (v.isValid() ? v.toInt() : etUndefined);
-}
-
-inline AbstractEditor *FileSystemContext::toAbstractEdit(QWidget *w) {
-    int t = editorType(w);
-    if (t == etLxiLst)
-        return toLxiViewer(w)->codeEditor();
-    return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
-}
-
-inline CodeEditor *FileSystemContext::toCodeEdit(QWidget *w) {
-    int t = editorType(w);
-    if (t == etLxiLst)
-        return toLxiViewer(w)->codeEditor();
-    return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
-}
-
-inline LogEditor *FileSystemContext::toLogEdit(QWidget *w) {
-    return (editorType(w) == etLog) ? static_cast<LogEditor*>(w) : nullptr;
-}
-
-inline gdxviewer::GdxViewer *FileSystemContext::toGdxViewer(QWidget *w) {
-    return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
-}
-
-inline lxiviewer::LxiViewer *FileSystemContext::toLxiViewer(QWidget *w) {
-    return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
-}
-
 } // namespace studio
 } // namespace gams

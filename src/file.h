@@ -6,6 +6,6 @@
 //#include "file/logcontext.h"
 //#include "file/filegroupcontext.h"
 //#include "file/filemetrics.h"
-//#include "file/filetype.h"
+#include "file/filetype.h"
 
 #endif // FILE_H

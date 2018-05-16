@@ -20,6 +20,10 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
+#include <QTextBlockUserData>
+#include <QHash>
+#include <QIcon>
+#include <QTimer>
 #include "editors/abstracteditor.h"
 #include "syntax/textmark.h"
 

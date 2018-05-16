@@ -20,7 +20,8 @@
 #ifndef COMMANDLINETOKENIZER_H
 #define COMMANDLINETOKENIZER_H
 
-#include <QtWidgets>
+#include <QTextLayout>
+#include <QLineEdit>
 #include "option.h"
 
 namespace gams {

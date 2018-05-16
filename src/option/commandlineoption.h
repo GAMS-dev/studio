@@ -20,7 +20,6 @@
 #ifndef COMMANDLINEOPTION_H
 #define COMMANDLINEOPTION_H
 
-#include <QtCore>
 #include<QComboBox>
 #include "commandlinetokenizer.h"
 
