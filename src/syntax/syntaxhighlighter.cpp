@@ -175,7 +175,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
-    QVector<ParenthesisPos> parPosList;
+    QVector<ParenthesesPos> parPosList;
     QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
@@ -226,7 +226,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->state() != SyntaxState::Standard) {
                         setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
-                        scanParenthesis(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
+                        scanparentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
                     }
                     code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
                 }
@@ -239,7 +239,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
             if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
-        scanParenthesis(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
+        scanparentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
@@ -256,7 +256,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!parPosList.isEmpty() && !blockData) {
             blockData = new BlockData();
         }
-        if (blockData) blockData->setParenthesis(parPosList);
+        if (blockData) blockData->setparentheses(parPosList);
         if (blockData && blockData->isEmpty())
             textBlock.setUserData(nullptr);
         else
@@ -290,7 +290,7 @@ int SyntaxHighlighter::getStateIdx(SyntaxState state) const
     return -1;
 }
 
-const QVector<SyntaxState> validParenthesisSyntax = {
+const QVector<SyntaxState> validparenthesesSyntax = {
     SyntaxState::Standard,
     SyntaxState::Identifier,
     SyntaxState::IdentifierTable,
@@ -302,20 +302,20 @@ const QVector<SyntaxState> validParenthesisSyntax = {
     SyntaxState::ReservedBody,
 };
 
-const QString validParenthesis("{[(}])/");
+const QString validparentheses("{[(}])/");
 
-void SyntaxHighlighter::scanParenthesis(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesisPos> &parenthesis)
+void SyntaxHighlighter::scanparentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
 {
-    if (!validParenthesisSyntax.contains(state)) return;
+    if (!validparenthesesSyntax.contains(state)) return;
     for (int i = start; i < start+len; ++i) {
-        int kind = validParenthesis.indexOf(text.at(i));
+        int kind = validparentheses.indexOf(text.at(i));
         if (kind == 6) {
             if (state == SyntaxState::IdentifierAssignmentEnd)
-                parenthesis << ParenthesisPos('\\', i);
+                parentheses << ParenthesesPos('\\', i);
             else if (state == SyntaxState::IdentifierAssignment)
-                parenthesis << ParenthesisPos(text.at(i), i);
+                parentheses << ParenthesesPos(text.at(i), i);
         } else if (kind >= 0) {
-            parenthesis << ParenthesisPos(text.at(i), i);
+            parentheses << ParenthesesPos(text.at(i), i);
         }
     }
 }

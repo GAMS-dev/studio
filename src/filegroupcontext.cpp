@@ -331,7 +331,7 @@ void FileGroupContext::saveGroup()
 QString FileGroupContext::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return QDir(location()).filePath(mGmsFileName);
+    return mGmsFileName;
 }
 
 void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
@@ -340,6 +340,12 @@ void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
 
     mGmsFileName = location;
     setLstFileName(QFileInfo(location).baseName() + ".lst");
+}
+
+void FileGroupContext::removeRunnableGms()
+{
+    mGmsFileName = "";
+    mLstFileName = "";
 }
 
 QString FileGroupContext::lstFileName()

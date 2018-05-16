@@ -37,6 +37,8 @@ public:
 public:
     virtual ~AbstractEditor() override;
     virtual EditorType type() = 0;
+    virtual void setOverwriteMode(bool overwrite);
+    virtual bool overwriteMode() const;
 
     bool event(QEvent *event) override;
     StudioSettings *settings() const;

@@ -21,6 +21,7 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
+#include "distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <memory>
@@ -31,6 +32,8 @@ namespace studio {
 
 class Application : public QApplication
 {
+    Q_OBJECT
+
 public:
     Application(int &argc, char **argv);
 
@@ -68,8 +71,9 @@ private:
     void parseCmdArgs();
 
 private:
-    CommandLineParser mCmdParser;
     std::unique_ptr<MainWindow> mMainWindow;
+    CommandLineParser mCmdParser;
+    DistributionValidator mDistribValidator;
 };
 
 } // namespace studio

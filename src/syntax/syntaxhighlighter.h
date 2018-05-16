@@ -29,7 +29,7 @@ namespace studio {
 class FileContext;
 class TextMarkList;
 class TextMark;
-struct ParenthesisPos;
+struct ParenthesesPos;
 
 enum ColorEnum {
     SyntaxDirex,
@@ -82,7 +82,7 @@ public:
 private:
     SyntaxAbstract *getSyntax(SyntaxState state) const;
     int getStateIdx(SyntaxState state) const;
-    void scanParenthesis(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesisPos> &parenthesis);
+    void scanparentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
 
 private:
     typedef int StateIndex;

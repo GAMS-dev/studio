@@ -104,6 +104,22 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Z");
     setHotkey(Hotkey::Redo, seq);
 
+    seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
+    *seq << QKeySequence("Ctrl+Right");
+    setHotkey(Hotkey::MoveCharGroupRight, seq);
+
+    seq = new KeySeqList("MoveCharGroupLeft","Move to the previous char-group");
+    *seq << QKeySequence("Ctrl+Left");
+    setHotkey(Hotkey::MoveCharGroupLeft, seq);
+
+    seq = new KeySeqList("SelectCharGroupRight","Select to the next char-group");
+    *seq << QKeySequence("Shift+Ctrl+Right");
+    setHotkey(Hotkey::SelectCharGroupRight, seq);
+
+    seq = new KeySeqList("SelectCharGroupLeft","Select to the previous char-group");
+    *seq << QKeySequence("Shift+Ctrl+Left");
+    setHotkey(Hotkey::SelectCharGroupLeft, seq);
+
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
     setHotkey(Hotkey::BlockEditStart, seq);
@@ -127,11 +143,11 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
 
-    seq = new KeySeqList("F8","goto matching parenthesis");
-    setHotkey(Hotkey::MatchParenthesis, seq);
+    seq = new KeySeqList("F8","goto matching parentheses");
+    setHotkey(Hotkey::MatchParentheses, seq);
 
-    seq = new KeySeqList("Shift+F8","select to matching parenthesis");
-    setHotkey(Hotkey::SelectParenthesis, seq);
+    seq = new KeySeqList("Shift+F8","select to matching parentheses");
+    setHotkey(Hotkey::SelectParentheses, seq);
 }
 
 void Keys::read(const QJsonObject& json)

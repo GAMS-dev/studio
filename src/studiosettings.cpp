@@ -255,7 +255,6 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");
-
     mAppSettings->beginReadArray("lastOpenedFiles");
     for (int i = 0; i < historySize(); i++) {
         mAppSettings->setArrayIndex(i);

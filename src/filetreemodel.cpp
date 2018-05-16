@@ -100,9 +100,6 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
 
     case Qt::DisplayRole:
         return mFileRepo->context(ind)->caption();
-//        if (mFileRepo->context(ind)->location() == mFileRepo->context(ind)->parentEntry()->runnableGms())
-//            return mFileRepo->context(ind)->caption() + " [active]";
-//        else
 
     case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {

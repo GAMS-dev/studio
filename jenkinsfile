@@ -191,45 +191,5 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-            steps {
-                parallel linux: {
-                    node('master') {
-                        script {
-                            if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                               sh 'scp -B *studio*.AppImage ${ARTIFACT_TARGET}'
-                            }
-                        }
-                    }
-                },
-                windowsX86: {
-                    node('windowsX86') {
-                        script {
-                            if ((env.BRANCH_NAME=='master')|(env.BRANCH_NAME=='develop')) {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch *studio-x86.zip ${ARTIFACT_TARGET}"
-                            }
-                        }
-                    }
-                },
-                windowsX64: {
-                    node('windowsX64') {
-                        script {
-                            if ((env.BRANCH_NAME=='master')|(env.BRANCH_NAME=='develop')) {
-                                bat "pscp -i ${WIN_KEY_FILE} -hostkey ${WIN_KEY_FINGERPRINT} -agent -batch *studio-x64.zip ${ARTIFACT_TARGET}"
-                            }
-                        }
-                    }
-                },
-                macos: {
-                    node('macos') {
-                        script {
-                            if ((env.BRANCH_NAME == 'master')|(env.BRANCH_NAME == 'develop')) {
-                                sh 'scp *.dmg ${ARTIFACT_TARGET}'
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

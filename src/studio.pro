@@ -37,14 +37,14 @@ DEFINES += 'STUDIO_MAJOR_VERSION=$$STUDIO_MAJOR_VERSION'
 DEFINES += 'STUDIO_MINOR_VERSION=$$STUDIO_MINOR_VERSION'
 DEFINES += 'STUDIO_PATCH_LEVEL=$$STUDIO_PATCH_LEVEL'
 DEFINES += 'GAMS_DISTRIB_VERSION=$$GAMS_DISTRIB_VERSION'
+DEFINES += 'GAMS_DISTRIB_VERSION_SHORT=\\"'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'\\"'
+DEFINES += 'GAMS_DISTRIB_VERSION_NEXT_SHORT=\\"'$$GAMS_DISTRIB_NEXT_MAJOR'.'$$GAMS_DISTRIB_NEXT_MINOR'\\"'
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
     ICON = studio.icns
     QMAKE_INFO_PLIST=Info.plist
-    DEFINES += 'GAMS_DISTRIB_VERSION_SHORT=\\"'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'\\"'
-    DEFINES += 'GAMS_DISTRIB_VERSION_NEXT_SHORT=\\"'$$GAMS_DISTRIB_NEXT_MAJOR'.'$$GAMS_DISTRIB_NEXT_MINOR'\\"'
 }
 unix {
     LIBS += -ldl

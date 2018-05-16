@@ -46,8 +46,8 @@ enum class CharType {
     LetterLCase,
 };
 
-struct ParenthesisMatch {
-    ParenthesisMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
+struct ParenthesesMatch {
+    ParenthesesMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
         : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
     bool isValid() {return pos>=0;}
     int pos;
@@ -56,10 +56,10 @@ struct ParenthesisMatch {
     bool valid;
 };
 
-struct ParenthesisPos
+struct ParenthesesPos
 {
-    ParenthesisPos() : character(QChar()), relPos(-1) {}
-    ParenthesisPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
+    ParenthesesPos() : character(QChar()), relPos(-1) {}
+    ParenthesesPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
     QChar character;
     int relPos;
 };
@@ -67,16 +67,16 @@ struct ParenthesisPos
 class BlockData : public QTextBlockUserData
 {
 public:
-    BlockData() { mParenthesis.reserve(10);}
+    BlockData() { mparentheses.reserve(10);}
     ~BlockData() {}
     QChar charForPos(int relPos);
-    bool isEmpty() {return mParenthesis.isEmpty();}
-    QVector<ParenthesisPos> parenthesis() const;
-    void setParenthesis(const QVector<ParenthesisPos> &parenthesis);
+    bool isEmpty() {return mparentheses.isEmpty();}
+    QVector<ParenthesesPos> parentheses() const;
+    void setparentheses(const QVector<ParenthesesPos> &parentheses);
 
 private:
     // if extending the data remember to enhance isEmpty()
-    QVector<ParenthesisPos> mParenthesis;
+    QVector<ParenthesesPos> mparentheses;
 };
 
 class CodeEditor : public AbstractEditor
@@ -90,6 +90,14 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+
+    /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
+    /// outdentation is performed at the cursor position.
+    ///
+    /// \param size The base value to indent. A negative value outdents the lines.
+    /// \param fromLine Defaults to the line with the cursors anchor
+    /// \param toLine Defaults to the line with the cursors position
+    /// \return The number of chars indented (or outdented if negative)
     int indent(int size, int fromLine = -1, int toLine = -1);
     void duplicateLine();
     void removeLine();
@@ -97,7 +105,9 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intState);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesisMatch matchParenthesis();
+    ParenthesesMatch matchParentheses();
+    void setOverwriteMode(bool overwrite) override;
+    bool overwriteMode() const override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -138,7 +148,7 @@ private:
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-    bool extraSelMatchParenthesis(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
@@ -177,6 +187,8 @@ private:
         int currentLine() const;
         int column() const;
         void setColumn(int column);
+        void setOverwriteMode(bool overwrite);
+        bool overwriteMode() const;
 
     private:
         CodeEditor* mEdit;
@@ -187,6 +199,7 @@ private:
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
+        bool mOverwrite = false;
     };
 
 private:
@@ -199,7 +212,8 @@ private:
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
-    ParenthesisMatch mParenthesisMatch;
+    QTimer mParenthesesDelay;
+    ParenthesesMatch mParenthesesMatch;
 
 public:
     BlockEdit *blockEdit() const;

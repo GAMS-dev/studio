@@ -60,7 +60,11 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
 FileGroupContext* FileRepository::findGroup(const QString &fileName)
 {
     FileSystemContext* context = findContext(fileName);
-    return context->parentEntry();
+    if (context)
+        return context->parentEntry();
+    else
+        return nullptr;
+
 }
 
 FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
@@ -362,8 +366,13 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
                     readGroup(subGroup, gprArray);
-                    // TODO(JM) restore expanded-state
-                    emit setNodeExpanded(mTreeModel->index(subGroup));
+
+                    if (subGroup->childCount() > 0) {
+                        // TODO(JM) restore expanded-state
+                        emit setNodeExpanded(mTreeModel->index(subGroup));
+                    } else {
+                        removeGroup(subGroup); // dont open empty groups
+                    }
                 }
             }
         } else {
@@ -390,7 +399,8 @@ void FileRepository::writeGroup(const FileGroupContext* group, QJsonArray& jsonA
         QJsonObject nodeObject;
         if (node->type() == FileSystemContext::FileGroup) {
             FileGroupContext *subGroup = static_cast<FileGroupContext*>(node);
-            nodeObject["file"] = subGroup->runnableGms();
+            nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
+                                                                : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
             QJsonArray subArray;
             writeGroup(subGroup, subArray);

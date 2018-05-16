@@ -43,6 +43,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);

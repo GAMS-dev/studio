@@ -66,7 +66,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
 
-    TimerID = startTimer(12000);
+    TimerID = startTimer(60000);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -132,8 +132,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     initTabs();
 
     connectCommandLineWidgets();
-
-    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -952,8 +950,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->openLst())
             openFileContext(lstCtx, true);
 
-    } else {
-        qDebug() << fileInfo.absoluteFilePath() << " not found. aborting.";
     }
     ui->dockLogView->raise();
 //    setRunActionsEnabled(true);
@@ -1006,7 +1002,9 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
+    about += "<br/><br/>Release: GAMS Studio " + QApplication::applicationVersion() + " ";
+    about += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
     about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
@@ -1070,7 +1068,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->save();
 
     if (ret != QMessageBox::Cancel) {
-        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles())
+        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
         if (fc->editors().size() == 1) {
             mFileRepo.close(fc->id());
@@ -1294,17 +1292,33 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::renameToBackup(QFile *file)
 {
+    const int MAX_BACKUPS = 3;
     FileSystemContext *fsc = mFileRepo.findContext(file->fileName());
-    FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
-    if (fc) fc->unwatch();
-
-    int suffix = 1;
-    QString filename = file->fileName();
-    if(!file->rename(filename + ".bak")) {
-        while (!file->rename(filename + "." + QString::number(suffix) + ".bak")) {
-            suffix++;
-        }
+    if (fsc) {
+        FileContext *fc = mFileRepo.fileContext(fsc->id());
+        if (fc) fc->unwatch();
     }
+
+    QString filename = file->fileName();
+
+    // find oldest backup file
+    int last = 1;
+    while (QFile(filename + "." + QString::number(last) + ".bak").exists()) {
+        if (last == MAX_BACKUPS) break; // dont exceed MAX_BACKUPS
+        last++;
+    }
+    if (last == MAX_BACKUPS) { // delete if maximum reached
+        QFile(filename + "." + QString::number(last) + ".bak").remove();
+        last--; // last is now one less
+    }
+
+    // move up all by 1, starting last
+    for (int i = last; i > 0; i--) {
+        QFile(filename + "." + QString::number(i) + ".bak") // from
+                .rename(filename + "." + QString::number(i + 1) + ".bak"); // to
+    }
+    //rename to 1
+    file->rename(filename + ".1.bak");
 }
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
@@ -1549,7 +1563,8 @@ void MainWindow::parseFilesFromCommandLine(FileGroupContext* fgc)
     QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
 
     // set default lst file name in case output option changed back to default
-    fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
+    if (!fgc->runnableGms().isEmpty())
+        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
@@ -1631,8 +1646,11 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
 
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileContext ? gmsFileContext->location() : group->runnableGms());
+
+    if (gmsFilePath == "")
+        appendSystemLog("No runnable GMS file found.");
+
     QFileInfo gmsFileInfo(gmsFilePath);
-    //    QString basePath = gmsFileInfo.absolutePath();
 
     logProc->setJumpToLogEnd(true);
     GamsProcess* process = group->gamsProcess();
@@ -1836,6 +1854,12 @@ void MainWindow::closeFile(FileContext* file)
 
         FileGroupContext *parent = file->parentEntry();
 
+        if (parent->runnableGms() == file->location())
+            parent->removeRunnableGms();
+
+        if (parent->logContext())
+            parent->logContext()->fileClosed(file);
+
         fileClosed(file->id());
         mFileRepo.removeFile(file);
 
@@ -2017,9 +2041,8 @@ HelpView *MainWindow::getDockHelpView() const
     return mDockHelpView;
 }
 
-QStringList MainWindow::readTabs(const QJsonObject &json)
+void MainWindow::readTabs(const QJsonObject &json)
 {
-    QStringList tabs;
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2029,7 +2052,7 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, nullptr, true, mib);
-                    tabs << location;
+                    mOpenTabsList << location;
                 }
                 QApplication::processEvents();
             }
@@ -2037,9 +2060,17 @@ QStringList MainWindow::readTabs(const QJsonObject &json)
     }
     if (json.contains("mainTabRecent")) {
         QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) openFilePath(location, nullptr, true);
+        if (QFileInfo(location).exists()) {
+            openFilePath(location, nullptr, true);
+            mOpenTabsList << location;
+        }
     }
-    return tabs;
+    QTimer::singleShot(0,this,SLOT(initAutoSave()));
+}
+
+void MainWindow::initAutoSave()
+{
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
 void MainWindow::writeTabs(QJsonObject &json) const
@@ -2240,13 +2271,7 @@ void MainWindow::on_actionIndent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        int col = ce->indent(mSettings->tabSize(), ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
-    } else {
-        ce->indent(mSettings->tabSize());
-    }
+    ce->indent(mSettings->tabSize());
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -2256,15 +2281,7 @@ void MainWindow::on_actionOutdent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        int minWhiteCount = ce->minIndentCount(ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        int col = ce->indent(qMax(-minWhiteCount, -ce->settings()->tabSize()),
-                             ce->blockEdit()->startLine(), ce->blockEdit()->currentLine());
-        ce->blockEdit()->setColumn(ce->blockEdit()->column() + col);
-    } else {
-        ce->indent(-mSettings->tabSize());
-    }
+    ce->indent(-mSettings->tabSize());
 }
 
 void MainWindow::on_actionDuplicate_Line_triggered()
