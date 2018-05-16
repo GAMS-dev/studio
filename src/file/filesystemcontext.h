@@ -21,10 +21,10 @@
 #define FILESYSTEMCONTEXT_H
 
 #include <QtWidgets>
-#include "editors/codeeditor.h"
-#include "editors/logeditor.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
+#include "editors/codeeditor.h"
+#include "editors/logeditor.h"
 
 namespace gams {
 namespace studio {
@@ -125,46 +125,17 @@ public:
 
 
 public: // static convenience methods
-    inline static void initEditorType(CodeEditor* w) {
-        if(w) w->setProperty("EditorType", etSourceCode);
-    }
-    inline static void initEditorType(AbstractEditor* w) { // obsolete?
-        if(w) w->setProperty("EditorType", etPlainText);
-    }
-    inline static void initEditorType(LogEditor* w) {
-        if(w) w->setProperty("EditorType", etLog);
-    }
-    inline static void initEditorType(gdxviewer::GdxViewer* w) {
-        if(w) w->setProperty("EditorType", etGdx);
-    }
-    inline static void initEditorType(lxiviewer::LxiViewer* w) {
-        if(w) w->setProperty("EditorType", etLxiLst);
-    }
-    inline static int editorType(QWidget* w) {
-        QVariant v = w ? w->property("EditorType") : QVariant();
-        return (v.isValid() ? v.toInt() : etUndefined);
-    }
-    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
-        int t = editorType(w);
-        if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
-    }
-    inline static CodeEditor* toCodeEdit(QWidget* w) {
-        int t = editorType(w);
-        if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
-    }
-    inline static LogEditor* toLogEdit(QWidget* w) {
-        return (editorType(w) == etLog) ? static_cast<LogEditor*>(w) : nullptr;
-    }
-    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
-        return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
-    }
-    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
-        return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
-    }
+    inline static void initEditorType(CodeEditor* w);
+    inline static void initEditorType(AbstractEditor* w);
+    inline static void initEditorType(LogEditor* w);
+    inline static void initEditorType(gdxviewer::GdxViewer* w);
+    inline static void initEditorType(lxiviewer::LxiViewer* w);
+    inline static int editorType(QWidget* w);
+    inline static AbstractEditor* toAbstractEdit(QWidget* w);
+    inline static CodeEditor* toCodeEdit(QWidget* w);
+    inline static LogEditor* toLogEdit(QWidget* w);
+    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w);
+    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w);
 
 signals:
     void changed(FileId fileId);

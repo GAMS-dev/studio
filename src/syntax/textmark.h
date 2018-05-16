@@ -21,7 +21,7 @@
 #define TEXTMARK_H
 
 #include <QtWidgets>
-#include "filetype.h"
+#include "file.h"
 
 namespace gams {
 namespace studio {

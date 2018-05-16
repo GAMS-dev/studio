@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "projectcontextmenu.h"
-#include "filegroupcontext.h"
-#include "logcontext.h"
+#include "file.h"
 #include "commonpaths.h"
 
 namespace gams {

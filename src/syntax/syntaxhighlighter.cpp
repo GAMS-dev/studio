@@ -25,7 +25,7 @@
 #include "textmarklist.h"
 #include "logger.h"
 #include "exception.h"
-#include "filecontext.h"
+#include "file.h"
 
 namespace gams {
 namespace studio {

@@ -19,8 +19,7 @@
  */
 #include "textmark.h"
 #include "textmarklist.h"
-#include "filecontext.h"
-#include "filegroupcontext.h"
+#include "file.h"
 #include "logger.h"
 #include "exception.h"
 

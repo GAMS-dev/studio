@@ -67,176 +67,177 @@ DEFINES += _CRT_SECURE_NO_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    main.cpp \
-    editors/codeeditor.cpp \
-    filesystemcontext.cpp \
-    filecontext.cpp \
-    filerepository.cpp \
-    filegroupcontext.cpp \
-    welcomepage.cpp \
-    mainwindow.cpp \
-    treeitemdelegate.cpp \
-    exception.cpp \
-    modeldialog/modeldialog.cpp \
-    modeldialog/glbparser.cpp   \
-    modeldialog/libraryitem.cpp \
-    modeldialog/library.cpp     \
-    modeldialog/librarymodel.cpp \
-    gamsprocess.cpp     \
-    gamslibprocess.cpp  \
     abstractprocess.cpp \
-    filetype.cpp        \
-    filemetrics.cpp \
-    gdxviewer/gdxviewer.cpp \
-    gdxviewer/gdxsymbol.cpp \
-    gdxviewer/gdxsymboltable.cpp \
-    filetreemodel.cpp \
-    logger.cpp \
-    logcontext.cpp \
+    application.cpp \
+    autosavehandler.cpp \
+    bookmarkdialog.cpp \
+    checkforupdatewrapper.cpp \
+    commandlineparser.cpp \
+    editors/abstracteditor.cpp \
+    editors/codeeditor.cpp \
+    editors/logeditor.cpp \
+    editors/selectencodings.cpp \
+    exception.cpp \
+    file/filecontext.cpp \
+    file/filegroupcontext.cpp \
+    file/filemetrics.cpp \
+    file/filerepository.cpp \
+    file/filesystemcontext.cpp \
+    file/filetreemodel.cpp \
+    file/filetype.cpp        \
+    file/logcontext.cpp \
+    gamslibprocess.cpp  \
+    gamsprocess.cpp     \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/filteruelmodel.cpp \
-    settingsdialog.cpp \
-    studiosettings.cpp \
-    application.cpp \
-    projectcontextmenu.cpp \
-    gdxviewer/gdxsymbolview.cpp \
+    gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    option/option.cpp \
+    gdxviewer/gdxsymboltable.cpp \
+    gdxviewer/gdxsymbolview.cpp \
+    gdxviewer/gdxviewer.cpp \
+    gotowidget.cpp \
+    helpview.cpp \
+    keys.cpp \
+    logger.cpp \
+    lxiviewer/lxiparser.cpp \
+    lxiviewer/lxitreeitem.cpp \
+    lxiviewer/lxitreemodel.cpp \
+    lxiviewer/lxiviewer.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    modeldialog/glbparser.cpp   \
+    modeldialog/library.cpp     \
+    modeldialog/libraryitem.cpp \
+    modeldialog/librarymodel.cpp \
+    modeldialog/modeldialog.cpp \
+    option/addoptionheaderview.cpp \
     option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
     option/commandlinetokenizer.cpp \
-    option/optionparametermodel.cpp \
-    option/optioncompleterdelegate.cpp \
     option/lineeditcompleteevent.cpp \
+    option/option.cpp \
+    option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optioneditor.cpp \
+    option/optionparametermodel.cpp \
     option/optionsortfilterproxymodel.cpp \
-    option/addoptionheaderview.cpp \
-    syntax/textmark.cpp \
-    syntax/textmarklist.cpp \
-    syntax/syntaxhighlighter.cpp \
-    syntax/syntaxformats.cpp \
-    syntax/syntaxdeclaration.cpp \
-    syntax/syntaxidentifier.cpp \
-    searchwidget.cpp \
+    projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
-    keys.cpp \
-    helpview.cpp \
-    bookmarkdialog.cpp \
-    commandlineparser.cpp \
-    wplabel.cpp \
-    gotowidget.cpp \
-    editors/logeditor.cpp \
-    editors/abstracteditor.cpp \
-    editors/selectencodings.cpp \
-    updatedialog.cpp \
-    lxiviewer/lxitreeitem.cpp \
-    lxiviewer/lxiparser.cpp \
-    lxiviewer/lxitreemodel.cpp \
-    lxiviewer/lxiviewer.cpp \
-    checkforupdatewrapper.cpp \
-    autosavehandler.cpp \
+    searchwidget.cpp \
+    settingsdialog.cpp \
     statuswidgets.cpp \
+    studiosettings.cpp \
+    syntax/syntaxdeclaration.cpp \
+    syntax/syntaxformats.cpp \
+    syntax/syntaxhighlighter.cpp \
+    syntax/syntaxidentifier.cpp \
+    syntax/textmark.cpp \
+    syntax/textmarklist.cpp \
+    treeitemdelegate.cpp \
+    updatedialog.cpp \
+    welcomepage.cpp \
+    wplabel.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp
 
 HEADERS += \
+    abstractprocess.h \
+    application.h \
+    autosavehandler.h \
+    bookmarkdialog.h \
+    checkforupdatewrapper.h \
+    commandlineparser.h \
+    editors/abstracteditor.h \
     editors/codeeditor.h \
-    filesystemcontext.h \
-    filecontext.h \
-    filerepository.h \
-    filegroupcontext.h \
-    welcomepage.h \
-    mainwindow.h \
+    editors/logeditor.h \
+    editors/selectencodings.h \
     exception.h \
-    treeitemdelegate.h \
-    version.h \
-    modeldialog/modeldialog.h   \
-    modeldialog/glbparser.h     \
-    modeldialog/libraryitem.h   \
-    modeldialog/library.h       \
-    modeldialog/librarymodel.h \
-    gamsprocess.h       \
-    gamslibprocess.h    \
-    abstractprocess.h   \
-    filetype.h \
-    filemetrics.h \
+    file/filesystemcontext.h \
+    file/filecontext.h \
+    file/filerepository.h \
+    file/filegroupcontext.h \
+    file/filetype.h \
+    file/filemetrics.h \
+    file/filetreemodel.h \
+    file/logcontext.h \
+    gamsprocess.h \
+    gamslibprocess.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxsymbol.h \
+    gdxviewer/gdxsymbolheaderview.h \
     gdxviewer/gdxsymboltable.h \
-    filetreemodel.h \
-    logger.h \
-    logcontext.h \
+    gdxviewer/gdxsymbolview.h \
     gdxviewer/columnfilter.h \
     gdxviewer/columnfilterframe.h \
     gdxviewer/filteruelmodel.h \
-    settingsdialog.h \
-    studiosettings.h \
-    application.h \
-    projectcontextmenu.h \
-    gdxviewer/gdxsymbolview.h \
-    gdxviewer/gdxsymbolheaderview.h \
-    option/option.h \
-    option/commandlinehistory.h \
-    option/commandlinetokenizer.h \
-    option/commandlineoption.h \
-    option/optionparametermodel.h \
-    option/optioncompleterdelegate.h \
-    option/lineeditcompleteevent.h \
-    option/optiondefinitionitem.h \
-    option/optiondefinitionmodel.h \
-    option/optioneditor.h \
-    option/optionsortfilterproxymodel.h \
-    option/addoptionheaderview.h \
-    syntax.h \
-    syntax/textmark.h \
-    syntax/textmarklist.h \
-    syntax/syntaxhighlighter.h \
-    syntax/syntaxformats.h \
-    syntax/syntaxdeclaration.h \
-    syntax/syntaxidentifier.h \
-    syntax/syntaxdata.h \
-    searchwidget.h \
-    resultsview.h \
-    searchresultlist.h \
-    syntax/syntaxdata.h \
-    keys.h \
-    helpview.h \
-    bookmarkdialog.h \
-    commandlineparser.h \
-    wplabel.h \
     gotowidget.h \
-    editors/logeditor.h \
-    editors/abstracteditor.h \
-    editors/selectencodings.h \
-    updatedialog.h \
+    helpview.h \
+    keys.h \
+    logger.h \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreemodel.h \
     lxiviewer/lxiviewer.h \
-    checkforupdatewrapper.h \
-    autosavehandler.h \
+    mainwindow.h \
+    modeldialog/glbparser.h \
+    modeldialog/library.h \
+    modeldialog/libraryitem.h \
+    modeldialog/librarymodel.h \
+    modeldialog/modeldialog.h \
+    option/addoptionheaderview.h \
+    option/commandlinehistory.h \
+    option/commandlineoption.h \
+    option/commandlinetokenizer.h \
+    option/lineeditcompleteevent.h \
+    option/option.h \
+    option/optioncompleterdelegate.h \
+    option/optiondefinitionitem.h \
+    option/optiondefinitionmodel.h \
+    option/optioneditor.h \
+    option/optionparametermodel.h \
+    option/optionsortfilterproxymodel.h \
+    projectcontextmenu.h \
+    resultsview.h \
+    searchresultlist.h \
+    searchwidget.h \
+    settingsdialog.h \
     statuswidgets.h \
+    studiosettings.h \
+    syntax.h \
+    syntax/syntaxdata.h \
+    syntax/syntaxdata.h \
+    syntax/syntaxdeclaration.h \
+    syntax/syntaxformats.h \
+    syntax/syntaxhighlighter.h \
+    syntax/syntaxidentifier.h \
+    syntax/textmark.h \
+    syntax/textmarklist.h \
+    treeitemdelegate.h \
+    updatedialog.h \
+    version.h \
+    welcomepage.h \
+    wplabel.h \
     commonpaths.h \
-    distributionvalidator.h
+    distributionvalidator.h \
+    file.h
 
 FORMS += \
-    welcomepage.ui  \
-    mainwindow.ui   \
-    newdialog.ui    \
-    modeldialog/modeldialog.ui \
+    bookmarkdialog.ui \
+    editors/selectencodings.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
-    settingsdialog.ui \
-    searchwidget.ui \
-    resultsview.ui \
-    bookmarkdialog.ui \
     gotowidget.ui \
-    editors/selectencodings.ui \
+    mainwindow.ui   \
+    modeldialog/modeldialog.ui \
+    newdialog.ui    \
+    resultsview.ui \
+    searchwidget.ui \
+    settingsdialog.ui \
+    welcomepage.ui  \
     updatedialog.ui \
     lxiviewer/lxiviewer.ui
 

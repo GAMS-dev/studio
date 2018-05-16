@@ -24,7 +24,7 @@
 #include <QMainWindow>
 
 #include "editors/codeeditor.h"
-#include "filerepository.h"
+#include "file.h"
 #include "modeldialog/libraryitem.h"
 #include "option/commandlinehistory.h"
 #include "option/commandlineoption.h"
