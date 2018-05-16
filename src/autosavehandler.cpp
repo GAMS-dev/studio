@@ -17,9 +17,8 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
 {
     QStringList filters { "*.gms", "*.txt" };
     QStringList autsaveFiles;
-    QStringList tabsandRecent = list << mMainWindow->history()->lastOpenedFiles;
 
-    for (auto file : tabsandRecent)
+    for (auto file : list)
     {
         QString path = CommonPaths::path(file);
         if (!path.isEmpty()) {
