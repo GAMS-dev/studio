@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <QMainWindow>
+#include <QCheckBox>
 
 #include "editors/codeeditor.h"
 #include "file.h"

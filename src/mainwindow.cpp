@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtConcurrent>
+#include <QShortcut>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"

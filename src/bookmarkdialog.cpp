@@ -21,6 +21,8 @@
 #include "helpview.h"
 
 #include <QStandardItemModel>
+#include <QKeyEvent>
+#include <QMenu>
 
 namespace gams {
 namespace studio {

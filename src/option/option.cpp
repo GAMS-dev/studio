@@ -19,6 +19,7 @@
  */
 #include <QIntValidator>
 #include <QDoubleValidator>
+#include <QDir>
 #include "exception.h"
 #include "gclgms.h"
 #include "option.h"

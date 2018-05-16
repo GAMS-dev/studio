@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QScrollBar>
+#include <QDir>
 #include "logcontext.h"
 #include "exception.h"
 #include "filegroupcontext.h"

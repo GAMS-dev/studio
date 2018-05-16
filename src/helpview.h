@@ -20,7 +20,10 @@
 #ifndef HELPVIEW_H
 #define HELPVIEW_H
 
-#include <QtWidgets>
+#include <QDockWidget>
+#include <QLineEdit>
+#include <QStatusBar>
+#include <QLabel>
 #include <QWebEngineView>
 #include <QWebEnginePage>
 

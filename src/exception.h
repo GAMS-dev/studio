@@ -20,7 +20,9 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
-#include <QtCore>
+#include <QException>
+#include <QTextStream>
+#include <QDebug>
 
 namespace gams {
 namespace studio {

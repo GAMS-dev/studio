@@ -20,7 +20,12 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <QtCore>
+#include <QRect>
+#include <QDebug>
+#include <QTextStream>
+#include <QString>
+#include <QDateTime>
+#include <QRegularExpression>
 #include <iostream>
 #include <string>
 
