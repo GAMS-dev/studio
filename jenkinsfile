@@ -64,29 +64,46 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            echo 'TODO Test on linux'
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 windowsX86: {
                     node('windowsX86') {
                         bat '''
-                            echo 'TODO Test on windowsX86'
+                            echo off
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
                         bat '''
-                            echo 'TODO Test on windowsX64'
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 macos: {
                     node('macos') {
                         sh '''
-                            echo 'TODO Test on macos'
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 }
             }
@@ -96,7 +113,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
+                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
                         '''
                         sh '''
                             # create folder structure
