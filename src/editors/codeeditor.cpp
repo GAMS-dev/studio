@@ -604,12 +604,12 @@ int CodeEditor::indent(int size, int fromLine, int toLine)
             force = textCursor().hasSelection();
             fromLine = document()->findBlock(textCursor().anchor()).blockNumber();
             toLine = textCursor().block().blockNumber();
-            if (force) {
-                savePos = textCursor();
-                saveAnc = textCursor();
-                saveAnc.setPosition(saveAnc.anchor());
-            }
         }
+    }
+    if (force) {
+        savePos = textCursor();
+        saveAnc = textCursor();
+        saveAnc.setPosition(saveAnc.anchor());
     }
     if (fromLine > toLine) qSwap(fromLine, toLine);
 

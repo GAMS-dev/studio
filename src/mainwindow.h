@@ -239,6 +239,9 @@ private slots:
     void on_actionReset_Views_triggered();
     void initAutoSave();
 
+    void anyMenuHide();
+    void advOff();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -313,6 +316,7 @@ private:
     FileMetrics mMetrics;
     bool mCheckOnce = true;
     QStringList mOpenTabsList;
+    bool mMenuTriggered = false;
 };
 
 }

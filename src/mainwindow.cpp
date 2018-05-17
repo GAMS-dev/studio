@@ -116,6 +116,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
+    connect(ui->menuAdvanced, &QMenu::aboutToHide, this, &MainWindow::anyMenuHide);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -2075,6 +2076,17 @@ void MainWindow::initAutoSave()
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
+void MainWindow::anyMenuHide()
+{
+    mMenuTriggered = true;
+    QTimer::singleShot(0, this, SLOT(advOff()));
+}
+
+void MainWindow::advOff()
+{
+    mMenuTriggered = false;
+}
+
 void MainWindow::writeTabs(QJsonObject &json) const
 {
     QJsonArray tabArray;
@@ -2273,7 +2285,9 @@ void MainWindow::on_actionIndent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-    ce->indent(mSettings->tabSize());
+    QPoint pos(-1,-1); QPoint anc(-1,-1);
+    if (mMenuTriggered) ce->getPositionAndAnchor(pos, anc);
+    ce->indent(mSettings->tabSize(), pos.y()-1, anc.y()-1);
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -2283,7 +2297,9 @@ void MainWindow::on_actionOutdent_triggered()
 
     CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
-    ce->indent(-mSettings->tabSize());
+    QPoint pos(-1,-1); QPoint anc(-1,-1);
+    if (mMenuTriggered) ce->getPositionAndAnchor(pos, anc);
+    ce->indent(-mSettings->tabSize(), pos.y()-1, anc.y()-1);
 }
 
 void MainWindow::on_actionDuplicate_Line_triggered()
