@@ -118,12 +118,15 @@ pipeline {
                             curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
                         '''
                         sh '''
+                            pwd
+                            cd ${WORKSPACE}
+
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
 
                             # collect files
-                            cp bin/studio appdir/usr/bin/
+                            cp src/bin/studio appdir/usr/bin/
                             cp gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
 
@@ -187,11 +190,11 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-                        fileOperations([folderRenameOperation(destination: 'bin/GAMS Studio.app', source: 'bin/studio.app')])
+                        fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
                             sh '''
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
-                                macdeployqt "bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                                macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                                 security lock-keychain
                             '''
                         }
