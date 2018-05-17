@@ -1,4 +1,5 @@
 /*
+ *
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -17,6 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QScrollBar>
+#include <QDir>
 #include "logcontext.h"
 #include "exception.h"
 #include "filegroupcontext.h"

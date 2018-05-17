@@ -22,7 +22,6 @@
 
 #include <QDialog>
 #include "mainwindow.h"
-#include "filecontext.h"
 
 namespace Ui {
 class GoToWidget;

@@ -19,7 +19,7 @@
  */
 #include "gotowidget.h"
 #include "ui_gotowidget.h"
-#include "filecontext.h"
+#include "file.h"
 #include "mainwindow.h"
 
 namespace gams {

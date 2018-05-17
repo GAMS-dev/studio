@@ -17,15 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "filecontext.h"
-#include "filegroupcontext.h"
+#include <QDir>
+#include "file.h"
 #include "gamsprocess.h"
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
 #include "editors/codeeditor.h"
 #include "ui_lxiviewer.h"
-
 #include "logger.h"
 
 namespace gams {

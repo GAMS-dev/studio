@@ -20,6 +20,7 @@
 #ifndef OPTIONPARAMETERMODEL_H
 #define OPTIONPARAMETERMODEL_H
 
+#include <QAbstractItemModel>
 #include "commandlinetokenizer.h"
 #include "option.h"
 

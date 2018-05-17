@@ -20,7 +20,7 @@
 #ifndef FILETYPE_H
 #define FILETYPE_H
 
-#include <QtCore>
+#include <QStringList>
 
 namespace gams {
 namespace studio {

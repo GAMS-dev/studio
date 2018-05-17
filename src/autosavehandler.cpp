@@ -3,6 +3,8 @@
 #include "commonpaths.h"
 
 #include <QMessageBox>
+#include <QDir>
+#include <QJsonObject>
 
 namespace gams {
 namespace studio {

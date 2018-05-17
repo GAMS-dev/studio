@@ -20,7 +20,10 @@
 #ifndef OPTIONEDITOR_H
 #define OPTIONEDITOR_H
 
-#include <QtWidgets>
+#include <QVBoxLayout>
+#include <QSplitter>
+#include <QTableView>
+#include <QTreeView>
 
 #include "commandlineoption.h"
 #include "commandlinetokenizer.h"

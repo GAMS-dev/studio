@@ -20,7 +20,7 @@
 #ifndef FILECONTEXT_H
 #define FILECONTEXT_H
 
-#include <QtWidgets>
+#include <QFileSystemWatcher>
 #include "filesystemcontext.h"
 #include "filemetrics.h"
 #include "syntax.h"

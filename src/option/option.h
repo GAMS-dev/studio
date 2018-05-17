@@ -20,7 +20,9 @@
 #ifndef OPTION_H
 #define OPTION_H
 
-#include <QtWidgets>
+#include <QStringList>
+#include <QMap>
+#include <QVariant>
 #include "optcc.h"
 
 namespace gams {
