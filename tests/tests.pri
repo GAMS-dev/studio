@@ -18,14 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = app
+QT += testlib
 
-include(../tests.pri)
+CONFIG += c++14
 
-INCLUDEPATH += $$TESTSROOT/../src
+DESTDIR = ../bin
 
-HEADERS += \
-    testcommonpaths.h
-
-SOURCES += \
-    testcommonpaths.cpp
+TESTSROOT = $$_PRO_FILE_PWD_/..
