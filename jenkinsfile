@@ -28,6 +28,7 @@ pipeline {
                             echo Setting up environment for VS 2015 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
                             call vcvars32.bat
+                            cd %WORKSPACE%
                             qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
@@ -43,6 +44,7 @@ pipeline {
                             echo Setting up environment for VS2017 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
+                            cd %WORKSPACE%
                             qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
