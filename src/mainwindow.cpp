@@ -2290,26 +2290,6 @@ void MainWindow::on_actionOutdent_triggered()
     ce->indent(-mSettings->tabSize(), pos.y()-1, anc.y()-1);
 }
 
-void MainWindow::on_actionIndentBlock_triggered()
-{
-    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
-        return;
-
-    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
-    if (!ce || ce->isReadOnly()) return;
-    ce->indent(mSettings->tabSize());
-}
-
-void MainWindow::on_actionOutdentBlock_triggered()
-{
-    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
-        return;
-
-    CodeEditor* ce = FileContext::toCodeEdit(mRecent.editor());
-    if (!ce || ce->isReadOnly()) return;
-    ce->indent(-mSettings->tabSize());
-}
-
 void MainWindow::on_actionDuplicate_Line_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )

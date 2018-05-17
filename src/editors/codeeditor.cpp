@@ -303,6 +303,16 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         }
+        if (e == Hotkey::Indent) {
+            indent(mSettings->tabSize());
+            e->accept();
+            return;
+        }
+        if (e == Hotkey::Outdent) {
+            indent(-mSettings->tabSize());
+            e->accept();
+            return;
+        }
     }
 
     if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
@@ -1246,9 +1256,16 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
+    } else if (e == Hotkey::Indent) {
+        mEdit->indent(mEdit->mSettings->tabSize());
+        return;
+    } else if (e == Hotkey::Outdent) {
+        mEdit->indent(-mEdit->mSettings->tabSize());
+        return;
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
+
     startCursorTimer();
 }
 

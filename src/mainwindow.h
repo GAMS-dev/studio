@@ -228,8 +228,6 @@ private slots:
     void on_actionOverwrite_Mode_toggled(bool overwriteMode);
     void on_actionIndent_triggered();
     void on_actionOutdent_triggered();
-    void on_actionIndentBlock_triggered();
-    void on_actionOutdentBlock_triggered();
     void on_actionDuplicate_Line_triggered();
     void on_actionRemove_Line_triggered();
     void on_actionComment_triggered();
