@@ -30,8 +30,6 @@ namespace studio {
 
 FileGroupContext::~FileGroupContext()
 {
-    if (mChildList.size())
-        DEB() << "Group must be empty before deletion";
 }
 
 void FileGroupContext::setFlag(ContextFlag flag, bool value)
