@@ -102,7 +102,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
     insertHistory();
 
-    setSearchStatus(SearchStatus::Clear);
+    setSearchStatus(SearchStatus::Searching);
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
