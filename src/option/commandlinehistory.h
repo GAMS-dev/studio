@@ -20,7 +20,9 @@
 #ifndef COMMANDLINEHISTORY_H
 #define COMMANDLINEHISTORY_H
 
-#include <QtWidgets>
+#include <QObject>
+#include <QStringList>
+#include <QMap>
 
 namespace gams {
 namespace studio {

@@ -22,13 +22,14 @@
 
 #include <QSyntaxHighlighter>
 #include "syntaxformats.h"
+#include "textmark.h"
 
 namespace gams {
 namespace studio {
 
 class FileContext;
 class TextMarkList;
-class TextMark;
+//class TextMark;
 struct ParenthesesPos;
 
 enum ColorEnum {

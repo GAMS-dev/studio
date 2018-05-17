@@ -24,6 +24,8 @@
 #include "exception.h"
 #include "searchresultlist.h"
 #include <QDebug>
+#include <QMessageBox>
+#include <QTextDocumentFragment>
 
 namespace gams {
 namespace studio {

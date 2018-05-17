@@ -23,7 +23,9 @@
 #ifndef SYNTAXDATA_H
 #define SYNTAXDATA_H
 
-#include <QtCore>
+#include <QList>
+#include <QString>
+#include <QPair>
 
 namespace gams {
 namespace studio {

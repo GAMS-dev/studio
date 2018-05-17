@@ -24,6 +24,7 @@
 #include "gamsprocess.h"
 #include "commonpaths.h"
 #include "logger.h"
+#include "syntax.h"
 
 namespace gams {
 namespace studio {

@@ -20,13 +20,13 @@
 #ifndef TEXTMARKLIST_H
 #define TEXTMARKLIST_H
 
-#include <QtCore>
 #include "textmark.h"
 
 namespace gams {
 namespace studio {
 
 class FileContext;
+class FileGroupContext;
 
 class TextMarkList: public QObject
 {

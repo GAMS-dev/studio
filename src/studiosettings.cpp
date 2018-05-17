@@ -17,6 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QMessageBox>
+#include <QDir>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"

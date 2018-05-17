@@ -20,7 +20,8 @@
 #ifndef FILEMETRICS_H
 #define FILEMETRICS_H
 
-#include <QtCore>
+#include <QDateTime>
+#include <QFileInfo>
 #include "filetype.h"
 
 namespace gams {

@@ -20,7 +20,7 @@
 #ifndef OPTIONCOMPLETERDELEGATE_H
 #define OPTIONCOMPLETERDELEGATE_H
 
-#include <QtWidgets>
+#include <QStyledItemDelegate>
 #include "commandlinetokenizer.h"
 #include "option.h"
 #include "optionparametermodel.h"

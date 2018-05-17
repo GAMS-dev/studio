@@ -20,8 +20,9 @@
 #ifndef TEXTMARK_H
 #define TEXTMARK_H
 
-#include <QtWidgets>
-#include "filetype.h"
+#include <QTextDocument>
+#include <QVector>
+#include "file/filetype.h"
 
 namespace gams {
 namespace studio {
