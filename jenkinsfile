@@ -118,9 +118,6 @@ pipeline {
                             curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
                         '''
                         sh '''
-                            pwd
-                            cd ${WORKSPACE}
-
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
@@ -199,7 +196,7 @@ pipeline {
                             '''
                         }
                         sh '''
-                            mv "bin/GAMS Studio.dmg" studio.dmg
+                            mv "src/bin/GAMS Studio.dmg" studio.dmg
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
