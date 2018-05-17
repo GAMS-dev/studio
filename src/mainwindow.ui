@@ -142,6 +142,8 @@
      <addaction name="separator"/>
      <addaction name="actionIndent"/>
      <addaction name="actionOutdent"/>
+     <addaction name="actionIndentBlock"/>
+     <addaction name="actionOutdentBlock"/>
      <addaction name="actionDuplicate_Line"/>
      <addaction name="actionRemove_Line"/>
      <addaction name="actionComment"/>
@@ -664,15 +666,31 @@
   </action>
   <action name="actionIndent">
    <property name="text">
-    <string>Indent Line</string>
+    <string>Indent Line(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionOutdent">
+   <property name="text">
+    <string>Outdent Line(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionIndentBlock">
+   <property name="text">
+    <string>Indent Block</string>
    </property>
    <property name="shortcut">
     <string>Tab</string>
    </property>
   </action>
-  <action name="actionOutdent">
+  <action name="actionOutdentBlock">
    <property name="text">
-    <string>Outdent Line</string>
+    <string>Outdent Block</string>
    </property>
    <property name="shortcut">
     <string>Shift+Tab</string>
