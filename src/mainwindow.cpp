@@ -100,7 +100,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
-    connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::closeFileEditors);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
@@ -1050,16 +1049,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
-        if (fc->editors().size() == 1) {
-            mFileRepo.close(fc->id());
-//            if (!QFileInfo(fc->location()).exists()) {
-//                emit fc->parentEntry()->removeNode(fc);
-//                fc = nullptr;
-//            }
-        } else {
-            fc->removeEditor(edit);
-            ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        }
+
+        mClosedTabs << fc->location();
+        fc->removeEditor(edit);
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
     }
 }
 
@@ -1862,7 +1855,6 @@ void MainWindow::closeFile(FileContext* file)
 
     // save changes in project structure
     mSettings->saveSettings(this);
-
 }
 
 /// Closes all open editors and tabs related to a file
@@ -2352,6 +2344,7 @@ void MainWindow::toggleLogDebug()
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
+    // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
     QFile file(mClosedTabs.last());

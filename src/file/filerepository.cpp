@@ -224,14 +224,6 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     return group;
 }
 
-void FileRepository::close(FileId fileId)
-{
-    FileContext *fc = fileContext(fileId);
-    QModelIndex fci = mTreeModel->index(fc);
-    mTreeModel->dataChanged(fci, fci);
-    emit fileClosed(fileId, QPrivateSignal());
-}
-
 void FileRepository::setSuffixFilter(QStringList filter)
 {
     for (QString suff: filter) {

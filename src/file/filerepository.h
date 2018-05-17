@@ -125,7 +125,6 @@ public:
     }
 
 signals:
-    void fileClosed(FileId fileId, QPrivateSignal);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
