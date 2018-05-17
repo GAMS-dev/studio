@@ -20,4 +20,4 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testCommonPaths
+SUBDIRS += testcommonpaths

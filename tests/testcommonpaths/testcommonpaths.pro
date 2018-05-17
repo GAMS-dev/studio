@@ -20,3 +20,12 @@
 
 TEMPLATE = app
 
+QT += testlib
+
+INCLUDEPATH += $$_PRO_FILE_PWD_/../../src
+
+HEADERS += \
+    testcommonpaths.h
+
+SOURCES += \
+    testcommonpaths.cpp
