@@ -22,6 +22,7 @@ QT += testlib
 QT -= gui
 
 CONFIG += c++14
+CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
