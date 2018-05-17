@@ -20,11 +20,10 @@
 #ifndef FILESYSTEMCONTEXT_H
 #define FILESYSTEMCONTEXT_H
 
-#include <QtWidgets>
-#include "editors/codeeditor.h"
-#include "editors/logeditor.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
+#include "editors/codeeditor.h"
+#include "editors/logeditor.h"
 
 namespace gams {
 namespace studio {

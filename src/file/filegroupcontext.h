@@ -20,10 +20,11 @@
 #ifndef FILEGROUPCONTEXT_H
 #define FILEGROUPCONTEXT_H
 
-#include "filesystemcontext.h"
-#include "syntax.h"
-
+#include <QProcess>
+#include <QFileInfoList>
 #include <memory>
+#include "filesystemcontext.h"
+#include "syntax/textmark.h"
 
 namespace gams {
 namespace studio {
@@ -31,9 +32,7 @@ namespace studio {
 class LogContext;
 class FileContext;
 class GamsProcess;
-//class TextMarkList;
-//class TextMark;
-//enum TextMark::Type;
+class TextMarkList;
 
 class FileGroupContext : public FileSystemContext
 {

@@ -18,7 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QKeyEvent>
-
+#include <QCompleter>
+#include <QStringListModel>
+#include <QApplication>
+#include <QMainWindow>
 #include "lineeditcompleteevent.h"
 #include "optioncompleterdelegate.h"
 

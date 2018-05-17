@@ -21,7 +21,6 @@
 #define STUDIOSETTINGS_H
 
 #include <QSettings>
-#include <QDebug>
 #include "mainwindow.h"
 #include "commandlineparser.h"
 

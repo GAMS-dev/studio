@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textmarklist.h"
-#include "filecontext.h"
-#include "filegroupcontext.h"
+#include "file.h"
 #include "exception.h"
 #include "logger.h"
 

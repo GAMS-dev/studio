@@ -20,7 +20,6 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include "QtGui"
 #include "studiosettings.h"
 
 namespace gams {

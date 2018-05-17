@@ -20,6 +20,7 @@
 #ifndef OPTIONDEFINITIONMODEL_H
 #define OPTIONDEFINITIONMODEL_H
 
+#include <QAbstractItemModel>
 #include "option/option.h"
 #include "option/optiondefinitionitem.h"
 
