@@ -104,11 +104,6 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     mParent = parent;
 }
 
-void LogContext::fileClosed(FileContext *fc)
-{
-    if (fc == mLstContext) mLstContext = nullptr;
-}
-
 TextMark*LogContext::firstErrorMark()
 {
     if (!mMarks) return nullptr;
@@ -379,6 +374,16 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
         }
     }
     return result;
+}
+
+FileContext *LogContext::lstContext() const
+{
+    return mLstContext;
+}
+
+void LogContext::setLstContext(FileContext *lstContext)
+{
+    mLstContext = lstContext;
 }
 
 void LogContext::setJumpToLogEnd(bool state)

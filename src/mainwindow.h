@@ -129,6 +129,7 @@ public:
     void delayedFileRestoration();
     void resetViews();
 
+
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
@@ -150,11 +151,12 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void fileClosed(FileId fileId);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(FileGroupContext* group);
+    void closeFileConditionally(FileContext *file);
     void closeFile(FileContext* file);
+    void closeFileEditors(FileId fileId);
     void addToGroup(FileGroupContext *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);

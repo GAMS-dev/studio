@@ -33,10 +33,12 @@ public:
     void addEditor(QWidget* edit) override;
     void removeEditor(QWidget* edit) override;
     void setParentEntry(FileGroupContext *parent) override;
-    void fileClosed(FileContext* fc);
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+    FileContext *lstContext() const;
+    void setLstContext(FileContext *lstContext);
+
 public slots:
     void addProcessData(QString text);
     void setJumpToLogEnd(bool state);

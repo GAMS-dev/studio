@@ -100,7 +100,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
-    connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::fileClosed);
+    connect(&mFileRepo, &FileRepository::fileClosed, this, &MainWindow::closeFileEditors);
     connect(&mFileRepo, &FileRepository::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mFileRepo, &FileRepository::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mFileRepo, &FileRepository::openFileContext, this, &MainWindow::openFileContext);
@@ -109,7 +109,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mFileRepo, &FileRepository::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFileConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
@@ -893,31 +893,9 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     int ret = msgBox.exec();
 
     if (ret == QMessageBox::No)
-        fileClosed(fileId);
+        closeFile(fc);
     else
         fc->document()->setModified();
-}
-
-void MainWindow::fileClosed(FileId fileId)
-{
-    FileContext* fc = mFileRepo.fileContext(fileId);
-    mClosedTabs << fc->location();
-    if (!fc)
-        FATAL() << "FileId " << fileId << " is not of class FileContext.";
-    while (!fc->editors().isEmpty()) {
-        QWidget *edit = fc->editors().first();
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        fc->removeEditor(edit);
-        edit->deleteLater();
-    }
-
-    // TODO(JM) Right now there are issues with the TextMarkList, so we leave it out for now
-//    if (!QFileInfo(fc->location()).exists()) {
-//        fc->marks()->unbind();
-//        emit fc->parentEntry()->removeNode(fc);
-//        fc = nullptr;
-//    }
-
 }
 
 void MainWindow::appendSystemLog(const QString &text)
@@ -1831,7 +1809,7 @@ void MainWindow::closeGroup(FileGroupContext* group)
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
         for (FileContext *file: openFiles) {
-            fileClosed(file->id());
+            closeFileEditors(file->id());
         }
         LogContext* log = group->logContext();
         if (log) {
@@ -1849,27 +1827,69 @@ void MainWindow::closeGroup(FileGroupContext* group)
 
 }
 
+/// Asks user for confirmation if a file is modified before calling closeFile
+/// \param file
+///
+void MainWindow::closeFileConditionally(FileContext* file) {
+    if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file))
+        closeFile(file);
+}
+
+/// Removes file from repository. And calls closeFileEditors to clean everything up.
+/// \param file
+///
 void MainWindow::closeFile(FileContext* file)
+{    
+    ui->projectView->setCurrentIndex(QModelIndex());
+
+    FileGroupContext *parent = file->parentEntry();
+
+    // if this file is marked as runnable remove reference
+    if (parent->runnableGms() == file->location())
+        parent->removeRunnableGms();
+
+    // if this is a lst file referenced in a log
+    if (parent->logContext()->lstContext() == file)
+        parent->logContext()->setLstContext(nullptr);
+
+    // close actual file and remove repo node
+    closeFileEditors(file->id());
+    mFileRepo.removeFile(file);
+
+    // close group if empty now
+    if (parent->childCount() == 0)
+        closeGroup(parent);
+
+    // save changes in project structure
+    mSettings->saveSettings(this);
+
+}
+
+/// Closes all open editors and tabs related to a file
+/// \param fileId
+///
+void MainWindow::closeFileEditors(FileId fileId)
 {
-    if (!file->isModified() || requestCloseChanged(QList<FileContext*>() << file)) {
-        ui->projectView->setCurrentIndex(QModelIndex());
+    FileContext* fc = mFileRepo.fileContext(fileId);
 
-        FileGroupContext *parent = file->parentEntry();
+    // add to recently closed tabs
+    mClosedTabs << fc->location();
+    if (!fc)
+        FATAL() << "FileId " << fileId << " is not of class FileContext.";
 
-        if (parent->runnableGms() == file->location())
-            parent->removeRunnableGms();
-
-        if (parent->logContext())
-            parent->logContext()->fileClosed(file);
-
-        fileClosed(file->id());
-        mFileRepo.removeFile(file);
-
-        if (parent->childCount() == 0)
-            closeGroup(parent);
-
-        mSettings->saveSettings(this);
+    // close all related editors, tabs and clean up
+    while (!fc->editors().isEmpty()) {
+        QWidget *edit = fc->editors().first();
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        fc->removeEditor(edit);
+        edit->deleteLater();
     }
+// TODO(JM) Right now there are issues with the TextMarkList, so we leave it out for now
+//    if (!QFileInfo(fc->location()).exists()) {
+//        fc->marks()->unbind();
+//        emit fc->parentEntry()->removeNode(fc);
+//        fc = nullptr;
+//    }
 }
 
 void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip)
