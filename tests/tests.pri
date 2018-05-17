@@ -19,6 +19,7 @@
 #
 
 QT += testlib
+QT -= gui
 
 CONFIG += c++14
 
