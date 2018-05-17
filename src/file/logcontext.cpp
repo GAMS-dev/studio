@@ -109,6 +109,11 @@ void LogContext::fileClosed(FileContext *fc)
     if (fc == mLstContext) mLstContext = nullptr;
 }
 
+void LogContext::resetLst()
+{
+    mLstContext = nullptr;
+}
+
 TextMark*LogContext::firstErrorMark()
 {
     if (!mMarks) return nullptr;

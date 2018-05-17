@@ -341,6 +341,7 @@ void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
 
     mGmsFileName = location;
     setLstFileName(QFileInfo(location).baseName() + ".lst");
+    if (logContext()) logContext()->resetLst();
 }
 
 void FileGroupContext::removeRunnableGms()

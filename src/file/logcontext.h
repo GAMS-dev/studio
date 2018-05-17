@@ -34,6 +34,7 @@ public:
     void removeEditor(QWidget* edit) override;
     void setParentEntry(FileGroupContext *parent) override;
     void fileClosed(FileContext* fc);
+    void resetLst();
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
