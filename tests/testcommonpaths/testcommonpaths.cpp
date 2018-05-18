@@ -24,6 +24,30 @@
 
 using gams::studio::CommonPaths;
 
+void TestCommonPaths::testSystemDir()
+{
+    auto result = CommonPaths::systemDir();
+    QVERIFY(!result.isEmpty());
+}
+
+void TestCommonPaths::testUserDocumentDir()
+{
+    auto result = CommonPaths::userDocumentsDir();
+    QVERIFY(result.endsWith("GAMSStudio"));
+}
+
+void TestCommonPaths::testUserModelLibraryDir()
+{
+    auto result = CommonPaths::userModelLibraryDir();
+    QVERIFY(result.endsWith("modellibs"));
+}
+
+void TestCommonPaths::testDefaultWorkingDir()
+{
+    auto result = CommonPaths::defaultWorkingDir();
+    QVERIFY(result.endsWith("workspace"));
+}
+
 void TestCommonPaths::testAbsoluteFilePathEmpty()
 {
     auto result = CommonPaths::absolutFilePath("");
