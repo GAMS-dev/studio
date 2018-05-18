@@ -23,9 +23,12 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH += $$TESTSROOT/../src
+SRCPATH = $$TESTSROOT/../src
 
 HEADERS += \
     testcommonpaths.h
 
 SOURCES += \
-    testcommonpaths.cpp
+    testcommonpaths.cpp \
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp

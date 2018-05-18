@@ -18,10 +18,64 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testcommonpaths.h"
+#include "commonpaths.h"
 
-void TestCommonPaths::test()
+#include <QDebug>
+
+using gams::studio::CommonPaths;
+
+void TestCommonPaths::testAbsoluteFilePathEmpty()
 {
-    QVERIFY(true);
+    auto result = CommonPaths::absolutFilePath("");
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testAbsoluteFilePathNullStr()
+{
+    auto result = CommonPaths::absolutFilePath(QString());
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testAbsoluteFilePathExisting()
+{
+    const QString currentDir(CommonPaths::absolutPath("."));
+    const QString filePath("testcommonpaths");
+    auto result = CommonPaths::absolutFilePath(filePath);
+    QVERIFY(!result.compare(currentDir+"/"+filePath));
+}
+
+void TestCommonPaths::testAbsoluteFilePathNotExisting()
+{
+    const QString currentDir(CommonPaths::absolutPath("."));
+    const QString filePath("myDir/myfile.txt");
+    auto result = CommonPaths::absolutFilePath(filePath);
+    QVERIFY(!result.compare(currentDir+"/"+filePath));
+}
+
+void TestCommonPaths::testAbsolutePathEmpty()
+{
+    auto result = CommonPaths::absolutPath("");
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testAbsolutePathNullStr()
+{
+    auto result = CommonPaths::absolutPath(QString());
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testAbsolutePathExisting()
+{
+    const QString absolutPath(CommonPaths::absolutPath("."));
+    auto result = CommonPaths::absolutPath(absolutPath);
+    QVERIFY(!result.compare(absolutPath));
+}
+
+void TestCommonPaths::testAbsolutePathNotExisting()
+{
+    const QString absolutPath(CommonPaths::absolutPath("./lala"));
+    auto result = CommonPaths::absolutPath(absolutPath);
+    QVERIFY(!result.compare(absolutPath));
 }
 
 QTEST_MAIN(TestCommonPaths)

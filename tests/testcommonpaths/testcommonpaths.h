@@ -27,7 +27,15 @@ class TestCommonPaths : public QObject
     Q_OBJECT
 
 private slots:
-    void test();
+    void testAbsoluteFilePathEmpty();
+    void testAbsoluteFilePathNullStr();
+    void testAbsoluteFilePathExisting();
+    void testAbsoluteFilePathNotExisting();
+
+    void testAbsolutePathEmpty();
+    void testAbsolutePathNullStr();
+    void testAbsolutePathExisting();
+    void testAbsolutePathNotExisting();
 };
 
 #endif // TESTCOMMONPATHS_H

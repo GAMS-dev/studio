@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += testlib
+QT += core testlib
 QT -= gui
 
 CONFIG += c++14
