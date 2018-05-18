@@ -29,6 +29,29 @@
 namespace gams {
 namespace studio {
 
+FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
+    : FileSystemContext(id, name, location, FileSystemContext::FileGroup),
+      mGamsProcess(new GamsProcess)
+{
+    qDebug() << "runInfo" << runInfo; // rogo: delete
+    if (runInfo == "") return;
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(location + "/" + runInfo);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+
+    // fix for .lst-as-mainfile bug
+    if (runnableFile.suffix() == "gms")
+        mGmsFileName = runnableFile.absoluteFilePath();
+    else if (alternateFile.exists())
+        mGmsFileName = alternateFile.fileName();
+    else
+        mGmsFileName = "";
+
+    //mGamsProcess->setContext(this);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
+}
+
 FileGroupContext::~FileGroupContext()
 {
 }
@@ -219,6 +242,12 @@ void FileGroupContext::attachFile(const QString &filepath)
         if (!fsc && fi.exists()) {
             updateChildNodes();
         }
+
+        if (runnableGms().isEmpty() && filepath.endsWith(".gms", Qt::CaseInsensitive)) {
+            FileContext *gms = nullptr;
+            findOrCreateFileContext(filepath, gms, this);
+            setRunnableGms(gms);
+        }
     }
 }
 
@@ -392,29 +421,6 @@ void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState
     Q_UNUSED(newState);
     updateRunState(newState);
     emit gamsProcessStateChanged(this);
-}
-
-FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
-    : FileSystemContext(id, name, location, FileSystemContext::FileGroup),
-      mGamsProcess(new GamsProcess)
-{
-    if (runInfo == "") return;
-
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + runInfo);
-    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
-
-    // fix for .lst-as-basefile bug
-    if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    } else if (alternateFile.exists()) {
-        mGmsFileName = alternateFile.fileName();
-    } else {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    }
-
-    //mGamsProcess->setContext(this);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
 }
 
 } // namespace studio

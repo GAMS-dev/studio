@@ -1832,23 +1832,32 @@ void MainWindow::closeFile(FileContext* file)
 {    
     ui->projectView->setCurrentIndex(QModelIndex());
 
-    FileGroupContext *parent = file->parentEntry();
-
-    // if this file is marked as runnable remove reference
-    if (parent->runnableGms() == file->location())
-        parent->removeRunnableGms();
+    FileGroupContext *parentGroup = file->parentEntry();
 
     // if this is a lst file referenced in a log
-    if (parent->logContext() && parent->logContext()->lstContext() == file)
-        parent->logContext()->setLstContext(nullptr);
+    if (parentGroup->logContext() && parentGroup->logContext()->lstContext() == file)
+        parentGroup->logContext()->setLstContext(nullptr);
 
     // close actual file and remove repo node
     closeFileEditors(file->id());
     mFileRepo.removeFile(file);
 
+    // if this file is marked as runnable remove reference
+    if (parentGroup->runnableGms() == file->location()) {
+        parentGroup->removeRunnableGms();
+        for (int i = 0; i < parentGroup->childCount(); i++) {
+            // choose next as main gms file
+            if (parentGroup->childEntry(i)->location().endsWith(".gms")) {
+                parentGroup->setRunnableGms(static_cast<FileContext*>(parentGroup->childEntry(i)));
+                break;
+            }
+        }
+    }
+
     // close group if empty now
-    if (parent->childCount() == 0)
-        closeGroup(parent);
+    if (parentGroup->childCount() == 0)
+        closeGroup(parentGroup);
+
 
     // save changes in project structure
     mSettings->saveSettings(this);
@@ -2429,6 +2438,3 @@ void MainWindow::resetViews()
 
 }
 }
-
-
-
