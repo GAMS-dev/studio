@@ -20,8 +20,6 @@
 #include "testcommonpaths.h"
 #include "commonpaths.h"
 
-#include <QDebug>
-
 using gams::studio::CommonPaths;
 
 void TestCommonPaths::testSystemDir()
