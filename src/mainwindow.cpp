@@ -1839,7 +1839,7 @@ void MainWindow::closeFile(FileContext* file)
         parent->removeRunnableGms();
 
     // if this is a lst file referenced in a log
-    if (parent->logContext()->lstContext() == file)
+    if (parent->logContext() && parent->logContext()->lstContext() == file)
         parent->logContext()->setLstContext(nullptr);
 
     // close actual file and remove repo node
