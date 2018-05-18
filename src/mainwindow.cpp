@@ -1528,7 +1528,7 @@ void MainWindow::openFiles(QStringList pathList)
     for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(CommonPaths::filePath(fName), nullptr, true);
+            openFilePath(CommonPaths::absolutFilePath(fName), nullptr, true);
         else
             filesNotFound.append(fName);
     }
@@ -1881,7 +1881,7 @@ void MainWindow::openFilePath(QString filePath, FileGroupContext *parent, bool f
     FileContext *fc = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
 
     if (!fc) { // not yet opened by user, open file in new tab
-        FileGroupContext* group = mFileRepo.ensureGroup(CommonPaths::filePath(filePath));
+        FileGroupContext* group = mFileRepo.ensureGroup(CommonPaths::absolutFilePath(filePath));
         mFileRepo.findOrCreateFileContext(filePath, fc, group);
         if (!fc) {
             EXCEPT() << "File not found: " << filePath;
