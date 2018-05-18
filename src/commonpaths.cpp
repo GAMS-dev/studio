@@ -44,7 +44,7 @@ QString CommonPaths::systemDir() {
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
-    gamsPath = QApplication::applicationDirPath().append(subPath);
+    gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
