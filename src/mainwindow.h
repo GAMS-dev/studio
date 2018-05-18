@@ -253,7 +253,7 @@ protected:
 private:
     void initTabs();
     FileContext* addContext(const QString &path, const QString &fileName);
-    void openContext(const QModelIndex& index);
+    void openIndex(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);

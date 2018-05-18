@@ -1388,7 +1388,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             ui->logTabs->setCurrentIndex(ind);
         }
     } else {
-        openContext(index);
+        openIndex(index);
     }
 }
 
@@ -1928,7 +1928,7 @@ FileContext* MainWindow::addContext(const QString &path, const QString &fileName
     return fc;
 }
 
-void MainWindow::openContext(const QModelIndex& index)
+void MainWindow::openIndex(const QModelIndex& index)
 {
     FileContext *file = mFileRepo.fileContext(index);
     if (file) openFileContext(file);
