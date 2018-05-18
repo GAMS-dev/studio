@@ -1443,20 +1443,15 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-    }
-    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-        openContext(ui->projectView->currentIndex());
-        event->accept();
-    } else {
-        QMainWindow::keyPressEvent(event);
-    }
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0))
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
         mSearchWidget->hide();
         mSearchWidget->clearResults();
     }
+
+    QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
@@ -1765,11 +1760,13 @@ void MainWindow::openFileContext(FileContext* fileContext, bool focus, int codec
     if (!fileContext->editors().empty()) {
         edit = fileContext->editors().first();
     }
+    // open edit if existing or create one
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
         createEdit(tabWidget, focus, fileContext->id(), codecMib);
     }
+    // set keyboard focus to editor
     if (tabWidget->currentWidget())
         if (focus) {
             lxiviewer::LxiViewer* lxiViewer = FileSystemContext::toLxiViewer(edit);
