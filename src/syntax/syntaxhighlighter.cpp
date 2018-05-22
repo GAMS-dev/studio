@@ -30,7 +30,7 @@
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(FileContext* context)
+ErrorHighlighter::ErrorHighlighter(ProjectFileNode* context)
     : QSyntaxHighlighter(context->document()), mContext(context)
 {
 }
@@ -114,7 +114,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
 }
 
 
-SyntaxHighlighter::SyntaxHighlighter(FileContext* context)
+SyntaxHighlighter::SyntaxHighlighter(ProjectFileNode* context)
     : ErrorHighlighter(context)
 {
     QHash<ColorEnum, QColor> cl {

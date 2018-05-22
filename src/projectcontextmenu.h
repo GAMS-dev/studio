@@ -25,9 +25,9 @@
 namespace gams {
 namespace studio {
 
-class FileSystemContext;
-class FileGroupContext;
-class FileContext;
+class ProjectAbstractNode;
+class ProjectGroupNode;
+class ProjectFileNode;
 
 class ProjectContextMenu : public QMenu
 {
@@ -35,17 +35,17 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNode(FileSystemContext* context);
+    void setNode(ProjectAbstractNode* context);
 
     void setParent(QWidget *parent);
 
 signals:
-    void closeGroup(FileGroupContext* group);
-    void runGroup(FileGroupContext* group);
-    void runFile(FileContext *fc);
-    void setMainFile(FileContext *fc);
-    void closeFile(FileContext* fc);
-    void addExistingFile(FileGroupContext* group, const QString& file);
+    void closeGroup(ProjectGroupNode* group);
+    void runGroup(ProjectGroupNode* group);
+    void runFile(ProjectFileNode *fc);
+    void setMainFile(ProjectFileNode *fc);
+    void closeFile(ProjectFileNode* fc);
+    void addExistingFile(ProjectGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
 
 private slots:
@@ -60,7 +60,7 @@ private:
     void onOpenFileLoc();
 
 private:
-    FileSystemContext* mNode;
+    ProjectAbstractNode* mNode;
     QHash<int, QAction*> mActions;
     QWidget *mParent = nullptr;
 };

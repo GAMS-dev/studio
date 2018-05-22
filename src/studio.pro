@@ -73,14 +73,8 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
     exception.cpp \
-    file/filecontext.cpp \
-    file/filegroupcontext.cpp \
     file/filemetrics.cpp \
-    file/filerepository.cpp \
-    file/filesystemcontext.cpp \
-    file/filetreemodel.cpp \
     file/filetype.cpp \
-    file/logcontext.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxviewer/columnfilter.cpp \
@@ -134,7 +128,15 @@ SOURCES += \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp
+    wplabel.cpp \
+    file/projectfilenode.cpp \
+    file/projectgroupnode.cpp \
+    file/projectrepo.cpp \
+    file/projectabstractnode.cpp \
+    file/projecttreemodel.cpp \
+    file/projectlognode.cpp \
+    file/filemetarepo.cpp \
+    file/filemeta.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -151,14 +153,9 @@ HEADERS += \
     editors/selectencodings.h \
     exception.h \
     file.h \
-    file/filecontext.h \
-    file/filegroupcontext.h \
     file/filemetrics.h \
-    file/filerepository.h \
-    file/filesystemcontext.h \
-    file/filetreemodel.h \
     file/filetype.h \
-    file/logcontext.h \
+    file/projectabstractnode.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxviewer/columnfilter.h \
@@ -215,7 +212,14 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h
+    wplabel.h \
+    file/projectgroupnode.h \
+    file/projectfilenode.h \
+    file/projectlognode.h \
+    file/projectfilerepo.h \
+    file/projecttreemodel.h \
+    file/filemetarepo.h \
+    file/filemeta.h
 
 FORMS += \
     bookmarkdialog.ui \

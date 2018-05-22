@@ -18,8 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "filecontext.h"
-#include "filegroupcontext.h"
+#include "projectfilenode.h"
+#include "projectgroupnode.h"
 #include "exception.h"
 #include "editors/codeeditor.h"
 #include "logger.h"
@@ -30,11 +30,11 @@
 namespace gams {
 namespace studio {
 
-const QList<int> FileContext::mDefaulsCodecs {0, 1, 108};
+const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
         // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
-FileContext::FileContext(FileId fileId, QString name, QString location, ContextType type)
-    : FileSystemContext(fileId, name, location, type)
+ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, ContextType type)
+    : ProjectAbstractNode(fileId, name, location, type)
 {
     mMetrics = FileMetrics(QFileInfo(location));
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
@@ -44,12 +44,12 @@ FileContext::FileContext(FileId fileId, QString name, QString location, ContextT
     }
 }
 
-QWidgetList& FileContext::editorList()
+QWidgetList& ProjectFileNode::editorList()
 {
     return mEditors;
 }
 
-FileContext::~FileContext()
+ProjectFileNode::~ProjectFileNode()
 {
     if (mMarks) mMarks->unbind();
 
@@ -57,24 +57,24 @@ FileContext::~FileContext()
     removeAllEditors();
 }
 
-void FileContext::setParentEntry(FileGroupContext* parent)
+void ProjectFileNode::setParentEntry(ProjectGroupNode* parent)
 {
-    FileSystemContext::setParentEntry(parent);
+    ProjectAbstractNode::setParentEntry(parent);
     if (!parent) {
         if (mMarks) mMarks->unbind();
         mMarks = nullptr;
     } else if (mMarks != parent->marks(location())) {
         mMarks = parent->marks(location());
-        if (mMarks) connect(this, &FileContext::documentOpened, mMarks, &TextMarkList::documentOpened);
+        if (mMarks) connect(this, &ProjectFileNode::documentOpened, mMarks, &TextMarkList::documentOpened);
     }
 }
 
-int FileContext::codecMib() const
+int ProjectFileNode::codecMib() const
 {
     return mCodec ? mCodec->mibEnum() : -1;
 }
 
-void FileContext::setCodecMib(int mib)
+void ProjectFileNode::setCodecMib(int mib)
 {
     QTextCodec *codec = QTextCodec::codecForMib(mib);
     if (!codec)
@@ -86,23 +86,23 @@ void FileContext::setCodecMib(int mib)
     // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
 }
 
-const QString FileContext::caption()
+const QString ProjectFileNode::caption()
 {
     return name() + (isModified() ? "*" : "");
 }
 
-bool FileContext::isModified()
+bool ProjectFileNode::isModified()
 {
     return document() && document()->isModified();
 }
 
-void FileContext::save()
+void ProjectFileNode::save()
 {
     if (isModified())
         save(location());
 }
 
-void FileContext::save(QString filePath)
+void ProjectFileNode::save(QString filePath)
 {
     if (filePath == "")
         EXCEPT() << "Can't save without file name";
@@ -119,17 +119,17 @@ void FileContext::save(QString filePath)
     document()->setModified(false);
 }
 
-const FileMetrics& FileContext::metrics() const
+const FileMetrics& ProjectFileNode::metrics() const
 {
     return mMetrics;
 }
 
-const QWidgetList FileContext::editors() const
+const QWidgetList ProjectFileNode::editors() const
 {
     return mEditors;
 }
 
-void FileContext::setLocation(const QString& _location)
+void ProjectFileNode::setLocation(const QString& _location)
 {
     if (_location.isEmpty())
         EXCEPT() << "File can't be set to an empty location.";
@@ -140,11 +140,11 @@ void FileContext::setLocation(const QString& _location)
     // TODO(JM) adapt parent group
     if (document())
         document()->setModified(true);
-    FileSystemContext::setLocation(_location);
+    ProjectAbstractNode::setLocation(_location);
     mMetrics = FileMetrics(newLoc);
 }
 
-QIcon FileContext::icon()
+QIcon ProjectFileNode::icon()
 {
     QString runMark = (location() == parentEntry()->runnableGms()) ? "-run" : "";
     if (mMetrics.fileType() == FileType::Gms)
@@ -154,30 +154,30 @@ QIcon FileContext::icon()
     return QIcon(":/img/file-alt"+runMark);
 }
 
-void FileContext::addEditor(QWidget* edit)
+void ProjectFileNode::addEditor(QWidget* edit)
 {
     if (!edit) return;
     if (mEditors.contains(edit)) {
         mEditors.move(mEditors.indexOf(edit), 0);
         return;
     }
-    if (FileSystemContext::editorType(edit) == FileSystemContext::etUndefined)
+    if (ProjectAbstractNode::editorType(edit) == ProjectAbstractNode::etUndefined)
         EXCEPT() << "Type assignment missing for this editor/viewer";
     bool newlyOpen = !document();
     mEditors.prepend(edit);
-    AbstractEditor* ptEdit = FileContext::toAbstractEdit(edit);
-    CodeEditor* scEdit = FileContext::toCodeEdit(edit);
+    AbstractEditor* ptEdit = ProjectFileNode::toAbstractEdit(edit);
+    CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (mEditors.size() == 1) {
         if (ptEdit) {
             ptEdit->document()->setParent(this);
-            connect(document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged, Qt::UniqueConnection);
+            connect(document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged, Qt::UniqueConnection);
             if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document()) {
                 mSyntaxHighlighter->setDocument(document());
                 if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
             }
             if (newlyOpen) emit documentOpened();
-            QTimer::singleShot(50, this, &FileContext::updateMarks);
+            QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
         }
     } else if (ptEdit) {
         ptEdit->setDocument(document());
@@ -195,33 +195,33 @@ void FileContext::addEditor(QWidget* edit)
         connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
         connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
     }
-    setFlag(FileSystemContext::cfActive);
+    setFlag(ProjectAbstractNode::cfActive);
 }
 
-void FileContext::editToTop(QWidget* edit)
+void ProjectFileNode::editToTop(QWidget* edit)
 {
     addEditor(edit);
 }
 
-void FileContext::removeEditor(QWidget* edit)
+void ProjectFileNode::removeEditor(QWidget* edit)
 {
     int i = mEditors.indexOf(edit);
     if (i < 0)
         return;
     bool wasModified = isModified();
-    AbstractEditor* ptEdit = FileContext::toAbstractEdit(edit);
-    CodeEditor* scEdit = FileContext::toCodeEdit(edit);
+    AbstractEditor* ptEdit = ProjectFileNode::toAbstractEdit(edit);
+    CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
         emit documentClosed();
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
-        disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileContext::modificationChanged);
+        disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
         if (!document()) emit documentClosed();
-        unsetFlag(FileSystemContext::cfActive);
+        unsetFlag(ProjectAbstractNode::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {
         ptEdit->setDocument(document()->clone(ptEdit));
@@ -235,7 +235,7 @@ void FileContext::removeEditor(QWidget* edit)
     }
 }
 
-void FileContext::removeAllEditors()
+void ProjectFileNode::removeAllEditors()
 {
     auto editors = mEditors;
     for (auto editor : editors) {
@@ -244,20 +244,20 @@ void FileContext::removeAllEditors()
     mEditors = editors;
 }
 
-bool FileContext::hasEditor(QWidget* edit)
+bool ProjectFileNode::hasEditor(QWidget* edit)
 {
     return mEditors.contains(edit);
 }
 
-QTextDocument*FileContext::document() const
+QTextDocument*ProjectFileNode::document() const
 {
     if (mEditors.isEmpty())
         return nullptr;
-    AbstractEditor* edit = FileContext::toAbstractEdit(mEditors.first());
+    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
     return edit ? edit->document() : nullptr;
 }
 
-bool FileContext::isReadOnly()
+bool ProjectFileNode::isReadOnly()
 {
     AbstractEditor* edit = nullptr;
     if (mEditors.size()) {
@@ -266,7 +266,7 @@ bool FileContext::isReadOnly()
     return edit && edit->isReadOnly();
 }
 
-void FileContext::load(QList<int> codecMibs, bool keepMarks)
+void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
 {
 //    TRACETIME();
     if (!document())
@@ -307,25 +307,25 @@ void FileContext::load(QList<int> codecMibs, bool keepMarks)
         file.close();
         document()->setModified(false);
         mMetrics = FileMetrics(QFileInfo(file));
-        QTimer::singleShot(50, this, &FileContext::updateMarks);
+        QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
     }
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
-        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
+        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &ProjectFileNode::onFileChangedExtern);
         mWatcher->addPath(location());
     }
 }
 
-void FileContext::load(int codecMib, bool keepMarks)
+void ProjectFileNode::load(int codecMib, bool keepMarks)
 {
     load(QList<int>() << codecMib, keepMarks);
 }
 
-void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
+void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
 {
     emit openFileContext(this, focus);
     if (mEditors.size()) {
-        AbstractEditor* edit = FileSystemContext::toAbstractEdit(mEditors.first());
+        AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
         if (!edit) return;
 
         QTextCursor tc;
@@ -348,12 +348,12 @@ void FileContext::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int
     }
 }
 
-void FileContext::showToolTip(const QVector<TextMark*> marks)
+void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
 {
     if (mEditors.size() && marks.size() > 0) {
         QTextCursor cursor(marks.first()->textCursor());
         if (cursor.isNull()) return;
-        AbstractEditor* edit = FileSystemContext::toAbstractEdit(mEditors.first());
+        AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
         if (!edit) return;
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
@@ -362,13 +362,13 @@ void FileContext::showToolTip(const QVector<TextMark*> marks)
     }
 }
 
-void FileContext::rehighlightAt(int pos)
+void ProjectFileNode::rehighlightAt(int pos)
 {
     if (pos < 0) return;
     if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
 }
 
-void FileContext::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
+void ProjectFileNode::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
 {
     if (!document() || !mSyntaxHighlighter) return;
     while (block.isValid()) {
@@ -378,7 +378,7 @@ void FileContext::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
     }
 }
 
-void FileContext::updateMarks()
+void ProjectFileNode::updateMarks()
 {
     // TODO(JM) Perform a large-file-test if this should have an own thread
     if (!mMarks) return;
@@ -412,7 +412,7 @@ void FileContext::updateMarks()
     }
 }
 
-TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
+TextMark* ProjectFileNode::generateTextMark(TextMark::Type tmType, int value, int line, int column, int size)
 {
     if (!mMarks || !parentEntry())
         EXCEPT() << "Marks can only be set if FileContext is linked to a Group";
@@ -420,7 +420,7 @@ TextMark* FileContext::generateTextMark(TextMark::Type tmType, int value, int li
     return mark;
 }
 
-TextMark*FileContext::generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size)
+TextMark*ProjectFileNode::generateTextMark(QString fileName, TextMark::Type tmType, int value, int line, int column, int size)
 {
     if (!parentEntry())
         EXCEPT() << "Marks can only be set if FileContext is linked to a Group";
@@ -428,32 +428,32 @@ TextMark*FileContext::generateTextMark(QString fileName, TextMark::Type tmType, 
     return mark;
 }
 
-ErrorHighlighter *FileContext::highlighter()
+ErrorHighlighter *ProjectFileNode::highlighter()
 {
     return mSyntaxHighlighter;
 }
 
-void FileContext::removeTextMarks(TextMark::Type tmType, bool rehighlight)
+void ProjectFileNode::removeTextMarks(TextMark::Type tmType, bool rehighlight)
 {
     removeTextMarks(QSet<TextMark::Type>() << tmType, rehighlight);
 }
 
-void FileContext::removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight)
+void ProjectFileNode::removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight)
 {
     if (!mMarks) return;
     mMarks->removeTextMarks(tmTypes, rehighlight);
 }
 
-void FileContext::addFileWatcherForGdx()
+void ProjectFileNode::addFileWatcherForGdx()
 {
     if (!mWatcher) {
         mWatcher = new QFileSystemWatcher(this);
-        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &FileContext::onFileChangedExtern);
+        connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &ProjectFileNode::onFileChangedExtern);
         mWatcher->addPath(location());
     }
 }
 
-void FileContext::unwatch()
+void ProjectFileNode::unwatch()
 {
     if (mWatcher) {
         mWatcher->removePath(location());
@@ -462,17 +462,17 @@ void FileContext::unwatch()
     }
 }
 
-QString FileContext::tooltip()
+QString ProjectFileNode::tooltip()
 {
     return location();
 }
 
-int FileContext::textMarkCount(QSet<TextMark::Type> tmTypes)
+int ProjectFileNode::textMarkCount(QSet<TextMark::Type> tmTypes)
 {
     return mMarks->textMarkCount(tmTypes);
 }
 
-bool FileContext::eventFilter(QObject* watched, QEvent* event)
+bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
 {
     static QSet<QEvent::Type> evCheckMouse {QEvent::MouseButtonDblClick, QEvent::MouseButtonPress, QEvent::MouseButtonRelease, QEvent::MouseMove};
     static QSet<QEvent::Type> evCheckKey {QEvent::KeyPress, QEvent::KeyRelease};
@@ -488,8 +488,8 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
 
     // TODO(JM) use updateLinkDisplay
 
-    AbstractEditor* edit = FileContext::toAbstractEdit(mEditors.first());
-    if (!edit) FileSystemContext::eventFilter(watched, event);
+    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
+    if (!edit) ProjectAbstractNode::eventFilter(watched, event);
 
     QMouseEvent* mouseEvent = (evCheckMouse.contains(event->type())) ? static_cast<QMouseEvent*>(event) : nullptr;
     QHelpEvent* helpEvent = (event->type() == QEvent::ToolTip)  ? static_cast<QHelpEvent*>(event) : nullptr;
@@ -530,13 +530,13 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
         } else {
             edit->viewport()->setCursor(Qt::IBeamCursor);
         }
-        return FileSystemContext::eventFilter(watched, event);
+        return ProjectAbstractNode::eventFilter(watched, event);
 
     } else if (mouseEvent || helpEvent) {
 
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        CodeEditor* codeEdit = FileSystemContext::toCodeEdit(edit);
+        CodeEditor* codeEdit = ProjectAbstractNode::toCodeEdit(edit);
         mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
 
@@ -565,19 +565,19 @@ bool FileContext::eventFilter(QObject* watched, QEvent* event)
             return !mMarksAtMouse.isEmpty();
         }
     }
-    return FileSystemContext::eventFilter(watched, event);
+    return ProjectAbstractNode::eventFilter(watched, event);
 }
 
-bool FileContext::mouseOverLink()
+bool ProjectFileNode::mouseOverLink()
 {
     return !mMarksAtMouse.isEmpty();
 }
 
-QVector<QPoint> FileContext::getEditPositions()
+QVector<QPoint> ProjectFileNode::getEditPositions()
 {
     QVector<QPoint> res;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = FileContext::toAbstractEdit(widget);
+        AbstractEditor* edit = ProjectFileNode::toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
             res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
@@ -588,11 +588,11 @@ QVector<QPoint> FileContext::getEditPositions()
     return res;
 }
 
-void FileContext::setEditPositions(QVector<QPoint> edPositions)
+void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = FileContext::toAbstractEdit(widget);
+        AbstractEditor* edit = ProjectFileNode::toAbstractEdit(widget);
         QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
         if (edit) {
             QTextCursor cursor(edit->document());
@@ -606,13 +606,13 @@ void FileContext::setEditPositions(QVector<QPoint> edPositions)
     }
 }
 
-void FileContext::modificationChanged(bool modiState)
+void ProjectFileNode::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
     emit changed(id());
 }
 
-void FileContext::onFileChangedExtern(QString filepath)
+void ProjectFileNode::onFileChangedExtern(QString filepath)
 {
     if (!mEditors.size())
         return;

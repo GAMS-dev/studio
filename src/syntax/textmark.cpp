@@ -59,7 +59,7 @@ void TextMark::jumpToRefMark(bool focus)
 void TextMark::jumpToMark(bool focus)
 {
     if (!mMarks) return;
-    FileContext* fc = mMarks->openFileContext();
+    ProjectFileNode* fc = mMarks->openFileContext();
     if (!fc) return;
 
     if (fc->document()) {

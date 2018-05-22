@@ -27,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-class FileContext;
+class ProjectFileNode;
 class TextMarkList;
 //class TextMark;
 struct ParenthesesPos;
@@ -50,7 +50,7 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(FileContext *context);
+    ErrorHighlighter(ProjectFileNode *context);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
     TextMarkList* marks();
@@ -66,7 +66,7 @@ protected:
     int mLastSyntaxState = 0;
 
 private:
-    FileContext* mContext = nullptr;
+    ProjectFileNode* mContext = nullptr;
     QTextBlock mTestBlock;
 
 };
@@ -75,7 +75,7 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(FileContext *context);
+    SyntaxHighlighter(ProjectFileNode *context);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

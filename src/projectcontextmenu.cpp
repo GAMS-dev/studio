@@ -52,13 +52,13 @@ ProjectContextMenu::ProjectContextMenu()
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
 
-void ProjectContextMenu::setNode(FileSystemContext* context)
+void ProjectContextMenu::setNode(ProjectAbstractNode* context)
 {
     mNode = context;
 
     bool isGmsFile = false;
-    if (mNode->type() == FileSystemContext::File) {
-        FileContext *fc = static_cast<FileContext*>(mNode);
+    if (mNode->type() == ProjectAbstractNode::File) {
+        ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
         isGmsFile = (fc->metrics().fileType() == FileType::Gms);
     }
 
@@ -68,13 +68,13 @@ void ProjectContextMenu::setNode(FileSystemContext* context)
     mActions[5]->setVisible(isGmsFile);
 
     // all files
-    mActions[10]->setVisible(mNode->type() == FileSystemContext::File);
+    mActions[10]->setVisible(mNode->type() == ProjectAbstractNode::File);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    FileContext *file = (mNode->type() == FileSystemContext::File)
-                        ? static_cast<FileContext*>(mNode) : nullptr;
+    ProjectFileNode *file = (mNode->type() == ProjectAbstractNode::File)
+                        ? static_cast<ProjectFileNode*>(mNode) : nullptr;
 
     if (file) emit closeFile(file);
 }
@@ -93,8 +93,8 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup)
-                              ? static_cast<FileGroupContext*>(mNode) : mNode->parentEntry();
+    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup)
+                              ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
 
     emit addExistingFile(group, filePath);
 }
@@ -126,7 +126,7 @@ void ProjectContextMenu::onAddNewFile()
     } else { // replace old
         file.resize(0);
     }
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
+    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
                                                                               : mNode->parentEntry();
     emit addExistingFile(group, filePath);
 }
@@ -138,34 +138,34 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    FileGroupContext *group = (mNode->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(mNode)
+    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
                                                                               : mNode->parentEntry();
     if (group) emit closeGroup(group);
 }
 
 void ProjectContextMenu::onRunFile()
 {
-    FileContext *file = static_cast<FileContext*>(mNode);
+    ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
     emit runFile(file);
 }
 
 void ProjectContextMenu::onSetMainFile()
 {
-    FileContext *file = static_cast<FileContext*>(mNode);
+    ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
     emit setMainFile(file);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    if (mNode->type() == FileSystemContext::File) {
-        FileContext *file = static_cast<FileContext*>(mNode);
+    if (mNode->type() == ProjectAbstractNode::File) {
+        ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
 
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            FileGroupContext *parent = file->parentEntry();
+            ProjectGroupNode *parent = file->parentEntry();
             if (parent) openLoc = parent->location();
             QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
         } else {
@@ -184,8 +184,8 @@ void ProjectContextMenu::onOpenFileLoc()
         if (parent) openLoc = parent->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
-    } else if (mNode->type() == FileSystemContext::FileGroup) {
-        FileGroupContext *group = static_cast<FileGroupContext*>(mNode);
+    } else if (mNode->type() == ProjectAbstractNode::FileGroup) {
+        ProjectGroupNode *group = static_cast<ProjectGroupNode*>(mNode);
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }

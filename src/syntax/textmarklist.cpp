@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-TextMarkList::TextMarkList(FileGroupContext* group, const QString& fileName)
+TextMarkList::TextMarkList(ProjectGroupNode* group, const QString& fileName)
     : QObject(), mGroupContext(group), mFileName(fileName)
 {}
 
@@ -37,7 +37,7 @@ void TextMarkList::unbind()
     }
 }
 
-void TextMarkList::bind(FileContext* fc)
+void TextMarkList::bind(ProjectFileNode* fc)
 {
     if (mFileContext)
         EXCEPT() << "TextMarks are already bound to FileContext " << mFileContext->location();
@@ -125,7 +125,7 @@ int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
     return res;
 }
 
-FileContext*TextMarkList::fileContext()
+ProjectFileNode*TextMarkList::fileContext()
 {
     if (mFileContext) return mFileContext;
     // TODO(JM) find file-context in group
@@ -137,7 +137,7 @@ QTextDocument*TextMarkList::document() const
     return mFileContext ? mFileContext->document() : nullptr;
 }
 
-FileContext* TextMarkList::openFileContext()
+ProjectFileNode* TextMarkList::openFileContext()
 {
     if (!mFileContext) {
         DEB() << "Creating FileContext for missing " << mFileName;

@@ -25,27 +25,27 @@
 namespace gams {
 namespace studio {
 
-class FileContext;
-class FileGroupContext;
+class ProjectFileNode;
+class ProjectGroupNode;
 
 class TextMarkList: public QObject
 {
     Q_OBJECT
 public:
-    TextMarkList(FileGroupContext* group, const QString &fileName);
+    TextMarkList(ProjectGroupNode* group, const QString &fileName);
     void unbind();
-    void bind(FileContext* fc);
+    void bind(ProjectFileNode* fc);
     void updateMarks();
     void rehighlight();
     QVector<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
     QVector<TextMark*> marks() { return mMarks;}
     int textMarkCount(QSet<TextMark::Type> tmTypes);
-    FileContext* fileContext();
+    ProjectFileNode* fileContext();
     QTextDocument* document() const;
-    FileContext* openFileContext();
+    ProjectFileNode* openFileContext();
 
 signals:
-    void getFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
+    void getFileContext(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -55,9 +55,9 @@ public slots:
 
 protected:
     friend class TextMark;
-    friend class LogContext;
-    friend class FileContext;
-    friend class FileGroupContext;
+    friend class ProjectLogNode;
+    friend class ProjectFileNode;
+    friend class ProjectGroupNode;
     TextMark* generateTextMark(TextMark::Type tmType, int value, int line, int column, int size = 0);
     void removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighlight = false);
     void removeTextMark(TextMark* mark);
@@ -66,8 +66,8 @@ protected:
     void connectDoc();
 
 private:
-    FileGroupContext* mGroupContext = nullptr;
-    FileContext* mFileContext = nullptr;
+    ProjectGroupNode* mGroupContext = nullptr;
+    ProjectFileNode* mFileContext = nullptr;
     QString mFileName;
     QVector<TextMark*> mMarks;
 };

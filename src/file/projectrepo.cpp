@@ -20,7 +20,7 @@
 #include <QDir>
 #include <QJsonObject>
 #include <QJsonArray>
-#include "filerepository.h"
+#include "projectfilerepo.h"
 #include "exception.h"
 #include "syntax.h"
 #include "logger.h"
@@ -29,30 +29,30 @@
 namespace gams {
 namespace studio {
 
-FileRepository::FileRepository(QObject* parent)
-    : QObject(parent), mNextId(0), mTreeModel(new FileTreeModel(this, new FileGroupContext(mNextId++, "Root", "", "")))
+ProjectFileRepo::ProjectFileRepo(QObject* parent)
+    : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectGroupNode(mNextId++, "Root", "", "")))
 {
     storeContext(mTreeModel->rootContext());
 }
 
-FileRepository::~FileRepository()
+ProjectFileRepo::~ProjectFileRepo()
 {
     FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
     delete mTreeModel;
 }
 
-QModelIndex FileRepository::findEntry(QString name, QString location, QModelIndex parentIndex)
+QModelIndex ProjectFileRepo::findEntry(QString name, QString location, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
         parentIndex = mTreeModel->rootModelIndex();
-    FileGroupContext *par = groupContext(parentIndex);
+    ProjectGroupNode *par = groupContext(parentIndex);
     if (!par)
         FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
     if (hit) {
-        FileSystemContext *fc = par->childEntry(offset);
+        ProjectAbstractNode *fc = par->childEntry(offset);
         if (fc->location().compare(location, Qt::CaseInsensitive) == 0) {
             return mTreeModel->index(offset, 0, parentIndex);
         }
@@ -60,9 +60,9 @@ QModelIndex FileRepository::findEntry(QString name, QString location, QModelInde
     return QModelIndex();
 }
 
-FileGroupContext* FileRepository::findGroup(const QString &fileName)
+ProjectGroupNode* ProjectFileRepo::findGroup(const QString &fileName)
 {
-    FileSystemContext* context = findContext(fileName);
+    ProjectAbstractNode* context = findContext(fileName);
     if (context)
         return context->parentEntry();
     else
@@ -70,20 +70,20 @@ FileGroupContext* FileRepository::findGroup(const QString &fileName)
 
 }
 
-FileSystemContext* FileRepository::findContext(QString filePath, FileGroupContext* fileGroup)
+ProjectAbstractNode* ProjectFileRepo::findContext(QString filePath, ProjectGroupNode* fileGroup)
 {
-    FileGroupContext *group = fileGroup ? fileGroup : mTreeModel->rootContext();
-    FileSystemContext* fsc = group->findContext(filePath);
+    ProjectGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootContext();
+    ProjectAbstractNode* fsc = group->findContext(filePath);
     return fsc;
 }
 
-void FileRepository::findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup)
+void ProjectFileRepo::findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup)
 {
-    FileSystemContext* fsc = findContext(filePath, fileGroup);
-    *resultFile = (fsc && fsc->type() == FileSystemContext::File) ? static_cast<FileContext*>(fsc)  : nullptr;
+    ProjectAbstractNode* fsc = findContext(filePath, fileGroup);
+    *resultFile = (fsc && fsc->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc)  : nullptr;
 }
 
-void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& resultFile, FileGroupContext* fileGroup)
+void ProjectFileRepo::findOrCreateFileContext(QString filePath, ProjectFileNode*& resultFile, ProjectGroupNode* fileGroup)
 {
     if (!QFileInfo(filePath).exists()) {
         filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
@@ -93,35 +93,35 @@ void FileRepository::findOrCreateFileContext(QString filePath, FileContext*& res
     }
     if (!fileGroup)
         EXCEPT() << "The group must not be null";
-    FileSystemContext* fsc = findContext(filePath, fileGroup);
+    ProjectAbstractNode* fsc = findContext(filePath, fileGroup);
     if (!fsc) {
         QFileInfo fi(filePath);
         resultFile = addFile(fi.fileName(), CommonPaths::absolutFilePath(filePath), fileGroup);
-    } else if (fsc->type() == FileSystemContext::File) {
-        resultFile = static_cast<FileContext*>(fsc);
+    } else if (fsc->type() == ProjectAbstractNode::File) {
+        resultFile = static_cast<ProjectFileNode*>(fsc);
     } else {
         resultFile = nullptr;
     }
 
 }
 
-QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
+QList<ProjectFileNode*> ProjectFileRepo::modifiedFiles(ProjectGroupNode *fileGroup)
 {
     if (!fileGroup)
         fileGroup = mTreeModel->rootContext();
-    QList<FileContext*> res;
+    QList<ProjectFileNode*> res;
     for (int i = 0; i < fileGroup->childCount(); ++i) {
-        if (fileGroup->childEntry(i)->type() == FileSystemContext::FileGroup) {
-            FileGroupContext *fgc = static_cast<FileGroupContext*>(fileGroup->childEntry(i));
-            QList<FileContext*> sub = modifiedFiles(fgc);
-            for (FileContext *fc : sub) {
+        if (fileGroup->childEntry(i)->type() == ProjectAbstractNode::FileGroup) {
+            ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(fileGroup->childEntry(i));
+            QList<ProjectFileNode*> sub = modifiedFiles(fgc);
+            for (ProjectFileNode *fc : sub) {
                 if (!res.contains(fc)) {
                     res << fc;
                 }
             }
         }
-        if (fileGroup->childEntry(i)->type() == FileSystemContext::File) {
-            FileContext *fc = static_cast<FileContext*>(fileGroup->childEntry(i));
+        if (fileGroup->childEntry(i)->type() == ProjectAbstractNode::File) {
+            ProjectFileNode *fc = static_cast<ProjectFileNode*>(fileGroup->childEntry(i));
             if (fc->isModified()) {
                 res << fc;
             }
@@ -130,34 +130,34 @@ QList<FileContext*> FileRepository::modifiedFiles(FileGroupContext *fileGroup)
     return res;
 }
 
-int FileRepository::saveAll()
+int ProjectFileRepo::saveAll()
 {
-    QList<FileContext*> files = modifiedFiles();
-    for (FileContext* fc: files) {
+    QList<ProjectFileNode*> files = modifiedFiles();
+    for (ProjectFileNode* fc: files) {
         fc->save();
     }
     return files.size();
 }
 
-FileGroupContext* FileRepository::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
+ProjectGroupNode* ProjectFileRepo::addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex)
 {
     if (!parentIndex.isValid())
         parentIndex = mTreeModel->rootModelIndex();
-    FileGroupContext *par = groupContext(parentIndex);
+    ProjectGroupNode *par = groupContext(parentIndex);
     if (!par)
         FATAL() << "Can't get parent object";
 
     bool hit;
     int offset = par->peekIndex(name, &hit);
     if (hit) offset++;
-    FileGroupContext* group = new FileGroupContext(mNextId++, name, location, runInfo);
+    ProjectGroupNode* group = new ProjectGroupNode(mNextId++, name, location, runInfo);
     storeContext(group);
     mTreeModel->insertChild(offset, groupContext(parentIndex), group);
-    connect(group, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
-    connect(group, &FileGroupContext::gamsProcessStateChanged, this, &FileRepository::gamsProcessStateChanged);
-    connect(group, &FileGroupContext::removeNode, this, &FileRepository::removeNode);
-    connect(group, &FileGroupContext::requestNode, this, &FileRepository::addNode);
-    connect(group, &FileGroupContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
+    connect(group, &ProjectGroupNode::changed, this, &ProjectFileRepo::nodeChanged);
+    connect(group, &ProjectGroupNode::gamsProcessStateChanged, this, &ProjectFileRepo::gamsProcessStateChanged);
+    connect(group, &ProjectGroupNode::removeNode, this, &ProjectFileRepo::removeNode);
+    connect(group, &ProjectGroupNode::requestNode, this, &ProjectFileRepo::addNode);
+    connect(group, &ProjectGroupNode::findOrCreateFileContext, this, &ProjectFileRepo::findOrCreateFileContext);
     for (QString suff: mSuffixFilter) {
         QFileInfo fi(location, group->name() + suff);
         if (fi.exists()) group->attachFile(fi.filePath());
@@ -165,7 +165,7 @@ FileGroupContext* FileRepository::addGroup(QString name, QString location, QStri
     return group;
 }
 
-FileContext* FileRepository::addFile(QString name, QString location, FileGroupContext* parent)
+ProjectFileNode* ProjectFileRepo::addFile(QString name, QString location, ProjectGroupNode* parent)
 {
     if (!parent)
         parent = mTreeModel->rootContext();
@@ -173,49 +173,49 @@ FileContext* FileRepository::addFile(QString name, QString location, FileGroupCo
     int offset = parent->peekIndex(name, &hit);
     if (hit)
         FATAL() << "The group '" << parent->name() << "' already contains '" << name << "'";
-    FileContext* file = new FileContext(mNextId++, name, location);
+    ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location);
     storeContext(file);
     mTreeModel->insertChild(offset, parent, file);
-    connect(file, &FileGroupContext::changed, this, &FileRepository::nodeChanged);
-    connect(file, &FileContext::modifiedExtern, this, &FileRepository::onFileChangedExtern);
-    connect(file, &FileContext::deletedExtern, this, &FileRepository::onFileDeletedExtern);
-    connect(file, &FileContext::openFileContext, this, &FileRepository::openFileContext);
-    connect(file, &FileContext::findFileContext, this, &FileRepository::findFile);
-    connect(file, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
+    connect(file, &ProjectGroupNode::changed, this, &ProjectFileRepo::nodeChanged);
+    connect(file, &ProjectFileNode::modifiedExtern, this, &ProjectFileRepo::onFileChangedExtern);
+    connect(file, &ProjectFileNode::deletedExtern, this, &ProjectFileRepo::onFileDeletedExtern);
+    connect(file, &ProjectFileNode::openFileContext, this, &ProjectFileRepo::openFileContext);
+    connect(file, &ProjectFileNode::findFileContext, this, &ProjectFileRepo::findFile);
+    connect(file, &ProjectFileNode::findOrCreateFileContext, this, &ProjectFileRepo::findOrCreateFileContext);
     return file;
 }
 
-void FileRepository::removeNode(FileSystemContext* node)
+void ProjectFileRepo::removeNode(ProjectAbstractNode* node)
 {
     if (!node) return;
     mTreeModel->removeChild(node);
     deleteContext(node);
 }
 
-FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
+ProjectGroupNode* ProjectFileRepo::ensureGroup(const QString &filePath)
 {
     bool extendedCaption = false;
-    FileGroupContext* group = nullptr;
+    ProjectGroupNode* group = nullptr;
 
     QFileInfo fi(filePath);
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
-        FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
-        if (fsc && fsc->type() == FileSystemContext::FileGroup && fsc->name() == fi.completeBaseName()) {
-            group = static_cast<FileGroupContext*>(fsc);
+        ProjectAbstractNode* fsc = mTreeModel->rootContext()->childEntry(i);
+        if (fsc && fsc->type() == ProjectAbstractNode::FileGroup && fsc->name() == fi.completeBaseName()) {
+            group = static_cast<ProjectGroupNode*>(fsc);
             if (di == QFileInfo(group->location())) {
                 group->attachFile(fi.filePath());
                 group->updateChildNodes();
                 return group;
             } else {
                 extendedCaption = true;
-                group->setFlag(FileSystemContext::cfExtendCaption);
+                group->setFlag(ProjectAbstractNode::cfExtendCaption);
             }
         }
     }
     group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
     if (extendedCaption)
-        group->setFlag(FileSystemContext::cfExtendCaption);
+        group->setFlag(ProjectAbstractNode::cfExtendCaption);
 
     if (!fi.isDir())
         group->attachFile(fi.filePath());
@@ -224,15 +224,15 @@ FileGroupContext* FileRepository::ensureGroup(const QString &filePath)
     return group;
 }
 
-void FileRepository::close(FileId fileId)
+void ProjectFileRepo::close(FileId fileId)
 {
-    FileContext *fc = fileContext(fileId);
+    ProjectFileNode *fc = fileContext(fileId);
     QModelIndex fci = mTreeModel->index(fc);
     mTreeModel->dataChanged(fci, fci);
     emit fileClosed(fileId, QPrivateSignal());
 }
 
-void FileRepository::setSuffixFilter(QStringList filter)
+void ProjectFileRepo::setSuffixFilter(QStringList filter)
 {
     for (QString suff: filter) {
         if (!suff.startsWith("."))
@@ -241,43 +241,43 @@ void FileRepository::setSuffixFilter(QStringList filter)
     mSuffixFilter = filter;
 }
 
-void FileRepository::dump(FileSystemContext *fc, int lv)
+void ProjectFileRepo::dump(ProjectAbstractNode *fc, int lv)
 {
     if (!fc) return;
 
     qDebug() << QString("  ").repeated(lv) + "+ " + fc->location() + "  (" + fc->name() + ")";
-    FileGroupContext *gc = qobject_cast<FileGroupContext*>(fc);
+    ProjectGroupNode *gc = qobject_cast<ProjectGroupNode*>(fc);
     if (!gc) return;
     for (int i=0 ; i < gc->childCount() ; i++) {
-        FileSystemContext *child = gc->childEntry(i);
+        ProjectAbstractNode *child = gc->childEntry(i);
         dump(child, lv+1);
     }
 }
 
-void FileRepository::nodeChanged(FileId fileId)
+void ProjectFileRepo::nodeChanged(FileId fileId)
 {
-    FileSystemContext* nd = context(fileId);
+    ProjectAbstractNode* nd = context(fileId);
     if (!nd) return;
     QModelIndex ndIndex = mTreeModel->index(nd);
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
 }
 
-void FileRepository::editorActivated(QWidget* edit)
+void ProjectFileRepo::editorActivated(QWidget* edit)
 {
-    FileContext *fc = fileContext(edit);
+    ProjectFileNode *fc = fileContext(edit);
     QModelIndex mi = mTreeModel->index(fc);
     mTreeModel->setCurrent(mi);
 }
 
-void FileRepository::setSelected(const QModelIndex& ind)
+void ProjectFileRepo::setSelected(const QModelIndex& ind)
 {
     mTreeModel->setSelected(ind);
 }
 
-void FileRepository::removeGroup(FileGroupContext* fileGroup)
+void ProjectFileRepo::removeGroup(ProjectGroupNode* fileGroup)
 {
     for (int i = 0; i < fileGroup->childCount(); ++i) {
-        FileSystemContext *child = fileGroup->childEntry(i);
+        ProjectAbstractNode *child = fileGroup->childEntry(i);
         mTreeModel->removeChild(child);
         deleteContext(child);
     }
@@ -285,22 +285,22 @@ void FileRepository::removeGroup(FileGroupContext* fileGroup)
     deleteContext(fileGroup);
 }
 
-void FileRepository::removeFile(FileContext* file)
+void ProjectFileRepo::removeFile(ProjectFileNode* file)
 {
     removeNode(file);
 }
 
-FileTreeModel*FileRepository::treeModel() const
+ProjectTreeModel*ProjectFileRepo::treeModel() const
 {
     return mTreeModel;
 }
 
-LogContext*FileRepository::logContext(QWidget* edit)
+ProjectLogNode*ProjectFileRepo::logContext(QWidget* edit)
 {
     for (int i = 0; i < mTreeModel->rootContext()->childCount(); ++i) {
-        FileSystemContext* fsc = mTreeModel->rootContext()->childEntry(i);
-        if (fsc->type() == FileSystemContext::FileGroup) {
-            FileGroupContext* group = static_cast<FileGroupContext*>(fsc);
+        ProjectAbstractNode* fsc = mTreeModel->rootContext()->childEntry(i);
+        if (fsc->type() == ProjectAbstractNode::FileGroup) {
+            ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
 
             if (!group->logContext()) return nullptr;
             if (group->logContext()->editors().contains(edit)) {
@@ -311,21 +311,21 @@ LogContext*FileRepository::logContext(QWidget* edit)
     return nullptr;
 }
 
-LogContext*FileRepository::logContext(FileSystemContext* node)
+ProjectLogNode*ProjectFileRepo::logContext(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
-    FileGroupContext* group = nullptr;
-    if (node->type() != FileSystemContext::FileGroup)
+    ProjectGroupNode* group = nullptr;
+    if (node->type() != ProjectAbstractNode::FileGroup)
         group = node->parentEntry();
     else
-        group = static_cast<FileGroupContext*>(node);
-    LogContext* log = group->logContext();
+        group = static_cast<ProjectGroupNode*>(node);
+    ProjectLogNode* log = group->logContext();
     if (!log) {
-        log = new LogContext(mNextId++, "["+group->name()+"]");
+        log = new ProjectLogNode(mNextId++, "["+group->name()+"]");
         storeContext(log);
-        connect(log, &LogContext::openFileContext, this, &FileRepository::openFileContext);
-        connect(log, &FileContext::findFileContext, this, &FileRepository::findFile);
-        connect(log, &FileContext::findOrCreateFileContext, this, &FileRepository::findOrCreateFileContext);
+        connect(log, &ProjectLogNode::openFileContext, this, &ProjectFileRepo::openFileContext);
+        connect(log, &ProjectFileNode::findFileContext, this, &ProjectFileRepo::findFile);
+        connect(log, &ProjectFileNode::findOrCreateFileContext, this, &ProjectFileRepo::findOrCreateFileContext);
         log->setParentEntry(group);
         bool hit;
         int offset = group->peekIndex(log->name(), &hit);
@@ -335,22 +335,22 @@ LogContext*FileRepository::logContext(FileSystemContext* node)
     return log;
 }
 
-void FileRepository::removeMarks(FileGroupContext* group)
+void ProjectFileRepo::removeMarks(ProjectGroupNode* group)
 {
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void FileRepository::updateLinkDisplay(AbstractEditor *editUnderCursor)
+void ProjectFileRepo::updateLinkDisplay(AbstractEditor *editUnderCursor)
 {
     if (editUnderCursor) {
-        FileContext *fc = fileContext(editUnderCursor);
+        ProjectFileNode *fc = fileContext(editUnderCursor);
         bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
         bool  isLink = fc->mouseOverLink();
         editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
     }
 }
 
-void FileRepository::read(const QJsonObject &json)
+void ProjectFileRepo::read(const QJsonObject &json)
 {
     if (json.contains("projects") && json["projects"].isArray()) {
         QJsonArray gprArray = json["projects"].toArray();
@@ -358,14 +358,14 @@ void FileRepository::read(const QJsonObject &json)
     }
 }
 
-void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonArray)
+void ProjectFileRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray)
 {
     for (int i = 0; i < jsonArray.size(); ++i) {
         QJsonObject node = jsonArray[i].toObject();
         if (node.contains("nodes")) {
             if (node.contains("file") && node["file"].isString()) {
                 // TODO(JM) later, groups of deeper level need to be created, too
-                FileGroupContext* subGroup = ensureGroup(node["file"].toString());
+                ProjectGroupNode* subGroup = ensureGroup(node["file"].toString());
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
                     readGroup(subGroup, gprArray);
@@ -388,20 +388,20 @@ void FileRepository::readGroup(FileGroupContext* group, const QJsonArray& jsonAr
     }
 }
 
-void FileRepository::write(QJsonObject& json) const
+void ProjectFileRepo::write(QJsonObject& json) const
 {
     QJsonArray gprArray;
     writeGroup(mTreeModel->rootContext(), gprArray);
     json["projects"] = gprArray;
 }
 
-void FileRepository::writeGroup(const FileGroupContext* group, QJsonArray& jsonArray) const
+void ProjectFileRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArray) const
 {
     for (int i = 0; i < group->childCount(); ++i) {
-        FileSystemContext *node = group->childEntry(i);
+        ProjectAbstractNode *node = group->childEntry(i);
         QJsonObject nodeObject;
-        if (node->type() == FileSystemContext::FileGroup) {
-            FileGroupContext *subGroup = static_cast<FileGroupContext*>(node);
+        if (node->type() == ProjectAbstractNode::FileGroup) {
+            ProjectGroupNode *subGroup = static_cast<ProjectGroupNode*>(node);
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
                                                                 : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
@@ -417,19 +417,19 @@ void FileRepository::writeGroup(const FileGroupContext* group, QJsonArray& jsonA
 }
 
 
-void FileRepository::onFileChangedExtern(FileId fileId)
+void ProjectFileRepo::onFileChangedExtern(FileId fileId)
 {
     if (!mChangedIds.contains(fileId)) mChangedIds << fileId;
-    QTimer::singleShot(100, this, &FileRepository::processExternFileEvents);
+    QTimer::singleShot(100, this, &ProjectFileRepo::processExternFileEvents);
 }
 
-void FileRepository::onFileDeletedExtern(FileId fileId)
+void ProjectFileRepo::onFileDeletedExtern(FileId fileId)
 {
     if (!mDeletedIds.contains(fileId)) mDeletedIds << fileId;
-    QTimer::singleShot(100, this, &FileRepository::processExternFileEvents);
+    QTimer::singleShot(100, this, &ProjectFileRepo::processExternFileEvents);
 }
 
-void FileRepository::processExternFileEvents()
+void ProjectFileRepo::processExternFileEvents()
 {
     while (!mDeletedIds.isEmpty()) {
         int fileId = mDeletedIds.takeFirst();
@@ -442,43 +442,43 @@ void FileRepository::processExternFileEvents()
     }
 }
 
-void FileRepository::addNode(QString name, QString location, FileGroupContext* parent)
+void ProjectFileRepo::addNode(QString name, QString location, ProjectGroupNode* parent)
 {
     addFile(name, location, parent);
 }
 
-FileSystemContext*FileRepository::context(const QModelIndex& index) const
+ProjectAbstractNode*ProjectFileRepo::context(const QModelIndex& index) const
 {
     return context(index.internalId());
 }
 
-FileContext*FileRepository::fileContext(const QModelIndex& index) const
+ProjectFileNode*ProjectFileRepo::fileContext(const QModelIndex& index) const
 {
     return fileContext(index.internalId());
 }
 
-FileContext* FileRepository::fileContext(QWidget* edit) const
+ProjectFileNode* ProjectFileRepo::fileContext(QWidget* edit) const
 {
     QWidget *parentEdit = edit ? edit->parentWidget() : nullptr;
-    for (FileSystemContext *fsc: mContext) {
-        FileContext *file = fileContext(fsc->id());
+    for (ProjectAbstractNode *fsc: mContext) {
+        ProjectFileNode *file = fileContext(fsc->id());
         if (file && (file->hasEditor(edit) || file->hasEditor(parentEdit))) return file;
     }
     return nullptr;
 }
 
-FileGroupContext*FileRepository::groupContext(const QModelIndex& index) const
+ProjectGroupNode*ProjectFileRepo::groupContext(const QModelIndex& index) const
 {
     return groupContext(index.internalId());
 }
 
-QWidgetList FileRepository::editors(FileId fileId)
+QWidgetList ProjectFileRepo::editors(FileId fileId)
 {
-    FileContext* file = fileContext(fileId);
+    ProjectFileNode* file = fileContext(fileId);
     if (file)
         return file->editors();
 
-    FileGroupContext* group = groupContext(fileId);
+    ProjectGroupNode* group = groupContext(fileId);
     if (!group) group = mTreeModel->rootContext();
     if (!group) return QWidgetList();
     QWidgetList allEdits;

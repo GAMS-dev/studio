@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEREPOSITORY_H
-#define FILEREPOSITORY_H
+#ifndef PROJECTFILEREPO_H
+#define PROJECTFILEREPO_H
 
 #include <QStringList>
 #include <QWidgetList>
 #include <QModelIndex>
-#include "filetreemodel.h"
-#include "logcontext.h"
-#include "filesystemcontext.h"
-#include "filecontext.h"
-#include "filegroupcontext.h"
+#include "projecttreemodel.h"
+#include "projectlognode.h"
+#include "projectabstractnode.h"
+#include "projectfilenode.h"
+#include "projectgroupnode.h"
 #include "filetype.h"
 
 namespace gams {
@@ -45,32 +45,32 @@ namespace studio {
 /// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
 /// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
 ///
-class FileRepository : public QObject
+class ProjectFileRepo : public QObject
 {
     Q_OBJECT
 public:
-    explicit FileRepository(QObject *parent = nullptr);
-    ~FileRepository();
+    explicit ProjectFileRepo(QObject *parent = nullptr);
+    ~ProjectFileRepo();
 
     /// \brief Get the <c>FileSystemContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileSystemContext</c>.
     /// \return The associated <c>FileSystemContext</c>.
-    FileSystemContext* context(const QModelIndex& index) const;
+    ProjectAbstractNode* context(const QModelIndex& index) const;
 
     /// \brief Get the <c>FileContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(const QModelIndex& index) const;
+    ProjectFileNode* fileContext(const QModelIndex& index) const;
 
     /// \brief Get the <c>FileContext</c> related to a <c>QWidget</c>.
     /// \param edit The <c>QWidget</c> assigned to the <c>FileContext</c>.
     /// \return The associated <c>FileContext</c>, otherwise <c>nullptr</c>.
-    FileContext* fileContext(QWidget* edit) const;
+    ProjectFileNode* fileContext(QWidget* edit) const;
 
     /// \brief Get the <c>FileGroupContext</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>FileGroupContext</c>.
     /// \return The associated <c>FileGroupContext</c>, otherwise <c>nullptr</c>.
-    FileGroupContext* groupContext(const QModelIndex& index) const;
+    ProjectGroupNode* groupContext(const QModelIndex& index) const;
 
     QWidgetList editors(FileId fileId = -1);
 
@@ -80,81 +80,81 @@ public:
     /// \param projectFile The file name w/o path of the project OR gms-start-file
     /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
     /// \return Model index to the new FileGroupContext.
-    FileGroupContext* addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+    ProjectGroupNode* addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
 
     /// Adds a file node to the file repository.
     /// \param name The filename without path.
     /// \param location The filename with full path.
     /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
     /// \return a <c>QModelIndex</c> to the new node.
-    FileContext* addFile(QString name, QString location, FileGroupContext* parent = nullptr);
+    ProjectFileNode* addFile(QString name, QString location, ProjectGroupNode* parent = nullptr);
 
-    FileGroupContext* ensureGroup(const QString& filePath);
+    ProjectGroupNode* ensureGroup(const QString& filePath);
     void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
-    void dump(FileSystemContext* fc, int lv = 0);
+    void dump(ProjectAbstractNode* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-    FileSystemContext* findContext(QString filePath, FileGroupContext* fileGroup = nullptr);
-    FileGroupContext* findGroup(const QString &fileName);
-    QList<FileContext*> modifiedFiles(FileGroupContext* fileGroup = nullptr);
+    ProjectAbstractNode* findContext(QString filePath, ProjectGroupNode* fileGroup = nullptr);
+    ProjectGroupNode* findGroup(const QString &fileName);
+    QList<ProjectFileNode*> modifiedFiles(ProjectGroupNode* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QWidget* edit);
-    FileTreeModel* treeModel() const;
-    LogContext* logContext(QWidget* edit);
-    LogContext* logContext(FileSystemContext* node);
-    void removeMarks(FileGroupContext* group);
+    ProjectTreeModel* treeModel() const;
+    ProjectLogNode* logContext(QWidget* edit);
+    ProjectLogNode* logContext(ProjectAbstractNode* node);
+    void removeMarks(ProjectGroupNode* group);
 
     void updateLinkDisplay(AbstractEditor* editUnderCursor);
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 
-    inline FileSystemContext* context(FileId id) const {
+    inline ProjectAbstractNode* context(FileId id) const {
         return mContext.value(id, nullptr);
     }
-    inline FileGroupContext* groupContext(FileId id) const {
-        FileSystemContext* res = mContext.value(id, nullptr);
-        return (res && res->type() == FileSystemContext::FileGroup) ? static_cast<FileGroupContext*>(res) : nullptr;
+    inline ProjectGroupNode* groupContext(FileId id) const {
+        ProjectAbstractNode* res = mContext.value(id, nullptr);
+        return (res && res->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(res) : nullptr;
     }
-    inline FileContext* fileContext(FileId id) const {
-        FileSystemContext* res = mContext.value(id, nullptr);
-        return (res && res->type() == FileSystemContext::File) ? static_cast<FileContext*>(res) : nullptr;
+    inline ProjectFileNode* fileContext(FileId id) const {
+        ProjectAbstractNode* res = mContext.value(id, nullptr);
+        return (res && res->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(res) : nullptr;
     }
-    inline LogContext* logContext(FileId id) const {
-        FileSystemContext* res = mContext.value(id, nullptr);
-        return (res && res->type() == FileSystemContext::Log) ? static_cast<LogContext*>(res) : nullptr;
+    inline ProjectLogNode* logContext(FileId id) const {
+        ProjectAbstractNode* res = mContext.value(id, nullptr);
+        return (res && res->type() == ProjectAbstractNode::Log) ? static_cast<ProjectLogNode*>(res) : nullptr;
     }
 
 signals:
     void fileClosed(FileId fileId, QPrivateSignal);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
-    void gamsProcessStateChanged(FileGroupContext* group);
+    void openFileContext(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
+    void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void getNodeExpanded(const QModelIndex &mi, bool *expanded);
 
 public slots:
     void nodeChanged(FileId fileId);
-    void findFile(QString filePath, FileContext** resultFile, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
+    void findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileContext(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
     void setSelected(const QModelIndex& ind);
-    void removeGroup(FileGroupContext* fileGroup);
-    void removeFile(FileContext* file);
+    void removeGroup(ProjectGroupNode* fileGroup);
+    void removeFile(ProjectFileNode* file);
 
 private slots:
     void onFileChangedExtern(FileId fileId);
     void onFileDeletedExtern(FileId fileId);
     void processExternFileEvents();
-    void addNode(QString name, QString location, FileGroupContext* parent = nullptr);
-    void removeNode(FileSystemContext *node);
+    void addNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
+    void removeNode(ProjectAbstractNode *node);
 
 private:
-    void writeGroup(const FileGroupContext* group, QJsonArray &jsonArray) const;
-    void readGroup(FileGroupContext* group, const QJsonArray &jsonArray);
-    inline void storeContext(FileSystemContext* context) {
+    void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
+    void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
+    inline void storeContext(ProjectAbstractNode* context) {
         mContext.insert(context->id(), context);
     }
-    inline void deleteContext(FileSystemContext* context) {
+    inline void deleteContext(ProjectAbstractNode* context) {
         context->setParentEntry(nullptr);
         mContext.remove(context->id());
         delete context;
@@ -162,14 +162,14 @@ private:
 
 private:
     FileId mNextId;
-    FileTreeModel* mTreeModel = nullptr;
+    ProjectTreeModel* mTreeModel = nullptr;
     QStringList mSuffixFilter;
     QList<FileId> mChangedIds;
     QList<FileId> mDeletedIds;
-    QHash<FileId, FileSystemContext*> mContext;
+    QHash<FileId, ProjectAbstractNode*> mContext;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // FILEREPOSITORY_H
+#endif // PROJECTFILEREPO_H

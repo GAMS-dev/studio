@@ -1,6 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "file/filerepository.h"
+#include "file/projectfilerepo.h"
 
 #endif // FILE_H

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILESYSTEMCONTEXT_H
-#define FILESYSTEMCONTEXT_H
+#ifndef PROJECTABSTRACTNODE_H
+#define PROJECTABSTRACTNODE_H
 
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
@@ -30,9 +30,9 @@ namespace studio {
 
 typedef int FileId;
 
-class FileGroupContext;
+class ProjectGroupNode;
 
-class FileSystemContext : public QObject
+class ProjectAbstractNode : public QObject
 {   // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
     // TODO(JM) Disagree: to many common members - this would lead to code doubling. If you want an interface,
     //                    it could be set on top of this FileSystemContext (e.g. AbstractContext)
@@ -73,7 +73,7 @@ public:
 
     typedef QFlags<ContextFlag> ContextFlags;
 
-    virtual ~FileSystemContext();
+    virtual ~ProjectAbstractNode();
 
     FileId id() const;
 
@@ -114,13 +114,13 @@ public:
     virtual void unsetFlag(ContextFlag flag);
     virtual bool testFlag(ContextFlag flag);
 
-    FileGroupContext* parentEntry() const;
-    virtual void setParentEntry(FileGroupContext *parent);
-    virtual FileSystemContext* childEntry(int index) const;
+    ProjectGroupNode* parentEntry() const;
+    virtual void setParentEntry(ProjectGroupNode *parent);
+    virtual ProjectAbstractNode* childEntry(int index) const;
     virtual int childCount() const;    
     virtual QString tooltip()=0;
 
-    FileSystemContext *findFile(QString filePath);
+    ProjectAbstractNode *findFile(QString filePath);
 
 
 public: // static convenience methods
@@ -169,15 +169,15 @@ signals:
     void changed(FileId fileId);
 
 protected:
-    friend class LogContext;
+    friend class ProjectLogNode;
 
-    FileSystemContext(FileId fileId, QString name, QString location);
-    FileSystemContext(FileId fileId, QString name, QString location, ContextType type);
+    ProjectAbstractNode(FileId fileId, QString name, QString location);
+    ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
 private:
     FileId mId;
-    FileGroupContext* mParent;
+    ProjectGroupNode* mParent;
     QString mName;
     QString mLocation;
     ContextFlags mFlags;
@@ -187,4 +187,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // FILESYSTEMCONTEXT_H
+#endif // PROJECTABSTRACTNODE_H

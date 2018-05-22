@@ -31,7 +31,7 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
+LxiViewer::LxiViewer(CodeEditor *codeEditor, ProjectFileNode *fc, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
     mCodeEditor(codeEditor),
@@ -52,8 +52,8 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
-    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
+    connect(mFileContext->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
+    connect(mFileContext->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }

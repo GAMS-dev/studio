@@ -20,17 +20,17 @@
  */
 #include <QScrollBar>
 #include <QDir>
-#include "logcontext.h"
+#include "projectlognode.h"
 #include "exception.h"
-#include "filegroupcontext.h"
+#include "projectgroupnode.h"
 #include "logger.h"
 #include "editors/logeditor.h"
 
 namespace gams {
 namespace studio {
 
-LogContext::LogContext(FileId fileId, QString name)
-    : FileContext(fileId, name, "[LOG]", FileSystemContext::Log)
+ProjectLogNode::ProjectLogNode(FileId fileId, QString name)
+    : ProjectFileNode(fileId, name, "[LOG]", ProjectAbstractNode::Log)
 {
     mMetrics = FileMetrics(QFileInfo(name+".log"));
     mDocument = new QTextDocument(this);
@@ -38,12 +38,12 @@ LogContext::LogContext(FileId fileId, QString name)
     mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
-void LogContext::clearLog()
+void ProjectLogNode::clearLog()
 {
     document()->clear();
 }
 
-void LogContext::markOld()
+void ProjectLogNode::markOld()
 {
     if (document() && !document()->isEmpty()) {
         QTextCursor cur(document());
@@ -63,12 +63,12 @@ void LogContext::markOld()
     }
 }
 
-QTextDocument* LogContext::document() const
+QTextDocument* ProjectLogNode::document() const
 {
     return mDocument;
 }
 
-void LogContext::addEditor(QWidget* edit)
+void ProjectLogNode::addEditor(QWidget* edit)
 {
     if (!edit) return;
 
@@ -79,20 +79,20 @@ void LogContext::addEditor(QWidget* edit)
     LogEditor* logEdit = toLogEdit(edit);
     if (!logEdit) return;
     logEdit->setDocument(mDocument);
-    FileContext::addEditor(edit);
+    ProjectFileNode::addEditor(edit);
 }
 
-void LogContext::removeEditor(QWidget* edit)
+void ProjectLogNode::removeEditor(QWidget* edit)
 {
     if (!edit) return;
     if (!editorList().contains(edit)) return;
 
     editorList().append(nullptr);
-    FileContext::removeEditor(edit);
+    ProjectFileNode::removeEditor(edit);
     editorList().removeLast();
 }
 
-void LogContext::setParentEntry(FileGroupContext* parent)
+void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
 {
     if (parent) {
         parent->setLogContext(this);
@@ -104,23 +104,23 @@ void LogContext::setParentEntry(FileGroupContext* parent)
     mParent = parent;
 }
 
-void LogContext::fileClosed(FileContext *fc)
+void ProjectLogNode::fileClosed(ProjectFileNode *fc)
 {
     if (fc == mLstContext) mLstContext = nullptr;
 }
 
-void LogContext::resetLst()
+void ProjectLogNode::resetLst()
 {
     mLstContext = nullptr;
 }
 
-TextMark*LogContext::firstErrorMark()
+TextMark*ProjectLogNode::firstErrorMark()
 {
     if (!mMarks) return nullptr;
     return mMarks->firstErrorMark();
 }
 
-void LogContext::addProcessData(QString text)
+void ProjectLogNode::addProcessData(QString text)
 {
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
@@ -141,20 +141,20 @@ void LogContext::addProcessData(QString text)
         QList<LinkData> marks;
         QString newLine = extractLinks(line, state, marks);
         // store count of followup lines
-        if (mLastLstLink && state == FileContext::Inside) {
+        if (mLastLstLink && state == ProjectFileNode::Inside) {
             mLastLstLink->incSpread();
         } else {
             mLastLstLink = nullptr;
         }
-        if (state >= FileContext::Exiting)
+        if (state >= ProjectFileNode::Exiting)
             parentEntry()->setLstErrorText(mCurrentErrorHint.lstLine, mCurrentErrorHint.text);
-        if (state == FileContext::FollowupError) {
+        if (state == ProjectFileNode::FollowupError) {
             newLine = extractLinks(line, state, marks);
         }
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: editors()) {
-            AbstractEditor* ed = FileContext::toAbstractEdit(w);
+            AbstractEditor* ed = ProjectFileNode::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -200,7 +200,7 @@ void LogContext::addProcessData(QString text)
 
         int i = 0;
         for (QWidget* w: editors()) {
-            AbstractEditor* ed = FileContext::toAbstractEdit(w);
+            AbstractEditor* ed = ProjectFileNode::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;
@@ -223,7 +223,7 @@ inline QStringRef capture(const QString &line, int &a, int &b, const int offset,
 }
 
 
-QString LogContext::extractLinks(const QString &line, FileContext::ExtractionState &state, QList<LogContext::LinkData> &marks)
+QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::ExtractionState &state, QList<ProjectLogNode::LinkData> &marks)
 {
     if (mInErrorDescription) {
         if (line.startsWith("***") || line.startsWith("---")) {
@@ -295,7 +295,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
             LinkData mark;
             mark.col = line.indexOf(" ")+1;
             mark.size = result.length() - mark.col;
-            FileContext *fc = nullptr;
+            ProjectFileNode *fc = nullptr;
             if (!fName.isEmpty()) {
                 emit findFileContext(fName, &fc, parentEntry());
                 if (fc) {
@@ -359,7 +359,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
                 mark.col = 4;
                 mark.size = result.length() - mark.col - 1;
 
-                FileContext *fc = nullptr;
+                ProjectFileNode *fc = nullptr;
                 emit findFileContext(fName, &fc, parentEntry());
                 if (fc) {
                     mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
@@ -386,7 +386,7 @@ QString LogContext::extractLinks(const QString &line, FileContext::ExtractionSta
     return result;
 }
 
-void LogContext::setJumpToLogEnd(bool state)
+void ProjectLogNode::setJumpToLogEnd(bool state)
 {
     mJumpToLogEnd = state;
 }
