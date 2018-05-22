@@ -118,6 +118,7 @@ SOURCES += \
     option/optioneditor.cpp \
     option/optionparametermodel.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/optiontablemodel.cpp \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
@@ -196,6 +197,7 @@ HEADERS += \
     option/optioneditor.h \
     option/optionparametermodel.h \
     option/optionsortfilterproxymodel.h \
+    option/optiontablemodel.h \
     option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \

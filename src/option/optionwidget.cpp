@@ -294,6 +294,18 @@ void OptionWidget::disableOptionEditor()
     setInterruptActionsEnabled(false);
 }
 
+void OptionWidget::on_commandLineOptionChanged(const QString &commandLineStr)
+{
+    QList<OptionItem> optionItems = mOptionTokenizer->tokenize( commandLineStr );
+    mOptionTokenizer->formatItemLineEdit(ui->gamsOptionCommandLine->lineEdit(), optionItems );
+//    emit commandLineOptionChanged( optionItems );
+}
+
+void OptionWidget::on_optionTableModelChanged(const QList<OptionItem> &optionItems)
+{
+    mOptionTokenizer->formatItemLineEdit(ui->gamsOptionCommandLine->lineEdit(), optionItems);
+}
+
 void OptionWidget::toggleOptionDefinition(bool checked)
 {
     if (checked) {

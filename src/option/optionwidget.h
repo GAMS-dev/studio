@@ -80,6 +80,9 @@ public slots:
     void loadCommandLineOption(const QString &location);
     void disableOptionEditor();
 
+    void on_commandLineOptionChanged(const QString &commandLineStr);
+    void on_optionTableModelChanged(const QList<OptionItem> &optionItems); // const QString &commandLineStr);
+
 private slots:
     void toggleOptionDefinition(bool checked);
 
