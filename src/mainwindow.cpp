@@ -342,11 +342,6 @@ void MainWindow::on_actionHelp_View_triggered(bool checked)
     dockWidgetShow(mDockHelpView, checked);
 }
 
-void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
-{
-    mCommandLineHistory = opt;
-}
-
 void MainWindow::checkOptionDefinition(bool checked)
 {
     mShowOptionDefintionCheckBox->setChecked(checked);
@@ -356,11 +351,6 @@ void MainWindow::checkOptionDefinition(bool checked)
 bool MainWindow::isOptionDefinitionChecked()
 {
     return mShowOptionDefintionCheckBox->isChecked();
-}
-
-CommandLineHistory *MainWindow::commandLineHistory()
-{
-    return mCommandLineHistory;
 }
 
 FileRepository *MainWindow::fileRepository()
@@ -1602,6 +1592,11 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     } else {
         dw->hide();
     }
+}
+
+OptionWidget *MainWindow::getGamsOptionWidget() const
+{
+    return mGamsOptionWidget;
 }
 
 void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)

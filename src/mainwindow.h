@@ -111,10 +111,8 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
-    void setCommandLineHistory(CommandLineHistory* opt);
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
-    CommandLineHistory* commandLineHistory();
     FileRepository* fileRepository();
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
@@ -123,12 +121,14 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
-    HelpView *getDockHelpView() const;
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     QWidget *welcomePage() const;
     void delayedFileRestoration();
     void resetViews();
+
+    HelpView *getDockHelpView() const;
+    OptionWidget *getGamsOptionWidget() const;
 
 public slots:
     void receiveAction(QString action);

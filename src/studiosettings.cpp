@@ -159,7 +159,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(main->commandLineHistory()->allHistory());
+    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -276,7 +276,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     mAppSettings->endArray();
     mAppSettings->endGroup();
 
-    main->commandLineHistory()->setAllHistory(map);
+    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()
