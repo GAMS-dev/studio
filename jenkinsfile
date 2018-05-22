@@ -98,7 +98,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
+                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
                         '''
                         sh '''
                             # create folder structure
@@ -109,6 +109,11 @@ pipeline {
                             cp bin/studio appdir/usr/bin/
                             cp gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
+
+                            # TODO (AF) take a look at linuxdeployqt
+                            # workaround for linuxdeployqt and svg
+                            mkdir -p appdir/usr/plugins/imageformats
+                            cp /opt/Qt/5.10.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage --version
