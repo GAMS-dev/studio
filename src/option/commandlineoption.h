@@ -31,6 +31,7 @@ class CommandLineOption : public QComboBox
     Q_OBJECT
 
 public:
+    CommandLineOption(QWidget* parent);
     CommandLineOption(bool validateFlag, QWidget* parent);
     ~CommandLineOption();
 

@@ -142,6 +142,10 @@ public slots:
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
+    void on_commandLineHelpTriggered();
+    void on_runWithChangedOptions();
+    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
+
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
@@ -206,10 +210,6 @@ private slots:
     void on_logTabs_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
-     // Command Line Option
-    void on_runWithChangedOptions();
-    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
-    void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();

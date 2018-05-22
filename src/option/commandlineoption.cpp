@@ -23,6 +23,11 @@
 namespace gams {
 namespace studio {
 
+CommandLineOption::CommandLineOption(QWidget *parent) :
+    CommandLineOption(true, parent)
+{
+}
+
 CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
     QComboBox(parent), mValidated(validateFlag)
 {
