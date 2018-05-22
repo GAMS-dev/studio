@@ -26,7 +26,7 @@ Download the GAMS Studio sources from GitHub (via git or as zip archive). All in
 
 ## 4. Building the GAMS Studio project ##
 
-Start Qt Creator, open the project file 'src/studio.pro' and click 'Build/Run qmake'. This generates the file '**gamsinclude.pri**' that defines the default location of the GAMS installation location. The path within the 'gamsinclude.pri'  may have to be updated to the correct GAMS installation location on your system.
+Start Qt Creator, open the project file 'gams-studio.pro' and click 'Build/Run qmake'. This generates the file '**gamsinclude.pri**' that defines the default location of the GAMS installation location. The path within the 'gamsinclude.pri'  may have to be updated to the correct GAMS installation location on your system.
 
 On Windows the file contains:
 ```

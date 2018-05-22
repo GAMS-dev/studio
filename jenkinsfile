@@ -14,7 +14,7 @@ pipeline {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
-                            qmake src/studio.pro && make -j3
+                            qmake gams-studio.pro && make -j3
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
@@ -28,8 +28,8 @@ pipeline {
                             echo Setting up environment for VS 2015 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
                             call vcvars32.bat
-                            cd %WORKSPACE%\\src
-                            qmake studio.pro "CONFIG+=release"
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
@@ -44,8 +44,8 @@ pipeline {
                             echo Setting up environment for VS2017 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
-                            cd %WORKSPACE%\\src
-                            qmake studio.pro "CONFIG+=release"
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
@@ -55,7 +55,7 @@ pipeline {
                     node('macos') {
                         step([$class: 'WsCleanup'])
                         checkout scm
-                        sh 'qmake src/studio.pro && make -j3'
+                        sh 'qmake gams-studio.pro && make -j3'
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
                 }
@@ -66,29 +66,46 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            echo 'TODO Test on linux'
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 windowsX86: {
                     node('windowsX86') {
                         bat '''
-                            echo 'TODO Test on windowsX86'
+                            echo off
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 windowsX64: {
                     node('windowsX64') {
                         bat '''
-                            echo 'TODO Test on windowsX64'
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 },
                 macos: {
                     node('macos') {
                         sh '''
-                            echo 'TODO Test on macos'
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
                         '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
                 }
             }
@@ -98,7 +115,7 @@ pipeline {
                 parallel linux: {
                     node('master') {
                         sh '''
-                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
+                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
                         '''
                         sh '''
                             # create folder structure
@@ -106,7 +123,7 @@ pipeline {
                             mkdir -p appdir/usr/share/pixmaps
 
                             # collect files
-                            cp bin/studio appdir/usr/bin/
+                            cp src/bin/studio appdir/usr/bin/
                             cp gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
 
@@ -170,16 +187,16 @@ pipeline {
                 },
                 macos: {
                     node('macos') {
-                        fileOperations([folderRenameOperation(destination: 'bin/GAMS Studio.app', source: 'bin/studio.app')])
+                        fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
                             sh '''
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
-                                macdeployqt "bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                                macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                                 security lock-keychain
                             '''
                         }
                         sh '''
-                            mv "bin/GAMS Studio.dmg" studio.dmg
+                            mv "src/bin/GAMS Studio.dmg" studio.dmg
                         '''
                         script {
                             if (env.BRANCH_NAME != 'master') {
