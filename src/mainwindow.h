@@ -31,6 +31,7 @@
 #include "option/commandlineoption.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optioneditor.h"
+#include "option/optionwidget.h"
 #include "projectcontextmenu.h"
 #include "helpview.h"
 #include "resultsview.h"
@@ -285,6 +286,7 @@ private:
     QCheckBox* mShowOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
+    OptionWidget* mGamsOptionWidget = nullptr;
 
     GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;

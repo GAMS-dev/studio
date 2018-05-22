@@ -93,7 +93,18 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     mDockHelpView->hide();
 
+    // -- option widget refactor ---
+    mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                                         ui->actionInterrupt, ui->actionStop,
+                                         this);
+    ui->dockOptionEditor->setWidget(mGamsOptionWidget);
+    ui->dockOptionEditor->show();
+    // -- option widget refactor ---
+
+    // To be removed -- option widget refactor ---
     createRunAndCommandLineWidgets();
+    // -- option widget refactor ---
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -116,6 +127,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
+    // -- To be removed option widget refactor ---
+    //connect(ui->dockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
+    // -- option widget refactor ---
+    connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
+    // -- option widget refactor ---
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -1198,7 +1214,7 @@ void MainWindow::createRunAndCommandLineWidgets()
     mDockOptionView->show();
     ui->actionOption_View->setChecked(true);
 
-    this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
+    this->addDockWidget(Qt::BottomDockWidgetArea, mDockOptionView);
     mDockOptionView->widget()->resize( mCommandWidget->size() );
     this->resizeDocks({mDockOptionView}, {mCommandWidget->size().height()}, Qt::Vertical);
 

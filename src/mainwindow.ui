@@ -338,6 +338,15 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockOptionEditor">
+   <property name="windowTitle">
+    <string>Option</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="dockOptionEditorContents"/>
+  </widget>
   <action name="actionFile">
    <property name="text">
     <string>File</string>
