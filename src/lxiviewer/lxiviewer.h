@@ -49,7 +49,7 @@ private:
     Ui::LxiViewer *ui;
 
     CodeEditor* mCodeEditor;
-    ProjectFileNode *mFileContext;
+    ProjectFileNode *mFileNode;
     QString mLstFile;
     QString mLxiFile;
 

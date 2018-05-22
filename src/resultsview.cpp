@@ -52,7 +52,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (QFileInfo(item.locFile()).exists())
         mMain->openFile(item.locFile());
 
-    ProjectAbstractNode *fsc = mMain->fileRepository()->findContext(item.locFile());
+    ProjectAbstractNode *fsc = mMain->projectRepo()->findNode(item.locFile());
     if (!fsc) EXCEPT() << "File not found: " << item.locFile();
 
     ProjectFileNode *jmpFc = nullptr;

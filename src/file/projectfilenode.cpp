@@ -323,7 +323,7 @@ void ProjectFileNode::load(int codecMib, bool keepMarks)
 
 void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
 {
-    emit openFileContext(this, focus);
+    emit openFileNode(this, focus);
     if (mEditors.size()) {
         AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
         if (!edit) return;

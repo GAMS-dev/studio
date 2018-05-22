@@ -35,8 +35,8 @@ class TextMark;
 typedef QPair<int,QString> ErrorHint;
 
 ///
-/// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
-/// \see FileSystemContext, FileGroupContext, FileContext, LogContext
+/// The <c>ProjectFileNode</c> class represents a file. It is derived from <c>ProjectAbstractNode</c>.
+/// \see ProjectAbstractNode, ProjectGroupNode, ProjectLogNode
 ///
 class ProjectFileNode : public ProjectAbstractNode
 {
@@ -94,7 +94,7 @@ public:
     /// \return The list of assigned editors.
     const QWidgetList editors() const;
 
-    /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
+    /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>ProjectFileNode</c> share the same
     /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
     virtual void addEditor(QWidget* edit);
@@ -154,9 +154,9 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(FileId fileId);
 
-    void findFileContext(QString filePath, ProjectFileNode** fileContext, ProjectGroupNode* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
-    void openFileContext(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
+    void findFileNode(QString filePath, ProjectFileNode** fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
     void documentClosed();
 
@@ -167,7 +167,7 @@ protected slots:
 
 protected:
     friend class ProjectLogNode;
-    friend class ProjectFileRepo;
+    friend class ProjectRepo;
     ProjectFileNode(FileId fileId, QString name, QString location, ContextType type = ProjectAbstractNode::File);
 
     QWidgetList& editorList();

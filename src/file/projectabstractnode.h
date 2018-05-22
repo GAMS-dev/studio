@@ -40,7 +40,7 @@ class ProjectAbstractNode : public QObject
 
 public:
     enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
-                       // TODO(JM) I'd prefer having either a pointer-list of changed context in repo or a method here
+                       // TODO(JM) I'd prefer having either a pointer-list of changed node in repo or a method here
 
         // TODO(JM) check, which flags are better implemented as methods getting their info implicit
         cfNone          = 0x00,
@@ -77,8 +77,8 @@ public:
 
     FileId id() const;
 
-    /// \brief File context type.
-    /// \return Returns the file context type as <c>int</c>.
+    /// \brief File node type.
+    /// \return Returns the file node type as <c>int</c>.
     int type() const;
 
     /// \brief Checks if the node can be represented in a tab.

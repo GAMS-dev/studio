@@ -48,16 +48,16 @@ public:
     int childCount() const override;
     int indexOf(ProjectAbstractNode *child);
     ProjectAbstractNode* childEntry(int index) const override;
-    ProjectAbstractNode* findContext(QString filePath);
+    ProjectAbstractNode* findNode(QString filePath);
     ProjectFileNode* findFile(QString filePath);
     QIcon icon() override;
 
     QString runnableGms();
-    void setRunnableGms(ProjectFileNode *gmsFileContext);
+    void setRunnableGms(ProjectFileNode *gmsFileNode);
     void removeRunnableGms();
     QString lstFileName();
     void setLstFileName(const QString &lstFileName);
-    ProjectLogNode* logContext() const;
+    ProjectLogNode* logNode() const;
 
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
@@ -80,13 +80,13 @@ signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
     void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void findOrCreateFileContext(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
 protected:
-    friend class ProjectFileRepo;
+    friend class ProjectRepo;
     friend class ProjectAbstractNode;
     friend class ProjectFileNode;
     friend class ProjectLogNode;
@@ -96,7 +96,7 @@ protected:
     void insertChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
     void checkFlags() override;
-    void setLogContext(ProjectLogNode* logContext);
+    void setLogNode(ProjectLogNode* logNode);
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);
     TextMarkList* marks(const QString &fileName);
@@ -105,7 +105,7 @@ protected:
 
 private:
     QList<ProjectAbstractNode*> mChildList;
-    ProjectLogNode* mLogContext = nullptr;
+    ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
     QString mLstFileName;
     QString mGmsFileName;

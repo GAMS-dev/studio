@@ -216,10 +216,10 @@ HEADERS += \
     file/projectgroupnode.h \
     file/projectfilenode.h \
     file/projectlognode.h \
-    file/projectfilerepo.h \
     file/projecttreemodel.h \
     file/filemetarepo.h \
-    file/filemeta.h
+    file/filemeta.h \
+    file/projectrepo.h
 
 FORMS += \
     bookmarkdialog.ui \

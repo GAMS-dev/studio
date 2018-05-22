@@ -52,9 +52,9 @@ ProjectContextMenu::ProjectContextMenu()
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
 
-void ProjectContextMenu::setNode(ProjectAbstractNode* context)
+void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 {
-    mNode = context;
+    mNode = node;
 
     bool isGmsFile = false;
     if (mNode->type() == ProjectAbstractNode::File) {

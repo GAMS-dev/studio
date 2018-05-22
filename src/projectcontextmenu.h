@@ -35,7 +35,7 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNode(ProjectAbstractNode* context);
+    void setNode(ProjectAbstractNode* node);
 
     void setParent(QWidget *parent);
 

@@ -26,12 +26,12 @@
 namespace gams {
 namespace studio {
 
-class ProjectFileRepo;
+class ProjectRepo;
 
 class ProjectTreeModel : public QAbstractItemModel
 {
 public:
-    explicit ProjectTreeModel(ProjectFileRepo *parent, ProjectGroupNode* root);
+    explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
     QModelIndex parent(const QModelIndex &child) const;
@@ -41,11 +41,11 @@ public:
 
     QModelIndex index(ProjectAbstractNode* entry) const;
     QModelIndex rootModelIndex() const;
-    ProjectGroupNode* rootContext() const;
+    ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
 
 protected:
-    friend class ProjectFileRepo;
+    friend class ProjectRepo;
 
     bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
     bool removeChild(ProjectAbstractNode* child);
@@ -58,7 +58,7 @@ protected:
     void setSelected(const QModelIndex& ind);
 
 private:
-    ProjectFileRepo *mFileRepo;
+    ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;
     QModelIndex mCurrent;
     QModelIndex mSelected;

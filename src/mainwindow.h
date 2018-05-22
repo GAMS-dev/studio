@@ -114,7 +114,7 @@ public:
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
-    ProjectFileRepo* fileRepository();
+    ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
@@ -143,7 +143,7 @@ public slots:
     void appendSystemLog(const QString &text);
 
 private slots:
-    void openFileContext(ProjectFileNode *fileContext, bool focus = true, int codecMib = -1);
+    void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -250,12 +250,12 @@ protected:
 
 private:
     void initTabs();
-    ProjectFileNode* addContext(const QString &path, const QString &fileName);
-    void openContext(const QModelIndex& index);
+    ProjectFileNode* addNode(const QString &path, const QString &fileName);
+    void openNode(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
-    void execute(QString commandLineStr, ProjectFileNode *gmsFileContext = nullptr);
+    void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
@@ -297,9 +297,9 @@ private:
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
-    ProjectFileRepo mFileRepo;
+    ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
-    void changeToLog(ProjectFileNode* fileContext);
+    void changeToLog(ProjectFileNode* fileNode);
 
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;

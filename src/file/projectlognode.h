@@ -43,7 +43,7 @@ public slots:
     void setJumpToLogEnd(bool state);
 
 protected:
-    friend class ProjectFileRepo;
+    friend class ProjectRepo;
     ProjectLogNode(FileId fileId, QString name);
 
     struct LinkData {
@@ -63,13 +63,13 @@ private:
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-//    QSet<FileContext*> mMarkedContextList;
+//    QSet<FileNode*> mMarkedNodeList;
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
     bool mDebugLog = false;
     QString mLastSourceFile;
-    ProjectFileNode *mLstContext = nullptr;
+    ProjectFileNode *mLstNode = nullptr;
 };
 
 } // namespace studio

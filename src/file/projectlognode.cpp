@@ -95,10 +95,10 @@ void ProjectLogNode::removeEditor(QWidget* edit)
 void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
 {
     if (parent) {
-        parent->setLogContext(this);
+        parent->setLogNode(this);
         mMarks = parent->marks(location());
     } else {
-        mParent->setLogContext(nullptr);
+        mParent->setLogNode(nullptr);
         mMarks = nullptr;
     }
     mParent = parent;
@@ -106,12 +106,12 @@ void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
 
 void ProjectLogNode::fileClosed(ProjectFileNode *fc)
 {
-    if (fc == mLstContext) mLstContext = nullptr;
+    if (fc == mLstNode) mLstNode = nullptr;
 }
 
 void ProjectLogNode::resetLst()
 {
-    mLstContext = nullptr;
+    mLstNode = nullptr;
 }
 
 TextMark*ProjectLogNode::firstErrorMark()
@@ -297,7 +297,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             ProjectFileNode *fc = nullptr;
             if (!fName.isEmpty()) {
-                emit findFileContext(fName, &fc, parentEntry());
+                emit findFileNode(fName, &fc, parentEntry());
                 if (fc) {
                     mark.textMark = fc->generateTextMark(TextMark::error, mCurrentErrorHint.lstLine, lineNr, colStart, size);
                 } else {
@@ -330,11 +330,11 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 LinkData mark;
                 mark.col = lstColStart;
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
-                if (!mLstContext) {
-                    emit findFileContext(fName, &mLstContext, parentEntry());
+                if (!mLstNode) {
+                    emit findFileNode(fName, &mLstNode, parentEntry());
                 }
-                if (mLstContext) {
-                    mark.textMark = mLstContext->generateTextMark((errFound ? TextMark::link : TextMark::none)
+                if (mLstNode) {
+                    mark.textMark = mLstNode->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                                   , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                     errFound = false;
                 } else {
@@ -360,7 +360,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = result.length() - mark.col - 1;
 
                 ProjectFileNode *fc = nullptr;
-                emit findFileContext(fName, &fc, parentEntry());
+                emit findFileNode(fName, &fc, parentEntry());
                 if (fc) {
                     mark.textMark = fc->generateTextMark((errFound ? TextMark::link : TextMark::none)
                                                          , mCurrentErrorHint.lstLine, lineNr, 0, col);

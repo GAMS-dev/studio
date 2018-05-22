@@ -40,12 +40,12 @@ public:
     QVector<TextMark*> marksForBlock(QTextBlock block, TextMark::Type refType = TextMark::all);
     QVector<TextMark*> marks() { return mMarks;}
     int textMarkCount(QSet<TextMark::Type> tmTypes);
-    ProjectFileNode* fileContext();
+    ProjectFileNode* fileNode();
     QTextDocument* document() const;
-    ProjectFileNode* openFileContext();
+    ProjectFileNode* openFileNode();
 
 signals:
-    void getFileContext(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void getFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
 public slots:
     void shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -66,8 +66,8 @@ protected:
     void connectDoc();
 
 private:
-    ProjectGroupNode* mGroupContext = nullptr;
-    ProjectFileNode* mFileContext = nullptr;
+    ProjectGroupNode* mGroupNode = nullptr;
+    ProjectFileNode* mFileNode = nullptr;
     QString mFileName;
     QVector<TextMark*> mMarks;
 };

@@ -50,7 +50,7 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(ProjectFileNode *context);
+    ErrorHighlighter(ProjectFileNode *node);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
     TextMarkList* marks();
@@ -66,7 +66,7 @@ protected:
     int mLastSyntaxState = 0;
 
 private:
-    ProjectFileNode* mContext = nullptr;
+    ProjectFileNode* mNode = nullptr;
     QTextBlock mTestBlock;
 
 };
@@ -75,7 +75,7 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(ProjectFileNode *context);
+    SyntaxHighlighter(ProjectFileNode *node);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

@@ -59,14 +59,14 @@ void TextMark::jumpToRefMark(bool focus)
 void TextMark::jumpToMark(bool focus)
 {
     if (!mMarks) return;
-    ProjectFileNode* fc = mMarks->openFileContext();
+    ProjectFileNode* fc = mMarks->openFileNode();
     if (!fc) return;
 
     if (fc->document()) {
         updatePos();
         fc->jumpTo(textCursor(), focus);
     } else if (fc->metrics().fileType() == FileType::Gdx) {
-        fc->openFileContext(fc, focus);
+        fc->openFileNode(fc, focus);
     }
 }
 
@@ -107,8 +107,8 @@ QColor TextMark::color()
 
 FileType::Kind TextMark::fileKind()
 {
-    return (!mMarks || !mMarks->fileContext()) ? FileType::None
-                                               : mMarks->fileContext()->metrics().fileType().kind();
+    return (!mMarks || !mMarks->fileNode()) ? FileType::None
+                                               : mMarks->fileNode()->metrics().fileType().kind();
 }
 
 FileType::Kind TextMark::refFileKind()
@@ -163,7 +163,7 @@ QTextCursor TextMark::textCursor()
 
 void TextMark::rehighlight()
 {
-    if (mMarks && mMarks->fileContext()) mMarks->fileContext()->rehighlightAt(position());
+    if (mMarks && mMarks->fileNode()) mMarks->fileNode()->rehighlightAt(position());
 }
 
 void TextMark::move(int delta)
@@ -173,8 +173,8 @@ void TextMark::move(int delta)
 
     mPosition += delta;
     updateLineCol();
-    if (mMarks && mMarks->fileContext())
-        mMarks->fileContext()->rehighlightAt(qMin(mPosition-delta+1, document()->characterCount()-1));
+    if (mMarks && mMarks->fileNode())
+        mMarks->fileNode()->rehighlightAt(qMin(mPosition-delta+1, document()->characterCount()-1));
     rehighlight();
 }
 

@@ -50,7 +50,7 @@ void GoToWidget::on_GoTo_clicked()
 {
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
-    ProjectFileNode* fc = mMain->fileRepository()->fileContext(mMain->recent()->editor());
+    ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
     if (!fc) return;
     fc->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->setText("");

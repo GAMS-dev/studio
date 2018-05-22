@@ -32,14 +32,14 @@ public:
     int locLineNr() const;
     int locCol() const;
     QString locFile() const;
-    QString context() const;
+    QString node() const;
 
 private:
     int mLocLineNr;
     int mLocCol;
     QString mLocFile;
-    QString mContext;
-    explicit Result(int locLineNr, int locCol, QString locFile, QString context = "");
+    QString mNode;
+    explicit Result(int locLineNr, int locCol, QString locFile, QString node = "");
 };
 
 class SearchResultList : public QAbstractTableModel
@@ -50,7 +50,7 @@ public:
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList() override;
     QList<Result> resultList();
-    void addResult(int locLineNr, int locCol, QString locFile, QString context = "");
+    void addResult(int locLineNr, int locCol, QString locFile, QString node = "");
     void addResultList(QList<Result> resList);
     QString searchTerm() const;
     bool isRegex() const;
