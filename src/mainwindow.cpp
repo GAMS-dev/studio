@@ -127,11 +127,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
-    // -- To be removed option widget refactor ---
-    //connect(ui->dockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
-    // -- option widget refactor ---
     connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
-    // -- option widget refactor ---
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -148,8 +144,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
 
     initTabs();
-
-    connectCommandLineWidgets();
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -287,7 +281,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(mDockOptionView).count();
+    visibility = visibility || tabifiedDockWidgets(ui->dockOptionEditor).count();
     ui->actionOption_View->setChecked(visibility);
 }
 
@@ -333,8 +327,8 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_actionOption_View_triggered(bool checked)
 {
-    dockWidgetShow(mDockOptionView, checked);
-    if(!checked) mDockOptionView->setFloating(false);
+    dockWidgetShow(ui->dockOptionEditor, checked);
+    if(!checked) ui->dockOptionEditor->setFloating(false);
 }
 
 void MainWindow::on_actionHelp_View_triggered(bool checked)
@@ -545,7 +539,7 @@ void MainWindow::projectViewVisibiltyChanged(bool visibility)
 
 void MainWindow::optionViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(mDockOptionView).count());
+    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(ui->dockOptionEditor).count());
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
@@ -765,17 +759,16 @@ void MainWindow::loadCommandLineOptions(FileContext* fc)
     mCommandLineOption->setCurrentIndex(0);
     mCommandLineOption->setEnabled(true);
     mCommandLineOption->setCurrentContext(fc->location());
+
+    // -- option widget refactor ---
+    emit mGamsOptionWidget->loadCommandLineOption(fc->location());
+    // -- option widget refactor ---
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    if (!mCommandLineOption->getCurrentContext().isEmpty()) {
-        mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
-    }
-    mCommandLineOption->setCurrentIndex(-1);
-    mCommandLineOption->setCurrentContext("");
-    mCommandWidget->setEnabled(false);
-    mOptionEditor->setEnabled(false);
+
+    emit mGamsOptionWidget->optionEditorDisabled();
 
     // remove highlights from old tab
     FileContext* oldTab = mFileRepo.fileContext(mRecent.editor());
@@ -796,8 +789,8 @@ void MainWindow::activeTabChanged(int index)
             if (!edit->isReadOnly()) {
                 loadCommandLineOptions(fc);
 
-                mCommandWidget->setEnabled(true);
-                mOptionEditor->setEnabled(true);
+//                mCommandWidget->setEnabled(true);
+//                mOptionEditor->setEnabled(true);
                 updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
@@ -1159,8 +1152,8 @@ void MainWindow::createRunAndCommandLineWidgets()
     QIcon stopIcon(":/img/stop");
     QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
     QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
-    connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
+//    connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
+//    connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
     interruptToolButton->setMenu(interruptMenu);
     interruptToolButton->setDefaultAction(interruptAction);
     interruptToolButton->setSizePolicy(buttonSizePolicy);
@@ -1212,18 +1205,18 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
 }
 
-void MainWindow::connectCommandLineWidgets()
-{
-    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
-            this, &MainWindow::on_runWithChangedOptions);
+//void MainWindow::connectCommandLineWidgets()
+//{
+//    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
+//            this, &MainWindow::on_runWithChangedOptions);
 
-    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-            mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-            mOptionEditor, &OptionEditor::updateTableModel );
+//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
+//            mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
+//            mOptionEditor, &OptionEditor::updateTableModel );
 
-    connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
-}
+//    connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
+//}
 
 void MainWindow::setRunActionsEnabled(bool enable)
 {
@@ -1632,7 +1625,7 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
         }
     }
 
-    setRunActionsEnabled(false);
+//    setRunActionsEnabled(false);
 
     mFileRepo.removeMarks(group);
     LogContext* logProc = mFileRepo.logContext(group);
@@ -1681,48 +1674,21 @@ void MainWindow::execute(QString commandLineStr, FileContext* gmsFileContext)
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 }
 
-void MainWindow::interruptTriggered()
-{
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
-    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::interrupt);
-}
-
-void MainWindow::stopTriggered()
-{
-    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
-    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::stop);
-}
-
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    setRunActionsEnabled(state != QProcess::Running);
-    interruptToolButton->setEnabled(state == QProcess::Running);
-    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
-    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
-    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
-    mOptionEditor->setEnabled(state != QProcess::Running);
-}
+    // To be removed -- option widget refactor ---
+//    setRunActionsEnabled(state != QProcess::Running);
+//    interruptToolButton->setEnabled(state == QProcess::Running);
+//    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
+//    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
+//    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
+//    mOptionEditor->setEnabled(state != QProcess::Running);
+    // -- option widget refactor ---
 
-void MainWindow::on_runWithChangedOptions()
-{
-    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption() );
-}
-
-void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
-{
-    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
-                                   forcedOptionItems) );
+    // -- option widget refactor ---
+    emit mGamsOptionWidget->runStateChanged(state);
+    // -- option widget refactor ---
 }
 
 void MainWindow::on_runGmsFile(FileContext *fc)
@@ -1748,40 +1714,51 @@ void MainWindow::on_commandLineHelpTriggered()
 void MainWindow::on_actionRun_triggered()
 {
     if (isActiveTabEditable()) {
-       emit mCommandLineOption->optionRunChanged();
-       mRunToolButton->setDefaultAction( ui->actionRun );
+        execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
     }
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
     if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionRun_with_GDX_Creation );
+        execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
     }
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
     if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionCompile );
+        execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
     }
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
     if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionCompile_with_GDX_Creation );
+        execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
     }
+}
+
+void MainWindow::on_actionInterrupt_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    mGamsOptionWidget->on_interruptAction();
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::interrupt);
+}
+
+void MainWindow::on_actionStop_triggered()
+{
+    FileContext* fc = mFileRepo.fileContext(mRecent.editor());
+    FileGroupContext *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    mGamsOptionWidget->on_stopAction();
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::changeToLog(FileContext* fileContext)
@@ -2420,7 +2397,7 @@ void MainWindow::resetViews()
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedSecond = dock;
-        } else if (dock == mDockOptionView) {
+        } else if (dock == ui->dockOptionEditor) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }

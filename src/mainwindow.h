@@ -144,8 +144,6 @@ public slots:
     void appendSystemLog(const QString &text);
 
     void on_commandLineHelpTriggered();
-    void on_runWithChangedOptions();
-    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
@@ -193,6 +191,8 @@ private slots:
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
+    void on_actionInterrupt_triggered();
+    void on_actionStop_triggered();
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_triggered();
@@ -233,8 +233,6 @@ private slots:
     void on_actionRemove_Line_triggered();
     void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
-    void interruptTriggered();
-    void stopTriggered();
     void toggleLogDebug();
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();

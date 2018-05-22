@@ -50,14 +50,14 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionEditorCheckbox, &QCheckBox::clicked, this, &OptionWidget::toggleOptionDefinition);
     connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::on_commandLineHelpTriggered);
 
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
-            main, &MainWindow::on_runWithChangedOptions);
+//    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
+//            main, &MainWindow::on_runWithChangedOptions);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             mOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
 //    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
 //            ui->gamsOptionWidget, &OptionEditor::updateTableModel );
-//    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
-//            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption );
+    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
+            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption );
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
@@ -100,6 +100,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
     connect(this, &OptionWidget::runStateChanged, this, &OptionWidget::updateRunState);
+    connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
 }
 
 OptionWidget::~OptionWidget()
@@ -110,10 +111,40 @@ OptionWidget::~OptionWidget()
     //    delete mCommandLineTokenizer;  TODO fix Problem with parent
 }
 
-QString OptionWidget::getCurrentOption() const
+QString OptionWidget::on_runAction(RunActionState state)
 {
-    return ui->gamsOptionCommandLine->getCurrentOption();
-    //    return Tokenizer->tokenize(ui->gamsOptionCommandLine->getCurrentOption()),forcedOptionItems) );
+    mCommandLineHistory->addIntoCurrentContextHistory( ui->gamsOptionCommandLine->getCurrentOption());
+    //   Tokenizer->tokenize(ui->gamsOptionCommandLine->getCurrentOption()),forcedOptionItems) );
+    QString commandLineStr =  ui->gamsOptionCommandLine->getCurrentOption();
+
+    if (!commandLineStr.endsWith(" "))
+        commandLineStr.append(" ");
+
+    // TODO check key duplication
+    if (state == RunActionState::RunWithGDXCreation) {
+       commandLineStr.append("GDX=default");
+       ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
+    } else if (state == RunActionState::Compile) {
+        commandLineStr.append("ACTION=C");
+        ui->gamsRunToolButton->setDefaultAction( actionCompile );
+    } else if (state == RunActionState::CompileWithGDXCreation) {
+        commandLineStr.append("ACTION=C GDX=default");
+        ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
+    } else {
+        ui->gamsRunToolButton->setDefaultAction( actionRun );
+    }
+
+    return commandLineStr.simplified();
+}
+
+void OptionWidget::on_interruptAction()
+{
+    ui->gamsInterruptToolButton->setDefaultAction( actionInterrupt );
+}
+
+void OptionWidget::on_stopAction()
+{
+    ui->gamsInterruptToolButton->setDefaultAction( actionStop );
 }
 
 void OptionWidget::setOptionHistory(QMap<QString, QStringList> opts)
@@ -245,8 +276,22 @@ void OptionWidget::loadCommandLineOption(const QString &location)
        ui->gamsOptionCommandLine->insertItem(0, str );
     }
     ui->gamsOptionCommandLine->setCurrentIndex(0);
-    ui->gamsOptionCommandLine->setEnabled(true);
     ui->gamsOptionCommandLine->setCurrentContext(location);
+    ui->gamsOptionCommandLine->setEnabled(true);
+
+    setRunActionsEnabled(true);
+    setInterruptActionsEnabled(false);
+}
+
+void OptionWidget::disableOptionEditor()
+{
+    ui->gamsOptionCommandLine->setCurrentIndex(-1);
+    ui->gamsOptionCommandLine->setCurrentContext("");
+    ui->gamsOptionCommandLine->setEnabled(false);
+    ui->gamsOptionWidget->setEnabled(false);
+
+    setRunActionsEnabled(false);
+    setInterruptActionsEnabled(false);
 }
 
 void OptionWidget::toggleOptionDefinition(bool checked)
@@ -318,42 +363,6 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     actionStop->setEnabled(enable);
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
 
-}
-
-QString OptionWidget::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
-{
-    QString commandLineStr;
-    QStringList keyList;
-    for(OptionItem item: optionItems) {
-        if (item.disabled)
-            continue;
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-        keyList << item.key;
-    }
-    QString message;
-    for(OptionItem item: forcedOptionItems) {
-        if (item.disabled)
-            continue;
-
-        // TODO check key duplication
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-    }
-    if (!message.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
-        msgBox.setInformativeText("Do you want to continue ?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.exec();
-    }
-    return commandLineStr.simplified();
 }
 
 }

@@ -38,6 +38,13 @@ namespace studio {
 
 class MainWindow;
 
+enum class RunActionState {
+    Run,
+    RunWithGDXCreation,
+    Compile,
+    CompileWithGDXCreation
+};
+
 class OptionWidget : public QWidget
 {
     Q_OBJECT
@@ -48,10 +55,13 @@ public:
                           MainWindow *parent = nullptr);
     ~OptionWidget();
 
-    QString getCurrentOption() const;
+    QString on_runAction(RunActionState state);
+    void on_interruptAction();
+    void on_stopAction();
 
 signals:
     void runStateChanged(const QProcess::ProcessState &state);
+    void optionEditorDisabled();
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
@@ -68,6 +78,7 @@ public slots:
     void updateRunState(const QProcess::ProcessState &state);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QString &location);
+    void disableOptionEditor();
 
 private slots:
     void toggleOptionDefinition(bool checked);
@@ -77,9 +88,6 @@ private:
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
-
-    QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
-                                  const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
 
     Ui::OptionWidget *ui;
 
