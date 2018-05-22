@@ -201,6 +201,9 @@
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
+    <addaction name="actionInterrupt"/>
+    <addaction name="actionStop"/>
+    <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
    <addaction name="menuFile"/>
@@ -782,6 +785,30 @@
    </property>
    <property name="priority">
     <enum>QAction::HighPriority</enum>
+   </property>
+  </action>
+  <action name="actionInterrupt">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/interrupt</normaloff>:/img/interrupt</iconset>
+   </property>
+   <property name="text">
+    <string>Interrupt</string>
+   </property>
+   <property name="toolTip">
+    <string>Interrupt</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/stop</normaloff>:/img/stop</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop</string>
    </property>
   </action>
  </widget>
