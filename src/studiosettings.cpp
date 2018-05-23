@@ -169,7 +169,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->endArray();
 
     QJsonObject jsonProject;
-    main->fileRepository()->write(jsonProject);
+    main->projectRepo()->write(jsonProject);
     QJsonDocument saveDoc(jsonProject);
     mAppSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
 
@@ -341,7 +341,7 @@ void StudioSettings::restoreTabsAndProjects(MainWindow *main)
     mAppSettings->beginGroup("fileHistory");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->fileRepository()->read(loadDoc.object());
+    main->projectRepo()->read(loadDoc.object());
 
     if (restoreTabs()) {
         saveData = mAppSettings->value("openTabs", "").toByteArray();

@@ -31,15 +31,15 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
+LxiViewer::LxiViewer(CodeEditor *codeEditor, ProjectFileNode *fc, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
     mCodeEditor(codeEditor),
-    mFileContext(fc)
+    mFileNode(fc)
 {
     ui->setupUi(this);
 
-    mLstFile = mFileContext->location();
+    mLstFile = mFileNode->location();
 
     ui->splitter->addWidget(mCodeEditor);
 
@@ -52,8 +52,8 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileContext *fc, QWidget *parent):
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
-    connect(mFileContext->parentEntry(), &FileGroupContext::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
+    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
+    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
@@ -73,7 +73,7 @@ CodeEditor *LxiViewer::codeEditor() const
 
 void LxiViewer::loadLxiFile()
 {
-    if (QProcess::NotRunning == mFileContext->parentEntry()->gamsProcessState()) {
+    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
         if (QFileInfo(mLxiFile).exists()) {
             ui->splitter->widget(0)->show();
             LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
@@ -89,8 +89,8 @@ void LxiViewer::loadLxiFile()
 
 void LxiViewer::loadLstFile()
 {
-    if (QProcess::NotRunning == mFileContext->parentEntry()->gamsProcessState()) {
-        mFileContext->load(mFileContext->codecMib());
+    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
+        mFileNode->load(mFileNode->codecMib());
     }
 
 }
@@ -144,7 +144,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     cursor.setPosition(tb.position());
 
     disconnect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    mFileContext->jumpTo(cursor, true);
+    mFileNode->jumpTo(cursor, true);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 

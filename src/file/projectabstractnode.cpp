@@ -17,56 +17,56 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "filesystemcontext.h"
-#include "filegroupcontext.h"
+#include "projectabstractnode.h"
+#include "projectgroupnode.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
-FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location)
+ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location)
     : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
 {}
 
-FileSystemContext::FileSystemContext(FileId fileId, QString name, QString location, ContextType type)
+ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type)
     : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
 {}
 
-void FileSystemContext::checkFlags()
+void ProjectAbstractNode::checkFlags()
 {
 }
 
-FileSystemContext::~FileSystemContext()
+ProjectAbstractNode::~ProjectAbstractNode()
 {
     if (mParent) {
-        FileGroupContext* group = mParent;
+        ProjectGroupNode* group = mParent;
         mParent = nullptr;
         if (group) group->removeChild(this);
     }
 }
 
-FileId FileSystemContext::id() const
+FileId ProjectAbstractNode::id() const
 {
     return mId;
 }
 
-int FileSystemContext::type() const
+int ProjectAbstractNode::type() const
 {
     return mType;
 }
 
-bool FileSystemContext::canShowAsTab() const
+bool ProjectAbstractNode::canShowAsTab() const
 {
     static QList<int> showableTypes = {ContextType::File};
     return showableTypes.contains(mType);
 }
 
-FileGroupContext* FileSystemContext::parentEntry() const
+ProjectGroupNode* ProjectAbstractNode::parentEntry() const
 {
     return mParent;
 }
 
-void FileSystemContext::setParentEntry(FileGroupContext* parent)
+void ProjectAbstractNode::setParentEntry(ProjectGroupNode* parent)
 {
     if (parent != mParent) {
         if (mParent) mParent->removeChild(this);
@@ -75,28 +75,28 @@ void FileSystemContext::setParentEntry(FileGroupContext* parent)
     }
 }
 
-FileSystemContext* FileSystemContext::childEntry(int index) const
+ProjectAbstractNode* ProjectAbstractNode::childEntry(int index) const
 {
     Q_UNUSED(index);
     return nullptr;
 }
 
-int FileSystemContext::childCount() const
+int ProjectAbstractNode::childCount() const
 {
     return 0;
 }
 
-const QString FileSystemContext::caption()
+const QString ProjectAbstractNode::caption()
 {
     return mName;
 }
 
-const QString FileSystemContext::name()
+const QString ProjectAbstractNode::name()
 {
     return mName;
 }
 
-void FileSystemContext::setName(const QString& name)
+void ProjectAbstractNode::setName(const QString& name)
 {
     if (mName != name) {
         mName = name;
@@ -104,12 +104,12 @@ void FileSystemContext::setName(const QString& name)
     }
 }
 
-const QString& FileSystemContext::location() const
+const QString& ProjectAbstractNode::location() const
 {
     return mLocation;
 }
 
-void FileSystemContext::setLocation(const QString& location)
+void ProjectAbstractNode::setLocation(const QString& location)
 {
     if (!location.isEmpty()) {
         QFileInfo fi(location);
@@ -123,12 +123,12 @@ void FileSystemContext::setLocation(const QString& location)
     }
 }
 
-const FileSystemContext::ContextFlags& FileSystemContext::flags() const
+const ProjectAbstractNode::ContextFlags& ProjectAbstractNode::flags() const
 {
     return mFlags;
 }
 
-void FileSystemContext::setFlag(ContextFlag flag, bool value)
+void ProjectAbstractNode::setFlag(ContextFlag flag, bool value)
 {
     bool current = testFlag(flag);
     if (current == value) return;
@@ -138,17 +138,17 @@ void FileSystemContext::setFlag(ContextFlag flag, bool value)
     emit changed(mId);
 }
 
-void FileSystemContext::unsetFlag(ContextFlag flag)
+void ProjectAbstractNode::unsetFlag(ContextFlag flag)
 {
     setFlag(flag, false);
 }
 
-bool FileSystemContext::testFlag(FileSystemContext::ContextFlag flag)
+bool ProjectAbstractNode::testFlag(ProjectAbstractNode::ContextFlag flag)
 {
     return mFlags.testFlag(flag);
 }
 
-FileSystemContext* FileSystemContext::findFile(QString filePath)
+ProjectAbstractNode* ProjectAbstractNode::findFile(QString filePath)
 {
     if(location() == filePath)
         return this;

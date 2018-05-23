@@ -27,8 +27,8 @@
 namespace gams {
 namespace studio {
 
-class FileContext;
-class FileGroupContext;
+class ProjectFileNode;
+class ProjectGroupNode;
 class TextMarkList;
 
 class TextMark
