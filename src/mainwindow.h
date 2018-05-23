@@ -144,6 +144,7 @@ public slots:
     void appendSystemLog(const QString &text);
 
     void on_commandLineHelpTriggered();
+    void on_optionRunChanged();
 
 private slots:
     void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);

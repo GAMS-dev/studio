@@ -50,8 +50,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionEditorCheckbox, &QCheckBox::clicked, this, &OptionWidget::toggleOptionDefinition);
     connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::on_commandLineHelpTriggered);
 
-//    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
-//            main, &MainWindow::on_runWithChangedOptions);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
+            main, &MainWindow::on_optionRunChanged);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             mOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
 //    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,

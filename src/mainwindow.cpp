@@ -1711,6 +1711,11 @@ void MainWindow::on_commandLineHelpTriggered()
         mDockHelpView->raise();
 }
 
+void MainWindow::on_optionRunChanged()
+{
+    on_actionRun_triggered();
+}
+
 void MainWindow::on_actionRun_triggered()
 {
     if (isActiveTabEditable()) {
