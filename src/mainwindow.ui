@@ -664,18 +664,18 @@
   </action>
   <action name="actionIndent">
    <property name="text">
-    <string>Indent Line</string>
+    <string>Indent Line(s)</string>
    </property>
    <property name="shortcut">
-    <string>Tab</string>
+    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="actionOutdent">
    <property name="text">
-    <string>Outdent Line</string>
+    <string>Outdent Line(s)</string>
    </property>
    <property name="shortcut">
-    <string>Shift+Tab</string>
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="actionDuplicate_Line">

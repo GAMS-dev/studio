@@ -17,26 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "filetreemodel.h"
+#include "projecttreemodel.h"
 
 #include "exception.h"
-#include "filerepository.h"
-#include "filecontext.h"
-#include "filesystemcontext.h"
-#include "filegroupcontext.h"
+#include "projectrepo.h"
+#include "projectfilenode.h"
+#include "projectabstractnode.h"
+#include "projectgroupnode.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
-FileTreeModel::FileTreeModel(FileRepository* parent, FileGroupContext* root)
-    : QAbstractItemModel(parent), mFileRepo(parent), mRoot(root)
+ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectGroupNode* root)
+    : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
-    if (!mFileRepo)
+    if (!mProjectRepo)
         FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
 }
 
-QModelIndex FileTreeModel::index(FileSystemContext *entry) const
+QModelIndex ProjectTreeModel::index(ProjectAbstractNode *entry) const
 {
     if (!entry)
         return QModelIndex();
@@ -50,48 +50,48 @@ QModelIndex FileTreeModel::index(FileSystemContext *entry) const
     return QModelIndex();
 }
 
-QModelIndex FileTreeModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
-    FileSystemContext *fc = mFileRepo->context(parent)->childEntry(row);
+    ProjectAbstractNode *fc = mProjectRepo->node(parent)->childEntry(row);
     if (!fc)
         FATAL() << "invalid child for row " << row;
     return createIndex(row, column, fc->id());
 }
 
-QModelIndex FileTreeModel::parent(const QModelIndex& child) const
+QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 {
     if (!child.isValid()) return QModelIndex();
-    FileSystemContext* eChild = mFileRepo->context(child);
+    ProjectAbstractNode* eChild = mProjectRepo->node(child);
     if (!eChild || eChild == mRoot)
         return QModelIndex();
-    FileGroupContext* eParent = eChild->parentEntry();
+    ProjectGroupNode* eParent = eChild->parentEntry();
     if (!eParent)
         return QModelIndex();
     if (eParent == mRoot)
         return createIndex(0, child.column(), eParent->id());
-    FileGroupContext* parParent = eParent->parentEntry();
+    ProjectGroupNode* parParent = eParent->parentEntry();
     int row = parParent ? parParent->indexOf(eParent) : -1;
     if (row < 0)
         FATAL() << "could not find child in parent";
     return createIndex(row, child.column(), eParent->id());
 }
 
-int FileTreeModel::rowCount(const QModelIndex& parent) const
+int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    FileSystemContext* entry = mFileRepo->context(parent);
+    ProjectAbstractNode* entry = mProjectRepo->node(parent);
     if (!entry) return 0;
     return entry->childCount();
 }
 
-int FileTreeModel::columnCount(const QModelIndex& parent) const
+int ProjectTreeModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
     return 1;
 }
 
-QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
+QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
 {
     if (!ind.isValid()) return QVariant();
     switch (role) {
@@ -99,7 +99,7 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
         if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
-        return mFileRepo->context(ind)->caption();
+        return mProjectRepo->node(ind)->caption();
 
     case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
@@ -111,10 +111,10 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
         break;
 
     case Qt::ForegroundRole: {
-        FileSystemContext::ContextFlags flags = mFileRepo->context(ind)->flags();
-        if (flags.testFlag(FileSystemContext::cfMissing))
+        ProjectAbstractNode::ContextFlags flags = mProjectRepo->node(ind)->flags();
+        if (flags.testFlag(ProjectAbstractNode::cfMissing))
             return QColor(Qt::red);
-        if (flags.testFlag(FileSystemContext::cfActive)) {
+        if (flags.testFlag(ProjectAbstractNode::cfActive)) {
             return (isCurrent(ind)) ? QColor(Qt::blue)
                                       : QColor(Qt::black);
         }
@@ -122,10 +122,10 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
     }
 
     case Qt::DecorationRole:
-        return mFileRepo->context(ind)->icon();
+        return mProjectRepo->node(ind)->icon();
 
     case Qt::ToolTipRole:
-        return mFileRepo->context(ind)->tooltip();
+        return mProjectRepo->node(ind)->tooltip();
 
     default:
         break;
@@ -133,17 +133,17 @@ QVariant FileTreeModel::data(const QModelIndex& ind, int role) const
     return QVariant();
 }
 
-QModelIndex FileTreeModel::rootModelIndex() const
+QModelIndex ProjectTreeModel::rootModelIndex() const
 {
     return createIndex(0, 0, mRoot->id());
 }
 
-FileGroupContext* FileTreeModel::rootContext() const
+ProjectGroupNode* ProjectTreeModel::rootNode() const
 {
     return mRoot;
 }
 
-bool FileTreeModel::removeRows(int row, int count, const QModelIndex& parent)
+bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
 {
     Q_UNUSED(row);
     Q_UNUSED(count);
@@ -152,7 +152,7 @@ bool FileTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     return false;
 }
 
-bool FileTreeModel::insertChild(int row, FileGroupContext* parent, FileSystemContext* child)
+bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child)
 {
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
@@ -162,7 +162,7 @@ bool FileTreeModel::insertChild(int row, FileGroupContext* parent, FileSystemCon
     return true;
 }
 
-bool FileTreeModel::removeChild(FileSystemContext* child)
+bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
@@ -173,35 +173,35 @@ bool FileTreeModel::removeChild(FileSystemContext* child)
     return true;
 }
 
-bool FileTreeModel::isCurrent(const QModelIndex& ind) const
+bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
 {
     return (mCurrent.isValid() && ind == mCurrent);
 }
 
-void FileTreeModel::setCurrent(const QModelIndex& ind)
+void ProjectTreeModel::setCurrent(const QModelIndex& ind)
 {
     if (!isCurrent(ind)) {
         QModelIndex mi = mCurrent;
         mCurrent = ind;
         if (mi.isValid()) {
             dataChanged(mi, mi);                        // invalidate old
-            if (mFileRepo->context(mi)) {
-                QModelIndex par = index(mFileRepo->context(mi)->parentEntry());
+            if (mProjectRepo->node(mi)) {
+                QModelIndex par = index(mProjectRepo->node(mi)->parentEntry());
                 if (par.isValid()) dataChanged(par, par);
             }
         }
         if (mCurrent.isValid()) {
             dataChanged(mCurrent, mCurrent);            // invalidate new
-            QModelIndex par = index(mFileRepo->context(mCurrent)->parentEntry());
+            QModelIndex par = index(mProjectRepo->node(mCurrent)->parentEntry());
             if (par.isValid()) dataChanged(par, par);
         }
     }
 }
 
-bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
+bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
-        FileSystemContext* fsc = mFileRepo->context(mCurrent);
+        ProjectAbstractNode* fsc = mProjectRepo->node(mCurrent);
         if (!fsc) return false;
         if (fsc->parentEntry()->id() == static_cast<FileId>(ind.internalId())) {
             return true;
@@ -210,12 +210,12 @@ bool FileTreeModel::isCurrentGroup(const QModelIndex& ind) const
     return false;
 }
 
-bool FileTreeModel::isSelected(const QModelIndex& ind) const
+bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 {
     return (mSelected.isValid() && ind == mSelected);
 }
 
-void FileTreeModel::setSelected(const QModelIndex& ind)
+void ProjectTreeModel::setSelected(const QModelIndex& ind)
 {
     if (!isSelected(ind)) {
         QModelIndex mi = mSelected;

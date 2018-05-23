@@ -42,9 +42,9 @@ QList<Result> SearchResultList::resultList()
     return mResultList;
 }
 
-void SearchResultList::addResult(int locLineNr, int locCol, QString locFile, QString context)
+void SearchResultList::addResult(int locLineNr, int locCol, QString locFile, QString node)
 {
-    mResultList.append(Result(locLineNr, locCol, locFile, context));
+    mResultList.append(Result(locLineNr, locCol, locFile, node));
 }
 
 void SearchResultList::addResultList(QList<Result> resList)
@@ -95,7 +95,7 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
         {
         case 0: return item.locFile();
         case 1: return item.locLineNr();
-        case 2: return item.context();
+        case 2: return item.node();
         }
     }
     return QVariant();

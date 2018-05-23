@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "filegroupcontext.h"
-#include "filecontext.h"
-#include "logcontext.h"
+#include "projectgroupnode.h"
+#include "projectfilenode.h"
+#include "projectlognode.h"
 #include "exception.h"
 #include "gamsprocess.h"
 #include "commonpaths.h"
@@ -29,67 +29,67 @@
 namespace gams {
 namespace studio {
 
-FileGroupContext::~FileGroupContext()
+ProjectGroupNode::~ProjectGroupNode()
 {
     if (mChildList.size())
         DEB() << "Group must be empty before deletion";
 }
 
-void FileGroupContext::setFlag(ContextFlag flag, bool value)
+void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
 {
-    if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
-    FileSystemContext::setFlag(flag, value);
+    if (flag == ProjectAbstractNode::cfEditMod || flag == ProjectAbstractNode::cfFileMod)
+        EXCEPT() << "Can't modify flag " << (flag == ProjectAbstractNode::cfEditMod ? "cfEditMod" : "cfFileMod");
+    ProjectAbstractNode::setFlag(flag, value);
 
     // distribute missing flag to child entries
-    if (flag == FileSystemContext::cfMissing && flag) {
-        for (FileSystemContext *fc: mChildList) {
+    if (flag == ProjectAbstractNode::cfMissing && flag) {
+        for (ProjectAbstractNode *fc: mChildList) {
             fc->setFlag(flag);
         }
     }
 }
 
-void FileGroupContext::unsetFlag(ContextFlag flag)
+void ProjectGroupNode::unsetFlag(ContextFlag flag)
 {
-    if (flag == FileSystemContext::cfEditMod || flag == FileSystemContext::cfFileMod)
-        EXCEPT() << "Can't modify flag " << (flag == FileSystemContext::cfEditMod ? "cfEditMod" : "cfFileMod");
-    FileSystemContext::setFlag(flag, false);
+    if (flag == ProjectAbstractNode::cfEditMod || flag == ProjectAbstractNode::cfFileMod)
+        EXCEPT() << "Can't modify flag " << (flag == ProjectAbstractNode::cfEditMod ? "cfEditMod" : "cfFileMod");
+    ProjectAbstractNode::setFlag(flag, false);
 }
 
-FileSystemContext* FileGroupContext::findContext(QString filePath)
+ProjectAbstractNode* ProjectGroupNode::findNode(QString filePath)
 {
     QFileInfo fi(filePath);
     for (int i = 0; i < childCount(); i++) {
-        FileSystemContext *child = childEntry(i);
+        ProjectAbstractNode *child = childEntry(i);
         if (QFileInfo(child->location()) == fi)
             return child;
-        if (child->type() == FileSystemContext::FileGroup) {
-            FileGroupContext *group = static_cast<FileGroupContext*>(child);
-            FileSystemContext *subChild = group->findContext(filePath);
+        if (child->type() == ProjectAbstractNode::FileGroup) {
+            ProjectGroupNode *group = static_cast<ProjectGroupNode*>(child);
+            ProjectAbstractNode *subChild = group->findNode(filePath);
             if (subChild) return subChild;
         }
     }
     return nullptr;
 }
 
-FileContext*FileGroupContext::findFile(QString filePath)
+ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
 {
-    FileSystemContext* fsc = findContext(filePath);
-    return (fsc && (fsc->type() == FileSystemContext::File || fsc->type() == FileSystemContext::Log))
-            ? static_cast<FileContext*>(fsc) : nullptr;
+    ProjectAbstractNode* fsc = findNode(filePath);
+    return (fsc && (fsc->type() == ProjectAbstractNode::File || fsc->type() == ProjectAbstractNode::Log))
+            ? static_cast<ProjectFileNode*>(fsc) : nullptr;
 }
 
-void FileGroupContext::setLocation(const QString& location)
+void ProjectGroupNode::setLocation(const QString& location)
 {
     Q_UNUSED(location);
-    EXCEPT() << "The location of a FileGroupContext can't be changed.";
+    EXCEPT() << "The location of a FileGroupNode can't be changed.";
 }
 
-int FileGroupContext::peekIndex(const QString& name, bool *hit)
+int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
 {
     if (hit) *hit = false;
     for (int i = 0; i < childCount(); ++i) {
-        FileSystemContext *child = childEntry(i);
+        ProjectAbstractNode *child = childEntry(i);
         QString other = child->name();
         int comp = name.compare(other, Qt::CaseInsensitive);
         if (comp < 0) return i;
@@ -101,16 +101,16 @@ int FileGroupContext::peekIndex(const QString& name, bool *hit)
     return childCount();
 }
 
-void FileGroupContext::insertChild(FileSystemContext* child)
+void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
 {
     if (!child || mChildList.contains(child)) return;
     bool hit;
     int pos = peekIndex(child->name(), &hit);
     if (hit) pos++;
     mChildList.insert(pos, child);
-    if (child->type() == FileSystemContext::File) {
+    if (child->type() == ProjectAbstractNode::File) {
         TextMarkList *markList = marks(child->location());
-        markList->bind(static_cast<FileContext*>(child));
+        markList->bind(static_cast<ProjectFileNode*>(child));
     }
     if (!mAttachedFiles.contains(child->location())) {
         mAttachedFiles << child->location();
@@ -119,16 +119,16 @@ void FileGroupContext::insertChild(FileSystemContext* child)
         setFlag(cfActive);
 }
 
-void FileGroupContext::removeChild(FileSystemContext* child)
+void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
 {
     mChildList.removeOne(child);
     detachFile(child->location());
 }
 
-void FileGroupContext::checkFlags()
+void ProjectGroupNode::checkFlags()
 {
     bool active = false;
-    for (FileSystemContext *fsc: mChildList) {
+    for (ProjectAbstractNode *fsc: mChildList) {
         if (fsc->testFlag(cfActive)) {
             active = true;
             break;
@@ -137,38 +137,38 @@ void FileGroupContext::checkFlags()
     setFlag(cfActive, active);
 }
 
-void FileGroupContext::setLogContext(LogContext* logContext)
+void ProjectGroupNode::setLogNode(ProjectLogNode* logNode)
 {
-    if (mLogContext)
-        EXCEPT() << "Reset the log-context is not allowed";
-    mLogContext = logContext;
-    if (mLogContext) {
-        TextMarkList *markList = marks(mLogContext->location());
-        markList->bind(mLogContext);
+    if (mLogNode)
+        EXCEPT() << "Reset the logNode is not allowed";
+    mLogNode = logNode;
+    if (mLogNode) {
+        TextMarkList *markList = marks(mLogNode->location());
+        markList->bind(mLogNode);
     }
 }
 
-void FileGroupContext::updateRunState(const QProcess::ProcessState& state)
+void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
 {
     Q_UNUSED(state)
     // TODO(JM) visualize if a state is running
 }
 
-TextMarkList* FileGroupContext::marks(const QString& fileName)
+TextMarkList* ProjectGroupNode::marks(const QString& fileName)
 {
     if (!mMarksForFilenames.contains(fileName)) {
         TextMarkList* marks = new TextMarkList(this, fileName);
-        connect(marks, &TextMarkList::getFileContext, this, &FileGroupContext::findOrCreateFileContext);
+        connect(marks, &TextMarkList::getFileNode, this, &ProjectGroupNode::findOrCreateFileNode);
         mMarksForFilenames.insert(fileName, marks);
     }
     return mMarksForFilenames.value(fileName);
 }
 
-void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
+void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 {
     QHash<QString, TextMarkList*>::iterator it;
     for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it) {
-        FileContext *file = findFile(it.key());
+        ProjectFileNode *file = findFile(it.key());
         if (file) {
             file->removeTextMarks(tmTypes);
         } else {
@@ -177,12 +177,12 @@ void FileGroupContext::removeMarks(QSet<TextMark::Type> tmTypes)
     }
 }
 
-void FileGroupContext::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
+void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
-void FileGroupContext::setLstFileName(const QString &lstFileName)
+void ProjectGroupNode::setLstFileName(const QString &lstFileName)
 {
     QFileInfo fi(lstFileName);
     if (fi.isRelative())
@@ -191,7 +191,7 @@ void FileGroupContext::setLstFileName(const QString &lstFileName)
         mLstFileName = lstFileName;
 }
 
-void FileGroupContext::dumpMarks()
+void ProjectGroupNode::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
         QString res = file+":\n";
@@ -203,7 +203,7 @@ void FileGroupContext::dumpMarks()
     }
 }
 
-QString FileGroupContext::tooltip()
+QString ProjectGroupNode::tooltip()
 {
     QString tooltip(location());
     tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
@@ -211,58 +211,58 @@ QString FileGroupContext::tooltip()
     return tooltip;
 }
 
-void FileGroupContext::attachFile(const QString &filepath)
+void ProjectGroupNode::attachFile(const QString &filepath)
 {
     if(filepath == "") return;
     QFileInfo fi(filepath);
     if(!mAttachedFiles.contains(fi)) {
         mAttachedFiles << fi;
-        FileSystemContext* fsc = findContext(filepath);
+        ProjectAbstractNode* fsc = findNode(filepath);
         if (!fsc && fi.exists()) {
             updateChildNodes();
         }
     }
 }
 
-void FileGroupContext::detachFile(const QString& filepath)
+void ProjectGroupNode::detachFile(const QString& filepath)
 {
     QFileInfo fi(filepath);
     if (mAttachedFiles.contains(fi)) {
-        FileSystemContext* fsc = findContext(filepath);
-        FileContext *fc = (fsc && fsc->type()==FileSystemContext::File) ? static_cast<FileContext*>(fsc) : nullptr;
+        ProjectAbstractNode* fsc = findNode(filepath);
+        ProjectFileNode *fc = (fsc && fsc->type()==ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
         if (!fc || fc->editors().isEmpty()) {
             mAttachedFiles.removeOne(fi);
         }
     }
 }
 
-typedef QPair<int, FileSystemContext*> IndexedFSContext;
+typedef QPair<int, ProjectAbstractNode*> IndexedNode;
 
-void FileGroupContext::updateChildNodes()
+void ProjectGroupNode::updateChildNodes()
 {
     QFileInfoList addList = mAttachedFiles;
-    QList<IndexedFSContext> vanishedEntries;
+    QList<IndexedNode> vanishedEntries;
     for (int i = 0; i < childCount(); ++i) {
-        FileSystemContext *entry = childEntry(i);
-        if (entry->type() == FileSystemContext::Log)
+        ProjectAbstractNode *entry = childEntry(i);
+        if (entry->type() == ProjectAbstractNode::Log)
             continue;
         QFileInfo fi(entry->location());
         int pos = addList.indexOf(fi);
         if (pos >= 0) {
             // keep existing entries and remove them from addList
             addList.removeAt(pos);
-            entry->unsetFlag(FileSystemContext::cfMissing);
+            entry->unsetFlag(ProjectAbstractNode::cfMissing);
         } else {
             // prepare indicees in reverse order (highest index first)
-            vanishedEntries.insert(0, IndexedFSContext(i, entry));
+            vanishedEntries.insert(0, IndexedNode(i, entry));
         }
     }
     // check for vanished files and directories
-    for (IndexedFSContext childIndex: vanishedEntries) {
-        FileSystemContext* entry = childIndex.second;
-        if (entry->testFlag(FileSystemContext::cfActive)) {
+    for (IndexedNode childIndex: vanishedEntries) {
+        ProjectAbstractNode* entry = childIndex.second;
+        if (entry->testFlag(ProjectAbstractNode::cfActive)) {
             // mark active files as missing (directories recursively)
-            entry->setFlag(FileSystemContext::cfMissing);
+            entry->setFlag(ProjectAbstractNode::cfMissing);
             qDebug() << "Missing node: " << entry->name();
         } else {
             // inactive files can be removed (directories recursively)
@@ -276,10 +276,10 @@ void FileGroupContext::updateChildNodes()
     }
 }
 
-void FileGroupContext::jumpToFirstError(bool focus)
+void ProjectGroupNode::jumpToFirstError(bool focus)
 {
-    if (!mLogContext) return;
-    TextMark* textMark = mLogContext->firstErrorMark();
+    if (!mLogNode) return;
+    TextMark* textMark = mLogNode->firstErrorMark();
     if (textMark) {
         if (!textMark->textCursor().isNull()) {
             textMark->jumpToMark(focus);
@@ -289,115 +289,116 @@ void FileGroupContext::jumpToFirstError(bool focus)
     }
 }
 
-QString FileGroupContext::lstErrorText(int line)
+QString ProjectGroupNode::lstErrorText(int line)
 {
     return mLstErrorTexts.value(line);
 }
 
-void FileGroupContext::setLstErrorText(int line, QString text)
+void ProjectGroupNode::setLstErrorText(int line, QString text)
 {
     mLstErrorTexts.insert(line, text);
 }
 
-void FileGroupContext::clearLstErrorTexts()
+void ProjectGroupNode::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
 //    dumpMarks();
     removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
-//    FileSystemContext *fsc = findFile(lstFileName());
-//    if (fsc && fsc->type() == FileSystemContext::File) {
-//        FileContext *fc = static_cast<FileContext*>(fsc);
+//    ProjectAbstractNode *fsc = findFile(lstFileName());
+//    if (fsc && fsc->type() == ProjectAbstractNode::File) {
+//        ProjectFileNode *fc = static_cast<ProjectFileNode*>(fsc);
 //        fc->clearMarksEnhanced();
 //    }
 }
 
-bool FileGroupContext::hasLstErrorText(int line)
+bool ProjectGroupNode::hasLstErrorText(int line)
 {
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
-void FileGroupContext::saveGroup()
+void ProjectGroupNode::saveGroup()
 {
-    foreach (FileSystemContext* child, mChildList) {
+    foreach (ProjectAbstractNode* child, mChildList) {
         if (child->type() == ContextType::FileGroup) {
-            FileGroupContext *fgc = static_cast<FileGroupContext*>(child);
+            ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
             fgc->saveGroup();
         } else if (child->type() == ContextType::File) {
-            FileContext *fc = static_cast<FileContext*>(child);
+            ProjectFileNode *fc = static_cast<ProjectFileNode*>(child);
             fc->save();
         }
     }
 }
 
-QString FileGroupContext::runnableGms()
+QString ProjectGroupNode::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
     return mGmsFileName;
 }
 
-void FileGroupContext::setRunnableGms(FileContext *gmsFileContext)
+void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
-    QString location = gmsFileContext->location();
+    QString location = gmsFileNode->location();
 
     mGmsFileName = location;
     setLstFileName(QFileInfo(location).baseName() + ".lst");
+    if (logNode()) logNode()->resetLst();
 }
 
-void FileGroupContext::removeRunnableGms()
+void ProjectGroupNode::removeRunnableGms()
 {
     mGmsFileName = "";
     mLstFileName = "";
 }
 
-QString FileGroupContext::lstFileName()
+QString ProjectGroupNode::lstFileName()
 {
     return mLstFileName;
 }
 
-LogContext*FileGroupContext::logContext() const
+ProjectLogNode*ProjectGroupNode::logNode() const
 {
-    return mLogContext;
+    return mLogNode;
 }
 
-GamsProcess*FileGroupContext::gamsProcess()
+GamsProcess*ProjectGroupNode::gamsProcess()
 {
     return mGamsProcess.get();
 }
 
-QProcess::ProcessState FileGroupContext::gamsProcessState() const
+QProcess::ProcessState ProjectGroupNode::gamsProcessState() const
 {
     return mGamsProcess->state();
 }
 
-int FileGroupContext::childCount() const
+int ProjectGroupNode::childCount() const
 {
     return mChildList.count();
 }
 
-int FileGroupContext::indexOf(FileSystemContext* child)
+int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
 {
     return mChildList.indexOf(child);
 }
 
-FileSystemContext*FileGroupContext::childEntry(int index) const
+ProjectAbstractNode*ProjectGroupNode::childEntry(int index) const
 {
     return mChildList.at(index);
 }
 
-QIcon FileGroupContext::icon()
+QIcon ProjectGroupNode::icon()
 {
     return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
 }
 
-void FileGroupContext::onGamsProcessStateChanged(QProcess::ProcessState newState)
+void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState);
     updateRunState(newState);
     emit gamsProcessStateChanged(this);
 }
 
-FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QString runInfo)
-    : FileSystemContext(id, name, location, FileSystemContext::FileGroup),
+ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString runInfo)
+    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
       mGamsProcess(new GamsProcess)
 {
     if (runInfo == "") return;
@@ -415,8 +416,8 @@ FileGroupContext::FileGroupContext(FileId id, QString name, QString location, QS
         mGmsFileName = runnableFile.absoluteFilePath();
     }
 
-    //mGamsProcess->setContext(this);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &FileGroupContext::onGamsProcessStateChanged);
+    //mGamsProcess->setNode(this);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
 }
 
 } // namespace studio

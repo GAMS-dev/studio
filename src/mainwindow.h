@@ -62,7 +62,7 @@ struct RecentData {
 
     FileId editFileId = -1;
     QString path = ".";
-    FileGroupContext* group = nullptr;
+    ProjectGroupNode* group = nullptr;
 
 private:
     QWidget* mEditor = nullptr;
@@ -114,7 +114,7 @@ public:
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
-    FileRepository* fileRepository();
+    ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
@@ -136,14 +136,14 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
-    void on_runGmsFile(FileContext *fc);
-    void on_setMainGms(FileContext *fc);
+    void on_runGmsFile(ProjectFileNode *fc);
+    void on_setMainGms(ProjectFileNode *fc);
     void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
 private slots:
-    void openFileContext(FileContext *fileContext, bool focus = true, int codecMib = -1);
+    void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -153,14 +153,14 @@ private slots:
     void fileClosed(FileId fileId);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
-    void closeGroup(FileGroupContext* group);
-    void closeFile(FileContext* file);
-    void addToGroup(FileGroupContext *group, const QString &filepath);
+    void closeGroup(ProjectGroupNode* group);
+    void closeFile(ProjectFileNode* file);
+    void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void openFilePath(QString filePath, FileGroupContext *parent, bool focus, int codecMip = -1);
+    void openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip = -1);
 
     // View
-    void gamsProcessStateChanged(FileGroupContext* group);
+    void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void toggleOptionDefinition(bool checked);
@@ -250,25 +250,25 @@ protected:
 
 private:
     void initTabs();
-    FileContext* addContext(const QString &path, const QString &fileName);
-    void openContext(const QModelIndex& index);
+    ProjectFileNode* addNode(const QString &path, const QString &fileName);
+    void openNode(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
-    void execute(QString commandLineStr, FileContext *gmsFileContext = nullptr);
+    void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
-    bool requestCloseChanged(QList<FileContext*> changedFiles);
+    bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void loadCommandLineOptions(FileContext* fc);
+    void loadCommandLineOptions(ProjectFileNode* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    void parseFilesFromCommandLine(FileGroupContext *fgc);
+    void parseFilesFromCommandLine(ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
 
 private:
@@ -297,9 +297,9 @@ private:
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
-    FileRepository mFileRepo;
+    ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
-    void changeToLog(FileContext* fileContext);
+    void changeToLog(ProjectFileNode* fileNode);
 
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;

@@ -17,21 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILETREEMODEL_H
-#define FILETREEMODEL_H
+#ifndef PROJECTTREEMODEL_H
+#define PROJECTTREEMODEL_H
 
 #include <QAbstractItemModel>
-#include "filegroupcontext.h"
+#include "projectgroupnode.h"
 
 namespace gams {
 namespace studio {
 
-class FileRepository;
+class ProjectRepo;
 
-class FileTreeModel : public QAbstractItemModel
+class ProjectTreeModel : public QAbstractItemModel
 {
 public:
-    explicit FileTreeModel(FileRepository *parent, FileGroupContext* root);
+    explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
     QModelIndex parent(const QModelIndex &child) const;
@@ -39,16 +39,16 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(FileSystemContext* entry) const;
+    QModelIndex index(ProjectAbstractNode* entry) const;
     QModelIndex rootModelIndex() const;
-    FileGroupContext* rootContext() const;
+    ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
 
 protected:
-    friend class FileRepository;
+    friend class ProjectRepo;
 
-    bool insertChild(int row, FileGroupContext* parent, FileSystemContext* child);
-    bool removeChild(FileSystemContext* child);
+    bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
+    bool removeChild(ProjectAbstractNode* child);
 
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
@@ -58,8 +58,8 @@ protected:
     void setSelected(const QModelIndex& ind);
 
 private:
-    FileRepository *mFileRepo;
-    FileGroupContext* mRoot = nullptr;
+    ProjectRepo *mProjectRepo;
+    ProjectGroupNode* mRoot = nullptr;
     QModelIndex mCurrent;
     QModelIndex mSelected;
 
@@ -68,4 +68,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // FILETREEMODEL_H
+#endif // PROJECTTREEMODEL_H

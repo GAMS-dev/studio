@@ -17,23 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LOGCONTEXT_H
-#define LOGCONTEXT_H
+#ifndef PROJECTLOGNODE_H
+#define PROJECTLOGNODE_H
 
-#include "filecontext.h"
+#include "projectfilenode.h"
 
 namespace gams {
 namespace studio {
 
-class LogContext : public FileContext
+class ProjectLogNode final: public ProjectFileNode
 {
 public:
     void markOld();
     QTextDocument* document() const override;
     void addEditor(QWidget* edit) override;
     void removeEditor(QWidget* edit) override;
-    void setParentEntry(FileGroupContext *parent) override;
-    void fileClosed(FileContext* fc);
+    void setParentEntry(ProjectGroupNode *parent) override;
+    void fileClosed(ProjectFileNode* fc);
+    void resetLst();
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
@@ -42,8 +43,8 @@ public slots:
     void setJumpToLogEnd(bool state);
 
 protected:
-    friend class FileRepository;
-    LogContext(FileId fileId, QString name);
+    friend class ProjectRepo;
+    ProjectLogNode(FileId fileId, QString name);
 
     struct LinkData {
         TextMark* textMark = nullptr;
@@ -62,16 +63,16 @@ private:
     bool mInErrorDescription = false;
     QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-//    QSet<FileContext*> mMarkedContextList;
+//    QSet<FileNode*> mMarkedNodeList;
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
     bool mDebugLog = false;
     QString mLastSourceFile;
-    FileContext *mLstContext = nullptr;
+    ProjectFileNode *mLstNode = nullptr;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // LOGCONTEXT_H
+#endif // PROJECTLOGNODE_H

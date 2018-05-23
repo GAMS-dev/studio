@@ -46,7 +46,7 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(FileSystemContext *fsc, bool skipFilters = false);
+    QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false);
 
     enum SearchDirection {
         Forward = 0,
@@ -90,7 +90,7 @@ private:
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
     void simpleReplaceAll();
-    QList<Result> findInGroup(FileSystemContext *fsc = nullptr);
+    QList<Result> findInGroup(ProjectAbstractNode *fsc = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);
