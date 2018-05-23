@@ -288,17 +288,10 @@ void OptionTableModel::toggleActiveOptionItem(int index)
     emit optionModelChanged(mOptionItem);
 }
 
-void OptionTableModel::on_optionModelChanged(const QList<OptionItem> &optionItem)
+void OptionTableModel::on_optionTableModelChanged(const QString &text)
 {
     beginResetModel();
-
-    mOptionItem = optionItem;
-
-    QMap<int, QVariant> previousCheckState = mCheckState;
-    for(int idx = 0; idx<mOptionItem.size(); ++idx) {
-       mCheckState[idx] = QVariant();
-    }
-
+    itemizeOptionFromCommandLineStr(text);
     validateOption();
 
     setRowCount(mOptionItem.size());

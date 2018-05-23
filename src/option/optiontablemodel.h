@@ -48,12 +48,13 @@ public:
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QList<OptionItem> getCurrentListOfOptionItems();
+
 signals:
     void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:
     void toggleActiveOptionItem(int index);
-    void on_optionModelChanged(const QList<OptionItem> &optionItem);
+    void on_optionTableModelChanged(const QString &text);
 
 private:
     QList<OptionItem> mOptionItem;

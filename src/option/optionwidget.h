@@ -59,20 +59,20 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
+    void setOptionHistory(QMap<QString, QStringList> opts);
+    QMap<QString, QStringList> getOptionHistory() const;
+
 signals:
     void runStateChanged(const QProcess::ProcessState &state);
     void optionEditorDisabled();
     void optionLoaded(const QString &location);
-//    void optionTableModelChanged(const QString &commandLineStr);
-    void optionTableModelChanged( const QList<OptionItem> &optionItems);
+    void optionTableModelChanged(const QString &commandLineStr);
+//    void optionTableModelChanged( const QList<OptionItem> &optionItems);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 public slots:
-    void setOptionHistory(QMap<QString, QStringList> opts);
-    QMap<QString, QStringList> getOptionHistory() const;
-
-//    void updateTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
+    void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
@@ -80,9 +80,6 @@ public slots:
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QString &location);
     void disableOptionEditor();
-
-    void on_commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
-    void on_optionTableModelChanged(const QList<OptionItem> &optionItems); // const QString &commandLineStr);
 
 private slots:
     void toggleOptionDefinition(bool checked);
