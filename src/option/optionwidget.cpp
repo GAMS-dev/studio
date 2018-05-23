@@ -39,8 +39,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 {
     ui->setupUi(this);
 
-    mGamsOption = new Option(CommonPaths::systemDir(), QString("optgams.def"));
-    mOptionTokenizer = new CommandLineTokenizer(mGamsOption);
+    mGamsOptionTokenizer = new CommandLineTokenizer(QString("optgams.def"));
     mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
@@ -56,20 +55,20 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
             ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            mOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+            mGamsOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
 
-    QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
-    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
+    QList<OptionItem> optionItem = mGamsOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
+    QString normalizedText = mGamsOptionTokenizer->normalize(optionItem);
+    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mGamsOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( optionTableModel );
     connect(optionTableModel, &OptionTableModel::optionModelChanged,
             this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
     connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
-            mOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+            mGamsOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
 
-    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView));
+    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mGamsOptionTokenizer, ui->gamsOptionTableView));
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
@@ -87,7 +86,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
-    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getGamsOption(), this);
+    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mGamsOptionTokenizer->getGamsOption(), this);
     proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -111,9 +110,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 OptionWidget::~OptionWidget()
 {
     delete ui;
-    delete mGamsOption;
     delete mCommandLineHistory;
-    //    delete mCommandLineTokenizer;  TODO fix Problem with parent
+    delete mGamsOptionTokenizer;
 }
 
 QString OptionWidget::on_runAction(RunActionState state)
@@ -322,8 +320,7 @@ void OptionWidget::toggleOptionDefinition(bool checked)
 
         ui->gamsOptionCommandLine->lineEdit()->setEnabled( true );
         ui->gamsOptionWidget->hide();
-//        this->widget()->resize( ui->gamsCommandWidget->size() );
-//        this->resizeDocks({ui->dockOptionView}, {ui->gamsCommandWidget->size().height()}, Qt::Vertical);
+        main->resizeOptionEditor(ui->gamsCommandWidget->size());
     }
 }
 

@@ -102,9 +102,8 @@ private:
 
     MainWindow* main;
 
-    Option* mGamsOption;
     CommandLineHistory* mCommandLineHistory;
-    CommandLineTokenizer* mOptionTokenizer;
+    CommandLineTokenizer* mGamsOptionTokenizer;
 };
 
 }

@@ -127,6 +127,7 @@ public:
     QWidget *welcomePage() const;
     void delayedFileRestoration();
     void resetViews();
+    void resizeOptionEditor(const QSize &size);
 
     HelpView *getDockHelpView() const;
     OptionWidget *getGamsOptionWidget() const;

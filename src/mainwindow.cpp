@@ -756,23 +756,11 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
     ProjectGroupNode* group = fc->parentEntry();
     if (!group) return;
 
-    mCommandLineOption->clear();
-    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
-    foreach(QString str, option) {
-       mCommandLineOption->insertItem(0, str );
-    }
-    mCommandLineOption->setCurrentIndex(0);
-    mCommandLineOption->setEnabled(true);
-    mCommandLineOption->setCurrentContext(fc->location());
-
-    // -- option widget refactor ---
     emit mGamsOptionWidget->loadCommandLineOption(fc->location());
-    // -- option widget refactor ---
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-
     emit mGamsOptionWidget->optionEditorDisabled();
 
     // remove highlights from old tab
@@ -793,9 +781,6 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 loadCommandLineOptions(fc);
-
-//                mCommandWidget->setEnabled(true);
-//                mOptionEditor->setEnabled(true);
                 updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
@@ -1209,19 +1194,6 @@ void MainWindow::createRunAndCommandLineWidgets()
     connect(mShowOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
     connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
 }
-
-//void MainWindow::connectCommandLineWidgets()
-//{
-//    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
-//            this, &MainWindow::on_runWithChangedOptions);
-
-//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-//            mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-//    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-//            mOptionEditor, &OptionEditor::updateTableModel );
-
-//    connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
-//}
 
 void MainWindow::setRunActionsEnabled(bool enable)
 {
@@ -1682,18 +1654,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 void MainWindow::updateRunState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    // To be removed -- option widget refactor ---
-//    setRunActionsEnabled(state != QProcess::Running);
-//    interruptToolButton->setEnabled(state == QProcess::Running);
-//    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
-//    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
-//    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
-//    mOptionEditor->setEnabled(state != QProcess::Running);
-    // -- option widget refactor ---
-
-    // -- option widget refactor ---
     emit mGamsOptionWidget->runStateChanged(state);
-    // -- option widget refactor ---
 }
 
 void MainWindow::on_runGmsFile(ProjectFileNode *fc)
@@ -2418,6 +2379,13 @@ void MainWindow::resetViews()
     // stack help over output
     tabifyDockWidget(stackedFirst, stackedSecond);
 }
+
+void MainWindow::resizeOptionEditor(const QSize &size)
+{
+    mGamsOptionWidget->resize( size );
+    this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
+}
+
 
 }
 }
