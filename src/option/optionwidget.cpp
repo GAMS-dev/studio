@@ -160,6 +160,17 @@ QMap<QString, QStringList> OptionWidget::getOptionHistory() const
     return mCommandLineHistory->allHistory();
 }
 
+void OptionWidget::checkOptionDefinition(bool checked)
+{
+    ui->gamsOptionEditorCheckbox->setChecked(checked);
+    toggleOptionDefinition(checked);
+}
+
+bool OptionWidget::isOptionDefinitionChecked()
+{
+    return ui->gamsOptionEditorCheckbox->isChecked();
+}
+
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);

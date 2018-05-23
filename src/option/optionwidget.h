@@ -62,6 +62,9 @@ public:
     void setOptionHistory(QMap<QString, QStringList> opts);
     QMap<QString, QStringList> getOptionHistory() const;
 
+    void checkOptionDefinition(bool checked);
+    bool isOptionDefinitionChecked();
+
 signals:
     void runStateChanged(const QProcess::ProcessState &state);
     void optionEditorDisabled();

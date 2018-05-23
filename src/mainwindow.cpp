@@ -338,13 +338,12 @@ void MainWindow::on_actionHelp_View_triggered(bool checked)
 
 void MainWindow::checkOptionDefinition(bool checked)
 {
-    mShowOptionDefintionCheckBox->setChecked(checked);
-    toggleOptionDefinition(checked);
+    mGamsOptionWidget->checkOptionDefinition(checked);
 }
 
 bool MainWindow::isOptionDefinitionChecked()
 {
-    return mShowOptionDefintionCheckBox->isChecked();
+    return mGamsOptionWidget->isOptionDefinitionChecked();
 }
 
 CommandLineHistory *MainWindow::commandLineHistory()
