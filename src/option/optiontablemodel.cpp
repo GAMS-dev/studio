@@ -320,7 +320,7 @@ void OptionTableModel::on_optionModelChanged(const QList<OptionItem> &optionItem
 
     }
     endResetModel();
-//    emit optionModelChanged(mOptionItem);
+    emit optionModelChanged(mOptionItem);
 }
 
 

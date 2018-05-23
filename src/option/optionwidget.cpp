@@ -26,6 +26,7 @@
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
+#include "optiontablemodel.h"
 #include "mainwindow.h"
 
 namespace gams {
@@ -52,17 +53,21 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
             main, &MainWindow::on_optionRunChanged);
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            mOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-//    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-//            ui->gamsOptionWidget, &OptionEditor::updateTableModel );
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
             ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption );
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            this, &OptionWidget::on_commandLineOptionChanged);
+//    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+//            mOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+//    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+//            ui->gamsOptionWidget, &OptionEditor::updateTableModel );
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, mOptionTokenizer,  this);
-    ui->gamsOptionTableView->setModel( optionParamModel );
+//    OptionParameterModel* optionParamModel = new OptionParameterModel(normalizedText, mOptionTokenizer,  this);
+//    ui->gamsOptionTableView->setModel( optionParamModel );
+    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
+    ui->gamsOptionTableView->setModel( optionTableModel );
 
     ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView));
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -79,7 +84,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->gamsOptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
-    connect(this, &OptionWidget::optionTableModelChanged, optionParamModel, &OptionParameterModel::updateCurrentOption);
+//    connect(this, &OptionWidget::optionTableModelChanged, optionParamModel, &OptionParameterModel::updateCurrentOption);
+    connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionModelChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getGamsOption(), this);
@@ -294,10 +300,10 @@ void OptionWidget::disableOptionEditor()
     setInterruptActionsEnabled(false);
 }
 
-void OptionWidget::on_commandLineOptionChanged(const QString &commandLineStr)
+void OptionWidget::on_commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr)
 {
-    QList<OptionItem> optionItems = mOptionTokenizer->tokenize( commandLineStr );
-    mOptionTokenizer->formatItemLineEdit(ui->gamsOptionCommandLine->lineEdit(), optionItems );
+//    QList<OptionItem> optionItems = mOptionTokenizer->tokenize( commandLineStr );
+//    mOptionTokenizer->formatItemLineEdit(ui->gamsOptionCommandLine->lineEdit(), optionItems );
 //    emit commandLineOptionChanged( optionItems );
 }
 
