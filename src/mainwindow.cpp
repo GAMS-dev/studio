@@ -1542,7 +1542,9 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    on_actionRun_triggered();
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    if (state == QProcess::NotRunning)
+       on_actionRun_triggered();
 }
 
 void MainWindow::on_actionRun_triggered()
