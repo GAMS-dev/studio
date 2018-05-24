@@ -38,7 +38,7 @@ class GdxViewer : public QWidget
     Q_OBJECT
 
 public:
-    GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = 0);
+    GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = nullptr);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();

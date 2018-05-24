@@ -32,8 +32,8 @@ class FilterUelModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit FilterUelModel(GdxSymbol* symbol, int column, QObject *parent = 0);
-    ~FilterUelModel();
+    explicit FilterUelModel(GdxSymbol* symbol, int column, QObject *parent = nullptr);
+    ~FilterUelModel() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

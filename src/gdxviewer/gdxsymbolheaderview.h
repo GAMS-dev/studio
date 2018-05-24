@@ -33,8 +33,8 @@ class GdxSymbolHeaderView : public QHeaderView
     Q_OBJECT
 
 public:
-    GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent=nullptr);
-    ~GdxSymbolHeaderView();
+    GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
+    ~GdxSymbolHeaderView() override;
 
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
