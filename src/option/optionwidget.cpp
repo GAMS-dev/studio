@@ -174,7 +174,7 @@ bool OptionWidget::isOptionDefinitionChecked()
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
-    if (isHidden())
+    if (ui->gamsOptionWidget->isHidden())
         return;
 
     emit optionTableModelChanged(commandLineStr);
@@ -182,7 +182,7 @@ void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &co
 
 void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
 {
-    if (isHidden())
+    if (ui->gamsOptionWidget->isHidden())
        return;
 
     ui->gamsOptionCommandLine->lineEdit()->setText( commandLineStr );
@@ -191,7 +191,7 @@ void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
 
 void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
-    if (isHidden())
+    if (ui->gamsOptionWidget->isHidden())
        return;
 
     emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), optionItems);
@@ -267,7 +267,6 @@ void OptionWidget::updateRunState(const QProcess::ProcessState &state)
     setInterruptActionsEnabled(state == QProcess::Running);
 
     ui->gamsOptionCommandLine->lineEdit()->setReadOnly(state == QProcess::Running);
-//    ui->gamsOptionEditorCheckbox->setEnabled(state != QProcess::Running);
     ui->gamsOptionWidget->setEnabled(state != QProcess::Running);
 }
 
@@ -324,7 +323,7 @@ void OptionWidget::toggleOptionDefinition(bool checked)
 
         ui->gamsOptionCommandLine->lineEdit()->setEnabled( false );
         ui->gamsOptionWidget->show();
-        //emit ui->gamsOptionWidget->optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
+        emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
 
     } else {
         //updateRunState();
