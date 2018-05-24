@@ -29,15 +29,14 @@
 namespace gams {
 namespace studio {
 
-ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString runInfo)
+ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
     : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
       mGamsProcess(new GamsProcess)
 {
-    qDebug() << "runInfo" << runInfo; // rogo: delete
-    if (runInfo == "") return;
+    if (fileName == "") return;
 
     // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + runInfo);
+    QFileInfo runnableFile(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
 
     // fix for .lst-as-mainfile bug
