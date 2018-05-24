@@ -979,12 +979,19 @@ void MainWindow::on_actionHelp_triggered()
         mDockHelpView->raise();
 }
 
+QString MainWindow::studioInfo()
+{
+    QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
+    ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
+    ret += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
+
+    return ret;
+}
+
 void MainWindow::on_actionAbout_triggered()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
-    about += "<br/><br/>Release: GAMS Studio " + QApplication::applicationVersion() + " ";
-    about += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
-    about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
+    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    about += studioInfo();
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
     about += "This program is free software: you can redistribute it and/or modify ";
@@ -1007,7 +1014,19 @@ void MainWindow::on_actionAbout_triggered()
     about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-    QMessageBox::about(this, "About GAMS Studio", about);
+
+    QMessageBox box;
+    box.setIcon(QMessageBox::Information);
+    box.setText("About GAMS Studio");
+    box.setInformativeText(about);
+    box.addButton("Close", QMessageBox::AcceptRole);
+    box.addButton("Copy to Clipboard", QMessageBox::ActionRole);
+
+    int answer = box.exec();
+    if (answer) {
+        QClipboard *clip = QGuiApplication::clipboard();
+        clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
+    }
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()

@@ -129,7 +129,6 @@ public:
     void delayedFileRestoration();
     void resetViews();
 
-
 public slots:
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
@@ -272,6 +271,7 @@ private:
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
+    QString studioInfo();
 
 private:
     Ui::MainWindow *ui;
