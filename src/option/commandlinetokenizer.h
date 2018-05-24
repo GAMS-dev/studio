@@ -43,7 +43,6 @@ class CommandLineTokenizer : public QObject
 public:
 
     CommandLineTokenizer(const QString &optionFileName);
-    CommandLineTokenizer(Option* gamsOption);  // To be removed
     ~CommandLineTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);

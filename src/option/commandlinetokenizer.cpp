@@ -44,25 +44,6 @@ CommandLineTokenizer::CommandLineTokenizer(const QString &optionFileName)
     mDeactivatedOptionFormat.setForeground(Qt::lightGray);
 }
 
-CommandLineTokenizer::CommandLineTokenizer(Option* option) : // To be removed
-    mGamsOption(option)
-{
-    mInvalidKeyFormat.setFontItalic(true);
-    mInvalidKeyFormat.setBackground(Qt::lightGray);
-    mInvalidKeyFormat.setForeground(Qt::red);
-
-    mInvalidValueFormat.setFontItalic(true);
-    mInvalidValueFormat.setBackground(Qt::lightGray);
-    mInvalidValueFormat.setForeground(Qt::red/*Qt::blue*/);
-
-    mDeprecateOptionFormat.setFontItalic(true);
-    mDeprecateOptionFormat.setBackground(Qt::lightGray);
-    mDeprecateOptionFormat.setForeground(Qt::white);
-
-    mDeactivatedOptionFormat.setFontItalic(true);
-    mDeactivatedOptionFormat.setForeground(Qt::lightGray);
-}
-
 CommandLineTokenizer::~CommandLineTokenizer()
 {
     delete mGamsOption;
