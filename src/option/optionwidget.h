@@ -27,7 +27,6 @@
 #include "commandlineoption.h"
 #include "commandlinetokenizer.h"
 #include "commandlinehistory.h"
-#include "optionparametermodel.h"
 
 namespace Ui {
 class OptionWidget;

@@ -37,7 +37,6 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
-#include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"

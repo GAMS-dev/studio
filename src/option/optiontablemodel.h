@@ -21,6 +21,7 @@
 #define OPTIONTABLEMODEL_H
 
 #include <QAbstractItemModel>
+
 #include "commandlinetokenizer.h"
 #include "option.h"
 
