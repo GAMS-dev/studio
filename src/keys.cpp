@@ -132,12 +132,11 @@ void Keys::reset()
     seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 
-    seq = new KeySeqList("Ctrl+Shift+I","indent selected lines");
-    *seq << QKeySequence("Tab");
+    seq = new KeySeqList("Tab","indent selected lines");
     setHotkey(Hotkey::Indent, seq);
 
-    seq = new KeySeqList("Ctrl+Shift+U","outdent selected lines");
-    *seq << QKeySequence("Shift+Tab") << QKeySequence("Shift+Backtab");
+    seq = new KeySeqList("Shift+Tab","outdent selected lines");
+    *seq << QKeySequence("Shift+Backtab");
     setHotkey(Hotkey::Outdent, seq);
 
     seq = new KeySeqList("Ctrl+Y","remove line");

@@ -25,24 +25,24 @@
 namespace gams {
 namespace studio {
 
-TextMarkList::TextMarkList(FileGroupContext* group, const QString& fileName)
-    : QObject(), mGroupContext(group), mFileName(fileName)
+TextMarkList::TextMarkList(ProjectGroupNode* group, const QString& fileName)
+    : QObject(), mGroupNode(group), mFileName(fileName)
 {}
 
 void TextMarkList::unbind()
 {
-    if (mFileContext) {
-        mFileContext->unbindMarks();
-        mFileContext = nullptr;
+    if (mFileNode) {
+        mFileNode->unbindMarks();
+        mFileNode = nullptr;
     }
 }
 
-void TextMarkList::bind(FileContext* fc)
+void TextMarkList::bind(ProjectFileNode* fc)
 {
-    if (mFileContext)
-        EXCEPT() << "TextMarks are already bound to FileContext " << mFileContext->location();
-    mFileContext = fc;
-    mGroupContext = fc->parentEntry();
+    if (mFileNode)
+        EXCEPT() << "TextMarks are already bound to FileNode " << mFileNode->location();
+    mFileNode = fc;
+    mGroupNode = fc->parentEntry();
     mFileName = fc->location();
     if (fc->document() && fc->metrics().fileType().kind() == FileType::Gms) connectDoc();
 }
@@ -78,7 +78,7 @@ void TextMarkList::textMarkIconsEmpty(bool* noIcons)
 
 void TextMarkList::documentOpened()
 {
-    if (mFileContext && mFileContext->metrics().fileType().kind() == FileType::Gms)
+    if (mFileNode && mFileNode->metrics().fileType().kind() == FileType::Gms)
         connectDoc();
 }
 
@@ -92,8 +92,8 @@ void TextMarkList::documentChanged(int pos, int charsRemoved, int charsAdded)
             int pos = mark->position();
             if (mark->type() == TextMark::error || mark->type() == TextMark::link) mark->flatten();
             else mMarks.removeAt(i);
-            if (fileContext()) fileContext()->rehighlightAt(pos);
-        } else if (compare > 0 && !mFileContext->isReadOnly()) {
+            if (fileNode()) fileNode()->rehighlightAt(pos);
+        } else if (compare > 0 && !mFileNode->isReadOnly()) {
             mark->move(charsAdded-charsRemoved);
         }
         i--;
@@ -106,7 +106,7 @@ TextMark*TextMarkList::generateTextMark(TextMark::Type tmType, int value, int li
     res->setPosition(line, column, size);
     res->setValue(value);
     mMarks << res;
-    if (document()) fileContext()->rehighlightAt(res->position());
+    if (document()) fileNode()->rehighlightAt(res->position());
     return res;
 }
 
@@ -125,29 +125,29 @@ int TextMarkList::textMarkCount(QSet<TextMark::Type> tmTypes)
     return res;
 }
 
-FileContext*TextMarkList::fileContext()
+ProjectFileNode*TextMarkList::fileNode()
 {
-    if (mFileContext) return mFileContext;
-    // TODO(JM) find file-context in group
-    return mFileContext;
+    if (mFileNode) return mFileNode;
+    // TODO(JM) find fileNode in groupNode
+    return mFileNode;
 }
 
 QTextDocument*TextMarkList::document() const
 {
-    return mFileContext ? mFileContext->document() : nullptr;
+    return mFileNode ? mFileNode->document() : nullptr;
 }
 
-FileContext* TextMarkList::openFileContext()
+ProjectFileNode* TextMarkList::openFileNode()
 {
-    if (!mFileContext) {
-        DEB() << "Creating FileContext for missing " << mFileName;
-        emit getFileContext(mFileName, mFileContext, mGroupContext);
-        if (!mFileContext) EXCEPT() << "Error creating FileContext " << mFileName;
+    if (!mFileNode) {
+        DEB() << "Creating FileNode for missing " << mFileName;
+        emit getFileNode(mFileName, mFileNode, mGroupNode);
+        if (!mFileNode) EXCEPT() << "Error creating FileNode " << mFileName;
     }
-    if (!mFileContext->document()) {
-        emit mFileContext->openFileContext(mFileContext, true);
+    if (!mFileNode->document()) {
+        emit mFileNode->openFileNode(mFileNode, true);
     }
-    return mFileContext;
+    return mFileNode;
 }
 
 void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighlight)
@@ -161,8 +161,8 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighli
             TextMark* mark = mMarks.takeAt(i);
             mark->clearBackRefs();
             delete mark;
-            if (doRehighlight && fileContext() && fileContext()->document())
-                fileContext()->rehighlightAt(pos);
+            if (doRehighlight && fileNode() && fileNode()->document())
+                fileNode()->rehighlightAt(pos);
         }
     }
 }
@@ -201,8 +201,8 @@ TextMark*TextMarkList::firstErrorMark()
 
 void TextMarkList::connectDoc()
 {
-    if (mFileContext && mFileContext->document() && !mFileContext->isReadOnly()) {
-        connect(mFileContext->document(), &QTextDocument::contentsChange, this, &TextMarkList::documentChanged);
+    if (mFileNode && mFileNode->document() && !mFileNode->isReadOnly()) {
+        connect(mFileNode->document(), &QTextDocument::contentsChange, this, &TextMarkList::documentChanged);
         updateMarks();
     }
 }

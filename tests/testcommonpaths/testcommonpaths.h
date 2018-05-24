@@ -17,54 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
-#define GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+#ifndef TESTCOMMONPATHS_H
+#define TESTCOMMONPATHS_H
 
-#include <QWidget>
-#include <QModelIndex>
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
-
-class CodeEditor;
-class ProjectFileNode;
-
-namespace lxiviewer {
-
-namespace Ui {
-class LxiViewer;
-}
-
-class LxiViewer : public QWidget
+class TestCommonPaths : public QObject
 {
     Q_OBJECT
 
-public:
-    explicit LxiViewer(CodeEditor *codeEditor, ProjectFileNode *fc, QWidget *parent);
-    ~LxiViewer();
-
-    CodeEditor *codeEditor() const;
-
-private:
-    Ui::LxiViewer *ui;
-
-    CodeEditor* mCodeEditor;
-    ProjectFileNode *mFileNode;
-    QString mLstFile;
-    QString mLxiFile;
-
 private slots:
-    void loadLxiFile();
-    void loadLstFile();
-    void jumpToTreeItem();
+    void testSystemDir();
+    void testUserDocumentDir();
+    void testUserModelLibraryDir();
+    void testDefaultWorkingDir();
 
+    void testAbsoluteFilePathEmpty();
+    void testAbsoluteFilePathNullStr();
+    void testAbsoluteFilePathExisting();
+    void testAbsoluteFilePathNotExisting();
 
-private slots:
-    void jumpToLine(QModelIndex modelIndex);
+    void testAbsolutePathEmpty();
+    void testAbsolutePathNullStr();
+    void testAbsolutePathExisting();
+    void testAbsolutePathNotExisting();
 };
 
-
-} // namespace lxiviewer
-} // namespace studio
-} // namespace gams
-#endif // GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+#endif // TESTCOMMONPATHS_H

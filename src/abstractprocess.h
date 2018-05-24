@@ -27,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-class FileGroupContext;
+class ProjectGroupNode;
 
 class AbstractProcess
         : public QObject

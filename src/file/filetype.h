@@ -62,7 +62,7 @@ public:
 
 
 private:
-    friend class FileRepository;
+    friend class ProjectRepo;
 
     static void clear();
     FileType(Kind kind, QString suffix, QString description, bool autoReload, const Kind dependant = None);

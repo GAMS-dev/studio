@@ -303,6 +303,16 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         }
+        if (e == Hotkey::Indent) {
+            indent(mSettings->tabSize());
+            e->accept();
+            return;
+        }
+        if (e == Hotkey::Outdent) {
+            indent(-mSettings->tabSize());
+            e->accept();
+            return;
+        }
     }
 
     if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
@@ -604,12 +614,12 @@ int CodeEditor::indent(int size, int fromLine, int toLine)
             force = textCursor().hasSelection();
             fromLine = document()->findBlock(textCursor().anchor()).blockNumber();
             toLine = textCursor().block().blockNumber();
-            if (force) {
-                savePos = textCursor();
-                saveAnc = textCursor();
-                saveAnc.setPosition(saveAnc.anchor());
-            }
         }
+    }
+    if (force) {
+        savePos = textCursor();
+        saveAnc = textCursor();
+        saveAnc.setPosition(saveAnc.anchor());
     }
     if (fromLine > toLine) qSwap(fromLine, toLine);
 
@@ -1246,9 +1256,16 @@ void CodeEditor::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
         replaceBlockText("");
+    } else if (e == Hotkey::Indent) {
+        mEdit->indent(mEdit->mSettings->tabSize());
+        return;
+    } else if (e == Hotkey::Outdent) {
+        mEdit->indent(-mEdit->mSettings->tabSize());
+        return;
     } else if (e->text().length()) {
         replaceBlockText(e->text());
     }
+
     startCursorTimer();
 }
 

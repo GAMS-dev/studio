@@ -22,7 +22,7 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
 
     for (auto file : list)
     {
-        QString path = CommonPaths::path(file);
+        QString path = CommonPaths::absolutPath(file);
         if (!path.isEmpty()) {
             QDir dir(path);
             dir.setNameFilters(filters);
@@ -71,7 +71,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();
-                    FileContext* fc = mMainWindow->fileRepository()->fileContext(editor);
+                    ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
                     QTextCursor curs(fc->document());
                     curs.select(QTextCursor::Document);
                     curs.insertText(line);
@@ -93,7 +93,7 @@ void AutosaveHandler::saveChangedFiles()
 {
     for (auto editor : mMainWindow->openEditors())
     {
-        FileContext* fc = mMainWindow->fileRepository()->fileContext(editor);
+        ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
         QString filepath = QFileInfo(fc->location()).path();
         QString filename = filepath+fc->name();
         FileMetrics metrics = FileMetrics(QFileInfo(filename));

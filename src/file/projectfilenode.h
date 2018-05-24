@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILECONTEXT_H
-#define FILECONTEXT_H
+#ifndef PROJECTFILENODE_H
+#define PROJECTFILENODE_H
 
 #include <QFileSystemWatcher>
-#include "filesystemcontext.h"
+#include "projectabstractnode.h"
 #include "filemetrics.h"
 #include "syntax.h"
 #include "gdxviewer/gdxviewer.h"
@@ -30,15 +30,15 @@ namespace gams {
 namespace studio {
 
 class CodeEditor;
-class FileGroupContext;
+class ProjectGroupNode;
 class TextMark;
 typedef QPair<int,QString> ErrorHint;
 
 ///
-/// The <c>FileContext</c> class represents context data for a text-file. It is derived from <c>FileSystemContext</c>.
-/// \see FileSystemContext, FileGroupContext, FileContext, LogContext
+/// The <c>ProjectFileNode</c> class represents a file. It is derived from <c>ProjectAbstractNode</c>.
+/// \see ProjectAbstractNode, ProjectGroupNode, ProjectLogNode
 ///
-class FileContext : public FileSystemContext
+class ProjectFileNode : public ProjectAbstractNode
 {
     Q_OBJECT
 public:
@@ -50,9 +50,9 @@ public:
         FollowupError,
     };
 
-    ~FileContext() override;
+    ~ProjectFileNode() override;
 
-    void setParentEntry(FileGroupContext *parent) override;
+    void setParentEntry(ProjectGroupNode *parent) override;
 
     /// The name of the current codec for this file.
     /// \return The name of the codec.
@@ -94,7 +94,7 @@ public:
     /// \return The list of assigned editors.
     const QWidgetList editors() const;
 
-    /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>FileContext</c> share the same
+    /// Assigns a <c>CodeEditor</c> to this file. All editors assigned to a <c>ProjectFileNode</c> share the same
     /// <c>QTextDocument</c>. If the editor is already assigned it is moved to top.
     /// \param edit The additional <c>CodeEditor</c>
     virtual void addEditor(QWidget* edit);
@@ -154,9 +154,9 @@ signals:
     /// \param fileId The file identifier
     void deletedExtern(FileId fileId);
 
-    void findFileContext(QString filePath, FileContext** fileContext, FileGroupContext* fileGroup = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext*& fileContext, FileGroupContext* fileGroup = nullptr);
-    void openFileContext(FileContext* fileContext, bool focus = true, int codecMib = -1);
+    void findFileNode(QString filePath, ProjectFileNode** fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
     void documentClosed();
 
@@ -166,9 +166,9 @@ protected slots:
     void modificationChanged(bool modiState);
 
 protected:
-    friend class LogContext;
-    friend class FileRepository;
-    FileContext(FileId fileId, QString name, QString location, ContextType type = FileSystemContext::File);
+    friend class ProjectLogNode;
+    friend class ProjectRepo;
+    ProjectFileNode(FileId fileId, QString name, QString location, ContextType type = ProjectAbstractNode::File);
 
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -181,7 +181,7 @@ private:
 private:
     FileMetrics mMetrics;
     QTextCodec *mCodec = nullptr;
-    FileContext *mLinkFile = nullptr;
+    ProjectFileNode *mLinkFile = nullptr;
     QWidgetList mEditors;
     QFileSystemWatcher *mWatcher = nullptr;
     QVector<TextMark*> mMarksAtMouse;
@@ -197,4 +197,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // FILECONTEXT_H
+#endif // PROJECTFILENODE_H

@@ -17,47 +17,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEGROUPCONTEXT_H
-#define FILEGROUPCONTEXT_H
+#ifndef PROJECTGROUPNODE_H
+#define PROJECTGROUPNODE_H
 
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
-#include "filesystemcontext.h"
+#include "projectabstractnode.h"
 #include "syntax/textmark.h"
 
 namespace gams {
 namespace studio {
 
-class LogContext;
-class FileContext;
+class ProjectLogNode;
+class ProjectFileNode;
 class GamsProcess;
 class TextMarkList;
 
-class FileGroupContext : public FileSystemContext
+class ProjectGroupNode : public ProjectAbstractNode
 {
     Q_OBJECT
 
 public:
-    virtual ~FileGroupContext() override;
+    virtual ~ProjectGroupNode() override;
     void setFlag(ContextFlag flag, bool value = true) override;
     void unsetFlag(ContextFlag flag) override;
 
     void setLocation(const QString &location) override;
 
     int childCount() const override;
-    int indexOf(FileSystemContext *child);
-    FileSystemContext* childEntry(int index) const override;
-    FileSystemContext* findContext(QString filePath);
-    FileContext* findFile(QString filePath);
+    int indexOf(ProjectAbstractNode *child);
+    ProjectAbstractNode* childEntry(int index) const override;
+    ProjectAbstractNode* findNode(QString filePath);
+    ProjectFileNode* findFile(QString filePath);
     QIcon icon() override;
 
     QString runnableGms();
-    void setRunnableGms(FileContext *gmsFileContext);
+    void setRunnableGms(ProjectFileNode *gmsFileNode);
     void removeRunnableGms();
     QString lstFileName();
     void setLstFileName(const QString &lstFileName);
-    LogContext* logContext() const;
+    ProjectLogNode* logNode() const;
 
     GamsProcess* gamsProcess();
     QProcess::ProcessState gamsProcessState() const;
@@ -77,26 +77,26 @@ public:
     QString tooltip() override;
 
 signals:
-    void gamsProcessStateChanged(FileGroupContext* group);
-    void removeNode(FileSystemContext *node);
-    void requestNode(QString name, QString location, FileGroupContext* parent = nullptr);
-    void findOrCreateFileContext(QString filePath, FileContext *&resultFile, FileGroupContext* fileGroup = nullptr);
+    void gamsProcessStateChanged(ProjectGroupNode* group);
+    void removeNode(ProjectAbstractNode *node);
+    void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
 protected:
-    friend class FileRepository;
-    friend class FileSystemContext;
-    friend class FileContext;
-    friend class LogContext;
+    friend class ProjectRepo;
+    friend class ProjectAbstractNode;
+    friend class ProjectFileNode;
+    friend class ProjectLogNode;
 
-    FileGroupContext(FileId id, QString name, QString location, QString runInfo);
+    ProjectGroupNode(FileId id, QString name, QString location, QString runInfo);
     int peekIndex(const QString &name, bool* hit = nullptr);
-    void insertChild(FileSystemContext *child);
-    void removeChild(FileSystemContext *child);
+    void insertChild(ProjectAbstractNode *child);
+    void removeChild(ProjectAbstractNode *child);
     void checkFlags() override;
-    void setLogContext(LogContext* logContext);
+    void setLogNode(ProjectLogNode* logNode);
     void updateRunState(const QProcess::ProcessState &state);
     void addMark(const QString &filePath, TextMark* mark);
     TextMarkList* marks(const QString &fileName);
@@ -104,8 +104,8 @@ protected:
     void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
-    QList<FileSystemContext*> mChildList;
-    LogContext* mLogContext = nullptr;
+    QList<ProjectAbstractNode*> mChildList;
+    ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
     QString mLstFileName;
     QString mGmsFileName;
@@ -119,4 +119,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // FILEGROUPCONTEXT_H
+#endif // PROJECTGROUPNODE_H
