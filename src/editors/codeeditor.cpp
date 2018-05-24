@@ -988,7 +988,8 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        if (!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() == &mWordDelay)
+        if ((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() == &mWordDelay)
+                && (mSettings->wordUnderCursor() || textCursor().hasSelection() ))
             extraSelCurrentWord(selections);
     }
     extraSelBlockEdit(selections);
@@ -1018,8 +1019,6 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mSettings->wordUnderCursor()) return;
-
     QHash<int, TextMark*> textMarks;
     emit requestMarkHash(&textMarks, TextMark::match);
 
