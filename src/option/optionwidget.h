@@ -65,12 +65,13 @@ public:
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
 
+    CommandLineTokenizer *getGamsOptionTokenizer() const;
+
 signals:
     void runStateChanged(const QProcess::ProcessState &state);
     void optionEditorDisabled();
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
-//    void optionTableModelChanged( const QList<OptionItem> &optionItems);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 

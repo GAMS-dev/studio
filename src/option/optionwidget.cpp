@@ -386,5 +386,10 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
 
 }
 
+CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const
+{
+    return mGamsOptionTokenizer;
+}
+
 }
 }

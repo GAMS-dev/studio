@@ -113,7 +113,6 @@ public:
     void setHelpViewVisibility(bool visibility);
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
-    CommandLineHistory* commandLineHistory();
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
@@ -169,7 +168,6 @@ private slots:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
-    void toggleOptionDefinition(bool checked);
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
@@ -270,21 +268,12 @@ private:
     void loadCommandLineOptions(ProjectFileNode* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    void parseFilesFromCommandLine(ProjectGroupNode *fgc);
+    void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
 
 private:
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
-
-    Option* mGamsOption;
-    OptionEditor* mOptionEditor;
-    QDockWidget* mDockOptionView;
-    CommandLineHistory* mCommandLineHistory;
-    CommandLineOption* mCommandLineOption;
-    CommandLineTokenizer* mCommandLineTokenizer;
-    QWidget* mCommandWidget;
-    QCheckBox* mShowOptionDefintionCheckBox;
 
     HelpView* mDockHelpView = nullptr;
     OptionWidget* mGamsOptionWidget = nullptr;
@@ -304,8 +293,6 @@ private:
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(ProjectFileNode* fileNode);
 
-    QToolButton* interruptToolButton = nullptr;
-    QToolButton* mRunToolButton = nullptr;
     GoToWidget *mGoto;
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
