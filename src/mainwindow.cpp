@@ -1878,28 +1878,28 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
         EXCEPT() << "File not found: " << filePath;
     }
     ProjectAbstractNode *fsc = mProjectRepo.findNode(filePath, parent);
-    ProjectFileNode *fc = (fsc && fsc->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
+    ProjectFileNode *fileNode = (fsc && fsc->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
 
-    if (!fc) { // not yet opened by user, open file in new tab
+    if (!fileNode) { // not yet opened by user, open file in new tab
         ProjectGroupNode* group = mProjectRepo.ensureGroup(CommonPaths::absolutFilePath(filePath));
-        mProjectRepo.findOrCreateFileNode(filePath, fc, group);
-        if (!fc) {
+        mProjectRepo.findOrCreateFileNode(filePath, fileNode, group);
+        if (!fileNode) {
             EXCEPT() << "File not found: " << filePath;
         }
-        QTabWidget* tabWidget = (fc->type() == ProjectAbstractNode::Log) ? ui->logTabs : ui->mainTab;
-        createEdit(tabWidget, focus, fc->id(), codecMip);
+        QTabWidget* tabWidget = (fileNode->type() == ProjectAbstractNode::Log) ? ui->logTabs : ui->mainTab;
+        createEdit(tabWidget, focus, fileNode->id(), codecMip);
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mProjectRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
     } else {
-        openFileNode(fc, focus, codecMip);
+        openFileNode(fileNode, focus, codecMip);
     }
-    if (!fc) {
+    if (!fileNode) {
         EXCEPT() << "invalid pointer found: FileNode expected.";
     }
     mRecent.path = filePath;
-    mRecent.group = fc->parentEntry();
+    mRecent.group = fileNode->parentEntry();
 }
 
 ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName)

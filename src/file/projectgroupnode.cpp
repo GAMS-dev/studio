@@ -42,7 +42,7 @@ void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
     ProjectAbstractNode::setFlag(flag, value);
 
     // distribute missing flag to child entries
-    if (flag == ProjectAbstractNode::cfMissing && flag) {
+    if (flag == (ProjectAbstractNode::cfMissing & flag)) {
         for (ProjectAbstractNode *fc: mChildList) {
             fc->setFlag(flag);
         }
