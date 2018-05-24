@@ -5,4 +5,4 @@ TryExec=studio
 Exec=studio %F
 Icon=gamslogo
 Terminal=false
-Categories=Development;IDE
+Categories=Development;IDE;
