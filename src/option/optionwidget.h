@@ -67,7 +67,6 @@ public:
     CommandLineTokenizer *getGamsOptionTokenizer() const;
 
 signals:
-    void runStateChanged(const QProcess::ProcessState &state);
     void optionEditorDisabled();
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
@@ -79,7 +78,7 @@ public slots:
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
-    void updateRunState(const QProcess::ProcessState &state);
+    void updateRunState(bool isRunnable, bool isMain, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QString &location);
     void disableOptionEditor();

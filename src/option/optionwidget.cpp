@@ -103,7 +103,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
-    connect(this, &OptionWidget::runStateChanged, this, &OptionWidget::updateRunState);
     connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
 }
 
@@ -261,13 +260,14 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     }
 }
 
-void OptionWidget::updateRunState(const QProcess::ProcessState &state)
+void OptionWidget::updateRunState(bool isRunnable, bool isMain, bool isRunning)
 {
-    setRunActionsEnabled(state != QProcess::Running);
-    setInterruptActionsEnabled(state == QProcess::Running);
+    setRunActionsEnabled( isRunnable && !isRunning );
+    setInterruptActionsEnabled( isRunnable && isMain && isRunning );
 
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly(state == QProcess::Running);
-    ui->gamsOptionWidget->setEnabled(state != QProcess::Running);
+    ui->gamsOptionWidget->setEnabled( isRunnable && (!isMain || (isMain && !isRunning)) );
+    ui->gamsOptionCommandLine->lineEdit()->setReadOnly( isMain && isRunning );
+    ui->gamsOptionCommandLine->lineEdit()->setEnabled( ui->gamsOptionWidget->isHidden() );
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -319,17 +319,13 @@ void OptionWidget::disableOptionEditor()
 void OptionWidget::toggleOptionDefinition(bool checked)
 {
     if (checked) {
-        //updateRunState();
-
-        ui->gamsOptionCommandLine->lineEdit()->setEnabled( false );
         ui->gamsOptionWidget->show();
+        main->updateRunState();
         emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
 
     } else {
-        //updateRunState();
-
-        ui->gamsOptionCommandLine->lineEdit()->setEnabled( true );
         ui->gamsOptionWidget->hide();
+        main->updateRunState();
         main->resizeOptionEditor(ui->gamsCommandWidget->size());
     }
 }

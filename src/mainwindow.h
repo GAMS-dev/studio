@@ -124,6 +124,7 @@ public:
     void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
+    void updateRunState();
 
     HelpView *getDockHelpView() const;
     OptionWidget *getGamsOptionWidget() const;
@@ -253,13 +254,14 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
-    void updateRunState();
     void createWelcomePage();
     void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
     bool isActiveTabRunnable();
+    bool isActiveTabSetAsMain();
+    bool isRecentGroupInRunningState();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void loadCommandLineOptions(ProjectFileNode* fc);

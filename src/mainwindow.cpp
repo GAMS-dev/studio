@@ -749,8 +749,7 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 loadCommandLineOptions(fc);
-                if (fc->location() == mRecent.group->runnableGms())
-                   updateRunState();
+                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -1074,14 +1073,31 @@ bool MainWindow::isActiveTabRunnable()
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+        return (fc && !edit->isReadOnly());
+    }
+    return false;
+}
+
+bool MainWindow::isActiveTabSetAsMain()
+{
+    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    if (edit) {
+        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
         if (fc) {
            ProjectGroupNode* group = fc->parentEntry();
            if (group) {
-               return (!edit->isReadOnly() && (fc->location()==group->runnableGms()));
+               return (fc->location()==group->runnableGms());
            }
         }
     }
     return false;
+}
+
+bool MainWindow::isRecentGroupInRunningState()
+{
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    return (state == QProcess::Running);
 }
 
 QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
@@ -1521,8 +1537,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::updateRunState()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    emit mGamsOptionWidget->runStateChanged(state);
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isActiveTabSetAsMain(), isRecentGroupInRunningState());
 }
 
 void MainWindow::on_runGmsFile(ProjectFileNode *fc)
@@ -1533,9 +1548,10 @@ void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
-    loadCommandLineOptions(fc);
-    if (isActiveTabRunnable())
-        updateRunState();
+    // loadCommandLineOptions(fc);
+    // TODO As an activated tab should synchronize with the shown option,
+    // also activate Tab in addition to loadCommandLineOptions(fc).
+    // The run ui states will be updated when activeTabChanged(index) is called.
 }
 
 void MainWindow::on_commandLineHelpTriggered()
