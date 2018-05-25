@@ -1019,10 +1019,11 @@ void MainWindow::on_actionAbout_triggered()
     box.setIcon(QMessageBox::Information);
     box.setText("About GAMS Studio");
     box.setInformativeText(about);
-    box.addButton("Close", QMessageBox::AcceptRole);
-    box.addButton("Copy to Clipboard", QMessageBox::ActionRole);
-
+    box.setIconPixmap(QPixmap(":/img/gams-w24"));
+    box.addButton("Close", QMessageBox::RejectRole);
+    box.addButton("Copy && Close", QMessageBox::AcceptRole);
     int answer = box.exec();
+
     if (answer) {
         QClipboard *clip = QGuiApplication::clipboard();
         clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
