@@ -111,6 +111,7 @@ struct TextMarkData
     TextMarkData(QString& _location, TextMark::Type _type, int _line, int _column, int _size = 0)
         : location(_location), type(_type), line(_line), column(_column), size(_size) {}
     QString location;
+    QString contextLocation;
     TextMark::Type type;
     int line;
     int column;
