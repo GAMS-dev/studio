@@ -28,6 +28,7 @@
 #include <QDebug>
 #include <QPair>
 #include <QStandardPaths>
+#include <QHeaderView>
 #include <QFileDialog>
 #include <QSettings>
 #include "glbparser.h"

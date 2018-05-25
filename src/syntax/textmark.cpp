@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textmark.h"
-#include "textmarklist.h"
+#include "textmarkrepo.h"
 #include "file.h"
 #include "logger.h"
 #include "exception.h"
@@ -28,17 +28,20 @@ namespace studio {
 
 int TextMark::mNextId = 0;
 
-TextMark::TextMark(TextMarkList* marks, Type tmType): mId(mNextId++), mMarks(marks), mType(tmType)
-{}
+TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, FileId contextId)
+    : mId(mNextId++), mFileId(fileId), mContextId(contextId), mMarks(marks), mType(tmType)
+{
+    if (!mMarks) FATAL() << "The TextMarkRepo must be a valid instance.";
+}
 
 TextMark::~TextMark()
 {
-    if (mMarks) mMarks->removeTextMark(this);
+    mMarks->remove(this);
 }
 
 QTextDocument*TextMark::document() const
 {
-    return mMarks ? mMarks->document() : nullptr;
+    return mMarks->document(mFileId);
 }
 
 
@@ -52,21 +55,21 @@ void TextMark::setPosition(int line, int column, int size)
 
 void TextMark::jumpToRefMark(bool focus)
 {
+    if (!mReference && mRefData)
+        setRefMark(mMarks->create(mRefData));
     if (mReference)
         mReference->jumpToMark(focus);
 }
 
 void TextMark::jumpToMark(bool focus)
 {
-    if (!mMarks) return;
-    ProjectFileNode* fc = mMarks->openFileNode();
-    if (!fc) return;
+    if (!mMarks->openFile(mFileId)) return;
 
-    if (fc->document()) {
+    if (document()) {
         updatePos();
-        fc->jumpTo(textCursor(), focus);
-    } else if (fc->metrics().fileType() == FileType::Gdx) {
-        fc->openFileNode(fc, focus);
+        mMarks->jumpTo(mFileId, textCursor(), focus);
+    } else if (mMarks->fileKind(mFileId) == FileType::Gdx) {
+        mMarks->openFile(mFileId, focus);
     }
 }
 
@@ -75,12 +78,22 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
     if (mReference)
         mReference->mBackRefs << this;
+    if (mRefData) {
+        delete mRefData;
+        mRefData = nullptr;
+    }
 }
 
 void TextMark::unsetRefMark(TextMark* refMark)
 {
     if (mReference == refMark) mReference = nullptr;
     mBackRefs.removeAll(refMark);
+}
+
+inline bool TextMark::isErrorRef()
+{
+    return (mReference && mReference->type() == error)
+            || (mRefData && mRefData->type == error);
 }
 
 void TextMark::clearBackRefs()
@@ -96,24 +109,26 @@ QColor TextMark::color()
     if (type() == TextMark::match)
         return Qt::yellow;
 
-    if (!mReference) return Qt::darkRed;
-    if (mReference->type() == TextMark::error)
+    if (mReference) {
+        if (mReference->type() == TextMark::error) return Qt::darkRed;
+        if (mReference->fileKind() == FileType::Lst) return Qt::blue;
+    } else if (mRefData) {
+        if (mRefData->type == TextMark::error) return Qt::darkRed;
+        if (mRefData->location.endsWith(".lst", Qt::CaseInsensitive)) return Qt::blue;
+    } else {
         return Qt::darkRed;
-    if (mReference->fileKind() == FileType::Lst)
-        return Qt::blue;
-
+    }
     return Qt::darkGreen;
 }
 
 FileType::Kind TextMark::fileKind()
 {
-    return (!mMarks || !mMarks->fileNode()) ? FileType::None
-                                               : mMarks->fileNode()->metrics().fileType().kind();
+    return mMarks->fileKind(mFileId);
 }
 
 FileType::Kind TextMark::refFileKind()
 {
-    return !mReference ? FileType::None : mReference->fileKind();
+    return mReference ? mReference->fileKind() : mRefData ? mRefData->fileKind() : FileType::None;
 }
 
 QIcon TextMark::icon()
@@ -123,7 +138,7 @@ QIcon TextMark::icon()
         return QIcon(":/img/exclam-circle-r");
         break;
     case link:
-        return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
+        return (mReference || mRefData) ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
         break;
     case bookmark: {
         QIcon ico(":/img/bookmark");
@@ -137,10 +152,15 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
+inline TextMark::Type TextMark::refType() const
+{
+    return (mReference) ? mReference->type() : mRefData ? mRefData->type : none;
+}
+
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {
     if (shape && ((mType == error && inIconRegion) || mType == link))
-        *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+        *shape = (mReference || mRefData) ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
     return *shape;
 }
 
@@ -163,7 +183,7 @@ QTextCursor TextMark::textCursor()
 
 void TextMark::rehighlight()
 {
-    if (mMarks && mMarks->fileNode()) mMarks->fileNode()->rehighlightAt(position());
+    mMarks->rehighlightAt(mFileId, position());
 }
 
 void TextMark::move(int delta)
@@ -173,8 +193,7 @@ void TextMark::move(int delta)
 
     mPosition += delta;
     updateLineCol();
-    if (mMarks && mMarks->fileNode())
-        mMarks->fileNode()->rehighlightAt(qMin(mPosition-delta+1, document()->characterCount()-1));
+    mMarks->rehighlightAt(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
     rehighlight();
 }
 
@@ -218,7 +237,9 @@ QString TextMark::dump()
     for (TextMark* mark: mBackRefs) {
         refs << QString::number(mark->mId);
     }
-    return QString("(%3,%4)[%1->%2] ").arg(mId).arg(mReference?QString::number(mReference->mId):"#").arg(mPosition).arg(mSize);
+    return QString("(%3,%4)[%1->%2] ").arg(mId)
+            .arg(mReference ? QString::number(mReference->mId) : mRefData ? "?" : "#")
+            .arg(mPosition).arg(mSize);
 }
 
 int TextMark::value() const

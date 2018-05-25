@@ -136,7 +136,8 @@ SOURCES += \
     file/projecttreemodel.cpp \
     file/projectlognode.cpp \
     file/filemetarepo.cpp \
-    file/filemeta.cpp
+    file/filemeta.cpp \
+    syntax/textmarkrepo.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -145,6 +146,7 @@ HEADERS += \
     bookmarkdialog.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
+    common.h \
     commonpaths.h \
     distributionvalidator.h \
     editors/abstracteditor.h \
@@ -219,7 +221,8 @@ HEADERS += \
     file/projecttreemodel.h \
     file/filemetarepo.h \
     file/filemeta.h \
-    file/projectrepo.h
+    file/projectrepo.h \
+    syntax/textmarkrepo.h
 
 FORMS += \
     bookmarkdialog.ui \

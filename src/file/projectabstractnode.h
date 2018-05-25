@@ -20,6 +20,7 @@
 #ifndef PROJECTABSTRACTNODE_H
 #define PROJECTABSTRACTNODE_H
 
+#include "common.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "editors/codeeditor.h"
@@ -27,8 +28,6 @@
 
 namespace gams {
 namespace studio {
-
-typedef int FileId;
 
 class ProjectGroupNode;
 
