@@ -224,14 +224,6 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath)
     return group;
 }
 
-void ProjectRepo::close(FileId fileId)
-{
-    ProjectFileNode *fc = fileNode(fileId);
-    QModelIndex fci = mTreeModel->index(fc);
-    mTreeModel->dataChanged(fci, fci);
-    emit fileClosed(fileId, QPrivateSignal());
-}
-
 void ProjectRepo::setSuffixFilter(QStringList filter)
 {
     for (QString suff: filter) {
@@ -415,7 +407,6 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         jsonArray.append(nodeObject);
     }
 }
-
 
 void ProjectRepo::onFileChangedExtern(FileId fileId)
 {

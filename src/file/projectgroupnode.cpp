@@ -29,10 +29,30 @@
 namespace gams {
 namespace studio {
 
+ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
+    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
+      mGamsProcess(new GamsProcess)
+{
+    if (fileName == "") return;
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(location + "/" + fileName);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+
+    // fix for .lst-as-mainfile bug
+    if (runnableFile.suffix() == "gms")
+        mGmsFileName = runnableFile.absoluteFilePath();
+    else if (alternateFile.exists())
+        mGmsFileName = alternateFile.fileName();
+    else
+        mGmsFileName = "";
+
+    //mGamsProcess->setContext(this);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
+}
+
 ProjectGroupNode::~ProjectGroupNode()
 {
-    if (mChildList.size())
-        DEB() << "Group must be empty before deletion";
 }
 
 void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
@@ -221,6 +241,12 @@ void ProjectGroupNode::attachFile(const QString &filepath)
         if (!fsc && fi.exists()) {
             updateChildNodes();
         }
+
+        if (runnableGms().isEmpty() && filepath.endsWith(".gms", Qt::CaseInsensitive)) {
+            ProjectFileNode *gms = nullptr;
+            findOrCreateFileNode(filepath, gms, this);
+            setRunnableGms(gms);
+        }
     }
 }
 
@@ -395,29 +421,6 @@ void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState
     Q_UNUSED(newState);
     updateRunState(newState);
     emit gamsProcessStateChanged(this);
-}
-
-ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString runInfo)
-    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProcess(new GamsProcess)
-{
-    if (runInfo == "") return;
-
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + runInfo);
-    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
-
-    // fix for .lst-as-basefile bug
-    if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    } else if (alternateFile.exists()) {
-        mGmsFileName = alternateFile.fileName();
-    } else {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    }
-
-    //mGamsProcess->setNode(this);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
 }
 
 } // namespace studio

@@ -91,7 +91,7 @@ protected:
     friend class ProjectFileNode;
     friend class ProjectLogNode;
 
-    ProjectGroupNode(FileId id, QString name, QString location, QString runInfo);
+    ProjectGroupNode(FileId id, QString name, QString location, QString fileName);
     int peekIndex(const QString &name, bool* hit = nullptr);
     void insertChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);

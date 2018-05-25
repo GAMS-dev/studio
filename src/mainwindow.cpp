@@ -100,7 +100,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
-    connect(&mProjectRepo, &ProjectRepo::fileClosed, this, &MainWindow::fileClosed);
     connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFileNode);
@@ -109,7 +108,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFileConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
@@ -663,8 +662,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                  "Save file as...",
                                                  path,
                                                  tr("GAMS code (*.gms *.inc);;"
-                                                 "Text files (*.txt);;"
-                                                 "All files (*.*)"));
+                                                    "Text files (*.txt);;"
+                                                    "All files (*.*)"));
     if (!filePath.isEmpty()) {
         mRecent.path = QFileInfo(filePath).path();
         ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editFileId);
@@ -893,31 +892,9 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     int ret = msgBox.exec();
 
     if (ret == QMessageBox::No)
-        fileClosed(fileId);
+        closeFile(fc);
     else
         fc->document()->setModified();
-}
-
-void MainWindow::fileClosed(FileId fileId)
-{
-    ProjectFileNode* fc = mProjectRepo.fileNode(fileId);
-    mClosedTabs << fc->location();
-    if (!fc)
-        FATAL() << "FileId " << fileId << " is not of class FileNode.";
-    while (!fc->editors().isEmpty()) {
-        QWidget *edit = fc->editors().first();
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        fc->removeEditor(edit);
-        edit->deleteLater();
-    }
-
-    // TODO(JM) Right now there are issues with the TextMarkList, so we leave it out for now
-//    if (!QFileInfo(fc->location()).exists()) {
-//        fc->marks()->unbind();
-//        emit fc->parentEntry()->removeNode(fc);
-//        fc = nullptr;
-//    }
-
 }
 
 void MainWindow::appendSystemLog(const QString &text)
@@ -1002,12 +979,19 @@ void MainWindow::on_actionHelp_triggered()
         mDockHelpView->raise();
 }
 
+QString MainWindow::studioInfo()
+{
+    QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
+    ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
+    ret += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
+
+    return ret;
+}
+
 void MainWindow::on_actionAbout_triggered()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
-    about += "<br/><br/>Release: GAMS Studio " + QApplication::applicationVersion() + " ";
-    about += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
-    about += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
+    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
+    about += studioInfo();
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
     about += "This program is free software: you can redistribute it and/or modify ";
@@ -1030,7 +1014,20 @@ void MainWindow::on_actionAbout_triggered()
     about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-    QMessageBox::about(this, "About GAMS Studio", about);
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Information);
+    box.setWindowTitle("About GAMS Studio");
+    box.setText(about);
+    box.setIconPixmap(QPixmap(":/img/gams-w24"));
+    box.addButton("Close", QMessageBox::RejectRole);
+    box.addButton("Copy product info", QMessageBox::AcceptRole);
+    int answer = box.exec();
+
+    if (answer) {
+        QClipboard *clip = QGuiApplication::clipboard();
+        clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
+    }
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -1072,16 +1069,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
-        if (fc->editors().size() == 1) {
-            mProjectRepo.close(fc->id());
-//            if (!QFileInfo(fc->location()).exists()) {
-//                emit fc->parentEntry()->removeNode(fc);
-//                fc = nullptr;
-//            }
-        } else {
-            fc->removeEditor(edit);
-            ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        }
+
+        mClosedTabs << fc->location();
+        fc->removeEditor(edit);
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
     }
 }
 
@@ -1472,20 +1463,15 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0)){
-            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-    }
-    if (focusWidget() == ui->projectView && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
-        openNode(ui->projectView->currentIndex());
-        event->accept();
-    } else {
-        QMainWindow::keyPressEvent(event);
-    }
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0))
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
         mSearchWidget->hide();
         mSearchWidget->clearResults();
     }
+
+    QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
@@ -1794,11 +1780,13 @@ void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMi
     if (!fileNode->editors().empty()) {
         edit = fileNode->editors().first();
     }
+    // open edit if existing or create one
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
         createEdit(tabWidget, focus, fileNode->id(), codecMib);
     }
+    // set keyboard focus to editor
     if (tabWidget->currentWidget())
         if (focus) {
             lxiviewer::LxiViewer* lxiViewer = ProjectAbstractNode::toLxiViewer(edit);
@@ -1831,7 +1819,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
         for (ProjectFileNode *file: openFiles) {
-            fileClosed(file->id());
+            closeFileEditors(file->id());
         }
         ProjectLogNode* log = group->logNode();
         if (log) {
@@ -1846,29 +1834,71 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         mProjectRepo.removeGroup(group);
         mSettings->saveSettings(this);
     }
-
 }
 
+/// Asks user for confirmation if a file is modified before calling closeFile
+/// \param file
+///
+void MainWindow::closeFileConditionally(ProjectFileNode* file) {
+    if (!file->isModified() || requestCloseChanged(QList<ProjectFileNode*>() << file))
+        closeFile(file);
+}
+
+/// Removes file from repository. And calls closeFileEditors to clean everything up.
+/// \param file
+///
 void MainWindow::closeFile(ProjectFileNode* file)
+{    
+    ui->projectView->setCurrentIndex(QModelIndex());
+
+    ProjectGroupNode *parentGroup = file->parentEntry();
+
+    // if this is a lst file referenced in a log
+    if (parentGroup->logNode() && parentGroup->logNode()->lstNode() == file)
+        parentGroup->logNode()->setLstNode(nullptr);
+
+    // close actual file and remove repo node
+    closeFileEditors(file->id());
+    mProjectRepo.removeFile(file);
+
+    // if this file is marked as runnable remove reference
+    if (parentGroup->runnableGms() == file->location()) {
+        parentGroup->removeRunnableGms();
+        for (int i = 0; i < parentGroup->childCount(); i++) {
+            // choose next as main gms file
+            if (parentGroup->childEntry(i)->location().endsWith(".gms")) {
+                parentGroup->setRunnableGms(static_cast<ProjectFileNode*>(parentGroup->childEntry(i)));
+                break;
+            }
+        }
+    }
+
+    // close group if empty now
+    if (parentGroup->childCount() == 0)
+        closeGroup(parentGroup);
+
+    // save changes in project structure
+    mSettings->saveSettings(this);
+}
+
+/// Closes all open editors and tabs related to a file
+/// \param fileId
+///
+void MainWindow::closeFileEditors(FileId fileId)
 {
-    if (!file->isModified() || requestCloseChanged(QList<ProjectFileNode*>() << file)) {
-        ui->projectView->setCurrentIndex(QModelIndex());
+    ProjectFileNode* fc = mProjectRepo.fileNode(fileId);
 
-        ProjectGroupNode *parent = file->parentEntry();
+    // add to recently closed tabs
+    mClosedTabs << fc->location();
+    if (!fc)
+        FATAL() << "FileId " << fileId << " is not of class FileContext.";
 
-        if (parent->runnableGms() == file->location())
-            parent->removeRunnableGms();
-
-        if (parent->logNode())
-            parent->logNode()->fileClosed(file);
-
-        fileClosed(file->id());
-        mProjectRepo.removeFile(file);
-
-        if (parent->childCount() == 0)
-            closeGroup(parent);
-
-        mSettings->saveSettings(this);
+    // close all related editors, tabs and clean up
+    while (!fc->editors().isEmpty()) {
+        QWidget *edit = fc->editors().first();
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        fc->removeEditor(edit);
+        edit->deleteLater();
     }
 }
 
@@ -2336,6 +2366,7 @@ void MainWindow::toggleLogDebug()
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
+    // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
     QFile file(mClosedTabs.last());
