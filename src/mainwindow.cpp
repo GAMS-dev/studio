@@ -1021,7 +1021,7 @@ void MainWindow::on_actionAbout_triggered()
     box.setText(about);
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
-    box.addButton("Copy && Close", QMessageBox::AcceptRole);
+    box.addButton("Copy product info", QMessageBox::AcceptRole);
     int answer = box.exec();
 
     if (answer) {
