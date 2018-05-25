@@ -259,7 +259,7 @@ private:
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     void connectCommandLineWidgets();
     void setRunActionsEnabled(bool enable);
-    bool isActiveTabEditable();
+    bool isActiveTabRunnable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void loadCommandLineOptions(ProjectFileNode* fc);

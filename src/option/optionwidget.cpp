@@ -301,7 +301,7 @@ void OptionWidget::loadCommandLineOption(const QString &location)
     ui->gamsOptionCommandLine->setCurrentContext(location);
     ui->gamsOptionCommandLine->setEnabled(true);
 
-    setRunActionsEnabled(true);
+    setRunActionsEnabled(false);
     setInterruptActionsEnabled(false);
 }
 

@@ -749,7 +749,8 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 loadCommandLineOptions(fc);
-                updateRunState();
+                if (fc->location() == mRecent.group->runnableGms())
+                   updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -1067,13 +1068,18 @@ void MainWindow::setRunActionsEnabled(bool enable)
     ui->actionCompile_with_GDX_Creation->setEnabled(enable);
 }
 
-bool MainWindow::isActiveTabEditable()
+bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        return (fc && !edit->isReadOnly());
+        if (fc) {
+           ProjectGroupNode* group = fc->parentEntry();
+           if (group) {
+               return (!edit->isReadOnly() && (fc->location()==group->runnableGms()));
+           }
+        }
     }
     return false;
 }
@@ -1528,6 +1534,8 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
     loadCommandLineOptions(fc);
+    if (isActiveTabRunnable())
+        updateRunState();
 }
 
 void MainWindow::on_commandLineHelpTriggered()
@@ -1548,28 +1556,28 @@ void MainWindow::on_optionRunChanged()
 
 void MainWindow::on_actionRun_triggered()
 {
-    if (isActiveTabEditable()) {
+    if (isActiveTabRunnable()) {
         execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
     }
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    if (isActiveTabEditable()) {
+    if (isActiveTabRunnable()) {
         execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
     }
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    if (isActiveTabEditable()) {
+    if (isActiveTabRunnable()) {
         execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
     }
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    if (isActiveTabEditable()) {
+    if (isActiveTabRunnable()) {
         execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
     }
 }
