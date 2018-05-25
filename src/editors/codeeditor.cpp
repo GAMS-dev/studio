@@ -988,7 +988,7 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        if ((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() == &mWordDelay)
+        if ((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() != &mParenthesesDelay)
                 && (mSettings->wordUnderCursor() || textCursor().hasSelection() ))
             extraSelCurrentWord(selections);
     }
