@@ -1015,10 +1015,10 @@ void MainWindow::on_actionAbout_triggered()
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
 
-    QMessageBox box;
+    QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
-    box.setText("About GAMS Studio");
-    box.setInformativeText(about);
+    box.setWindowTitle("About GAMS Studio");
+    box.setText(about);
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     box.addButton("Copy && Close", QMessageBox::AcceptRole);
