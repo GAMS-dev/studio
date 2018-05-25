@@ -37,7 +37,7 @@ class GdxSymbolView : public QWidget
     Q_OBJECT
 
 public:
-    explicit GdxSymbolView(QWidget *parent = 0);
+    explicit GdxSymbolView(QWidget *parent = nullptr);
     ~GdxSymbolView();
 
     GdxSymbol *sym() const;

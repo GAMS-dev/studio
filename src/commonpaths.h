@@ -54,14 +54,20 @@ public:
     static QString userModelLibraryDir();
 
     ///
-    /// \brief Get the file path even if the file does not exists.
-    /// \param path Path to the file.
-    /// \return Returns the canonical file path if the file exists;
-    ///         otherwise the absolute file path.
+    /// \brief Get the absolut file path.
+    /// \param filePath File to get the absolute path for.
+    /// \return Returns the absolute file path if \p filePath is not empty;
+    ///         otherwise an empty string is returned.
     ///
-    static QString filePath(const QString &path);
+    static QString absolutFilePath(const QString &filePath);
 
-    static QString path(const QString &file);
+    ///
+    /// \brief Get the absolut directory path.
+    /// \param dir Directory to get the absolute path for.
+    /// \return Returns the absolute directory path if \p dir is not empty;
+    ///         otherwise an empty string is returned.
+    ///
+    static QString absolutPath(const QString &dir);
 
 private:
     CommonPaths();

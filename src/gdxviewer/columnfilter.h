@@ -30,7 +30,7 @@ namespace gdxviewer {
 class ColumnFilter : public QWidgetAction
 {
 public:
-    ColumnFilter(GdxSymbol* symbol, int column, QWidget *parent = 0);
+    ColumnFilter(GdxSymbol* symbol, int column, QWidget *parent = nullptr);
     QWidget* createWidget(QWidget * parent) override;
 
 private:

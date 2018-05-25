@@ -32,13 +32,6 @@ CONFIG += c++14
 include($$PWD/gamsdependency.pri)
 
 include (../version)
-DEFINES += 'STUDIO_VERSION=\\"$$VERSION\\"'
-DEFINES += 'STUDIO_MAJOR_VERSION=$$STUDIO_MAJOR_VERSION'
-DEFINES += 'STUDIO_MINOR_VERSION=$$STUDIO_MINOR_VERSION'
-DEFINES += 'STUDIO_PATCH_LEVEL=$$STUDIO_PATCH_LEVEL'
-DEFINES += 'GAMS_DISTRIB_VERSION=$$GAMS_DISTRIB_VERSION'
-DEFINES += 'GAMS_DISTRIB_VERSION_SHORT=\\"'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'\\"'
-DEFINES += 'GAMS_DISTRIB_VERSION_NEXT_SHORT=\\"'$$GAMS_DISTRIB_NEXT_MAJOR'.'$$GAMS_DISTRIB_NEXT_MINOR'\\"'
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
@@ -80,14 +73,8 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
     exception.cpp \
-    file/filecontext.cpp \
-    file/filegroupcontext.cpp \
     file/filemetrics.cpp \
-    file/filerepository.cpp \
-    file/filesystemcontext.cpp \
-    file/filetreemodel.cpp \
     file/filetype.cpp \
-    file/logcontext.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxviewer/columnfilter.cpp \
@@ -141,7 +128,15 @@ SOURCES += \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp
+    wplabel.cpp \
+    file/projectfilenode.cpp \
+    file/projectgroupnode.cpp \
+    file/projectrepo.cpp \
+    file/projectabstractnode.cpp \
+    file/projecttreemodel.cpp \
+    file/projectlognode.cpp \
+    file/filemetarepo.cpp \
+    file/filemeta.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -158,14 +153,9 @@ HEADERS += \
     editors/selectencodings.h \
     exception.h \
     file.h \
-    file/filecontext.h \
-    file/filegroupcontext.h \
     file/filemetrics.h \
-    file/filerepository.h \
-    file/filesystemcontext.h \
-    file/filetreemodel.h \
     file/filetype.h \
-    file/logcontext.h \
+    file/projectabstractnode.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxviewer/columnfilter.h \
@@ -222,7 +212,14 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h
+    wplabel.h \
+    file/projectgroupnode.h \
+    file/projectfilenode.h \
+    file/projectlognode.h \
+    file/projecttreemodel.h \
+    file/filemetarepo.h \
+    file/filemeta.h \
+    file/projectrepo.h
 
 FORMS += \
     bookmarkdialog.ui \

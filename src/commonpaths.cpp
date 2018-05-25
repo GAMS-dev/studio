@@ -20,11 +20,10 @@
 #include "commonpaths.h"
 #include "exception.h"
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
-#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -45,7 +44,7 @@ QString CommonPaths::systemDir() {
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
-    gamsPath = QApplication::applicationDirPath().append(subPath);
+    gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
     QString path = QStandardPaths::findExecutable("gams", {gamsPath});
@@ -84,16 +83,18 @@ QString CommonPaths::defaultWorkingDir()
     return defWorkingDir.path();
 }
 
-QString CommonPaths::filePath(const QString &path)
+QString CommonPaths::absolutFilePath(const QString &filePath)
 {
-    QFileInfo fi(path);
+    QFileInfo fi(filePath);
     return fi.absoluteFilePath();
 }
 
-QString CommonPaths::path(const QString &file)
+QString CommonPaths::absolutPath(const QString &dir)
 {
-    QFileInfo fi(file);
-    return fi.absolutePath();
+    if (dir.isEmpty())
+        return "";
+    QDir d(dir);
+    return d.absolutePath();
 }
 
 }
