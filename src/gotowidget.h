@@ -40,8 +40,6 @@ public:
 
     ~GoToWidget();
 
-    void focusTextBox();
-
 private slots:
     void on_goToButton_clicked();
 

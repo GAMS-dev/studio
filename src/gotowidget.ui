@@ -28,6 +28,9 @@
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
      </property>
+     <property name="inputMethodHints">
+      <set>Qt::ImhDigitsOnly</set>
+     </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
@@ -37,6 +40,9 @@
     <widget class="QPushButton" name="goToButton">
      <property name="text">
       <string>Go</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
