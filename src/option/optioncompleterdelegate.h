@@ -23,7 +23,6 @@
 #include <QStyledItemDelegate>
 #include "commandlinetokenizer.h"
 #include "option.h"
-#include "optionparametermodel.h"
 
 namespace gams {
 namespace studio {

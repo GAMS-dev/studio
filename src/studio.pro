@@ -109,9 +109,9 @@ SOURCES += \
     option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
-    option/optioneditor.cpp \
-    option/optionparametermodel.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/optiontablemodel.cpp \
+    option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
@@ -189,9 +189,9 @@ HEADERS += \
     option/optioncompleterdelegate.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
-    option/optioneditor.h \
-    option/optionparametermodel.h \
     option/optionsortfilterproxymodel.h \
+    option/optiontablemodel.h \
+    option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \
     searchresultlist.h \
@@ -232,6 +232,7 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     newdialog.ui \
+    option/optionwidget.ui \
     resultsview.ui \
     searchwidget.ui \
     settingsdialog.ui \
