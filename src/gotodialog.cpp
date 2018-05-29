@@ -19,7 +19,6 @@
  */
 #include "gotodialog.h"
 #include "ui_gotodialog.h"
-#include "file.h"
 #include "mainwindow.h"
 
 namespace gams {
