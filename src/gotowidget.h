@@ -21,7 +21,6 @@
 #define GOTOWIDGET_H
 
 #include <QDialog>
-#include "mainwindow.h"
 
 namespace Ui {
 class GoToWidget;
@@ -29,6 +28,8 @@ class GoToWidget;
 
 namespace gams {
 namespace studio {
+
+class MainWindow;
 
 class GoToWidget : public QDialog
 {
@@ -47,7 +48,6 @@ private slots:
 private:
     Ui::GoToWidget *ui;
     MainWindow *mMain;
-    QTextCursor mSelection;
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *event);
 
