@@ -45,7 +45,7 @@ void GoToWidget::focusTextBox()
     ui->lineEdit->setFocus();
 }
 
-void GoToWidget::on_GoTo_clicked()
+void GoToWidget::on_goToButton_clicked()
 {
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
@@ -53,22 +53,16 @@ void GoToWidget::on_GoTo_clicked()
     if (!fc) return;
     fc->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->clear();
+    close();
 }
 
 void GoToWidget::keyPressEvent(QKeyEvent *event)
 {
-    if ( isVisible() &&  (event->key() == Qt::Key_Escape)) {
-        hide();
+    if (event->key() == Qt::Key_Escape) {
+        close();
     }
-    if ( isVisible() &&  ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return))) {
-        GoToWidget::on_GoTo_clicked();
-    }
-}
-
-void GoToWidget::keyReleaseEvent(QKeyEvent *event)
-{
-    if ( isVisible() &&  ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return))) {
-        hide();
+    if ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
+        on_goToButton_clicked();
     }
 }
 

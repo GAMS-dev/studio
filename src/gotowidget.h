@@ -43,14 +43,12 @@ public:
     void focusTextBox();
 
 private slots:
-    void on_GoTo_clicked();
+    void on_goToButton_clicked();
 
 private:
     Ui::GoToWidget *ui;
     MainWindow *mMain;
     void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
-
 };
 
 }

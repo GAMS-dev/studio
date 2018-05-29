@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>205</width>
-    <height>38</height>
+    <width>221</width>
+    <height>53</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Go to line</string>
@@ -16,41 +22,25 @@
   <property name="whatsThis">
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tool helps you find the line number you're looking for.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
-  <widget class="QPushButton" name="GoTo">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>4</y>
-     <width>65</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Go</string>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>16</width>
-     <height>16</height>
-    </size>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>4</y>
-     <width>110</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="layoutDirection">
-    <enum>Qt::RightToLeft</enum>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QLineEdit" name="lineEdit">
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="goToButton">
+     <property name="text">
+      <string>Go</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
