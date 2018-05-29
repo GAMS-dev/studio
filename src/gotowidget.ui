@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Go to line</string>
   </property>
   <property name="whatsThis">
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tool helps you find the line number you're looking for.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

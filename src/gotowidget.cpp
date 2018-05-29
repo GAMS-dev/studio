@@ -42,7 +42,6 @@ GoToWidget::~GoToWidget()
 
 void GoToWidget::focusTextBox()
 {
-    this->setWindowTitle("Go To");
     ui->lineEdit->setFocus();
 }
 
