@@ -915,18 +915,21 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
-    if ( (mRecent.editor() != nullptr) && (focusWidget() == mRecent.editor()) ) {
+    QWidget* widget = focusWidget();
+    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
+        mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+    } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
-            mDockHelpView->on_dollarControlHelpRequested("title");
+            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, "title");
         } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mDockHelpView->on_dollarControlHelpRequested(word);
+            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, word);
         } else {
-            mDockHelpView->on_keywordHelpRequested(word);
+            mDockHelpView->on_helpContentRequested(HelpView::INDEX_CHAPTER, word);
         }
     }
     if (mDockHelpView->isHidden())
@@ -1542,7 +1545,7 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    mDockHelpView->on_commandLineHelpRequested();
+    mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, "");
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
     if (tabifiedDockWidgets(mDockHelpView).count())

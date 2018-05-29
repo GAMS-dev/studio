@@ -64,6 +64,8 @@ public:
     bool isOptionDefinitionChecked();
 
     CommandLineTokenizer *getGamsOptionTokenizer() const;
+    bool isAnOptionWidgetFocused(QWidget* focusWidget);
+    QString getSelectedOptionName(QWidget* widget) const;
 
 signals:
     void optionEditorDisabled();
