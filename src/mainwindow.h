@@ -52,7 +52,6 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class Result;
-class GoToWidget;
 class AutosaveHandler;
 
 struct RecentData {
@@ -305,7 +304,6 @@ private:
 
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;
-    GoToWidget *mGoto;
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
