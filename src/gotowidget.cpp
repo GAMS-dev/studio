@@ -32,7 +32,6 @@ GoToWidget::GoToWidget(MainWindow *parent) :
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
-    setFixedSize(size());
 
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToWidget::on_goToButton_clicked);
 }
