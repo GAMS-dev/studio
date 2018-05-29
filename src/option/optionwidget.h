@@ -21,7 +21,6 @@
 #define OPTIONWIDGET_H
 
 #include <QWidget>
-#include <QProcess>
 
 #include "option.h"
 #include "commandlineoption.h"
