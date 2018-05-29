@@ -1,6 +1,3 @@
-#ifndef OPTIONWIDGET_H
-#define OPTIONWIDGET_H
-
 /*
  * This file is part of the GAMS Studio project.
  *
@@ -20,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef OPTIONWIDGET_H
+#define OPTIONWIDGET_H
+
 #include <QWidget>
 #include <QProcess>
 

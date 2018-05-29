@@ -20,8 +20,7 @@
 #ifndef COMMANDLINEOPTION_H
 #define COMMANDLINEOPTION_H
 
-#include<QComboBox>
-#include "commandlinetokenizer.h"
+#include <QComboBox>
 
 namespace gams {
 namespace studio {
