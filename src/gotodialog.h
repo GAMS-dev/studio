@@ -38,10 +38,7 @@ class GoToDialog : public QDialog
 public:
     explicit GoToDialog(MainWindow *parent = nullptr);
 
-    ~GoToDialog() override;
-
-protected:
-    void keyPressEvent(QKeyEvent *e) override;
+    ~GoToDialog();
 
 private slots:
     void on_goToButton_clicked();

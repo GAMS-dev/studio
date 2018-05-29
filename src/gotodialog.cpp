@@ -24,14 +24,12 @@
 namespace gams {
 namespace studio {
 
-
 GoToDialog::GoToDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
-
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
@@ -49,13 +47,6 @@ void GoToDialog::on_goToButton_clicked()
     fc->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->clear();
     close();
-}
-
-void GoToDialog::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key() == Qt::Key_Escape) {
-        close();
-    }
 }
 
 }
