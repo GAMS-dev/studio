@@ -52,7 +52,7 @@ void GoToWidget::on_GoTo_clicked()
     ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
     if (!fc) return;
     fc->jumpTo(cursor, true, altLine, 0);
-    ui->lineEdit->setText("");
+    ui->lineEdit->clear();
 }
 
 void GoToWidget::keyPressEvent(QKeyEvent *event)
