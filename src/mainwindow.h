@@ -153,11 +153,12 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void fileClosed(FileId fileId);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
+    void closeFileConditionally(ProjectFileNode *file);
     void closeFile(ProjectFileNode* file);
+    void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip = -1);
@@ -269,6 +270,7 @@ private:
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
+    QString studioInfo();
 
 private:
     Ui::MainWindow *ui;

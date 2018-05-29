@@ -40,8 +40,9 @@ class GdxSymbol : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent = 0);
-    ~GdxSymbol();
+    explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
+                       GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
+    ~GdxSymbol() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

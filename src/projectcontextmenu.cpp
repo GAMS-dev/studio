@@ -84,7 +84,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
-    QString filePath = QFileDialog::getOpenFileName(mParent,
+    QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
                                                     "Add existing file",
                                                     sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
@@ -92,11 +92,14 @@ void ProjectContextMenu::onAddExisitingFile()
                                                        "All files (*.*)"),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    if (filePath == "") return;
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup)
-                              ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
+    if (filePaths.isEmpty()) return;
 
-    emit addExistingFile(group, filePath);
+    foreach (QString filePath, filePaths) {
+        ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup)
+                                  ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
+
+        emit addExistingFile(group, filePath);
+    }
 }
 
 void ProjectContextMenu::onAddNewFile()

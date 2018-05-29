@@ -33,11 +33,13 @@ public:
     void addEditor(QWidget* edit) override;
     void removeEditor(QWidget* edit) override;
     void setParentEntry(ProjectGroupNode *parent) override;
-    void fileClosed(ProjectFileNode* fc);
     void resetLst();
     TextMark* firstErrorMark();
     void clearLog();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+    ProjectFileNode *lstNode() const;
+    void setLstNode(ProjectFileNode *lstNode);
+
 public slots:
     void addProcessData(QString text);
     void setJumpToLogEnd(bool state);

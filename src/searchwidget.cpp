@@ -104,7 +104,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
     insertHistory();
 
-    setSearchStatus(SearchStatus::Clear);
+    setSearchStatus(SearchStatus::Searching);
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -348,6 +348,15 @@ void SearchWidget::findNext(SearchDirection direction)
 void SearchWidget::focusSearchField()
 {
     ui->combo_search->setFocus();
+
+    QWidget *widget = mMain->recent()->editor();
+    AbstractEditor *edit = ProjectFileNode::toAbstractEdit(widget);
+    ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
+    if (!fsc || !edit) return;
+    if (edit->textCursor().hasSelection())
+        ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
+    else
+        ui->combo_search->setCurrentText("");
     ui->combo_search->lineEdit()->selectAll();
 }
 
@@ -355,17 +364,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    QWidget *widget = mMain->recent()->editor();
-    AbstractEditor *edit = ProjectFileNode::toAbstractEdit(widget);
-    ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
-    if (!fsc || !edit) return;
-
     focusSearchField();
-    if (edit->textCursor().hasSelection())
-        ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
-    else
-        ui->combo_search->setCurrentText("");
-
     updateReplaceActionAvailability();
 }
 

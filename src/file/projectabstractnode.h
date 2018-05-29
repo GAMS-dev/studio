@@ -47,7 +47,7 @@ public:
         cfActive        = 0x01, // TODO(JM) implemented and in use: if this is the only real flag, we should have a method instead
         cfFileMod       = 0x02, // TODO(JM) implemented but not in use (marks changes from outside)
         cfEditMod       = 0x04, // TODO(JM) implemented but not in use (marks changes from inside - but here we have the doc.modified())
-        cfMissing       = 0x08, // TODO(JM) some implementation missing in FileContext?
+        cfMissing       = 0x08, // TODO(JM) some implementation missing in ProjectFileNode?
         cfExtendCaption = 0x10, // needed for doubled groups - could be moved to a boolean there
         cfVirtual       = 0x20, // set - but not used
     };
