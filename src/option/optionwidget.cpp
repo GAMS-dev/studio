@@ -95,6 +95,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
     ui->gamsOptionTreeView->setModel( proxymodel );
+    ui->gamsOptionTreeView->setItemsExpandable(true);
+    ui->gamsOptionTreeView->setSortingEnabled(true);
     ui->gamsOptionTreeView->sortByColumn(0, Qt::AscendingOrder);
     ui->gamsOptionTreeView->resizeColumnToContents(0);
     ui->gamsOptionTreeView->resizeColumnToContents(2);
