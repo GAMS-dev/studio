@@ -33,16 +33,13 @@ GoToWidget::GoToWidget(MainWindow *parent) :
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
     setFixedSize(size());
+
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToWidget::on_goToButton_clicked);
 }
 
 GoToWidget::~GoToWidget()
 {
     delete ui;
-}
-
-void GoToWidget::focusTextBox()
-{
-    ui->lineEdit->setFocus();
 }
 
 void GoToWidget::on_goToButton_clicked()
@@ -60,9 +57,6 @@ void GoToWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
         close();
-    }
-    if ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
-        on_goToButton_clicked();
     }
 }
 

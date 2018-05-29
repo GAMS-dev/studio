@@ -38,7 +38,10 @@ class GoToWidget : public QDialog
 public:
     explicit GoToWidget(MainWindow *parent = nullptr);
 
-    ~GoToWidget();
+    ~GoToWidget() override;
+
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
 
 private slots:
     void on_goToButton_clicked();
@@ -46,7 +49,6 @@ private slots:
 private:
     Ui::GoToWidget *ui;
     MainWindow *mMain;
-    void keyPressEvent(QKeyEvent *e);
 };
 
 }
