@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef GOTODIALOG_H
+#define GOTODIALOG_H
 
 #include <QDialog>
 
 namespace Ui {
-class GoToWidget;
+class GoToDialog;
 }
 
 namespace gams {
@@ -31,14 +31,14 @@ namespace studio {
 
 class MainWindow;
 
-class GoToWidget : public QDialog
+class GoToDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = nullptr);
+    explicit GoToDialog(MainWindow *parent = nullptr);
 
-    ~GoToWidget() override;
+    ~GoToDialog() override;
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
@@ -47,10 +47,10 @@ private slots:
     void on_goToButton_clicked();
 
 private:
-    Ui::GoToWidget *ui;
+    Ui::GoToDialog *ui;
     MainWindow *mMain;
 };
 
 }
 }
-#endif // GOTOWIDGET_H
+#endif // GoToDialog_H

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gotowidget.h"
-#include "ui_gotowidget.h"
+#include "gotodialog.h"
+#include "ui_gotodialog.h"
 #include "file.h"
 #include "mainwindow.h"
 
@@ -26,22 +26,22 @@ namespace gams {
 namespace studio {
 
 
-GoToWidget::GoToWidget(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::GoToWidget), mMain(parent)
+GoToDialog::GoToDialog(MainWindow *parent) :
+    QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
 
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToWidget::on_goToButton_clicked);
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
-GoToWidget::~GoToWidget()
+GoToDialog::~GoToDialog()
 {
     delete ui;
 }
 
-void GoToWidget::on_goToButton_clicked()
+void GoToDialog::on_goToButton_clicked()
 {
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
@@ -52,7 +52,7 @@ void GoToWidget::on_goToButton_clicked()
     close();
 }
 
-void GoToWidget::keyPressEvent(QKeyEvent *event)
+void GoToDialog::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
         close();

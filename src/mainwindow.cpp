@@ -40,7 +40,7 @@
 #include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
-#include "gotowidget.h"
+#include "gotodialog.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "editors/selectencodings.h"
@@ -2132,7 +2132,7 @@ void MainWindow::on_actionGo_To_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
         return;
-    GoToWidget dialog(this);
+    GoToDialog dialog(this);
     dialog.exec();
 }
 
