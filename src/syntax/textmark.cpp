@@ -28,20 +28,22 @@ namespace studio {
 
 int TextMark::mNextId = 0;
 
-TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, FileId contextId)
-    : mId(mNextId++), mFileId(fileId), mContextId(contextId), mMarks(marks), mType(tmType)
+TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
+    : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarks(marks), mType(tmType)
 {
     if (!mMarks) FATAL() << "The TextMarkRepo must be a valid instance.";
 }
 
 TextMark::~TextMark()
 {
-    mMarks->remove(this);
+    mMarks->removeMark(this);
+    clearBackRefs();
+    rehighlight();
 }
 
 QTextDocument*TextMark::document() const
 {
-    return mMarks->document(mFileId);
+    return mMarks->document(mFileId, mGroupId);
 }
 
 
@@ -56,7 +58,7 @@ void TextMark::setPosition(int line, int column, int size)
 void TextMark::jumpToRefMark(bool focus)
 {
     if (!mReference && mRefData)
-        setRefMark(mMarks->create(mRefData));
+        setRefMark(mMarks->createMark(mRefData));
     if (mReference)
         mReference->jumpToMark(focus);
 }
@@ -102,6 +104,16 @@ void TextMark::clearBackRefs()
     foreach (TextMark* backRef, mBackRefs) {
         backRef->unsetRefMark(this);
     }
+    mBackRefs.clear();
+    if (mBlockData) mBlockData->removeTextMark(this);
+    mBlockData = nullptr;
+}
+
+void TextMark::setBlockData(BlockData *blockData)
+{
+    // recent value of mBlockData is commonly invalid
+    mBlockData = blockData;
+    if (mBlockData) mBlockData->addTextMark(this);
 }
 
 QColor TextMark::color()
@@ -121,12 +133,12 @@ QColor TextMark::color()
     return Qt::darkGreen;
 }
 
-FileType::Kind TextMark::fileKind()
+FileKind TextMark::fileKind()
 {
     return mMarks->fileKind(mFileId);
 }
 
-FileType::Kind TextMark::refFileKind()
+FileKind TextMark::refFileKind()
 {
     return mReference ? mReference->fileKind() : mRefData ? mRefData->fileKind() : FileType::None;
 }
@@ -240,6 +252,16 @@ QString TextMark::dump()
     return QString("(%3,%4)[%1->%2] ").arg(mId)
             .arg(mReference ? QString::number(mReference->mId) : mRefData ? "?" : "#")
             .arg(mPosition).arg(mSize);
+}
+
+FileId TextMark::fileId() const
+{
+    return mFileId;
+}
+
+FileId TextMark::contextId() const
+{
+    return mGroupId;
 }
 
 int TextMark::value() const

@@ -28,18 +28,19 @@
 namespace gams {
 namespace studio {
 
-class ProjectFileNode;
-class ProjectGroupNode;
 class TextMarkRepo;
 struct TextMarkData;
+class BlockData;
 
 class TextMark
 {
 public:
     enum Type {none, error, link, bookmark, match, all};
 
-    explicit TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, FileId contextId = -1);
+    explicit TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = -1);
     virtual ~TextMark();
+    FileId fileId() const;
+    FileId contextId() const;
     QTextDocument* document() const;
     void setPosition(int line, int column, int size = 0);
     void jumpToRefMark(bool focus = true);
@@ -48,12 +49,13 @@ public:
     void unsetRefMark(TextMark* refMark);
     inline bool isErrorRef();
     QColor color();
-    FileType::Kind fileKind();
-    FileType::Kind refFileKind();
+    FileKind fileKind();
+    FileKind refFileKind();
     int value() const;
     void setValue(int value);
 
     void clearBackRefs();
+    void setBlockData(BlockData* blockData);
 
     QIcon icon();
     inline Type type() const {return mType;}
@@ -92,7 +94,7 @@ private:
     static int mNextId;
     int mId;
     FileId mFileId;
-    FileId mContextId;
+    NodeId mGroupId;
     TextMarkRepo* mMarks;
     int mPosition = -1;
     Type mType = none;
@@ -104,6 +106,7 @@ private:
     TextMark* mReference = nullptr;
     TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
+    BlockData* mBlockData = nullptr;
 };
 
 struct TextMarkData
@@ -116,7 +119,7 @@ struct TextMarkData
     int line;
     int column;
     int size;
-    FileType::Kind fileKind() {
+    FileKind fileKind() {
         return FileType::from(location.right(4).toLower()).kind();
     }
 };

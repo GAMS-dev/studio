@@ -134,7 +134,7 @@ QList<Result> SearchWidget::findInAllFiles()
     ProjectAbstractNode *fsc;
     for (int i = 0; i < root->childCount(); i++) {
         fsc = root->childEntry(i);
-        if (fsc->type() == ProjectAbstractNode::ContextType::FileGroup)
+        if (fsc->type() == NodeType::Group)
             matches.append(findInGroup(fsc));
     }
     return matches;
@@ -164,7 +164,7 @@ QList<Result> SearchWidget::findInGroup(ProjectAbstractNode *fsc)
         if (!fgc) return QList<Result>();
 
     } else {
-        if (fsc->type() == ProjectGroupNode::FileGroup)
+        if (fsc->type() == NodeType::Group)
             fgc = static_cast<ProjectGroupNode*>(fsc);
     }
 
@@ -195,7 +195,7 @@ QList<Result> SearchWidget::findInFile(ProjectAbstractNode *fsc, bool skipFilter
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
-    if (fsc->type() == ProjectAbstractNode::FileGroup) { // or is it a group?
+    if (fsc->type() == NodeType::Group) { // or is it a group?
         matches.addResultList(findInGroup(fsc)); // TESTME studio does not support this case as of yet
     } else { // it's a file
         ProjectFileNode *fc(static_cast<ProjectFileNode*>(fsc));

@@ -23,6 +23,7 @@
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
+//#include <file.h>
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
 
@@ -32,87 +33,98 @@ namespace studio {
 class ProjectLogNode;
 class ProjectFileNode;
 class GamsProcess;
-class TextMarkList;
+class TextMarkRepo;
+class FileMeta;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
     Q_OBJECT
-
 public:
     virtual ~ProjectGroupNode() override;
-    void setFlag(ContextFlag flag, bool value = true) override;
-    void unsetFlag(ContextFlag flag) override;
 
-    void setLocation(const QString &location) override;
-
-    int childCount() const override;
+    QString location() const;
+    int childCount() const;
+    ProjectAbstractNode* childEntry(int index) const;
     int indexOf(ProjectAbstractNode *child);
-    ProjectAbstractNode* childEntry(int index) const override;
-    ProjectAbstractNode* findNode(QString filePath);
-    ProjectFileNode* findFile(QString filePath);
-    QIcon icon() override;
-
-    QString runnableGms();
-    void setRunnableGms(ProjectFileNode *gmsFileNode);
-    void removeRunnableGms();
-    QString lstFileName();
-    void setLstFileName(const QString &lstFileName);
     ProjectLogNode* logNode() const;
-
-    GamsProcess* gamsProcess();
-    QProcess::ProcessState gamsProcessState() const;
-
-    void attachFile(const QString &filepath);
-    void detachFile(const QString &filepath);
-    void updateChildNodes();
-    void jumpToFirstError(bool focus);
-
-    QString lstErrorText(int line);
-    void setLstErrorText(int line, QString text);
-    void clearLstErrorTexts();
-    bool hasLstErrorText( int line = -1);
-    void saveGroup();
-
-    void dumpMarks();
-    QString tooltip() override;
-
-signals:
-    void gamsProcessStateChanged(ProjectGroupNode* group);
-    void removeNode(ProjectAbstractNode *node);
-    void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
-
-protected slots:
-    void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
 protected:
     friend class ProjectRepo;
     friend class ProjectAbstractNode;
-    friend class ProjectFileNode;
     friend class ProjectLogNode;
+    friend class ProjectFileNode;
 
-    ProjectGroupNode(FileId id, QString name, QString location, QString runInfo);
-    int peekIndex(const QString &name, bool* hit = nullptr);
+    ProjectGroupNode(NodeId id, QString name, FileMeta *runFileMeta);
     void insertChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
-    void checkFlags() override;
     void setLogNode(ProjectLogNode* logNode);
-    void updateRunState(const QProcess::ProcessState &state);
-    void addMark(const QString &filePath, TextMark* mark);
-    TextMarkList* marks(const QString &fileName);
-    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
-    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
+    QString mLocation;
     QList<ProjectAbstractNode*> mChildList;
-    ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
-    QString mLstFileName;
     QString mGmsFileName;
-    QFileInfoList mAttachedFiles;
+    ProjectLogNode* mLogNode = nullptr;
 
-    QHash<int, QString> mLstErrorTexts;
-    QHash<QString, TextMarkList*> mMarksForFilenames;
+//public:
+//    void setFlag(ContextFlag flag, bool value = true) override;
+//    void unsetFlag(ContextFlag flag) override;
+
+//    void setLocation(const QString &location) override;
+
+//    ProjectAbstractNode* findNode(QString filePath);
+//    ProjectFileNode* findFile(FileId fileId);
+//    ProjectFileNode* findFile(QString filePath);
+//    QIcon icon() override;
+
+//    QString runnableGms();
+//    void setRunnableGms(ProjectFileNode *gmsFileNode);
+//    void removeRunnableGms();
+//    QString lstFileName();
+//    void setLstFileName(const QString &lstFileName);
+
+//    GamsProcess* gamsProcess();
+//    QProcess::ProcessState gamsProcessState() const;
+
+//    void attachFile(const QString &filepath);
+//    void detachFile(const QString &filepath);
+//    void updateChildNodes();
+//    void jumpToFirstError(bool focus);
+
+//    QString lstErrorText(int line);
+//    void setLstErrorText(int line, QString text);
+//    void clearLstErrorTexts();
+//    bool hasLstErrorText( int line = -1);
+//    void saveGroup();
+
+//    void dumpMarks();
+//    QString tooltip() override;
+
+//signals:
+//    void gamsProcessStateChanged(ProjectGroupNode* group);
+//    void removeNode(ProjectAbstractNode *node);
+//    void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
+//    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+
+//protected slots:
+//    void onGamsProcessStateChanged(QProcess::ProcessState newState);
+
+//protected:
+
+//    void checkFlags() override;
+//    void updateRunState(const QProcess::ProcessState &state);
+//    void addMark(const QString &filePath, TextMark* mark);
+//    TextMarkRepo* marks(const QString &fileName);
+//    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+//    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+//    int peekIndex(const QString &name, bool* hit = nullptr);
+
+//private:
+//    QString mLstFileName;
+//    QFileInfoList mAttachedFiles;
+
+//    QHash<int, QString> mLstErrorTexts;
+//    QHash<QString, TextMarkRepo*> mMarksForFilenames;
 
 };
 

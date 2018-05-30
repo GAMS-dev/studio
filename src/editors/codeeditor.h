@@ -76,11 +76,14 @@ public:
     QChar charForPos(int relPos);
     bool isEmpty() {return mparentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
-    void setparentheses(const QVector<ParenthesesPos> &parentheses);
+    void setParentheses(const QVector<ParenthesesPos> &parentheses);
+    void addTextMark(TextMark* mark);
+    void removeTextMark(TextMark* mark);
 
 private:
     // if extending the data remember to enhance isEmpty()
     QVector<ParenthesesPos> mparentheses;
+    QVector<TextMark*> mMarks;
 };
 
 class CodeEditor : public AbstractEditor

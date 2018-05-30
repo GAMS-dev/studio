@@ -270,6 +270,7 @@ private:
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
+    void changeToLog(ProjectFileNode* fileNode);
 
 private:
     Ui::MainWindow *ui;
@@ -297,9 +298,10 @@ private:
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
+    FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
+    TextMarkRepo* mTextMarkRepo;
     ProjectContextMenu mProjectContextMenu;
-    void changeToLog(ProjectFileNode* fileNode);
 
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;

@@ -1500,9 +1500,21 @@ QVector<ParenthesesPos> BlockData::parentheses() const
     return mparentheses;
 }
 
-void BlockData::setparentheses(const QVector<ParenthesesPos> &parentheses)
+void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses)
 {
     mparentheses = parentheses;
+}
+
+void BlockData::addTextMark(TextMark *mark)
+{
+    if (mMarks.contains(mark)) return;
+    mMarks << mark;
+    mark->setBlockData(this);
+}
+
+void BlockData::removeTextMark(TextMark *mark)
+{
+    mMarks.removeAll(mark);
 }
 
 

@@ -48,6 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "syntax/textmarkrepo.h"
 
 namespace gams {
 namespace studio {
@@ -67,9 +68,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
-
     TimerID = startTimer(60000);
-
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
@@ -83,6 +82,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
     ui->systemLogView->setTextInteractionFlags(ui->systemLogView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
@@ -147,11 +148,14 @@ void MainWindow::delayedFileRestoration()
 
 MainWindow::~MainWindow()
 {
+    delete mTextMarkRepo;
+    mTextMarkRepo = nullptr;
     delete ui;
     killTimer(TimerID);
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
     //          may not be in the ui, delete and remove them from ui before the ui is deleted.
     delete mGamsOption;
+    FileType::clear();
 }
 
 void MainWindow::initTabs()
@@ -183,13 +187,13 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 fc->addEditor(lxiViewer);
                 connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
                 connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
+                tabIndex = tabWidget->addTab(lxiViewer, fc->name(NameModifier::EditState));
             } else {
                 fc->addEditor(codeEdit);
                 connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
                 connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
-                tabIndex = tabWidget->addTab(codeEdit, fc->caption());
+                tabIndex = tabWidget->addTab(codeEdit, fc->name(NameModifier::EditState));
             }
 
             if (codecMip == -1)
@@ -212,7 +216,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
             ProjectAbstractNode::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = tabWidget->addTab(gdxView, fc->caption());
+            tabIndex = tabWidget->addTab(gdxView, fc->name(NameModifier::EditState));
             fc->addFileWatcherForGdx();
         }
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -837,7 +841,7 @@ void MainWindow::fileChanged(FileId fileId)
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
             ProjectFileNode *fc = mProjectRepo.fileNode(fileId);
-            if (fc) ui->mainTab->setTabText(index, fc->caption());
+            if (fc) ui->mainTab->setTabText(index, fc->name(NameModifier::EditState));
         }
     }
 }
@@ -1404,7 +1408,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* fsc = mProjectRepo.node(index);
-    if (fsc->type() == ProjectAbstractNode::FileGroup) {
+    if (fsc->type() == NodeType::Group) {
         ProjectLogNode* logProc = mProjectRepo.logNode(fsc);
         if (logProc->editors().isEmpty()) {
             logProc->setDebugLog(mLogDebugLines);
@@ -1412,7 +1416,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             ProjectAbstractNode::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
                                                                   : AbstractEditor::NoWrap);
-            int ind = ui->logTabs->addTab(logEdit, logProc->caption());
+            int ind = ui->logTabs->addTab(logEdit, logProc->name(NameModifier::EditState));
             logProc->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
         }
@@ -1631,7 +1635,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         ProjectAbstractNode::initEditorType(logEdit);
 
-        ui->logTabs->addTab(logEdit, logProc->caption());
+        ui->logTabs->addTab(logEdit, logProc->name(NameModifier::EditState));
         logProc->addEditor(logEdit);
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
@@ -1642,7 +1646,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         logProc->clearLog();
     }
     if (!ui->logTabs->children().contains(logProc->editors().first())) {
-        ui->logTabs->addTab(logProc->editors().first(), logProc->caption());
+        ui->logTabs->addTab(logProc->editors().first(), logProc->name(NameModifier::EditState));
     }
     ui->logTabs->setCurrentWidget(logProc->editors().first());
 
@@ -2326,7 +2330,7 @@ void MainWindow::toggleLogDebug()
     ProjectGroupNode* root = mProjectRepo.treeModel()->rootNode();
     for (int i = 0; i < root->childCount(); ++i) {
         ProjectAbstractNode *fsc = root->childEntry(i);
-        if (fsc->type() == ProjectAbstractNode::FileGroup) {
+        if (fsc->type() == NodeType::Group) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
             ProjectLogNode* log = group->logNode();
             if (log) log->setDebugLog(mLogDebugLines);

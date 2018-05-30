@@ -20,19 +20,136 @@
 #include "projectgroupnode.h"
 #include "projectfilenode.h"
 #include "projectlognode.h"
+#include "filemeta.h"
 #include "exception.h"
 #include "gamsprocess.h"
 #include "commonpaths.h"
 #include "logger.h"
 #include "syntax.h"
+#include "file.h"
+#include <QFileInfo>
+#include <QDir>
 
 namespace gams {
 namespace studio {
+
+ProjectGroupNode::ProjectGroupNode(NodeId id, QString name, FileMeta* runFileMeta)
+    : ProjectAbstractNode(id, name, NodeType::Group)
+    , mGamsProcess(runFileMeta ? new GamsProcess() : nullptr)
+{
+    if (!runFileMeta) return;
+    QFileInfo runFile(runFileMeta->location());
+    mLocation = runFile.absoluteDir().path();
+    QString runInfo = runFile.fileName();
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(mLocation + "/" + runInfo);
+    QFileInfo alternateFile(mLocation + "/" + runnableFile.completeBaseName() + ".gms");
+
+    // fix for .lst-as-basefile bug
+    if (runnableFile.suffix() == "gms") {
+        mGmsFileName = runnableFile.absoluteFilePath();
+    } else if (alternateFile.exists()) {
+        mGmsFileName = alternateFile.fileName();
+    } else {
+        mGmsFileName = runnableFile.absoluteFilePath();
+    }
+
+//    if (mGamsProcess) {
+//        mGamsProcess->setNode(this);
+//        connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
+//    }
+}
 
 ProjectGroupNode::~ProjectGroupNode()
 {
     if (mChildList.size())
         DEB() << "Group must be empty before deletion";
+}
+
+void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
+{
+    if (!child || mChildList.contains(child)) return;
+    mChildList.append(child);
+    int i = mChildList.size()-1;
+    while (i > 0 && child->name().compare(mChildList.at(i-1)->name(), Qt::CaseInsensitive) < 0)
+        --i;
+    if (i < mChildList.size()-1)
+        mChildList.move(mChildList.size()-1, i);
+
+//    bool hit;
+//    int pos = peekIndex(child->name(), &hit);
+//    if (hit) pos++;
+//    mChildList.insert(pos, child);
+//    if (child->type() == ProjectAbstractNode::File) {
+//        // TODO(JM) move file binding to FileMetaRepo
+//        TextMarkRepo *markList = marks(child->location());
+//        markList->bind(static_cast<ProjectFileNode*>(child));
+//    }
+//    if (!mAttachedFiles.contains(child->location())) {
+//        mAttachedFiles << child->location();
+//    }
+//    if (child->testFlag(cfActive))
+//        setFlag(cfActive);
+}
+
+
+
+void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
+{
+    mChildList.removeOne(child);
+//    detachFile(child->location());
+}
+
+int ProjectGroupNode::childCount() const
+{
+    return mChildList.count();
+}
+
+ProjectAbstractNode*ProjectGroupNode::childEntry(int index) const
+{
+    return mChildList.at(index);
+}
+
+int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
+{
+    return mChildList.indexOf(child);
+}
+
+ProjectLogNode* ProjectGroupNode::logNode() const
+{
+    return mLogNode;
+}
+
+void ProjectGroupNode::setLogNode(ProjectLogNode* logNode)
+{
+    if (mLogNode)
+        EXCEPT() << "Reset the logNode is not allowed";
+    mLogNode = logNode;
+}
+
+QString ProjectGroupNode::location() const
+{
+    return mLocation;
+}
+
+
+/*
+
+int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
+{
+    if (hit) *hit = false;
+    for (int i = 0; i < childCount(); ++i) {
+        ProjectAbstractNode *child = childEntry(i);
+        QString other = child->name();
+        int comp = name.compare(other, Qt::CaseInsensitive);
+        if (comp < 0) return i;
+        if (comp == 0) {
+            if (hit) *hit = true;
+            return i;
+        }
+    }
+    return childCount();
 }
 
 void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
@@ -63,9 +180,24 @@ ProjectAbstractNode* ProjectGroupNode::findNode(QString filePath)
         ProjectAbstractNode *child = childEntry(i);
         if (QFileInfo(child->location()) == fi)
             return child;
-        if (child->type() == ProjectAbstractNode::FileGroup) {
+        if (child->type() == NodeType::Group) {
             ProjectGroupNode *group = static_cast<ProjectGroupNode*>(child);
             ProjectAbstractNode *subChild = group->findNode(filePath);
+            if (subChild) return subChild;
+        }
+    }
+    return nullptr;
+}
+
+ProjectFileNode *ProjectGroupNode::findFile(FileId fileId)
+{
+    for (int i = 0; i < childCount(); i++) {
+        ProjectAbstractNode *child = childEntry(i);
+        if (QFileInfo(child->id()) == fileId)
+            return child;
+        if (child->type() == NodeType::Group) {
+            ProjectGroupNode *group = static_cast<ProjectGroupNode*>(child);
+            ProjectAbstractNode *subChild = group->findNode(fileId);
             if (subChild) return subChild;
         }
     }
@@ -85,46 +217,6 @@ void ProjectGroupNode::setLocation(const QString& location)
     EXCEPT() << "The location of a FileGroupNode can't be changed.";
 }
 
-int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
-{
-    if (hit) *hit = false;
-    for (int i = 0; i < childCount(); ++i) {
-        ProjectAbstractNode *child = childEntry(i);
-        QString other = child->name();
-        int comp = name.compare(other, Qt::CaseInsensitive);
-        if (comp < 0) return i;
-        if (comp == 0) {
-            if (hit) *hit = true;
-            return i;
-        }
-    }
-    return childCount();
-}
-
-void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
-{
-    if (!child || mChildList.contains(child)) return;
-    bool hit;
-    int pos = peekIndex(child->name(), &hit);
-    if (hit) pos++;
-    mChildList.insert(pos, child);
-    if (child->type() == ProjectAbstractNode::File) {
-        TextMarkList *markList = marks(child->location());
-        markList->bind(static_cast<ProjectFileNode*>(child));
-    }
-    if (!mAttachedFiles.contains(child->location())) {
-        mAttachedFiles << child->location();
-    }
-    if (child->testFlag(cfActive))
-        setFlag(cfActive);
-}
-
-void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
-{
-    mChildList.removeOne(child);
-    detachFile(child->location());
-}
-
 void ProjectGroupNode::checkFlags()
 {
     bool active = false;
@@ -137,28 +229,18 @@ void ProjectGroupNode::checkFlags()
     setFlag(cfActive, active);
 }
 
-void ProjectGroupNode::setLogNode(ProjectLogNode* logNode)
-{
-    if (mLogNode)
-        EXCEPT() << "Reset the logNode is not allowed";
-    mLogNode = logNode;
-    if (mLogNode) {
-        TextMarkList *markList = marks(mLogNode->location());
-        markList->bind(mLogNode);
-    }
-}
-
 void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
 {
     Q_UNUSED(state)
     // TODO(JM) visualize if a state is running
 }
 
-TextMarkList* ProjectGroupNode::marks(const QString& fileName)
+TextMarkRepo *ProjectGroupNode::marks(const QString& fileName)
 {
     if (!mMarksForFilenames.contains(fileName)) {
-        TextMarkList* marks = new TextMarkList(this, fileName);
-        connect(marks, &TextMarkList::getFileNode, this, &ProjectGroupNode::findOrCreateFileNode);
+        TextMarkRepo* marks = new TextMarkRepo(this, fileName);
+        // TOOD(JM) move functionality to FileMetaRepo
+        connect(marks, &TextMarkRepo::getFileNode, this, &ProjectGroupNode::findOrCreateFileNode);
         mMarksForFilenames.insert(fileName, marks);
     }
     return mMarksForFilenames.value(fileName);
@@ -166,12 +248,13 @@ TextMarkList* ProjectGroupNode::marks(const QString& fileName)
 
 void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 {
-    QHash<QString, TextMarkList*>::iterator it;
+    QHash<QString, TextMarkRepo*>::iterator it;
     for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it) {
         ProjectFileNode *file = findFile(it.key());
         if (file) {
             file->removeTextMarks(tmTypes);
         } else {
+            // TODO(JM) move file binding to FileMetaRepo
             it.value()->removeTextMarks(tmTypes);
         }
     }
@@ -179,6 +262,7 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
+    // TODO(JM) move file binding to FileMetaRepo
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
@@ -195,7 +279,7 @@ void ProjectGroupNode::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
         QString res = file+":\n";
-        TextMarkList* list = marks(file);
+        TextMarkRepo* list = marks(file);
         foreach (TextMark* mark, list->marks()) {
             res.append(QString("  %1\n").arg(mark->dump()));
         }
@@ -319,10 +403,10 @@ bool ProjectGroupNode::hasLstErrorText(int line)
 void ProjectGroupNode::saveGroup()
 {
     foreach (ProjectAbstractNode* child, mChildList) {
-        if (child->type() == ContextType::FileGroup) {
+        if (child->type() == NodeType::Group) {
             ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
             fgc->saveGroup();
-        } else if (child->type() == ContextType::File) {
+        } else if (child->type() == NodeType::File) {
             ProjectFileNode *fc = static_cast<ProjectFileNode*>(child);
             fc->save();
         }
@@ -355,11 +439,6 @@ QString ProjectGroupNode::lstFileName()
     return mLstFileName;
 }
 
-ProjectLogNode*ProjectGroupNode::logNode() const
-{
-    return mLogNode;
-}
-
 GamsProcess*ProjectGroupNode::gamsProcess()
 {
     return mGamsProcess.get();
@@ -368,21 +447,6 @@ GamsProcess*ProjectGroupNode::gamsProcess()
 QProcess::ProcessState ProjectGroupNode::gamsProcessState() const
 {
     return mGamsProcess->state();
-}
-
-int ProjectGroupNode::childCount() const
-{
-    return mChildList.count();
-}
-
-int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
-{
-    return mChildList.indexOf(child);
-}
-
-ProjectAbstractNode*ProjectGroupNode::childEntry(int index) const
-{
-    return mChildList.at(index);
 }
 
 QIcon ProjectGroupNode::icon()
@@ -397,28 +461,7 @@ void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState
     emit gamsProcessStateChanged(this);
 }
 
-ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString runInfo)
-    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProcess(new GamsProcess)
-{
-    if (runInfo == "") return;
-
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + runInfo);
-    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
-
-    // fix for .lst-as-basefile bug
-    if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    } else if (alternateFile.exists()) {
-        mGmsFileName = alternateFile.fileName();
-    } else {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    }
-
-    //mGamsProcess->setNode(this);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
-}
+*/
 
 } // namespace studio
 } // namespace gams

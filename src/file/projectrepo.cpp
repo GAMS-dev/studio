@@ -30,16 +30,82 @@ namespace gams {
 namespace studio {
 
 ProjectRepo::ProjectRepo(QObject* parent)
-    : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectGroupNode(mNextId++, "Root", "", "")))
+    : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectGroupNode(mNextId++, "Root", nullptr)))
 {
     storeNode(mTreeModel->rootNode());
 }
 
 ProjectRepo::~ProjectRepo()
 {
-    FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
     delete mTreeModel;
 }
+
+inline ProjectAbstractNode *ProjectRepo::node(NodeId id) const
+{
+    return mNode.value(id, nullptr);
+}
+
+inline ProjectAbstractNode*ProjectRepo::node(const QModelIndex& index) const
+{
+    return node(index.internalId());
+}
+
+inline ProjectGroupNode *ProjectRepo::groupNode(NodeId id) const
+{
+    ProjectAbstractNode* res = mNode.value(id, nullptr);
+    return (res && res->type() == NodeType::Group) ? static_cast<ProjectGroupNode*>(res) : nullptr;
+}
+
+inline ProjectGroupNode*ProjectRepo::groupNode(const QModelIndex& index) const
+{
+    return groupNode(index.internalId());
+}
+
+inline ProjectFileNode *ProjectRepo::fileNode(NodeId id) const
+{
+    ProjectAbstractNode* res = mNode.value(id, nullptr);
+    return (res && res->type() == NodeType::File) ? static_cast<ProjectFileNode*>(res) : nullptr;
+}
+
+inline ProjectFileNode*ProjectRepo::fileNode(const QModelIndex& index) const
+{
+    return fileNode(index.internalId());
+}
+
+inline ProjectLogNode *ProjectRepo::logNode(NodeId id) const
+{
+    ProjectAbstractNode* res = mNode.value(id, nullptr);
+    return (res && res->type() == NodeType::Log) ? static_cast<ProjectLogNode*>(res) : nullptr;
+}
+
+inline ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
+{
+    if (!node) return nullptr;
+    ProjectGroupNode* group = nullptr;
+    if (node->type() != NodeType::Group)
+        group = node->parentEntry();
+    else
+        group = static_cast<ProjectGroupNode*>(node);
+    ProjectLogNode* log = group->logNode();
+    return log;
+
+    // TODO(JM) no implicit creation
+//    if (!log) {
+//        log = new ProjectLogNode(mNextId++, "["+group->name()+"]");
+//        storeNode(log);
+//        connect(log, &ProjectLogNode::openFileNode, this, &ProjectRepo::openFile);
+//        connect(log, &ProjectFileNode::findFileNode, this, &ProjectRepo::findFile);
+//        connect(log, &ProjectFileNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
+//        log->setParentEntry(group);
+//        bool hit;
+//        int offset = group->peekIndex(log->name(), &hit);
+//        if (hit) offset++;
+// //        mTreeModel->insertChild(offset, group, res);
+//    }
+}
+
+
+/*
 
 QModelIndex ProjectRepo::findEntry(QString name, QString location, QModelIndex parentIndex)
 {
@@ -111,7 +177,7 @@ QList<ProjectFileNode*> ProjectRepo::modifiedFiles(ProjectGroupNode *fileGroup)
         fileGroup = mTreeModel->rootNode();
     QList<ProjectFileNode*> res;
     for (int i = 0; i < fileGroup->childCount(); ++i) {
-        if (fileGroup->childEntry(i)->type() == ProjectAbstractNode::FileGroup) {
+        if (fileGroup->childEntry(i)->type() == NodeType::Group) {
             ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(fileGroup->childEntry(i));
             QList<ProjectFileNode*> sub = modifiedFiles(fgc);
             for (ProjectFileNode *fc : sub) {
@@ -201,7 +267,7 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath)
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         ProjectAbstractNode* fsc = mTreeModel->rootNode()->childEntry(i);
-        if (fsc && fsc->type() == ProjectAbstractNode::FileGroup && fsc->name() == fi.completeBaseName()) {
+        if (fsc && fsc->type() == NodeType::Group && fsc->name() == fi.completeBaseName()) {
             group = static_cast<ProjectGroupNode*>(fsc);
             if (di == QFileInfo(group->location())) {
                 group->attachFile(fi.filePath());
@@ -224,12 +290,12 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath)
     return group;
 }
 
-void ProjectRepo::close(FileId fileId)
+void ProjectRepo::close(NodeId nodeId)
 {
-    ProjectFileNode *fc = fileNode(fileId);
+    ProjectFileNode *fc = fileNode(nodeId);
     QModelIndex fci = mTreeModel->index(fc);
     mTreeModel->dataChanged(fci, fci);
-    emit fileClosed(fileId, QPrivateSignal());
+    emit fileClosed(nodeId, QPrivateSignal());
 }
 
 void ProjectRepo::setSuffixFilter(QStringList filter)
@@ -254,9 +320,9 @@ void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
     }
 }
 
-void ProjectRepo::nodeChanged(FileId fileId)
+void ProjectRepo::nodeChanged(NodeId nodeId)
 {
-    ProjectAbstractNode* nd = node(fileId);
+    ProjectAbstractNode* nd = node(nodeId);
     if (!nd) return;
     QModelIndex ndIndex = mTreeModel->index(nd);
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
@@ -299,7 +365,7 @@ ProjectLogNode*ProjectRepo::logNode(QWidget* edit)
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         ProjectAbstractNode* fsc = mTreeModel->rootNode()->childEntry(i);
-        if (fsc->type() == ProjectAbstractNode::FileGroup) {
+        if (fsc->type() == NodeType::Group) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
 
             if (!group->logNode()) return nullptr;
@@ -309,30 +375,6 @@ ProjectLogNode*ProjectRepo::logNode(QWidget* edit)
         }
     }
     return nullptr;
-}
-
-ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
-{
-    if (!node) return nullptr;
-    ProjectGroupNode* group = nullptr;
-    if (node->type() != ProjectAbstractNode::FileGroup)
-        group = node->parentEntry();
-    else
-        group = static_cast<ProjectGroupNode*>(node);
-    ProjectLogNode* log = group->logNode();
-    if (!log) {
-        log = new ProjectLogNode(mNextId++, "["+group->name()+"]");
-        storeNode(log);
-        connect(log, &ProjectLogNode::openFileNode, this, &ProjectRepo::openFile);
-        connect(log, &ProjectFileNode::findFileNode, this, &ProjectRepo::findFile);
-        connect(log, &ProjectFileNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-        log->setParentEntry(group);
-        bool hit;
-        int offset = group->peekIndex(log->name(), &hit);
-        if (hit) offset++;
-//        mTreeModel->insertChild(offset, group, res);
-    }
-    return log;
 }
 
 void ProjectRepo::removeMarks(ProjectGroupNode* group)
@@ -400,7 +442,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
     for (int i = 0; i < group->childCount(); ++i) {
         ProjectAbstractNode *node = group->childEntry(i);
         QJsonObject nodeObject;
-        if (node->type() == ProjectAbstractNode::FileGroup) {
+        if (node->type() == NodeType::Group) {
             ProjectGroupNode *subGroup = static_cast<ProjectGroupNode*>(node);
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
                                                                 : subGroup->childEntry(0)->location());
@@ -417,44 +459,34 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
 }
 
 
-void ProjectRepo::onFileChangedExtern(FileId fileId)
+void ProjectRepo::onFileChangedExtern(NodeId nodeId)
 {
-    if (!mChangedIds.contains(fileId)) mChangedIds << fileId;
+    if (!mChangedIds.contains(nodeId)) mChangedIds << nodeId;
     QTimer::singleShot(100, this, &ProjectRepo::processExternFileEvents);
 }
 
-void ProjectRepo::onFileDeletedExtern(FileId fileId)
+void ProjectRepo::onFileDeletedExtern(NodeId nodeId)
 {
-    if (!mDeletedIds.contains(fileId)) mDeletedIds << fileId;
+    if (!mDeletedIds.contains(nodeId)) mDeletedIds << nodeId;
     QTimer::singleShot(100, this, &ProjectRepo::processExternFileEvents);
 }
 
 void ProjectRepo::processExternFileEvents()
 {
     while (!mDeletedIds.isEmpty()) {
-        int fileId = mDeletedIds.takeFirst();
-        if (mChangedIds.contains(fileId)) mChangedIds.removeAll(fileId);
-        emit fileDeletedExtern(fileId);
+        int nodeId = mDeletedIds.takeFirst();
+        if (mChangedIds.contains(nodeId)) mChangedIds.removeAll(nodeId);
+        emit fileDeletedExtern(nodeId);
     }
     while (!mChangedIds.isEmpty()) {
-        int fileId = mChangedIds.takeFirst();
-        emit fileChangedExtern(fileId);
+        int nodeId = mChangedIds.takeFirst();
+        emit fileChangedExtern(nodeId);
     }
 }
 
 void ProjectRepo::addNode(QString name, QString location, ProjectGroupNode* parent)
 {
     addFile(name, location, parent);
-}
-
-ProjectAbstractNode*ProjectRepo::node(const QModelIndex& index) const
-{
-    return node(index.internalId());
-}
-
-ProjectFileNode*ProjectRepo::fileNode(const QModelIndex& index) const
-{
-    return fileNode(index.internalId());
 }
 
 ProjectFileNode* ProjectRepo::fileNode(QWidget* edit) const
@@ -467,18 +499,13 @@ ProjectFileNode* ProjectRepo::fileNode(QWidget* edit) const
     return nullptr;
 }
 
-ProjectGroupNode*ProjectRepo::groupNode(const QModelIndex& index) const
+QWidgetList ProjectRepo::editors(NodeId nodeId)
 {
-    return groupNode(index.internalId());
-}
-
-QWidgetList ProjectRepo::editors(FileId fileId)
-{
-    ProjectFileNode* file = fileNode(fileId);
+    ProjectFileNode* file = fileNode(nodeId);
     if (file)
         return file->editors();
 
-    ProjectGroupNode* group = groupNode(fileId);
+    ProjectGroupNode* group = groupNode(nodeId);
     if (!group) group = mTreeModel->rootNode();
     if (!group) return QWidgetList();
     QWidgetList allEdits;
@@ -491,6 +518,8 @@ QWidgetList ProjectRepo::editors(FileId fileId)
     }
     return allEdits;
 }
+
+*/
 
 } // namespace studio
 } // namespace gams

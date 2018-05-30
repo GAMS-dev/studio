@@ -18,10 +18,39 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef COMMON_H
+#define COMMON_H
+
 namespace gams {
 namespace studio {
 
 typedef int FileId;
+typedef int NodeId;
+typedef int TextMarkId;
+
+enum struct NameModifier {
+    Raw,
+    EditState
+};
+enum struct NodeType {
+    File,
+    Group,
+    Log
+};
+enum FileKind {
+    None,
+    Gsp,
+    Gms,
+    Txt,
+    Lst,
+    Lxi,
+    Log,
+    Gdx,
+    Ref,
+};
+
 
 }
 }
+
+#endif // COMMON_H

@@ -57,9 +57,9 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
     mNode = node;
 
     bool isGmsFile = false;
-    if (mNode->type() == ProjectAbstractNode::File) {
+    if (mNode->type() == NodeType::File) {
         ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
-        isGmsFile = (fc->metrics().fileType() == FileType::Gms);
+        isGmsFile = (fc->metrics().fileType() == FileKind::Gms);
     }
 
 //    mActions[2]->setVisible(isGmsFile);
@@ -68,12 +68,12 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
     mActions[5]->setVisible(isGmsFile);
 
     // all files
-    mActions[10]->setVisible(mNode->type() == ProjectAbstractNode::File);
+    mActions[10]->setVisible(mNode->type() == NodeType::File);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    ProjectFileNode *file = (mNode->type() == ProjectAbstractNode::File)
+    ProjectFileNode *file = (mNode->type() == NodeType::File)
                         ? static_cast<ProjectFileNode*>(mNode) : nullptr;
 
     if (file) emit closeFile(file);
@@ -93,7 +93,7 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup)
+    ProjectGroupNode *group = (mNode->type() == NodeType::Group)
                               ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
 
     emit addExistingFile(group, filePath);
@@ -126,8 +126,8 @@ void ProjectContextMenu::onAddNewFile()
     } else { // replace old
         file.resize(0);
     }
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                              : mNode->parentEntry();
+    ProjectGroupNode *group = (mNode->type() == NodeType::Group) ? static_cast<ProjectGroupNode*>(mNode)
+                                                                 : mNode->parentEntry();
     emit addExistingFile(group, filePath);
 }
 
@@ -138,8 +138,8 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                              : mNode->parentEntry();
+    ProjectGroupNode *group = (mNode->type() == NodeType::Group) ? static_cast<ProjectGroupNode*>(mNode)
+                                                                 : mNode->parentEntry();
     if (group) emit closeGroup(group);
 }
 
@@ -158,7 +158,7 @@ void ProjectContextMenu::onSetMainFile()
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    if (mNode->type() == ProjectAbstractNode::File) {
+    if (mNode->type() == NodeType::File) {
         ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
 
 // select file on windows by calling explorer.exe with parameter /select
@@ -184,7 +184,7 @@ void ProjectContextMenu::onOpenFileLoc()
         if (parent) openLoc = parent->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
-    } else if (mNode->type() == ProjectAbstractNode::FileGroup) {
+    } else if (mNode->type() == NodeType::Group) {
         ProjectGroupNode *group = static_cast<ProjectGroupNode*>(mNode);
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));

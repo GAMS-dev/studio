@@ -28,48 +28,52 @@ namespace studio {
 class ProjectLogNode final: public ProjectFileNode
 {
 public:
-    void markOld();
-    QTextDocument* document() const override;
-    void addEditor(QWidget* edit) override;
-    void removeEditor(QWidget* edit) override;
-    void setParentEntry(ProjectGroupNode *parent) override;
-    void fileClosed(ProjectFileNode* fc);
-    void resetLst();
-    TextMark* firstErrorMark();
-    void clearLog();
-    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
-public slots:
-    void addProcessData(QString text);
-    void setJumpToLogEnd(bool state);
+
+private:
+    QTextDocument *mDocument = nullptr;
+
+//public:
+//    void markOld();
+//    QTextDocument* document() const override;
+//    void addEditor(QWidget* edit) override;
+//    void removeEditor(QWidget* edit) override;
+//    void setParentEntry(ProjectGroupNode *parent) override;
+//    void fileClosed(ProjectFileNode* fc);
+//    void resetLst();
+//    TextMark* firstErrorMark();
+//    void clearLog();
+//    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+//public slots:
+//    void addProcessData(QString text);
+//    void setJumpToLogEnd(bool state);
 
 protected:
     friend class ProjectRepo;
-    ProjectLogNode(FileId fileId, QString name);
+    ProjectLogNode(TextMarkRepo *textMarkRepo, FileId fileId, FileMeta *fileMeta, NodeId groupId);
 
-    struct LinkData {
-        TextMark* textMark = nullptr;
-        int col = 0;
-        int size = 1;
-    };
-    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
+//    struct LinkData {
+//        TextMark* textMark = nullptr;
+//        int col = 0;
+//        int size = 1;
+//    };
+//    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
-private:
-    struct ErrorData {
-        int lstLine = 0;
-        int errNr = 0;
-        QString text;
-    };
-    bool mJumpToLogEnd = true;
-    bool mInErrorDescription = false;
-    QTextDocument *mDocument = nullptr;
-    ErrorData mCurrentErrorHint;
-//    QSet<FileNode*> mMarkedNodeList;
-    QString mLineBuffer;
-    TextMark* mLastLstLink = nullptr;
-    bool mConceal = false;
-    bool mDebugLog = false;
-    QString mLastSourceFile;
-    ProjectFileNode *mLstNode = nullptr;
+//private:
+//    struct ErrorData {
+//        int lstLine = 0;
+//        int errNr = 0;
+//        QString text;
+//    };
+//    bool mJumpToLogEnd = true;
+//    bool mInErrorDescription = false;
+//    ErrorData mCurrentErrorHint;
+// //    QSet<FileNode*> mMarkedNodeList;
+//    QString mLineBuffer;
+//    TextMark* mLastLstLink = nullptr;
+//    bool mConceal = false;
+//    bool mDebugLog = false;
+//    QString mLastSourceFile;
+//    ProjectFileNode *mLstNode = nullptr;
 };
 
 } // namespace studio

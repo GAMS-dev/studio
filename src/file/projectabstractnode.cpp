@@ -24,17 +24,9 @@
 namespace gams {
 namespace studio {
 
-ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location)
-    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
+ProjectAbstractNode::ProjectAbstractNode(NodeId nodeId, QString name, NodeType type)
+    : QObject(), mId(nodeId), mParent(nullptr), mName(name), mType(type)
 {}
-
-ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type)
-    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
-{}
-
-void ProjectAbstractNode::checkFlags()
-{
-}
 
 ProjectAbstractNode::~ProjectAbstractNode()
 {
@@ -50,15 +42,18 @@ FileId ProjectAbstractNode::id() const
     return mId;
 }
 
-int ProjectAbstractNode::type() const
+const QString ProjectAbstractNode::name(NameModifier mod)
 {
-    return mType;
+    Q_UNUSED(mod);
+    return mName;
 }
 
-bool ProjectAbstractNode::canShowAsTab() const
+void ProjectAbstractNode::setName(const QString& name)
 {
-    static QList<int> showableTypes = {ContextType::File};
-    return showableTypes.contains(mType);
+    if (mName != name) {
+        mName = name;
+        emit changed(mId);
+    }
 }
 
 ProjectGroupNode* ProjectAbstractNode::parentEntry() const
@@ -75,33 +70,39 @@ void ProjectAbstractNode::setParentEntry(ProjectGroupNode* parent)
     }
 }
 
-ProjectAbstractNode* ProjectAbstractNode::childEntry(int index) const
+NodeType ProjectAbstractNode::type() const
 {
-    Q_UNUSED(index);
-    return nullptr;
+    return mType;
 }
 
-int ProjectAbstractNode::childCount() const
+//int ProjectAbstractNode::childCount() const
+//{
+//    return 0;
+//}
+
+//ProjectAbstractNode* ProjectAbstractNode::childEntry(int index) const
+//{
+//    Q_UNUSED(index);
+//    return nullptr;
+//}
+
+
+/*
+
+void ProjectAbstractNode::checkFlags()
 {
-    return 0;
+}
+
+
+bool ProjectAbstractNode::canShowAsTab() const
+{
+    static QList<int> showableTypes = {NodeType::File};
+    return showableTypes.contains(mType);
 }
 
 const QString ProjectAbstractNode::caption()
 {
     return mName;
-}
-
-const QString ProjectAbstractNode::name()
-{
-    return mName;
-}
-
-void ProjectAbstractNode::setName(const QString& name)
-{
-    if (mName != name) {
-        mName = name;
-        emit changed(mId);
-    }
 }
 
 const QString& ProjectAbstractNode::location() const
@@ -155,6 +156,8 @@ ProjectAbstractNode* ProjectAbstractNode::findFile(QString filePath)
     else
         return nullptr;
 }
+
+*/
 
 } // namespace studio
 } // namespace gams

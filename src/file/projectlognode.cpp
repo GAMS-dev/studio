@@ -20,6 +20,7 @@
  */
 #include <QScrollBar>
 #include <QDir>
+#include "file.h"
 #include "projectlognode.h"
 #include "exception.h"
 #include "projectgroupnode.h"
@@ -29,14 +30,12 @@
 namespace gams {
 namespace studio {
 
-ProjectLogNode::ProjectLogNode(FileId fileId, QString name)
-    : ProjectFileNode(fileId, name, "[LOG]", ProjectAbstractNode::Log)
+ProjectLogNode::ProjectLogNode(TextMarkRepo* textMarkRepo, FileId fileId, FileMeta* fileMeta, NodeId groupId)
+    : ProjectFileNode(textMarkRepo, fileId, fileMeta, groupId, NodeType::Log)
 {
-    mMetrics = FileMetrics(QFileInfo(name+".log"));
-    mDocument = new QTextDocument(this);
-    mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
-    mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
+
+/*
 
 void ProjectLogNode::clearLog()
 {
@@ -390,6 +389,8 @@ void ProjectLogNode::setJumpToLogEnd(bool state)
 {
     mJumpToLogEnd = state;
 }
+
+*/
 
 } // namespace studio
 } // namespace gams

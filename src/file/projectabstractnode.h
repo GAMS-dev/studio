@@ -38,25 +38,6 @@ class ProjectAbstractNode : public QObject
     Q_OBJECT
 
 public:
-    enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
-                       // TODO(JM) I'd prefer having either a pointer-list of changed node in repo or a method here
-
-        // TODO(JM) check, which flags are better implemented as methods getting their info implicit
-        cfNone          = 0x00,
-        cfActive        = 0x01, // TODO(JM) implemented and in use: if this is the only real flag, we should have a method instead
-        cfFileMod       = 0x02, // TODO(JM) implemented but not in use (marks changes from outside)
-        cfEditMod       = 0x04, // TODO(JM) implemented but not in use (marks changes from inside - but here we have the doc.modified())
-        cfMissing       = 0x08, // TODO(JM) some implementation missing in ProjectFileNode?
-        cfExtendCaption = 0x10, // needed for doubled groups - could be moved to a boolean there
-        cfVirtual       = 0x20, // set - but not used
-    };
-
-    enum ContextType {
-        File,
-        FileGroup,
-        FileSystem,
-        Log
-    };
 
     enum EditorType {
         etUndefined = 0,
@@ -70,15 +51,58 @@ public:
         etLastKomplexType = 9,
     };
 
-    typedef QFlags<ContextFlag> ContextFlags;
-
     virtual ~ProjectAbstractNode();
 
     FileId id() const;
 
+    /// The raw name of this node.
+    /// \return The raw name of this node.
+    virtual const QString name(NameModifier mod = NameModifier::Raw);
+
+    /// Sets the raw name of this node.
+    /// \param name The raw name of this node.
+    void setName(const QString& name);
+
+    ProjectGroupNode* parentEntry() const;
+    virtual void setParentEntry(ProjectGroupNode *parent);
+
     /// \brief File node type.
     /// \return Returns the file node type as <c>int</c>.
-    int type() const;
+    NodeType type() const;
+
+//    virtual int childCount() const;
+//    virtual ProjectAbstractNode* childEntry(int index) const;
+
+signals:
+    void changed(NodeId fileId);
+
+protected:
+    friend class ProjectLogNode;
+
+    ProjectAbstractNode(NodeId nodeId, QString name, NodeType type);
+
+private:
+    NodeId mId;
+    ProjectGroupNode* mParent;
+    QString mName;
+    NodeType mType;
+
+/*
+
+    enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
+                       // TODO(JM) I'd prefer having either a pointer-list of changed node in repo or a method here
+
+        // TODO(JM) check, which flags are better implemented as methods getting their info implicit
+        cfNone          = 0x00,
+        cfActive        = 0x01, // TODO(JM) implemented and in use: if this is the only real flag, we should have a method instead
+        cfFileMod       = 0x02, // TODO(JM) implemented but not in use (marks changes from outside)
+        cfEditMod       = 0x04, // TODO(JM) implemented but not in use (marks changes from inside - but here we have the doc.modified())
+        cfMissing       = 0x08, // TODO(JM) some implementation missing in ProjectFileNode?
+        cfExtendCaption = 0x10, // needed for doubled groups - could be moved to a boolean there
+        cfVirtual       = 0x20, // set - but not used
+    };
+
+    typedef QFlags<ContextFlag> ContextFlags;
 
     /// \brief Checks if the node can be represented in a tab.
     /// \return True, if the node can be represented in a tab.
@@ -87,14 +111,6 @@ public:
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
     virtual const QString caption();
-
-    /// The raw name of this node.
-    /// \return The raw name of this node.
-    virtual const QString name();
-
-    /// Sets the raw name of this node.
-    /// \param name The raw name of this node.
-    void setName(const QString& name);
 
     /// The location of the node. This is a directory or file with full path.
     /// \param location The new location
@@ -113,10 +129,6 @@ public:
     virtual void unsetFlag(ContextFlag flag);
     virtual bool testFlag(ContextFlag flag);
 
-    ProjectGroupNode* parentEntry() const;
-    virtual void setParentEntry(ProjectGroupNode *parent);
-    virtual ProjectAbstractNode* childEntry(int index) const;
-    virtual int childCount() const;    
     virtual QString tooltip()=0;
 
     ProjectAbstractNode *findFile(QString filePath);
@@ -164,23 +176,12 @@ public: // static convenience methods
         return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
     }
 
-signals:
-    void changed(FileId fileId);
-
 protected:
-    friend class ProjectLogNode;
-
-    ProjectAbstractNode(FileId fileId, QString name, QString location);
-    ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type);
     virtual void checkFlags();
 
-private:
-    FileId mId;
-    ProjectGroupNode* mParent;
-    QString mName;
-    QString mLocation;
-    ContextFlags mFlags;
-    ContextType mType;
+
+*/
+
 };
 
 } // namespace studio

@@ -73,10 +73,18 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
     exception.cpp \
-    file/filemetrics.cpp \
+    file/filemeta.cpp \
+    file/filemetarepo.cpp \
+#    file/filemetrics.cpp \
     file/filetype.cpp \
-    gamslibprocess.cpp  \
-    gamsprocess.cpp     \
+    file/projectabstractnode.cpp \
+    file/projectfilenode.cpp \
+    file/projectgroupnode.cpp \
+    file/projectlognode.cpp \
+    file/projectrepo.cpp \
+    file/projecttreemodel.cpp \
+    gamslibprocess.cpp \
+    gamsprocess.cpp \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/filteruelmodel.cpp \
@@ -123,21 +131,14 @@ SOURCES += \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxidentifier.cpp \
-    syntax/textmark.cpp \
-    syntax/textmarklist.cpp \
+   syntax/textmark.cpp \
+   syntax/textmarkrepo.cpp \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp \
-    file/projectfilenode.cpp \
-    file/projectgroupnode.cpp \
-    file/projectrepo.cpp \
-    file/projectabstractnode.cpp \
-    file/projecttreemodel.cpp \
-    file/projectlognode.cpp \
-    file/filemetarepo.cpp \
-    file/filemeta.cpp \
-    syntax/textmarkrepo.cpp
+    wplabel.cpp
+
+#    syntax/textmarklist.cpp \
 
 HEADERS += \
     abstractprocess.h \
@@ -155,9 +156,16 @@ HEADERS += \
     editors/selectencodings.h \
     exception.h \
     file.h \
-    file/filemetrics.h \
+    file/filemeta.h \
+    file/filemetarepo.h \
+#    file/filemetrics.h \
     file/filetype.h \
     file/projectabstractnode.h \
+    file/projectfilenode.h \
+    file/projectgroupnode.h \
+    file/projectlognode.h \
+    file/projectrepo.h \
+    file/projecttreemodel.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxviewer/columnfilter.h \
@@ -209,20 +217,14 @@ HEADERS += \
     syntax/syntaxhighlighter.h \
     syntax/syntaxidentifier.h \
     syntax/textmark.h \
-    syntax/textmarklist.h \
+    syntax/textmarkrepo.h \
     treeitemdelegate.h \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h \
-    file/projectgroupnode.h \
-    file/projectfilenode.h \
-    file/projectlognode.h \
-    file/projecttreemodel.h \
-    file/filemetarepo.h \
-    file/filemeta.h \
-    file/projectrepo.h \
-    syntax/textmarkrepo.h
+    wplabel.h
+
+#    syntax/textmarklist.h \
 
 FORMS += \
     bookmarkdialog.ui \

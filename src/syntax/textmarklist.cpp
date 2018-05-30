@@ -159,7 +159,6 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighli
         if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             int pos = tm->position();
             TextMark* mark = mMarks.takeAt(i);
-            mark->clearBackRefs();
             delete mark;
             if (doRehighlight && fileNode() && fileNode()->document())
                 fileNode()->rehighlightAt(pos);

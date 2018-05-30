@@ -28,8 +28,8 @@ namespace gams {
 namespace studio {
 
 class ProjectFileNode;
-class TextMarkList;
-//class TextMark;
+//class TextMarkList;
+class TextMarkRepo;
 struct ParenthesesPos;
 
 enum ColorEnum {
@@ -50,23 +50,27 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(ProjectFileNode *node);
+    ErrorHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId = -1);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
-    TextMarkList* marks();
+    FileId nodeId() const;
+    FileId contextId() const;
 
 public slots:
     void syntaxState(int position, int &intState);
 
 protected:
     void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QVector<TextMark*> markList);
+    TextMarkRepo* markRepo();
 
 protected:
     int mPositionForSyntaxState = -1;
     int mLastSyntaxState = 0;
 
 private:
-    ProjectFileNode* mNode = nullptr;
+    FileId mNodeId = -1;
+    FileId mContextId = -1;
+    TextMarkRepo* mMarks = nullptr;
     QTextBlock mTestBlock;
 
 };
@@ -75,7 +79,7 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(ProjectFileNode *node);
+    SyntaxHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId = -1);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

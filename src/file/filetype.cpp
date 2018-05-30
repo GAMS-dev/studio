@@ -26,20 +26,14 @@ namespace studio {
 QList<FileType*> FileType::mList;
 FileType *FileType::mNone = nullptr;
 
-FileType::FileType(Kind kind, QString suffix, QString description, bool autoReload, const Kind dependant)
+FileType::FileType(FileKind kind, QString suffix, QString description, bool autoReload)
     : mKind(kind), mSuffix(suffix.split(",", QString::SkipEmptyParts)), mDescription(description)
-    , mAutoReload(autoReload), mDependant(dependant)
+    , mAutoReload(autoReload)
 {}
 
-FileType::Kind FileType::kind() const
+FileKind FileType::kind() const
 {
     return mKind;
-}
-
-
-FileType::Kind FileType::dependant() const
-{
-    return mDependant;
 }
 
 bool FileType::operator ==(const FileType& fileType) const
@@ -52,12 +46,12 @@ bool FileType::operator !=(const FileType& fileType) const
     return (this != &fileType);
 }
 
-bool FileType::operator ==(const FileType::Kind& kind) const
+bool FileType::operator ==(const FileKind &kind) const
 {
     return (mKind == kind);
 }
 
-bool FileType::operator !=(const FileType::Kind& kind) const
+bool FileType::operator !=(const FileKind &kind) const
 {
     return (mKind != kind);
 }
@@ -84,7 +78,7 @@ const QList<FileType*> FileType::list()
         mList << new FileType(Gms, "gms,inc", "GAMS Source Code", false);
         mList << new FileType(Txt, "txt", "Text File", false);
         mList << new FileType(Lst, "lst", "GAMS List File", true);
-        mList << new FileType(Lxi, "lxi", "GAMS List File Index", true, Lst);
+        mList << new FileType(Lxi, "lxi", "GAMS List File Index", true);
         mList << new FileType(Gdx, "gdx", "GAMS Data", true);
         mList << new FileType(Ref, "ref", "GAMS Ref File", true);
         mList << new FileType(Log, "log", "GAMS Log File", false);
@@ -102,7 +96,7 @@ FileType &FileType::from(QString suffix)
     return *mNone;
 }
 
-FileType& FileType::from(FileType::Kind kind)
+FileType& FileType::from(FileKind kind)
 {
     for (FileType *ft: list()) {
         if (ft->mKind == kind)

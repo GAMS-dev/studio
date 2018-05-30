@@ -22,7 +22,8 @@
 #include "syntaxdeclaration.h"
 #include "syntaxidentifier.h"
 #include "textmark.h"
-#include "textmarklist.h"
+//#include "textmarklist.h"
+#include "textmarkrepo.h"
 #include "logger.h"
 #include "exception.h"
 #include "file.h"
@@ -30,8 +31,8 @@
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(ProjectFileNode* node)
-    : QSyntaxHighlighter(node->document()), mNode(node)
+ErrorHighlighter::ErrorHighlighter(FileId nodeId, TextMarkRepo* textMarkRepo, FileId contextId)
+    : QSyntaxHighlighter(textMarkRepo->document(nodeId)), mNodeId(nodeId), mContextId(contextId), mMarks(textMarkRepo)
 {
 }
 
@@ -40,9 +41,19 @@ void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
     setDocument(doc);
 }
 
-TextMarkList* ErrorHighlighter::marks()
+TextMarkRepo *ErrorHighlighter::markRepo()
 {
-    return (mNode) ? mNode->marks() : nullptr;
+    return mMarks;
+}
+
+FileId ErrorHighlighter::nodeId() const
+{
+    return mNodeId;
+}
+
+FileId ErrorHighlighter::contextId() const
+{
+    return mContextId;
 }
 
 void ErrorHighlighter::syntaxState(int position, int &intState)
@@ -56,11 +67,8 @@ void ErrorHighlighter::syntaxState(int position, int &intState)
 
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
-    if (!marks()) {
-        DEB() << "trying to highlight without marks!";
-        return;
-    }
-    QVector<TextMark*> markList = marks()->marksForBlock(currentBlock());
+    // TODO(JM) marksForBlock functionality
+    QVector<TextMark*> markList = mMarks->marksForBlock(mNodeId, currentBlock());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
@@ -114,8 +122,8 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
 }
 
 
-SyntaxHighlighter::SyntaxHighlighter(ProjectFileNode* node)
-    : ErrorHighlighter(node)
+SyntaxHighlighter::SyntaxHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId)
+    : ErrorHighlighter(node, textMarkRepo, contextId)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
@@ -176,7 +184,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
+    QVector<TextMark*> markList = markRepo() ? markRepo()->marksForBlock(nodeId(), currentBlock()) : QVector<TextMark*>();
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
@@ -256,7 +264,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!parPosList.isEmpty() && !blockData) {
             blockData = new BlockData();
         }
-        if (blockData) blockData->setparentheses(parPosList);
+        if (blockData) blockData->setParentheses(parPosList);
         if (blockData && blockData->isEmpty())
             textBlock.setUserData(nullptr);
         else
@@ -290,7 +298,7 @@ int SyntaxHighlighter::getStateIdx(SyntaxState state) const
     return -1;
 }
 
-const QVector<SyntaxState> validparenthesesSyntax = {
+const QVector<SyntaxState> validParenthesesSyntax = {
     SyntaxState::Standard,
     SyntaxState::Identifier,
     SyntaxState::IdentifierTable,
@@ -302,13 +310,13 @@ const QVector<SyntaxState> validparenthesesSyntax = {
     SyntaxState::ReservedBody,
 };
 
-const QString validparentheses("{[(}])/");
+const QString validParentheses("{[(}])/");
 
 void SyntaxHighlighter::scanparentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
 {
-    if (!validparenthesesSyntax.contains(state)) return;
+    if (!validParenthesesSyntax.contains(state)) return;
     for (int i = start; i < start+len; ++i) {
-        int kind = validparentheses.indexOf(text.at(i));
+        int kind = validParentheses.indexOf(text.at(i));
         if (kind == 6) {
             if (state == SyntaxState::IdentifierAssignmentEnd)
                 parentheses << ParenthesesPos('\\', i);

@@ -22,6 +22,8 @@
 #include "projectgroupnode.h"
 #include "exception.h"
 #include "editors/codeeditor.h"
+#include "syntax/textmarkrepo.h"
+#include "filemeta.h"
 #include "logger.h"
 #include <QScrollBar>
 #include <QToolTip>
@@ -33,40 +35,55 @@ namespace studio {
 const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
         // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
-ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, ContextType type)
-    : ProjectAbstractNode(fileId, name, location, type)
+ProjectFileNode::ProjectFileNode(TextMarkRepo* marksRepo, NodeId nodeId, FileMeta *fileMeta, NodeId groupId, NodeType type)
+    : ProjectAbstractNode(nodeId, fileMeta->name(), type), mFileMeta(fileMeta)
 {
-    mMetrics = FileMetrics(QFileInfo(location));
-    if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(this);
-    else if (mMetrics.fileType() != FileType::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(this);
+    if (mFileMeta->kind() == FileKind::Gms || mFileMeta->kind() == FileKind::Txt)
+        mSyntaxHighlighter = new SyntaxHighlighter(nodeId, marksRepo, groupId);
+    else if (mFileMeta->kind() != FileKind::Gdx) {
+        mSyntaxHighlighter = new ErrorHighlighter(nodeId, marksRepo, groupId);
     }
 }
+
+ProjectFileNode::~ProjectFileNode()
+{
+//    removeAllEditors();
+}
+
+const QString ProjectFileNode::name(NameModifier mod)
+{
+    QString res = ProjectAbstractNode::name();
+    switch (mod) {
+    case NameModifier::EditState:
+        res += (isModified() ? "*" : "");
+        break;
+    default:
+        break;
+    }
+    return res;
+}
+
+bool ProjectFileNode::isModified()
+{
+    return mFileMeta->isModified();
+}
+
+QTextDocument *ProjectFileNode::document() const
+{
+    return mFileMeta->document();
+}
+
+
+/*
 
 QWidgetList& ProjectFileNode::editorList()
 {
     return mEditors;
 }
 
-ProjectFileNode::~ProjectFileNode()
-{
-    if (mMarks) mMarks->unbind();
-
-//    setParentEntry(nullptr);
-    removeAllEditors();
-}
-
 void ProjectFileNode::setParentEntry(ProjectGroupNode* parent)
 {
     ProjectAbstractNode::setParentEntry(parent);
-    if (!parent) {
-        if (mMarks) mMarks->unbind();
-        mMarks = nullptr;
-    } else if (mMarks != parent->marks(location())) {
-        mMarks = parent->marks(location());
-        if (mMarks) connect(this, &ProjectFileNode::documentOpened, mMarks, &TextMarkList::documentOpened);
-    }
 }
 
 int ProjectFileNode::codecMib() const
@@ -84,16 +101,6 @@ void ProjectFileNode::setCodecMib(int mib)
         mCodec = codec;
     }
     // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
-}
-
-const QString ProjectFileNode::caption()
-{
-    return name() + (isModified() ? "*" : "");
-}
-
-bool ProjectFileNode::isModified()
-{
-    return document() && document()->isModified();
 }
 
 void ProjectFileNode::save()
@@ -191,8 +198,9 @@ void ProjectFileNode::addEditor(QWidget* edit)
         ptEdit->installEventFilter(this);
     }
     if (scEdit && mMarks) {
-        connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
-        connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
+        // TODO(JM) Should be bound directly to a sublist in TextMarkRepo
+        connect(scEdit, &CodeEditor::requestMarkHash, this, &ProjectFileNode::shareMarkHash);
+        connect(scEdit, &CodeEditor::requestMarksEmpty, this, &ProjectFileNode::textMarkIconsEmpty);
         connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
     }
     setFlag(ProjectAbstractNode::cfActive);
@@ -296,12 +304,12 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
         }
         if (codec) {
             if (mMarks && keepMarks)
-                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
             QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
             setEditPositions(edPos);
             if (mMarks && keepMarks)
-                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkList::documentChanged);
+                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
             mCodec = codec;
         }
         file.close();
@@ -612,6 +620,18 @@ void ProjectFileNode::modificationChanged(bool modiState)
     emit changed(id());
 }
 
+void ProjectFileNode::shareMarkHash(QHash<int, TextMark *> *marks, TextMark::Type filter)
+{
+    foreach (TextMark* mark, mMarks->marks(id(), filter)) {
+        marks->insert(mark->line(), mark);
+    }
+}
+
+void ProjectFileNode::textMarkIconsEmpty(bool *marksEmpty)
+{
+    *marksEmpty = mMarks->marks(id()).isEmpty();
+}
+
 void ProjectFileNode::onFileChangedExtern(QString filepath)
 {
     if (!mEditors.size())
@@ -648,6 +668,10 @@ void ProjectFileNode::onFileChangedExtern(QString filepath)
     }
     mWatcher->addPath(location());
 }
+
+
+*/
+
 
 } // namespace studio
 } // namespace gams
