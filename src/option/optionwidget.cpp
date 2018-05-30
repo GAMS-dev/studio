@@ -264,7 +264,7 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::updateRunState(bool isRunnable, bool isMain, bool isRunning)
 {
-    setRunActionsEnabled( isRunnable && !isRunning );
+    setRunActionsEnabled( isRunnable && isMain && !isRunning );
     setInterruptActionsEnabled( isRunnable && isMain && isRunning );
 
     ui->gamsOptionWidget->setEnabled( isRunnable && (!isMain || (isMain && !isRunning)) );
