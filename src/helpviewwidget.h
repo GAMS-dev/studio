@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef HELPVIEW_H
-#define HELPVIEW_H
+#ifndef HELPVIEWWIDGET_H
+#define HELPVIEWWIDGET_H
 
 #include <QDockWidget>
 #include <QLineEdit>
@@ -30,12 +30,12 @@
 namespace gams {
 namespace studio {
 
-class HelpView : public QDockWidget
+class HelpViewWidget : public QDockWidget
 {
     Q_OBJECT
 public:
-    HelpView(QWidget* parent = nullptr);
-    ~HelpView();
+    HelpViewWidget(QWidget* parent = nullptr);
+    ~HelpViewWidget();
 
     QMultiMap<QString, QString> getBookmarkMap() const;
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
@@ -123,4 +123,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // HELPVIEW_H
+#endif // HELPVIEWWIDGET_H

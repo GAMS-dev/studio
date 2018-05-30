@@ -86,7 +86,8 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gotowidget.cpp \
-    helpview.cpp \
+    helpviewwidget.cpp \
+    help/helpview.cpp \
     keys.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
@@ -167,7 +168,9 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gotowidget.h \
-    helpview.h \
+    helpviewwidget.h \
+    help/helpsearchwidget.h \
+    help/helpview.h \
     keys.h \
     logger.h \
     lxiviewer/lxiparser.h \
@@ -228,6 +231,7 @@ FORMS += \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
     gotowidget.ui \
+    help/helpview.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \

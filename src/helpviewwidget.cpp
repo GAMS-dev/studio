@@ -23,20 +23,20 @@
 #include "exception.h"
 #include "commonpaths.h"
 #include "gclgms.h"
-#include "helpview.h"
+#include "helpviewwidget.h"
 #include "checkforupdatewrapper.h"
 
 namespace gams {
 namespace studio {
 
-const QString HelpView::START_CHAPTER = "docs/index.html";
-const QString HelpView::DOLLARCONTROL_CHAPTER = "docs/UG_DollarControlOptions.html";
-const QString HelpView::GAMSCALL_CHAPTER = "docs/UG_GamsCall.html";
-const QString HelpView::INDEX_CHAPTER = "docs/keyword.html";
-const QString HelpView::OPTION_CHAPTER = "docs/UG_OptionStatement.html";
-const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
+const QString HelpViewWidget::START_CHAPTER = "docs/index.html";
+const QString HelpViewWidget::DOLLARCONTROL_CHAPTER = "docs/UG_DollarControlOptions.html";
+const QString HelpViewWidget::GAMSCALL_CHAPTER = "docs/UG_GamsCall.html";
+const QString HelpViewWidget::INDEX_CHAPTER = "docs/keyword.html";
+const QString HelpViewWidget::OPTION_CHAPTER = "docs/UG_OptionStatement.html";
+const QString HelpViewWidget::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 
-HelpView::HelpView(QWidget *parent) :
+HelpViewWidget::HelpViewWidget(QWidget *parent) :
     QDockWidget(parent)
 {
     CheckForUpdateWrapper c4uWrapper;
@@ -59,11 +59,11 @@ HelpView::HelpView(QWidget *parent) :
     setupUi(parent);
 }
 
-HelpView::~HelpView()
+HelpViewWidget::~HelpViewWidget()
 {
 }
 
-void HelpView::setupUi(QWidget *parent)
+void HelpViewWidget::setupUi(QWidget *parent)
 {
     this->setObjectName(QStringLiteral("dockHelpView"));
     this->setEnabled(true);
@@ -85,7 +85,7 @@ void HelpView::setupUi(QWidget *parent)
         getErrorHTMLText( htmlText, START_CHAPTER);
         mHelpView->setHtml( htmlText );
     }
-    connect(mHelpView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
+    connect(mHelpView, &QWebEngineView::loadFinished, this, &HelpViewWidget::on_loadFinished);
 
     QToolBar* toolbar = new QToolBar(this);
 
@@ -95,7 +95,7 @@ void HelpView::setupUi(QWidget *parent)
     actionHome->setStatusTip("Start page ("+ QDir(CommonPaths::systemDir()).filePath(START_CHAPTER)+")");
     QIcon homeButtonIcon(":/img/home");
     actionHome->setIcon(homeButtonIcon);
-    connect(actionHome, &QAction::triggered, this, &HelpView::on_actionHome_triggered);
+    connect(actionHome, &QAction::triggered, this, &HelpViewWidget::on_actionHome_triggered);
 
     toolbar->addAction(actionHome);
     toolbar->addSeparator();
@@ -109,11 +109,11 @@ void HelpView::setupUi(QWidget *parent)
 
     actionAddBookmark = new QAction(tr("Bookmark This Page"), this);
     actionAddBookmark->setStatusTip(tr("Bookmark This Page"));
-    connect(actionAddBookmark, &QAction::triggered, this, &HelpView::on_actionAddBookMark_triggered);
+    connect(actionAddBookmark, &QAction::triggered, this, &HelpViewWidget::on_actionAddBookMark_triggered);
 
     actionOrganizeBookmark = new QAction(tr("Organize Bookmarks"), this);
     actionOrganizeBookmark->setStatusTip(tr("Organize Bookmarks"));
-    connect(actionOrganizeBookmark, &QAction::triggered, this, &HelpView::on_actionOrganizeBookMark_triggered);
+    connect(actionOrganizeBookmark, &QAction::triggered, this, &HelpViewWidget::on_actionOrganizeBookMark_triggered);
 
     mBookmarkMenu = new QMenu(this);
     mBookmarkMenu->addAction(actionAddBookmark);
@@ -138,17 +138,17 @@ void HelpView::setupUi(QWidget *parent)
     actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+mThisRelease+"/", this);
     actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
     actionOnlineHelp->setCheckable(true);
-    connect(actionOnlineHelp, &QAction::triggered, this, &HelpView::on_actionOnlineHelp_triggered);
+    connect(actionOnlineHelp, &QAction::triggered, this, &HelpViewWidget::on_actionOnlineHelp_triggered);
     helpMenu->addAction(actionOnlineHelp);
     helpMenu->addSeparator();
 
     actionOpenInBrowser = new QAction(tr("Open in Default Web Browser"), this);
     actionOpenInBrowser->setStatusTip(tr("Open this page in Default Web Browser"));
-    connect(actionOpenInBrowser, &QAction::triggered, this, &HelpView::on_actionOpenInBrowser_triggered);
+    connect(actionOpenInBrowser, &QAction::triggered, this, &HelpViewWidget::on_actionOpenInBrowser_triggered);
     helpMenu->addAction(actionOpenInBrowser);
     helpMenu->addSeparator();
 
-    actionCopyPageURL = helpMenu->addAction(tr("Copy Page URL to Clipboard"), this,  &HelpView::copyURLToClipboard);
+    actionCopyPageURL = helpMenu->addAction(tr("Copy Page URL to Clipboard"), this,  &HelpViewWidget::copyURLToClipboard);
     actionCopyPageURL->setStatusTip(tr("Copy URL of this page to Clipboard"));
 
     QToolButton* helpToolButton = new QToolButton(this);
@@ -168,7 +168,7 @@ void HelpView::setupUi(QWidget *parent)
     this->setWidget( helpWidget );
 }
 
-void HelpView::createSearchBar()
+void HelpViewWidget::createSearchBar()
 {
     QWidget* searchWidget = new QWidget(this);
     QHBoxLayout* layout = new QHBoxLayout;
@@ -180,7 +180,7 @@ void HelpView::createSearchBar()
     mSearchLineEdit = new QLineEdit(this);
     mSearchLineEdit->setPlaceholderText(tr("Find in page..."));
     mSearchLineEdit->setClearButtonEnabled(true);
-    connect(mSearchLineEdit, &QLineEdit::textChanged, this, &HelpView::searchText);
+    connect(mSearchLineEdit, &QLineEdit::textChanged, this, &HelpViewWidget::searchText);
     layout->addWidget(mSearchLineEdit);
 
     QSizePolicy buttonSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -196,8 +196,8 @@ void HelpView::createSearchBar()
     forwardButton->setIcon(forwardButtonIcon);
     forwardButton->setSizePolicy(buttonSizePolicy);
     forwardButton->setToolTip(tr("Find the next occurrence"));
-    connect(backButton, &QPushButton::clicked, this, &HelpView::on_backButtonTriggered);
-    connect(forwardButton, &QPushButton::clicked, this, &HelpView::on_forwardButtonTriggered);
+    connect(backButton, &QPushButton::clicked, this, &HelpViewWidget::on_backButtonTriggered);
+    connect(forwardButton, &QPushButton::clicked, this, &HelpViewWidget::on_forwardButtonTriggered);
 
     layout->addWidget(backButton);
     layout->addWidget(forwardButton);
@@ -206,7 +206,7 @@ void HelpView::createSearchBar()
     caseSensitivity->setText(tr("Case Sensitivity"));
     caseSensitivity->setSizePolicy(buttonSizePolicy);
     caseSensitivity->setToolTip(tr("Find with Case Sensitvity"));
-    connect(caseSensitivity, &QCheckBox::clicked, this, &HelpView::on_caseSensitivityToggled);
+    connect(caseSensitivity, &QCheckBox::clicked, this, &HelpViewWidget::on_caseSensitivityToggled);
     layout->addWidget(caseSensitivity);
 
     QWidget* statusWidget = new QWidget(this);
@@ -228,7 +228,7 @@ void HelpView::createSearchBar()
 
     closeButton->setSizePolicy(buttonSizePolicy);
     closeButton->setToolTip(QStringLiteral("Close Find Help"));
-    connect(closeButton, &QPushButton::clicked, this, &HelpView::on_searchCloseButtonTriggered);
+    connect(closeButton, &QPushButton::clicked, this, &HelpViewWidget::on_searchCloseButtonTriggered);
 
     closeWidgetlayout->addWidget(closeButton);
 
@@ -240,19 +240,19 @@ void HelpView::createSearchBar()
     clearSearchBar();
 }
 
-void HelpView::clearSearchBar()
+void HelpViewWidget::clearSearchBar()
 {
     mSearchLineEdit->clear();
     findText("", Forward);
     mSearchBar->hide();
 }
 
-void HelpView::on_urlOpened(const QUrl& location)
+void HelpViewWidget::on_urlOpened(const QUrl& location)
 {
     mHelpView->load(location);
 }
 
-void HelpView::on_helpContentRequested(const QString &chapter, const QString &keyword)
+void HelpViewWidget::on_helpContentRequested(const QString &chapter, const QString &keyword)
 {
     QDir dir = QDir(baseLocation).filePath(chapter);
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
@@ -298,7 +298,7 @@ void HelpView::on_helpContentRequested(const QString &chapter, const QString &ke
     return;
 }
 
-void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& name)
+void HelpViewWidget::on_bookmarkNameUpdated(const QString& location, const QString& name)
 {
     if (mBookmarkMap.contains(location)) {
         foreach (QAction* action, mBookmarkMenu->actions()) {
@@ -313,7 +313,7 @@ void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& na
     }
 }
 
-void HelpView::on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name)
+void HelpViewWidget::on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name)
 {
      if (mBookmarkMap.contains(oldLocation)) {
          mBookmarkMap.remove(oldLocation);
@@ -344,7 +344,7 @@ void HelpView::on_bookmarkLocationUpdated(const QString& oldLocation, const QStr
      }
 }
 
-void HelpView::on_bookmarkRemoved(const QString &location, const QString& name)
+void HelpViewWidget::on_bookmarkRemoved(const QString &location, const QString& name)
 {
     foreach (QAction* action, mBookmarkMenu->actions()) {
         if (action->isSeparator())
@@ -359,7 +359,7 @@ void HelpView::on_bookmarkRemoved(const QString &location, const QString& name)
     }
 }
 
-void HelpView::on_loadFinished(bool ok)
+void HelpViewWidget::on_loadFinished(bool ok)
 {
     actionOnlineHelp->setEnabled( true );
     actionOnlineHelp->setChecked( false );
@@ -379,12 +379,12 @@ void HelpView::on_loadFinished(bool ok)
     }
 }
 
-void HelpView::on_actionHome_triggered()
+void HelpViewWidget::on_actionHome_triggered()
 {
     mHelpView->load(startPageUrl);
 }
 
-void HelpView::on_actionAddBookMark_triggered()
+void HelpViewWidget::on_actionAddBookMark_triggered()
 {
     if (mBookmarkMap.size() == 0)
         mBookmarkMenu->addSeparator();
@@ -407,20 +407,20 @@ void HelpView::on_actionAddBookMark_triggered()
     }
 }
 
-void HelpView::on_actionOrganizeBookMark_triggered()
+void HelpViewWidget::on_actionOrganizeBookMark_triggered()
 {
     BookmarkDialog bookmarkDialog(mBookmarkMap, this);
     bookmarkDialog.exec();
 }
 
-void HelpView::on_actionBookMark_triggered()
+void HelpViewWidget::on_actionBookMark_triggered()
 {
     QAction* sAction = qobject_cast<QAction*>(sender());
     mHelpView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
 }
 
 
-void HelpView::on_actionOnlineHelp_triggered(bool checked)
+void HelpViewWidget::on_actionOnlineHelp_triggered(bool checked)
 {
     QUrl url = mHelpView->url();
 
@@ -449,12 +449,12 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
     mHelpView->load( url );
 }
 
-void HelpView::on_actionOpenInBrowser_triggered()
+void HelpViewWidget::on_actionOpenInBrowser_triggered()
 {
     QDesktopServices::openUrl( mHelpView->url() );
 }
 
-void HelpView::on_searchHelp()
+void HelpViewWidget::on_searchHelp()
 {
     if (mSearchBar->isVisible()) {
         clearSearchBar();
@@ -465,34 +465,34 @@ void HelpView::on_searchHelp()
     }
 }
 
-void HelpView::on_backButtonTriggered()
+void HelpViewWidget::on_backButtonTriggered()
 {
     findText(mSearchLineEdit->text(), Backward);
 }
 
-void HelpView::on_forwardButtonTriggered()
+void HelpViewWidget::on_forwardButtonTriggered()
 {
     findText(mSearchLineEdit->text(), Forward);
 }
 
-void HelpView::on_searchCloseButtonTriggered()
+void HelpViewWidget::on_searchCloseButtonTriggered()
 {
     on_searchHelp();
 }
 
-void HelpView::on_caseSensitivityToggled(bool checked)
+void HelpViewWidget::on_caseSensitivityToggled(bool checked)
 {
     mSearchCaseSensitivity = checked;
     findText("", Forward);
     findText(mSearchLineEdit->text(), Forward);
 }
 
-void HelpView::searchText(const QString &text)
+void HelpViewWidget::searchText(const QString &text)
 {
     findText(text, Forward);
 }
 
-void HelpView::findText(const QString &text, SearchDirection direction)
+void HelpViewWidget::findText(const QString &text, SearchDirection direction)
 {
     QWebEnginePage::FindFlags flags = (mSearchCaseSensitivity ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
     if (direction == Backward)
@@ -507,38 +507,38 @@ void HelpView::findText(const QString &text, SearchDirection direction)
         mStatusText->setText("");
 }
 
-void HelpView::copyURLToClipboard()
+void HelpViewWidget::copyURLToClipboard()
 {
     QClipboard* clip = QApplication::clipboard();;
     clip->setText( mHelpView->page()->url().toString());
 }
 
-void HelpView::zoomIn()
+void HelpViewWidget::zoomIn()
 {
     mHelpView->page()->setZoomFactor( mHelpView->page()->zoomFactor() + 0.1);
 }
 
-void HelpView::zoomOut()
+void HelpViewWidget::zoomOut()
 {
     mHelpView->page()->setZoomFactor( mHelpView->page()->zoomFactor() - 0.1);
 }
 
-void HelpView::resetZoom()
+void HelpViewWidget::resetZoom()
 {
     mHelpView->page()->setZoomFactor(1.0);
 }
 
-void HelpView::setZoomFactor(qreal factor)
+void HelpViewWidget::setZoomFactor(qreal factor)
 {
     mHelpView->page()->setZoomFactor(factor);
 }
 
-qreal HelpView::getZoomFactor()
+qreal HelpViewWidget::getZoomFactor()
 {
     return mHelpView->page()->zoomFactor();
 }
 
-void HelpView::addBookmarkAction(const QString &objectName, const QString &title)
+void HelpViewWidget::addBookmarkAction(const QString &objectName, const QString &title)
 {
     QAction* action = new QAction(this);
     action->setObjectName(objectName);
@@ -552,17 +552,17 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
            QIcon linkButtonIcon(":/img/external-link");
            action->setIcon(linkButtonIcon);
     }
-    connect(action, &QAction::triggered, this, &HelpView::on_actionBookMark_triggered);
+    connect(action, &QAction::triggered, this, &HelpViewWidget::on_actionBookMark_triggered);
     mBookmarkMenu->addAction(action);
 }
 
-void HelpView::closeEvent(QCloseEvent *event)
+void HelpViewWidget::closeEvent(QCloseEvent *event)
 {
     clearSearchBar();
     QDockWidget::closeEvent(event);
 }
 
-void HelpView::keyPressEvent(QKeyEvent *event)
+void HelpViewWidget::keyPressEvent(QKeyEvent *event)
 {
     if (mSearchBar->isVisible()) {
         if (event->key() == Qt::Key_Escape) {
@@ -575,7 +575,7 @@ void HelpView::keyPressEvent(QKeyEvent *event)
      QDockWidget::keyPressEvent(event);
 }
 
-void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
+void HelpViewWidget::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 {
     QString downloadPage = QString("https://www.gams.com/%1").arg(mThisRelease);
 
@@ -589,12 +589,12 @@ void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
     htmlText += "</a> or from the latest download page <a href='https://www.gams.com/latest'>https://www.gams.com/latest</a>.</div> </body></html>";
 }
 
-QMultiMap<QString, QString> HelpView::getBookmarkMap() const
+QMultiMap<QString, QString> HelpViewWidget::getBookmarkMap() const
 {
     return mBookmarkMap;
 }
 
-void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
+void HelpViewWidget::setBookmarkMap(const QMultiMap<QString, QString> &value)
 {
     mBookmarkMap = value;
 

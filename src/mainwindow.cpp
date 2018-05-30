@@ -47,6 +47,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "help/helpview.h"
 
 namespace gams {
 namespace studio {
@@ -87,10 +88,13 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mDockHelpView = new HelpView(this);
+    mDockHelpView = new HelpViewWidget(this);
     this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
+    connect(mDockHelpView, &HelpViewWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     mDockHelpView->hide();
+
+    ui->dockHelpView->setWidget(new HelpView(this));
+    ui->dockHelpView->show();
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
@@ -917,7 +921,7 @@ void MainWindow::on_actionHelp_triggered()
 {
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+        mDockHelpView->on_helpContentRequested(HelpViewWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
@@ -925,11 +929,11 @@ void MainWindow::on_actionHelp_triggered()
         ce->wordInfo(ce->textCursor(), word, istate);
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
-            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, "title");
+            mDockHelpView->on_helpContentRequested(HelpViewWidget::DOLLARCONTROL_CHAPTER, "title");
         } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, word);
+            mDockHelpView->on_helpContentRequested(HelpViewWidget::DOLLARCONTROL_CHAPTER, word);
         } else {
-            mDockHelpView->on_helpContentRequested(HelpView::INDEX_CHAPTER, word);
+            mDockHelpView->on_helpContentRequested(HelpViewWidget::INDEX_CHAPTER, word);
         }
     }
     if (mDockHelpView->isHidden())
@@ -1545,7 +1549,7 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, "");
+    mDockHelpView->on_helpContentRequested(HelpViewWidget::GAMSCALL_CHAPTER, "");
     if (mDockHelpView->isHidden())
         mDockHelpView->show();
     if (tabifiedDockWidgets(mDockHelpView).count())
@@ -1918,7 +1922,7 @@ void MainWindow::updateEditorLineWrapping()
     }
 }
 
-HelpView *MainWindow::getDockHelpView() const
+HelpViewWidget *MainWindow::getDockHelpView() const
 {
     return mDockHelpView;
 }
