@@ -17,21 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPTIONPARAMETERMODEL_H
-#define OPTIONPARAMETERMODEL_H
+#ifndef OPTIONTABLEMODEL_H
+#define OPTIONTABLEMODEL_H
 
 #include <QAbstractItemModel>
+
 #include "commandlinetokenizer.h"
 #include "option.h"
 
 namespace gams {
 namespace studio {
 
-class OptionParameterModel : public QAbstractTableModel
+class OptionTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject *parent = 0);
+    OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject *parent = 0);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -48,12 +49,13 @@ public:
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QList<OptionItem> getCurrentListOfOptionItems();
+
 signals:
     void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:
     void toggleActiveOptionItem(int index);
-    void updateCurrentOption(const QString &text);
+    void on_optionTableModelChanged(const QString &text);
 
 private:
     QList<OptionItem> mOptionItem;
@@ -71,4 +73,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // OPTIONPARAMETERMODEL_H
+#endif // OPTIONTABLEMODEL_H

@@ -20,8 +20,7 @@
 #ifndef COMMANDLINEOPTION_H
 #define COMMANDLINEOPTION_H
 
-#include<QComboBox>
-#include "commandlinetokenizer.h"
+#include <QComboBox>
 
 namespace gams {
 namespace studio {
@@ -31,6 +30,7 @@ class CommandLineOption : public QComboBox
     Q_OBJECT
 
 public:
+    CommandLineOption(QWidget* parent);
     CommandLineOption(bool validateFlag, QWidget* parent);
     ~CommandLineOption();
 
