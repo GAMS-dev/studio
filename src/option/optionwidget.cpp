@@ -381,12 +381,46 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     actionInterrupt->setEnabled(enable);
     actionStop->setEnabled(enable);
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
-
 }
 
 CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const
 {
     return mGamsOptionTokenizer;
+}
+
+bool OptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)
+{
+    return (focusWidget==ui->gamsOptionTableView || focusWidget==ui->gamsOptionTreeView || focusWidget==ui->gamsOptionCommandLine);
+}
+
+QString OptionWidget::getSelectedOptionName(QWidget *widget) const
+{
+    QString selectedOptions = "";
+    if (widget == ui->gamsOptionTableView) {
+        QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QVariant headerData = ui->gamsOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            if (Qt::CheckState(headerData.toUInt())==Qt::Checked) {
+                return "";
+            }
+            QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
+            return data.toString();
+        }
+    } else if (widget == ui->gamsOptionTreeView) {
+        QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
+            if (parentIndex.row() >= 0) {
+                return ui->gamsOptionTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            } else {
+                return ui->gamsOptionTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            }
+        }
+    } /*else if (widget == ui->gamsOptionCommandLine) {
+    }*/
+    return selectedOptions;
 }
 
 }

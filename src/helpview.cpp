@@ -32,8 +32,8 @@ namespace studio {
 const QString HelpView::START_CHAPTER = "docs/index.html";
 const QString HelpView::DOLLARCONTROL_CHAPTER = "docs/UG_DollarControlOptions.html";
 const QString HelpView::GAMSCALL_CHAPTER = "docs/UG_GamsCall.html";
-const QString HelpView::OPTION_CHAPTER = "docs/UG_OptionStatement.html";
 const QString HelpView::INDEX_CHAPTER = "docs/keyword.html";
+const QString HelpView::OPTION_CHAPTER = "docs/UG_OptionStatement.html";
 const QString HelpView::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 
 HelpView::HelpView(QWidget *parent) :
@@ -52,6 +52,9 @@ HelpView::HelpView(QWidget *parent) :
     baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
     startPageUrl = QUrl::fromLocalFile(dir.absolutePath());
     mOfflineHelpAvailable = (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath()));
+
+    mChapters << START_CHAPTER << DOLLARCONTROL_CHAPTER << GAMSCALL_CHAPTER
+              << INDEX_CHAPTER << OPTION_CHAPTER;
 
     setupUi(parent);
 }
@@ -249,53 +252,50 @@ void HelpView::on_urlOpened(const QUrl& location)
     mHelpView->load(location);
 }
 
-void HelpView::on_commandLineHelpRequested()
+void HelpView::on_helpContentRequested(const QString &chapter, const QString &keyword)
 {
-    QDir dir = QDir(baseLocation).filePath(GAMSCALL_CHAPTER);
-    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
+    QDir dir = QDir(baseLocation).filePath(chapter);
+    if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
+        QString htmlText;
+        getErrorHTMLText( htmlText, chapter);
+        mHelpView->setHtml( htmlText );
+        return;
+    }
+
+    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+    switch(mChapters.indexOf(chapter)) {
+    case 0: // START_CHAPTER
         mHelpView->load(QUrl::fromLocalFile(dir.canonicalPath()));
-    } else { // show latest online doc
-        QString htmlText;
-        getErrorHTMLText( htmlText, GAMSCALL_CHAPTER);
-        mHelpView->setHtml( htmlText );
-    }
-}
-
-void HelpView::on_dollarControlHelpRequested(const QString &word)
-{
-    QString anchorStr;
-    if (word.toLower().startsWith("off")) {
-        anchorStr = "DOLLARon"+word.toLower();
-    } else if (word.toLower().startsWith("on")) {
-               anchorStr = "DOLLARonoff"+word.toLower().mid(2);
-    } else {
-        anchorStr = "DOLLAR"+word.toLower();
-    }
-
-    QDir dir = QDir(baseLocation).filePath(DOLLARCONTROL_CHAPTER);
-    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
-       QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
-       url.setFragment(anchorStr);
-       mHelpView->load(url);
-    } else { // show latest online doc
-        QString htmlText;
-        getErrorHTMLText( htmlText, DOLLARCONTROL_CHAPTER);
-        mHelpView->setHtml( htmlText );
-    }
-}
-
-void HelpView::on_keywordHelpRequested(const QString &word)
-{
-    QDir dir = QDir(baseLocation).filePath(INDEX_CHAPTER);
-    if (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath())) {
-        QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
-        url.setQuery("q="+word);
+        break;
+    case 1: // DOLLARCONTROL_CHAPTER
+        if (!keyword.isEmpty()) {
+            QString anchorStr;
+            if (keyword.toLower().startsWith("off")) {
+                anchorStr = "DOLLARon"+keyword.toLower();
+            } else if (keyword.toLower().startsWith("on")) {
+                   anchorStr = "DOLLARonoff"+keyword.toLower().mid(2);
+            } else {
+               anchorStr = "DOLLAR"+keyword.toLower();
+            }
+            url.setFragment(anchorStr);
+        }
         mHelpView->load(url);
-    } else { // show latest online doc
-        QString htmlText;
-        getErrorHTMLText( htmlText, INDEX_CHAPTER);
-        mHelpView->setHtml( htmlText );
+        break;
+    case 2: // GAMSCALL_CHAPTER
+        if (!keyword.isEmpty()) {
+            QString anchorStr = "GAMSAO" + keyword.toLower();
+            url.setFragment(anchorStr);
+        }
+        mHelpView->load(url);
+        break;
+    case 3: // INDEX_CHAPTER
+        url.setQuery("q="+keyword);
+        mHelpView->load(url);
+        break;
+    default:
+        break;
     }
+    return;
 }
 
 void HelpView::on_bookmarkNameUpdated(const QString& location, const QString& name)
