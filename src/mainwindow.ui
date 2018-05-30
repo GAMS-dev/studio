@@ -347,6 +347,15 @@
    </attribute>
    <widget class="QWidget" name="dockOptionEditorContents"/>
   </widget>
+  <widget class="QDockWidget" name="dockHelpView">
+   <property name="windowTitle">
+    <string>Help</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockHelpViewContents"/>
+  </widget>
   <action name="actionFile">
    <property name="text">
     <string>File</string>
