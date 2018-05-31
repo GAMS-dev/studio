@@ -19,7 +19,7 @@
  */
 #include <QDir>
 #include <QtWidgets>
-#include "bookmarkdialog.h"
+#include "help/bookmarkdialog.h"
 #include "exception.h"
 #include "commonpaths.h"
 #include "gclgms.h"
