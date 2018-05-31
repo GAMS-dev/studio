@@ -85,7 +85,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    gotowidget.cpp \
     helpviewwidget.cpp \
     help/helpview.cpp \
     keys.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     file/projecttreemodel.cpp \
     file/projectlognode.cpp \
     file/filemetarepo.cpp \
-    file/filemeta.cpp
+    file/filemeta.cpp \
+    gotodialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -167,9 +167,7 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    gotowidget.h \
     helpviewwidget.h \
-    help/helpsearchwidget.h \
     help/helpview.h \
     keys.h \
     logger.h \
@@ -222,7 +220,8 @@ HEADERS += \
     file/projecttreemodel.h \
     file/filemetarepo.h \
     file/filemeta.h \
-    file/projectrepo.h
+    file/projectrepo.h \
+    gotodialog.h
 
 FORMS += \
     bookmarkdialog.ui \
@@ -230,7 +229,6 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
-    gotowidget.ui \
     help/helpview.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
@@ -241,7 +239,8 @@ FORMS += \
     searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
-    welcomepage.ui
+    welcomepage.ui \
+    gotodialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

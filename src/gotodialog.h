@@ -17,42 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GOTOWIDGET_H
-#define GOTOWIDGET_H
+#ifndef GOTODIALOG_H
+#define GOTODIALOG_H
 
 #include <QDialog>
-#include "mainwindow.h"
 
 namespace Ui {
-class GoToWidget;
+class GoToDialog;
 }
 
 namespace gams {
 namespace studio {
 
-class GoToWidget : public QDialog
+class MainWindow;
+
+class GoToDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit GoToWidget(MainWindow *parent = nullptr);
+    explicit GoToDialog(MainWindow *parent = nullptr);
 
-    ~GoToWidget();
-
-    void focusTextBox();
+    ~GoToDialog();
 
 private slots:
-    void on_GoTo_clicked();
+    void on_goToButton_clicked();
 
 private:
-    Ui::GoToWidget *ui;
+    Ui::GoToDialog *ui;
     MainWindow *mMain;
-    QTextCursor mSelection;
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *event);
-
 };
 
 }
 }
-#endif // GOTOWIDGET_H
+#endif // GoToDialog_H

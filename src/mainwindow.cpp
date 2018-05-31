@@ -39,7 +39,7 @@
 #include "searchwidget.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
-#include "gotowidget.h"
+#include "gotodialog.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "editors/selectencodings.h"
@@ -130,7 +130,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
-    mGoto= new GoToWidget(this);
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
@@ -1702,7 +1701,7 @@ void MainWindow::closeFileConditionally(ProjectFileNode* file) {
 /// \param file
 ///
 void MainWindow::closeFile(ProjectFileNode* file)
-{    
+{
     ui->projectView->setCurrentIndex(QModelIndex());
 
     ProjectGroupNode *parentGroup = file->parentEntry();
@@ -1985,23 +1984,10 @@ QWidget *MainWindow::welcomePage() const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    int width = mGoto->frameGeometry().width();
-    int height = mGoto->frameGeometry().height();
-    QDesktopWidget wid;
-    int thisscreen = QApplication::desktop()->screenNumber(this);
-    int screenWidth = wid.screen(thisscreen)->width();
-    int screenHeight = wid.screen(thisscreen)->height();
-    int x = wid.availableGeometry(thisscreen).x();
-    int y = wid.availableGeometry(thisscreen).y();
-    if (mGoto->isVisible()) {
-        mGoto->hide();
-    } else {
-        mGoto->setGeometry(x+(screenWidth/2)-(width/2),y+(screenHeight/2)-(height/2),width,height);
-        if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
-            return;
-        mGoto->show();
-        mGoto->focusTextBox();
-    }
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
+        return;
+    GoToDialog dialog(this);
+    dialog.exec();
 }
 
 
