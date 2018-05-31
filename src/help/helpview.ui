@@ -33,13 +33,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWebEngineView" name="webEngineView">
-     <property name="url">
-      <url>
-       <string>about:blank</string>
-      </url>
-     </property>
-    </widget>
+    <widget class="QWebEngineView" name="webEngineView"/>
    </item>
    <item>
     <widget class="QWidget" name="statusbarWidget" native="true">

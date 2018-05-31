@@ -39,6 +39,8 @@ public:
     explicit HelpView(QWidget *parent = 0);
     ~HelpView();
 
+    QMultiMap<QString, QString> getBookmarkMap() const;
+    void setBookmarkMap(const QMultiMap<QString, QString> &value);
     void clearStatusBar();
 
     static const QString START_CHAPTER;
@@ -49,6 +51,12 @@ public:
     static const QString LATEST_ONLINE_HELP_URL;
 
 public slots:
+    void on_urlOpened(const QUrl& location);
+    void on_helpContentRequested(const QString& chapter, const QString& keyword);
+    void on_bookmarkNameUpdated(const QString& location, const QString& name);
+    void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
+    void on_bookmarkRemoved(const QString& location, const QString& name);
+
     void on_loadFinished(bool ok);
 
     void on_actionHome_triggered();
@@ -68,6 +76,13 @@ public slots:
     void on_closeButtonTriggered();
     void on_caseSensitivityToggled(bool checked);
     void searchText(const QString& text);
+
+    void zoomIn();
+    void zoomOut();
+    void resetZoom();
+
+    void setZoomFactor(qreal factor);
+    qreal getZoomFactor();
 
 protected:
     void closeEvent(QCloseEvent *event);

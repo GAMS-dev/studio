@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QCheckBox>
+#include <QClipboard>
 #include <QDir>
 #include <QDesktopServices>
 #include <QKeyEvent>
@@ -137,6 +138,8 @@ HelpView::HelpView(QWidget *parent) :
     connect(ui->forwardButton, &QPushButton::clicked, this, &HelpView::on_forwardButtonTriggered);
     connect(ui->caseSenstivity, &QCheckBox::clicked, this, &HelpView::on_caseSensitivityToggled);
     connect(ui->closeButton, &QPushButton::clicked, this, &HelpView::on_closeButtonTriggered);
+
+    clearStatusBar();
 }
 
 HelpView::~HelpView()
@@ -144,11 +147,141 @@ HelpView::~HelpView()
     delete ui;
 }
 
+QMultiMap<QString, QString> HelpView::getBookmarkMap() const
+{
+    return mBookmarkMap;
+}
+
+void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
+{
+    mBookmarkMap = value;
+
+    if (mBookmarkMap.size() > 0)
+        mBookmarkMenu->addSeparator();
+
+    QMultiMap<QString, QString>::iterator i;
+    for (i = mBookmarkMap.begin(); i != mBookmarkMap.end(); ++i) {
+        addBookmarkAction(i.key(), i.value());
+    }
+}
+
 void HelpView::clearStatusBar()
 {
     ui->searchLineEdit->clear();
     findText("", Forward);
     ui->statusbarWidget->hide();
+}
+
+void HelpView::on_urlOpened(const QUrl &location)
+{
+    ui->webEngineView->load(location);
+}
+
+void HelpView::on_helpContentRequested(const QString &chapter, const QString &keyword)
+{
+    QDir dir = QDir(baseLocation).filePath(chapter);
+    if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
+        QString htmlText;
+        getErrorHTMLText( htmlText, chapter);
+        ui->webEngineView->setHtml( htmlText );
+        return;
+    }
+
+    QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
+    switch(mChapters.indexOf(chapter)) {
+    case 0: // START_CHAPTER
+        ui->webEngineView->load(QUrl::fromLocalFile(dir.canonicalPath()));
+        break;
+    case 1: // DOLLARCONTROL_CHAPTER
+        if (!keyword.isEmpty()) {
+            QString anchorStr;
+            if (keyword.toLower().startsWith("off")) {
+                anchorStr = "DOLLARon"+keyword.toLower();
+            } else if (keyword.toLower().startsWith("on")) {
+                   anchorStr = "DOLLARonoff"+keyword.toLower().mid(2);
+            } else {
+               anchorStr = "DOLLAR"+keyword.toLower();
+            }
+            url.setFragment(anchorStr);
+        }
+        ui->webEngineView->load(url);
+        break;
+    case 2: // GAMSCALL_CHAPTER
+        if (!keyword.isEmpty()) {
+            QString anchorStr = "GAMSAO" + keyword.toLower();
+            url.setFragment(anchorStr);
+        }
+        ui->webEngineView->load(url);
+        break;
+    case 3: // INDEX_CHAPTER
+        url.setQuery("q="+keyword);
+        ui->webEngineView->load(url);
+        break;
+    default:
+        break;
+    }
+    return;
+}
+
+void HelpView::on_bookmarkNameUpdated(const QString &location, const QString &name)
+{
+    if (mBookmarkMap.contains(location)) {
+        foreach (QAction* action, mBookmarkMenu->actions()) {
+            if (action->isSeparator())
+                continue;
+            if (QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) {
+                action->setText(name);
+                mBookmarkMap.replace(location, name);
+                break;
+           }
+        }
+    }
+}
+
+void HelpView::on_bookmarkLocationUpdated(const QString &oldLocation, const QString &newLocation, const QString &name)
+{
+    if (mBookmarkMap.contains(oldLocation)) {
+        mBookmarkMap.remove(oldLocation);
+        foreach (QAction* action, mBookmarkMenu->actions()) {
+            if (action->isSeparator())
+                continue;
+            if (QString::compare(action->objectName(), oldLocation, Qt::CaseInsensitive) == 0) {
+                mBookmarkMenu->removeAction( action );
+                break;
+           }
+        }
+    }
+
+    bool found = false;
+    foreach (QAction* action, mBookmarkMenu->actions()) {
+        if (action->isSeparator())
+            continue;
+        if ((QString::compare(action->objectName(), newLocation, Qt::CaseInsensitive) == 0) &&
+            (QString::compare(action->text(), name, Qt::CaseInsensitive) == 0)
+           ) {
+              found = true;
+              break;
+        }
+    }
+    if (!found) {
+        addBookmarkAction(newLocation, name);
+        mBookmarkMap.insert(newLocation, name);
+    }
+}
+
+void HelpView::on_bookmarkRemoved(const QString &location, const QString &name)
+{
+    foreach (QAction* action, mBookmarkMenu->actions()) {
+        if (action->isSeparator())
+            continue;
+        if ((QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) &&
+            (QString::compare(action->text(), name, Qt::CaseInsensitive) == 0)
+           ) {
+              mBookmarkMap.remove(location, name);
+              mBookmarkMenu->removeAction( action );
+              break;
+        }
+    }
 }
 
 void HelpView::on_actionHome_triggered()
@@ -242,7 +375,7 @@ void HelpView::on_actionOpenInBrowser_triggered()
 void HelpView::on_actionCopyPageURL_triggered()
 {
     QClipboard* clip = QApplication::clipboard();;
-    clip->setText( mHelpView->page()->url().toString());
+    clip->setText( ui->webEngineView->page()->url().toString());
 }
 
 void HelpView::on_actionBookmark_triggered()
@@ -271,12 +404,12 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
 
 void HelpView::on_searchHelp()
 {
-    if (ui->webEngineView->isVisible()) {
+    if (ui->statusbarWidget->isVisible()) {
         clearStatusBar();
         ui->webEngineView->setFocus();
     } else {
         ui->statusbarWidget->show();
-        ui->webEngineView->setFocus();
+        ui->searchLineEdit->setFocus();
     }
 }
 
@@ -304,6 +437,31 @@ void HelpView::on_caseSensitivityToggled(bool checked)
 void HelpView::searchText(const QString &text)
 {
     findText(text, Forward);
+}
+
+void HelpView::zoomIn()
+{
+    ui->webEngineView->page()->setZoomFactor( ui->webEngineView->page()->zoomFactor() + 0.1);
+}
+
+void HelpView::zoomOut()
+{
+    ui->webEngineView->page()->setZoomFactor( ui->webEngineView->page()->zoomFactor() - 0.1);
+}
+
+void HelpView::resetZoom()
+{
+    ui->webEngineView->page()->setZoomFactor(1.0);
+}
+
+void HelpView::setZoomFactor(qreal factor)
+{
+    ui->webEngineView->page()->setZoomFactor(factor);
+}
+
+qreal HelpView::getZoomFactor()
+{
+    return ui->webEngineView->page()->zoomFactor();
 }
 
 void HelpView::closeEvent(QCloseEvent *event)
