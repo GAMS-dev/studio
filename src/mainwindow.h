@@ -50,7 +50,6 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class Result;
-class GoToWidget;
 class AutosaveHandler;
 
 struct RecentData {
@@ -294,7 +293,9 @@ private:
     ProjectContextMenu mProjectContextMenu;
     void changeToLog(ProjectFileNode* fileNode);
 
-    GoToWidget *mGoto;
+    QToolButton* interruptToolButton = nullptr;
+    QToolButton* mRunToolButton = nullptr;
+
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
