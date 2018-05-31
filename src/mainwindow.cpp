@@ -886,7 +886,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
             openFileNode(lstCtx, true);
 
     }
-    ui->dockLogView->raise();
 }
 
 void MainWindow::postGamsLibRun(AbstractProcess* process)
@@ -1521,6 +1520,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
+
+    ui->dockLogView->raise();
 }
 
 void MainWindow::updateRunState()
