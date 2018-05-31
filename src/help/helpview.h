@@ -39,6 +39,8 @@ public:
     explicit HelpView(QWidget *parent = 0);
     ~HelpView();
 
+    void clearStatusBar();
+
     static const QString START_CHAPTER;
     static const QString DOLLARCONTROL_CHAPTER ;
     static const QString OPTION_CHAPTER;
@@ -47,8 +49,29 @@ public:
     static const QString LATEST_ONLINE_HELP_URL;
 
 public slots:
-    void on_actionHome_triggered();
     void on_loadFinished(bool ok);
+
+    void on_actionHome_triggered();
+    void on_actionAddBookmark_triggered();
+    void on_actionOrganizeBookmark_triggered();
+    void on_actionBookmark_triggered();
+
+    void on_actionOnlineHelp_triggered(bool checked);
+    void on_actionOpenInBrowser_triggered();
+    void on_actionCopyPageURL_triggered();
+
+    void addBookmarkAction(const QString& objectName, const QString& title);
+
+    void on_searchHelp();
+    void on_backButtonTriggered();
+    void on_forwardButtonTriggered();
+    void on_closeButtonTriggered();
+    void on_caseSensitivityToggled(bool checked);
+    void searchText(const QString& text);
+
+protected:
+    void closeEvent(QCloseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     Ui::HelpView *ui;
@@ -66,6 +89,11 @@ private:
     bool mOfflineHelpAvailable = false;
 
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
+    void findText(const QString &text, SearchDirection direction);
 };
 
 } // namespace studio
