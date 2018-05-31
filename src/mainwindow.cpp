@@ -1539,7 +1539,7 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
     // loadCommandLineOptions(fc);
     // TODO As an activated tab should synchronize with the shown option,
     // also activate Tab in addition to loadCommandLineOptions(fc).
-    // The run ui states will be updated when activeTabChanged(index) is called.
+    updateRunState();
 }
 
 void MainWindow::on_commandLineHelpTriggered()
