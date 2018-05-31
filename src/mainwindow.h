@@ -31,7 +31,6 @@
 #include "option/optionwidget.h"
 #include "projectcontextmenu.h"
 #include "help/helpview.h"
-#include "helpviewwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
@@ -276,7 +275,6 @@ private:
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
-    HelpViewWidget* mDockHelpView = nullptr;
     HelpView* mHelpView = nullptr;
     OptionWidget* mGamsOptionWidget = nullptr;
 

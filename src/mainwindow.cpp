@@ -88,11 +88,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mDockHelpView = new HelpViewWidget(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-//    connect(mDockHelpView, &HelpViewWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
-//    mDockHelpView->hide();
-
     mHelpView = new HelpView(this);
     ui->dockHelpView->setWidget(mHelpView);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
@@ -922,7 +917,7 @@ void MainWindow::on_actionHelp_triggered()
 {
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        mHelpView->on_helpContentRequested(HelpViewWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+        mHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
@@ -930,11 +925,11 @@ void MainWindow::on_actionHelp_triggered()
         ce->wordInfo(ce->textCursor(), word, istate);
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
-            mHelpView->on_helpContentRequested(HelpViewWidget::DOLLARCONTROL_CHAPTER, "title");
+            mHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, "title");
         } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mHelpView->on_helpContentRequested(HelpViewWidget::DOLLARCONTROL_CHAPTER, word);
+            mHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, word);
         } else {
-            mHelpView->on_helpContentRequested(HelpViewWidget::INDEX_CHAPTER, word);
+            mHelpView->on_helpContentRequested(HelpView::INDEX_CHAPTER, word);
         }
     }
     if (ui->dockHelpView->isHidden())
@@ -1555,7 +1550,7 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    mHelpView->on_helpContentRequested(HelpViewWidget::GAMSCALL_CHAPTER, "");
+    mHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, "");
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())
