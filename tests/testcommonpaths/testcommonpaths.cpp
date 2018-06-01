@@ -25,7 +25,15 @@ using gams::studio::CommonPaths;
 void TestCommonPaths::testSystemDir()
 {
     auto result = CommonPaths::systemDir();
-    QVERIFY(!result.isEmpty());
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testCustomSystemDir()
+{
+    const QString customDir = "/home/user/gams/xx.y";
+    CommonPaths::setSystemDir(customDir);
+    auto result = CommonPaths::systemDir();
+    QVERIFY(customDir == result);
 }
 
 void TestCommonPaths::testUserDocumentDir()

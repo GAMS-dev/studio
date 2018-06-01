@@ -28,6 +28,7 @@ class TestCommonPaths : public QObject
 
 private slots:
     void testSystemDir();
+    void testCustomSystemDir();
     void testUserDocumentDir();
     void testUserModelLibraryDir();
     void testDefaultWorkingDir();

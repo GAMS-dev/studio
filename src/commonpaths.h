@@ -38,14 +38,21 @@ namespace studio {
 class CommonPaths
 {
 public:
+
     ///
     /// \brief Get GAMS system directory.
+    /// \return Returns the GAMS system directory.
+    ///
+    static const QString& systemDir();
+
+    ///
+    /// \brief Set GAMS system directory.
     /// \return Returns the GAMS system directory.
     /// \remark If GAMS Studio is part of the GAMS distribution a relateive
     ///         path based on the executable location is returned;
     ///         otherwise the PATH environment variable used to find GAMS.
     ///
-    static QString systemDir();
+    static void setSystemDir(const QString &sysdir = QString());
 
     static QString defaultWorkingDir();
 
@@ -71,6 +78,9 @@ public:
 
 private:
     CommonPaths();
+
+private:
+    static QString SystemDir;
 };
 
 }

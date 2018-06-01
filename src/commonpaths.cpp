@@ -28,12 +28,23 @@
 namespace gams {
 namespace studio {
 
+QString CommonPaths::SystemDir = QString();
+
 CommonPaths::CommonPaths()
 {
 
 }
 
-QString CommonPaths::systemDir() {
+const QString& CommonPaths::systemDir() {
+    return SystemDir;
+}
+
+void CommonPaths::setSystemDir(const QString &sysdir) {
+    if (!sysdir.isEmpty()) {
+        SystemDir = sysdir;
+        return;
+    }
+
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
@@ -53,7 +64,7 @@ QString CommonPaths::systemDir() {
         if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
     }
 
-    return QDir::cleanPath(gamsPath);
+    SystemDir = QDir::cleanPath(gamsPath);
 }
 
 QString CommonPaths::userDocumentsDir()
