@@ -62,7 +62,7 @@ public slots:
     void on_actionHome_triggered();
     void on_actionAddBookmark_triggered();
     void on_actionOrganizeBookmark_triggered();
-    void on_actionBookmark_triggered();
+    void on_bookmarkaction();
 
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
@@ -108,7 +108,7 @@ private:
         Forward = 0,
         Backward = 1
     };
-    void findText(const QString &text, SearchDirection direction);
+    void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
 };
 
 } // namespace studio

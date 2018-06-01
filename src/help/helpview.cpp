@@ -101,7 +101,7 @@ HelpView::HelpView(QWidget *parent) :
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    ui->actionOnlineHelp = new QAction("View This Page from https://www.gams.com/"+mThisRelease+"/", this);
+    ui->actionOnlineHelp->setText("View This Page from https://www.gams.com/"+mThisRelease+"/");
     ui->actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
     ui->actionOnlineHelp->setCheckable(true);
     helpMenu->addAction(ui->actionOnlineHelp);
@@ -168,7 +168,7 @@ void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
 void HelpView::clearStatusBar()
 {
     ui->searchLineEdit->clear();
-    findText("", Forward);
+    findText("", Forward, ui->caseSenstivity->isChecked());
     ui->statusbarWidget->hide();
 }
 
@@ -378,7 +378,7 @@ void HelpView::on_actionCopyPageURL_triggered()
     clip->setText( ui->webEngineView->page()->url().toString());
 }
 
-void HelpView::on_actionBookmark_triggered()
+void HelpView::on_bookmarkaction()
 {
     QAction* sAction = qobject_cast<QAction*>(sender());
     ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
@@ -398,7 +398,7 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
            QIcon linkButtonIcon(":/img/external-link");
            action->setIcon(linkButtonIcon);
     }
-    connect(action, &QAction::triggered, this, &HelpView::on_actionBookmark_triggered);
+    connect(action, &QAction::triggered, this, &HelpView::on_bookmarkaction);
     mBookmarkMenu->addAction(action);
 }
 
@@ -415,12 +415,12 @@ void HelpView::on_searchHelp()
 
 void HelpView::on_backButtonTriggered()
 {
-    findText(ui->searchLineEdit->text(), Backward);
+    findText(ui->searchLineEdit->text(), Backward, ui->caseSenstivity->isChecked());
 }
 
 void HelpView::on_forwardButtonTriggered()
 {
-    findText(ui->searchLineEdit->text(), Forward);
+    findText(ui->searchLineEdit->text(), Forward, ui->caseSenstivity->isChecked());
 }
 
 void HelpView::on_closeButtonTriggered()
@@ -430,13 +430,13 @@ void HelpView::on_closeButtonTriggered()
 
 void HelpView::on_caseSensitivityToggled(bool checked)
 {
-    findText("", Forward);
-    findText(ui->searchLineEdit->text(), Forward);
+    findText("", Forward, checked);
+    findText(ui->searchLineEdit->text(), Forward, checked);
 }
 
 void HelpView::searchText(const QString &text)
 {
-    findText(text, Forward);
+    findText(text, Forward, ui->caseSenstivity->isChecked());
 }
 
 void HelpView::zoomIn()
@@ -497,9 +497,9 @@ void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
     htmlText += "</a> or from the latest download page <a href='https://www.gams.com/latest'>https://www.gams.com/latest</a>.</div> </body></html>";
 }
 
-void HelpView::findText(const QString &text, HelpView::SearchDirection direction)
+void HelpView::findText(const QString &text, HelpView::SearchDirection direction, bool caseSensitivity)
 {
-    QWebEnginePage::FindFlags flags = (ui->caseSenstivity->isChecked() ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
+    QWebEnginePage::FindFlags flags = (caseSensitivity ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
     if (direction == Backward)
         flags = flags | QWebEnginePage::FindBackward;
     ui->webEngineView->page()->findText(text, flags, [this](bool found) {
