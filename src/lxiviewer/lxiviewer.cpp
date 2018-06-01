@@ -52,8 +52,8 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, ProjectFileNode *fc, QWidget *paren
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
-    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
+    connect(mFileNode->parentNode(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
+    connect(mFileNode->parentNode(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
@@ -73,7 +73,7 @@ CodeEditor *LxiViewer::codeEditor() const
 
 void LxiViewer::loadLxiFile()
 {
-    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
+    if (QProcess::NotRunning == mFileNode->parentNode()->gamsProcessState()) {
         if (QFileInfo(mLxiFile).exists()) {
             ui->splitter->widget(0)->show();
             LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
@@ -89,7 +89,7 @@ void LxiViewer::loadLxiFile()
 
 void LxiViewer::loadLstFile()
 {
-    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
+    if (QProcess::NotRunning == mFileNode->parentNode()->gamsProcessState()) {
         mFileNode->load(mFileNode->codecMib());
     }
 

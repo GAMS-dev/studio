@@ -30,10 +30,15 @@
 namespace gams {
 namespace studio {
 
-ProjectLogNode::ProjectLogNode(TextMarkRepo* textMarkRepo, FileId fileId, FileMeta* fileMeta, NodeId groupId)
-    : ProjectFileNode(textMarkRepo, fileId, fileMeta, groupId, NodeType::Log)
+ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectGroupNode *group)
+    : ProjectFileNode(fileMeta, group, NodeType::Log)
+{}
+
+void ProjectLogNode::resetLst()
 {
+    mLstNode = nullptr;
 }
+
 
 /*
 
@@ -106,11 +111,6 @@ void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
 void ProjectLogNode::fileClosed(ProjectFileNode *fc)
 {
     if (fc == mLstNode) mLstNode = nullptr;
-}
-
-void ProjectLogNode::resetLst()
-{
-    mLstNode = nullptr;
 }
 
 TextMark*ProjectLogNode::firstErrorMark()

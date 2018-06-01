@@ -59,7 +59,7 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
     bool isGmsFile = false;
     if (mNode->type() == NodeType::File) {
         ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
-        isGmsFile = (fc->metrics().fileType() == FileKind::Gms);
+        isGmsFile = (fc->file()->kind() == FileKind::Gms);
     }
 
 //    mActions[2]->setVisible(isGmsFile);
@@ -94,7 +94,7 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
     ProjectGroupNode *group = (mNode->type() == NodeType::Group)
-                              ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
+                              ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentNode();
 
     emit addExistingFile(group, filePath);
 }
@@ -127,7 +127,7 @@ void ProjectContextMenu::onAddNewFile()
         file.resize(0);
     }
     ProjectGroupNode *group = (mNode->type() == NodeType::Group) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                 : mNode->parentEntry();
+                                                                 : mNode->parentNode();
     emit addExistingFile(group, filePath);
 }
 
@@ -139,7 +139,7 @@ void ProjectContextMenu::setParent(QWidget *parent)
 void ProjectContextMenu::onCloseGroup()
 {
     ProjectGroupNode *group = (mNode->type() == NodeType::Group) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                 : mNode->parentEntry();
+                                                                 : mNode->parentNode();
     if (group) emit closeGroup(group);
 }
 
@@ -159,13 +159,13 @@ void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
     if (mNode->type() == NodeType::File) {
-        ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
+        ProjectFileNode *node = static_cast<ProjectFileNode*>(mNode);
 
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            ProjectGroupNode *parent = file->parentEntry();
+            ProjectGroupNode *parent = node->parentNode();
             if (parent) openLoc = parent->location();
             QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
         } else {
@@ -174,13 +174,13 @@ void ProjectContextMenu::onOpenFileLoc()
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(file->location());
+            args << QDir::toNativeSeparators(node->file()->location());
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();
         }
 #else
-        ProjectGroupNode *parent = file->parentEntry();
+        ProjectGroupNode *parent = node->parentEntry();
         if (parent) openLoc = parent->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif

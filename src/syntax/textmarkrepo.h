@@ -17,20 +17,17 @@ class TextMarkRepo: public QObject
 {
     Q_OBJECT
 public:
-
-    // TODO(JM) next step: shoft from ProjectRepo to FileMetaRepo
-//    TextMarkRepo(FileMetaRepo* fileRepo, QObject *parent = nullptr);
-    explicit TextMarkRepo(ProjectRepo* fileRepo, QObject *parent = nullptr);
+    explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
     void removeMark(TextMark* tm);
     void removeMarks(FileId fileId);
     TextMark* createMark(TextMarkData* tmData);
-    QTextDocument* document(FileId fileId, NodeId groupId = -1) const;
+    QTextDocument* document(FileId fileId) const;
 
 //    FileMetaRepo *fileRepo() const { return mFileRepo; }
-    ProjectRepo *fileRepo() const { return mFileRepo; }
-    bool openFile(FileId fileId, bool focus = false);
+    FileMetaRepo *fileRepo() const { return mFileRepo; }
+    bool openFile(FileId fileId, NodeId groupId, bool focus = false);
     void jumpTo(FileId fileId, QTextCursor cursor, bool focus = false);
     void rehighlightAt(FileId fileId, int pos);
     FileKind fileKind(FileId fileId);
@@ -39,8 +36,8 @@ public:
 
 
 private:
-//    FileMetaRepo* mFileRepo = nullptr;
-    ProjectRepo* mFileRepo = nullptr;
+    FileMetaRepo* mFileRepo = nullptr;
+    ProjectRepo* mProjectRepo = nullptr;
     QMultiHash<FileId, TextMark*> mMarks;
 
 private:

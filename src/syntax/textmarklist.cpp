@@ -42,7 +42,7 @@ void TextMarkList::bind(ProjectFileNode* fc)
     if (mFileNode)
         EXCEPT() << "TextMarks are already bound to FileNode " << mFileNode->location();
     mFileNode = fc;
-    mGroupNode = fc->parentEntry();
+    mGroupNode = fc->parentNode();
     mFileName = fc->location();
     if (fc->document() && fc->metrics().fileType().kind() == FileType::Gms) connectDoc();
 }

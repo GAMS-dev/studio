@@ -52,18 +52,26 @@ public:
     };
 
     ~ProjectFileNode() override;
+    void setParentNode(ProjectGroupNode *parent) override;
+
+
+    /// The icon for this file type.
+    /// \return The icon for this file type.
+    QIcon icon() override;
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
     const QString name(NameModifier mod = NameModifier::Raw) override;
     bool isModified();
     QTextDocument* document() const;
+    FileMeta* file() const;
+    QString location() const;
 
 
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
-    ProjectFileNode(TextMarkRepo* marksRepo, NodeId nodeId, FileMeta* fileMeta, NodeId groupId = -1, NodeType type = NodeType::File);
+    ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::File);
 
 private:
     FileMeta* mFileMeta;
@@ -84,10 +92,6 @@ private:
 //    /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
 //    /// \param location The new location
 //    void setLocation(const QString &_location) override;
-
-//    /// The icon for this file type.
-//    /// \return The icon for this file type.
-//    QIcon icon() override;
 
 //    /// Saves the file, if it is changed.
 //    void save();

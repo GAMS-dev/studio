@@ -13,12 +13,14 @@ class FileMeta: QObject
 {
     Q_OBJECT
 public:
-    FileMeta(QString location);
+    inline FileId id() const;
     QString location() const;
     FileKind kind();
     QString name();
     bool isModified() const;
     QTextDocument* document() const;
+    int codecMib() const;
+    bool exists() const;
 
 private:
     struct Data {
@@ -30,10 +32,15 @@ private:
         FileType *type = nullptr;
     };
 
+    friend class FileMetaRepo;
+    FileMeta(FileId id, QString location);
+
 private:
+    FileId mId;
     QString mLocation;
     QString mName;
     Data mData;
+    QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark

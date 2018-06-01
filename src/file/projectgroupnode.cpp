@@ -33,38 +33,34 @@
 namespace gams {
 namespace studio {
 
-ProjectGroupNode::ProjectGroupNode(NodeId id, QString name, FileMeta* runFileMeta)
-    : ProjectAbstractNode(id, name, NodeType::Group)
-    , mGamsProcess(runFileMeta ? new GamsProcess() : nullptr)
-{
-    if (!runFileMeta) return;
-    QFileInfo runFile(runFileMeta->location());
-    mLocation = runFile.absoluteDir().path();
-    QString runInfo = runFile.fileName();
-
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(mLocation + "/" + runInfo);
-    QFileInfo alternateFile(mLocation + "/" + runnableFile.completeBaseName() + ".gms");
-
-    // fix for .lst-as-basefile bug
-    if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    } else if (alternateFile.exists()) {
-        mGmsFileName = alternateFile.fileName();
-    } else {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    }
-
-//    if (mGamsProcess) {
-//        mGamsProcess->setNode(this);
-//        connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
-//    }
-}
+ProjectGroupNode::ProjectGroupNode(QString name, NodeType type)
+    : ProjectAbstractNode(name, type)
+{}
 
 ProjectGroupNode::~ProjectGroupNode()
 {
     if (mChildList.size())
         DEB() << "Group must be empty before deletion";
+}
+
+QIcon ProjectGroupNode::icon()
+{
+    return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
+}
+
+int ProjectGroupNode::childCount() const
+{
+    return mChildList.count();
+}
+
+ProjectAbstractNode*ProjectGroupNode::childEntry(int index) const
+{
+    return mChildList.at(index);
+}
+
+int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
+{
+    return mChildList.indexOf(child);
 }
 
 void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
@@ -93,45 +89,121 @@ void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
 //        setFlag(cfActive);
 }
 
-
-
 void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
 {
     mChildList.removeOne(child);
 //    detachFile(child->location());
 }
 
-int ProjectGroupNode::childCount() const
+QString ProjectGroupNode::location() const
 {
-    return mChildList.count();
+    return mLocation;
 }
 
-ProjectAbstractNode*ProjectGroupNode::childEntry(int index) const
+void ProjectGroupNode::setLocation(const QString& location)
 {
-    return mChildList.at(index);
+    mLocation = location;
 }
 
-int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
+QString ProjectGroupNode::tooltip()
 {
-    return mChildList.indexOf(child);
+    return QString(location());
 }
 
-ProjectLogNode* ProjectGroupNode::logNode() const
+
+
+ProjectRunGroupNode::ProjectRunGroupNode(QString name, FileMeta* runFileMeta)
+    : ProjectGroupNode(name, NodeType::RunGroup)
+    , mGamsProcess(runFileMeta ? new GamsProcess() : nullptr)
+{
+    if (!runFileMeta) return;
+    QFileInfo runFile(runFileMeta->location());
+    setLocation(runFile.absoluteDir().path());
+    QString runInfo = runFile.fileName();
+
+    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    QFileInfo runnableFile(location() + "/" + runInfo);
+    QFileInfo alternateFile(location() + "/" + runnableFile.completeBaseName() + ".gms");
+
+    // fix for .lst-as-basefile bug
+    if (runnableFile.suffix() == "gms") {
+        mGmsFileName = runnableFile.absoluteFilePath();
+    } else if (alternateFile.exists()) {
+        mGmsFileName = alternateFile.fileName();
+    } else {
+        mGmsFileName = runnableFile.absoluteFilePath();
+    }
+
+//    if (mGamsProcess) {
+//        mGamsProcess->setNode(this);
+//        connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
+//    }
+}
+
+
+ProjectLogNode* ProjectRunGroupNode::logNode() const
 {
     return mLogNode;
 }
 
-void ProjectGroupNode::setLogNode(ProjectLogNode* logNode)
+void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
 {
     if (mLogNode)
         EXCEPT() << "Reset the logNode is not allowed";
     mLogNode = logNode;
 }
 
-QString ProjectGroupNode::location() const
+ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(TextMarkRepo *textMarkRepo, FileMetaRepo *fileMetaRepo)
 {
-    return mLocation;
+    if (mLogNode) return mLogNode;
+    QString logName = "[LOG]" + QString::number(id());
+    FileMeta* fm = fileMetaRepo->getOrCreateFileMeta(logName);
+    ProjectLogNode* logNode = new ProjectLogNode(textMarkRepo, fileMetaRepo, id());
 }
+
+QString ProjectRunGroupNode::runnableGms() const
+{
+    // TODO(JM) for projects the project file has to be parsed for the main runableGms
+    return mGmsFileName;
+}
+
+void ProjectRunGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
+{
+    QString location = gmsFileNode->location();
+
+    mGmsFileName = location;
+    setLstFileName(QFileInfo(location).baseName() + ".lst");
+    if (logNode()) logNode()->resetLst();
+}
+
+void ProjectRunGroupNode::removeRunnableGms()
+{
+    mGmsFileName = "";
+    mLstFileName = "";
+}
+
+void ProjectRunGroupNode::setLstFileName(const QString &lstFileName)
+{
+    QFileInfo fi(lstFileName);
+    if (fi.isRelative())
+        mLstFileName = location() + "/" + lstFileName;
+    else
+        mLstFileName = lstFileName;
+}
+
+QString ProjectRunGroupNode::lstFileName() const
+{
+    return mLstFileName;
+}
+
+QString ProjectRunGroupNode::tooltip()
+{
+    QString res(location());
+    res.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
+//    tip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    return res;
+}
+
 
 
 /*
@@ -211,12 +283,6 @@ ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
             ? static_cast<ProjectFileNode*>(fsc) : nullptr;
 }
 
-void ProjectGroupNode::setLocation(const QString& location)
-{
-    Q_UNUSED(location);
-    EXCEPT() << "The location of a FileGroupNode can't be changed.";
-}
-
 void ProjectGroupNode::checkFlags()
 {
     bool active = false;
@@ -266,15 +332,6 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
-void ProjectGroupNode::setLstFileName(const QString &lstFileName)
-{
-    QFileInfo fi(lstFileName);
-    if (fi.isRelative())
-        mLstFileName = location() + "/" + lstFileName;
-    else
-        mLstFileName = lstFileName;
-}
-
 void ProjectGroupNode::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
@@ -285,14 +342,6 @@ void ProjectGroupNode::dumpMarks()
         }
         DEB() << res;
     }
-}
-
-QString ProjectGroupNode::tooltip()
-{
-    QString tooltip(location());
-    tooltip.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
-//    tooltip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
-    return tooltip;
 }
 
 void ProjectGroupNode::attachFile(const QString &filepath)
@@ -413,32 +462,6 @@ void ProjectGroupNode::saveGroup()
     }
 }
 
-QString ProjectGroupNode::runnableGms()
-{
-    // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mGmsFileName;
-}
-
-void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
-{
-    QString location = gmsFileNode->location();
-
-    mGmsFileName = location;
-    setLstFileName(QFileInfo(location).baseName() + ".lst");
-    if (logNode()) logNode()->resetLst();
-}
-
-void ProjectGroupNode::removeRunnableGms()
-{
-    mGmsFileName = "";
-    mLstFileName = "";
-}
-
-QString ProjectGroupNode::lstFileName()
-{
-    return mLstFileName;
-}
-
 GamsProcess*ProjectGroupNode::gamsProcess()
 {
     return mGamsProcess.get();
@@ -449,11 +472,6 @@ QProcess::ProcessState ProjectGroupNode::gamsProcessState() const
     return mGamsProcess->state();
 }
 
-QIcon ProjectGroupNode::icon()
-{
-    return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
-}
-
 void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState);
@@ -462,6 +480,36 @@ void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState
 }
 
 */
+
+ProjectRootNode::ProjectRootNode()
+    : ProjectGroupNode("Root", NodeType::Root)
+{}
+
+void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)
+{
+    Q_UNUSED(parent);
+    EXCEPT() << "The root node has no parent";
+}
+
+ProjectRepo *ProjectRootNode::repo() const
+{
+    if (!mRepo) EXCEPT() << "The ProjectRepo must not be null";
+    return mRepo;
+}
+
+TextMarkRepo *ProjectRootNode::textMarkRepo() const
+{
+    if (!mTextMarkRepo) EXCEPT() << "The TextMarkRepo must not be null";
+    return mTextMarkRepo;
+}
+
+void ProjectRootNode::init(ProjectRepo *repo, TextMarkRepo *textMarkRepo)
+{
+    if (!repo) EXCEPT() << "The ProjectRepo must not be null";
+    if (!textMarkRepo) EXCEPT() << "The TextMarkRepo must not be null";
+    mRepo = repo;
+    mTextMarkRepo = textMarkRepo;
+}
 
 } // namespace studio
 } // namespace gams

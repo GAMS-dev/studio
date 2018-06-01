@@ -28,9 +28,7 @@ namespace studio {
 class ProjectLogNode final: public ProjectFileNode
 {
 public:
-
-private:
-    QTextDocument *mDocument = nullptr;
+    void resetLst();
 
 //public:
 //    void markOld();
@@ -39,7 +37,6 @@ private:
 //    void removeEditor(QWidget* edit) override;
 //    void setParentEntry(ProjectGroupNode *parent) override;
 //    void fileClosed(ProjectFileNode* fc);
-//    void resetLst();
 //    TextMark* firstErrorMark();
 //    void clearLog();
 //    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
@@ -49,7 +46,8 @@ private:
 
 protected:
     friend class ProjectRepo;
-    ProjectLogNode(TextMarkRepo *textMarkRepo, FileId fileId, FileMeta *fileMeta, NodeId groupId);
+    friend class ProjectRunGroupNode;
+    ProjectLogNode(FileMeta *fileMeta, ProjectGroupNode *group);
 
 //    struct LinkData {
 //        TextMark* textMark = nullptr;
@@ -58,7 +56,8 @@ protected:
 //    };
 //    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
-//private:
+private:
+    ProjectFileNode *mLstNode = nullptr;
 //    struct ErrorData {
 //        int lstLine = 0;
 //        int errNr = 0;
@@ -73,7 +72,6 @@ protected:
 //    bool mConceal = false;
 //    bool mDebugLog = false;
 //    QString mLastSourceFile;
-//    ProjectFileNode *mLstNode = nullptr;
 };
 
 } // namespace studio

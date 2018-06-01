@@ -24,6 +24,7 @@
 #include "projectfilenode.h"
 #include "projectabstractnode.h"
 #include "projectgroupnode.h"
+#include "filemeta.h"
 #include "logger.h"
 
 namespace gams {
@@ -40,10 +41,10 @@ QModelIndex ProjectTreeModel::index(ProjectAbstractNode *entry) const
 {
     if (!entry)
         return QModelIndex();
-    if (!entry->parentEntry())
+    if (!entry->parentNode())
         return createIndex(0, 0, entry->id());
-    for (int i = 0; i < entry->parentEntry()->childCount(); ++i) {
-        if (entry->parentEntry()->childEntry(i) == entry) {
+    for (int i = 0; i < entry->parentNode()->childCount(); ++i) {
+        if (entry->parentNode()->childEntry(i) == entry) {
             return createIndex(i, 0, entry->id());
         }
     }
@@ -54,7 +55,7 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex& pare
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
-    ProjectAbstractNode *fc = mProjectRepo->node(parent)->childEntry(row);
+    ProjectAbstractNode *fc = mProjectRepo->groupNode(parent)->childEntry(row);
     if (!fc)
         FATAL() << "invalid child for row " << row;
     return createIndex(row, column, fc->id());
@@ -66,12 +67,12 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
     ProjectAbstractNode* eChild = mProjectRepo->node(child);
     if (!eChild || eChild == mRoot)
         return QModelIndex();
-    ProjectGroupNode* eParent = eChild->parentEntry();
+    ProjectGroupNode* eParent = eChild->parentNode();
     if (!eParent)
         return QModelIndex();
     if (eParent == mRoot)
         return createIndex(0, child.column(), eParent->id());
-    ProjectGroupNode* parParent = eParent->parentEntry();
+    ProjectGroupNode* parParent = eParent->parentNode();
     int row = parParent ? parParent->indexOf(eParent) : -1;
     if (row < 0)
         FATAL() << "could not find child in parent";
@@ -80,7 +81,7 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 
 int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    ProjectAbstractNode* entry = mProjectRepo->node(parent);
+    ProjectGroupNode* entry = mProjectRepo->groupNode(parent);
     if (!entry) return 0;
     return entry->childCount();
 }
@@ -99,7 +100,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
-        return mProjectRepo->node(ind)->caption();
+        return mProjectRepo->node(ind)->name(NameModifier::EditState);
 
     case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
@@ -111,10 +112,12 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         break;
 
     case Qt::ForegroundRole: {
-        ProjectAbstractNode::ContextFlags flags = mProjectRepo->node(ind)->flags();
-        if (flags.testFlag(ProjectAbstractNode::cfMissing))
+        ProjectAbstractNode* node = mProjectRepo->node(ind);
+        if (!node) return QVariant();
+        if (node->toFile() && !node->toFile()->file()->exists())
             return QColor(Qt::red);
-        if (flags.testFlag(ProjectAbstractNode::cfActive)) {
+
+        if (node->isActive()) {
             return (isCurrent(ind)) ? QColor(Qt::blue)
                                       : QColor(Qt::black);
         }
@@ -157,7 +160,7 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
     beginInsertRows(parMi, row, row);
-    child->setParentEntry(parent);
+    child->setParentNode(parent);
     endInsertRows();
     return true;
 }
@@ -166,9 +169,9 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
-    QModelIndex parMi = index(child->parentEntry());
+    QModelIndex parMi = index(child->parentNode());
     beginRemoveRows(parMi, mi.row(), mi.row());
-    child->setParentEntry(nullptr);
+    child->setParentNode(nullptr);
     endRemoveRows();
     return true;
 }
@@ -186,13 +189,13 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
         if (mi.isValid()) {
             dataChanged(mi, mi);                        // invalidate old
             if (mProjectRepo->node(mi)) {
-                QModelIndex par = index(mProjectRepo->node(mi)->parentEntry());
+                QModelIndex par = index(mProjectRepo->node(mi)->parentNode());
                 if (par.isValid()) dataChanged(par, par);
             }
         }
         if (mCurrent.isValid()) {
             dataChanged(mCurrent, mCurrent);            // invalidate new
-            QModelIndex par = index(mProjectRepo->node(mCurrent)->parentEntry());
+            QModelIndex par = index(mProjectRepo->node(mCurrent)->parentNode());
             if (par.isValid()) dataChanged(par, par);
         }
     }
@@ -203,7 +206,7 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
     if (mCurrent.isValid()) {
         ProjectAbstractNode* fsc = mProjectRepo->node(mCurrent);
         if (!fsc) return false;
-        if (fsc->parentEntry()->id() == static_cast<FileId>(ind.internalId())) {
+        if (fsc->parentNode()->id() == static_cast<FileId>(ind.internalId())) {
             return true;
         }
     }

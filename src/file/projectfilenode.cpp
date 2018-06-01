@@ -35,19 +35,42 @@ namespace studio {
 const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
         // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
-ProjectFileNode::ProjectFileNode(TextMarkRepo* marksRepo, NodeId nodeId, FileMeta *fileMeta, NodeId groupId, NodeType type)
-    : ProjectAbstractNode(nodeId, fileMeta->name(), type), mFileMeta(fileMeta)
+ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
+    : ProjectAbstractNode(fileMeta->name(), type), mFileMeta(fileMeta)
 {
-    if (mFileMeta->kind() == FileKind::Gms || mFileMeta->kind() == FileKind::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(nodeId, marksRepo, groupId);
-    else if (mFileMeta->kind() != FileKind::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(nodeId, marksRepo, groupId);
-    }
+    if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
+    if (group) setParentNode(group);
 }
 
 ProjectFileNode::~ProjectFileNode()
 {
-//    removeAllEditors();
+    //    removeAllEditors();
+}
+
+void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
+{
+    ProjectAbstractNode::setParentNode(parent);
+    if (mSyntaxHighlighter) {
+        delete mSyntaxHighlighter;
+        mSyntaxHighlighter = nullptr;
+    }
+    if (mFileMeta->kind() == FileKind::Gms || mFileMeta->kind() == FileKind::Txt)
+        mSyntaxHighlighter = new SyntaxHighlighter(id(), textMarkRepo(), parent->id());
+    else if (mFileMeta->kind() != FileKind::Gdx) {
+        mSyntaxHighlighter = new ErrorHighlighter(id(), textMarkRepo(), parent->id());
+    }
+}
+
+QIcon ProjectFileNode::icon()
+{
+    ProjectGroupNode* par = parentNode();
+    while (par && !par->toRunGroup()) par = par->parentNode();
+    QString runMark = (par && file()->location() == par->toRunGroup()->runnableGms()) ? "-run" : "";
+    if (file()->kind() == FileKind::Gms)
+        return QIcon(":/img/gams-w"+runMark);
+    if (file()->kind() == FileKind::Gdx)
+        return QIcon(":/img/database");
+    return QIcon(":/img/file-alt"+runMark);
 }
 
 const QString ProjectFileNode::name(NameModifier mod)
@@ -71,6 +94,16 @@ bool ProjectFileNode::isModified()
 QTextDocument *ProjectFileNode::document() const
 {
     return mFileMeta->document();
+}
+
+FileMeta *ProjectFileNode::file() const
+{
+    return mFileMeta;
+}
+
+QString ProjectFileNode::location() const
+{
+    return mFileMeta->location();
 }
 
 
@@ -149,16 +182,6 @@ void ProjectFileNode::setLocation(const QString& _location)
         document()->setModified(true);
     ProjectAbstractNode::setLocation(_location);
     mMetrics = FileMetrics(newLoc);
-}
-
-QIcon ProjectFileNode::icon()
-{
-    QString runMark = (location() == parentEntry()->runnableGms()) ? "-run" : "";
-    if (mMetrics.fileType() == FileType::Gms)
-        return QIcon(":/img/gams-w"+runMark);
-    if (mMetrics.fileType() == FileType::Gdx)
-        return QIcon(":/img/database");
-    return QIcon(":/img/file-alt"+runMark);
 }
 
 void ProjectFileNode::addEditor(QWidget* edit)

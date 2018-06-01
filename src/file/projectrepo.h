@@ -90,6 +90,10 @@ public:
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
     inline ProjectLogNode* logNode(ProjectAbstractNode* node);
 
+    inline bool isActive(const ProjectAbstractNode *node) const;
+
+    inline void setActive(ProjectAbstractNode* node);
+
 //    ProjectFileNode* fileNode(QWidget* edit) const;
 //    ProjectLogNode* logNode(QWidget* edit);
 
@@ -98,15 +102,16 @@ private:
         mNode.insert(node->id(), node);
     }
     inline void deleteNode(ProjectAbstractNode* node) {
-        node->setParentEntry(nullptr);
+        node->setParentNode(nullptr);
         mNode.remove(node->id());
         delete node;
     }
+    friend class ProjectRunGroupNode;
 
 private:
-    NodeId mNextId;
     ProjectTreeModel* mTreeModel = nullptr;
     QHash<NodeId, ProjectAbstractNode*> mNode;
+    QVector<ProjectAbstractNode*> mActiveStack;
 
 /*
 

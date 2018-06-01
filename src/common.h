@@ -33,8 +33,10 @@ enum struct NameModifier {
     EditState
 };
 enum struct NodeType {
-    File,
+    Root,
     Group,
+    RunGroup,
+    File,
     Log
 };
 enum FileKind {

@@ -95,7 +95,6 @@ public:
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
 
-
     bool outputViewVisibility();
     bool projectViewVisibility();
     bool optionEditorVisibility();

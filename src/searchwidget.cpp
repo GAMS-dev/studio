@@ -160,7 +160,7 @@ QList<Result> SearchWidget::findInGroup(ProjectAbstractNode *fsc)
     ProjectGroupNode *fgc = nullptr;
     if (!fsc) {
         ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-        fgc = (fc ? fc->parentEntry() : nullptr);
+        fgc = (fc ? fc->parentNode() : nullptr);
         if (!fgc) return QList<Result>();
 
     } else {

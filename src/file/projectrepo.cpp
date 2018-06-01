@@ -30,7 +30,7 @@ namespace gams {
 namespace studio {
 
 ProjectRepo::ProjectRepo(QObject* parent)
-    : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectGroupNode(mNextId++, "Root", nullptr)))
+    : QObject(parent), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this, textMarkRepo)))
 {
     storeNode(mTreeModel->rootNode());
 }
@@ -78,31 +78,54 @@ inline ProjectLogNode *ProjectRepo::logNode(NodeId id) const
     return (res && res->type() == NodeType::Log) ? static_cast<ProjectLogNode*>(res) : nullptr;
 }
 
-inline ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
+inline ProjectLogNode* ProjectRepo::logNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
-    ProjectGroupNode* group = nullptr;
-    if (node->type() != NodeType::Group)
-        group = node->parentEntry();
-    else
-        group = static_cast<ProjectGroupNode*>(node);
-    ProjectLogNode* log = group->logNode();
-    return log;
+    const ProjectGroupNode* group = node->toGroup();
+    if (!group) group = node->parentNode();
+    while (!group->toRunGroup()) group = group->parentNode();
+    if (group->toRunGroup()) return group->toRunGroup()->logNode();
+    return nullptr;
 
     // TODO(JM) no implicit creation
-//    if (!log) {
-//        log = new ProjectLogNode(mNextId++, "["+group->name()+"]");
-//        storeNode(log);
-//        connect(log, &ProjectLogNode::openFileNode, this, &ProjectRepo::openFile);
-//        connect(log, &ProjectFileNode::findFileNode, this, &ProjectRepo::findFile);
-//        connect(log, &ProjectFileNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-//        log->setParentEntry(group);
+//    ProjectLogNode* res;
+//    if (!res) {
+//        res = new ProjectLogNode(mNextId++, "["+group->name()+"]");
+//        storeNode(res);
+//        connect(res, &ProjectLogNode::openFileNode, this, &ProjectRepo::openFile);
+//        connect(res, &ProjectFileNode::findFileNode, this, &ProjectRepo::findFile);
+//        connect(res, &ProjectFileNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
+//        res->setParentEntry(group);
 //        bool hit;
-//        int offset = group->peekIndex(log->name(), &hit);
+//        int offset = group->peekIndex(res->name(), &hit);
 //        if (hit) offset++;
-// //        mTreeModel->insertChild(offset, group, res);
 //    }
+//    return res;
 }
+
+bool ProjectRepo::isActive(const ProjectAbstractNode *node) const
+{
+
+    ProjectAbstractNode *par = mActiveStack.isEmpty() ? nullptr : mActiveStack.at(0);
+    while (par) {
+        if (par == node) return true;
+        par = par->parentNode();
+    }
+    return false;
+}
+
+void ProjectRepo::setActive(ProjectAbstractNode *node)
+{
+    int i = mActiveStack.indexOf(node);
+    if (i < 0) {
+        mActiveStack.insert(0, node);
+        while (mActiveStack.size() > 30)
+            mActiveStack.remove(30);
+    } else if (i > 0) {
+        mActiveStack.move(i, 0);
+    }
+}
+
 
 
 /*

@@ -43,7 +43,7 @@ TextMark::~TextMark()
 
 QTextDocument*TextMark::document() const
 {
-    return mMarks->document(mFileId, mGroupId);
+    return mMarks->document(mFileId);
 }
 
 
@@ -65,13 +65,13 @@ void TextMark::jumpToRefMark(bool focus)
 
 void TextMark::jumpToMark(bool focus)
 {
-    if (!mMarks->openFile(mFileId)) return;
+    if (!mMarks->openFile(mFileId, mGroupId)) return;
 
     if (document()) {
         updatePos();
         mMarks->jumpTo(mFileId, textCursor(), focus);
-    } else if (mMarks->fileKind(mFileId) == FileType::Gdx) {
-        mMarks->openFile(mFileId, focus);
+    } else if (mMarks->fileKind(mFileId) == FileKind::Gdx) {
+        mMarks->openFile(mFileId, mGroupId, focus);
     }
 }
 
@@ -123,7 +123,7 @@ QColor TextMark::color()
 
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
-        if (mReference->fileKind() == FileType::Lst) return Qt::blue;
+        if (mReference->fileKind() == FileKind::Lst) return Qt::blue;
     } else if (mRefData) {
         if (mRefData->type == TextMark::error) return Qt::darkRed;
         if (mRefData->location.endsWith(".lst", Qt::CaseInsensitive)) return Qt::blue;
@@ -140,7 +140,7 @@ FileKind TextMark::fileKind()
 
 FileKind TextMark::refFileKind()
 {
-    return mReference ? mReference->fileKind() : mRefData ? mRefData->fileKind() : FileType::None;
+    return mReference ? mReference->fileKind() : mRefData ? mRefData->fileKind() : FileKind::None;
 }
 
 QIcon TextMark::icon()

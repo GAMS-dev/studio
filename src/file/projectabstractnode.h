@@ -29,7 +29,12 @@
 namespace gams {
 namespace studio {
 
+class ProjectRootNode;
 class ProjectGroupNode;
+class ProjectRunGroupNode;
+class ProjectFileNode;
+class ProjectLogNode;
+class ProjectRepo;
 
 class ProjectAbstractNode : public QObject
 {   // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
@@ -53,7 +58,7 @@ public:
 
     virtual ~ProjectAbstractNode();
 
-    FileId id() const;
+    NodeId id() const;
 
     /// The raw name of this node.
     /// \return The raw name of this node.
@@ -63,25 +68,43 @@ public:
     /// \param name The raw name of this node.
     void setName(const QString& name);
 
-    ProjectGroupNode* parentEntry() const;
-    virtual void setParentEntry(ProjectGroupNode *parent);
+    /// The icon for this file type.
+    /// \return The icon for this file type.
+    virtual QIcon icon() = 0;
+
+    virtual ProjectGroupNode *parentNode() const;
+    virtual void setParentNode(ProjectGroupNode *parent);
 
     /// \brief File node type.
     /// \return Returns the file node type as <c>int</c>.
     NodeType type() const;
+    virtual QString tooltip() = 0;
+
+    const ProjectRootNode *toRoot() const;
+    const ProjectGroupNode* toGroup() const;
+    const ProjectRunGroupNode *toRunGroup() const;
+    const ProjectFileNode* toFile() const;
+    const ProjectLogNode* toLog() const;
+
+    bool isActive() const;
+    void setActive();
 
 //    virtual int childCount() const;
 //    virtual ProjectAbstractNode* childEntry(int index) const;
 
 signals:
-    void changed(NodeId fileId);
+    void changed(NodeId nodeId);
 
 protected:
-    friend class ProjectLogNode;
+//    friend class ProjectLogNode;
 
-    ProjectAbstractNode(NodeId nodeId, QString name, NodeType type);
+    ProjectAbstractNode(QString name, NodeType type);
+    ProjectRepo* repo() const;
+    TextMarkRepo* textMarkRepo() const;
 
 private:
+    static NodeId mNextNodeId;
+    ProjectRepo* mRepo;
     NodeId mId;
     ProjectGroupNode* mParent;
     QString mName;
@@ -120,16 +143,10 @@ private:
     /// \param location The new location
     virtual void setLocation(const QString& location);
 
-    /// The icon for this file type.
-    /// \return The icon for this file type.
-    virtual QIcon icon() = 0;
-
     const ContextFlags &flags() const;
     virtual void setFlag(ContextFlag flag, bool value = true);
     virtual void unsetFlag(ContextFlag flag);
     virtual bool testFlag(ContextFlag flag);
-
-    virtual QString tooltip()=0;
 
     ProjectAbstractNode *findFile(QString filePath);
 

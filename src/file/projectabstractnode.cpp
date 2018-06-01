@@ -19,14 +19,37 @@
  */
 #include "projectabstractnode.h"
 #include "projectgroupnode.h"
+#include "projectlognode.h"
+#include "projectrepo.h"
 #include "logger.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-ProjectAbstractNode::ProjectAbstractNode(NodeId nodeId, QString name, NodeType type)
-    : QObject(), mId(nodeId), mParent(nullptr), mName(name), mType(type)
+NodeId ProjectAbstractNode::mNextNodeId = 0;
+
+ProjectAbstractNode::ProjectAbstractNode(QString name, NodeType type)
+    : QObject(), mId(mNextNodeId++), mParent(nullptr), mName(name), mType(type)
 {}
+
+ProjectRepo *ProjectAbstractNode::repo() const
+{
+    const ProjectAbstractNode* par = this;
+    while (par->parent()) par = par->parentNode();
+    if (par->toRoot())
+        return par->toRoot()->repo();
+    EXCEPT() << "ProjectRepo is not assigned";
+}
+
+TextMarkRepo *ProjectAbstractNode::textMarkRepo() const
+{
+    const ProjectAbstractNode* par = this;
+    while (par->parent()) par = par->parentNode();
+    if (par->toRoot())
+        return par->toRoot()->textMarkRepo();
+    EXCEPT() << "TextMarkRepo is not assigned";
+}
 
 ProjectAbstractNode::~ProjectAbstractNode()
 {
@@ -37,7 +60,7 @@ ProjectAbstractNode::~ProjectAbstractNode()
     }
 }
 
-FileId ProjectAbstractNode::id() const
+NodeId ProjectAbstractNode::id() const
 {
     return mId;
 }
@@ -56,12 +79,12 @@ void ProjectAbstractNode::setName(const QString& name)
     }
 }
 
-ProjectGroupNode* ProjectAbstractNode::parentEntry() const
+ProjectGroupNode* ProjectAbstractNode::parentNode() const
 {
     return mParent;
 }
 
-void ProjectAbstractNode::setParentEntry(ProjectGroupNode* parent)
+void ProjectAbstractNode::setParentNode(ProjectGroupNode* parent)
 {
     if (parent != mParent) {
         if (mParent) mParent->removeChild(this);
@@ -73,6 +96,49 @@ void ProjectAbstractNode::setParentEntry(ProjectGroupNode* parent)
 NodeType ProjectAbstractNode::type() const
 {
     return mType;
+}
+
+const ProjectRootNode *ProjectAbstractNode::toRoot() const
+{
+    if (mType == NodeType::Root) return static_cast<const ProjectRootNode*>(this);
+    return nullptr;
+}
+
+const ProjectGroupNode *ProjectAbstractNode::toGroup() const
+{
+    if (mType == NodeType::Group) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::RunGroup) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::Root) return static_cast<const ProjectGroupNode*>(this);
+    return nullptr;
+}
+
+const ProjectRunGroupNode *ProjectAbstractNode::toRunGroup() const
+{
+    if (mType == NodeType::RunGroup) return static_cast<const ProjectRunGroupNode*>(this);
+    return nullptr;
+}
+
+const ProjectFileNode *ProjectAbstractNode::toFile() const
+{
+    if (mType == NodeType::File) return static_cast<const ProjectFileNode*>(this);
+    if (mType == NodeType::Log) return static_cast<const ProjectFileNode*>(this);
+    return nullptr;
+}
+
+const ProjectLogNode *ProjectAbstractNode::toLog() const
+{
+    if (mType == NodeType::Log) return static_cast<const ProjectLogNode*>(this);
+    return nullptr;
+}
+
+bool ProjectAbstractNode::isActive() const
+{
+    return repo()->isActive(this);
+}
+
+void ProjectAbstractNode::setActive()
+{
+    repo()->setActive(this);
 }
 
 //int ProjectAbstractNode::childCount() const

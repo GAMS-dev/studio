@@ -1,12 +1,14 @@
 #include "textmarkrepo.h"
+#include "file/filemetarepo.h"
+#include "file/filemeta.h"
 #include "file/projectrepo.h"
 #include <QMultiHash>
 
 namespace gams {
 namespace studio {
 
-TextMarkRepo::TextMarkRepo(ProjectRepo *fileRepo, QObject *parent)
-    : QObject(parent), mFileRepo(fileRepo)
+TextMarkRepo::TextMarkRepo(FileMetaRepo *fileRepo, ProjectRepo *projectRepo, QObject *parent)
+    : QObject(parent), mFileRepo(fileRepo), mProjectRepo(projectRepo)
 {
 }
 
@@ -39,24 +41,17 @@ TextMark *TextMarkRepo::createMark(TextMarkData *tmData)
     return mark;
 }
 
-QTextDocument *TextMarkRepo::document(FileId fileId, NodeId groupId) const
+QTextDocument *TextMarkRepo::document(FileId fileId) const
 {
-    if (groupId >= 0) {
-        ProjectGroupNode* group = mFileRepo->findGroup(groupId);
-        if (!group) return nullptr;
-        ProjectFileNode* fn = group->findFile(fileId);
-
-    }
-
-    if (fn) return fn->document();
-    return nullptr;
+    FileMeta* fm = mFileRepo->fileMeta(fileId);
+    return fm ? fm->document() : nullptr;
 }
 
-bool TextMarkRepo::openFile(FileId fileId, bool focus)
+bool TextMarkRepo::openFile(FileId fileId, NodeId groupId, bool focus)
 {
-    ProjectFileNode* fn = mFileRepo->fileNode(fileId);
-    if (fn) {
-        emit mFileRepo->openFile(fn, focus, fn->codecMib());
+    FileMeta* fm = mFileRepo->fileMeta(fileId);
+    if (fm) {
+        emit mFileRepo->openFile(fm, groupId, focus, fm->codecMib());
         return true;
     }
     return false;
@@ -64,8 +59,8 @@ bool TextMarkRepo::openFile(FileId fileId, bool focus)
 
 void TextMarkRepo::jumpTo(FileId fileId, QTextCursor cursor, bool focus)
 {
-    ProjectFileNode* fn = mFileRepo->fileNode(fileId);
-    if (fn) fn->jumpTo(cursor, focus);
+    FileMeta* fm = mFileRepo->fileMeta(fileId);
+    if (fm) fm->jumpTo(cursor, focus);
 }
 
 void TextMarkRepo::rehighlightAt(FileId fileId, int pos)
