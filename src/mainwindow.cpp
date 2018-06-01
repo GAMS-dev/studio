@@ -364,7 +364,7 @@ void MainWindow::receiveAction(QString action)
 
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
-    if (gmsFileName == "")
+    if (gmsFileName.isEmpty())
         gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
@@ -392,7 +392,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
-    if (anchor != "")
+    if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
     getDockHelpView()->on_urlOpened(result);
