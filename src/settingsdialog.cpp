@@ -20,7 +20,9 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include "mainwindow.h"
 #include "settingsdialog.h"
+#include "studiosettings.h"
 #include "ui_settingsdialog.h"
 
 namespace gams {

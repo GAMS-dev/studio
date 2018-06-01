@@ -21,11 +21,13 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QDir>
+#include <QSettings>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
 #include "searchwidget.h"
 #include "version.h"
+#include "commandlineparser.h"
 
 namespace gams {
 namespace studio {
