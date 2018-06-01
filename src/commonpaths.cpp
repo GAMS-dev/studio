@@ -35,36 +35,44 @@ CommonPaths::CommonPaths()
 
 }
 
-const QString& CommonPaths::systemDir() {
+const QString& CommonPaths::systemDir()
+{
     return SystemDir;
 }
 
-void CommonPaths::setSystemDir(const QString &sysdir) {
-    if (!sysdir.isEmpty()) {
-        SystemDir = sysdir;
-        return;
-    }
-
+void CommonPaths::setSystemDir(const QString &sysdir)
+{
     QString gamsPath;
-    const QString subPath = QString(QDir::separator()).append("..");
+    if (sysdir.isEmpty()) {
+        const QString subPath = QString(QDir::separator()).append("..");
 #if __APPLE__
-    gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
-    if (!QDir(gamsPath).exists())
-        gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
+        gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
+        if (!QDir(gamsPath).exists())
+            gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
 #elif __unix__
-    QFileInfo fileInfo(qgetenv("APPIMAGE"));
-    gamsPath = fileInfo.absoluteDir().path().append(subPath);
+        QFileInfo fileInfo(qgetenv("APPIMAGE"));
+        gamsPath = fileInfo.absoluteDir().path().append(subPath);
 #else
-    gamsPath = QCoreApplication::applicationDirPath().append(subPath);
+        gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
-    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
-    if (path.isEmpty()) {
-        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-        if (gamsPath.isEmpty()) EXCEPT() << "GAMS not found in PATH.";
+        QString path = QStandardPaths::findExecutable("gams", {gamsPath});
+        if (path.isEmpty()) {
+            gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+        }
+    }
+    else {
+        QString gamsPath = QStandardPaths::findExecutable("gams", {sysdir});
     }
 
     SystemDir = QDir::cleanPath(gamsPath);
+}
+
+bool CommonPaths::isSystemDirValid()
+{
+    if (QStandardPaths::findExecutable("gams", {SystemDir}).isEmpty())
+        return false;
+    return true;
 }
 
 QString CommonPaths::userDocumentsDir()

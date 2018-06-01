@@ -54,6 +54,8 @@ public:
     ///
     static void setSystemDir(const QString &sysdir = QString());
 
+    static bool isSystemDirValid();
+
     static QString defaultWorkingDir();
 
     static QString userDocumentsDir();
