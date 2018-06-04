@@ -364,7 +364,7 @@ void MainWindow::receiveAction(QString action)
 
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
-    if (gmsFileName == "")
+    if (gmsFileName.isEmpty())
         gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
@@ -392,7 +392,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
-    if (anchor != "")
+    if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
     getDockHelpView()->on_urlOpened(result);
@@ -1135,7 +1135,12 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(ui->systemLog);
-    ui->logTabs->setCurrentIndex(index);
+    if (index < 0)
+        ui->logTabs->addTab(ui->systemLog, "System");
+    else
+        ui->logTabs->setCurrentIndex(index);
+    ui->systemLog->raise();
+    dockWidgetShow(ui->dockLogView, true);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()

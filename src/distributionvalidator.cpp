@@ -63,10 +63,19 @@ void DistributionValidator::checkCompatibility()
 {
     GamsProcess gp;
     QString about = gp.aboutGAMS();
-    if (about.contains(GAMS_DISTRIB_VERSION_SHORT))
+    if (about.isEmpty()) {
+        QString message = QString("ERROR: Could not find GAMS. Please check our GAMS setup. %1 %2")
+                .arg("The installation instructions can be found at https://www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
+                .arg("Current path to GAMS: " + CommonPaths::systemDir());
+        emit messageReceived(message);
         return;
-    else if (about.contains(GAMS_DISTRIB_VERSION_NEXT_SHORT))
+    }
+    else if (about.contains(GAMS_DISTRIB_VERSION_SHORT)) {
         return;
+    }
+    else if (about.contains(GAMS_DISTRIB_VERSION_NEXT_SHORT)) {
+        return;
+    }
 
     QRegExp regex(".*GAMS Release\\s+:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about) && regex.captureCount() == 1) {
@@ -75,7 +84,7 @@ void DistributionValidator::checkCompatibility()
                 .arg(GAMS_DISTRIB_VERSION_SHORT).arg(GAMS_DISTRIB_VERSION_NEXT_SHORT);
         emit messageReceived(error);
     } else {
-        emit messageReceived("ERROR: could not validate GAMS Distribution version.");
+        emit messageReceived("ERROR: Could not validate GAMS Distribution version.");
     }
 }
 
