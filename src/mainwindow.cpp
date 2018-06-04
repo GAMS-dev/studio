@@ -1135,7 +1135,12 @@ QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, c
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(ui->systemLog);
-    ui->logTabs->setCurrentIndex(index);
+    if (index < 0)
+        ui->logTabs->addTab(ui->systemLog, "System");
+    else
+        ui->logTabs->setCurrentIndex(index);
+    ui->systemLog->raise();
+    dockWidgetShow(ui->dockLogView, true);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
