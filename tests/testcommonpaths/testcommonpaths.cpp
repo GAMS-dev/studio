@@ -20,6 +20,9 @@
 #include "testcommonpaths.h"
 #include "commonpaths.h"
 
+#include <QtGlobal>
+#include <QStandardPaths>
+
 using gams::studio::CommonPaths;
 
 void TestCommonPaths::testSystemDir()
@@ -28,12 +31,48 @@ void TestCommonPaths::testSystemDir()
     QVERIFY(result.isEmpty());
 }
 
-void TestCommonPaths::testCustomSystemDir()
+void TestCommonPaths::testSetSystemDirNull()
+{
+    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    CommonPaths::setSystemDir(QString());
+    auto result = CommonPaths::systemDir();
+    QVERIFY(expected == result);
+}
+
+void TestCommonPaths::testSetSystemDirEmpty()
+{
+    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    CommonPaths::setSystemDir("");
+    auto result = CommonPaths::systemDir();
+    QVERIFY(expected == result);
+}
+
+void TestCommonPaths::testSetSystemDirCustom()
+{
+    const QString customDir = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    CommonPaths::setSystemDir(customDir);
+    auto result = CommonPaths::systemDir();
+    QVERIFY(customDir == result);
+}
+
+void TestCommonPaths::testSetSystemDirNoGAMS()
 {
     const QString customDir = "/home/user/gams/xx.y";
     CommonPaths::setSystemDir(customDir);
     auto result = CommonPaths::systemDir();
-    QVERIFY(customDir == result);
+    QVERIFY(result.isEmpty());
+}
+
+void TestCommonPaths::testSetSystemDirAPPIMAGE()
+{
+#ifdef __unix__
+    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    qputenv("APPIMAGE", expected.toLatin1());
+    CommonPaths::setSystemDir();
+    auto result = CommonPaths::systemDir();
+    qunsetenv("APPIMAGE");
+    QVERIFY(expected == result);
+#endif
 }
 
 void TestCommonPaths::testUserDocumentDir()
@@ -52,6 +91,18 @@ void TestCommonPaths::testDefaultWorkingDir()
 {
     auto result = CommonPaths::defaultWorkingDir();
     QVERIFY(result.endsWith("workspace"));
+}
+
+void TestCommonPaths::testIsSystemDirValid()
+{
+    CommonPaths::setSystemDir();
+    QVERIFY(CommonPaths::isSystemDirValid());
+}
+
+void TestCommonPaths::testIsSystemDirInValid()
+{
+    CommonPaths::setSystemDir("./lala");
+    QVERIFY(!CommonPaths::isSystemDirValid());
 }
 
 void TestCommonPaths::testAbsoluteFilePathEmpty()

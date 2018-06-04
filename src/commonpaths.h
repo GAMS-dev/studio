@@ -54,6 +54,10 @@ public:
     ///
     static void setSystemDir(const QString &sysdir = QString());
 
+    ///
+    /// \brief Checks if the current system directory is a valid GAMS directory.
+    /// \return <c>true</c> if the system directory contains GAMS; otherwise <c>false</c>.
+    ///
     static bool isSystemDirValid();
 
     static QString defaultWorkingDir();

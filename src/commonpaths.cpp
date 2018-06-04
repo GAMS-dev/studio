@@ -45,7 +45,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
     QString gamsPath;
     if (sysdir.isEmpty()) {
         const QString subPath = QString(QDir::separator()).append("..");
-#if __APPLE__
+#ifdef __APPLE__
         gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
         if (!QDir(gamsPath).exists())
             gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
@@ -62,7 +62,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
         }
     }
     else {
-        QString gamsPath = QStandardPaths::findExecutable("gams", {sysdir});
+        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", {sysdir})).absolutePath();
     }
 
     SystemDir = QDir::cleanPath(gamsPath);

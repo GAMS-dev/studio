@@ -28,10 +28,19 @@ class TestCommonPaths : public QObject
 
 private slots:
     void testSystemDir();
-    void testCustomSystemDir();
+
+    void testSetSystemDirNull();
+    void testSetSystemDirEmpty();
+    void testSetSystemDirCustom();
+    void testSetSystemDirNoGAMS();
+    void testSetSystemDirAPPIMAGE();
+
     void testUserDocumentDir();
     void testUserModelLibraryDir();
     void testDefaultWorkingDir();
+
+    void testIsSystemDirValid();
+    void testIsSystemDirInValid();
 
     void testAbsoluteFilePathEmpty();
     void testAbsoluteFilePathNullStr();
