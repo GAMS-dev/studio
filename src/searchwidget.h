@@ -20,8 +20,11 @@
 #ifndef SEARCHWIDGET_H
 #define SEARCHWIDGET_H
 
-#include "mainwindow.h"
+//#include "mainwindow.h"
+#include "searchresultlist.h"
 #include <QDialog>
+#include <QTextCursor>
+#include <QTextDocument>
 
 namespace Ui {
 class SearchWidget;
@@ -29,6 +32,9 @@ class SearchWidget;
 
 namespace gams {
 namespace studio {
+
+class MainWindow;
+class ProjectAbstractNode;
 
 class SearchWidget : public QDialog
 {

@@ -23,19 +23,26 @@
 #include <memory>
 #include <QMainWindow>
 #include <QCheckBox>
+#include <QFile>
+#include <QActionGroup>
+#include <QToolButton>
 
-#include "editors/codeeditor.h"
-#include "file.h"
-#include "modeldialog/libraryitem.h"
-#include "option/commandlinehistory.h"
-#include "option/commandlineoption.h"
-#include "option/lineeditcompleteevent.h"
-#include "option/optioneditor.h"
+#include "common.h"
 #include "projectcontextmenu.h"
-#include "helpview.h"
-#include "resultsview.h"
-#include "commandlineparser.h"
-#include "statuswidgets.h"
+#include "file/filemetarepo.h"
+#include "file/projectrepo.h"
+
+//#include "editors/codeeditor.h"
+//#include "file.h"
+//#include "modeldialog/libraryitem.h"
+//#include "option/commandlinehistory.h"
+//#include "option/commandlineoption.h"
+//#include "option/lineeditcompleteevent.h"
+//#include "option/optioneditor.h"
+//#include "helpview.h"
+//#include "resultsview.h"
+//#include "commandlineparser.h"
+//#include "statuswidgets.h"
 
 namespace Ui {
 class MainWindow;
@@ -44,14 +51,40 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
-class AbstractProcess;
-class GAMSProcess;
-class GAMSLibProcess;
-class WelcomePage;
+//class AbstractProcess;
+//class GAMSProcess;
+//class GAMSLibProcess;
+//class WelcomePage;
+//class StudioSettings;
+//class Result;
+//class GoToWidget;
+//class AutosaveHandler;
+
+class MainWindow;
 class StudioSettings;
+class CommandLineHistory;
+class AbstractEditor;
 class SearchWidget;
 class SearchResultList;
-class Result;
+class ProjectFileNode;
+class HelpView;
+class OptionItem;
+class AbstractProcess;
+class LibraryItem;
+class CommandLineTokenizer;
+class CommandLineOption;
+class Option;
+class OptionEditor;
+class GAMSLibProcess;
+class GAMSProcess;
+class ResultsView;
+class WelcomePage;
+//class FileMetaRepo;
+//class ProjectRepo;
+class TextMarkRepo;
+class ProjectGroupNode;
+class FileMetrics;
+class StatusWidgets;
 class GoToWidget;
 class AutosaveHandler;
 
@@ -113,6 +146,7 @@ public:
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
     CommandLineHistory* commandLineHistory();
+    FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
@@ -311,7 +345,6 @@ private:
     QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
     int TimerID;
-    FileMetrics mMetrics;
     bool mCheckOnce = true;
     QStringList mOpenTabsList;
 };

@@ -31,10 +31,13 @@
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(FileId nodeId, TextMarkRepo* textMarkRepo, FileId contextId)
-    : QSyntaxHighlighter(textMarkRepo->document(nodeId)), mNodeId(nodeId), mContextId(contextId), mMarks(textMarkRepo)
-{
-}
+ErrorHighlighter::ErrorHighlighter(ProjectFileNode *node, TextMarkRepo *textMarkRepo)
+    : ErrorHighlighter(node->file()->id(), textMarkRepo, node->runFileId())
+{}
+
+ErrorHighlighter::ErrorHighlighter(FileId fileId, TextMarkRepo* textMarkRepo, FileId runId)
+    : QSyntaxHighlighter(textMarkRepo->document(fileId)), mFileId(fileId), mRunId(runId), mMarks(textMarkRepo)
+{}
 
 void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
 {
@@ -48,12 +51,12 @@ TextMarkRepo *ErrorHighlighter::markRepo()
 
 FileId ErrorHighlighter::nodeId() const
 {
-    return mNodeId;
+    return mFileId;
 }
 
 FileId ErrorHighlighter::contextId() const
 {
-    return mContextId;
+    return mRunId;
 }
 
 void ErrorHighlighter::syntaxState(int position, int &intState)
@@ -68,7 +71,7 @@ void ErrorHighlighter::syntaxState(int position, int &intState)
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
     // TODO(JM) marksForBlock functionality
-    QVector<TextMark*> markList = mMarks->marksForBlock(mNodeId, currentBlock());
+    QVector<TextMark*> markList = mMarks->marksForBlock(mFileId, currentBlock());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
@@ -122,8 +125,12 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
 }
 
 
-SyntaxHighlighter::SyntaxHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId)
-    : ErrorHighlighter(node, textMarkRepo, contextId)
+SyntaxHighlighter::SyntaxHighlighter(ProjectFileNode *node, TextMarkRepo *textMarkRepo)
+    : SyntaxHighlighter(node->file()->id(), textMarkRepo, node->runFileId())
+{}
+
+SyntaxHighlighter::SyntaxHighlighter(FileId file, TextMarkRepo *textMarkRepo, FileId groupId)
+    : ErrorHighlighter(file, textMarkRepo, groupId)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},

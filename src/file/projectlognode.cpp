@@ -30,9 +30,11 @@
 namespace gams {
 namespace studio {
 
-ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectGroupNode *group)
-    : ProjectFileNode(fileMeta, group, NodeType::Log)
-{}
+ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
+    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
+{
+    runGroup->setLogNode(this);
+}
 
 void ProjectLogNode::resetLst()
 {

@@ -61,17 +61,20 @@ public:
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
-    const QString name(NameModifier mod = NameModifier::Raw) override;
+    const QString name(NameModifier mod = NameModifier::raw) override;
     bool isModified();
     QTextDocument* document() const;
     FileMeta* file() const;
     QString location() const;
-
+    QString tooltip() override;
+    FileId runFileId() const;
 
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
-    ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::File);
+
+    ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::file);
+    void showToolTip(const QVector<TextMark*> marks);
 
 private:
     FileMeta* mFileMeta;
@@ -141,7 +144,6 @@ private:
 
 //    const FileMetrics& metrics() const;
 //    void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
-//    void showToolTip(const QVector<TextMark*> marks);
 
 //    void rehighlightAt(int pos);
 //    void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
@@ -161,7 +163,6 @@ private:
 //    TextMarkRepo* marks() const { return mMarks; }
 //    void unbindMarks() { mMarks = nullptr; }
 
-//    QString tooltip() override;
 
 //signals:
 //    /// Signal is emitted when the file has been modified externally.

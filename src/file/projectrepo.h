@@ -91,26 +91,28 @@ public:
     inline ProjectLogNode* logNode(ProjectAbstractNode* node);
 
     inline bool isActive(const ProjectAbstractNode *node) const;
-
     inline void setActive(ProjectAbstractNode* node);
 
-//    ProjectFileNode* fileNode(QWidget* edit) const;
-//    ProjectLogNode* logNode(QWidget* edit);
+    ProjectTreeModel* treeModel() const;
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
 private:
+    void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
+    void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
     inline void storeNode(ProjectAbstractNode* node) {
-        mNode.insert(node->id(), node);
+        mNodes.insert(node->id(), node);
     }
     inline void deleteNode(ProjectAbstractNode* node) {
         node->setParentNode(nullptr);
-        mNode.remove(node->id());
+        mNodes.remove(node->id());
         delete node;
     }
     friend class ProjectRunGroupNode;
 
 private:
     ProjectTreeModel* mTreeModel = nullptr;
-    QHash<NodeId, ProjectAbstractNode*> mNode;
+    QHash<NodeId, ProjectAbstractNode*> mNodes;
     QVector<ProjectAbstractNode*> mActiveStack;
 
 /*
@@ -144,12 +146,9 @@ private:
     QList<ProjectFileNode*> modifiedFiles(ProjectGroupNode* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QWidget* edit);
-    ProjectTreeModel* treeModel() const;
     void removeMarks(ProjectGroupNode* group);
 
     void updateLinkDisplay(AbstractEditor* editUnderCursor);
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
 
 
 signals:
@@ -176,9 +175,6 @@ private slots:
     void addNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
     void removeNode(ProjectAbstractNode *node);
 
-private:
-    void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
-    void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
 
 private:
     QStringList mSuffixFilter;

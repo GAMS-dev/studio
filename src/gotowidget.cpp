@@ -21,6 +21,7 @@
 #include "ui_gotowidget.h"
 #include "file.h"
 #include "mainwindow.h"
+#include "editors/abstracteditor.h"
 
 namespace gams {
 namespace studio {
@@ -48,11 +49,14 @@ void GoToWidget::focusTextBox()
 
 void GoToWidget::on_GoTo_clicked()
 {
+    AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    if (!edit) return;
+
+    FileMeta* fm = mMain->fileRepo()->fileMeta(edit->fileId());
     int altLine =(ui->lineEdit->text().toInt())-1;
     QTextCursor cursor;
-    ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-    if (!fc) return;
-    fc->jumpTo(cursor, true, altLine, 0);
+    if (!fm) return;
+    fm->jumpTo(cursor, true, altLine, 0);
     ui->lineEdit->setText("");
 }
 

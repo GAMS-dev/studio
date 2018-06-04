@@ -84,6 +84,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
+    mProjectRepo.treeModel()->rootNode()->init(mProjectRepo, mTextMarkRepo);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
@@ -187,13 +188,13 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 fc->addEditor(lxiViewer);
                 connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
                 connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                tabIndex = tabWidget->addTab(lxiViewer, fc->name(NameModifier::EditState));
+                tabIndex = tabWidget->addTab(lxiViewer, fc->name(NameModifier::editState));
             } else {
                 fc->addEditor(codeEdit);
                 connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
                 connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
-                tabIndex = tabWidget->addTab(codeEdit, fc->name(NameModifier::EditState));
+                tabIndex = tabWidget->addTab(codeEdit, fc->name(NameModifier::editState));
             }
 
             if (codecMip == -1)
@@ -216,7 +217,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
             ProjectAbstractNode::initEditorType(gdxView);
             fc->addEditor(gdxView);
-            tabIndex = tabWidget->addTab(gdxView, fc->name(NameModifier::EditState));
+            tabIndex = tabWidget->addTab(gdxView, fc->name(NameModifier::editState));
             fc->addFileWatcherForGdx();
         }
         tabWidget->setTabToolTip(tabIndex, fc->location());
@@ -349,6 +350,11 @@ bool MainWindow::isOptionDefinitionChecked()
 CommandLineHistory *MainWindow::commandLineHistory()
 {
     return mCommandLineHistory;
+}
+
+FileMetaRepo *MainWindow::fileRepo()
+{
+    return &mFileMetaRepo;
 }
 
 ProjectRepo *MainWindow::projectRepo()
@@ -648,7 +654,7 @@ void MainWindow::on_actionSave_triggered()
 {
     ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editFileId);
     if (!fc) return;
-    if (fc->type() == NodeType::Log) {
+    if (fc->type() == NodeType::log) {
         on_actionSave_As_triggered();
     } else if (fc->isModified()) {
         fc->save();
@@ -841,7 +847,7 @@ void MainWindow::fileChanged(FileId fileId)
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
             ProjectFileNode *fc = mProjectRepo.fileNode(fileId);
-            if (fc) ui->mainTab->setTabText(index, fc->name(NameModifier::EditState));
+            if (fc) ui->mainTab->setTabText(index, fc->name(NameModifier::editState));
         }
     }
 }
@@ -1416,7 +1422,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             ProjectAbstractNode::initEditorType(logEdit);
             logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
                                                                   : AbstractEditor::NoWrap);
-            int ind = ui->logTabs->addTab(logEdit, logNode->name(NameModifier::EditState));
+            int ind = ui->logTabs->addTab(logEdit, logNode->name(NameModifier::editState));
             logNode->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
         }
@@ -1635,7 +1641,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         LogEditor* logEdit = new LogEditor(mSettings.get(), this);
         ProjectAbstractNode::initEditorType(logEdit);
 
-        ui->logTabs->addTab(logEdit, logProc->name(NameModifier::EditState));
+        ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
         logProc->addEditor(logEdit);
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
     }
@@ -1646,7 +1652,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         logProc->clearLog();
     }
     if (!ui->logTabs->children().contains(logProc->editors().first())) {
-        ui->logTabs->addTab(logProc->editors().first(), logProc->name(NameModifier::EditState));
+        ui->logTabs->addTab(logProc->editors().first(), logProc->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logProc->editors().first());
 
@@ -1794,7 +1800,7 @@ void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMi
 {
     if (!fileNode) return;
     QWidget* edit = nullptr;
-    QTabWidget* tabWidget = fileNode->type() == NodeType::Log ? ui->logTabs : ui->mainTab;
+    QTabWidget* tabWidget = fileNode->type() == NodeType::log ? ui->logTabs : ui->mainTab;
     if (!fileNode->editors().empty()) {
         edit = fileNode->editors().first();
     }
@@ -1825,7 +1831,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     QList<ProjectFileNode*> openFiles;
     for (int i = 0; i < group->childCount(); ++i) {
         ProjectAbstractNode* fsc = group->childEntry(i);
-        if (fsc->type() == NodeType::File) {
+        if (fsc->type() == NodeType::file) {
             ProjectFileNode* file = static_cast<ProjectFileNode*>(fsc);
             openFiles << file;
             if (file->isModified())
@@ -1882,7 +1888,7 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
         EXCEPT() << "File not found: " << filePath;
     }
     ProjectAbstractNode *fsc = mProjectRepo.findNode(filePath, parent);
-    ProjectFileNode *fileNode = (fsc && fsc->type() == NodeType::File) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
+    ProjectFileNode *fileNode = (fsc && fsc->type() == NodeType::file) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
 
     if (!fileNode) { // not yet opened by user, open file in new tab
         ProjectGroupNode* group = mProjectRepo.ensureGroup(CommonPaths::absolutFilePath(filePath));
@@ -1890,7 +1896,7 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
         if (!fileNode) {
             EXCEPT() << "File not found: " << filePath;
         }
-        QTabWidget* tabWidget = (fileNode->type() == NodeType::Log) ? ui->logTabs : ui->mainTab;
+        QTabWidget* tabWidget = (fileNode->type() == NodeType::log) ? ui->logTabs : ui->mainTab;
         createEdit(tabWidget, focus, fileNode->id(), codecMip);
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
@@ -2330,7 +2336,7 @@ void MainWindow::toggleLogDebug()
     ProjectGroupNode* root = mProjectRepo.treeModel()->rootNode();
     for (int i = 0; i < root->childCount(); ++i) {
         ProjectAbstractNode *fsc = root->childEntry(i);
-        if (fsc->type() == NodeType::Group) {
+        if (fsc->type() == NodeType::group) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
             ProjectLogNode* log = group->logNode();
             if (log) log->setDebugLog(mLogDebugLines);
@@ -2365,7 +2371,7 @@ QWidget *RecentData::editor() const
 
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditor);
+    AbstractEditor* edit = FileMeta::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
@@ -2373,7 +2379,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
-    edit = ProjectFileNode::toAbstractEdit(mEditor);
+    edit = FileMeta::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);

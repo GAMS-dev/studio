@@ -110,10 +110,15 @@ QString ProjectGroupNode::tooltip()
     return QString(location());
 }
 
+QString ProjectGroupNode::lstErrorText(int line)
+{
+    return parentNode() ? parentNode()->lstErrorText(line) : QString();
+}
+
 
 
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, FileMeta* runFileMeta)
-    : ProjectGroupNode(name, NodeType::RunGroup)
+    : ProjectGroupNode(name, NodeType::runGroup)
     , mGamsProcess(runFileMeta ? new GamsProcess() : nullptr)
 {
     if (!runFileMeta) return;
@@ -140,6 +145,11 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, FileMeta* runFileMeta)
 //    }
 }
 
+FileId ProjectRunGroupNode::runFileId() const
+{
+    return mGmsFileId;
+}
+
 
 ProjectLogNode* ProjectRunGroupNode::logNode() const
 {
@@ -153,12 +163,12 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
-ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(TextMarkRepo *textMarkRepo, FileMetaRepo *fileMetaRepo)
+ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
 {
     if (mLogNode) return mLogNode;
     QString logName = "[LOG]" + QString::number(id());
     FileMeta* fm = fileMetaRepo->getOrCreateFileMeta(logName);
-    ProjectLogNode* logNode = new ProjectLogNode(textMarkRepo, fileMetaRepo, id());
+    ProjectLogNode* logNode = new ProjectLogNode(fm, this);
 }
 
 QString ProjectRunGroupNode::runnableGms() const
@@ -170,7 +180,7 @@ QString ProjectRunGroupNode::runnableGms() const
 void ProjectRunGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
     QString location = gmsFileNode->location();
-
+    mGmsFileId = gmsFileNode->file()->id();
     mGmsFileName = location;
     setLstFileName(QFileInfo(location).baseName() + ".lst");
     if (logNode()) logNode()->resetLst();
@@ -178,6 +188,7 @@ void ProjectRunGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 
 void ProjectRunGroupNode::removeRunnableGms()
 {
+    mGmsFileId = -1;
     mGmsFileName = "";
     mLstFileName = "";
 }
@@ -196,11 +207,32 @@ QString ProjectRunGroupNode::lstFileName() const
     return mLstFileName;
 }
 
+QString ProjectRunGroupNode::lstErrorText(int line)
+{
+    return mLstErrorTexts.value(line);
+}
+
+void ProjectRunGroupNode::setLstErrorText(int line, QString text)
+{
+    mLstErrorTexts.insert(line, text);
+}
+
+void ProjectRunGroupNode::clearLstErrorTexts()
+{
+    mLstErrorTexts.clear();
+    // TODO(JM) remove marks for this groups NodeId
+}
+
+bool ProjectRunGroupNode::hasLstErrorText(int line)
+{
+    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
+}
+
 QString ProjectRunGroupNode::tooltip()
 {
     QString res(location());
     res.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
-//    tip.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    res.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
     return res;
 }
 
@@ -422,33 +454,6 @@ void ProjectGroupNode::jumpToFirstError(bool focus)
     }
 }
 
-QString ProjectGroupNode::lstErrorText(int line)
-{
-    return mLstErrorTexts.value(line);
-}
-
-void ProjectGroupNode::setLstErrorText(int line, QString text)
-{
-    mLstErrorTexts.insert(line, text);
-}
-
-void ProjectGroupNode::clearLstErrorTexts()
-{
-    mLstErrorTexts.clear();
-//    dumpMarks();
-    removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
-//    ProjectAbstractNode *fsc = findFile(lstFileName());
-//    if (fsc && fsc->type() == ProjectAbstractNode::File) {
-//        ProjectFileNode *fc = static_cast<ProjectFileNode*>(fsc);
-//        fc->clearMarksEnhanced();
-//    }
-}
-
-bool ProjectGroupNode::hasLstErrorText(int line)
-{
-    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
-}
-
 void ProjectGroupNode::saveGroup()
 {
     foreach (ProjectAbstractNode* child, mChildList) {
@@ -482,7 +487,7 @@ void ProjectGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState
 */
 
 ProjectRootNode::ProjectRootNode()
-    : ProjectGroupNode("Root", NodeType::Root)
+    : ProjectGroupNode("Root", NodeType::root)
 {}
 
 void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)

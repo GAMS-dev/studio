@@ -37,10 +37,10 @@ class TextMark
 public:
     enum Type {none, error, link, bookmark, match, all};
 
-    explicit TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = -1);
+    TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, FileId runId = -1);
     virtual ~TextMark();
     FileId fileId() const;
-    FileId contextId() const;
+    FileId runId() const;
     QTextDocument* document() const;
     void setPosition(int line, int column, int size = 0);
     void jumpToRefMark(bool focus = true);
@@ -94,7 +94,7 @@ private:
     static int mNextId;
     int mId;
     FileId mFileId;
-    NodeId mGroupId;
+    FileId mRunId;
     TextMarkRepo* mMarks;
     int mPosition = -1;
     Type mType = none;

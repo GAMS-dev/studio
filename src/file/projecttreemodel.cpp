@@ -30,7 +30,7 @@
 namespace gams {
 namespace studio {
 
-ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectGroupNode* root)
+ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectRootNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
     if (!mProjectRepo)
@@ -100,7 +100,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (isSelected(ind)) return QColor("#4466BBFF");
 
     case Qt::DisplayRole:
-        return mProjectRepo->node(ind)->name(NameModifier::EditState);
+        return mProjectRepo->node(ind)->name(NameModifier::editState);
 
     case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
@@ -141,7 +141,7 @@ QModelIndex ProjectTreeModel::rootModelIndex() const
     return createIndex(0, 0, mRoot->id());
 }
 
-ProjectGroupNode* ProjectTreeModel::rootNode() const
+ProjectRootNode* ProjectTreeModel::rootNode() const
 {
     return mRoot;
 }

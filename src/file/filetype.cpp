@@ -74,15 +74,15 @@ QStringList FileType::suffix() const
 const QList<FileType*> FileType::list()
 {
     if (mList.isEmpty()) {
-        mList << new FileType(Gsp, "gsp,pro", "GAMS Studio Project", false);
-        mList << new FileType(Gms, "gms,inc", "GAMS Source Code", false);
-        mList << new FileType(Txt, "txt", "Text File", false);
-        mList << new FileType(Lst, "lst", "GAMS List File", true);
-        mList << new FileType(Lxi, "lxi", "GAMS List File Index", true);
-        mList << new FileType(Gdx, "gdx", "GAMS Data", true);
-        mList << new FileType(Ref, "ref", "GAMS Ref File", true);
-        mList << new FileType(Log, "log", "GAMS Log File", false);
-        mNone = new FileType(None, "", "Unknown File", false);
+        mList << new FileType(FileKind::Gsp, "gsp,pro", "GAMS Studio Project", false);
+        mList << new FileType(FileKind::Gms, "gms,inc", "GAMS Source Code", false);
+        mList << new FileType(FileKind::Txt, "txt", "Text File", false);
+        mList << new FileType(FileKind::Lst, "lst", "GAMS List File", true);
+        mList << new FileType(FileKind::Lxi, "lxi", "GAMS List File Index", true);
+        mList << new FileType(FileKind::Gdx, "gdx", "GAMS Data", true);
+        mList << new FileType(FileKind::Ref, "ref", "GAMS Ref File", true);
+        mList << new FileType(FileKind::Log, "log", "GAMS Log File", false);
+        mNone = new FileType(FileKind::None, "", "Unknown File", false);
     }
     return mList;
 }

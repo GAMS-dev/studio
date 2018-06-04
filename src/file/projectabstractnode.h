@@ -43,26 +43,13 @@ class ProjectAbstractNode : public QObject
     Q_OBJECT
 
 public:
-
-    enum EditorType {
-        etUndefined = 0,
-        etPlainText = 1,
-        etSourceCode = 2,
-        etLog = 3,
-        etLastTextType = 4,
-
-        etLxiLst = 5,
-        etGdx = 6,
-        etLastKomplexType = 9,
-    };
-
     virtual ~ProjectAbstractNode();
 
     NodeId id() const;
 
     /// The raw name of this node.
     /// \return The raw name of this node.
-    virtual const QString name(NameModifier mod = NameModifier::Raw);
+    virtual const QString name(NameModifier mod = NameModifier::raw);
 
     /// Sets the raw name of this node.
     /// \param name The raw name of this node.
@@ -155,9 +142,6 @@ public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(AbstractEditor* w) { // obsolete?
-        if(w) w->setProperty("EditorType", etPlainText);
-    }
     inline static void initEditorType(LogEditor* w) {
         if(w) w->setProperty("EditorType", etLog);
     }
@@ -169,13 +153,13 @@ public: // static convenience methods
     }
     inline static int editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
-        return (v.isValid() ? v.toInt() : etUndefined);
+        return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
     }
     inline static AbstractEditor* toAbstractEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
             return toLxiViewer(w)->codeEditor();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
+        return (t > EditorType::undefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
     }
     inline static CodeEditor* toCodeEdit(QWidget* w) {
         int t = editorType(w);

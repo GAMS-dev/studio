@@ -55,6 +55,27 @@ QMimeData* AbstractEditor::createMimeDataFromSelection() const
     return mimeData;
 }
 
+FileId AbstractEditor::fileId() const
+{
+    return mFileId;
+}
+
+void AbstractEditor::setFileId(const FileId &groupId)
+{
+    setRunFileId();
+    mFileId = groupId;
+}
+
+FileId AbstractEditor::runFileId() const
+{
+    return mRunFileId;
+}
+
+void AbstractEditor::setRunFileId(const FileId &runFileId)
+{
+    mRunFileId = runFileId;
+}
+
 StudioSettings *AbstractEditor::settings() const
 {
     return mSettings;

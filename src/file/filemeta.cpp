@@ -1,5 +1,7 @@
 #include "filemeta.h"
 #include "filetype.h"
+#include "editors/codeeditor.h"
+#include "exception.h"
 #include <QFileInfo>
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
@@ -38,6 +40,160 @@ QString FileMeta::name()
     return mName;
 }
 
+QWidgetList FileMeta::editors() const
+{
+    return mEditors;
+}
+
+QWidget *FileMeta::topEditor() const
+{
+    return isOpen() ? mEditors.first() : nullptr;
+}
+
+inline EditorType FileMeta::editorType(QWidget *w)
+{
+    QVariant v = w ? w->property("EditorType") : QVariant();
+    return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
+}
+
+void FileMeta::modificationChanged(bool modiState)
+{
+    Q_UNUSED(modiState);
+    emit changed(id());
+}
+
+void FileMeta::updateMarks()
+{
+    // This gathers additional error information from lst-content
+
+    // TODO(JM) Perform a large-file-test if this should have an own thread
+
+//    if (!mMarks) return;
+//    mMarks->updateMarks();
+//    if (mMarksEnhanced) return;
+//    QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
+//    if (mMetrics.fileType() == FileType::Lst && document()) {
+//        for (TextMark* mark: mMarks->marks()) {
+//            QList<int> errNrs;
+//            int lineNr = mark->line();
+//            QTextBlock block = document()->findBlockByNumber(lineNr).next();
+//            QStringList errText;
+//            while (block.isValid()) {
+//                QRegularExpressionMatch match = rex.match(block.text());
+//                if (!match.hasMatch()) break;
+//                if (match.capturedLength(3)) { // first line with error numbers and indent
+//                    for (QString nrText: match.captured(3).split(",")) errNrs << nrText.toInt();
+//                    if (match.capturedLength(4)) errText << match.captured(4);
+//                } else if (match.capturedLength(5)) { // line with error number and description
+//                    errText << match.captured(5)+"\t"+match.captured(6);
+//                } else if (match.capturedLength(7)) { // indented follow-up line for error description
+//                    errText << "\t"+match.captured(7);
+//                } else if (match.capturedLength(8)) { // non-indented line for additional error description
+//                    errText << match.captured(8);
+//                }
+//                block = block.next();
+//            }
+//            parentEntry()->setLstErrorText(lineNr, errText.join("\n"));
+//        }
+//        mMarksEnhanced = true;
+//    }
+
+}
+
+void FileMeta::addEditor(QWidget *edit)
+{
+    if (!edit) return;
+    if (mEditors.contains(edit)) {
+        mEditors.move(mEditors.indexOf(edit), 0);
+        return;
+    }
+    if (editorType(edit) == EditorType::undefined)
+        EXCEPT() << "Type assignment missing for this editor/viewer";
+    bool newlyOpen = !document();
+    mEditors.prepend(edit);
+    AbstractEditor* ptEdit = toAbstractEdit(edit);
+    CodeEditor* scEdit = toCodeEdit(edit);
+
+    if (mEditors.size() == 1) {
+        if (ptEdit) {
+            ptEdit->document()->setParent(this);
+            connect(document(), &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged, Qt::UniqueConnection);
+            if (mHighlighter && mHighlighter->document() != document()) {
+                mHighlighter->setDocument(document());
+                if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+            }
+            if (newlyOpen) emit documentOpened();
+            QTimer::singleShot(50, this, &FileMeta::updateMarks);
+        }
+    } else if (ptEdit) {
+        ptEdit->setDocument(document());
+    }
+    // TODO(JM) getMouseMove and -click for editor to enable link-clicking
+    if (ptEdit) {
+        if (!ptEdit->viewport()->hasMouseTracking()) {
+            ptEdit->viewport()->setMouseTracking(true);
+        }
+        ptEdit->viewport()->installEventFilter(this);
+        ptEdit->installEventFilter(this);
+    }
+//    if (scEdit && mMarks) {
+//        // TODO(JM) Should be bound directly to a sublist in TextMarkRepo
+//        connect(scEdit, &CodeEditor::requestMarkHash, this, &ProjectFileNode::shareMarkHash);
+//        connect(scEdit, &CodeEditor::requestMarksEmpty, this, &ProjectFileNode::textMarkIconsEmpty);
+//        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
+//    }
+}
+
+void FileMeta::editToTop(QWidget *edit)
+{
+    addEditor(edit);
+}
+
+void FileMeta::removeEditor(QWidget *edit)
+{
+    int i = mEditors.indexOf(edit);
+    if (i < 0)
+        return;
+    bool wasModified = isModified();
+    AbstractEditor* ptEdit = toAbstractEdit(edit);
+    CodeEditor* scEdit = toCodeEdit(edit);
+
+    if (ptEdit && mEditors.size() == 1) {
+        emit documentClosed();
+        // On removing last editor: paste document-parency back to editor
+        ptEdit->document()->setParent(ptEdit);
+        disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+    mEditors.removeAt(i);
+    if (mEditors.isEmpty()) {
+        if (!document()) emit documentClosed();
+        if (wasModified) emit changed(id());
+    } else if (ptEdit) {
+        ptEdit->setDocument(document()->clone(ptEdit));
+    }
+    if (ptEdit) {
+        ptEdit->viewport()->removeEventFilter(this);
+        ptEdit->removeEventFilter(this);
+    }
+    if (scEdit && mHighlighter) {
+        disconnect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+    }
+}
+
+void FileMeta::removeAllEditors()
+{
+    auto editors = mEditors;
+    for (auto editor : editors) {
+        removeEditor(editor);
+    }
+    mEditors = editors;
+}
+
+bool FileMeta::hasEditor(QWidget *edit)
+{
+    return mEditors.contains(edit);
+}
+
 bool FileMeta::isModified() const
 {
     return mDocument->isModified();
@@ -56,6 +212,11 @@ int FileMeta::codecMib() const
 bool FileMeta::exists() const
 {
     return mData.exist;
+}
+
+bool FileMeta::isOpen() const
+{
+    return !mEditors.isEmpty();
 }
 
 FileMeta::Data::Data(QString location)

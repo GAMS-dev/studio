@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QJsonObject>
+#include <QTextStream>
 
 namespace gams {
 namespace studio {
@@ -57,28 +58,29 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                                          QMessageBox::Yes);
 
     if (QMessageBox::Yes == decision) {
-        for (const auto& autosaveFile : autosaveFiles)
-        {
+        for (const auto& autosaveFile : autosaveFiles) {
             QString originalversion = autosaveFile;
             originalversion.replace(mAutosavedFileMarker, "");
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
             mMainWindow->openFile(destFile.fileName());
-            if (srcFile.open(QIODevice::ReadWrite))
-            {
-                if (destFile.open(QIODevice::ReadWrite))
-                {
+            if (srcFile.open(QIODevice::ReadWrite)) {
+                if (destFile.open(QIODevice::ReadWrite)) {
                     QTextStream in(&srcFile);
-                    QString line = in.readAll() ;
-                    QWidget* editor = mMainWindow->recent()->editor();
-                    ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
-                    QTextCursor curs(fc->document());
-                    curs.select(QTextCursor::Document);
-                    curs.insertText(line);
-                    destFile.close();
-                    AbstractEditor *abstractEditor = dynamic_cast<AbstractEditor*>(editor);
-                    if (editor)
-                        abstractEditor->moveCursor(QTextCursor::Start);
+                    QString all = in.readAll();
+                    QWidget* wid = mMainWindow->recent()->editor();
+                    AbstractEditor* editor = FileMeta::toAbstractEdit(wid);
+                    if (editor) {
+                        FileMeta* fm = mMainWindow->fileRepo()->fileMeta(editor->fileId());
+                        if (fm) {
+                            QTextCursor curs(fm->document());
+                            curs.select(QTextCursor::Document);
+                            curs.insertText(all);
+                            destFile.close();
+                            editor->moveCursor(QTextCursor::Start);
+                        }
+                    }
+
                 }
                 srcFile.close();
             }
@@ -91,19 +93,17 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 
 void AutosaveHandler::saveChangedFiles()
 {
-    for (auto editor : mMainWindow->openEditors())
-    {
-        ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
-        QString filepath = QFileInfo(fc->location()).path();
-        QString filename = filepath+fc->name();
-        FileMetrics metrics = FileMetrics(QFileInfo(filename));
-        QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fc->name();
-        if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
-        {
+    for (auto widget : mMainWindow->openEditors()) {
+        CodeEditor* editor = FileMeta::toCodeEdit(widget);
+        if (!editor) continue;
+        FileMeta* fm = mMainWindow->fileRepo()->fileMeta(editor->fileId());
+        QString filepath = QFileInfo(fm->location()).path();
+        QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fm->name();
+        if (fm->isModified() && (fm->kind() == FileKind::Gms || fm->kind() == FileKind::Txt)) {
             QFile file(autosaveFile);
             file.open(QIODevice::WriteOnly);
             QTextStream out(&file);
-            out << fc->document()->toPlainText();
+            out << fm->document()->toPlainText();
             out.flush();
             file.close();
         }

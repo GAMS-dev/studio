@@ -28,8 +28,8 @@ namespace studio {
 
 int TextMark::mNextId = 0;
 
-TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
-    : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarks(marks), mType(tmType)
+TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, FileId runId)
+    : mId(mNextId++), mFileId(fileId), mRunId(runId), mMarks(marks), mType(tmType)
 {
     if (!mMarks) FATAL() << "The TextMarkRepo must be a valid instance.";
 }
@@ -65,13 +65,13 @@ void TextMark::jumpToRefMark(bool focus)
 
 void TextMark::jumpToMark(bool focus)
 {
-    if (!mMarks->openFile(mFileId, mGroupId)) return;
+    if (!mMarks->openFile(mFileId, mRunId)) return;
 
     if (document()) {
         updatePos();
         mMarks->jumpTo(mFileId, textCursor(), focus);
     } else if (mMarks->fileKind(mFileId) == FileKind::Gdx) {
-        mMarks->openFile(mFileId, mGroupId, focus);
+        mMarks->openFile(mFileId, mRunId, focus);
     }
 }
 
@@ -259,9 +259,9 @@ FileId TextMark::fileId() const
     return mFileId;
 }
 
-FileId TextMark::contextId() const
+FileId TextMark::runId() const
 {
-    return mGroupId;
+    return mRunId;
 }
 
 int TextMark::value() const

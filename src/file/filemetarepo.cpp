@@ -11,7 +11,7 @@ FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
 {
 }
 
-FileMeta *FileMetaRepo::fileMeta(const FileId fileId) const
+FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 {
     return mFiles.value(fileId, nullptr);
 }

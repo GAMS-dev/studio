@@ -24,22 +24,47 @@
 namespace gams {
 namespace studio {
 
-typedef int FileId;
-typedef int NodeId;
-typedef int TextMarkId;
+
+template <typename PHANTOM_TYPE>
+class PhantomInt
+{
+    int mValue;
+public:
+    PhantomInt (int value = -1) : mValue(value) { }
+//    inline int Value () const { return mValue; }
+    inline operator int() const {return mValue;}
+    inline PhantomInt<PHANTOM_TYPE>& operator++() {
+        mValue++;
+        return *this;
+    }
+    inline PhantomInt<PHANTOM_TYPE> operator++(int) {
+        int prev = mValue;
+        operator++();
+        return PhantomInt(prev);
+    }
+};
+
+struct PiFileId {};
+struct PiNodeId {};
+struct PiTextMarkId {};
+
+typedef PhantomInt<PiFileId> FileId;
+typedef PhantomInt<PiNodeId> NodeId;
+typedef PhantomInt<PiTextMarkId> TextMarkId;
+
 
 enum struct NameModifier {
-    Raw,
-    EditState
+    raw,
+    editState
 };
 enum struct NodeType {
-    Root,
-    Group,
-    RunGroup,
-    File,
-    Log
+    root,
+    group,
+    runGroup,
+    file,
+    log
 };
-enum FileKind {
+enum struct FileKind {
     None,
     Gsp,
     Gms,
@@ -50,6 +75,14 @@ enum FileKind {
     Gdx,
     Ref,
 };
+enum struct EditorType {
+    undefined = 0,
+    source = 1,
+    log = 2,
+    lxiLst = 5,
+    gdx = 6,
+};
+
 
 
 }

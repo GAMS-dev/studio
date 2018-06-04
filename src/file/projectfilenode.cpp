@@ -55,9 +55,9 @@ void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
         mSyntaxHighlighter = nullptr;
     }
     if (mFileMeta->kind() == FileKind::Gms || mFileMeta->kind() == FileKind::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(id(), textMarkRepo(), parent->id());
+        mSyntaxHighlighter = new SyntaxHighlighter(this, textMarkRepo());
     else if (mFileMeta->kind() != FileKind::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(id(), textMarkRepo(), parent->id());
+        mSyntaxHighlighter = new ErrorHighlighter(this, textMarkRepo());
     }
 }
 
@@ -77,7 +77,7 @@ const QString ProjectFileNode::name(NameModifier mod)
 {
     QString res = ProjectAbstractNode::name();
     switch (mod) {
-    case NameModifier::EditState:
+    case NameModifier::editState:
         res += (isModified() ? "*" : "");
         break;
     default:
@@ -106,6 +106,34 @@ QString ProjectFileNode::location() const
     return mFileMeta->location();
 }
 
+QString ProjectFileNode::tooltip()
+{
+    return location();
+}
+
+FileId ProjectFileNode::runFileId() const
+{
+    ProjectGroupNode* group = parentNode();
+    while (group && group->type() != NodeType::runGroup)
+        group = group->parentNode();
+    if (group && group->type() != NodeType::runGroup)
+        return group->toRunGroup()->runFileId();
+    return -1;
+}
+
+void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
+{
+    if (mFileMeta->isOpen() && marks.size() > 0) {
+        QTextCursor cursor(marks.first()->textCursor());
+        if (cursor.isNull()) return;
+        AbstractEditor* edit = FileMeta::toAbstractEdit(mFileMeta->topEditor());
+        if (!edit) return;
+        cursor.setPosition(cursor.anchor());
+        QPoint pos = edit->cursorRect(cursor).bottomLeft();
+        QString tip = parentNode()->lstErrorText(marks.first()->value());
+        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
+    }
+}
 
 /*
 
@@ -191,7 +219,7 @@ void ProjectFileNode::addEditor(QWidget* edit)
         mEditors.move(mEditors.indexOf(edit), 0);
         return;
     }
-    if (ProjectAbstractNode::editorType(edit) == ProjectAbstractNode::etUndefined)
+    if (ProjectAbstractNode::editorType(edit) == EditorType::undefined)
         EXCEPT() << "Type assignment missing for this editor/viewer";
     bool newlyOpen = !document();
     mEditors.prepend(edit);
@@ -379,20 +407,6 @@ void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine,
     }
 }
 
-void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
-{
-    if (mEditors.size() && marks.size() > 0) {
-        QTextCursor cursor(marks.first()->textCursor());
-        if (cursor.isNull()) return;
-        AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
-        if (!edit) return;
-        cursor.setPosition(cursor.anchor());
-        QPoint pos = edit->cursorRect(cursor).bottomLeft();
-        QString tip = parentEntry()->lstErrorText(marks.first()->value());
-        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
-    }
-}
-
 void ProjectFileNode::rehighlightAt(int pos)
 {
     if (pos < 0) return;
@@ -491,11 +505,6 @@ void ProjectFileNode::unwatch()
         mWatcher->deleteLater();
         mWatcher = nullptr;
     }
-}
-
-QString ProjectFileNode::tooltip()
-{
-    return location();
 }
 
 int ProjectFileNode::textMarkCount(QSet<TextMark::Type> tmTypes)

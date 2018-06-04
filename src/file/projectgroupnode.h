@@ -49,6 +49,7 @@ public:
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;
     QString tooltip() override;
+    virtual QString lstErrorText(int line);
 
 protected:
     friend class ProjectRepo;
@@ -84,10 +85,6 @@ private:
 //    void updateChildNodes();
 //    void jumpToFirstError(bool focus);
 
-//    QString lstErrorText(int line);
-//    void setLstErrorText(int line, QString text);
-//    void clearLstErrorTexts();
-//    bool hasLstErrorText( int line = -1);
 //    void saveGroup();
 
 //    void dumpMarks();
@@ -113,8 +110,6 @@ private:
 
 //private:
 //    QFileInfoList mAttachedFiles;
-
-//    QHash<int, QString> mLstErrorTexts;
 //    QHash<QString, TextMarkRepo*> mMarksForFilenames;
 
 };
@@ -125,13 +120,19 @@ class ProjectRunGroupNode : public ProjectGroupNode
 public:
     ProjectLogNode* logNode() const;
     void setLogNode(ProjectLogNode* logNode);
-    ProjectLogNode* getOrCreateLogNode(TextMarkRepo* textMarkRepo, FileMetaRepo* fileMetaRepo);
+    ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
     QString runnableGms() const;
     void setRunnableGms(ProjectFileNode *gmsFileNode);
     void removeRunnableGms();
+    FileId runFileId() const;
     QString lstFileName() const;
     void setLstFileName(const QString &lstFileName);
     QString tooltip() override;
+    QString lstErrorText(int line);
+    void setLstErrorText(int line, QString text);
+    void clearLstErrorTexts();
+    bool hasLstErrorText( int line = -1);
+
 
 protected:
     friend class ProjectRepo;
@@ -143,10 +144,14 @@ protected:
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
+    FileId mGmsFileId = -1;
     QString mGmsFileName;
     QString mLstFileName;
     ProjectLogNode* mLogNode = nullptr;
+    QHash<int, QString> mLstErrorTexts;
+
 };
+
 
 class ProjectRootNode : public ProjectGroupNode
 {

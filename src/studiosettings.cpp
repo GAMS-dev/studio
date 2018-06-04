@@ -26,6 +26,10 @@
 #include "commonpaths.h"
 #include "searchwidget.h"
 #include "version.h"
+#include "logger.h"
+#include "helpview.h"
+#include "option/commandlinehistory.h"
+#include "file.h"
 
 namespace gams {
 namespace studio {
@@ -104,7 +108,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         return;
 
     if (mAppSettings == nullptr) {
-        qDebug() << "ERROR: settings file missing.";
+        DEB() << "ERROR: settings file missing.";
         return;
     }
     // Main Application Settings

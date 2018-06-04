@@ -47,7 +47,7 @@ public:
 protected:
     friend class ProjectRepo;
     friend class ProjectRunGroupNode;
-    ProjectLogNode(FileMeta *fileMeta, ProjectGroupNode *group);
+    ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *runGroup);
 
 //    struct LinkData {
 //        TextMark* textMark = nullptr;

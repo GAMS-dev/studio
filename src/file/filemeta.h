@@ -1,15 +1,19 @@
 #ifndef FILEMETA_H
 #define FILEMETA_H
 
-#include <QObject>
+#include <QWidget>
 #include <QDateTime>
 #include <QTextDocument>
 #include "syntax.h"
+#include "editors/codeeditor.h"
+#include "editors/logeditor.h"
+#include "gdxviewer/gdxviewer.h"
+#include "lxiviewer/lxiviewer.h"
 
 namespace gams {
 namespace studio {
 
-class FileMeta: QObject
+class FileMeta: public QObject
 {
     Q_OBJECT
 public:
@@ -21,6 +25,63 @@ public:
     QTextDocument* document() const;
     int codecMib() const;
     bool exists() const;
+    bool isOpen() const;
+
+    QWidgetList editors() const;
+    QWidget* topEditor() const;
+    void addEditor(QWidget* edit);
+    void editToTop(QWidget* edit);
+    void removeEditor(QWidget* edit);
+    void removeAllEditors();
+    bool hasEditor(QWidget* edit);
+
+public: // static convenience methods
+    inline static void initEditorType(CodeEditor* w) {
+        if(w) w->setProperty("EditorType", (int)EditorType::source);
+    }
+    inline static void initEditorType(LogEditor* w) {
+        if(w) w->setProperty("EditorType", (int)EditorType::log);
+    }
+    inline static void initEditorType(gdxviewer::GdxViewer* w) {
+        if(w) w->setProperty("EditorType", (int)EditorType::gdx);
+    }
+    inline static void initEditorType(lxiviewer::LxiViewer* w) {
+        if(w) w->setProperty("EditorType", (int)EditorType::lxiLst);
+    }
+
+    inline static EditorType editorType(QWidget* w);
+
+    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
+        EditorType t = editorType(w);
+        if (t == EditorType::lxiLst)
+            return toLxiViewer(w)->codeEditor();
+        return (t == EditorType::log || t == EditorType::source)
+                ? static_cast<AbstractEditor*>(w) : nullptr;
+    }
+    inline static CodeEditor* toCodeEdit(QWidget* w) {
+        EditorType t = editorType(w);
+        if (t == EditorType::lxiLst)
+            return toLxiViewer(w)->codeEditor();
+        return (t == EditorType::source) ? static_cast<CodeEditor*>(w) : nullptr;
+    }
+    inline static LogEditor* toLogEdit(QWidget* w) {
+        return (editorType(w) == EditorType::log) ? static_cast<LogEditor*>(w) : nullptr;
+    }
+    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
+        return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
+    }
+    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
+        return (editorType(w) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
+    }
+
+signals:
+    void changed(FileId fileId);
+    void documentOpened();
+    void documentClosed();
+
+private slots:
+    void modificationChanged(bool modiState);
+    void updateMarks();
 
 private:
     struct Data {
@@ -42,6 +103,8 @@ private:
     Data mData;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
+    QWidgetList mEditors;
+    ErrorHighlighter* mHighlighter;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events

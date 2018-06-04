@@ -100,34 +100,34 @@ NodeType ProjectAbstractNode::type() const
 
 const ProjectRootNode *ProjectAbstractNode::toRoot() const
 {
-    if (mType == NodeType::Root) return static_cast<const ProjectRootNode*>(this);
+    if (mType == NodeType::root) return static_cast<const ProjectRootNode*>(this);
     return nullptr;
 }
 
 const ProjectGroupNode *ProjectAbstractNode::toGroup() const
 {
-    if (mType == NodeType::Group) return static_cast<const ProjectGroupNode*>(this);
-    if (mType == NodeType::RunGroup) return static_cast<const ProjectGroupNode*>(this);
-    if (mType == NodeType::Root) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::group) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::runGroup) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::root) return static_cast<const ProjectGroupNode*>(this);
     return nullptr;
 }
 
 const ProjectRunGroupNode *ProjectAbstractNode::toRunGroup() const
 {
-    if (mType == NodeType::RunGroup) return static_cast<const ProjectRunGroupNode*>(this);
+    if (mType == NodeType::runGroup) return static_cast<const ProjectRunGroupNode*>(this);
     return nullptr;
 }
 
 const ProjectFileNode *ProjectAbstractNode::toFile() const
 {
-    if (mType == NodeType::File) return static_cast<const ProjectFileNode*>(this);
-    if (mType == NodeType::Log) return static_cast<const ProjectFileNode*>(this);
+    if (mType == NodeType::file) return static_cast<const ProjectFileNode*>(this);
+    if (mType == NodeType::log) return static_cast<const ProjectFileNode*>(this);
     return nullptr;
 }
 
 const ProjectLogNode *ProjectAbstractNode::toLog() const
 {
-    if (mType == NodeType::Log) return static_cast<const ProjectLogNode*>(this);
+    if (mType == NodeType::log) return static_cast<const ProjectLogNode*>(this);
     return nullptr;
 }
 

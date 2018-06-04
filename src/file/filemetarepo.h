@@ -12,7 +12,7 @@ class FileMetaRepo : public QObject
     Q_OBJECT
 public:
     FileMetaRepo(QObject* parent);
-    FileMeta* fileMeta(const FileId fileId) const;
+    FileMeta* fileMeta(const FileId &fileId) const;
     FileMeta* fileMeta(const QString &location) const;
     FileId addFileMeta(FileMeta* fileMeta);
     FileMeta *getOrCreateFileMeta(QString location);

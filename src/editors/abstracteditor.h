@@ -21,6 +21,7 @@
 #define ABSTRACTEDITOR_H
 
 #include <QPlainTextEdit>
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,12 @@ public:
     bool event(QEvent *event) override;
     StudioSettings *settings() const;
 
+    FileId fileId() const;
+    void setFileId(const FileId &fileId);
+
+    FileId runFileId() const;
+    virtual void setRunFileId(const FileId &runFileId = FileId());
+
 public slots:
     void afterContentsChanged(int, int, int);
 
@@ -52,6 +59,8 @@ protected:
 
 protected:
     StudioSettings *mSettings = nullptr;
+    FileId mFileId = -1;
+    FileId mRunFileId = -1;
 };
 
 }

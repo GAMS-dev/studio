@@ -21,6 +21,7 @@
 #include "ui_resultsview.h"
 #include "exception.h"
 #include "searchresultlist.h"
+#include "mainwindow.h"
 
 namespace gams {
 namespace studio {
@@ -52,29 +53,23 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (QFileInfo(item.locFile()).exists())
         mMain->openFile(item.locFile());
 
-    ProjectAbstractNode *fsc = mMain->projectRepo()->findNode(item.locFile());
-    if (!fsc) EXCEPT() << "File not found: " << item.locFile();
-
-    ProjectFileNode *jmpFc = nullptr;
-    if (fsc->type() == NodeType::File)
-        jmpFc = static_cast<ProjectFileNode*>(fsc);
-
-    if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
+    FileMeta *fm = mMain->fileRepo()->fileMeta(item.locFile());
+    if (!fm) EXCEPT() << "File not found: " << item.locFile();
 
     // open and highlight
-    mMain->searchWidget()->findInFile(jmpFc, true);
+    mMain->searchWidget()->findInFile(fm, true);
 
     // jump to line
-    QTextCursor tc(jmpFc->document());
+    QTextCursor tc(fm->document());
     if (item.locCol() <= 0) {
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
+        tc.setPosition(fm->document()->findBlockByNumber(item.locLineNr() - 1).position());
     } else {
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
+        tc.setPosition(fm->document()->findBlockByNumber(item.locLineNr() - 1).position()
                        + item.locCol());
 
     }
-    jmpFc->jumpTo(tc, false);
-    jmpFc->editors().first()->setFocus();
+    fm->jumpTo(tc, false);
+    fm->editors().first()->setFocus();
 }
 
 }

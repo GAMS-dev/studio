@@ -50,7 +50,8 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId = -1);
+    ErrorHighlighter(ProjectFileNode* node, TextMarkRepo *textMarkRepo);
+    ErrorHighlighter(FileId fileId, TextMarkRepo *textMarkRepo, FileId runId = -1);
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
     FileId nodeId() const;
@@ -68,8 +69,8 @@ protected:
     int mLastSyntaxState = 0;
 
 private:
-    FileId mNodeId = -1;
-    FileId mContextId = -1;
+    FileId mFileId = -1;
+    FileId mRunId = -1;
     TextMarkRepo* mMarks = nullptr;
     QTextBlock mTestBlock;
 
@@ -79,7 +80,8 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(FileId node, TextMarkRepo *textMarkRepo, FileId contextId = -1);
+    SyntaxHighlighter(ProjectFileNode* node, TextMarkRepo *textMarkRepo);
+    SyntaxHighlighter(FileId file, TextMarkRepo *textMarkRepo, FileId groupId = -1);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

@@ -47,11 +47,11 @@ QTextDocument *TextMarkRepo::document(FileId fileId) const
     return fm ? fm->document() : nullptr;
 }
 
-bool TextMarkRepo::openFile(FileId fileId, NodeId groupId, bool focus)
+bool TextMarkRepo::openFile(FileId fileId, FileId runId, bool focus)
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
     if (fm) {
-        emit mFileRepo->openFile(fm, groupId, focus, fm->codecMib());
+        emit mFileRepo->openFile(fm, runId, focus, fm->codecMib());
         return true;
     }
     return false;
@@ -65,15 +65,15 @@ void TextMarkRepo::jumpTo(FileId fileId, QTextCursor cursor, bool focus)
 
 void TextMarkRepo::rehighlightAt(FileId fileId, int pos)
 {
-    ProjectFileNode* fn = mFileRepo->fileNode(fileId);
-    if (fn) fn->rehighlightAt(pos);
+    FileMeta* fm = mFileRepo->fileMeta(fileId);
+    if (fm) fm->rehighlightAt(pos);
 }
 
 FileKind TextMarkRepo::fileKind(FileId fileId)
 {
-    ProjectFileNode* fn = mFileRepo->fileNode(fileId);
-    if (fn) return fn->metrics().fileType().kind();
-    return FileType::None;
+    FileMeta* fm = mFileRepo->fileMeta(fileId);
+    if (fm) return fm->kind();
+    return FileKind::None;
 }
 
 QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType)
@@ -105,9 +105,9 @@ QList<TextMark*> TextMarkRepo::marks(FileId nodeId, TextMark::Type refType)
 FileId TextMarkRepo::ensureFileId(QString location)
 {
     if (location.isEmpty()) return -1;
-    ProjectFileNode* fn = nullptr;
-    mFileRepo->findOrCreateFileNode(location, fn, nullptr);
-    if (fn) return fn->id();
+    FileMeta* fm = nullptr;
+    mFileRepo->findOrCreateFileNode(location, fm, nullptr);
+    if (fm) return fm->id();
     return -1;
 }
 

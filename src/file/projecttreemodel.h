@@ -31,7 +31,7 @@ class ProjectRepo;
 class ProjectTreeModel : public QAbstractItemModel
 {
 public:
-    explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
+    explicit ProjectTreeModel(ProjectRepo *parent, ProjectRootNode *root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
     QModelIndex parent(const QModelIndex &child) const;
@@ -41,7 +41,7 @@ public:
 
     QModelIndex index(ProjectAbstractNode* entry) const;
     QModelIndex rootModelIndex() const;
-    ProjectGroupNode* rootNode() const;
+    ProjectRootNode *rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
 
 protected:
@@ -59,7 +59,7 @@ protected:
 
 private:
     ProjectRepo *mProjectRepo;
-    ProjectGroupNode* mRoot = nullptr;
+    ProjectRootNode *mRoot = nullptr;
     QModelIndex mCurrent;
     QModelIndex mSelected;
 
