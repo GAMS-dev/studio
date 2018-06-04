@@ -64,7 +64,6 @@ HelpView::HelpView(QWidget *parent) :
     mChapters << START_CHAPTER << DOLLARCONTROL_CHAPTER << GAMSCALL_CHAPTER
               << INDEX_CHAPTER << OPTION_CHAPTER;
 
-
     ui->setupUi(this);
 
     QToolBar* toolbar = new QToolBar(this);
@@ -133,6 +132,7 @@ HelpView::HelpView(QWidget *parent) :
     }
     connect(ui->webEngineView, &QWebEngineView::loadFinished, this, &HelpView::on_loadFinished);
 
+    connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpView::linkHovered);
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpView::searchText);
     connect(ui->backButton, &QPushButton::clicked, this, &HelpView::on_backButtonTriggered);
     connect(ui->forwardButton, &QPushButton::clicked, this, &HelpView::on_forwardButtonTriggered);
@@ -140,6 +140,7 @@ HelpView::HelpView(QWidget *parent) :
     connect(ui->closeButton, &QPushButton::clicked, this, &HelpView::on_closeButtonTriggered);
 
     clearStatusBar();
+    ui->searchbarWidget->hide();
 }
 
 HelpView::~HelpView()
@@ -167,9 +168,9 @@ void HelpView::setBookmarkMap(const QMultiMap<QString, QString> &value)
 
 void HelpView::clearStatusBar()
 {
+    ui->statusbarLabel->clear();
     ui->searchLineEdit->clear();
     findText("", Forward, ui->caseSenstivity->isChecked());
-    ui->statusbarWidget->hide();
 }
 
 void HelpView::on_urlOpened(const QUrl &location)
@@ -306,6 +307,16 @@ void HelpView::on_loadFinished(bool ok)
            if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
+   }
+}
+
+void HelpView::linkHovered(const QString &url)
+{
+    if (url.isEmpty()) {
+        ui->statusbarLabel->hide();
+    } else {
+        ui->statusbarLabel->show();
+        ui->statusbarLabel->setText(url);
     }
 }
 
@@ -340,8 +351,7 @@ void HelpView::on_actionOrganizeBookmark_triggered()
 
 void HelpView::on_actionOnlineHelp_triggered(bool checked)
 {
-    QUrl url = ui->webEngineView->url();
-
+   QUrl url = ui->webEngineView->url();
     if (checked) {
         QString urlStr = url.toDisplayString();
         urlStr.replace( urlStr.indexOf("file://"), 7, "");
@@ -404,13 +414,14 @@ void HelpView::addBookmarkAction(const QString &objectName, const QString &title
 
 void HelpView::on_searchHelp()
 {
-    if (ui->statusbarWidget->isVisible()) {
-        clearStatusBar();
+    if (ui->searchbarWidget->isVisible()) {
+        ui->searchbarWidget->hide();
         ui->webEngineView->setFocus();
     } else {
-        ui->statusbarWidget->show();
+        ui->searchbarWidget->show();
         ui->searchLineEdit->setFocus();
     }
+    clearStatusBar();
 }
 
 void HelpView::on_backButtonTriggered()
@@ -472,7 +483,7 @@ void HelpView::closeEvent(QCloseEvent *event)
 
 void HelpView::keyPressEvent(QKeyEvent *event)
 {
-    if (ui->statusbarWidget->isVisible()) {
+    if (ui->searchbarWidget->isVisible()) {
         if (event->key() == Qt::Key_Escape) {
            clearStatusBar();
            ui->webEngineView->setFocus();
@@ -504,12 +515,12 @@ void HelpView::findText(const QString &text, HelpView::SearchDirection direction
         flags = flags | QWebEnginePage::FindBackward;
     ui->webEngineView->page()->findText(text, flags, [this](bool found) {
         if (found)
-            ui->statusText->setText("");
+            ui->statusText->clear();
         else
-            ui->statusText->setText("No occurrences found");
+           ui->statusText->setText("No occurrences found");
     });
     if (text.isEmpty())
-        ui->statusText->setText("");
+        ui->statusText->clear();
 }
 
 } // namespace studio

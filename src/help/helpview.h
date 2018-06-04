@@ -21,6 +21,7 @@
 #define HELPVIEW_H
 
 #include <QWidget>
+#include <QLabel>
 #include <QMenu>
 #include <QUrl>
 
@@ -58,6 +59,7 @@ public slots:
     void on_bookmarkRemoved(const QString& location, const QString& name);
 
     void on_loadFinished(bool ok);
+    void linkHovered(const QString& url);
 
     void on_actionHome_triggered();
     void on_actionAddBookmark_triggered();
