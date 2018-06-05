@@ -97,13 +97,11 @@ private:
     QMenu* mBookmarkMenu;
     QStringList mChapters;
 
-    QString baseLocation;
-    QUrl startPageUrl;
-    QUrl onlineStartPageUrl;
-
-    QString mThisRelease;
-    QString mLastRelease;
-    bool mOfflineHelpAvailable = false;
+    QUrl getStartPageUrl();
+    QUrl getOnlineStartPageUrl();
+    bool isDocumentAvailable(const QString& path, const QString& chapter);
+    bool isCurrentReleaseTheLatestVersion();
+    QString getCurrentReleaseVersion();
 
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
     enum SearchDirection {

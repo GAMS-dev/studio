@@ -47,20 +47,6 @@ HelpView::HelpView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HelpView)
 {
-    CheckForUpdateWrapper c4uWrapper;
-    mThisRelease = c4uWrapper.currentDistribVersionShort();
-    mLastRelease = c4uWrapper.lastDistribVersionShort();
-
-    if (c4uWrapper.distribIsLatest())
-        onlineStartPageUrl = QUrl(LATEST_ONLINE_HELP_URL);
-    else
-        onlineStartPageUrl = QUrl( QString("https://www.gams.com/%1").arg(mThisRelease) );
-
-    QDir dir = QDir(CommonPaths::systemDir()).filePath(START_CHAPTER);
-    baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
-    startPageUrl = QUrl::fromLocalFile(dir.absolutePath());
-    mOfflineHelpAvailable = (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath()));
-
     mChapters << START_CHAPTER << DOLLARCONTROL_CHAPTER << GAMSCALL_CHAPTER
               << INDEX_CHAPTER << OPTION_CHAPTER;
 
@@ -68,8 +54,9 @@ HelpView::HelpView(QWidget *parent) :
 
     QToolBar* toolbar = new QToolBar(this);
 
-    ui->actionHome->setToolTip("Start page ("+ QDir(CommonPaths::systemDir()).filePath(START_CHAPTER)+")");
-    ui->actionHome->setStatusTip("Start page ("+ QDir(CommonPaths::systemDir()).filePath(START_CHAPTER)+")");
+    QString startPageUrl = getStartPageUrl().toString();
+    ui->actionHome->setToolTip("Start page ("+ startPageUrl +")");
+    ui->actionHome->setStatusTip("Start page ("+ startPageUrl +")");
 
     toolbar->addAction(ui->actionHome);
     toolbar->addSeparator();
@@ -100,8 +87,9 @@ HelpView::HelpView(QWidget *parent) :
     toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
-    ui->actionOnlineHelp->setText("View This Page from https://www.gams.com/"+mThisRelease+"/");
-    ui->actionOnlineHelp->setStatusTip("View This Page from https://www.gams.com/"+mThisRelease+"/");
+    QString onlineStartPageUrl = getOnlineStartPageUrl().toString();
+    ui->actionOnlineHelp->setText("View This Page from "+onlineStartPageUrl);
+    ui->actionOnlineHelp->setStatusTip("View This Page from "+onlineStartPageUrl);
     ui->actionOnlineHelp->setCheckable(true);
     helpMenu->addAction(ui->actionOnlineHelp);
     helpMenu->addSeparator();
@@ -123,8 +111,8 @@ HelpView::HelpView(QWidget *parent) :
 
     ui->toolbarVlLayout->addWidget(toolbar);
 
-    if (mOfflineHelpAvailable) {
-        ui->webEngineView->load(startPageUrl);
+    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        ui->webEngineView->load( getStartPageUrl() );
     } else {
         QString htmlText;
         getErrorHTMLText( htmlText, START_CHAPTER);
@@ -145,6 +133,7 @@ HelpView::HelpView(QWidget *parent) :
 
 HelpView::~HelpView()
 {
+    delete mBookmarkMenu;
     delete ui;
 }
 
@@ -180,7 +169,7 @@ void HelpView::on_urlOpened(const QUrl &location)
 
 void HelpView::on_helpContentRequested(const QString &chapter, const QString &keyword)
 {
-    QDir dir = QDir(baseLocation).filePath(chapter);
+    QDir dir = QDir(CommonPaths::systemDir()).filePath(chapter);
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
         QString htmlText;
         getErrorHTMLText( htmlText, chapter);
@@ -287,7 +276,7 @@ void HelpView::on_bookmarkRemoved(const QString &location, const QString &name)
 
 void HelpView::on_actionHome_triggered()
 {
-    ui->webEngineView->load(startPageUrl);
+    ui->webEngineView->load( getStartPageUrl() );
 }
 
 void HelpView::on_loadFinished(bool ok)
@@ -296,9 +285,9 @@ void HelpView::on_loadFinished(bool ok)
     ui->actionOnlineHelp->setChecked( false );
     if (ok) {
        if (ui->webEngineView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
-           if (ui->webEngineView->url().path().contains(mThisRelease))
+           if (ui->webEngineView->url().path().contains( getCurrentReleaseVersion()) )
                ui->actionOnlineHelp->setChecked( true );
-           else if (ui->webEngineView->url().path().contains("latest") && (mThisRelease == mLastRelease))
+           else if (ui->webEngineView->url().path().contains("latest") && isCurrentReleaseTheLatestVersion())
                ui->actionOnlineHelp->setChecked( true );
            else
                ui->actionOnlineHelp->setEnabled( false );
@@ -352,7 +341,9 @@ void HelpView::on_actionOrganizeBookmark_triggered()
 void HelpView::on_actionOnlineHelp_triggered(bool checked)
 {
    QUrl url = ui->webEngineView->url();
-    if (checked) {
+   QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
+   QUrl onlineStartPageUrl = getOnlineStartPageUrl();
+   if (checked) {
         QString urlStr = url.toDisplayString();
         urlStr.replace( urlStr.indexOf("file://"), 7, "");
         urlStr.replace( urlStr.indexOf( baseLocation),
@@ -360,7 +351,7 @@ void HelpView::on_actionOnlineHelp_triggered(bool checked)
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr);
     } else {
-        if (mOfflineHelpAvailable) {
+        if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
             QString urlStr = url.toDisplayString();
             urlStr.replace( urlStr.indexOf( onlineStartPageUrl.toDisplayString() ),
                             onlineStartPageUrl.toDisplayString().size(),
@@ -494,9 +485,51 @@ void HelpView::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
+QUrl HelpView::getStartPageUrl()
+{
+    QDir dir = QDir(CommonPaths::systemDir()).filePath(START_CHAPTER);
+    return QUrl::fromLocalFile(dir.absolutePath());
+}
+
+QUrl HelpView::getOnlineStartPageUrl()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (!c4uWrapper.isValid())
+        return QUrl(LATEST_ONLINE_HELP_URL);
+
+    if (c4uWrapper.distribIsLatest())
+        return QUrl(LATEST_ONLINE_HELP_URL);
+    else
+       return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+}
+
+bool HelpView::isDocumentAvailable(const QString &path, const QString &chapter)
+{
+    QDir dir = QDir(path).filePath(chapter);
+    return (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath()));
+}
+
+bool HelpView::isCurrentReleaseTheLatestVersion()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid())
+       return (c4uWrapper.currentDistribVersion() == c4uWrapper.lastDistribVersion());
+    else
+        return true;
+}
+
+QString HelpView::getCurrentReleaseVersion()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid())
+       return c4uWrapper.currentDistribVersionShort();
+    else
+        return "latest";
+}
+
 void HelpView::getErrorHTMLText(QString &htmlText, const QString &chapterText)
 {
-    QString downloadPage = QString("https://www.gams.com/%1").arg(mThisRelease);
+    QString downloadPage = QString("https://www.gams.com/%1").arg( getCurrentReleaseVersion() );
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
     htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";
