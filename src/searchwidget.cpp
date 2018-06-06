@@ -109,7 +109,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
-            matches.addResultList(findInFile(mMain->projectRepo()->fileNode(mMain->recent()->editor())));
+            matches.addResultList(findInFile(mMain->projectRepo()->asFile(mMain->recent()->editor())));
         break;
     case SearchScope::ThisGroup:
         matches.addResultList(findInGroup());
@@ -133,7 +133,7 @@ QList<Result> SearchWidget::findInAllFiles()
     ProjectGroupNode *root = mMain->projectRepo()->treeModel()->rootNode();
     ProjectAbstractNode *fsc;
     for (int i = 0; i < root->childCount(); i++) {
-        fsc = root->childEntry(i);
+        fsc = root->childNode(i);
         if (fsc->type() == NodeType::group)
             matches.append(findInGroup(fsc));
     }
@@ -146,7 +146,7 @@ QList<Result> SearchWidget::findInOpenFiles()
     QWidgetList editList = mMain->projectRepo()->editors();
     ProjectFileNode *fc;
     for (int i = 0; i < editList.size(); i++) {
-        fc = mMain->projectRepo()->fileNode(editList.at(i));
+        fc = mMain->projectRepo()->asFile(editList.at(i));
         if (fc == nullptr) break;
         matches.append(findInFile(fc));
     }
@@ -159,7 +159,7 @@ QList<Result> SearchWidget::findInGroup(ProjectAbstractNode *fsc)
 
     ProjectGroupNode *fgc = nullptr;
     if (!fsc) {
-        ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+        ProjectFileNode* fc = mMain->projectRepo()->asFile(mMain->recent()->editor());
         fgc = (fc ? fc->parentNode() : nullptr);
         if (!fgc) return QList<Result>();
 
@@ -171,7 +171,7 @@ QList<Result> SearchWidget::findInGroup(ProjectAbstractNode *fsc)
     if (!fgc) return matches;
 
     for (int i = 0; i < fgc->childCount(); i++) {
-        matches.append(findInFile(fgc->childEntry(i)));
+        matches.append(findInFile(fgc->childNode(i)));
     }
     return matches;
 }
@@ -209,7 +209,7 @@ QList<Result> SearchWidget::findInFile(ProjectAbstractNode *fsc, bool skipFilter
         if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
         if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
-        bool isOpenFile = (fc == mMain->projectRepo()->fileNode(mMain->recent()->editor()));
+        bool isOpenFile = (fc == mMain->projectRepo()->asFile(mMain->recent()->editor()));
 
         int lineCounter = 0;
         QFile file(fc->location());
@@ -282,12 +282,12 @@ void SearchWidget::simpleReplaceAll()
     QMessageBox msgBox;
     if (hits.length() == 1) {
         msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->fileNode(mMain->recent()->editor())->location()
+                       + mMain->projectRepo()->asFile(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     } else {
         msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->fileNode(mMain->recent()->editor())->location()
+                       + mMain->projectRepo()->asFile(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     }
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -330,7 +330,7 @@ void SearchWidget::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->asFile(mMain->recent()->editor());
     if (!fc) return;
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
@@ -357,7 +357,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 
     QWidget *widget = mMain->recent()->editor();
     AbstractEditor *edit = ProjectFileNode::toAbstractEdit(widget);
-    ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
+    ProjectAbstractNode *fsc = mMain->projectRepo()->asFile(widget);
     if (!fsc || !edit) return;
 
     focusSearchField();
@@ -423,7 +423,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
         hide();
-        if (mMain->projectRepo()->fileNode(mMain->recent()->editor()))
+        if (mMain->projectRepo()->asFile(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
@@ -505,7 +505,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     if (regex()) searchRegex.setPattern(searchTerm);
 
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->asFile(mMain->recent()->editor());
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
@@ -552,7 +552,7 @@ void SearchWidget::on_btn_clear_clicked()
 
 void SearchWidget::clearResults()
 {
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->asFile(mMain->recent()->editor());
     if (!fc) return;
     fc->removeTextMarks(TextMark::match, true);
     setSearchStatus(SearchStatus::Clear);

@@ -57,6 +57,7 @@ protected:
 //    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
 private:
+    ProjectRunGroupNode *mRunGroup = nullptr;
     ProjectFileNode *mLstNode = nullptr;
 //    struct ErrorData {
 //        int lstLine = 0;

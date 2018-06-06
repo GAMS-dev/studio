@@ -33,6 +33,8 @@ namespace studio {
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
     : ProjectFileNode(fileMeta, nullptr, NodeType::log)
 {
+    if (!runGroup) EXCEPT() << "The runGroup must not be null.";
+    mRunGroup = runGroup;
     runGroup->setLogNode(this);
 }
 

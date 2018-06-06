@@ -45,11 +45,12 @@ public:
 
     QIcon icon() override;
     int childCount() const;
-    ProjectAbstractNode* childEntry(int index) const;
+    ProjectAbstractNode* childNode(int index) const;
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;
     QString tooltip() override;
     virtual QString lstErrorText(int line);
+    const ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
 
 protected:
     friend class ProjectRepo;
@@ -57,10 +58,11 @@ protected:
     friend class ProjectLogNode;
     friend class ProjectFileNode;
 
-    ProjectGroupNode(QString name, NodeType type);
+    ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
     void insertChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
+    int peekIndex(const QString &name, bool* hit = nullptr);
 
 private:
     QList<ProjectAbstractNode*> mChildList;
@@ -80,7 +82,6 @@ private:
 //    GamsProcess* gamsProcess();
 //    QProcess::ProcessState gamsProcessState() const;
 
-//    void attachFile(const QString &filepath);
 //    void detachFile(const QString &filepath);
 //    void updateChildNodes();
 //    void jumpToFirstError(bool focus);
@@ -90,23 +91,18 @@ private:
 //    void dumpMarks();
 
 //signals:
-//    void gamsProcessStateChanged(ProjectGroupNode* group);
 //    void removeNode(ProjectAbstractNode *node);
 //    void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
 //    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
-//protected slots:
-//    void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
 //protected:
 
 //    void checkFlags() override;
-//    void updateRunState(const QProcess::ProcessState &state);
 //    void addMark(const QString &filePath, TextMark* mark);
 //    TextMarkRepo* marks(const QString &fileName);
 //    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 //    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
-//    int peekIndex(const QString &name, bool* hit = nullptr);
 
 //private:
 //    QFileInfoList mAttachedFiles;
@@ -133,6 +129,11 @@ public:
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
 
+signals:
+    void gamsProcessStateChanged(ProjectGroupNode* group);
+
+protected slots:
+    void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
 protected:
     friend class ProjectRepo;
@@ -140,7 +141,8 @@ protected:
     friend class ProjectLogNode;
     friend class ProjectFileNode;
 
-    ProjectRunGroupNode(QString name, FileMeta *runFileMeta);
+    ProjectRunGroupNode(QString name, QString location, FileMeta *runFileMeta = nullptr);
+    void updateRunState(const QProcess::ProcessState &state);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
@@ -157,19 +159,17 @@ class ProjectRootNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
-    ProjectRootNode();
+    ProjectRootNode(ProjectRepo *repo);
     ~ProjectRootNode() {}
     void setParentNode(ProjectRunGroupNode *parent);
     ProjectRepo *repo() const;
-    TextMarkRepo *textMarkRepo() const;
 
 private:
     friend class ProjectRepo;
-    void init(ProjectRepo* repo, TextMarkRepo* textMarkRepo);
+    void init(ProjectRepo* repo);
 
 private:
     ProjectRepo* mRepo = nullptr;
-    TextMarkRepo* mTextMarkRepo = nullptr;
 };
 
 } // namespace studio

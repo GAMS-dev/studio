@@ -37,14 +37,14 @@ ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectRootNode* root)
         FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
 }
 
-QModelIndex ProjectTreeModel::index(ProjectAbstractNode *entry) const
+QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *entry) const
 {
     if (!entry)
         return QModelIndex();
     if (!entry->parentNode())
         return createIndex(0, 0, entry->id());
     for (int i = 0; i < entry->parentNode()->childCount(); ++i) {
-        if (entry->parentNode()->childEntry(i) == entry) {
+        if (entry->parentNode()->childNode(i) == entry) {
             return createIndex(i, 0, entry->id());
         }
     }
@@ -55,10 +55,11 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex& pare
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
-    ProjectAbstractNode *fc = mProjectRepo->groupNode(parent)->childEntry(row);
-    if (!fc)
-        FATAL() << "invalid child for row " << row;
-    return createIndex(row, column, fc->id());
+    const ProjectGroupNode* group = mProjectRepo->node(parent)->toGroup();
+    if (!group) FATAL() << "invalid group for QModelIndex";
+    ProjectAbstractNode *node = group->childNode(row);
+    if (!node) FATAL() << "invalid child for row " << row;
+    return createIndex(row, column, node->id());
 }
 
 QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
@@ -81,7 +82,7 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 
 int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    ProjectGroupNode* entry = mProjectRepo->groupNode(parent);
+    const ProjectGroupNode* entry = mProjectRepo->node(parent)->toGroup();
     if (!entry) return 0;
     return entry->childCount();
 }

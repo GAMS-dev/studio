@@ -35,6 +35,7 @@ class ProjectRunGroupNode;
 class ProjectFileNode;
 class ProjectLogNode;
 class ProjectRepo;
+class FileMetaRepo;
 
 class ProjectAbstractNode : public QObject
 {   // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
@@ -76,6 +77,9 @@ public:
     bool isActive() const;
     void setActive();
 
+    inline const ProjectRootNode *root() const;
+    inline ProjectRepo* repo() const;
+
 //    virtual int childCount() const;
 //    virtual ProjectAbstractNode* childEntry(int index) const;
 
@@ -86,7 +90,7 @@ protected:
 //    friend class ProjectLogNode;
 
     ProjectAbstractNode(QString name, NodeType type);
-    ProjectRepo* repo() const;
+    FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
 private:

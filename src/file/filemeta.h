@@ -27,6 +27,7 @@ public:
     bool exists() const;
     bool isOpen() const;
 
+    void createEdit(QTabWidget* tabWidget, bool focus, FileId runId = -1, int codecMip = -1);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
@@ -34,6 +35,8 @@ public:
     void removeEditor(QWidget* edit);
     void removeAllEditors();
     bool hasEditor(QWidget* edit);
+
+    void jumpTo(const QTextCursor& cursor, FileId runId, bool focus, int altLine = 0, int altColumn = 0);
 
 public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {
@@ -49,7 +52,10 @@ public: // static convenience methods
         if(w) w->setProperty("EditorType", (int)EditorType::lxiLst);
     }
 
-    inline static EditorType editorType(QWidget* w);
+    inline static EditorType editorType(QWidget* w) {
+        QVariant v = w ? w->property("EditorType") : QVariant();
+        return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
+    }
 
     inline static AbstractEditor* toAbstractEdit(QWidget* w) {
         EditorType t = editorType(w);
@@ -78,6 +84,7 @@ signals:
     void changed(FileId fileId);
     void documentOpened();
     void documentClosed();
+    void openFile(FileMeta* fileMeta, bool focus = true, FileId runId = -1, int codecMib = -1);
 
 private slots:
     void modificationChanged(bool modiState);

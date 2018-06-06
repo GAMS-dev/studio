@@ -5,11 +5,8 @@
 namespace gams {
 namespace studio {
 
-FileId FileMetaRepo::mNextFileId = 0;
-
 FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
-{
-}
+{}
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 {
@@ -38,7 +35,7 @@ FileId FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     return res;
 }
 
-FileMeta* FileMetaRepo::getOrCreateFileMeta(QString location)
+FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location)
 {
     FileMeta* res = fileMeta(location);
     if (!res) {

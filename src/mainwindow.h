@@ -122,7 +122,7 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
+    void createEdit(QTabWidget* tabWidget, FileMeta *fileMeta, bool focus, FileId runId = -1, int codecMip = -1);
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
@@ -176,7 +176,7 @@ public slots:
     void appendSystemLog(const QString &text);
 
 private slots:
-    void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, FileId runId, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -196,6 +196,7 @@ private slots:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
+    void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void toggleOptionDefinition(bool checked);
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);

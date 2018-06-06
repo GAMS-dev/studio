@@ -33,22 +33,18 @@ ProjectAbstractNode::ProjectAbstractNode(QString name, NodeType type)
     : QObject(), mId(mNextNodeId++), mParent(nullptr), mName(name), mType(type)
 {}
 
-ProjectRepo *ProjectAbstractNode::repo() const
+inline const ProjectRootNode *ProjectAbstractNode::root() const
 {
     const ProjectAbstractNode* par = this;
     while (par->parent()) par = par->parentNode();
-    if (par->toRoot())
-        return par->toRoot()->repo();
-    EXCEPT() << "ProjectRepo is not assigned";
+    return par->toRoot();
 }
 
-TextMarkRepo *ProjectAbstractNode::textMarkRepo() const
+inline ProjectRepo *ProjectAbstractNode::repo() const
 {
-    const ProjectAbstractNode* par = this;
-    while (par->parent()) par = par->parentNode();
-    if (par->toRoot())
-        return par->toRoot()->textMarkRepo();
-    EXCEPT() << "TextMarkRepo is not assigned";
+    const ProjectRootNode* rootNode = root();
+    if (rootNode) return rootNode->repo();
+    EXCEPT() << "ProjectRepo is not assigned";
 }
 
 ProjectAbstractNode::~ProjectAbstractNode()

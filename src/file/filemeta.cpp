@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
+#include <QScrollBar>
 
 namespace gams {
 namespace studio {
@@ -48,12 +49,6 @@ QWidgetList FileMeta::editors() const
 QWidget *FileMeta::topEditor() const
 {
     return isOpen() ? mEditors.first() : nullptr;
-}
-
-inline EditorType FileMeta::editorType(QWidget *w)
-{
-    QVariant v = w ? w->property("EditorType") : QVariant();
-    return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
 }
 
 void FileMeta::modificationChanged(bool modiState)
@@ -194,6 +189,33 @@ bool FileMeta::hasEditor(QWidget *edit)
     return mEditors.contains(edit);
 }
 
+void FileMeta::jumpTo(const QTextCursor &cursor, FileId runId, bool focus, int altLine, int altColumn)
+{
+    emit openFile(this, focus, runId, codecMib());
+    if (mEditors.size()) {
+        AbstractEditor* edit = toAbstractEdit(mEditors.first());
+        if (!edit) return;
+
+        QTextCursor tc;
+        if (cursor.isNull()) {
+            if (edit->document()->blockCount()-1 < altLine) return;
+            tc = QTextCursor(edit->document()->findBlockByNumber(altLine));
+        } else {
+            tc = cursor;
+        }
+
+        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
+        tc.clearSelection();
+        edit->setTextCursor(tc);
+        // center line vertically
+        qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
+        qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
+        int mv = line - lines/2;
+        if (qAbs(mv) > lines/3)
+            edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+    }
+}
+
 bool FileMeta::isModified() const
 {
     return mDocument->isModified();
@@ -217,6 +239,54 @@ bool FileMeta::exists() const
 bool FileMeta::isOpen() const
 {
     return !mEditors.isEmpty();
+}
+
+void FileMeta::createEdit(QTabWidget *tabWidget, bool focus, FileId runId, int codecMip)
+{
+    int tabIndex;
+    if (kind() != FileKind::Gdx) {
+        CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
+        codeEdit->setTabChangesFocus(false);
+        initEditorType(codeEdit);
+        codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        QFontMetrics metric(codeEdit->font());
+        codeEdit->setTabStopDistance(8*metric.width(' '));
+        if (kind() == FileKind::Lst) {
+            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+            initEditorType(lxiViewer);
+            addEditor(lxiViewer);
+            connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+            connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+            tabIndex = tabWidget->addTab(lxiViewer, name(NameModifier::editState));
+        } else {
+            addEditor(codeEdit);
+            connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+            connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+            connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            tabIndex = tabWidget->addTab(codeEdit, name(NameModifier::editState));
+        }
+
+        if (codecMip == -1)
+            load(encodingMIBs(), true);
+        else
+            load(codecMip, true);
+
+        if (kind() == FileKind::Log ||
+                kind() == FileKind::Lst ||
+                kind() == FileKind::Ref) {
+
+            codeEdit->setReadOnly(true);
+            codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+        }
+    } else {
+        gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
+        initEditorType(gdxView);
+        addEditor(gdxView);
+        tabIndex = tabWidget->addTab(gdxView, name(NameModifier::editState));
+        addFileWatcherForGdx();
+    }
+    tabWidget->setTabToolTip(tabIndex, location());
+    if (focus) tabWidget->setCurrentIndex(tabIndex);
 }
 
 FileMeta::Data::Data(QString location)

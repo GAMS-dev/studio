@@ -65,14 +65,7 @@ void TextMark::jumpToRefMark(bool focus)
 
 void TextMark::jumpToMark(bool focus)
 {
-    if (!mMarks->openFile(mFileId, mRunId)) return;
-
-    if (document()) {
-        updatePos();
-        mMarks->jumpTo(mFileId, textCursor(), focus);
-    } else if (mMarks->fileKind(mFileId) == FileKind::Gdx) {
-        mMarks->openFile(mFileId, mRunId, focus);
-    }
+    mMarks->jumpTo(this, focus);
 }
 
 void TextMark::setRefMark(TextMark* refMark)

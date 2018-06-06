@@ -25,10 +25,8 @@ public:
     TextMark* createMark(TextMarkData* tmData);
     QTextDocument* document(FileId fileId) const;
 
-//    FileMetaRepo *fileRepo() const { return mFileRepo; }
     FileMetaRepo *fileRepo() const { return mFileRepo; }
-    bool openFile(FileId fileId, FileId runId, bool focus = false);
-    void jumpTo(FileId fileId, QTextCursor cursor, bool focus = false);
+    void jumpTo(TextMark *mark, bool focus = false);
     void rehighlightAt(FileId fileId, int pos);
     FileKind fileKind(FileId fileId);
     QVector<TextMark*> marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType = TextMark::all);

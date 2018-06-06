@@ -47,20 +47,14 @@ QTextDocument *TextMarkRepo::document(FileId fileId) const
     return fm ? fm->document() : nullptr;
 }
 
-bool TextMarkRepo::openFile(FileId fileId, FileId runId, bool focus)
+void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
 {
-    FileMeta* fm = mFileRepo->fileMeta(fileId);
-    if (fm) {
-        emit mFileRepo->openFile(fm, runId, focus, fm->codecMib());
-        return true;
+    FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
+    emit mFileRepo->openFile(fm, mark->runId(), focus, fm->codecMib());
+    if (mark->document())  {
+        mark->updatePos();
+        if (fm) fm->jumpTo(mark->textCursor(), mark->runId(), focus);
     }
-    return false;
-}
-
-void TextMarkRepo::jumpTo(FileId fileId, QTextCursor cursor, bool focus)
-{
-    FileMeta* fm = mFileRepo->fileMeta(fileId);
-    if (fm) fm->jumpTo(cursor, focus);
 }
 
 void TextMarkRepo::rehighlightAt(FileId fileId, int pos)
@@ -105,8 +99,7 @@ QList<TextMark*> TextMarkRepo::marks(FileId nodeId, TextMark::Type refType)
 FileId TextMarkRepo::ensureFileId(QString location)
 {
     if (location.isEmpty()) return -1;
-    FileMeta* fm = nullptr;
-    mFileRepo->findOrCreateFileNode(location, fm, nullptr);
+    FileMeta* fm = mFileRepo->fileMeta(location);
     if (fm) return fm->id();
     return -1;
 }

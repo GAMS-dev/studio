@@ -49,6 +49,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "syntax/textmarkrepo.h"
+#include "helpview.h"
 
 namespace gams {
 namespace studio {
@@ -57,7 +58,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
       mSettings(settings),
-      mAutosaveHandler(new AutosaveHandler(this))
+      mAutosaveHandler(new AutosaveHandler(this)),
+      mFileMetaRepo(this)
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -76,7 +78,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
-    mProjectRepo.setSuffixFilter(QStringList() << ".gms" << ".lst" << ".gdx");
+//    mProjectRepo.setSuffixFilter(QStringList() << ".gms" << ".lst" << ".gdx");
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
@@ -84,7 +86,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
-    mProjectRepo.treeModel()->rootNode()->init(mProjectRepo, mTextMarkRepo);
+    mProjectRepo.init(mFileMetaRepo, mTextMarkRepo);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
@@ -102,13 +104,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+
     connect(&mProjectRepo, &ProjectRepo::fileClosed, this, &MainWindow::fileClosed);
     connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
-    connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFileNode);
+    connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
+    connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
+
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFile);
@@ -169,63 +174,13 @@ void MainWindow::initTabs()
         createWelcomePage();
 }
 
-void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
+void MainWindow::linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus, int codecMip)
 {
-    ProjectFileNode *fc = mProjectRepo.fileNode(id);
-    if (fc) {
-        int tabIndex;
-        if (fc->metrics().fileType() != FileType::Gdx) {
-
-            CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
-            codeEdit->setTabChangesFocus(false);
-            ProjectAbstractNode::initEditorType(codeEdit);
-            codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-            QFontMetrics metric(codeEdit->font());
-            codeEdit->setTabStopDistance(8*metric.width(' '));
-            if (fc->metrics().fileType() == FileType::Lst) {
-                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
-                ProjectAbstractNode::initEditorType(lxiViewer);
-                fc->addEditor(lxiViewer);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                tabIndex = tabWidget->addTab(lxiViewer, fc->name(NameModifier::editState));
-            } else {
-                fc->addEditor(codeEdit);
-                connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
-                tabIndex = tabWidget->addTab(codeEdit, fc->name(NameModifier::editState));
-            }
-
-            if (codecMip == -1)
-                fc->load(encodingMIBs(), true);
-            else
-                fc->load(codecMip, true);
-
-            if (fc->metrics().fileType() == FileType::Log ||
-                    fc->metrics().fileType() == FileType::Lst ||
-                    fc->metrics().fileType() == FileType::Ref) {
-
-                codeEdit->setReadOnly(true);
-                codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-            } else {
-                connect(fc, &ProjectFileNode::changed, this, &MainWindow::fileChanged);
-            }
-            if (focus) updateMenuToCodec(fc->codecMib());
-
-        } else {
-            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
-            ProjectAbstractNode::initEditorType(gdxView);
-            fc->addEditor(gdxView);
-            tabIndex = tabWidget->addTab(gdxView, fc->name(NameModifier::editState));
-            fc->addFileWatcherForGdx();
-        }
-        tabWidget->setTabToolTip(tabIndex, fc->location());
-        if (focus) {
-            tabWidget->setCurrentIndex(tabIndex);
-            mRecent.setEditor(tabWidget->currentWidget(), this);
-            mRecent.editFileId = fc->id();
-        }
+    connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+    if (focus) {
+        updateMenuToCodec(fileMeta->codecMib());
+        mRecent.setEditor(tabWidget->currentWidget(), this);
+        mRecent.editFileId = fc->id();
     }
 }
 
@@ -515,6 +470,11 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
     ui->projectView->setExpanded(mi, expanded);
 }
 
+void MainWindow::isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const
+{
+    expanded = ui->projectView->isExpanded(mi);
+}
+
 void MainWindow::toggleOptionDefinition(bool checked)
 {
     if (checked) {
@@ -608,7 +568,7 @@ void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
     if (mRecent.editFileId >= 0) {
-        ProjectFileNode *fc = mProjectRepo.fileNode(mRecent.editFileId);
+        ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editFileId);
         if (fc) path = QFileInfo(fc->location()).path();
     }
     QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
@@ -652,7 +612,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editFileId);
+    ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editFileId);
     if (!fc) return;
     if (fc->type() == NodeType::log) {
         on_actionSave_As_triggered();
@@ -666,7 +626,7 @@ void MainWindow::on_actionSave_As_triggered()
     QString path = mRecent.path;
     ProjectFileNode *formerFc;
     if (mRecent.editFileId >= 0) {
-        formerFc = mProjectRepo.fileNode(mRecent.editFileId);
+        formerFc = mProjectRepo.asFile(mRecent.editFileId);
         if (formerFc) path = QFileInfo(formerFc->location()).path();
     }
     auto filePath = QFileDialog::getSaveFileName(this,
@@ -677,7 +637,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                  "All files (*.*)"));
     if (!filePath.isEmpty()) {
         mRecent.path = QFileInfo(filePath).path();
-        ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editFileId);
+        ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editFileId);
         if (!fc) return;
 
         if(fc->location().endsWith(".gms") && !filePath.endsWith(".gms")) {
@@ -723,7 +683,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-    ProjectFileNode *fc = mProjectRepo.fileNode(focusWidget());
+    ProjectFileNode *fc = mProjectRepo.asFile(focusWidget());
     if (fc) {
         if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
         updateMenuToCodec(action->data().toInt());
@@ -734,7 +694,7 @@ void MainWindow::codecChanged(QAction *action)
 void MainWindow::codecReload(QAction *action)
 {
     if (!focusWidget()) return;
-    ProjectFileNode *fc = mProjectRepo.fileNode(focusWidget());
+    ProjectFileNode *fc = mProjectRepo.asFile(focusWidget());
     if (fc && fc->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fc->isModified()) {
@@ -782,7 +742,7 @@ void MainWindow::activeTabChanged(int index)
     mOptionEditor->setEnabled(false);
 
     // remove highlights from old tab
-    ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
+    ProjectFileNode* oldTab = mProjectRepo.asFile(mRecent.editor());
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
 
     mRecent.setEditor(nullptr, this);
@@ -791,7 +751,7 @@ void MainWindow::activeTabChanged(int index)
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
 
     if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(lxiViewer ? editWidget : edit);
+        ProjectFileNode* fc = mProjectRepo.asFile(lxiViewer ? editWidget : edit);
 
         if (fc) {
             mRecent.editFileId = fc->id();
@@ -819,7 +779,7 @@ void MainWindow::activeTabChanged(int index)
         ui->menuEncoding->setEnabled(false);
         gdxviewer::GdxViewer* gdxViewer = ProjectFileNode::toGdxViewer(editWidget);
         mRecent.setEditor(gdxViewer, this);
-        ProjectFileNode* fc = mProjectRepo.fileNode(gdxViewer);
+        ProjectFileNode* fc = mProjectRepo.asFile(gdxViewer);
         mRecent.editFileId = fc->id();
         mRecent.group = fc->parentNode();
         mStatusWidgets->setFileName(fc->location());
@@ -846,7 +806,7 @@ void MainWindow::fileChanged(FileId fileId)
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
-            ProjectFileNode *fc = mProjectRepo.fileNode(fileId);
+            ProjectFileNode *fc = mProjectRepo.asFile(fileId);
             if (fc) ui->mainTab->setTabText(index, fc->name(NameModifier::editState));
         }
     }
@@ -854,7 +814,7 @@ void MainWindow::fileChanged(FileId fileId)
 
 void MainWindow::fileChangedExtern(FileId fileId)
 {
-    ProjectFileNode *fc = mProjectRepo.fileNode(fileId);
+    ProjectFileNode *fc = mProjectRepo.asFile(fileId);
 
     // file has not been loaded: nothing to do
     if (!fc->document()) return;
@@ -888,7 +848,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
 
 void MainWindow::fileDeletedExtern(FileId fileId)
 {
-    ProjectFileNode *fc = mProjectRepo.fileNode(fileId);
+    ProjectFileNode *fc = mProjectRepo.asFile(fileId);
     // file has not been loaded: nothing to do
     if (!fc->document()) return;
 
@@ -910,7 +870,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 
 void MainWindow::fileClosed(FileId fileId)
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(fileId);
+    ProjectFileNode* fc = mProjectRepo.asFile(fileId);
     mClosedTabs << fc->location();
     if (!fc)
         FATAL() << "FileId " << fileId << " is not of class FileNode.";
@@ -960,7 +920,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (lstCtx) lstCtx->updateMarks();
 
         if (mSettings->openLst())
-            openFileNode(lstCtx, true);
+            openFile(lstCtx, true);
 
     }
     ui->dockLogView->raise();
@@ -978,7 +938,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
     if (fc && !fc->editors().isEmpty()) {
         fc->load(fc->codecMib());
     }
-    openFileNode(fc);
+    openFile(fc);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -1058,7 +1018,7 @@ void MainWindow::on_actionUpdate_triggered()
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     QWidget* edit = ui->mainTab->widget(index);
-    ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+    ProjectFileNode* fc = mProjectRepo.asFile(edit);
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
@@ -1099,7 +1059,7 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
-        ProjectLogNode* log = mProjectRepo.logNode(edit);
+        ProjectLogNode* log = mProjectRepo.asLog(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
     }
@@ -1242,7 +1202,7 @@ bool MainWindow::isActiveTabEditable()
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+        ProjectFileNode* fc = mProjectRepo.asFile(edit);
         return (fc && !edit->isReadOnly());
     }
     return false;
@@ -1307,7 +1267,7 @@ void MainWindow::renameToBackup(QFile *file)
     const int MAX_BACKUPS = 3;
     ProjectAbstractNode *fsc = mProjectRepo.findNode(file->fileName());
     if (fsc) {
-        ProjectFileNode *fc = mProjectRepo.fileNode(fsc->id());
+        ProjectFileNode *fc = mProjectRepo.asFile(fsc->id());
         if (fc) fc->unwatch();
     }
 
@@ -1601,7 +1561,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
     mPerformanceTime.start();
-    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
+    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.asFile(mRecent.editor()));
     ProjectGroupNode *group = (fc ? fc->parentNode() : nullptr);
     if (!group) return;
 
@@ -1634,7 +1594,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     setRunActionsEnabled(false);
 
     mProjectRepo.removeMarks(group);
-    ProjectLogNode* logProc = mProjectRepo.logNode(group);
+    ProjectLogNode* logProc = mProjectRepo.asLog(group);
 
     if (logProc->editors().isEmpty()) {
         logProc->setDebugLog(mLogDebugLines);
@@ -1682,7 +1642,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::interruptTriggered()
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editor());
     ProjectGroupNode *group = (fc ? fc->parentNode() : nullptr);
     if (!group)
         return;
@@ -1692,7 +1652,7 @@ void MainWindow::interruptTriggered()
 
 void MainWindow::stopTriggered()
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editor());
     ProjectGroupNode *group = (fc ? fc->parentNode() : nullptr);
     if (!group)
         return;
@@ -1785,7 +1745,7 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 
 void MainWindow::changeToLog(ProjectFileNode* fileNode)
 {
-    ProjectLogNode* logNode = mProjectRepo.logNode(fileNode);
+    ProjectLogNode* logNode = mProjectRepo.asLog(fileNode);
     if (logNode && !logNode->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
         AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
@@ -1796,22 +1756,23 @@ void MainWindow::changeToLog(ProjectFileNode* fileNode)
     }
 }
 
-void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMib)
+void MainWindow::openFile(FileMeta *fileMeta, bool focus, FileId runId, int codecMib)
 {
-    if (!fileNode) return;
+    if (!fileMeta) return;
     QWidget* edit = nullptr;
-    QTabWidget* tabWidget = fileNode->type() == NodeType::log ? ui->logTabs : ui->mainTab;
-    if (!fileNode->editors().empty()) {
-        edit = fileNode->editors().first();
+    QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTab;
+    if (!fileMeta->editors().empty()) {
+        edit = fileMeta->editors().first();
     }
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        createEdit(tabWidget, focus, fileNode->id(), codecMib);
+        fileMeta->createEdit(tabWidget, focus, runId, codecMib);
+        linkToEdit(tabWidget, fileMeta, focus, codecMib);
     }
     if (tabWidget->currentWidget())
         if (focus) {
-            lxiviewer::LxiViewer* lxiViewer = ProjectAbstractNode::toLxiViewer(edit);
+            lxiviewer::LxiViewer* lxiViewer = FileMeta::toLxiViewer(edit);
             if (lxiViewer)
                 lxiViewer->codeEditor()->setFocus();
             else
@@ -1819,9 +1780,9 @@ void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMi
         }
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
-        changeToLog(fileNode);
+        changeToLog(fileMeta);
     }
-    addToOpenedFiles(fileNode->location());
+    addToOpenedFiles(fileMeta->location());
 }
 
 void MainWindow::closeGroup(ProjectGroupNode* group)
@@ -1830,7 +1791,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     QList<ProjectFileNode*> changedFiles;
     QList<ProjectFileNode*> openFiles;
     for (int i = 0; i < group->childCount(); ++i) {
-        ProjectAbstractNode* fsc = group->childEntry(i);
+        ProjectAbstractNode* fsc = group->childNode(i);
         if (fsc->type() == NodeType::file) {
             ProjectFileNode* file = static_cast<ProjectFileNode*>(fsc);
             openFiles << file;
@@ -1891,19 +1852,23 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
     ProjectFileNode *fileNode = (fsc && fsc->type() == NodeType::file) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
 
     if (!fileNode) { // not yet opened by user, open file in new tab
-        ProjectGroupNode* group = mProjectRepo.ensureGroup(CommonPaths::absolutFilePath(filePath));
+        ProjectGroupNode* group = mProjectRepo.findOrCreateGroup(CommonPaths::absolutFilePath(filePath));
         mProjectRepo.findOrCreateFileNode(filePath, fileNode, group);
         if (!fileNode) {
             EXCEPT() << "File not found: " << filePath;
         }
         QTabWidget* tabWidget = (fileNode->type() == NodeType::log) ? ui->logTabs : ui->mainTab;
-        createEdit(tabWidget, focus, fileNode->id(), codecMip);
+
+        fileMeta->createEdit(tabWidget, focus, runId, codecMip);
+        // TODO(JM) switch to FileMeta
+
+        linkToEdit(tabWidget, focus, fileNode->id(), codecMip);
         if (tabWidget->currentWidget())
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mProjectRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
     } else {
-        openFileNode(fileNode, focus, codecMip);
+        openFile(fileNode, focus, codecMip);
     }
     if (!fileNode) {
         EXCEPT() << "invalid pointer found: FileNode expected.";
@@ -1931,8 +1896,8 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
 
 void MainWindow::openNode(const QModelIndex& index)
 {
-    ProjectFileNode *file = mProjectRepo.fileNode(index);
-    if (file) openFileNode(file);
+    ProjectFileNode *file = mProjectRepo.asFile(index);
+    if (file) openFile(file);
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)
@@ -1941,7 +1906,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
     if (!edit) return;
 
     mProjectRepo.editorActivated(edit);
-    ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+    ProjectFileNode* fc = mProjectRepo.asFile(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
         updateRunState();
@@ -2091,7 +2056,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
     for (int i = 0; i < ui->mainTab->count(); ++i) {
         QWidget *wid = ui->mainTab->widget(i);
         if (!wid || wid == mWp) continue;
-        ProjectFileNode *fc = mProjectRepo.fileNode(wid);
+        ProjectFileNode *fc = mProjectRepo.asFile(wid);
         if (!fc) continue;
         QJsonObject tabObject;
         tabObject["location"] = fc->location();
@@ -2100,7 +2065,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
-    ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
+    ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.asFile(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
 }
 
@@ -2158,7 +2123,7 @@ void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
 
-    ProjectFileNode *fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editor());
     if (!fc) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
@@ -2178,7 +2143,7 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    ProjectFileNode *fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editor());
     if (!fc || !focusWidget()) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
@@ -2335,7 +2300,7 @@ void MainWindow::toggleLogDebug()
     mLogDebugLines = !mLogDebugLines;
     ProjectGroupNode* root = mProjectRepo.treeModel()->rootNode();
     for (int i = 0; i < root->childCount(); ++i) {
-        ProjectAbstractNode *fsc = root->childEntry(i);
+        ProjectAbstractNode *fsc = root->childNode(i);
         if (fsc->type() == NodeType::group) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
             ProjectLogNode* log = group->logNode();
