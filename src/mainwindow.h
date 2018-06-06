@@ -86,7 +86,6 @@ public:
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
     void updateMenuToCodec(int mib);
-    QStringList openedFiles();
     void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
 
@@ -117,7 +116,6 @@ public:
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
-    QWidget *welcomePage() const;
     void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
@@ -253,15 +251,10 @@ private:
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void createWelcomePage();
-    void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
-    void connectCommandLineWidgets();
-    void setRunActionsEnabled(bool enable);
     bool isActiveTabRunnable();
     bool isActiveTabSetAsMain();
     bool isRecentGroupInRunningState();
-    QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
-                                  const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
     void loadCommandLineOptions(ProjectFileNode* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();

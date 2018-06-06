@@ -1051,14 +1051,6 @@ void MainWindow::createWelcomePage()
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
-void MainWindow::setRunActionsEnabled(bool enable)
-{
-    ui->actionRun->setEnabled(enable);
-    ui->actionRun_with_GDX_Creation->setEnabled(enable);
-    ui->actionCompile->setEnabled(enable);
-    ui->actionCompile_with_GDX_Creation->setEnabled(enable);
-}
-
 bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
@@ -1090,46 +1082,6 @@ bool MainWindow::isRecentGroupInRunningState()
 {
     QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
     return (state == QProcess::Running);
-}
-
-QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
-{
-    QString commandLineStr;
-    QStringList keyList;
-    for(OptionItem item: optionItems) {
-        if (item.disabled)
-            continue;
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-        keyList << item.key;
-    }
-    QString message;
-    for(OptionItem item: forcedOptionItems) {
-        if (item.disabled)
-            continue;
-
-//        if ( keyList.contains(item.key, Qt::CaseInsensitive) ||
-//             keyList.contains(gamsOption->getSynonym(item.key)) ) {
-//            message.append(QString("\n   '%1' with '%1=%2'").arg(item.key).arg(item.value));
-//        }
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-    }
-    if (!message.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
-        msgBox.setInformativeText("Do you want to continue ?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.exec();
-    }
-    return commandLineStr.simplified();
 }
 
 void MainWindow::on_actionShow_System_Log_triggered()
@@ -1185,11 +1137,6 @@ void MainWindow::renameToBackup(QFile *file)
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
     openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
-}
-
-QStringList MainWindow::openedFiles()
-{
-    return history()->lastOpenedFiles;
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1974,11 +1921,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
     json["mainTabs"] = tabArray;
     ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
-}
-
-QWidget *MainWindow::welcomePage() const
-{
-    return mWp;
 }
 
 void MainWindow::on_actionGo_To_triggered()
