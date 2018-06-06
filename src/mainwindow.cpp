@@ -67,7 +67,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
 
-    TimerID = startTimer(60000);
+    mTimerID = startTimer(60000);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -148,8 +148,8 @@ void MainWindow::delayedFileRestoration()
 
 MainWindow::~MainWindow()
 {
+    killTimer(mTimerID);
     delete ui;
-    killTimer(TimerID);
 }
 
 void MainWindow::initTabs()
@@ -1447,7 +1447,6 @@ OptionWidget *MainWindow::getGamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    mPerformanceTime.start();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;

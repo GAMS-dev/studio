@@ -22,7 +22,6 @@
 
 #include <memory>
 #include <QMainWindow>
-#include <QCheckBox>
 
 #include "editors/codeeditor.h"
 #include "file.h"
@@ -49,7 +48,6 @@ class WelcomePage;
 class StudioSettings;
 class SearchWidget;
 class SearchResultList;
-class Result;
 class AutosaveHandler;
 
 struct RecentData {
@@ -270,6 +268,7 @@ private:
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
+    void changeToLog(ProjectFileNode* fileNode);
 
 private:
     Ui::MainWindow *ui;
@@ -278,7 +277,6 @@ private:
     HelpView* mDockHelpView = nullptr;
     OptionWidget* mGamsOptionWidget = nullptr;
 
-    GAMSProcess *mProcess = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
@@ -288,22 +286,15 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
-    bool mBeforeErrorExtraction = true;
     ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
-    void changeToLog(ProjectFileNode* fileNode);
-
-    QToolButton* interruptToolButton = nullptr;
-    QToolButton* mRunToolButton = nullptr;
 
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
-    QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
-    int TimerID;
+    int mTimerID;
     FileMetrics mMetrics;
-    bool mCheckOnce = true;
     QStringList mOpenTabsList;
 };
 
