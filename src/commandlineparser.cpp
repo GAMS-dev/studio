@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "commandlineparser.h"
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -37,6 +36,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"ignore-settings", "Ignore settings files for loading and saving."});
     addOption({"reset-settings", "Reset all settings including views to default."});
     addOption({"reset-view", "Reset views and window positions only."});
+    addOption({"gams-dir", "Set the GAMS system directory", "path"});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -50,6 +50,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mResetSettings = true;
     if (isSet("reset-view"))
         mResetView = true;
+    if (isSet("gams-dir"))
+        mGamsDir = this->value("gams-dir");
     mFiles = positionalArguments();
 
     return CommandLineOk;
@@ -73,6 +75,11 @@ bool CommandLineParser::resetSettings() const
 bool CommandLineParser::resetView() const
 {
     return mResetView;
+}
+
+QString CommandLineParser::gamsDir() const
+{
+    return mGamsDir;
 }
 
 } // namespace studio

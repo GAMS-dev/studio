@@ -68,7 +68,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
 
-    TimerID = startTimer(60000);
+    mTimerID = startTimer(60000);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -149,8 +149,8 @@ void MainWindow::delayedFileRestoration()
 
 MainWindow::~MainWindow()
 {
+    killTimer(mTimerID);
     delete ui;
-    killTimer(TimerID);
 }
 
 void MainWindow::initTabs()
@@ -365,7 +365,7 @@ void MainWindow::receiveAction(QString action)
 
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
-    if (gmsFileName == "")
+    if (gmsFileName.isEmpty())
         gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
@@ -393,7 +393,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
-    if (anchor != "")
+    if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
     getDockHelpView()->on_urlOpened(result);
@@ -1052,14 +1052,6 @@ void MainWindow::createWelcomePage()
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
-void MainWindow::setRunActionsEnabled(bool enable)
-{
-    ui->actionRun->setEnabled(enable);
-    ui->actionRun_with_GDX_Creation->setEnabled(enable);
-    ui->actionCompile->setEnabled(enable);
-    ui->actionCompile_with_GDX_Creation->setEnabled(enable);
-}
-
 bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
@@ -1093,50 +1085,15 @@ bool MainWindow::isRecentGroupInRunningState()
     return (state == QProcess::Running);
 }
 
-QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
-{
-    QString commandLineStr;
-    QStringList keyList;
-    for(OptionItem item: optionItems) {
-        if (item.disabled)
-            continue;
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-        keyList << item.key;
-    }
-    QString message;
-    for(OptionItem item: forcedOptionItems) {
-        if (item.disabled)
-            continue;
-
-//        if ( keyList.contains(item.key, Qt::CaseInsensitive) ||
-//             keyList.contains(gamsOption->getSynonym(item.key)) ) {
-//            message.append(QString("\n   '%1' with '%1=%2'").arg(item.key).arg(item.value));
-//        }
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-    }
-    if (!message.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
-        msgBox.setInformativeText("Do you want to continue ?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.exec();
-    }
-    return commandLineStr.simplified();
-}
-
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(ui->systemLog);
-    ui->logTabs->setCurrentIndex(index);
+    if (index < 0)
+        ui->logTabs->addTab(ui->systemLog, "System");
+    else
+        ui->logTabs->setCurrentIndex(index);
+    ui->systemLog->raise();
+    dockWidgetShow(ui->dockLogView, true);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1181,11 +1138,6 @@ void MainWindow::renameToBackup(QFile *file)
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
     openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
-}
-
-QStringList MainWindow::openedFiles()
-{
-    return history()->lastOpenedFiles;
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1265,8 +1217,6 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             ProjectAbstractNode::initEditorType(logEdit);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
-                                                                  : AbstractEditor::NoWrap);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
@@ -1445,7 +1395,6 @@ OptionWidget *MainWindow::getGamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    mPerformanceTime.start();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
@@ -1973,11 +1922,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
     json["mainTabs"] = tabArray;
     ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
-}
-
-QWidget *MainWindow::welcomePage() const
-{
-    return mWp;
 }
 
 void MainWindow::on_actionGo_To_triggered()

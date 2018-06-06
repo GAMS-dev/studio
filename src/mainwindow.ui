@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -816,6 +816,9 @@
    <property name="toolTip">
     <string>Interrupt</string>
    </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
   </action>
   <action name="actionStop">
    <property name="icon">
@@ -827,6 +830,9 @@
    </property>
    <property name="toolTip">
     <string>Stop</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F11</string>
    </property>
   </action>
  </widget>
