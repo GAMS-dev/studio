@@ -1269,8 +1269,6 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             ProjectAbstractNode::initEditorType(logEdit);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
-                                                                  : AbstractEditor::NoWrap);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
