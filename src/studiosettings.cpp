@@ -138,7 +138,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
-    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    QMultiMap<QString, QString> bookmarkMap(main->getHelpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
     mAppSettings->beginWriteArray("bookmarks");
@@ -148,7 +148,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
-    mAppSettings->setValue("zoomFactor", main->getDockHelpView()->getZoomFactor());
+    mAppSettings->setValue("zoomFactor", main->getHelpWidget()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
@@ -254,11 +254,11 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                            mAppSettings->value("name").toString());
     }
     mAppSettings->endArray();
-    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+    main->getHelpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
-        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+        main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
-        main->getDockHelpView()->setZoomFactor(1.0);
+        main->getHelpWidget()->setZoomFactor(1.0);
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");

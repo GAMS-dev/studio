@@ -85,7 +85,7 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     help/bookmarkdialog.cpp \
-    help/helpview.cpp \
+    help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
@@ -166,7 +166,7 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     help/bookmarkdialog.h \
-    help/helpview.h \
+    help/helpwidget.h \
     keys.h \
     logger.h \
     lxiviewer/lxiparser.h \
@@ -227,7 +227,7 @@ FORMS += \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
     help/bookmarkdialog.ui \
-    help/helpview.ui \
+    help/helpwidget.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \

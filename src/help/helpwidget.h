@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef HELPVIEW_H
-#define HELPVIEW_H
+#ifndef HELPWIDGET_H
+#define HELPWIDGET_H
 
 #include <QWidget>
 #include <QLabel>
@@ -26,19 +26,19 @@
 #include <QUrl>
 
 namespace Ui {
-class HelpView;
+class HelpWidget;
 }
 
 namespace gams {
 namespace studio {
 
-class HelpView : public QWidget
+class HelpWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit HelpView(QWidget *parent = 0);
-    ~HelpView();
+    explicit HelpWidget(QWidget *parent = 0);
+    ~HelpWidget();
 
     QMultiMap<QString, QString> getBookmarkMap() const;
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
@@ -91,7 +91,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
-    Ui::HelpView *ui;
+    Ui::HelpWidget *ui;
 
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
@@ -114,4 +114,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // HELPVIEW_H
+#endif // HELPWIDGET_H
