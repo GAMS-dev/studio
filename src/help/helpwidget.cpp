@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QToolBar>
 #include <QToolButton>
 

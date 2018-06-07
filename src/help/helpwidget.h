@@ -21,13 +21,14 @@
 #define HELPWIDGET_H
 
 #include <QWidget>
-#include <QLabel>
-#include <QMenu>
+#include <QMultiMap>
 #include <QUrl>
 
 namespace Ui {
 class HelpWidget;
 }
+
+class QMenu;
 
 namespace gams {
 namespace studio {
@@ -37,7 +38,7 @@ class HelpWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit HelpWidget(QWidget *parent = 0);
+    explicit HelpWidget(QWidget *parent = nullptr);
     ~HelpWidget();
 
     QMultiMap<QString, QString> getBookmarkMap() const;
