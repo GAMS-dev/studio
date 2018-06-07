@@ -157,6 +157,7 @@ private slots:
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip = -1);
+    void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -261,7 +262,7 @@ private:
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
-    void changeToLog(ProjectFileNode* fileNode);
+    void ensureLogEditor(ProjectLogNode* logProc);
 
 private:
     Ui::MainWindow *ui;
