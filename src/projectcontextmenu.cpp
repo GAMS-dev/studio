@@ -31,6 +31,7 @@ ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
 
+    mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
 //    mActions.insert(1, addSeparator());
 
 //    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
@@ -55,13 +56,14 @@ ProjectContextMenu::ProjectContextMenu()
 void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 {
     mNode = node;
-
+    bool isGroup = mNode && mNode->type() == ProjectAbstractNode::FileGroup;
     bool isGmsFile = false;
     if (mNode->type() == ProjectAbstractNode::File) {
         ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
         isGmsFile = (fc->metrics().fileType() == FileType::Gms);
     }
 
+    mActions[1]->setVisible(isGroup);
 //    mActions[2]->setVisible(isGmsFile);
 //    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
@@ -192,6 +194,11 @@ void ProjectContextMenu::onOpenFileLoc()
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
+}
+
+void ProjectContextMenu::onOpenLog()
+{
+    if (mNode) emit openLogFor(mNode, true);
 }
 
 } // namespace studio

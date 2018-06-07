@@ -116,6 +116,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
@@ -1030,6 +1031,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         mClosedTabs << fc->location();
         fc->removeEditor(edit);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        edit->deleteLater();
     }
 }
 
@@ -1040,6 +1042,9 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ProjectLogNode* log = mProjectRepo.logNode(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
+        AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
+        if (ed) ed->setDocument(nullptr);
+        edit->deleteLater();
     }
 }
 
@@ -1387,6 +1392,23 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
+OptionWidget *MainWindow::getGamsOptionWidget() const
+{
+    return mGamsOptionWidget;
+}
+
+void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
+{
+    if (!logProc->editors().isEmpty()) return;
+    logProc->setDebugLog(mLogDebugLines);
+    LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+    ProjectAbstractNode::initEditorType(logEdit);
+
+    ui->logTabs->addTab(logEdit, logProc->caption());
+    logProc->addEditor(logEdit);
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+}
+
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
@@ -1422,15 +1444,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     mProjectRepo.removeMarks(group);
     ProjectLogNode* logProc = mProjectRepo.logNode(group);
 
-    if (logProc->editors().isEmpty()) {
-        logProc->setDebugLog(mLogDebugLines);
-        LogEditor* logEdit = new LogEditor(mSettings.get(), this);
-        ProjectAbstractNode::initEditorType(logEdit);
-
-        ui->logTabs->addTab(logEdit, logProc->caption());
-        logProc->addEditor(logEdit);
-        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-    }
+    ensureLogEditor(logProc);
 
     if (!mSettings->clearLog()) {
         logProc->markOld();
@@ -1563,15 +1577,28 @@ void MainWindow::on_actionStop_triggered()
     QtConcurrent::run(process, &GamsProcess::stop);
 }
 
-void MainWindow::changeToLog(ProjectFileNode* fileNode)
+void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
 {
-    ProjectLogNode* logNode = mProjectRepo.logNode(fileNode);
-    if (logNode && !logNode->editors().isEmpty()) {
+    bool moveToEnd = false;
+    ProjectLogNode* logNode = mProjectRepo.logNode(node);
+    if (!logNode) return;
+    if (createMissing) {
+        moveToEnd = true;
+        ensureLogEditor(logNode);
+    }
+    if (!logNode->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
         AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
-        if (logEdit && ui->logTabs->currentWidget() != logEdit) {
-            if (ui->logTabs->currentWidget() != mResultsView)
-                ui->logTabs->setCurrentWidget(logEdit);
+        if (logEdit) {
+            if (ui->logTabs->currentWidget() != logEdit) {
+                if (ui->logTabs->currentWidget() != mResultsView)
+                    ui->logTabs->setCurrentWidget(logEdit);
+            }
+            if (moveToEnd) {
+                QTextCursor cursor = logEdit->textCursor();
+                cursor.movePosition(QTextCursor::End);
+                logEdit->setTextCursor(cursor);
+            }
         }
     }
 }

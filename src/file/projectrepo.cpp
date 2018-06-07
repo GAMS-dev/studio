@@ -294,7 +294,7 @@ ProjectLogNode*ProjectRepo::logNode(QWidget* edit)
         if (fsc->type() == ProjectAbstractNode::FileGroup) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
 
-            if (!group->logNode()) return nullptr;
+            if (!group->logNode()) continue;
             if (group->logNode()->editors().contains(edit)) {
                 return group->logNode();
             }
