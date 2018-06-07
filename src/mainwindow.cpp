@@ -1030,6 +1030,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         mClosedTabs << fc->location();
         fc->removeEditor(edit);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        edit->deleteLater();
     }
 }
 
