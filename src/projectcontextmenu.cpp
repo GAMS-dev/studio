@@ -29,7 +29,7 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(0, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
 
     mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
 //    mActions.insert(1, addSeparator());
@@ -67,7 +67,7 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 //    mActions[2]->setVisible(isGmsFile);
 //    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
-    mActions[5]->setVisible(isGmsFile);
+//    mActions[5]->setVisible(isGmsFile);
 
     // all files
     mActions[10]->setVisible(mNode->type() == ProjectAbstractNode::File);
