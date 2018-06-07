@@ -1041,6 +1041,9 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ProjectLogNode* log = mProjectRepo.logNode(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
+        AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
+        if (ed) ed->setDocument(nullptr);
+        edit->deleteLater();
     }
 }
 
