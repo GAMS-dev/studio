@@ -85,21 +85,25 @@ QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block,
     return res;
 }
 
-QList<TextMark*> TextMarkRepo::marks(FileId nodeId, TextMark::Type refType)
+QList<TextMark*> TextMarkRepo::marks(FileId fileId, FileId runId = -1, TextMark::Type refType, int max)
 {
     if (refType != TextMark::all) {
         QList<TextMark*> res;
-        foreach (TextMark* mark, mMarks.values(nodeId))
-            if (mark->type() == refType) res << mark;
+        foreach (TextMark* mark, mMarks.values(fileId)) {
+            if (mark->type() == refType && (runId < 0 || mark->runId() == runId)) {
+                res << mark;
+                if (--max == 0) break;
+            }
+        }
         return res;
     }
-    mMarks.values(nodeId);
+    mMarks.values(fileId);
 }
 
 FileId TextMarkRepo::ensureFileId(QString location)
 {
     if (location.isEmpty()) return -1;
-    FileMeta* fm = mFileRepo->fileMeta(location);
+    FileMeta* fm = mFileRepo->findOrCreateFileMeta(location);
     if (fm) return fm->id();
     return -1;
 }

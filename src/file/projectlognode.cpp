@@ -46,6 +46,13 @@ void ProjectLogNode::resetLst()
 
 /*
 
+TextMark*ProjectLogNode::firstErrorMark()
+{
+    if (!mMarks) return nullptr;
+    return mMarks->firstErrorMark();
+}
+
+
 void ProjectLogNode::clearLog()
 {
     document()->clear();
@@ -115,12 +122,6 @@ void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
 void ProjectLogNode::fileClosed(ProjectFileNode *fc)
 {
     if (fc == mLstNode) mLstNode = nullptr;
-}
-
-TextMark*ProjectLogNode::firstErrorMark()
-{
-    if (!mMarks) return nullptr;
-    return mMarks->firstErrorMark();
 }
 
 void ProjectLogNode::addProcessData(QString text)

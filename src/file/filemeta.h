@@ -13,6 +13,8 @@
 namespace gams {
 namespace studio {
 
+class ProjectRunGroupNode;
+
 class FileMeta: public QObject
 {
     Q_OBJECT
@@ -27,7 +29,7 @@ public:
     bool exists() const;
     bool isOpen() const;
 
-    void createEdit(QTabWidget* tabWidget, bool focus, FileId runId = -1, int codecMip = -1);
+    QWidget *createEdit(QTabWidget* tabWidget, bool focus, ProjectRunGroupNode *runGroup = nullptr, int codecMip = -1);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
@@ -101,10 +103,11 @@ private:
     };
 
     friend class FileMetaRepo;
-    FileMeta(FileId id, QString location);
+    FileMeta(FileMetaRepo* fileRepo, FileId id, QString location);
 
 private:
     FileId mId;
+    FileMetaRepo* mFileRepo;
     QString mLocation;
     QString mName;
     Data mData;

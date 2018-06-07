@@ -37,8 +37,8 @@ public:
 //    void removeEditor(QWidget* edit) override;
 //    void setParentEntry(ProjectGroupNode *parent) override;
 //    void fileClosed(ProjectFileNode* fc);
-//    TextMark* firstErrorMark();
 //    void clearLog();
+//    TextMark* firstErrorMark();
 //    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
 //public slots:
 //    void addProcessData(QString text);

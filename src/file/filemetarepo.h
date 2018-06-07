@@ -11,10 +11,11 @@ class FileMetaRepo : public QObject
 {
     Q_OBJECT
 public:
-    FileMetaRepo(QObject* parent);
+    FileMetaRepo(QObject* parent, StudioSettings* settings);
     FileMeta* fileMeta(const FileId &fileId) const;
     FileMeta* fileMeta(const QString &location) const;
     FileMeta *findOrCreateFileMeta(QString location);
+    StudioSettings *settings() const;
 
 signals:
     void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
@@ -24,7 +25,9 @@ private:
 
 private:
     FileId mNextFileId = 0;
+    StudioSettings *mSettings = nullptr;
     QHash<FileId, FileMeta*> mFiles;
+
 
 };
 

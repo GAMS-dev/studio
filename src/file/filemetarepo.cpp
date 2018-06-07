@@ -1,11 +1,12 @@
 #include "filemetarepo.h"
 #include "filemeta.h"
+#include "studiosettings.h"
 #include <QFileInfo>
 
 namespace gams {
 namespace studio {
 
-FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
+FileMetaRepo::FileMetaRepo(QObject *parent, StudioSettings *settings) : QObject(parent), mSettings(settings)
 {}
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
@@ -35,8 +36,14 @@ FileId FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     return res;
 }
 
+StudioSettings *FileMetaRepo::settings() const
+{
+    return mSettings;
+}
+
 FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location)
 {
+    if (location.isEmpty()) return nullptr;
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(mNextFileId++, location);

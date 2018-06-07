@@ -134,36 +134,22 @@ const ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, b
 }
 
 
-ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString _location, FileMeta* runFileMeta)
-    : ProjectGroupNode(name, _location, NodeType::runGroup)
+ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
+    : ProjectGroupNode(name, path, NodeType::runGroup)
     , mGamsProcess(runFileMeta ? new GamsProcess() : nullptr)
 {
-    if (!runFileMeta) return;
-    QFileInfo runFile(runFileMeta->location());
-    if (_location.isEmpty()) setLocation(runFile.absoluteDir().path());
-    QString runInfo = runFile.fileName();
-
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
-    QFileInfo runnableFile(location() + "/" + runInfo);
-    QFileInfo alternateFile(location() + "/" + runnableFile.completeBaseName() + ".gms");
-
-    // fix for .lst-as-basefile bug
-    if (runnableFile.suffix() == "gms") {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    } else if (alternateFile.exists()) {
-        mGmsFileName = alternateFile.fileName();
-    } else {
-        mGmsFileName = runnableFile.absoluteFilePath();
-    }
-
     if (mGamsProcess) {
         connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);
+    }
+    if (path.isEmpty()) setLocation(QFileInfo(runFileMeta->location()).absoluteDir().path());
+    if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
+        setRunnableGms(runFileMeta);
     }
 }
 
 FileId ProjectRunGroupNode::runFileId() const
 {
-    return mGmsFileId;
+    return mGmsFile->id();
 }
 
 
@@ -187,26 +173,30 @@ ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRe
     mLogNode = new ProjectLogNode(fm, this);
 }
 
-QString ProjectRunGroupNode::runnableGms() const
+FileMeta* ProjectRunGroupNode::runnableGms() const
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mGmsFileName;
+    return mGmsFile;
 }
 
-void ProjectRunGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
+void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
 {
-    QString location = gmsFileNode->location();
-    mGmsFileId = gmsFileNode->file()->id();
-    mGmsFileName = location;
-    QString lstName = QFileInfo(location).baseName() + ".lst";
+    if (!gmsFile) {
+        removeRunnableGms();
+        return;
+    }
+    if (gmsFile->kind() == FileKind::Gms)
+        EXCEPT() << "Only files of FileKind::Gms can become runable";
+    mGmsFile = gmsFile;
+    QString location = gmsFile->location();
+    QString lstName = QFileInfo(location).completeBaseName() + ".lst";
     setLstFileName(lstName);
     if (logNode()) logNode()->resetLst();
 }
 
 void ProjectRunGroupNode::removeRunnableGms()
 {
-    mGmsFileId = -1;
-    mGmsFileName = "";
+    mGmsFile = nullptr;
     mLstFileName = "";
 }
 
@@ -245,11 +235,30 @@ bool ProjectRunGroupNode::hasLstErrorText(int line)
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
+bool ProjectRunGroupNode::isProcess(const GamsProcess *process) const
+{
+    return process && mGamsProcess.get() == process;
+}
+
+void ProjectRunGroupNode::jumpToFirstError(bool focus)
+{
+    if (!mLogNode) return;
+    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), runFileId(), TextMark::error, 1);
+    TextMark* textMark = marks.size() ? marks.first() : nullptr;
+    if (textMark) {
+        if (!textMark->textCursor().isNull()) {
+            textMark->jumpToMark(focus);
+            textMark->jumpToRefMark(focus);
+        }
+        textMark = nullptr;
+    }
+}
+
 QString ProjectRunGroupNode::tooltip()
 {
     QString res(location());
-    res.append("\n\nMain GMS file: ").append(QFileInfo(runnableGms()).fileName());
-    res.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
+    if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
+    if (!lstFileName().isEmpty()) res.append("\nLast output file: ").append(QFileInfo(lstFileName()).fileName());
     return res;
 }
 
@@ -295,6 +304,16 @@ void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)
 ProjectRepo *ProjectRootNode::repo() const
 {
     return mRepo;
+}
+
+ProjectRunGroupNode *ProjectRootNode::findRunGroup(const AbstractProcess *process)
+{
+    foreach (ProjectAbstractNode* node, internalNodeList()) {
+        ProjectRunGroupNode* runGroup = node->toRunGroup();
+        if (runGroup && runGroup->isProcess(process))
+            return runGroup;
+    }
+    return nullptr;
 }
 
 
@@ -484,19 +503,6 @@ void ProjectGroupNode::updateChildNodes()
     for (QFileInfo fi: addList) {
         if (fi.exists())
             emit requestNode(fi.fileName(), CommonPaths::absolutFilePath(fi.filePath()), this);
-    }
-}
-
-void ProjectGroupNode::jumpToFirstError(bool focus)
-{
-    if (!mLogNode) return;
-    TextMark* textMark = mLogNode->firstErrorMark();
-    if (textMark) {
-        if (!textMark->textCursor().isNull()) {
-            textMark->jumpToMark(focus);
-            textMark->jumpToRefMark(focus);
-        }
-        textMark = nullptr;
     }
 }
 

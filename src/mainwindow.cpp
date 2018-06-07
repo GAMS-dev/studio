@@ -59,7 +59,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
       ui(new Ui::MainWindow),
       mSettings(settings),
       mAutosaveHandler(new AutosaveHandler(this)),
-      mFileMetaRepo(this)
+      mFileMetaRepo(this, settings)
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -903,24 +903,23 @@ void MainWindow::appendSystemLog(const QString &text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
-    // TODO(JM) jump to error IF! this is the active group
+    ProjectRunGroupNode* runGroup = mProjectRepo.findGroup(process);
     QFileInfo fileInfo(process->inputFile());
-    if(groupNode && fileInfo.exists()) {
-        QString lstFile = groupNode->lstFileName();
+    if(runGroup && fileInfo.exists()) {
+        QString lstFile = runGroup->lstFileName();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
-        bool doFocus = groupNode == mRecent.group;
+        bool doFocus = runGroup->isActive();
 
         if (mSettings->jumpToError())
-            groupNode->jumpToFirstError(doFocus);
+            runGroup->jumpToFirstError(doFocus);
 
-        ProjectFileNode* lstCtx = nullptr;
-        mProjectRepo.findOrCreateFileNode(lstFile, lstCtx, groupNode);
-
-        if (lstCtx) lstCtx->updateMarks();
+        ProjectAbstractNode * node = mProjectRepo.findNode(lstFile, runGroup);
+        ProjectFileNode* lstNode = node ? node->toFile() : nullptr;
+        if (!lstNode) lstNode = mFileMetaRepo.findOrCreateFileMeta(lstFile);
+        if (lstNode) lstNode->updateMarks();
 
         if (mSettings->openLst())
-            openFile(lstCtx, true);
+            openFile(lstNode, true, runGroup);
 
     }
     ui->dockLogView->raise();
@@ -1756,7 +1755,7 @@ void MainWindow::changeToLog(ProjectFileNode* fileNode)
     }
 }
 
-void MainWindow::openFile(FileMeta *fileMeta, bool focus, FileId runId, int codecMib)
+void MainWindow::openFile(FileMeta *fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
 {
     if (!fileMeta) return;
     QWidget* edit = nullptr;
@@ -1767,7 +1766,18 @@ void MainWindow::openFile(FileMeta *fileMeta, bool focus, FileId runId, int code
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        fileMeta->createEdit(tabWidget, focus, runId, codecMib);
+        edit = fileMeta->createEdit(tabWidget, focus, runGroup, codecMib);
+        CodeEditor* codeEdit = FileMeta::toCodeEdit(edit);
+        if (codeEdit) {
+            connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+            connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+            if (!codeEdit->isReadOnly())
+                connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+        }
+
+        int tabIndex = tabWidget->addTab(edit, fileMeta->name());
+        tabWidget->setTabToolTip(tabIndex, fileMeta->location());
+        if (focus) tabWidget->setCurrentIndex(tabIndex);
         linkToEdit(tabWidget, fileMeta, focus, codecMib);
     }
     if (tabWidget->currentWidget())
@@ -1848,8 +1858,8 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
     if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
     }
-    ProjectAbstractNode *fsc = mProjectRepo.findNode(filePath, parent);
-    ProjectFileNode *fileNode = (fsc && fsc->type() == NodeType::file) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
+    ProjectAbstractNode *node = mProjectRepo.findNode(filePath, parent);
+    ProjectFileNode *fileNode = (node && node->type() == NodeType::file) ? static_cast<ProjectFileNode*>(node) : nullptr;
 
     if (!fileNode) { // not yet opened by user, open file in new tab
         ProjectGroupNode* group = mProjectRepo.findOrCreateGroup(CommonPaths::absolutFilePath(filePath));
@@ -1868,7 +1878,7 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
         ui->projectView->expand(mProjectRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
     } else {
-        openFile(fileNode, focus, codecMip);
+        openFile(fileNode, focus, parent, codecMip);
     }
     if (!fileNode) {
         EXCEPT() << "invalid pointer found: FileNode expected.";

@@ -1,7 +1,11 @@
 #include "filemeta.h"
+#include "filemetarepo.h"
 #include "filetype.h"
 #include "editors/codeeditor.h"
 #include "exception.h"
+#include "studiosettings.h"
+#include "commonpaths.h"
+//#include "lxiviewer/lxiviewer.h"
 #include <QFileInfo>
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
@@ -10,8 +14,10 @@
 namespace gams {
 namespace studio {
 
-FileMeta::FileMeta(FileId id, QString location) : mId(id), mLocation(location), mData(Data(location))
+FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location)
+    : mId(id), mFileRepo(fileRepo), mLocation(location), mData(Data(location))
 {
+    if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     bool symbolic = mLocation.startsWith('[');
     int braceEnd = mLocation.indexOf(']');
     if (braceEnd <= 0) braceEnd = mLocation.size();
@@ -241,29 +247,22 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-void FileMeta::createEdit(QTabWidget *tabWidget, bool focus, FileId runId, int codecMip)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, bool focus, ProjectRunGroupNode *runGroup, int codecMip)
 {
-    int tabIndex;
+    QWidget* res = nullptr;
     if (kind() != FileKind::Gdx) {
-        CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
+        CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
         codeEdit->setTabChangesFocus(false);
+        codeEdit->setRunFileId(runGroup ? runGroup->runFileId() : -1);
         initEditorType(codeEdit);
-        codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());
         codeEdit->setTabStopDistance(8*metric.width(' '));
+        res = codeEdit;
         if (kind() == FileKind::Lst) {
-            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, this, runGroup, tabWidget);
             initEditorType(lxiViewer);
-            addEditor(lxiViewer);
-            connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-            connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-            tabIndex = tabWidget->addTab(lxiViewer, name(NameModifier::editState));
-        } else {
-            addEditor(codeEdit);
-            connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-            connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-            connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
-            tabIndex = tabWidget->addTab(codeEdit, name(NameModifier::editState));
+            res = lxiViewer;
         }
 
         if (codecMip == -1)
@@ -279,14 +278,13 @@ void FileMeta::createEdit(QTabWidget *tabWidget, bool focus, FileId runId, int c
             codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
     } else {
-        gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
+        gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
-        addEditor(gdxView);
-        tabIndex = tabWidget->addTab(gdxView, name(NameModifier::editState));
+        res = gdxView;
         addFileWatcherForGdx();
     }
-    tabWidget->setTabToolTip(tabIndex, location());
-    if (focus) tabWidget->setCurrentIndex(tabIndex);
+    addEditor(res);
+    return res;
 }
 
 FileMeta::Data::Data(QString location)

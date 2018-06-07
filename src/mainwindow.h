@@ -122,7 +122,7 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, FileMeta *fileMeta, bool focus, FileId runId = -1, int codecMip = -1);
+    void linkToEdit(QTabWidget* tabWidget, FileMeta *fileMeta, bool focus, int codecMip = -1);
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFile(const QString &filePath);
@@ -176,7 +176,7 @@ public slots:
     void appendSystemLog(const QString &text);
 
 private slots:
-    void openFile(FileMeta *fileMeta, bool focus = true, FileId runId, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode* runGroup = nullptr, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);

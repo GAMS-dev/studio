@@ -36,6 +36,7 @@ class GamsProcess;
 class TextMarkRepo;
 class FileMeta;
 class FileMetaRepo;
+class AbstractProcess;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
@@ -63,6 +64,7 @@ protected:
     void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
     int peekIndex(const QString &name, bool* hit = nullptr);
+    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildList; }
 
 private:
     QList<ProjectAbstractNode*> mChildList;
@@ -117,8 +119,8 @@ public:
     ProjectLogNode* logNode() const;
     void setLogNode(ProjectLogNode* logNode);
     ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
-    QString runnableGms() const;
-    void setRunnableGms(ProjectFileNode *gmsFileNode);
+    FileMeta *runnableGms() const;
+    void setRunnableGms(FileMeta *gmsFile);
     void removeRunnableGms();
     FileId runFileId() const;
     QString lstFileName() const;
@@ -128,6 +130,8 @@ public:
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
+    bool isProcess(const GamsProcess *process) const;
+    void jumpToFirstError(bool focus);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -141,12 +145,12 @@ protected:
     friend class ProjectLogNode;
     friend class ProjectFileNode;
 
-    ProjectRunGroupNode(QString name, QString location, FileMeta *runFileMeta = nullptr);
+    ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void updateRunState(const QProcess::ProcessState &state);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
-    FileId mGmsFileId = -1;
+    FileMeta* mGmsFile = nullptr;
     QString mGmsFileName;
     QString mLstFileName;
     ProjectLogNode* mLogNode = nullptr;
@@ -163,6 +167,7 @@ public:
     ~ProjectRootNode() {}
     void setParentNode(ProjectRunGroupNode *parent);
     ProjectRepo *repo() const;
+    ProjectRunGroupNode *findRunGroup(const AbstractProcess *process);
 
 private:
     friend class ProjectRepo;

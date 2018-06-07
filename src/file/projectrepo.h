@@ -32,6 +32,8 @@
 namespace gams {
 namespace studio {
 
+class AbstractProcess;
+
 // TODO(AF)
 // - a file which is in different groups
 // - naming and documentation of functions
@@ -50,8 +52,8 @@ public:
     explicit ProjectRepo(QObject *parent = nullptr);
     ~ProjectRepo();
 
-    ProjectGroupNode* createGroup(const QString& filePath, ProjectGroupNode *parent);
-    ProjectGroupNode* findGroup(const QString& filePath, bool createIfMissing = false);
+    ProjectGroupNode* findGroup(const AbstractProcess* process);
+    const ProjectGroupNode *findGroup(const QString& filePath);
     ProjectAbstractNode* findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr);
 
     /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
@@ -116,11 +118,11 @@ public:
 
     /// Adds a group node to the file repository. This will watch the location for changes.
     /// \param name The name of the project (or gist).
-    /// \param location The location of the directory.
-    /// \param projectFile The file name w/o path of the project OR gms-start-file
-    /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
-    /// \return Model index to the new <c>ProjectGroupNode</c>.
-    ProjectRunGroupNode *createGroup(QString name, QString location, ProjectGroupNode *_parent = nullptr);
+    /// \param path The location of the directory.
+    /// \param runFileName The file name w/o path of the project OR gms-start-file
+    /// \param _parent The parent of this node (default: rootTreeModelIndex)
+    /// \return the new <c>ProjectRunGroupNode</c>.
+    ProjectRunGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
     void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
 signals:
@@ -137,7 +139,7 @@ private:
 
     void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
     void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
-    inline void storeNode(ProjectAbstractNode* node) {
+    inline void indexNode(ProjectAbstractNode* node) {
         mNodes.insert(node->id(), node);
     }
     inline void deleteNode(ProjectAbstractNode* node) {
@@ -171,7 +173,6 @@ private:
     void dump(ProjectAbstractNode* fc, int lv = 0);
     QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
     ProjectAbstractNode* findNode(QString filePath, ProjectGroupNode* fileGroup = nullptr);
-    ProjectGroupNode* findGroup(const QString &fileName);
     QList<ProjectFileNode*> modifiedFiles(ProjectGroupNode* fileGroup = nullptr);
     int saveAll();
     void editorActivated(QWidget* edit);
