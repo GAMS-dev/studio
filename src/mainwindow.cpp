@@ -1492,11 +1492,6 @@ HelpWidget *MainWindow::getHelpWidget() const
     return mHelpWidget;
 }
 
-OptionWidget *MainWindow::getGamsOptionWidget() const
-{
-    return mGamsOptionWidget;
-}
-
 void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 {
     execute("", fc);
