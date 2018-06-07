@@ -17,29 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef HELPVIEW_H
-#define HELPVIEW_H
+#ifndef HELPWIDGET_H
+#define HELPWIDGET_H
 
-#include <QDockWidget>
-#include <QLineEdit>
-#include <QStatusBar>
-#include <QLabel>
-#include <QWebEngineView>
-#include <QWebEnginePage>
+#include <QWidget>
+#include <QMultiMap>
+#include <QUrl>
+
+namespace Ui {
+class HelpWidget;
+}
+
+class QMenu;
 
 namespace gams {
 namespace studio {
 
-class HelpView : public QDockWidget
+class HelpWidget : public QWidget
 {
     Q_OBJECT
+
 public:
-    HelpView(QWidget* parent = nullptr);
-    ~HelpView();
+    explicit HelpWidget(QWidget *parent = nullptr);
+    ~HelpWidget();
 
     QMultiMap<QString, QString> getBookmarkMap() const;
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
-    void clearSearchBar();
+    void clearStatusBar();
 
     static const QString START_CHAPTER;
     static const QString DOLLARCONTROL_CHAPTER ;
@@ -56,22 +60,26 @@ public slots:
     void on_bookmarkRemoved(const QString& location, const QString& name);
 
     void on_loadFinished(bool ok);
+    void linkHovered(const QString& url);
+
     void on_actionHome_triggered();
-    void on_actionAddBookMark_triggered();
-    void on_actionOrganizeBookMark_triggered();
-    void on_actionBookMark_triggered();
+    void on_actionAddBookmark_triggered();
+    void on_actionOrganizeBookmark_triggered();
+    void on_bookmarkaction();
 
     void on_actionOnlineHelp_triggered(bool checked);
     void on_actionOpenInBrowser_triggered();
+    void on_actionCopyPageURL_triggered();
+
+    void addBookmarkAction(const QString& objectName, const QString& title);
 
     void on_searchHelp();
     void on_backButtonTriggered();
     void on_forwardButtonTriggered();
-    void on_searchCloseButtonTriggered();
+    void on_closeButtonTriggered();
     void on_caseSensitivityToggled(bool checked);
     void searchText(const QString& text);
 
-    void copyURLToClipboard();
     void zoomIn();
     void zoomOut();
     void resetZoom();
@@ -79,48 +87,32 @@ public slots:
     void setZoomFactor(qreal factor);
     qreal getZoomFactor();
 
-    void addBookmarkAction(const QString& objectName, const QString& title);
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 private:
+    Ui::HelpWidget *ui;
+
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QStringList mChapters;
 
-    QAction* actionAddBookmark;
-    QAction* actionOrganizeBookmark;
-    QAction* actionOnlineHelp;
-    QAction* actionOpenInBrowser;
-    QAction* actionCopyPageURL;
+    QUrl getStartPageUrl();
+    QUrl getOnlineStartPageUrl();
+    bool isDocumentAvailable(const QString& path, const QString& chapter);
+    bool isCurrentReleaseTheLatestVersion();
+    QString getCurrentReleaseVersion();
 
-    QWebEngineView* mHelpView;
-    QLineEdit* mSearchLineEdit;
-    QStatusBar* mSearchBar;
-    QLabel* mStatusText;
-    bool mSearchCaseSensitivity = false;
-
-    QString baseLocation;
-    QUrl startPageUrl;
-    QUrl onlineStartPageUrl;
-
-    QString mThisRelease;
-    QString mLastRelease;
-    bool mOfflineHelpAvailable = false;
-
-    void setupUi(QWidget *parent);
-    void createSearchBar();
     void getErrorHTMLText(QString& htmlText, const QString& chapterText);
     enum SearchDirection {
         Forward = 0,
         Backward = 1
     };
-    void findText(const QString &text, SearchDirection direction);
+    void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // HELPVIEW_H
+#endif // HELPWIDGET_H

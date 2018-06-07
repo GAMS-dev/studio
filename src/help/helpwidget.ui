@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HelpWidget</class>
+ <widget class="QWidget" name="HelpWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>774</width>
+    <height>408</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="toolbarWidget" native="true">
+     <layout class="QVBoxLayout" name="toolbarVlLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWebEngineView" name="webEngineView"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="statusbarLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="searchbarWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="statusbarHLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QLineEdit" name="searchLineEdit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="placeholderText">
+         <string>Find in page...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="backButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../icons/icons.qrc">
+          <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="forwardButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../icons/icons.qrc">
+          <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="caseSenstivity">
+        <property name="text">
+         <string>Case Sensitivity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="statusText">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="closeButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../icons/icons.qrc">
+          <normaloff>:/img/delete</normaloff>:/img/delete</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionHome">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/home</normaloff>:/img/home</iconset>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="toolTip">
+    <string>Start Page</string>
+   </property>
+  </action>
+  <action name="actionAddBookmark">
+   <property name="text">
+    <string>Bookmark This page</string>
+   </property>
+   <property name="toolTip">
+    <string>Bookmark This page</string>
+   </property>
+  </action>
+  <action name="actionOrganizeBookmark">
+   <property name="text">
+    <string>Organzie Bookmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Organzie Bookmarks</string>
+   </property>
+  </action>
+  <action name="actionOnlineHelp">
+   <property name="text">
+    <string>View This Page from</string>
+   </property>
+   <property name="toolTip">
+    <string>View This Page from</string>
+   </property>
+  </action>
+  <action name="actionOpenInBrowser">
+   <property name="text">
+    <string>Open in Default Web Browser</string>
+   </property>
+   <property name="toolTip">
+    <string>Open in Default Web Browser</string>
+   </property>
+  </action>
+  <action name="actionCopyPageURL">
+   <property name="text">
+    <string>Copy Page URL to Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Page URL to Clipboard</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

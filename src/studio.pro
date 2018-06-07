@@ -63,7 +63,6 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    bookmarkdialog.cpp \
     checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -85,7 +84,8 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    helpview.cpp \
+    help/bookmarkdialog.cpp \
+    help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
@@ -142,7 +142,6 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    bookmarkdialog.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
     commonpaths.h \
@@ -166,7 +165,8 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    helpview.h \
+    help/bookmarkdialog.h \
+    help/helpwidget.h \
     keys.h \
     logger.h \
     lxiviewer/lxiparser.h \
@@ -222,11 +222,12 @@ HEADERS += \
     gotodialog.h
 
 FORMS += \
-    bookmarkdialog.ui \
     editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
+    help/bookmarkdialog.ui \
+    help/helpwidget.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \

@@ -87,10 +87,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mDockHelpView = new HelpView(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
-    mDockHelpView->hide();
+    mHelpWidget = new HelpWidget(this);
+    ui->dockHelpView->setWidget(mHelpWidget);
+    ui->dockHelpView->show();
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
@@ -120,6 +119,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
+    connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
@@ -276,11 +276,11 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
 
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(mDockHelpView).count();
+    visibility = visibility || tabifiedDockWidgets(ui->dockHelpView).count();
     if (!visibility)
-        getDockHelpView()->clearSearchBar();
+        mHelpWidget->clearStatusBar();
     else
-        getDockHelpView()->setFocus();
+        mHelpWidget->setFocus();
     ui->actionHelp_View->setChecked(visibility);
 }
 
@@ -322,7 +322,7 @@ void MainWindow::on_actionOption_View_triggered(bool checked)
 
 void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
-    dockWidgetShow(mDockHelpView, checked);
+    dockWidgetShow(ui->dockHelpView, checked);
 }
 
 void MainWindow::checkOptionDefinition(bool checked)
@@ -388,7 +388,7 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
-    if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
+    if (!getHelpWidget()->isVisible()) getHelpWidget()->show();
 
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
@@ -396,7 +396,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
-    getDockHelpView()->on_urlOpened(result);
+    getHelpWidget()->on_urlOpened(result);
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -495,8 +495,8 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
 
 void MainWindow::closeHelpView()
 {
-    if (mDockHelpView)
-        mDockHelpView->close();
+    if (ui->dockHelpView)
+        ui->dockHelpView->close();
 }
 
 void MainWindow::outputViewVisibiltyChanged(bool visibility)
@@ -516,7 +516,7 @@ void MainWindow::optionViewVisibiltyChanged(bool visibility)
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
-    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(mDockHelpView).count());
+    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
 }
 
 void MainWindow::updateEditorPos()
@@ -916,7 +916,7 @@ void MainWindow::on_actionHelp_triggered()
 {
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+        mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
@@ -924,17 +924,17 @@ void MainWindow::on_actionHelp_triggered()
         ce->wordInfo(ce->textCursor(), word, istate);
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
-            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, "title");
+            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
         } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mDockHelpView->on_helpContentRequested(HelpView::DOLLARCONTROL_CHAPTER, word);
+            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
         } else {
-            mDockHelpView->on_helpContentRequested(HelpView::INDEX_CHAPTER, word);
+            mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
         }
     }
-    if (mDockHelpView->isHidden())
-        mDockHelpView->show();
-    if (tabifiedDockWidgets(mDockHelpView).count())
-        mDockHelpView->raise();
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
 }
 
 QString MainWindow::studioInfo()
@@ -1487,6 +1487,11 @@ void MainWindow::updateRunState()
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isActiveTabSetAsMain(), isRecentGroupInRunningState());
 }
 
+HelpWidget *MainWindow::getHelpWidget() const
+{
+    return mHelpWidget;
+}
+
 void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 {
     execute("", fc);
@@ -1503,11 +1508,11 @@ void MainWindow::on_setMainGms(ProjectFileNode *fc)
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    mDockHelpView->on_helpContentRequested(HelpView::GAMSCALL_CHAPTER, "");
-    if (mDockHelpView->isHidden())
-        mDockHelpView->show();
-    if (tabifiedDockWidgets(mDockHelpView).count())
-        mDockHelpView->raise();
+    mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
 }
 
 void MainWindow::on_optionRunChanged()
@@ -1802,9 +1807,9 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->on_searchHelp();
+    if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
+        ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
+        mHelpWidget->on_searchHelp();
     } else {
        // toggle visibility
        if (mSearchWidget->isVisible()) {
@@ -1887,11 +1892,6 @@ void MainWindow::updateEditorLineWrapping()
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
     }
-}
-
-HelpView *MainWindow::getDockHelpView() const
-{
-    return mDockHelpView;
 }
 
 void MainWindow::readTabs(const QJsonObject &json)
@@ -2029,9 +2029,9 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->resetZoom(); // reset help view
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->resetZoom(); // reset help view
     } else {
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
     }
@@ -2040,9 +2040,9 @@ void MainWindow::on_actionReset_Zoom_triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->zoomOut();
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->zoomOut();
     } else {
         AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2054,9 +2054,9 @@ void MainWindow::on_actionZoom_Out_triggered()
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->zoomIn();
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->zoomIn();
     } else {
         AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2242,7 +2242,7 @@ void MainWindow::resetViews()
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedFirst = dock;
-        } else if (dock == mDockHelpView) {
+        } else if (dock == ui->dockHelpView) {
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);

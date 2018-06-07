@@ -29,7 +29,7 @@
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
 #include "projectcontextmenu.h"
-#include "helpview.h"
+#include "help/helpwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
@@ -121,7 +121,7 @@ public:
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
 
-    HelpView *getDockHelpView() const;
+    HelpWidget *getHelpWidget() const;
     OptionWidget *getGamsOptionWidget() const;
 
 public slots:
@@ -268,8 +268,8 @@ private:
     Ui::MainWindow *ui;
     SearchWidget *mSearchWidget = nullptr;
 
-    HelpView* mDockHelpView = nullptr;
-    OptionWidget* mGamsOptionWidget = nullptr;
+    HelpWidget *mHelpWidget = nullptr;
+    OptionWidget *mGamsOptionWidget = nullptr;
 
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;

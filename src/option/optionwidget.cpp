@@ -405,6 +405,9 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
                 return "";
             }
             QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
+            if (mGamsOptionTokenizer->getGamsOption()->isDoubleDashedOption(data.toString())) {
+               return "";
+            }
             return data.toString();
         }
     } else if (widget == ui->gamsOptionTreeView) {
