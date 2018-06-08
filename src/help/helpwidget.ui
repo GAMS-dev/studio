@@ -33,7 +33,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QWebEngineView" name="webEngineView"/>
+    <widget class="QWebEngineView" name="webEngineView" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="statusbarLabel">
