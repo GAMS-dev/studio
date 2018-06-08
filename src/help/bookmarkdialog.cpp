@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "bookmarkdialog.h"
-#include "helpview.h"
+#include "helpwidget.h"
 
 #include <QStandardItemModel>
 #include <QKeyEvent>
@@ -61,10 +61,10 @@ BookmarkDialog::BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget* pare
     connect(ui.bookmarkTableView, &QTableView::customContextMenuRequested,
             this, &BookmarkDialog::on_contextMenuShowed);
 
-    connect(this, &BookmarkDialog::openUrl, (HelpView*)parent, &HelpView::on_urlOpened );
-    connect(this, &BookmarkDialog::removeBookmark, (HelpView*)parent, &HelpView::on_bookmarkRemoved );
-    connect(this, &BookmarkDialog::updateBookmarkName, (HelpView*)parent, &HelpView::on_bookmarkNameUpdated );
-    connect(this, &BookmarkDialog::updateBookmarkLocation, (HelpView*)parent, &HelpView::on_bookmarkLocationUpdated );
+    connect(this, &BookmarkDialog::openUrl, (HelpWidget*)parent, &HelpWidget::on_urlOpened );
+    connect(this, &BookmarkDialog::removeBookmark, (HelpWidget*)parent, &HelpWidget::on_bookmarkRemoved );
+    connect(this, &BookmarkDialog::updateBookmarkName, (HelpWidget*)parent, &HelpWidget::on_bookmarkNameUpdated );
+    connect(this, &BookmarkDialog::updateBookmarkLocation, (HelpWidget*)parent, &HelpWidget::on_bookmarkLocationUpdated );
 }
 
 BookmarkDialog::~BookmarkDialog()

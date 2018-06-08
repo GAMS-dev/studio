@@ -19,12 +19,12 @@
  */
 #include <QIcon>
 #include "option.h"
-#include "optionparametermodel.h"
+#include "optiontablemodel.h"
 
 namespace gams {
 namespace studio {
 
-OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
+OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
 {
     Q_UNUSED(normalizedCommandLineStr);
@@ -34,7 +34,7 @@ OptionParameterModel::OptionParameterModel(const QString normalizedCommandLineSt
     gamsOption = commandLineTokenizer->getGamsOption();
 }
 
-QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation, int role) const
+QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
@@ -64,7 +64,7 @@ QVariant OptionParameterModel::headerData(int index, Qt::Orientation orientation
     return QVariant();
 }
 
-int OptionParameterModel::rowCount(const QModelIndex &parent) const
+int OptionTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -72,14 +72,14 @@ int OptionParameterModel::rowCount(const QModelIndex &parent) const
     return  mOptionItem.size();
 }
 
-int OptionParameterModel::columnCount(const QModelIndex &parent) const
+int OptionTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mHeader.size();
 }
 
-QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
+QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -172,7 +172,7 @@ QVariant OptionParameterModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-Qt::ItemFlags OptionParameterModel::flags(const QModelIndex &index) const
+Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
@@ -180,7 +180,7 @@ Qt::ItemFlags OptionParameterModel::flags(const QModelIndex &index) const
     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
-bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
+bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
 {
     if (orientation != Qt::Vertical || role != Qt::CheckStateRole)
         return false;
@@ -191,7 +191,7 @@ bool OptionParameterModel::setHeaderData(int index, Qt::Orientation orientation,
     return true;
 }
 
-bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role == Qt::EditRole)   {
         QString data = value.toString().simplified();
@@ -218,14 +218,14 @@ bool OptionParameterModel::setData(const QModelIndex &index, const QVariant &val
     return true;
 }
 
-QModelIndex OptionParameterModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex OptionTableModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
     return QModelIndex();
 }
 
-bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size())
@@ -242,7 +242,7 @@ bool OptionParameterModel::insertRows(int row, int count, const QModelIndex &par
     return true;
 }
 
-bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
@@ -255,7 +255,7 @@ bool OptionParameterModel::removeRows(int row, int count, const QModelIndex &par
     return true;
 }
 
-bool OptionParameterModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
@@ -270,12 +270,12 @@ bool OptionParameterModel::moveRows(const QModelIndex &sourceParent, int sourceR
     return true;
 }
 
-QList<OptionItem> OptionParameterModel::getCurrentListOfOptionItems()
+QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
 }
 
-void OptionParameterModel::toggleActiveOptionItem(int index)
+void OptionTableModel::toggleActiveOptionItem(int index)
 {
     if (mOptionItem.isEmpty() || index >= mOptionItem.size())
         return;
@@ -288,7 +288,7 @@ void OptionParameterModel::toggleActiveOptionItem(int index)
     emit optionModelChanged(mOptionItem);
 }
 
-void OptionParameterModel::updateCurrentOption(const QString &text)
+void OptionTableModel::on_optionTableModelChanged(const QString &text)
 {
     beginResetModel();
     itemizeOptionFromCommandLineStr(text);
@@ -316,7 +316,8 @@ void OptionParameterModel::updateCurrentOption(const QString &text)
     emit optionModelChanged(mOptionItem);
 }
 
-void OptionParameterModel::setRowCount(int rows)
+
+void OptionTableModel::setRowCount(int rows)
 {
    int rc = mOptionItem.size();
    if (rows < 0 ||  rc == rows)
@@ -328,7 +329,7 @@ void OptionParameterModel::setRowCount(int rows)
       removeRows(qMax(rows, 0), rc - rows);
 }
 
-void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
+void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 {
     QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();
@@ -338,7 +339,7 @@ void OptionParameterModel::itemizeOptionFromCommandLineStr(const QString text)
     }
 }
 
-void OptionParameterModel::validateOption()
+void OptionTableModel::validateOption()
 {
    for(OptionItem& item : mOptionItem) {
        if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter

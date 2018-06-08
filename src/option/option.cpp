@@ -23,6 +23,7 @@
 #include "exception.h"
 #include "gclgms.h"
 #include "option.h"
+#include "commonpaths.h"
 
 namespace gams {
 namespace studio {
@@ -321,6 +322,8 @@ OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 
 bool Option::readDefinition(const QString &systemPath, const QString &optionFileName)
 {
+    if (!CommonPaths::isSystemDirValid())
+        return false;
     optHandle_t mOPTHandle;
 
     char msg[GMS_SSSIZE];

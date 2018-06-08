@@ -20,12 +20,14 @@
 #ifndef STUDIOSETTINGS_H
 #define STUDIOSETTINGS_H
 
-#include <QSettings>
-#include "mainwindow.h"
-#include "commandlineparser.h"
+#include <QString>
+
+class QSettings;
 
 namespace gams {
 namespace studio {
+
+class MainWindow;
 
 // TODO(AF) switch to struct for the actual settings?
 // TODO(AF) new class SettingsReaderWriter?
@@ -117,8 +119,6 @@ public:
     void resetViewSettings();
 
     void restoreTabsAndProjects(MainWindow *main);
-
-public slots:
     void restoreLastFilesUsed(MainWindow *main);
 
 private:

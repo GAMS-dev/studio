@@ -47,6 +47,7 @@ signals:
     void closeFile(ProjectFileNode* fc);
     void addExistingFile(ProjectGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
+    void openLogFor(ProjectAbstractNode* node, bool createMissing);
 
 private slots:
     void onCloseGroup();
@@ -58,6 +59,7 @@ private slots:
 
 private:
     void onOpenFileLoc();
+    void onOpenLog();
 
 private:
     ProjectAbstractNode* mNode;

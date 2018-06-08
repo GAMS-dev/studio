@@ -22,6 +22,9 @@
 
 #include "studiosettings.h"
 
+#include <QKeyEvent>
+#include <QKeySequence>
+
 namespace gams {
 namespace studio {
 

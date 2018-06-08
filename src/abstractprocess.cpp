@@ -89,7 +89,10 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
 
 QString AbstractProcess::nativeAppPath()
 {
-    auto appPath = QDir(CommonPaths::systemDir()).filePath(mApp);
+    QString systemDir = CommonPaths::systemDir();
+    if (systemDir.isEmpty())
+        return QString();
+    auto appPath = QDir(systemDir).filePath(mApp);
     return QDir::toNativeSeparators(appPath);
 }
 

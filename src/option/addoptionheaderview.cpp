@@ -20,7 +20,7 @@
 #include <QPainter>
 #include <QTableView>
 #include <QMouseEvent>
-#include <QtWidgets>
+#include <QToolTip>
 
 #include "addoptionheaderview.h"
 

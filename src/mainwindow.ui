@@ -92,7 +92,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -200,6 +200,9 @@
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
+    <addaction name="separator"/>
+    <addaction name="actionInterrupt"/>
+    <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
    </widget>
@@ -334,6 +337,24 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockOptionEditor">
+   <property name="windowTitle">
+    <string>Option</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="dockOptionEditorContents"/>
+  </widget>
+  <widget class="QDockWidget" name="dockHelpView">
+   <property name="windowTitle">
+    <string>Help</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockHelpViewContents"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -782,6 +803,36 @@
    </property>
    <property name="priority">
     <enum>QAction::HighPriority</enum>
+   </property>
+  </action>
+  <action name="actionInterrupt">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/interrupt</normaloff>:/img/interrupt</iconset>
+   </property>
+   <property name="text">
+    <string>Interrupt</string>
+   </property>
+   <property name="toolTip">
+    <string>Interrupt</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/stop</normaloff>:/img/stop</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F11</string>
    </property>
   </action>
  </widget>

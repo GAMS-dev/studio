@@ -63,7 +63,6 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    bookmarkdialog.cpp \
     checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -85,8 +84,8 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    gotowidget.cpp \
-    helpview.cpp \
+    help/bookmarkdialog.cpp \
+    help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
@@ -109,9 +108,9 @@ SOURCES += \
     option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
-    option/optioneditor.cpp \
-    option/optionparametermodel.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/optiontablemodel.cpp \
+    option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
@@ -136,13 +135,13 @@ SOURCES += \
     file/projecttreemodel.cpp \
     file/projectlognode.cpp \
     file/filemetarepo.cpp \
-    file/filemeta.cpp
+    file/filemeta.cpp \
+    gotodialog.cpp
 
 HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    bookmarkdialog.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
     commonpaths.h \
@@ -166,8 +165,8 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    gotowidget.h \
-    helpview.h \
+    help/bookmarkdialog.h \
+    help/helpwidget.h \
     keys.h \
     logger.h \
     lxiviewer/lxiparser.h \
@@ -189,9 +188,9 @@ HEADERS += \
     option/optioncompleterdelegate.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
-    option/optioneditor.h \
-    option/optionparametermodel.h \
     option/optionsortfilterproxymodel.h \
+    option/optiontablemodel.h \
+    option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \
     searchresultlist.h \
@@ -219,24 +218,27 @@ HEADERS += \
     file/projecttreemodel.h \
     file/filemetarepo.h \
     file/filemeta.h \
-    file/projectrepo.h
+    file/projectrepo.h \
+    gotodialog.h
 
 FORMS += \
-    bookmarkdialog.ui \
     editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
-    gotowidget.ui \
+    help/bookmarkdialog.ui \
+    help/helpwidget.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     newdialog.ui \
+    option/optionwidget.ui \
     resultsview.ui \
     searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
-    welcomepage.ui
+    welcomepage.ui \
+    gotodialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

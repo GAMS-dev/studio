@@ -17,15 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDebug>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QDir>
+#include <QSettings>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
 #include "searchwidget.h"
 #include "version.h"
+#include "commandlineparser.h"
 
 namespace gams {
 namespace studio {
@@ -135,7 +138,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
-    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    QMultiMap<QString, QString> bookmarkMap(main->getHelpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
     mAppSettings->beginWriteArray("bookmarks");
@@ -145,7 +148,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
-    mAppSettings->setValue("zoomFactor", main->getDockHelpView()->getZoomFactor());
+    mAppSettings->setValue("zoomFactor", main->getHelpWidget()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
@@ -159,7 +162,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(main->commandLineHistory()->allHistory());
+    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -251,11 +254,11 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                            mAppSettings->value("name").toString());
     }
     mAppSettings->endArray();
-    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+    main->getHelpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
-        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+        main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
-        main->getDockHelpView()->setZoomFactor(1.0);
+        main->getHelpWidget()->setZoomFactor(1.0);
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");
@@ -276,7 +279,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     mAppSettings->endArray();
     mAppSettings->endGroup();
 
-    main->commandLineHistory()->setAllHistory(map);
+    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()

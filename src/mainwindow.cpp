@@ -37,10 +37,9 @@
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "searchwidget.h"
-#include "option/optioneditor.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
-#include "gotowidget.h"
+#include "gotodialog.h"
 #include "editors/logeditor.h"
 #include "editors/abstracteditor.h"
 #include "editors/selectencodings.h"
@@ -68,7 +67,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
 
-    TimerID = startTimer(60000);
+    mTimerID = startTimer(60000);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -88,12 +87,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mDockHelpView = new HelpView(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, mDockHelpView);
-    connect(mDockHelpView, &HelpView::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
-    mDockHelpView->hide();
+    mHelpWidget = new HelpWidget(this);
+    ui->dockHelpView->setWidget(mHelpWidget);
+    ui->dockHelpView->show();
 
-    createRunAndCommandLineWidgets();
+    mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                                         ui->actionInterrupt, ui->actionStop,
+                                         this);
+    ui->dockOptionEditor->setWidget(mGamsOptionWidget);
+    ui->dockOptionEditor->show();
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -113,15 +116,17 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
+    connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
+    connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchWidget = new SearchWidget(this);
-    mGoto= new GoToWidget(this);
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
@@ -131,8 +136,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
         ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
 
     initTabs();
-
-    connectCommandLineWidgets();
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -146,11 +149,8 @@ void MainWindow::delayedFileRestoration()
 
 MainWindow::~MainWindow()
 {
+    killTimer(mTimerID);
     delete ui;
-    killTimer(TimerID);
-    // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
-    //          may not be in the ui, delete and remove them from ui before the ui is deleted.
-    delete mGamsOption;
 }
 
 void MainWindow::initTabs()
@@ -270,17 +270,17 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(mDockOptionView).count();
+    visibility = visibility || tabifiedDockWidgets(ui->dockOptionEditor).count();
     ui->actionOption_View->setChecked(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(mDockHelpView).count();
+    visibility = visibility || tabifiedDockWidgets(ui->dockHelpView).count();
     if (!visibility)
-        getDockHelpView()->clearSearchBar();
+        mHelpWidget->clearStatusBar();
     else
-        getDockHelpView()->setFocus();
+        mHelpWidget->setFocus();
     ui->actionHelp_View->setChecked(visibility);
 }
 
@@ -316,34 +316,23 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 
 void MainWindow::on_actionOption_View_triggered(bool checked)
 {
-    dockWidgetShow(mDockOptionView, checked);
-    if(!checked) mDockOptionView->setFloating(false);
+    dockWidgetShow(ui->dockOptionEditor, checked);
+    if(!checked) ui->dockOptionEditor->setFloating(false);
 }
 
 void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
-    dockWidgetShow(mDockHelpView, checked);
-}
-
-void MainWindow::setCommandLineHistory(CommandLineHistory *opt)
-{
-    mCommandLineHistory = opt;
+    dockWidgetShow(ui->dockHelpView, checked);
 }
 
 void MainWindow::checkOptionDefinition(bool checked)
 {
-    mShowOptionDefintionCheckBox->setChecked(checked);
-    toggleOptionDefinition(checked);
+    mGamsOptionWidget->checkOptionDefinition(checked);
 }
 
 bool MainWindow::isOptionDefinitionChecked()
 {
-    return mShowOptionDefintionCheckBox->isChecked();
-}
-
-CommandLineHistory *MainWindow::commandLineHistory()
-{
-    return mCommandLineHistory;
+    return mGamsOptionWidget->isOptionDefinitionChecked();
 }
 
 ProjectRepo *MainWindow::projectRepo()
@@ -376,7 +365,7 @@ void MainWindow::receiveAction(QString action)
 
 void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
 {
-    if (gmsFileName == "")
+    if (gmsFileName.isEmpty())
         gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
@@ -399,15 +388,15 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
-    if (!getDockHelpView()->isVisible()) getDockHelpView()->show();
+    if (!getHelpWidget()->isVisible()) getHelpWidget()->show();
 
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
-    if (anchor != "")
+    if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
-    getDockHelpView()->on_urlOpened(result);
+    getHelpWidget()->on_urlOpened(result);
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -504,26 +493,10 @@ void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
     ui->projectView->setExpanded(mi, expanded);
 }
 
-void MainWindow::toggleOptionDefinition(bool checked)
-{
-    if (checked) {
-        updateRunState();
-        mCommandLineOption->lineEdit()->setEnabled( false );
-        mOptionEditor->show();
-        emit mOptionEditor->optionTableModelChanged(mCommandLineOption->lineEdit()->text());
-    } else {
-        updateRunState();
-        mCommandLineOption->lineEdit()->setEnabled( true );
-        mOptionEditor->hide();
-        mDockOptionView->widget()->resize( mCommandWidget->size() );
-        this->resizeDocks({mDockOptionView}, {mCommandWidget->size().height()}, Qt::Vertical);
-    }
-}
-
 void MainWindow::closeHelpView()
 {
-    if (mDockHelpView)
-        mDockHelpView->close();
+    if (ui->dockHelpView)
+        ui->dockHelpView->close();
 }
 
 void MainWindow::outputViewVisibiltyChanged(bool visibility)
@@ -538,12 +511,12 @@ void MainWindow::projectViewVisibiltyChanged(bool visibility)
 
 void MainWindow::optionViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(mDockOptionView).count());
+    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(ui->dockOptionEditor).count());
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
-    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(mDockHelpView).count());
+    ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
 }
 
 void MainWindow::updateEditorPos()
@@ -750,25 +723,12 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
     ProjectGroupNode* group = fc->parentEntry();
     if (!group) return;
 
-    mCommandLineOption->clear();
-    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
-    foreach(QString str, option) {
-       mCommandLineOption->insertItem(0, str );
-    }
-    mCommandLineOption->setCurrentIndex(0);
-    mCommandLineOption->setEnabled(true);
-    mCommandLineOption->setCurrentContext(fc->location());
+    emit mGamsOptionWidget->loadCommandLineOption(fc->location());
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    if (!mCommandLineOption->getCurrentContext().isEmpty()) {
-        mCommandLineHistory->addIntoCurrentContextHistory(mCommandLineOption->getCurrentOption());
-    }
-    mCommandLineOption->setCurrentIndex(-1);
-    mCommandLineOption->setCurrentContext("");
-    mCommandWidget->setEnabled(false);
-    mOptionEditor->setEnabled(false);
+    emit mGamsOptionWidget->optionEditorDisabled();
 
     // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
@@ -788,9 +748,6 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
                 loadCommandLineOptions(fc);
-
-                mCommandWidget->setEnabled(true);
-                mOptionEditor->setEnabled(true);
                 updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
@@ -930,8 +887,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
             openFileNode(lstCtx, true);
 
     }
-    ui->dockLogView->raise();
-//    setRunActionsEnabled(true);
 }
 
 void MainWindow::postGamsLibRun(AbstractProcess* process)
@@ -959,24 +914,27 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
-    if ( (mRecent.editor() != nullptr) && (focusWidget() == mRecent.editor()) ) {
+    QWidget* widget = focusWidget();
+    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
+        mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+    } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
 
         if (istate == static_cast<int>(SyntaxState::Title)) {
-            mDockHelpView->on_dollarControlHelpRequested("title");
+            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
         } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mDockHelpView->on_dollarControlHelpRequested(word);
+            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
         } else {
-            mDockHelpView->on_keywordHelpRequested(word);
+            mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
         }
     }
-    if (mDockHelpView->isHidden())
-        mDockHelpView->show();
-    if (tabifiedDockWidgets(mDockHelpView).count())
-        mDockHelpView->raise();
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
 }
 
 QString MainWindow::studioInfo()
@@ -1073,6 +1031,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         mClosedTabs << fc->location();
         fc->removeEditor(edit);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        edit->deleteLater();
     }
 }
 
@@ -1083,6 +1042,9 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ProjectLogNode* log = mProjectRepo.logNode(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
+        AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
+        if (ed) ed->setDocument(nullptr);
+        edit->deleteLater();
     }
 }
 
@@ -1094,131 +1056,7 @@ void MainWindow::createWelcomePage()
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
-void MainWindow::createRunAndCommandLineWidgets()
-{
-    mGamsOption = new Option(CommonPaths::systemDir(), QString("optgams.def"));
-    mCommandLineTokenizer = new CommandLineTokenizer(mGamsOption);
-    mCommandLineOption = new CommandLineOption(true, this);
-    mCommandLineHistory = new CommandLineHistory(this);
-
-    mDockOptionView = new QDockWidget(this);
-    mDockOptionView->setObjectName(QStringLiteral("mDockOptionView"));
-    mDockOptionView->setEnabled(true);
-    mDockOptionView->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    mDockOptionView->setWindowTitle("Option");
-    mDockOptionView->setFloating(false);
-    connect(mDockOptionView, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
-
-    QWidget* optionWidget = new QWidget;
-    QVBoxLayout* widgetVLayout = new QVBoxLayout;
-    widgetVLayout->setContentsMargins(0,0,0,0);
-
-    QHBoxLayout* commandHLayout = new QHBoxLayout;
-    commandHLayout->setContentsMargins(-1,0,-1,0);
-
-    QMenu* runMenu = new QMenu;
-    runMenu->addAction(ui->actionRun);
-    runMenu->addAction(ui->actionRun_with_GDX_Creation);
-    runMenu->addSeparator();
-    runMenu->addAction(ui->actionCompile);
-    runMenu->addAction(ui->actionCompile_with_GDX_Creation);
-    ui->actionRun->setShortcutVisibleInContextMenu(true);
-    ui->actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
-    ui->actionCompile->setShortcutVisibleInContextMenu(true);
-    ui->actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
-
-    mRunToolButton = new QToolButton(this);
-    mRunToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mRunToolButton->setMenu(runMenu);
-    mRunToolButton->setDefaultAction(ui->actionRun);
-    QSizePolicy buttonSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-    buttonSizePolicy.setVerticalStretch(0);
-    mRunToolButton->setSizePolicy(buttonSizePolicy);
-
-    commandHLayout->addWidget(mRunToolButton);
-
-    interruptToolButton = new QToolButton(this);
-    interruptToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu* interruptMenu = new QMenu();
-    QIcon interruptIcon(":/img/interrupt");
-    QIcon stopIcon(":/img/stop");
-    QAction* interruptAction = interruptMenu->addAction(interruptIcon, "Interrupt");
-    QAction* stopAction = interruptMenu->addAction(stopIcon, "Stop");
-    connect(interruptAction, &QAction::triggered, this, &MainWindow::interruptTriggered);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::stopTriggered);
-    interruptToolButton->setMenu(interruptMenu);
-    interruptToolButton->setDefaultAction(interruptAction);
-    interruptToolButton->setSizePolicy(buttonSizePolicy);
-
-    commandHLayout->addWidget(interruptToolButton);
-
-    commandHLayout->addWidget(mCommandLineOption);
-
-    QPushButton* helpButton = new QPushButton(this);
-    QIcon helpButtonIcon(":/img/question");
-    helpButton->setIcon(helpButtonIcon);
-    helpButton->setToolTip(QStringLiteral("Help on The GAMS Call and Command Line Parameters"));
-    helpButton->setSizePolicy(buttonSizePolicy);
-    commandHLayout->addWidget(helpButton);
-
-    mShowOptionDefintionCheckBox = new QCheckBox(this);
-    mShowOptionDefintionCheckBox->setObjectName(QStringLiteral("showOptionDefintionCheckBox"));
-    mShowOptionDefintionCheckBox->setEnabled(true);
-    mShowOptionDefintionCheckBox->setText(QApplication::translate("OptionEditor", "Option Editor", nullptr));
-    mShowOptionDefintionCheckBox->setSizePolicy(buttonSizePolicy);
-    commandHLayout->addWidget(mShowOptionDefintionCheckBox);
-    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    sizePolicy.setVerticalStretch(0);
-    optionWidget->setSizePolicy(sizePolicy);
-
-    mOptionEditor = new OptionEditor(mCommandLineOption, mCommandLineTokenizer, mDockOptionView);
-    mOptionEditor->hide();
-
-    mCommandWidget = new QWidget;
-    mCommandWidget->setLayout( commandHLayout );
-    QSizePolicy commandSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    commandSizePolicy.setVerticalStretch(0);
-    mCommandWidget->setSizePolicy(commandSizePolicy);
-
-    widgetVLayout->addWidget( mCommandWidget );
-    widgetVLayout->addWidget( mOptionEditor );
-    optionWidget->setLayout( widgetVLayout );
-
-    mDockOptionView->setWidget( optionWidget );
-
-    mDockOptionView->show();
-    ui->actionOption_View->setChecked(true);
-
-    this->addDockWidget(Qt::TopDockWidgetArea, mDockOptionView);
-    mDockOptionView->widget()->resize( mCommandWidget->size() );
-    this->resizeDocks({mDockOptionView}, {mCommandWidget->size().height()}, Qt::Vertical);
-
-    connect(mShowOptionDefintionCheckBox, &QCheckBox::clicked, this, &MainWindow::toggleOptionDefinition);
-    connect(helpButton, &QPushButton::clicked, this, &MainWindow::on_commandLineHelpTriggered);
-}
-
-void MainWindow::connectCommandLineWidgets()
-{
-    connect(mCommandLineOption, &CommandLineOption::optionRunChanged,
-            this, &MainWindow::on_runWithChangedOptions);
-
-    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-            mCommandLineTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-    connect(mCommandLineOption, &CommandLineOption::commandLineOptionChanged,
-            mOptionEditor, &OptionEditor::updateTableModel );
-
-    connect(mCommandLineOption, &QComboBox::editTextChanged,  mCommandLineOption, &CommandLineOption::validateChangedOption );
-}
-
-void MainWindow::setRunActionsEnabled(bool enable)
-{
-    ui->actionRun->setEnabled(enable);
-    ui->actionRun_with_GDX_Creation->setEnabled(enable);
-    ui->actionCompile->setEnabled(enable);
-    ui->actionCompile_with_GDX_Creation->setEnabled(enable);
-}
-
-bool MainWindow::isActiveTabEditable()
+bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
     AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
@@ -1229,50 +1067,37 @@ bool MainWindow::isActiveTabEditable()
     return false;
 }
 
-QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
+bool MainWindow::isActiveTabSetAsMain()
 {
-    QString commandLineStr;
-    QStringList keyList;
-    for(OptionItem item: optionItems) {
-        if (item.disabled)
-            continue;
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-        keyList << item.key;
+    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    if (edit) {
+        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+        if (fc) {
+           ProjectGroupNode* group = fc->parentEntry();
+           if (group) {
+               return (fc->location()==group->runnableGms());
+           }
+        }
     }
-    QString message;
-    for(OptionItem item: forcedOptionItems) {
-        if (item.disabled)
-            continue;
+    return false;
+}
 
-//        if ( keyList.contains(item.key, Qt::CaseInsensitive) ||
-//             keyList.contains(gamsOption->getSynonym(item.key)) ) {
-//            message.append(QString("\n   '%1' with '%1=%2'").arg(item.key).arg(item.value));
-//        }
-
-        commandLineStr.append(item.key);
-        commandLineStr.append("=");
-        commandLineStr.append(item.value);
-        commandLineStr.append(" ");
-    }
-    if (!message.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setText(QString("This action will override the following command line options: %1").arg(message));
-        msgBox.setInformativeText("Do you want to continue ?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.exec();
-    }
-    return commandLineStr.simplified();
+bool MainWindow::isRecentGroupInRunningState()
+{
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    return (state == QProcess::Running);
 }
 
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(ui->systemLog);
-    ui->logTabs->setCurrentIndex(index);
+    if (index < 0)
+        ui->logTabs->addTab(ui->systemLog, "System");
+    else
+        ui->logTabs->setCurrentIndex(index);
+    ui->systemLog->raise();
+    dockWidgetShow(ui->dockLogView, true);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1317,11 +1142,6 @@ void MainWindow::renameToBackup(QFile *file)
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
 {
     openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
-}
-
-QStringList MainWindow::openedFiles()
-{
-    return history()->lastOpenedFiles;
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1401,8 +1221,6 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
             logProc->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
             ProjectAbstractNode::initEditorType(logEdit);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth
-                                                                  : AbstractEditor::NoWrap);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
@@ -1546,9 +1364,9 @@ void MainWindow::customEvent(QEvent *event)
         ((LineEditCompleteEvent*)event)->complete();
 }
 
-void MainWindow::parseFilesFromCommandLine(ProjectGroupNode* fgc)
+void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
 {
-    QList<OptionItem> items = mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption());
+    QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
 
     // set default lst file name in case output option changed back to default
     if (!fgc->runnableGms().isEmpty())
@@ -1574,14 +1392,30 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
+OptionWidget *MainWindow::getGamsOptionWidget() const
+{
+    return mGamsOptionWidget;
+}
+
+void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
+{
+    if (!logProc->editors().isEmpty()) return;
+    logProc->setDebugLog(mLogDebugLines);
+    LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+    ProjectAbstractNode::initEditorType(logEdit);
+
+    ui->logTabs->addTab(logEdit, logProc->caption());
+    logProc->addEditor(logEdit);
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+}
+
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    mPerformanceTime.start();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
-    parseFilesFromCommandLine(group);
+    parseFilesFromCommandLine(commandLineStr, group);
 
     group->clearLstErrorTexts();
 
@@ -1607,20 +1441,10 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         }
     }
 
-    setRunActionsEnabled(false);
-
     mProjectRepo.removeMarks(group);
     ProjectLogNode* logProc = mProjectRepo.logNode(group);
 
-    if (logProc->editors().isEmpty()) {
-        logProc->setDebugLog(mLogDebugLines);
-        LogEditor* logEdit = new LogEditor(mSettings.get(), this);
-        ProjectAbstractNode::initEditorType(logEdit);
-
-        ui->logTabs->addTab(logEdit, logProc->caption());
-        logProc->addEditor(logEdit);
-        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-    }
+    ensureLogEditor(logProc);
 
     if (!mSettings->clearLog()) {
         logProc->markOld();
@@ -1654,50 +1478,18 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
-}
 
-void MainWindow::interruptTriggered()
-{
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
-    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::interrupt);
-}
-
-void MainWindow::stopTriggered()
-{
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
-    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::stop);
+    ui->dockLogView->raise();
 }
 
 void MainWindow::updateRunState()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    setRunActionsEnabled(state != QProcess::Running);
-    interruptToolButton->setEnabled(state == QProcess::Running);
-    interruptToolButton->menu()->setEnabled(state == QProcess::Running);
-    mCommandLineOption->lineEdit()->setReadOnly(state == QProcess::Running);
-    mShowOptionDefintionCheckBox->setEnabled(state != QProcess::Running);
-    mOptionEditor->setEnabled(state != QProcess::Running);
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isActiveTabSetAsMain(), isRecentGroupInRunningState());
 }
 
-void MainWindow::on_runWithChangedOptions()
+HelpWidget *MainWindow::getHelpWidget() const
 {
-    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( mCommandLineOption->getCurrentOption() );
-}
-
-void MainWindow::on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems)
-{
-    mCommandLineHistory->addIntoCurrentContextHistory( mCommandLineOption->getCurrentOption() );
-    execute( getCommandLineStrFrom(mCommandLineTokenizer->tokenize(mCommandLineOption->getCurrentOption()),
-                                   forcedOptionItems) );
+    return mHelpWidget;
 }
 
 void MainWindow::on_runGmsFile(ProjectFileNode *fc)
@@ -1708,66 +1500,100 @@ void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
-    loadCommandLineOptions(fc);
+    // loadCommandLineOptions(fc);
+    // TODO As an activated tab should synchronize with the shown option,
+    // also activate Tab in addition to loadCommandLineOptions(fc).
+    updateRunState();
 }
 
 void MainWindow::on_commandLineHelpTriggered()
 {
-    mDockHelpView->on_commandLineHelpRequested();
-    if (mDockHelpView->isHidden())
-        mDockHelpView->show();
-    if (tabifiedDockWidgets(mDockHelpView).count())
-        mDockHelpView->raise();
+    mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
+}
+
+void MainWindow::on_optionRunChanged()
+{
+    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    if (state == QProcess::NotRunning)
+       on_actionRun_triggered();
 }
 
 void MainWindow::on_actionRun_triggered()
 {
-    if (isActiveTabEditable()) {
-       emit mCommandLineOption->optionRunChanged();
-       mRunToolButton->setDefaultAction( ui->actionRun );
+    if (isActiveTabRunnable()) {
+        execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
     }
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionRun_with_GDX_Creation );
+    if (isActiveTabRunnable()) {
+        execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
     }
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionCompile );
+    if (isActiveTabRunnable()) {
+        execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
     }
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    if (isActiveTabEditable()) {
-        QList<OptionItem> forcedOptionItems;
-        forcedOptionItems.append( OptionItem("ACTION", "C", -1, -1, false) );
-        forcedOptionItems.append( OptionItem("GDX", "default", -1, -1, false) );
-        on_runWithParamAndChangedOptions(forcedOptionItems);
-        mRunToolButton->setDefaultAction( ui->actionCompile_with_GDX_Creation );
+    if (isActiveTabRunnable()) {
+        execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
     }
 }
 
-void MainWindow::changeToLog(ProjectFileNode* fileNode)
+void MainWindow::on_actionInterrupt_triggered()
 {
-    ProjectLogNode* logNode = mProjectRepo.logNode(fileNode);
-    if (logNode && !logNode->editors().isEmpty()) {
+    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    mGamsOptionWidget->on_interruptAction();
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::interrupt);
+}
+
+void MainWindow::on_actionStop_triggered()
+{
+    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
+    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
+    if (!group)
+        return;
+    mGamsOptionWidget->on_stopAction();
+    GamsProcess* process = group->gamsProcess();
+    QtConcurrent::run(process, &GamsProcess::stop);
+}
+
+void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
+{
+    bool moveToEnd = false;
+    ProjectLogNode* logNode = mProjectRepo.logNode(node);
+    if (!logNode) return;
+    if (createMissing) {
+        moveToEnd = true;
+        ensureLogEditor(logNode);
+    }
+    if (!logNode->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
         AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
-        if (logEdit && ui->logTabs->currentWidget() != logEdit) {
-            if (ui->logTabs->currentWidget() != mResultsView)
-                ui->logTabs->setCurrentWidget(logEdit);
+        if (logEdit) {
+            if (ui->logTabs->currentWidget() != logEdit) {
+                if (ui->logTabs->currentWidget() != mResultsView)
+                    ui->logTabs->setCurrentWidget(logEdit);
+            }
+            if (moveToEnd) {
+                QTextCursor cursor = logEdit->textCursor();
+                cursor.movePosition(QTextCursor::End);
+                logEdit->setTextCursor(cursor);
+            }
         }
     }
 }
@@ -1848,7 +1674,7 @@ void MainWindow::closeFileConditionally(ProjectFileNode* file) {
 /// \param file
 ///
 void MainWindow::closeFile(ProjectFileNode* file)
-{    
+{
     ui->projectView->setCurrentIndex(QModelIndex());
 
     ProjectGroupNode *parentGroup = file->parentEntry();
@@ -1981,9 +1807,9 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->on_searchHelp();
+    if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
+        ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
+        mHelpWidget->on_searchHelp();
     } else {
        // toggle visibility
        if (mSearchWidget->isVisible()) {
@@ -2068,11 +1894,6 @@ void MainWindow::updateEditorLineWrapping()
     }
 }
 
-HelpView *MainWindow::getDockHelpView() const
-{
-    return mDockHelpView;
-}
-
 void MainWindow::readTabs(const QJsonObject &json)
 {
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
@@ -2124,30 +1945,12 @@ void MainWindow::writeTabs(QJsonObject &json) const
     if (fc) json["mainTabRecent"] = fc->location();
 }
 
-QWidget *MainWindow::welcomePage() const
-{
-    return mWp;
-}
-
 void MainWindow::on_actionGo_To_triggered()
 {
-    int width = mGoto->frameGeometry().width();
-    int height = mGoto->frameGeometry().height();
-    QDesktopWidget wid;
-    int thisscreen = QApplication::desktop()->screenNumber(this);
-    int screenWidth = wid.screen(thisscreen)->width();
-    int screenHeight = wid.screen(thisscreen)->height();
-    int x = wid.availableGeometry(thisscreen).x();
-    int y = wid.availableGeometry(thisscreen).y();
-    if (mGoto->isVisible()) {
-        mGoto->hide();
-    } else {
-        mGoto->setGeometry(x+(screenWidth/2)-(width/2),y+(screenHeight/2)-(height/2),width,height);
-        if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
-            return;
-        mGoto->show();
-        mGoto->focusTextBox();
-    }
+    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
+        return;
+    GoToDialog dialog(this);
+    dialog.exec();
 }
 
 
@@ -2226,9 +2029,9 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->resetZoom(); // reset help view
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->resetZoom(); // reset help view
     } else {
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
     }
@@ -2237,9 +2040,9 @@ void MainWindow::on_actionReset_Zoom_triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->zoomOut();
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->zoomOut();
     } else {
         AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2251,9 +2054,9 @@ void MainWindow::on_actionZoom_Out_triggered()
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    if (getDockHelpView()->isAncestorOf(QApplication::focusWidget()) ||
-        getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
-        getDockHelpView()->zoomIn();
+    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        getHelpWidget()->zoomIn();
     } else {
         AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2439,18 +2242,25 @@ void MainWindow::resetViews()
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedFirst = dock;
-        } else if (dock == mDockHelpView) {
+        } else if (dock == ui->dockHelpView) {
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
             stackedSecond = dock;
-        } else if (dock == mDockOptionView) {
+        } else if (dock == ui->dockOptionEditor) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
     // stack help over output
     tabifyDockWidget(stackedFirst, stackedSecond);
 }
+
+void MainWindow::resizeOptionEditor(const QSize &size)
+{
+    mGamsOptionWidget->resize( size );
+    this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
+}
+
 
 }
 }

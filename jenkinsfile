@@ -199,6 +199,9 @@ pipeline {
                                 macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
                                 security lock-keychain
                             '''
+                            sh '''
+                                codesign --verify --verbose "src/bin/GAMS Studio.app"
+                            '''
                         }
                         sh '''
                             mv "src/bin/GAMS Studio.dmg" studio.dmg

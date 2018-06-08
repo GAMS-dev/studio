@@ -42,7 +42,7 @@ class CommandLineTokenizer : public QObject
 
 public:
 
-    CommandLineTokenizer(Option* gamsOption);
+    CommandLineTokenizer(const QString &optionFileName);
     ~CommandLineTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
@@ -72,7 +72,7 @@ private:
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
 
-    Option* gamsOption;
+    Option* mGamsOption;
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
