@@ -73,6 +73,8 @@ HelpWidget::HelpWidget(QWidget *parent) :
     mBookmarkMenu->addAction(ui->actionAddBookmark);
     mBookmarkMenu->addSeparator();
     mBookmarkMenu->addAction(ui->actionOrganizeBookmark);
+    mStatusBarLabel.setWindowFlags(Qt::ToolTip);
+    mStatusBarLabel.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
     QIcon bookmarkButtonIcon(":/img/bookmark");
@@ -158,7 +160,8 @@ void HelpWidget::setBookmarkMap(const QMultiMap<QString, QString> &value)
 
 void HelpWidget::clearStatusBar()
 {
-    ui->statusbarLabel->clear();
+    mStatusBarLabel.clear();
+    mStatusBarLabel.hide();
     ui->searchLineEdit->clear();
     findText("", Forward, ui->caseSenstivity->isChecked());
 }
@@ -303,10 +306,14 @@ void HelpWidget::on_loadFinished(bool ok)
 void HelpWidget::linkHovered(const QString &url)
 {
     if (url.isEmpty()) {
-        ui->statusbarLabel->hide();
+        mStatusBarLabel.hide();
     } else {
-        ui->statusbarLabel->show();
-        ui->statusbarLabel->setText(url);
+        mStatusBarLabel.setText(url);
+        QSize size = mStatusBarLabel.sizeHint();
+        QPoint fixPoint = mapToGlobal(ui->webEngineView->geometry().bottomLeft());
+        mStatusBarLabel.resize(qAbs(size.width()), qAbs(size.height()));
+        mStatusBarLabel.move(fixPoint.x(), fixPoint.y()-size.height());
+        mStatusBarLabel.show();
     }
 }
 

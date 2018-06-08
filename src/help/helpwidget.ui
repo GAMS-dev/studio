@@ -43,13 +43,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="statusbarLabel">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QWidget" name="searchbarWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">

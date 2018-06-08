@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QMultiMap>
 #include <QUrl>
+#include <QLabel>
 
 namespace Ui {
 class HelpWidget;
@@ -97,6 +98,7 @@ private:
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QStringList mChapters;
+    QLabel mStatusBarLabel;
 
     QUrl getStartPageUrl();
     QUrl getOnlineStartPageUrl();
