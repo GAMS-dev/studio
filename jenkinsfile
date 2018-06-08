@@ -200,7 +200,7 @@ pipeline {
                                 security lock-keychain
                             '''
                             sh '''
-                                codesign --verify --verbose "src/bin/GAMS Studio.dmg"
+                                codesign --verify --verbose "src/bin/GAMS Studio.app"
                             '''
                         }
                         sh '''
