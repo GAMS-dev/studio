@@ -41,7 +41,7 @@ class LxiViewer : public QWidget
     Q_OBJECT
 
 public:
-    explicit LxiViewer(CodeEditor *codeEditor, FileMeta *fc, ProjectRunGroupNode *runGroup, QWidget *parent);
+    explicit LxiViewer(CodeEditor *codeEditor, FileMeta *fileMeta, ProjectRunGroupNode *runGroup, QWidget *parent);
     ~LxiViewer();
 
     CodeEditor *codeEditor() const;
@@ -50,7 +50,8 @@ private:
     Ui::LxiViewer *ui;
 
     CodeEditor* mCodeEditor;
-    FileMeta *mFileNode;
+    FileMeta *mFileMeta;
+    ProjectRunGroupNode* mRunGroup;
     QString mLstFile;
     QString mLxiFile;
 

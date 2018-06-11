@@ -31,15 +31,16 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEditor *codeEditor, FileMeta *fc, ProjectRunGroupNode* runGroup, QWidget *parent):
+LxiViewer::LxiViewer(CodeEditor *codeEditor, FileMeta *fileMeta, ProjectRunGroupNode* runGroup, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
     mCodeEditor(codeEditor),
-    mFileNode(fc)
+    mFileMeta(fileMeta),
+    mRunGroup(runGroup)
 {
     ui->setupUi(this);
 
-    mLstFile = mFileNode->location();
+    mLstFile = mFileMeta->location();
 
     ui->splitter->addWidget(mCodeEditor);
 
@@ -78,7 +79,7 @@ CodeEditor *LxiViewer::codeEditor() const
 
 void LxiViewer::loadLxiFile()
 {
-    if (QProcess::NotRunning == mFileNode->parentNode()->gamsProcessState()) {
+    if (QProcess::NotRunning == mRunGroup->gamsProcessState()) {
         if (QFileInfo(mLxiFile).exists()) {
             ui->splitter->widget(0)->show();
             LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
@@ -94,8 +95,8 @@ void LxiViewer::loadLxiFile()
 
 void LxiViewer::loadLstFile()
 {
-    if (QProcess::NotRunning == mFileNode->parentNode()->gamsProcessState()) {
-        mFileNode->load(mFileNode->codecMib());
+    if (QProcess::NotRunning == mRunGroup->gamsProcessState()) {
+        mFileMeta->triggerLoad(mFileMeta->codecMib());
     }
 
 }
@@ -131,13 +132,11 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
 
     //jump to first child for virtual nodes
     if (lineNr == -1) {
-        if (!ui->lxiTreeView->isExpanded(modelIndex)) {
-            modelIndex = modelIndex.model()->index(0, 0, modelIndex);
-            selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
-            lineNr = selectedItem->lineNr();
-        }
-        else
+        if (ui->lxiTreeView->isExpanded(modelIndex))
             return;
+        modelIndex = modelIndex.model()->index(0, 0, modelIndex);
+        selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
+        lineNr = selectedItem->lineNr();
     }
 
     QTextBlock tb = mCodeEditor->document()->findBlockByNumber(lineNr);
@@ -149,7 +148,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     cursor.setPosition(tb.position());
 
     disconnect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    mFileNode->jumpTo(cursor, true);
+    mFileMeta->jumpTo(cursor, mRunGroup->runFileId(), true);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 

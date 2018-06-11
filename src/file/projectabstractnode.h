@@ -62,6 +62,7 @@ public:
 
     virtual ProjectGroupNode *parentNode() const;
     virtual void setParentNode(ProjectGroupNode *parent);
+    const ProjectRunGroupNode *runParentNode() const;
 
     /// \brief File node type.
     /// \return Returns the file node type as <c>int</c>.

@@ -39,7 +39,7 @@ public:
 //    void fileClosed(ProjectFileNode* fc);
 //    void clearLog();
 //    TextMark* firstErrorMark();
-//    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
 //public slots:
 //    void addProcessData(QString text);
 //    void setJumpToLogEnd(bool state);
@@ -71,7 +71,7 @@ private:
 //    QString mLineBuffer;
 //    TextMark* mLastLstLink = nullptr;
 //    bool mConceal = false;
-//    bool mDebugLog = false;
+    bool mDebugLog = false;
 //    QString mLastSourceFile;
 };
 

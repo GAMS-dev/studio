@@ -235,7 +235,7 @@ bool ProjectRunGroupNode::hasLstErrorText(int line)
     return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
 }
 
-bool ProjectRunGroupNode::isProcess(const GamsProcess *process) const
+bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 {
     return process && mGamsProcess.get() == process;
 }
@@ -306,10 +306,10 @@ ProjectRepo *ProjectRootNode::repo() const
     return mRepo;
 }
 
-ProjectRunGroupNode *ProjectRootNode::findRunGroup(const AbstractProcess *process)
+const ProjectRunGroupNode *ProjectRootNode::findRunGroup(const AbstractProcess *process) const
 {
     foreach (ProjectAbstractNode* node, internalNodeList()) {
-        ProjectRunGroupNode* runGroup = node->toRunGroup();
+        const ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->isProcess(process))
             return runGroup;
     }

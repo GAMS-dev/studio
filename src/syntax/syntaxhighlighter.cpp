@@ -49,12 +49,18 @@ TextMarkRepo *ErrorHighlighter::markRepo()
     return mMarks;
 }
 
+void ErrorHighlighter::setRunId(const FileId &runId)
+{
+    // TODO(JM) rehighlight all blocks with TextMarks of old or new runId
+    mRunId = runId;
+}
+
 FileId ErrorHighlighter::nodeId() const
 {
     return mFileId;
 }
 
-FileId ErrorHighlighter::contextId() const
+FileId ErrorHighlighter::runId() const
 {
     return mRunId;
 }

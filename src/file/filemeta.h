@@ -23,20 +23,21 @@ public:
     QString location() const;
     FileKind kind();
     QString name();
-    bool isModified() const;
     QTextDocument* document() const;
     int codecMib() const;
     bool exists() const;
     bool isOpen() const;
+    bool isModified() const;
 
-    QWidget *createEdit(QTabWidget* tabWidget, bool focus, ProjectRunGroupNode *runGroup = nullptr, int codecMip = -1);
+    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
     void removeAllEditors();
-    bool hasEditor(QWidget* edit);
+    bool hasEditor(QWidget* edit) const;
+    void triggerLoad(QList<int> codecMibs = QList<int>());
 
     void jumpTo(const QTextCursor& cursor, FileId runId, bool focus, int altLine = 0, int altColumn = 0);
 
@@ -104,6 +105,8 @@ private:
 
     friend class FileMetaRepo;
     FileMeta(FileMetaRepo* fileRepo, FileId id, QString location);
+    QVector<QPoint> getEditPositions();
+    void setEditPositions(QVector<QPoint> edPositions);
 
 private:
     FileId mId;
@@ -111,10 +114,12 @@ private:
     QString mLocation;
     QString mName;
     Data mData;
+    QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
-    QWidgetList mEditors;
-    ErrorHighlighter* mHighlighter;
+    ErrorHighlighter* mHighlighter = nullptr;
+
+    static const QList<int> mDefaulsCodecs;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events

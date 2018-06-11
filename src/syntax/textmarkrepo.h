@@ -30,6 +30,7 @@ public:
     void rehighlightAt(FileId fileId, int pos);
     FileKind fileKind(FileId fileId);
     QVector<TextMark*> marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType = TextMark::all);
+    QVector<TextMark*> marksForBlock(FileId nodeId, QTextBlock block, FileId runId, TextMark::Type refType = TextMark::all);
     QList<TextMark *> marks(FileId fileId, FileId runId, TextMark::Type refType = TextMark::all, int max = -1);
 
 

@@ -130,7 +130,7 @@ public:
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
-    bool isProcess(const GamsProcess *process) const;
+    bool isProcess(const AbstractProcess *process) const;
     void jumpToFirstError(bool focus);
 
 signals:
@@ -167,7 +167,7 @@ public:
     ~ProjectRootNode() {}
     void setParentNode(ProjectRunGroupNode *parent);
     ProjectRepo *repo() const;
-    ProjectRunGroupNode *findRunGroup(const AbstractProcess *process);
+    const ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
 
 private:
     friend class ProjectRepo;

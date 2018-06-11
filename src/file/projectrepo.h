@@ -52,9 +52,9 @@ public:
     explicit ProjectRepo(QObject *parent = nullptr);
     ~ProjectRepo();
 
-    ProjectGroupNode* findGroup(const AbstractProcess* process);
+    const ProjectGroupNode *findGroup(const AbstractProcess* process) const;
     const ProjectGroupNode *findGroup(const QString& filePath);
-    ProjectAbstractNode* findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr);
+    const ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectAbstractNode</c>.

@@ -42,7 +42,7 @@ ProjectRepo::~ProjectRepo()
     delete mTreeModel;
 }
 
-ProjectGroupNode *ProjectRepo::findGroup(const AbstractProcess *process)
+const ProjectGroupNode *ProjectRepo::findGroup(const AbstractProcess *process) const
 {
     return mTreeModel->rootNode()->findRunGroup(process);
 }
@@ -55,10 +55,10 @@ const ProjectGroupNode* ProjectRepo::findGroup(const QString &filePath)
     return node ? node->toGroup() : nullptr;
 }
 
-ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup)
+const ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup) const
 {
     ProjectGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootNode();
-    ProjectAbstractNode* fsc = group->findNode(filePath);
+    const ProjectAbstractNode* fsc = group->findNode(filePath);
     return fsc;
 }
 
@@ -191,7 +191,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         QString name = jsonObject["name"].toString("");
         QString file = jsonObject["file"].toString("");
         QString path = jsonObject["path"].toString("");
-        if (path.isEmpty()) path = QFileInfo(file).absoluteDir();
+        if (path.isEmpty()) path = QFileInfo(file).absolutePath();
         if (jsonObject.contains("nodes")) {
             // group
             QJsonArray gprArray = jsonObject["nodes"].toArray();
@@ -210,9 +210,9 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         } else {
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
-                FileMeta* file = fileRepo()->findOrCreateFileMeta(file);
-                ProjectAbstractNode* node = group->findNode(file, false);
-                if (!node) indexNode(new ProjectFileNode(file, group));
+                FileMeta* fileMeta = fileRepo()->findOrCreateFileMeta(file);
+                if (!group->findNode(file, false))
+                    indexNode(new ProjectFileNode(fileMeta, group));
             }
         }
     }

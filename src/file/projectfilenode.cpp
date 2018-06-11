@@ -32,9 +32,6 @@
 namespace gams {
 namespace studio {
 
-const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
-        // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
-
 ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
     : ProjectAbstractNode(fileMeta->name(), type), mFileMeta(fileMeta)
 {
@@ -50,15 +47,7 @@ ProjectFileNode::~ProjectFileNode()
 void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
 {
     ProjectAbstractNode::setParentNode(parent);
-    if (mSyntaxHighlighter) {
-        delete mSyntaxHighlighter;
-        mSyntaxHighlighter = nullptr;
-    }
-    if (mFileMeta->kind() == FileKind::Gms || mFileMeta->kind() == FileKind::Txt)
-        mSyntaxHighlighter = new SyntaxHighlighter(this, textMarkRepo());
-    else if (mFileMeta->kind() != FileKind::Gdx) {
-        mSyntaxHighlighter = new ErrorHighlighter(this, textMarkRepo());
-    }
+    // TODO(JM) setRunId in FileMeta
 }
 
 QIcon ProjectFileNode::icon()

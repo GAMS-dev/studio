@@ -334,7 +334,7 @@ private:
     bool mBeforeErrorExtraction = true;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
-    TextMarkRepo* mTextMarkRepo;
+    TextMarkRepo mTextMarkRepo;
     ProjectContextMenu mProjectContextMenu;
 
     QToolButton* interruptToolButton = nullptr;

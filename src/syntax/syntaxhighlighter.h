@@ -55,7 +55,9 @@ public:
     void highlightBlock(const QString &text);
     void setDocAndConnect(QTextDocument* doc);
     FileId nodeId() const;
-    FileId contextId() const;
+
+    FileId runId() const;
+    void setRunId(const FileId &runId);
 
 public slots:
     void syntaxState(int position, int &intState);

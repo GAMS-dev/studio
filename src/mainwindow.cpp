@@ -59,7 +59,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
       ui(new Ui::MainWindow),
       mSettings(settings),
       mAutosaveHandler(new AutosaveHandler(this)),
-      mFileMetaRepo(this, settings)
+      mProjectRepo(this),
+      mFileMetaRepo(this, settings),
+      mTextMarkRepo(&mProjectRepo, this)
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -85,8 +87,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->systemLogView->setTextInteractionFlags(ui->systemLogView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
-    mProjectRepo.init(mFileMetaRepo, mTextMarkRepo);
+//    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
+    mProjectRepo.init(&mFileMetaRepo, &mTextMarkRepo);
+    mFileMetaRepo.init(&mTextMarkRepo);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
@@ -1745,9 +1748,9 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::changeToLog(ProjectFileNode* fileNode)
 {
     ProjectLogNode* logNode = mProjectRepo.asLog(fileNode);
-    if (logNode && !logNode->editors().isEmpty()) {
+    if (logNode && !logNode->file()->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
-        AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
+        AbstractEditor* logEdit = FileMeta::toAbstractEdit(logNode->file()->editors().first());
         if (logEdit && ui->logTabs->currentWidget() != logEdit) {
             if (ui->logTabs->currentWidget() != mResultsView)
                 ui->logTabs->setCurrentWidget(logEdit);
@@ -1766,13 +1769,14 @@ void MainWindow::openFile(FileMeta *fileMeta, bool focus, ProjectRunGroupNode *r
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        edit = fileMeta->createEdit(tabWidget, focus, runGroup, codecMib);
+        edit = fileMeta->createEdit(tabWidget, runGroup, (codecMib == -1) ? encodingMIBs() : QList<int>() << codecMib);
         CodeEditor* codeEdit = FileMeta::toCodeEdit(edit);
         if (codeEdit) {
             connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
             connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-            if (!codeEdit->isReadOnly())
+            if (!codeEdit->isReadOnly()) {
                 connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            }
         }
 
         int tabIndex = tabWidget->addTab(edit, fileMeta->name());
@@ -1814,11 +1818,12 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         for (ProjectFileNode *file: openFiles) {
             fileClosed(file->id());
         }
-        ProjectLogNode* log = group->logNode();
+        ProjectRunGroupNode* runGroup = group->toRunGroup();
+        ProjectLogNode* log = runGroup ? runGroup->logNode() : nullptr;
         if (log) {
-            QWidget* edit = log->editors().isEmpty() ? nullptr : log->editors().first();
+            QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
             if (edit) {
-                log->removeEditor(edit);
+                log->file()->removeEditor(edit);
                 int index = ui->logTabs->indexOf(edit);
                 if (index >= 0) ui->logTabs->removeTab(index);
             }

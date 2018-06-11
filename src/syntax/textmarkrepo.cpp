@@ -72,6 +72,12 @@ FileKind TextMarkRepo::fileKind(FileId fileId)
 
 QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType)
 {
+    return marksForBlock(nodeId, block, -1, refType);
+}
+
+QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block, FileId runId, TextMark::Type refType)
+{
+    // TODO(JM) rebuild this to line/row behavior
     QVector<TextMark*> res;
     QList<TextMark*> marks = mMarks.values(nodeId);
     int i = block.blockNumber()+2 < block.document()->blockCount() ? 0 : qMax(marks.size()-4, 0);

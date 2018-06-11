@@ -78,7 +78,6 @@ protected:
 
 private:
     FileMeta* mFileMeta;
-    static const QList<int> mDefaulsCodecs;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
 
 
