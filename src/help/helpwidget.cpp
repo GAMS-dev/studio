@@ -118,7 +118,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
         ui->webEngineView->load( getStartPageUrl() );
     } else {
         QString htmlText;
-        getErrorHTMLText( htmlText, START_CHAPTER);
+        getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
     connect(ui->webEngineView, &QWebEngineView::loadFinished, this, &HelpWidget::on_loadFinished);
@@ -176,7 +176,7 @@ void HelpWidget::on_helpContentRequested(const QString &chapter, const QString &
     QDir dir = QDir(CommonPaths::systemDir()).filePath(chapter);
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
         QString htmlText;
-        getErrorHTMLText( htmlText, chapter);
+        getErrorHTMLText( htmlText, QUrl::fromLocalFile(dir.absolutePath()) );
         ui->webEngineView->setHtml( htmlText );
         return;
     }
@@ -280,7 +280,13 @@ void HelpWidget::on_bookmarkRemoved(const QString &location, const QString &name
 
 void HelpWidget::on_actionHome_triggered()
 {
-    ui->webEngineView->load( getStartPageUrl() );
+    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        ui->webEngineView->load( getStartPageUrl() );
+    } else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, getStartPageUrl() );
+        ui->webEngineView->setHtml( htmlText );
+    }
 }
 
 void HelpWidget::on_loadFinished(bool ok)
@@ -368,7 +374,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
             url.setScheme("file");
         } else {
             QString htmlText;
-            getErrorHTMLText( htmlText, "");
+            getErrorHTMLText( htmlText, getStartPageUrl() );
             ui->webEngineView->setHtml( htmlText );
         }
     }
@@ -390,7 +396,13 @@ void HelpWidget::on_actionCopyPageURL_triggered()
 void HelpWidget::on_bookmarkaction()
 {
     QAction* sAction = qobject_cast<QAction*>(sender());
-    ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+    } else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+        ui->webEngineView->setHtml( htmlText );
+    }
 }
 
 void HelpWidget::addBookmarkAction(const QString &objectName, const QString &title)
@@ -535,14 +547,16 @@ QString HelpWidget::getCurrentReleaseVersion()
         return "latest";
 }
 
-void HelpWidget::getErrorHTMLText(QString &htmlText, const QString &chapterText)
+void HelpWidget::getErrorHTMLText(QString &htmlText, const QUrl &url)
 {
     QString downloadPage = QString("https://www.gams.com/%1").arg( getCurrentReleaseVersion() );
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
-    htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";
-    htmlText += QDir(CommonPaths::systemDir()).filePath(chapterText);
-    htmlText += "</div><br/> <div>Please check your GAMS installation and configuration. You can reinstall GAMS from <a href='";
+    htmlText += "<div id='message'>The requested Help Document (";
+    htmlText += url.toString();
+    htmlText += ") has not been found from expected GAMS Installation at ";
+    htmlText += QDir(CommonPaths::systemDir()).absolutePath();  //.filePath(chapterText);
+    htmlText += ".</div><br/> <div>Please check your GAMS installation and configuration. You can reinstall GAMS from <a href='";
     htmlText += downloadPage;
     htmlText += "'>";
     htmlText += downloadPage;

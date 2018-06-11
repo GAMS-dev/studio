@@ -106,7 +106,7 @@ private:
     bool isCurrentReleaseTheLatestVersion();
     QString getCurrentReleaseVersion();
 
-    void getErrorHTMLText(QString& htmlText, const QString& chapterText);
+    void getErrorHTMLText(QString& htmlText, const QUrl& url);
     enum SearchDirection {
         Forward = 0,
         Backward = 1
