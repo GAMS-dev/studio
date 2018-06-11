@@ -988,8 +988,12 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        if ((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() != &mParenthesesDelay)
-                && (mSettings->wordUnderCursor() || textCursor().hasSelection() ))
+        // has selection OR did not find parentheses
+        if ( ((textCursor().hasSelection() || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) )
+              // AND sender is not paren delay
+              && sender() != &mParenthesesDelay)
+                // AND setting HWUC without seleciton is checked OR tc has selection
+                && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
             extraSelCurrentWord(selections);
     }
     extraSelBlockEdit(selections);
