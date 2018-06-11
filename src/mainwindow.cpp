@@ -1272,10 +1272,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QList<ProjectFileNode*> oFiles = mProjectRepo.modifiedFiles();
     if (!requestCloseChanged(oFiles)) {
         event->setAccepted(false);
-        return;
+    } else {
+        mSettings->saveSettings(this);
     }
-    mSettings->saveSettings(this);
-
     on_actionClose_All_triggered();
     closeHelpView();
 }
@@ -1663,7 +1662,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     }
 }
 
-/// Asks user for confirmation when a file is modified before calling closeFile
+/// Asks user for confirmation if a file is modified before calling closeFile
 /// \param file
 ///
 void MainWindow::closeFileConditionally(ProjectFileNode* file) {
