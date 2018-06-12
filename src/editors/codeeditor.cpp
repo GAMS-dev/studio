@@ -1023,11 +1023,6 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
-    QHash<int, TextMark*> textMarks;
-    emit requestMarkHash(&textMarks, TextMark::match);
-
-    if (textMarks.size() > 0) return;  // no word highlighting when a user searches
-
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));
