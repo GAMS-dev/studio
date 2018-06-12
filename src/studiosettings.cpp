@@ -304,14 +304,14 @@ void StudioSettings::loadUserSettings()
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
-    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
-    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", false).toBool());
+    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", false).toBool());
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
 
-    setHistorySize(mUserSettings->value("historySize", 8).toInt());
+    setHistorySize(mUserSettings->value("historySize", 12).toInt());
 
     mUserSettings->endGroup();
 }
