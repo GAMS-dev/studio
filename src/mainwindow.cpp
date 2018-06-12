@@ -868,7 +868,6 @@ void MainWindow::appendSystemLog(const QString &text)
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
     ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
-    // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
@@ -885,7 +884,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         if (mSettings->openLst())
             openFileNode(lstCtx, true);
-
     }
 }
 
@@ -1044,7 +1042,10 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ui->logTabs->removeTab(index);
         AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
-        edit->deleteLater();
+
+        // dont remove pointers in ui, otherwise re-adding syslog will crash
+        if (edit != ui->systemLog)
+            edit->deleteLater();
     }
 }
 
