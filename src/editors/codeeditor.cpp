@@ -977,7 +977,9 @@ void CodeEditor::recalcExtraSelections()
                 mWordUnderCursor = text.mid(from, to-from+1);
         }
         mParenthesesDelay.start(100);
-        mWordDelay.start(500);
+        int wordDelay = 10;
+        if (mSettings->wordUnderCursor()) wordDelay = 500;
+        mWordDelay.start(wordDelay);
     }
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
@@ -989,9 +991,9 @@ void CodeEditor::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         // has selection OR did not find parentheses
-        if ( ((textCursor().hasSelection() || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) )
-              // AND sender is not paren delay
-              && sender() != &mParenthesesDelay)
+        if ((textCursor().hasSelection() || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+              // AND sender is not paren delay OR automatic WUC highlighting is activated
+              && (sender() != &mParenthesesDelay || !mSettings->wordUnderCursor())
                 // AND setting HWUC without seleciton is checked OR tc has selection
                 && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
             extraSelCurrentWord(selections);
