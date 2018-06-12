@@ -134,9 +134,9 @@ LineNumberArea* CodeEditor::lineNumberArea()
     return mLineNumberArea;
 }
 
-void CodeEditor::setRunFileId(const FileId &groupId)
+void CodeEditor::setRunId(const FileId &runId)
 {
-    AbstractEditor::setFileId(groupId);
+    AbstractEditor::setFileId(runId);
     // TODO(JM) reload TextMarks after changing group context
 }
 

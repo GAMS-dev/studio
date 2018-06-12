@@ -39,7 +39,11 @@ public:
     bool hasEditor(QWidget* edit) const;
     void triggerLoad(QList<int> codecMibs = QList<int>());
 
-    void jumpTo(const QTextCursor& cursor, FileId runId, bool focus, int altLine = 0, int altColumn = 0);
+    void jumpTo(FileId runId, bool focus, int line = 0, int column = 0);
+    void rehighlightAt(int pos);
+    void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
+    ErrorHighlighter* highlighter() const;
+
 
 public: // static convenience methods
     inline static void initEditorType(CodeEditor* w) {

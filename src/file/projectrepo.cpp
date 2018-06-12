@@ -42,17 +42,24 @@ ProjectRepo::~ProjectRepo()
     delete mTreeModel;
 }
 
-const ProjectGroupNode *ProjectRepo::findGroup(const AbstractProcess *process) const
-{
-    return mTreeModel->rootNode()->findRunGroup(process);
-}
-
 const ProjectGroupNode* ProjectRepo::findGroup(const QString &filePath)
 {
     QFileInfo fi(filePath);
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
     const ProjectAbstractNode* node = mTreeModel->rootNode()->findNode(di.filePath(), false);
     return node ? node->toGroup() : nullptr;
+}
+
+ProjectRunGroupNode *ProjectRepo::findRunGroup(FileId runId, ProjectGroupNode *group) const
+{
+    if (!group) group = mTreeModel->rootNode();
+    return group->findRunGroup(runId);
+}
+
+ProjectRunGroupNode *ProjectRepo::findRunGroup(const AbstractProcess *process, ProjectGroupNode *group) const
+{
+    if (!group) group = mTreeModel->rootNode();
+    return group->findRunGroup(process);
 }
 
 const ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup) const
@@ -233,18 +240,18 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         bool expand = true;
         if (node->toGroup()) {
             if (node->toRunGroup())
-                jsonObject["file"] = node->toRunGroup()->runnableGms();
-            ProjectGroupNode *subGroup = node->toGroup();
+                jsonObject["file"] = node->toRunGroup()->runnableGms()->location();
+            const ProjectGroupNode *subGroup = node->toGroup();
             jsonObject["path"] = subGroup->location();
             jsonObject["name"] = node->name();
-            emit isNodeExpanded(mTreeModel->index(subGroup), expand);
+            emit isNodeExpanded(mTreeModel->index(subGroup), &expand);
             if (!expand) jsonObject["expand"] = false;
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
             jsonObject["nodes"] = subArray;
 
         } else {
-            ProjectFileNode *file = node->toFile();
+            const ProjectFileNode *file = node->toFile();
             jsonObject["file"] = file->location();
             jsonObject["name"] = file->name();
         }
@@ -252,7 +259,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
     }
 }
 
-ProjectRunGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent)
+ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent)
 {
     if (!_parent) _parent = mTreeModel->rootNode();
     if (!_parent) FATAL() << "Can't get parent object";
@@ -267,6 +274,7 @@ ProjectRunGroupNode* ProjectRepo::createGroup(QString name, QString path, QStrin
         FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
         runGroup = new ProjectRunGroupNode(name, path, runFile);
         group = runGroup;
+        connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     } else
         group = new ProjectGroupNode(name, path);
     indexNode(group);
@@ -276,9 +284,6 @@ ProjectRunGroupNode* ProjectRepo::createGroup(QString name, QString path, QStrin
 //    connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
 //    connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
 //    connect(group, &ProjectGroupNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-
-    if (runGroup)
-        connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
 
     return group;
 }

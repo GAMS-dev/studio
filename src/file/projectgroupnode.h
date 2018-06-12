@@ -52,6 +52,8 @@ public:
     QString tooltip() override;
     virtual QString lstErrorText(int line);
     const ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
+    ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
+    ProjectRunGroupNode *findRunGroup(FileId runId) const;
 
 protected:
     friend class ProjectRepo;
@@ -82,7 +84,6 @@ private:
 //    void setLstFileName(const QString &lstFileName);
 
 //    GamsProcess* gamsProcess();
-//    QProcess::ProcessState gamsProcessState() const;
 
 //    void detachFile(const QString &filepath);
 //    void updateChildNodes();
@@ -132,6 +133,7 @@ public:
     bool hasLstErrorText( int line = -1);
     bool isProcess(const AbstractProcess *process) const;
     void jumpToFirstError(bool focus);
+    QProcess::ProcessState gamsProcessState() const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -167,7 +169,6 @@ public:
     ~ProjectRootNode() {}
     void setParentNode(ProjectRunGroupNode *parent);
     ProjectRepo *repo() const;
-    const ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
 
 private:
     friend class ProjectRepo;

@@ -51,9 +51,11 @@ class ProjectRepo : public QObject
 public:
     explicit ProjectRepo(QObject *parent = nullptr);
     ~ProjectRepo();
+    void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
-    const ProjectGroupNode *findGroup(const AbstractProcess* process) const;
     const ProjectGroupNode *findGroup(const QString& filePath);
+    ProjectRunGroupNode *findRunGroup(FileId runId, ProjectGroupNode *group = nullptr) const;
+    ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
     const ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
@@ -122,13 +124,13 @@ public:
     /// \param runFileName The file name w/o path of the project OR gms-start-file
     /// \param _parent The parent of this node (default: rootTreeModelIndex)
     /// \return the new <c>ProjectRunGroupNode</c>.
-    ProjectRunGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
-    void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
+    ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool *expanded) const;
+    void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
 
 public slots:
     void nodeChanged(NodeId nodeId);
@@ -185,7 +187,6 @@ signals:
     void fileClosed(NodeId nodeId, QPrivateSignal);
     void fileChangedExtern(NodeId nodeId);
     void fileDeletedExtern(NodeId nodeId);
-    void openFile(ProjectFileNode* fileNode, bool focus = true, int codecMib = -1);
 
 public slots:
     void nodeChanged(NodeId nodeId);

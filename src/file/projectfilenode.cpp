@@ -62,7 +62,7 @@ QIcon ProjectFileNode::icon()
     return QIcon(":/img/file-alt"+runMark);
 }
 
-const QString ProjectFileNode::name(NameModifier mod)
+QString ProjectFileNode::name(NameModifier mod) const
 {
     QString res = ProjectAbstractNode::name();
     switch (mod) {
@@ -75,7 +75,7 @@ const QString ProjectFileNode::name(NameModifier mod)
     return res;
 }
 
-bool ProjectFileNode::isModified()
+bool ProjectFileNode::isModified() const
 {
     return mFileMeta->isModified();
 }

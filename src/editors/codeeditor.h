@@ -97,7 +97,7 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    void setRunFileId(const FileId &fileId) override;
+    void setRunId(const FileId &runId) override;
 
     /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
     /// outdentation is performed at the cursor position.

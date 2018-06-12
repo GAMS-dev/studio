@@ -50,7 +50,7 @@ public:
 
     /// The raw name of this node.
     /// \return The raw name of this node.
-    virtual const QString name(NameModifier mod = NameModifier::raw);
+    virtual QString name(NameModifier mod = NameModifier::raw) const;
 
     /// Sets the raw name of this node.
     /// \param name The raw name of this node.
@@ -71,7 +71,9 @@ public:
 
     const ProjectRootNode *toRoot() const;
     const ProjectGroupNode* toGroup() const;
+    ProjectGroupNode* toGroup();
     const ProjectRunGroupNode *toRunGroup() const;
+    ProjectRunGroupNode *toRunGroup();
     const ProjectFileNode* toFile() const;
     const ProjectLogNode* toLog() const;
 

@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-int TextMark::mNextId = 0;
+TextMarkId TextMark::mNextId = 0;
 
 TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, FileId runId)
     : mId(mNextId++), mFileId(fileId), mRunId(runId), mMarks(marks), mType(tmType)
@@ -169,71 +169,72 @@ Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion
     return *shape;
 }
 
-QTextBlock TextMark::textBlock()
-{
-    if (!document())
-        return QTextBlock();
-    return document()->findBlock(qMin(mPosition, document()->characterCount()-1));
-}
+//QTextBlock TextMark::textBlock()
+//{
+//    if (!document())
+//        return QTextBlock();
+//    return document()->findBlock(qMin(mPosition, document()->characterCount()-1));
+//}
 
-QTextCursor TextMark::textCursor()
-{
-    if (!document())
-        return QTextCursor();
-    QTextCursor cursor(document());
-    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
-    cursor.setPosition(pos);
-    return cursor;
-}
+//QTextCursor TextMark::textCursor()
+//{
+//    if (!document())
+//        return QTextCursor();
+//    QTextCursor cursor(document());
+//    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
+//    cursor.setPosition(pos);
+//    return cursor;
+//}
 
 void TextMark::rehighlight()
 {
     mMarks->rehighlightAt(mFileId, position());
 }
 
-void TextMark::move(int delta)
-{
-    if (mPosition < 0)
-        EXCEPT() << "Can't move an uninitialized position";
+//void TextMark::move(int delta)
+//{
+//    if (mPosition < 0)
+//        EXCEPT() << "Can't move an uninitialized position";
 
-    mPosition += delta;
-    updateLineCol();
-    mMarks->rehighlightAt(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
-    rehighlight();
-}
+//    mPosition += delta;
+//    updateLineCol();
+//    mMarks->rehighlightAt(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
+//    rehighlight();
+//}
 
-void TextMark::updatePos()
-{
-    if (document()) {
-        QTextBlock block = document()->findBlockByNumber(mLine);
-        if (block.blockNumber() != mLine) block = document()->lastBlock();
-        int col = (mColumn>=0 ? mColumn : 0);
-        mPosition = block.position() + col;
-        if (mSize <= 0) {
-            mSize = block.next().text().indexOf('$')+1;
-            if (mSize <= 0) mSize = block.length()-col-1;
-        } else {
-            QString str = block.text();
-            for (int i = col; i < qMin(col+mSize, str.length()); ++i)
-                if (str.at(i)=='\t') mSize -= (7 - i%8);
-        }
-    }
-}
+//void TextMark::updatePos()
+//{
+//    if (document()) {
+//        QTextBlock block = document()->findBlockByNumber(mLine);
+//        if (block.blockNumber() != mLine) block = document()->lastBlock();
+//        int col = (mColumn>=0 ? mColumn : 0);
+//        mPosition = block.position() + col;
+//        if (mSize <= 0) {
+//            mSize = block.next().text().indexOf('$')+1;
+//            if (mSize <= 0) mSize = block.length()-col-1;
+//        } else {
+//            QString str = block.text();
+//            for (int i = col; i < qMin(col+mSize, str.length()); ++i)
+//                if (str.at(i)=='\t') mSize -= (7 - i%8);
+//        }
+//    }
+//}
 
-void TextMark::updateLineCol()
-{
-    if (document()) {
-        QTextCursor cursor(document());
-        cursor.setPosition(qMin(mPosition, document()->characterCount()-1));
-        mLine = cursor.blockNumber();
-        if (mColumn >= 0) mColumn = cursor.positionInBlock();
-    }
-}
+//void TextMark::updateLineCol()
+//{
+//    if (document()) {
+//        QTextCursor cursor(document());
+//        cursor.setPosition(qMin(mPosition, document()->characterCount()-1));
+//        mLine = cursor.blockNumber();
+//        if (mColumn >= 0) mColumn = cursor.positionInBlock();
+//    }
+//}
 
 void TextMark::flatten()
 {
     mSize = 0;
     mColumn = -1;
+    rehighlight();
 }
 
 QString TextMark::dump()

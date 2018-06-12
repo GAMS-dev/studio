@@ -39,7 +39,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(const ProjectAbstractNode *entry) const;
+    QModelIndex index(const ProjectAbstractNode *node) const;
     QModelIndex rootModelIndex() const;
     ProjectRootNode *rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
@@ -47,7 +47,7 @@ public:
 protected:
     friend class ProjectRepo;
 
-    bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
+    bool insertChild(int row, ProjectGroupNode *parent, ProjectAbstractNode* child);
     bool removeChild(ProjectAbstractNode* child);
 
     bool isCurrent(const QModelIndex& ind) const;

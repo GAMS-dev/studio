@@ -37,7 +37,6 @@ class TextMark
 public:
     enum Type {none, error, link, bookmark, match, all};
 
-    TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, FileId runId = -1);
     virtual ~TextMark();
     FileId fileId() const;
     FileId runId() const;
@@ -63,49 +62,54 @@ public:
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
     inline bool isValid() {return mMarks && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
-    { return (mReference || mRefData) && ((mType == error && inIconRegion) || mType == link); }
-    QTextBlock textBlock();
-    QTextCursor textCursor();
-    inline int in(int pos, int len) {
-        if (mPosition < 0) return -2;
-        return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
-    }
+    { return mReference && ((mType == error && inIconRegion) || mType == link); }
+//    QTextBlock textBlock();
+//    QTextCursor textCursor();
+//    inline int in(int pos, int len) {
+//        if (mPosition < 0) return -2;
+//        return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
+//    }
 
     inline int line() const {return document() ? qMin(mLine,document()->blockCount()-1) : mLine;}
     inline int column() const {return mColumn;}
     inline int size() const {return mSize;}
     inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
-    inline int position() const {return document() ? qMin(mPosition,document()->characterCount()-1) : mPosition;}
+//    inline int position() const {return document() ? qMin(mPosition,document()->characterCount()-1) : mPosition;}
     inline int blockStart() const {return mColumn;}
     inline int blockEnd() const {return mColumn+mSize;}
-    inline void incSpread() {mSpread++;}
-    inline int spread() const {return mSpread;}
+//    inline void incSpread() {mSpread++;}
+//    inline int spread() const {return mSpread;}
     void rehighlight();
 
-    void move(int delta);
-    void updatePos();
-    void updateLineCol();
+//    void move(int delta);
+//    void updatePos();
+//    void updateLineCol();
     void flatten();
 
     QString dump();
 
+protected:
+    friend class TextMarkRepo;
+    TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, FileId runId = -1);
 
 private:
-    static int mNextId;
-    int mId;
+    static TextMarkId mNextId;
+    TextMarkId mId;
     FileId mFileId;
     FileId mRunId;
     TextMarkRepo* mMarks;
-    int mPosition = -1;
+//    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
     int mSize = 0;
     int mValue = 0;
-    int mSpread = 0;
+//    int mSpread = 0;
     TextMark* mReference = nullptr;
-    TextMarkData* mRefData = nullptr;
+//    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
+
+    // TODO(JM) maybe later we want to link the mark to the QTextBlock
     BlockData* mBlockData = nullptr;
 };
 

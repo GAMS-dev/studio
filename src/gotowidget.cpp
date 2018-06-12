@@ -54,9 +54,8 @@ void GoToWidget::on_GoTo_clicked()
 
     FileMeta* fm = mMain->fileRepo()->fileMeta(edit->fileId());
     int altLine =(ui->lineEdit->text().toInt())-1;
-    QTextCursor cursor;
     if (!fm) return;
-    fm->jumpTo(cursor, true, altLine, 0);
+    fm->jumpTo(-1, true, altLine, 0);
     ui->lineEdit->setText("");
 }
 

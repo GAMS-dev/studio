@@ -37,15 +37,15 @@ ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectRootNode* root)
         FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
 }
 
-QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *entry) const
+QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *node) const
 {
-    if (!entry)
+    if (!node)
         return QModelIndex();
-    if (!entry->parentNode())
-        return createIndex(0, 0, entry->id());
-    for (int i = 0; i < entry->parentNode()->childCount(); ++i) {
-        if (entry->parentNode()->childNode(i) == entry) {
-            return createIndex(i, 0, entry->id());
+    if (!node->parentNode())
+        return createIndex(0, 0, node->id());
+    for (int i = 0; i < node->parentNode()->childCount(); ++i) {
+        if (node->parentNode()->childNode(i) == node) {
+            return createIndex(i, 0, node->id());
         }
     }
     return QModelIndex();

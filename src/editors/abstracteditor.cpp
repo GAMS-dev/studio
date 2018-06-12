@@ -60,20 +60,20 @@ FileId AbstractEditor::fileId() const
     return mFileId;
 }
 
-void AbstractEditor::setFileId(const FileId &groupId)
+void AbstractEditor::setFileId(const FileId &runId)
 {
-    setRunFileId();
-    mFileId = groupId;
+    setRunId(); // reset runFileId
+    mFileId = runId;
 }
 
-FileId AbstractEditor::runFileId() const
+FileId AbstractEditor::runId() const
 {
-    return mRunFileId;
+    return mRunId;
 }
 
-void AbstractEditor::setRunFileId(const FileId &runFileId)
+void AbstractEditor::setRunId(const FileId &runId)
 {
-    mRunFileId = runFileId;
+    mRunId = runId;
 }
 
 StudioSettings *AbstractEditor::settings() const

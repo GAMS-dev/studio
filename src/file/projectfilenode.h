@@ -61,8 +61,8 @@ public:
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
-    const QString name(NameModifier mod = NameModifier::raw) override;
-    bool isModified();
+    QString name(NameModifier mod = NameModifier::raw) const override;
+    bool isModified() const;
     QTextDocument* document() const;
     FileMeta* file() const;
     QString location() const;

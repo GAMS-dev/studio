@@ -35,6 +35,9 @@ namespace studio {
 
 class MainWindow;
 class ProjectAbstractNode;
+class ProjectGroupNode;
+class ProjectFileNode;
+class FileMeta;
 
 class SearchWidget : public QDialog
 {
@@ -52,7 +55,8 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false);
+    QList<Result> findInFile(ProjectAbstractNode *node, bool skipFilters = false);
+    QList<Result> findInFile(FileMeta *fm, bool skipFilters = false);
 
     enum SearchDirection {
         Forward = 0,
@@ -96,7 +100,7 @@ private:
     QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
     void simpleReplaceAll();
-    QList<Result> findInGroup(ProjectAbstractNode *fsc = nullptr);
+    QList<Result> findInGroup(ProjectAbstractNode *node = nullptr);
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);

@@ -47,8 +47,8 @@ public:
     FileId fileId() const;
     void setFileId(const FileId &fileId);
 
-    FileId runFileId() const;
-    virtual void setRunFileId(const FileId &runFileId = FileId());
+    FileId runId() const;
+    virtual void setRunId(const FileId &runId = FileId());
 
 public slots:
     void afterContentsChanged(int, int, int);
@@ -60,7 +60,7 @@ protected:
 protected:
     StudioSettings *mSettings = nullptr;
     FileId mFileId = -1;
-    FileId mRunFileId = -1;
+    FileId mRunId = -1;
 };
 
 }

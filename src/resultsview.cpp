@@ -60,15 +60,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     mMain->searchWidget()->findInFile(fm, true);
 
     // jump to line
-    QTextCursor tc(fm->document());
-    if (item.locCol() <= 0) {
-        tc.setPosition(fm->document()->findBlockByNumber(item.locLineNr() - 1).position());
-    } else {
-        tc.setPosition(fm->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                       + item.locCol());
-
-    }
-    fm->jumpTo(tc, false);
+    fm->jumpTo(-1, false, item.locLineNr() - 1, item.locCol());
     fm->editors().first()->setFocus();
 }
 

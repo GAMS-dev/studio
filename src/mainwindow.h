@@ -31,6 +31,7 @@
 #include "projectcontextmenu.h"
 #include "file/filemetarepo.h"
 #include "file/projectrepo.h"
+#include "option/option.h"
 
 //#include "editors/codeeditor.h"
 //#include "file.h"
@@ -38,7 +39,6 @@
 //#include "option/commandlinehistory.h"
 //#include "option/commandlineoption.h"
 //#include "option/lineeditcompleteevent.h"
-//#include "option/optioneditor.h"
 //#include "helpview.h"
 //#include "resultsview.h"
 //#include "commandlineparser.h"
@@ -68,7 +68,6 @@ class SearchWidget;
 class SearchResultList;
 class ProjectFileNode;
 class HelpView;
-class OptionItem;
 class AbstractProcess;
 class LibraryItem;
 class CommandLineTokenizer;
@@ -176,7 +175,7 @@ public slots:
     void appendSystemLog(const QString &text);
 
 private slots:
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode* runGroup = nullptr, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);

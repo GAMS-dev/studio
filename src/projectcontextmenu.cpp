@@ -93,9 +93,7 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePath == "") return;
-    ProjectGroupNode *group = (mNode->type() == NodeType::group)
-                              ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentNode();
-
+    ProjectGroupNode *group = mNode->toGroup() ? mNode->toGroup() : mNode->parentNode();
     emit addExistingFile(group, filePath);
 }
 
@@ -126,8 +124,7 @@ void ProjectContextMenu::onAddNewFile()
     } else { // replace old
         file.resize(0);
     }
-    ProjectGroupNode *group = (mNode->type() == NodeType::group) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                 : mNode->parentNode();
+    ProjectGroupNode *group = mNode->toGroup() ? mNode->toGroup() : mNode->parentNode();
     emit addExistingFile(group, filePath);
 }
 
@@ -138,8 +135,7 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    ProjectGroupNode *group = (mNode->type() == NodeType::group) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                 : mNode->parentNode();
+    ProjectGroupNode *group = mNode->toGroup() ? mNode->toGroup() : mNode->parentNode();
     if (group) emit closeGroup(group);
 }
 
@@ -165,8 +161,8 @@ void ProjectContextMenu::onOpenFileLoc()
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            ProjectGroupNode *parent = node->parentNode();
-            if (parent) openLoc = parent->location();
+            ProjectGroupNode *group = node->parentNode();
+            if (group) openLoc = group->location();
             QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
         } else {
             QProcess proc;
@@ -180,12 +176,12 @@ void ProjectContextMenu::onOpenFileLoc()
             proc.waitForFinished();
         }
 #else
-        ProjectGroupNode *parent = node->parentEntry();
-        if (parent) openLoc = parent->location();
+        ProjectGroupNode *group = node->parentEntry();
+        if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
     } else if (mNode->type() == NodeType::group) {
-        ProjectGroupNode *group = static_cast<ProjectGroupNode*>(mNode);
+        ProjectGroupNode *group = mNode->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }

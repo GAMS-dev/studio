@@ -274,23 +274,15 @@ void FileMeta::triggerLoad(QList<int> codecMibs)
     }
 }
 
-void FileMeta::jumpTo(const QTextCursor &cursor, FileId runId, bool focus, int altLine, int altColumn)
+void FileMeta::jumpTo(FileId runId, bool focus, int line, int column)
 {
-    emit openFile(this, focus, runId, codecMib());
-    if (mEditors.size()) {
-        AbstractEditor* edit = toAbstractEdit(mEditors.first());
-        if (!edit) return;
+    emit mFileRepo->openFile(this, runId, focus, codecMib());
 
-        QTextCursor tc;
-        if (cursor.isNull()) {
-            if (edit->document()->blockCount()-1 < altLine) return;
-            tc = QTextCursor(edit->document()->findBlockByNumber(altLine));
-        } else {
-            tc = cursor;
-        }
-
-        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
-        tc.clearSelection();
+    AbstractEditor* edit = mEditors.size() ? toAbstractEdit(mEditors.first()) : nullptr;
+    if (edit && edit->document()->blockCount()-1 < line) {
+        QTextBlock block = edit->document()->findBlockByNumber(line);
+        QTextCursor tc = QTextCursor(block);
+        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
         edit->setTextCursor(tc);
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
@@ -299,6 +291,27 @@ void FileMeta::jumpTo(const QTextCursor &cursor, FileId runId, bool focus, int a
         if (qAbs(mv) > lines/3)
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
     }
+}
+
+void FileMeta::rehighlightAt(int pos)
+{
+    if (pos < 0) return;
+    if (document() && mHighlighter) mHighlighter->rehighlightBlock(document()->findBlock(pos));
+}
+
+void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
+{
+    if (!document() || !mHighlighter) return;
+    while (block.isValid()) {
+        mHighlighter->rehighlightBlock(block);
+        if (!endBlock.isValid() || block == endBlock) break;
+        block = block.next();
+    }
+}
+
+ErrorHighlighter *FileMeta::highlighter() const
+{
+    return mHighlighter;
 }
 
 bool FileMeta::isModified() const
@@ -332,7 +345,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() != FileKind::Gdx) {
         CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
         codeEdit->setTabChangesFocus(false);
-        codeEdit->setRunFileId(runGroup ? runGroup->runFileId() : -1);
+        codeEdit->setRunId(runGroup ? runGroup->runFileId() : -1);
         initEditorType(codeEdit);
         codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());

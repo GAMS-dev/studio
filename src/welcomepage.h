@@ -21,6 +21,7 @@
 #define WELCOMEPAGE_H
 
 #include <QWidget>
+#include <QLabel>
 #include "mainwindow.h"
 
 namespace Ui {

@@ -9,6 +9,7 @@ namespace gams {
 namespace studio {
 
 class TextMarkRepo;
+class ProjectRepo;
 
 class FileMetaRepo : public QObject
 {
@@ -19,12 +20,15 @@ public:
     FileMeta* fileMeta(const QString &location) const;
     FileMeta *findOrCreateFileMeta(QString location);
     StudioSettings *settings() const;
-    void init(TextMarkRepo* textMarkRepo);
+    void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
+    QVector<FileMeta*> openFiles() const;
 
 signals:
-    void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
     void removedFile(FileMeta* fm);
+
+public slots:
+    void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
 
 private slots:
     void dirChanged(const QString& path);
@@ -37,6 +41,7 @@ private:
     FileId mNextFileId = 0;
     StudioSettings *mSettings = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
+    ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
     QFileSystemWatcher mWatcher;
     QStringList mMissList;

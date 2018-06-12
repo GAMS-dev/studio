@@ -133,6 +133,36 @@ const ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, b
     return nullptr;
 }
 
+ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
+{
+    foreach (ProjectAbstractNode* node, internalNodeList()) {
+        ProjectRunGroupNode* runGroup = node->toRunGroup();
+        if (runGroup && runGroup->isProcess(process))
+            return runGroup;
+        const ProjectGroupNode* group = node->toGroup();
+        if (group) {
+            runGroup = findRunGroup(process);
+            if (runGroup) return runGroup;
+        }
+    }
+    return nullptr;
+}
+
+ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
+{
+    foreach (ProjectAbstractNode* node, internalNodeList()) {
+        ProjectRunGroupNode* runGroup = node->toRunGroup();
+        if (runGroup && runGroup->runFileId() == runId)
+            return runGroup;
+        const ProjectGroupNode* group = node->toGroup();
+        if (group) {
+            runGroup = findRunGroup(runId);
+            if (runGroup) return runGroup;
+        }
+    }
+    return nullptr;
+}
+
 
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
     : ProjectGroupNode(name, path, NodeType::runGroup)
@@ -254,6 +284,11 @@ void ProjectRunGroupNode::jumpToFirstError(bool focus)
     }
 }
 
+QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
+{
+    return mGamsProcess->state();
+}
+
 QString ProjectRunGroupNode::tooltip()
 {
     QString res(location());
@@ -304,16 +339,6 @@ void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)
 ProjectRepo *ProjectRootNode::repo() const
 {
     return mRepo;
-}
-
-const ProjectRunGroupNode *ProjectRootNode::findRunGroup(const AbstractProcess *process) const
-{
-    foreach (ProjectAbstractNode* node, internalNodeList()) {
-        const ProjectRunGroupNode* runGroup = node->toRunGroup();
-        if (runGroup && runGroup->isProcess(process))
-            return runGroup;
-    }
-    return nullptr;
 }
 
 

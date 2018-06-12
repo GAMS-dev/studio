@@ -54,6 +54,24 @@ TextMarkRepo *FileMetaRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
+QVector<FileMeta*> FileMetaRepo::openFiles() const
+{
+    QVector<FileMeta*> res;
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value()->isOpen()) res << i.value();
+    }
+    return res;
+}
+
+void FileMetaRepo::openFile(FileMeta *fm, FileId runId, bool focus, int codecMib)
+{
+    if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
+    ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(runId);
+    emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
+}
+
 void FileMetaRepo::dirChanged(const QString &path)
 {
     // TODO(JM) stack dir-name to check after timeout if it's deleted or contents has changed
@@ -69,12 +87,14 @@ StudioSettings *FileMetaRepo::settings() const
     return mSettings;
 }
 
-void FileMetaRepo::init(TextMarkRepo *textMarkRepo)
+void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 {
-    if (mTextMarkRepo != textMarkRepo) return;
-    if (mTextMarkRepo) EXCEPT() << "The FileMetaRepo already has been initialized.";
-    if (textMarkRepo) EXCEPT() << "The TextMarkRepo must not be null.";
+    if (mTextMarkRepo == textMarkRepo && mProjectRepo == projectRepo) return;
+    if (mTextMarkRepo || mProjectRepo) EXCEPT() << "The FileMetaRepo already has been initialized.";
+    if (!textMarkRepo) EXCEPT() << "The TextMarkRepo must not be null.";
+    if (!projectRepo) EXCEPT() << "The ProjectRepo must not be null.";
     mTextMarkRepo = textMarkRepo;
+    mProjectRepo = projectRepo;
 }
 
 FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location)

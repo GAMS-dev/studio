@@ -50,11 +50,7 @@ QTextDocument *TextMarkRepo::document(FileId fileId) const
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
-    emit mFileRepo->openFile(fm, mark->runId(), focus, fm->codecMib());
-    if (mark->document())  {
-        mark->updatePos();
-        if (fm) fm->jumpTo(mark->textCursor(), mark->runId(), focus);
-    }
+    if (fm) fm->jumpTo(mark->runId(), focus, mark->line(), mark->column());
 }
 
 void TextMarkRepo::rehighlightAt(FileId fileId, int pos)

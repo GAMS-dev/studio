@@ -96,7 +96,7 @@ void LxiViewer::loadLxiFile()
 void LxiViewer::loadLstFile()
 {
     if (QProcess::NotRunning == mRunGroup->gamsProcessState()) {
-        mFileMeta->triggerLoad(mFileMeta->codecMib());
+        mFileMeta->triggerLoad(QList<int>() << mFileMeta->codecMib());
     }
 
 }
@@ -144,11 +144,8 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
         tb = tb.next();
     }
     lineNr  = tb.blockNumber();
-    QTextCursor cursor = mCodeEditor->textCursor();
-    cursor.setPosition(tb.position());
-
     disconnect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    mFileMeta->jumpTo(cursor, mRunGroup->runFileId(), true);
+    mFileMeta->jumpTo(mRunGroup->runFileId(), true, lineNr);
     connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 

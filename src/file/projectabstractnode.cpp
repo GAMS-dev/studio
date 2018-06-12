@@ -36,7 +36,7 @@ ProjectAbstractNode::ProjectAbstractNode(QString name, NodeType type)
 inline const ProjectRootNode *ProjectAbstractNode::root() const
 {
     const ProjectAbstractNode* par = this;
-    while (par->parent()) par = par->parentNode();
+    while (par->parentNode()) par = par->parentNode();
     return par->toRoot();
 }
 
@@ -61,7 +61,7 @@ NodeId ProjectAbstractNode::id() const
     return mId;
 }
 
-const QString ProjectAbstractNode::name(NameModifier mod)
+QString ProjectAbstractNode::name(NameModifier mod) const
 {
     Q_UNUSED(mod);
     return mName;
@@ -118,9 +118,23 @@ const ProjectGroupNode *ProjectAbstractNode::toGroup() const
     return nullptr;
 }
 
+ProjectGroupNode *ProjectAbstractNode::toGroup()
+{
+    if (mType == NodeType::group) return static_cast<ProjectGroupNode*>(this);
+    if (mType == NodeType::runGroup) return static_cast<ProjectGroupNode*>(this);
+    if (mType == NodeType::root) return static_cast<ProjectGroupNode*>(this);
+    return nullptr;
+}
+
 const ProjectRunGroupNode *ProjectAbstractNode::toRunGroup() const
 {
     if (mType == NodeType::runGroup) return static_cast<const ProjectRunGroupNode*>(this);
+    return nullptr;
+}
+
+ProjectRunGroupNode *ProjectAbstractNode::toRunGroup()
+{
+    if (mType == NodeType::runGroup) return static_cast<ProjectRunGroupNode*>(this);
     return nullptr;
 }
 

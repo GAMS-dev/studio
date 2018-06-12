@@ -50,6 +50,7 @@
 #include "distributionvalidator.h"
 #include "syntax/textmarkrepo.h"
 #include "helpview.h"
+#include "statuswidgets.h"
 
 namespace gams {
 namespace studio {
@@ -61,7 +62,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mProjectRepo(this),
       mFileMetaRepo(this, settings),
-      mTextMarkRepo(&mProjectRepo, this)
+      mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this)
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -89,7 +90,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
 //    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
     mProjectRepo.init(&mFileMetaRepo, &mTextMarkRepo);
-    mFileMetaRepo.init(&mTextMarkRepo);
+    mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
