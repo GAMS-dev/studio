@@ -345,26 +345,26 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, mCachedResults);
 }
 
-void SearchWidget::focusSearchField()
+void SearchWidget::autofillSearchField()
 {
-    ui->combo_search->setFocus();
-
     QWidget *widget = mMain->recent()->editor();
     AbstractEditor *edit = ProjectFileNode::toAbstractEdit(widget);
     ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
     if (!fsc || !edit) return;
+
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
         ui->combo_search->setCurrentText("");
-    ui->combo_search->lineEdit()->selectAll();
+
+    ui->combo_search->setFocus();
 }
 
 void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    focusSearchField();
+    autofillSearchField();
     updateReplaceActionAvailability();
 }
 
@@ -421,13 +421,16 @@ void SearchWidget::invalidateCache()
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
+        e->accept();
         hide();
         if (mMain->projectRepo()->fileNode(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
+        e->accept();
         on_searchPrev();
     } else if (e->key() == Qt::Key_F3) {
+        e->accept();
         on_searchNext();
     }
     QDialog::keyPressEvent(e);
