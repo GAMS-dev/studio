@@ -11,6 +11,13 @@ namespace studio {
 class TextMarkRepo;
 class ProjectRepo;
 
+enum class FileEvent {
+    changed,
+    changedExtern,
+    removed,        // removed-event is delayed a bit to improve recognition of moved- or changed-events
+    moved,
+};
+
 class FileMetaRepo : public QObject
 {
     Q_OBJECT
@@ -26,6 +33,7 @@ public:
 
 signals:
     void removedFile(FileMeta* fm);
+    void fileEvent(FileMeta* fm, FileEvent e);
 
 public slots:
     void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);

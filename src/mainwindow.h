@@ -124,7 +124,6 @@ public:
     void linkToEdit(QTabWidget* tabWidget, FileMeta *fileMeta, bool focus, int codecMip = -1);
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
-    void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
 
     bool outputViewVisibility();
@@ -162,6 +161,7 @@ public:
     void resetViews();
 
 public slots:
+    void openFilePath(const QString &filePath);
     void receiveAction(QString action);
     void receiveModLibLoad(QString model);
     void receiveOpenDoc(QString doc, QString anchor);
@@ -189,7 +189,6 @@ private slots:
     void closeFile(ProjectFileNode* file);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip = -1);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);

@@ -311,6 +311,11 @@ void ProjectRepo::removeGroup(ProjectGroupNode* group)
     deleteNode(group);
 }
 
+void ProjectRepo::setSelected(const QModelIndex& ind)
+{
+    mTreeModel->setSelected(ind);
+}
+
 
 /*
 
@@ -465,11 +470,6 @@ void ProjectRepo::editorActivated(QWidget* edit)
     ProjectFileNode *fc = fileNode(edit);
     QModelIndex mi = mTreeModel->index(fc);
     mTreeModel->setCurrent(mi);
-}
-
-void ProjectRepo::setSelected(const QModelIndex& ind)
-{
-    mTreeModel->setSelected(ind);
 }
 
 void ProjectRepo::removeFile(ProjectFileNode* file)

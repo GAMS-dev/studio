@@ -51,7 +51,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     Result item = mResultList.resultList().at(selectedRow);
 
     if (QFileInfo(item.locFile()).exists())
-        mMain->openFile(item.locFile());
+        mMain->openFilePath(item.locFile());
 
     FileMeta *fm = mMain->fileRepo()->fileMeta(item.locFile());
     if (!fm) EXCEPT() << "File not found: " << item.locFile();

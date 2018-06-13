@@ -109,9 +109,14 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 
-    connect(&mProjectRepo, &ProjectRepo::fileClosed, this, &MainWindow::fileClosed);
+
+    // TODO(JM) mFileMetaRepo should signal just one FileEvent with the kind of change. That makes it easier to stack
+    //          the events to be triggered later if Studio gains the focus again
+    connect(&mFileMetaRepo, &FileMetaRepo::fileClosed, this, &MainWindow::fileClosed);
     connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
     connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
+
+
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -652,8 +657,8 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->save(filePath);
-        openFilePath(filePath, fc->parentNode(), true);
+        fc->file()->save(filePath);
+        openFile(fc->file(), true, fc->parentNode());
         mStatusWidgets->setFileName(fc->location());
     }
 }
@@ -1072,7 +1077,7 @@ void MainWindow::createWelcomePage()
 {
     mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
-    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFilePath);
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
@@ -1306,9 +1311,11 @@ QStringList MainWindow::openedFiles()
     return history()->lastOpenedFiles;
 }
 
-void MainWindow::openFile(const QString &filePath)
+void MainWindow::openFilePath(const QString &filePath)
 {
-    openFilePath(filePath, nullptr, true, -1);
+    FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
+    // TODO(JM) Do we need to find a ProjectRunGroupNode as context?
+    openFile(fm, true, nullptr, -1);
 }
 
 HistoryData *MainWindow::history()
@@ -1501,7 +1508,7 @@ void MainWindow::openFiles(QStringList pathList)
     for (QString fName: pathList) {
         QFileInfo fi(fName);
         if (fi.isFile())
-            openFilePath(CommonPaths::absolutFilePath(fName), nullptr, true);
+            openFilePath(CommonPaths::absolutFilePath(fName));
         else
             filesNotFound.append(fName);
     }
@@ -1859,40 +1866,6 @@ void MainWindow::closeFile(ProjectFileNode* file)
     }
 }
 
-void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip)
-{
-    if (!QFileInfo(filePath).exists()) {
-        EXCEPT() << "File not found: " << filePath;
-    }
-    ProjectAbstractNode *node = mProjectRepo.findNode(filePath, parent);
-    ProjectFileNode *fileNode = (node && node->type() == NodeType::file) ? static_cast<ProjectFileNode*>(node) : nullptr;
-
-    if (!fileNode) { // not yet opened by user, open file in new tab
-        ProjectGroupNode* group = mProjectRepo.findOrCreateGroup(CommonPaths::absolutFilePath(filePath));
-        mProjectRepo.findOrCreateFileNode(filePath, fileNode, group);
-        if (!fileNode) {
-            EXCEPT() << "File not found: " << filePath;
-        }
-        QTabWidget* tabWidget = (fileNode->type() == NodeType::log) ? ui->logTabs : ui->mainTab;
-
-        fileMeta->createEdit(tabWidget, focus, runId, codecMip);
-        // TODO(JM) switch to FileMeta
-
-        linkToEdit(tabWidget, focus, fileNode->id(), codecMip);
-        if (tabWidget->currentWidget())
-            if (focus) tabWidget->currentWidget()->setFocus();
-        ui->projectView->expand(mProjectRepo.treeModel()->index(group));
-        addToOpenedFiles(filePath);
-    } else {
-        openFile(fileNode, focus, parent, codecMip);
-    }
-    if (!fileNode) {
-        EXCEPT() << "invalid pointer found: FileNode expected.";
-    }
-    mRecent.path = filePath;
-    mRecent.group = fileNode->parentNode();
-}
-
 ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName)
 {
     ProjectFileNode *fc = nullptr;
@@ -1904,7 +1877,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         if (fType == FileType::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            openFilePath(fInfo.filePath(), nullptr, true); // open all sorts of files
+            openFilePath(fInfo.filePath()); // open all sorts of files
         }
     }
     return fc;
@@ -1913,7 +1886,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
 void MainWindow::openNode(const QModelIndex& index)
 {
     ProjectFileNode *file = mProjectRepo.asFile(index);
-    if (file) openFile(file);
+    if (file) openFilePath(file);
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)
@@ -2044,7 +2017,7 @@ void MainWindow::readTabs(const QJsonObject &json)
                 QString location = tabObject["location"].toString();
                 int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, nullptr, true, mib);
+                    openFile(mFileMetaRepo.findOrCreateFileMeta(location), true, nullptr, mib);
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents();
@@ -2054,7 +2027,7 @@ void MainWindow::readTabs(const QJsonObject &json)
     if (json.contains("mainTabRecent")) {
         QString location = json["mainTabRecent"].toString();
         if (QFileInfo(location).exists()) {
-            openFilePath(location, nullptr, true);
+            openFilePath(location);
             mOpenTabsList << location;
         }
     }
@@ -2332,7 +2305,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     QFile file(mClosedTabs.last());
     mClosedTabs.removeLast();
     if (file.exists())
-        openFile(file.fileName());
+        openFilePath(file.fileName());
     else
         on_actionRestore_Recently_Closed_Tab_triggered();
 }

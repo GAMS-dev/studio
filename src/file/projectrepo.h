@@ -131,6 +131,7 @@ signals:
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool *expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
+    void setSelected(const QModelIndex& ind);
 
 public slots:
     void nodeChanged(NodeId nodeId);
@@ -192,7 +193,6 @@ public slots:
     void nodeChanged(NodeId nodeId);
     void findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup = nullptr);
     void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
-    void setSelected(const QModelIndex& ind);
     void removeFile(ProjectFileNode* file);
 
 private slots:
