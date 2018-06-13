@@ -344,8 +344,9 @@ void SearchWidget::showEvent(QShowEvent *event)
 
     QWidget *widget = mMain->recent()->editor();
     AbstractEditor *edit = FileMeta::toAbstractEdit(widget);
-    FileMeta *fm = mMain->fileRepo()->fileMeta(widget);
-    if (!fm || !edit) return;
+    if (!edit) return;
+    FileMeta *fm = mMain->fileRepo()->fileMeta(edit->fileId());
+    if (!fm) return;
 
     focusSearchField();
     if (edit->textCursor().hasSelection())

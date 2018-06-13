@@ -293,10 +293,10 @@ void FileMeta::jumpTo(FileId runId, bool focus, int line, int column)
     }
 }
 
-void FileMeta::rehighlightAt(int pos)
+void FileMeta::rehighlight(int line)
 {
-    if (pos < 0) return;
-    if (document() && mHighlighter) mHighlighter->rehighlightBlock(document()->findBlock(pos));
+    if (line < 0) return;
+    if (document() && mHighlighter) mHighlighter->rehighlightBlock(document()->findBlockByNumber(line));
 }
 
 void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)

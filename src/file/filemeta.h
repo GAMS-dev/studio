@@ -40,7 +40,7 @@ public:
     void triggerLoad(QList<int> codecMibs = QList<int>());
 
     void jumpTo(FileId runId, bool focus, int line = 0, int column = 0);
-    void rehighlightAt(int pos);
+    void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
 

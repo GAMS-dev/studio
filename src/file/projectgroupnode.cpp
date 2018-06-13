@@ -273,14 +273,11 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 void ProjectRunGroupNode::jumpToFirstError(bool focus)
 {
     if (!mLogNode) return;
-    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), runFileId(), TextMark::error, 1);
+    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), -1, runFileId(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
     if (textMark) {
-        if (!textMark->textCursor().isNull()) {
-            textMark->jumpToMark(focus);
-            textMark->jumpToRefMark(focus);
-        }
-        textMark = nullptr;
+        textMark->jumpToMark(focus);
+        textMark->jumpToRefMark(focus);
     }
 }
 

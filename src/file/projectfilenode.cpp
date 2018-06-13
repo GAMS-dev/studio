@@ -110,6 +110,9 @@ FileId ProjectFileNode::runFileId() const
     return -1;
 }
 
+
+/*
+
 void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
 {
     if (mFileMeta->isOpen() && marks.size() > 0) {
@@ -123,8 +126,6 @@ void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
         QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
     }
 }
-
-/*
 
 QWidgetList& ProjectFileNode::editorList()
 {
@@ -394,12 +395,6 @@ void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine,
         if (qAbs(mv) > lines/3)
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
     }
-}
-
-void ProjectFileNode::rehighlightAt(int pos)
-{
-    if (pos < 0) return;
-    if (document() && mSyntaxHighlighter) mSyntaxHighlighter->rehighlightBlock(document()->findBlock(pos));
 }
 
 void ProjectFileNode::rehighlightBlock(QTextBlock block, QTextBlock endBlock)

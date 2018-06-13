@@ -20,24 +20,24 @@ public:
     explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
-    void removeMark(TextMark* tm);
+    inline void deleteMark(TextMark *tm);
+    void removeMark(TextMark *tm);
     void removeMarks(FileId fileId);
     TextMark* createMark(TextMarkData* tmData);
     QTextDocument* document(FileId fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
     void jumpTo(TextMark *mark, bool focus = false);
-    void rehighlightAt(FileId fileId, int pos);
+    void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
-    QVector<TextMark*> marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType = TextMark::all);
-    QVector<TextMark*> marksForBlock(FileId nodeId, QTextBlock block, FileId runId, TextMark::Type refType = TextMark::all);
-    QList<TextMark *> marks(FileId fileId, FileId runId, TextMark::Type refType = TextMark::all, int max = -1);
+    QList<TextMark *> marks(FileId nodeId, int lineNr = -1, FileId runId = -1, TextMark::Type refType = TextMark::all, int max = -1);
 
 
 private:
+    typedef QMultiMap<int, TextMark*> FileMarks;
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
-    QMultiHash<FileId, TextMark*> mMarks;
+    QHash<FileId, FileMarks*> mMarks;
 
 private:
     FileId ensureFileId(QString location);

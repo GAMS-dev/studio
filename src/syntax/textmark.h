@@ -60,7 +60,7 @@ public:
     inline Type type() const {return mType;}
     inline Type refType() const;
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
-    inline bool isValid() {return mMarks && (mLine>=0) && (mColumn>=0);}
+    inline bool isValid() {return mMarkRepo && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
     { return mReference && ((mType == error && inIconRegion) || mType == link); }
 //    QTextBlock textBlock();
@@ -97,7 +97,7 @@ private:
     TextMarkId mId;
     FileId mFileId;
     FileId mRunId;
-    TextMarkRepo* mMarks;
+    TextMarkRepo* mMarkRepo = nullptr;
 //    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
@@ -118,7 +118,7 @@ struct TextMarkData
     TextMarkData(QString& _location, TextMark::Type _type, int _line, int _column, int _size = 0)
         : location(_location), type(_type), line(_line), column(_column), size(_size) {}
     QString location;
-    QString contextLocation;
+    QString runLocation;
     TextMark::Type type;
     int line;
     int column;

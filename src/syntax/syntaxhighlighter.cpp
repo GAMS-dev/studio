@@ -77,11 +77,11 @@ void ErrorHighlighter::syntaxState(int position, int &intState)
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
     // TODO(JM) marksForBlock functionality
-    QVector<TextMark*> markList = mMarks->marksForBlock(mFileId, currentBlock());
+    QList<TextMark*> markList = mMarks->marks(mFileId, currentBlock().blockNumber(), runId());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QVector<TextMark*> markList)
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QList<TextMark*> markList)
 {
     int end = start+len;
     int marksStart = end;
@@ -197,12 +197,13 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QVector<TextMark*> markList = markRepo() ? markRepo()->marksForBlock(nodeId(), currentBlock()) : QVector<TextMark*>();
+    QTextBlock textBlock = currentBlock();
+    QList<TextMark*> markList = markRepo() ? markRepo()->marks(nodeId(), textBlock.blockNumber(), runId())
+                                           : QList<TextMark*>();
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
     int index = 0;
-    QTextBlock textBlock = currentBlock();
     int posForSyntaxState = mPositionForSyntaxState - textBlock.position();
     if (posForSyntaxState < 0) posForSyntaxState = text.length();
     bool extendSearch = true;

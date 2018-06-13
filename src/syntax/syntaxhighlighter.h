@@ -63,7 +63,7 @@ public slots:
     void syntaxState(int position, int &intState);
 
 protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QVector<TextMark*> markList);
+    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QList<TextMark *> markList);
     TextMarkRepo* markRepo();
 
 protected:

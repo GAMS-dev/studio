@@ -29,21 +29,21 @@ namespace studio {
 TextMarkId TextMark::mNextId = 0;
 
 TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, FileId runId)
-    : mId(mNextId++), mFileId(fileId), mRunId(runId), mMarks(marks), mType(tmType)
+    : mId(mNextId++), mFileId(fileId), mRunId(runId), mMarkRepo(marks), mType(tmType)
 {
-    if (!mMarks) FATAL() << "The TextMarkRepo must be a valid instance.";
+    if (!mMarkRepo) FATAL() << "The TextMarkRepo must be a valid instance.";
 }
 
 TextMark::~TextMark()
 {
-    mMarks->removeMark(this);
+    if (mMarkRepo) mMarkRepo->removeMark(this);
     clearBackRefs();
     rehighlight();
 }
 
 QTextDocument*TextMark::document() const
 {
-    return mMarks->document(mFileId);
+    return mMarkRepo->document(mFileId);
 }
 
 
@@ -52,20 +52,22 @@ void TextMark::setPosition(int line, int column, int size)
     mLine = line;
     mSize = (size<0) ? -size : size;
     mColumn = (size<0) ? column-mSize : column;
-    updatePos();
+//    updatePos();
 }
 
 void TextMark::jumpToRefMark(bool focus)
 {
-    if (!mReference && mRefData)
-        setRefMark(mMarks->createMark(mRefData));
+//    if (!mReference && mRefData)
+//        setRefMark(mMarks->createMark(mRefData));
     if (mReference)
         mReference->jumpToMark(focus);
+    else
+        DEB() << "No TextMark reference to jump to";
 }
 
 void TextMark::jumpToMark(bool focus)
 {
-    mMarks->jumpTo(this, focus);
+    mMarkRepo->jumpTo(this, focus);
 }
 
 void TextMark::setRefMark(TextMark* refMark)
@@ -73,10 +75,10 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
     if (mReference)
         mReference->mBackRefs << this;
-    if (mRefData) {
-        delete mRefData;
-        mRefData = nullptr;
-    }
+//    if (mRefData) {
+//        delete mRefData;
+//        mRefData = nullptr;
+//    }
 }
 
 void TextMark::unsetRefMark(TextMark* refMark)
@@ -87,8 +89,8 @@ void TextMark::unsetRefMark(TextMark* refMark)
 
 inline bool TextMark::isErrorRef()
 {
-    return (mReference && mReference->type() == error)
-            || (mRefData && mRefData->type == error);
+    return (mReference && mReference->type() == error);
+//            || (mRefData && mRefData->type == error);
 }
 
 void TextMark::clearBackRefs()
@@ -117,9 +119,9 @@ QColor TextMark::color()
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
         if (mReference->fileKind() == FileKind::Lst) return Qt::blue;
-    } else if (mRefData) {
-        if (mRefData->type == TextMark::error) return Qt::darkRed;
-        if (mRefData->location.endsWith(".lst", Qt::CaseInsensitive)) return Qt::blue;
+//    } else if (mRefData) {
+//        if (mRefData->type == TextMark::error) return Qt::darkRed;
+//        if (mRefData->location.endsWith(".lst", Qt::CaseInsensitive)) return Qt::blue;
     } else {
         return Qt::darkRed;
     }
@@ -128,12 +130,12 @@ QColor TextMark::color()
 
 FileKind TextMark::fileKind()
 {
-    return mMarks->fileKind(mFileId);
+    return mMarkRepo->fileKind(mFileId);
 }
 
 FileKind TextMark::refFileKind()
 {
-    return mReference ? mReference->fileKind() : mRefData ? mRefData->fileKind() : FileKind::None;
+    return mReference ? mReference->fileKind() /*: mRefData ? mRefData->fileKind()*/ : FileKind::None;
 }
 
 QIcon TextMark::icon()
@@ -143,7 +145,8 @@ QIcon TextMark::icon()
         return QIcon(":/img/exclam-circle-r");
         break;
     case link:
-        return (mReference || mRefData) ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
+//        return (mReference || mRefData) ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
+        return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
         break;
     case bookmark: {
         QIcon ico(":/img/bookmark");
@@ -159,13 +162,13 @@ QIcon TextMark::icon()
 
 inline TextMark::Type TextMark::refType() const
 {
-    return (mReference) ? mReference->type() : mRefData ? mRefData->type : none;
+    return (mReference) ? mReference->type() : none;
 }
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {
     if (shape && ((mType == error && inIconRegion) || mType == link))
-        *shape = (mReference || mRefData) ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+        *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
     return *shape;
 }
 
@@ -188,7 +191,7 @@ Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion
 
 void TextMark::rehighlight()
 {
-    mMarks->rehighlightAt(mFileId, position());
+    mMarkRepo->rehighlight(mFileId, mLine);
 }
 
 //void TextMark::move(int delta)
@@ -198,7 +201,7 @@ void TextMark::rehighlight()
 
 //    mPosition += delta;
 //    updateLineCol();
-//    mMarks->rehighlightAt(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
+//    mMarks->rehighlight(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
 //    rehighlight();
 //}
 
@@ -243,9 +246,9 @@ QString TextMark::dump()
     for (TextMark* mark: mBackRefs) {
         refs << QString::number(mark->mId);
     }
-    return QString("(%3,%4)[%1->%2] ").arg(mId)
-            .arg(mReference ? QString::number(mReference->mId) : mRefData ? "?" : "#")
-            .arg(mPosition).arg(mSize);
+    return QString("(%3,%4,%5)[%1%2] ").arg(mId)
+            .arg(mReference ? "->"+QString::number(mReference->mId) : "")
+            .arg(mLine).arg(mColumn).arg(mSize);
 }
 
 FileId TextMark::fileId() const

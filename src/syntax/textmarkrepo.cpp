@@ -20,24 +20,42 @@ TextMarkRepo::~TextMarkRepo()
     }
 }
 
+inline void TextMarkRepo::deleteMark(TextMark *tm)
+{
+    delete tm;
+}
+
 void TextMarkRepo::removeMark(TextMark *tm)
 {
-    mMarks.remove(tm->fileId(), tm);
+    FileMarks *marks = mMarks.value(tm->fileId());
+    marks->remove(tm->mId, tm);
+    if (marks->isEmpty()) {
+        mMarks.remove(tm->fileId());
+        delete marks;
+    }
 }
 
 void TextMarkRepo::removeMarks(FileId fileId)
 {
-    foreach (TextMark* mark, mMarks.values(fileId))
+    FileMarks *marks = mMarks.value(fileId);
+    foreach (TextMark* mark, marks->values()) {
+        mark->mMarkRepo = nullptr;
         delete mark;
-    mMarks.remove(fileId);
+    }
+    if (marks->isEmpty()) {
+        mMarks.remove(fileId);
+        delete marks;
+    }
 }
 
 TextMark *TextMarkRepo::createMark(TextMarkData *tmData)
 {
     FileId fileId = ensureFileId(tmData->location);
-    FileId contextId = ensureFileId(tmData->contextLocation);
-    TextMark* mark = new TextMark(this, fileId, tmData->type, contextId);
-    mMarks.insert(fileId, mark);
+    FileId runId = ensureFileId(tmData->runLocation);
+    TextMark* mark = new TextMark(this, fileId, tmData->type, runId);
+    if (!mMarks.contains(fileId)) mMarks.insert(fileId, new FileMarks());
+    FileMarks *marks = mMarks.value(fileId);
+    marks->insert(mark->line(), mark);
     return mark;
 }
 
@@ -53,10 +71,10 @@ void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
     if (fm) fm->jumpTo(mark->runId(), focus, mark->line(), mark->column());
 }
 
-void TextMarkRepo::rehighlightAt(FileId fileId, int pos)
+void TextMarkRepo::rehighlight(FileId fileId, int line)
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
-    if (fm) fm->rehighlightAt(pos);
+    if (fm) fm->rehighlight(line);
 }
 
 FileKind TextMarkRepo::fileKind(FileId fileId)
@@ -66,40 +84,21 @@ FileKind TextMarkRepo::fileKind(FileId fileId)
     return FileKind::None;
 }
 
-QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block, TextMark::Type refType)
+QList<TextMark*> TextMarkRepo::marks(FileId nodeId, int lineNr, FileId runId, TextMark::Type refType, int max)
 {
-    return marksForBlock(nodeId, block, -1, refType);
-}
-
-QVector<TextMark *> TextMarkRepo::marksForBlock(FileId nodeId, QTextBlock block, FileId runId, TextMark::Type refType)
-{
-    // TODO(JM) rebuild this to line/row behavior
-    QVector<TextMark*> res;
-    QList<TextMark*> marks = mMarks.values(nodeId);
-    int i = block.blockNumber()+2 < block.document()->blockCount() ? 0 : qMax(marks.size()-4, 0);
-    for (; i < marks.size(); i++) {
-        TextMark* tm = marks.at(i);
-        int hit = tm->in(block.position(), block.length()-1);
-        if (hit == 0 && (refType == TextMark::all || refType == tm->refType())) {
-            res << tm;
-        }
+    QList<TextMark*> res;
+    if (!mMarks.contains(nodeId)) return res;
+    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(nodeId)->values() : mMarks.value(nodeId)->values(lineNr);
+    if (runId < 0 && refType == TextMark::all) return marks;
+    int i = 0;
+    for (TextMark* mark: marks) {
+        if (refType != TextMark::all && refType != mark->type()) continue;
+        if (runId >= 0 && mark->runId() >= 0 && runId != mark->runId()) continue;
+        res << mark;
+        i++;
+        if (i == max) break;
     }
     return res;
-}
-
-QList<TextMark*> TextMarkRepo::marks(FileId fileId, FileId runId = -1, TextMark::Type refType, int max)
-{
-    if (refType != TextMark::all) {
-        QList<TextMark*> res;
-        foreach (TextMark* mark, mMarks.values(fileId)) {
-            if (mark->type() == refType && (runId < 0 || mark->runId() == runId)) {
-                res << mark;
-                if (--max == 0) break;
-            }
-        }
-        return res;
-    }
-    mMarks.values(fileId);
 }
 
 FileId TextMarkRepo::ensureFileId(QString location)
