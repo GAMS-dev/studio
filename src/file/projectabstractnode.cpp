@@ -99,6 +99,16 @@ const ProjectRunGroupNode *ProjectAbstractNode::runParentNode() const
     return nullptr;
 }
 
+ProjectRunGroupNode *ProjectAbstractNode::runParentNode()
+{
+    ProjectAbstractNode* node = this;
+    while (node && !node->toRunGroup()) {
+        node = node->parentNode();
+    }
+    if (node) return node->toRunGroup();
+    return nullptr;
+}
+
 NodeType ProjectAbstractNode::type() const
 {
     return mType;
@@ -142,6 +152,13 @@ const ProjectFileNode *ProjectAbstractNode::toFile() const
 {
     if (mType == NodeType::file) return static_cast<const ProjectFileNode*>(this);
     if (mType == NodeType::log) return static_cast<const ProjectFileNode*>(this);
+    return nullptr;
+}
+
+ProjectFileNode *ProjectAbstractNode::toFile()
+{
+    if (mType == NodeType::file) return static_cast<ProjectFileNode*>(this);
+    if (mType == NodeType::log) return static_cast<ProjectFileNode*>(this);
     return nullptr;
 }
 

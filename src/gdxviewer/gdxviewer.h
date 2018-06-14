@@ -24,6 +24,7 @@
 #include "gdxcc.h"
 #include "gdxsymbol.h"
 #include "gdxsymboltable.h"
+#include "common.h"
 #include <memory>
 #include <QMutex>
 #include <QVector>
@@ -47,9 +48,17 @@ public:
     void copyAction();
     void selectAllAction();
 
+    FileId fileId() const;
+    void setFileId(const FileId &fileId);
+    NodeId groupId() const;
+    void setGroupId(const NodeId &groupId = NodeId());
+
 private:
     QString mGdxFile;
     QString mSystemDirectory;
+
+    FileId mFileId = -1;
+    NodeId mGroupId = -1;
 
     bool mHasChanged = false;
 

@@ -56,7 +56,7 @@ public:
     const ProjectGroupNode *findGroup(const QString& filePath);
     ProjectRunGroupNode *findRunGroup(FileId runId, ProjectGroupNode *group = nullptr) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
-    const ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
+    ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectAbstractNode</c>.
@@ -125,6 +125,9 @@ public:
     /// \param _parent The parent of this node (default: rootTreeModelIndex)
     /// \return the new <c>ProjectRunGroupNode</c>.
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
+    ProjectFileNode *findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup);
+    ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup);
+    QVector<ProjectFileNode*> fileNodes(const FileId &fileId) const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

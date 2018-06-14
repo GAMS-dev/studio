@@ -19,6 +19,7 @@ class FileMeta: public QObject
 {
     Q_OBJECT
 public:
+    ~FileMeta() override;
     inline FileId id() const;
     QString location() const;
     FileKind kind();
@@ -28,16 +29,19 @@ public:
     bool exists() const;
     bool isOpen() const;
     bool isModified() const;
+    bool isReadOnly() const;
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
-    void removeEditor(QWidget* edit);
+    void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
     void removeAllEditors();
     bool hasEditor(QWidget* edit) const;
-    void triggerLoad(QList<int> codecMibs = QList<int>());
+    void load(QList<int> codecMibs = QList<int>());
+    void save();
+    void saveAs(const QString &location);
 
     void jumpTo(FileId runId, bool focus, int line = 0, int column = 0);
     void rehighlight(int line);
@@ -111,6 +115,7 @@ private:
     FileMeta(FileMetaRepo* fileRepo, FileId id, QString location);
     QVector<QPoint> getEditPositions();
     void setEditPositions(QVector<QPoint> edPositions);
+    void internalSave(const QString &location);
 
 private:
     FileId mId;

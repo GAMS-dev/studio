@@ -88,6 +88,7 @@ class GoToWidget;
 class AutosaveHandler;
 
 struct RecentData {
+    // TODO(JM) stack for recent-list to keep all in mind
 
     QWidget *editor() const;
     void setEditor(QWidget *editor, MainWindow* window);
@@ -121,7 +122,6 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
-    void linkToEdit(QTabWidget* tabWidget, FileMeta *fileMeta, bool focus, int codecMip = -1);
     void updateMenuToCodec(int mib);
     QStringList openedFiles();
     void openFiles(QStringList pathList);
@@ -146,6 +146,8 @@ public:
     CommandLineHistory* commandLineHistory();
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
+    TextMarkRepo* textMarkRepo() const;
+
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
     SearchWidget* searchWidget() const;
@@ -159,6 +161,7 @@ public:
     QWidget *welcomePage() const;
     void delayedFileRestoration();
     void resetViews();
+
 
 public slots:
     void openFilePath(const QString &filePath);
@@ -183,6 +186,7 @@ private slots:
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     void fileClosed(FileId fileId);
+    void fileEvent(FileMeta *fileMeta, const FileEvent &e);
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
@@ -306,8 +310,11 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    SearchWidget *mSearchWidget = nullptr;
+    FileMetaRepo mFileMetaRepo;
+    ProjectRepo mProjectRepo;
+    TextMarkRepo mTextMarkRepo;
 
+    SearchWidget *mSearchWidget = nullptr;
     Option* mGamsOption;
     OptionEditor* mOptionEditor;
     QDockWidget* mDockOptionView;
@@ -316,7 +323,6 @@ private:
     CommandLineTokenizer* mCommandLineTokenizer;
     QWidget* mCommandWidget;
     QCheckBox* mShowOptionDefintionCheckBox;
-
     HelpView* mDockHelpView = nullptr;
 
     GAMSProcess *mProcess = nullptr;
@@ -330,9 +336,6 @@ private:
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
-    FileMetaRepo mFileMetaRepo;
-    ProjectRepo mProjectRepo;
-    TextMarkRepo mTextMarkRepo;
     ProjectContextMenu mProjectContextMenu;
 
     QToolButton* interruptToolButton = nullptr;

@@ -35,24 +35,32 @@ void TextMarkRepo::removeMark(TextMark *tm)
     }
 }
 
-void TextMarkRepo::removeMarks(FileId fileId)
+void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
 {
     FileMarks *marks = mMarks.value(fileId);
-    foreach (TextMark* mark, marks->values()) {
-        mark->mMarkRepo = nullptr;
-        delete mark;
+    if (types.isEmpty() || types.contains(TextMark::all)) {
+        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ++it) {
+            delete *it;
+        }
+    } else {
+        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ++it) {
+            if (!types.contains(it.value()->type()))
+                delete *it;
+        }
     }
-    if (marks->isEmpty()) {
-        mMarks.remove(fileId);
-        delete marks;
-    }
+//    if (marks->isEmpty()) {
+//        mMarks.remove(fileId);
+//        delete marks;
+//    }
 }
 
-TextMark *TextMarkRepo::createMark(TextMarkData *tmData)
+TextMark *TextMarkRepo::createMark(TextMarkData &tmData)
 {
-    FileId fileId = ensureFileId(tmData->location);
-    FileId runId = ensureFileId(tmData->runLocation);
-    TextMark* mark = new TextMark(this, fileId, tmData->type, runId);
+    FileId fileId = ensureFileId(tmData.location);
+    if (fileId < 0) return nullptr;
+    FileId runId = ensureFileId(tmData.runLocation);
+    TextMark* mark = new TextMark(this, fileId, tmData.type, runId);
+    mark->setPosition(tmData.line, tmData.column, tmData.size);
     if (!mMarks.contains(fileId)) mMarks.insert(fileId, new FileMarks());
     FileMarks *marks = mMarks.value(fileId);
     marks->insert(mark->line(), mark);

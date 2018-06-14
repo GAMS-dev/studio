@@ -42,6 +42,14 @@ ProjectRepo::~ProjectRepo()
     delete mTreeModel;
 }
 
+void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
+{
+    if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
+    if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
+    mFileRepo = fileRepo;
+    mTextMarkRepo = textMarkRepo;
+}
+
 const ProjectGroupNode* ProjectRepo::findGroup(const QString &filePath)
 {
     QFileInfo fi(filePath);
@@ -62,11 +70,11 @@ ProjectRunGroupNode *ProjectRepo::findRunGroup(const AbstractProcess *process, P
     return group->findRunGroup(process);
 }
 
-const ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup) const
+ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup) const
 {
     ProjectGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootNode();
-    const ProjectAbstractNode* fsc = group->findNode(filePath);
-    return fsc;
+    ProjectAbstractNode* node = group->findNode(filePath);
+    return node;
 }
 
 inline ProjectAbstractNode *ProjectRepo::node(NodeId id) const
@@ -288,14 +296,6 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     return group;
 }
 
-void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
-{
-    if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
-    if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
-    mFileRepo = fileRepo;
-    mTextMarkRepo = textMarkRepo;
-}
-
 void ProjectRepo::removeGroup(ProjectGroupNode* group)
 {
     for (int i = 0; i < group->childCount(); ++i) {
@@ -309,6 +309,43 @@ void ProjectRepo::removeGroup(ProjectGroupNode* group)
     }
     mTreeModel->removeChild(group);
     deleteNode(group);
+}
+
+ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup)
+{
+    if (filePath.startsWith("[LOG]"))
+        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
+    FileMeta* fileMeta = mFileRepo->findOrCreateFileMeta(filePath);
+    if (filePath.isEmpty())
+        EXCEPT() << "Couldn't create a FileMeta for filename '" << filePath << "'";
+    return findOrCreateFileNode(fileMeta, fileGroup);
+}
+
+ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode* fileGroup)
+{
+    if (!fileGroup)
+        EXCEPT() << "The group must not be null";
+    ProjectAbstractNode* node = findNode(fileMeta->location(), fileGroup);
+    if (!node) {
+        if (fileMeta->kind() == FileKind::Log)
+            EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
+        node = new ProjectFileNode(fileMeta, fileGroup);
+    }
+    return node->toFile();
+
+}
+
+QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId) const
+{
+    QVector<ProjectFileNode*> res;
+    QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
+    while (i.hasNext()) {
+        i.next();
+        ProjectFileNode* fileNode = i.value()->toFile();
+        if (fileNode && fileNode->file()->id() == fileId)
+            res << fileNode;
+    }
+    return res;
 }
 
 void ProjectRepo::setSelected(const QModelIndex& ind)
@@ -342,28 +379,6 @@ void ProjectRepo::findFile(QString filePath, ProjectFileNode** resultFile, Proje
 {
     ProjectAbstractNode* fsc = findNode(filePath, fileGroup);
     *resultFile = (fsc && fsc->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc)  : nullptr;
-}
-
-void ProjectRepo::findOrCreateFileNode(QString filePath, ProjectFileNode*& resultFile, ProjectGroupNode* fileGroup)
-{
-    if (!QFileInfo(filePath).exists()) {
-        filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
-    }
-    if (!QFileInfo(filePath).exists()) {
-        EXCEPT() << "File not found: " << filePath;
-    }
-    if (!fileGroup)
-        EXCEPT() << "The group must not be null";
-    ProjectAbstractNode* fsc = findNode(filePath, fileGroup);
-    if (!fsc) {
-        QFileInfo fi(filePath);
-        resultFile = addFile(fi.fileName(), CommonPaths::absolutFilePath(filePath), fileGroup);
-    } else if (fsc->type() == ProjectAbstractNode::File) {
-        resultFile = static_cast<ProjectFileNode*>(fsc);
-    } else {
-        resultFile = nullptr;
-    }
-
 }
 
 QList<ProjectFileNode*> ProjectRepo::modifiedFiles(ProjectGroupNode *fileGroup)
@@ -411,6 +426,7 @@ ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGro
     ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location);
     storeNode(file);
     mTreeModel->insertChild(offset, parent, file);
+
     connect(file, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     connect(file, &ProjectFileNode::modifiedExtern, this, &ProjectRepo::onFileChangedExtern);
     connect(file, &ProjectFileNode::deletedExtern, this, &ProjectRepo::onFileDeletedExtern);

@@ -51,7 +51,8 @@ public:
     virtual QString location() const;
     QString tooltip() override;
     virtual QString lstErrorText(int line);
-    const ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
+    ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
+    ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
 

@@ -115,8 +115,10 @@ private:
 
 struct TextMarkData
 {
-    TextMarkData(QString& _location, TextMark::Type _type, int _line, int _column, int _size = 0)
-        : location(_location), type(_type), line(_line), column(_column), size(_size) {}
+    TextMarkData(const QString& _location, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : location(_location), runLocation(QString()), type(_type), line(_line), column(_column), size(_size) {}
+    TextMarkData(const QString& _location, const QString &_runLocation, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : location(_location), runLocation(_runLocation), type(_type), line(_line), column(_column), size(_size) {}
     QString location;
     QString runLocation;
     TextMark::Type type;

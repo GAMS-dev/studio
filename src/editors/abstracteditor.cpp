@@ -62,18 +62,18 @@ FileId AbstractEditor::fileId() const
 
 void AbstractEditor::setFileId(const FileId &runId)
 {
-    setRunId(); // reset runFileId
+    setGroupId(); // reset groupId
     mFileId = runId;
 }
 
-FileId AbstractEditor::runId() const
+NodeId AbstractEditor::groupId() const
 {
-    return mRunId;
+    return mGroupId;
 }
 
-void AbstractEditor::setRunId(const FileId &runId)
+void AbstractEditor::setGroupId(const NodeId &runId)
 {
-    mRunId = runId;
+    mGroupId = runId;
 }
 
 StudioSettings *AbstractEditor::settings() const

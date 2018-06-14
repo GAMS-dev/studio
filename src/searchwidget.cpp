@@ -214,8 +214,10 @@ QList<Result> SearchWidget::findInFile(FileMeta *fm, bool skipFilters)
             while (i.hasNext()) {
                 match = i.next();
                 matches.addResult(lineCounter, match.capturedStart(), file.fileName(), line.trimmed());
-                if (isOpenFile)
-                    fm->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
+                if (isOpenFile) {
+                    TextMarkData tmData(fm->location(), TextMark::match, lineCounter-1, match.capturedStart(), match.capturedLength());
+                    mMain->textMarkRepo()->createMark(tmData);
+                }
             }
         }
         file.close();
@@ -542,7 +544,7 @@ void SearchWidget::clearResults()
 {
     FileMeta *fm = mMain->fileRepo()->fileMeta(mMain->recent()->editFileId);
     if (!fm) return;
-    fm->removeTextMarks(TextMark::match, true);
+    mMain->textMarkRepo()->removeMarks(fm->id());
     setSearchStatus(SearchStatus::Clear);
 }
 

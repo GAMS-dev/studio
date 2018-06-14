@@ -8,6 +8,7 @@
 #include "commonpaths.h"
 //#include "lxiviewer/lxiviewer.h"
 #include <QFileInfo>
+#include <QFile>
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
@@ -42,6 +43,11 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location)
 
 }
 
+FileMeta::~FileMeta()
+{
+    mFileRepo->removedFile(this);
+}
+
 QVector<QPoint> FileMeta::getEditPositions()
 {
     QVector<QPoint> res;
@@ -72,6 +78,20 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
         i++;
     }
 
+}
+
+void FileMeta::internalSave(const QString &location)
+{
+    QFile file(location);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        EXCEPT() << "Can't open the file";
+    QTextStream out(&file);
+    if (mCodec) out.setCodec(mCodec);
+    out << document()->toPlainText();
+    out.flush();
+    file.close();
+    mData = Data(location);
+    document()->setModified(false);
 }
 
 inline FileId FileMeta::id() const
@@ -186,7 +206,7 @@ void FileMeta::editToTop(QWidget *edit)
     addEditor(edit);
 }
 
-void FileMeta::removeEditor(QWidget *edit)
+void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
 {
     int i = mEditors.indexOf(edit);
     if (i < 0) return;
@@ -201,7 +221,7 @@ void FileMeta::removeEditor(QWidget *edit)
         ptEdit->setDocument(new QTextDocument(ptEdit));
 
         if (mEditors.isEmpty()) {
-            emit documentClosed();
+            if (!suppressCloseSignal) emit documentClosed();
             if (kind() != FileKind::Log) {
                 mDocument->clear();
                 mDocument->clearUndoRedoStacks();
@@ -228,12 +248,11 @@ bool FileMeta::hasEditor(QWidget *edit) const
     return mEditors.contains(edit);
 }
 
-void FileMeta::triggerLoad(QList<int> codecMibs)
+void FileMeta::load(QList<int> codecMibs)
 {
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (!document() && kind() != FileKind::Gdx)
         EXCEPT() << "There is no document assigned to the file " << location();
-
     QList<int> mibs = codecMibs.isEmpty() ? mDefaulsCodecs : codecMibs;
 
     QFile file(location());
@@ -269,8 +288,53 @@ void FileMeta::triggerLoad(QList<int> codecMibs)
             mCodec = codec;
         }
         file.close();
+        mData = Data(location());
         document()->setModified(false);
 //        QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
+    }
+}
+
+void FileMeta::save()
+{
+    if (!isModified()) return;
+    if (location().isEmpty() || location().startsWith('['))
+        EXCEPT() << "Can't save file '" << location() << "'";
+    internalSave(location());
+}
+
+void FileMeta::saveAs(const QString &location)
+{
+    if (kind() == FileKind::Log) {
+        internalSave(location);
+        return;
+    }
+    if (location.isEmpty() || location.startsWith('['))
+        EXCEPT() << "Can't save file '" << location << "'";
+    if (location == mLocation) return;
+
+    // remember nodes that should be switched to the new FileMeta
+    QVector<ProjectFileNode*> nodes;
+    FileMeta* existingFM = mFileRepo->fileMeta(location);
+    if (existingFM == this) existingFM = nullptr;
+    if (existingFM)
+        nodes = mFileRepo->projectRepo()->fileNodes(existingFM->id());
+
+    // write the content
+    mLocation = location;
+    mData = Data(location);
+    emit changed(mId);
+    internalSave(mLocation);
+
+    // if there were nodes on the existingFM assign them to this
+    if (existingFM) {
+        for (ProjectFileNode* node: nodes) {
+            node->replaceFile(this);
+        }
+        for (QWidget* wid : existingFM->editors()) {
+            existingFM->removeEditor(wid, true);
+            addEditor(wid);
+        }
+        delete existingFM;
     }
 }
 
@@ -319,6 +383,13 @@ bool FileMeta::isModified() const
     return mDocument->isModified();
 }
 
+bool FileMeta::isReadOnly() const
+{
+    AbstractEditor* edit = mEditors.isEmpty() ? nullptr : toAbstractEdit(mEditors.first());
+    if (!edit) return true;
+    return edit->isReadOnly();
+}
+
 QTextDocument *FileMeta::document() const
 {
     return mDocument;
@@ -345,7 +416,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() != FileKind::Gdx) {
         CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
         codeEdit->setTabChangesFocus(false);
-        codeEdit->setRunId(runGroup ? runGroup->runFileId() : -1);
+        codeEdit->setGroupId(runGroup ? runGroup->id() : -1);
         initEditorType(codeEdit);
         codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());
@@ -356,8 +427,10 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
-        if (!mEditors.size())
-            triggerLoad(codecMibs);
+
+        // TODO(JM) load should unbound from createEdit
+//        if (!mEditors.size())
+//            triggerLoad(codecMibs);
 
         if (kind() == FileKind::Log ||
                 kind() == FileKind::Lst ||

@@ -116,7 +116,7 @@ QString ProjectGroupNode::lstErrorText(int line)
     return parentNode() ? parentNode()->lstErrorText(line) : QString();
 }
 
-const ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool recurse) const
+ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool recurse) const
 {
     foreach (ProjectAbstractNode* node, mChildList) {
         const ProjectFileNode* file = node->toFile();
@@ -125,12 +125,20 @@ const ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, b
         if (group) {
             if (group->location() == location) return node;
             if (recurse) {
-                const ProjectAbstractNode* sub = group->findNode(location, true);
+                ProjectAbstractNode* sub = group->findNode(location, true);
                 if (sub) return sub;
             }
         }
     }
     return nullptr;
+}
+
+ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
+{
+    ProjectAbstractNode* fn = findNode(location, false);
+    if (fn) return fn->toFile();
+    FileMeta* fm = root()->fileRepo()->findOrCreateFileMeta(location);
+    return root()->repo()->findOrCreateFileNode(fm, this);
 }
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
@@ -338,23 +346,10 @@ ProjectRepo *ProjectRootNode::repo() const
     return mRepo;
 }
 
-
 /*
 
 
 
-void ProjectGroupNode::attachFile(const QString &filepath)
-{
-    if(filepath == "") return;
-    QFileInfo fi(filepath);
-    if(!mAttachedFiles.contains(fi)) {
-        mAttachedFiles << fi;
-        ProjectAbstractNode* fsc = findNode(filepath);
-        if (!fsc && fi.exists()) {
-            updateChildNodes();
-        }
-    }
-}
 
 void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
 {

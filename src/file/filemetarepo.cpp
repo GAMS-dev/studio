@@ -54,6 +54,12 @@ TextMarkRepo *FileMetaRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
+ProjectRepo *FileMetaRepo::projectRepo() const
+{
+    if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
+    return mProjectRepo;
+}
+
 QVector<FileMeta*> FileMetaRepo::openFiles() const
 {
     QVector<FileMeta*> res;
@@ -70,6 +76,11 @@ void FileMetaRepo::openFile(FileMeta *fm, FileId runId, bool focus, int codecMib
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
     ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(runId);
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
+}
+
+void FileMetaRepo::removedFile(FileMeta *fm)
+{
+    if (fm) mFiles.remove(fm->id());
 }
 
 void FileMetaRepo::dirChanged(const QString &path)

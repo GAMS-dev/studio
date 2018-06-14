@@ -63,6 +63,7 @@ public:
     virtual ProjectGroupNode *parentNode() const;
     virtual void setParentNode(ProjectGroupNode *parent);
     const ProjectRunGroupNode *runParentNode() const;
+    ProjectRunGroupNode *runParentNode();
 
     /// \brief File node type.
     /// \return Returns the file node type as <c>int</c>.
@@ -75,6 +76,7 @@ public:
     const ProjectRunGroupNode *toRunGroup() const;
     ProjectRunGroupNode *toRunGroup();
     const ProjectFileNode* toFile() const;
+    ProjectFileNode* toFile();
     const ProjectLogNode* toLog() const;
 
     bool isActive() const;

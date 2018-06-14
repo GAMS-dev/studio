@@ -90,6 +90,14 @@ FileMeta *ProjectFileNode::file() const
     return mFileMeta;
 }
 
+void ProjectFileNode::replaceFile(FileMeta *fileMeta)
+{
+    if (mFileMeta != fileMeta) {
+        mFileMeta = fileMeta;
+        emit changed();
+    }
+}
+
 QString ProjectFileNode::location() const
 {
     return mFileMeta->location();

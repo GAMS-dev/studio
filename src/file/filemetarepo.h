@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFileSystemWatcher>
 #include "filemeta.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -29,14 +30,15 @@ public:
     StudioSettings *settings() const;
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
+    ProjectRepo *projectRepo() const;
     QVector<FileMeta*> openFiles() const;
 
 signals:
-    void removedFile(FileMeta* fm);
     void fileEvent(FileMeta* fm, FileEvent e);
 
 public slots:
     void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
+    void removedFile(FileMeta* fm);
 
 private slots:
     void dirChanged(const QString& path);

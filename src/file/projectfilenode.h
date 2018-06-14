@@ -69,11 +69,16 @@ public:
     QString tooltip() override;
     FileId runFileId() const;
 
+signals:
+    void changed();
+
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
+    friend class FileMeta;
 
     ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::file);
+    void replaceFile(FileMeta* fileMeta);
 //    void showToolTip(const QVector<TextMark*> marks);
 
 private:

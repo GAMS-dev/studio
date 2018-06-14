@@ -38,6 +38,7 @@
 #include "settingsdialog.h"
 #include "searchwidget.h"
 #include "option/optioneditor.h"
+#include "option/commandlinehistory.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
@@ -112,9 +113,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     // TODO(JM) mFileMetaRepo should signal just one FileEvent with the kind of change. That makes it easier to stack
     //          the events to be triggered later if Studio gains the focus again
-    connect(&mFileMetaRepo, &FileMetaRepo::fileClosed, this, &MainWindow::fileClosed);
-    connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
-    connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
+    connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
+//    connect(&mFileMetaRepo, &FileMetaRepo::fileClosed, this, &MainWindow::fileClosed);
+//    connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
+//    connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
 
 
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
@@ -163,8 +165,6 @@ void MainWindow::delayedFileRestoration()
 
 MainWindow::~MainWindow()
 {
-    delete mTextMarkRepo;
-    mTextMarkRepo = nullptr;
     delete ui;
     killTimer(TimerID);
     // TODO(JM) The delete ui deletes all child instances in the tree. If you want to remove instances that may or
@@ -183,16 +183,6 @@ void MainWindow::initTabs()
         createWelcomePage();
 }
 
-void MainWindow::linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus, int codecMip)
-{
-    connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    if (focus) {
-        updateMenuToCodec(fileMeta->codecMib());
-        mRecent.setEditor(tabWidget->currentWidget(), this);
-        mRecent.editFileId = fc->id();
-    }
-}
-
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
@@ -202,7 +192,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
-    group->attachFile(filepath);
+    mProjectRepo.findOrCreateFileNode(filepath, group);
 }
 
 void MainWindow::sendSourcePath(QString &source)
@@ -328,14 +318,18 @@ ProjectRepo *MainWindow::projectRepo()
 
 QWidgetList MainWindow::openEditors()
 {
-    return mProjectRepo.editors();
+    QWidgetList res;
+    for (int i = 0; i < ui->mainTab->count(); ++i) {
+        res << ui->mainTab->widget(i);
+    }
+    return res;
 }
 
 QList<AbstractEditor*> MainWindow::openLogs()
 {
     QList<AbstractEditor*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(ui->logTabs->widget(i));
+        AbstractEditor* ed = FileMeta::toAbstractEdit(ui->logTabs->widget(i));
         if (ed) resList << ed;
     }
     return resList;
@@ -530,8 +524,8 @@ void MainWindow::updateEditorPos()
 {
     QPoint pos;
     QPoint anchor;
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(edit);
+    AbstractEditor* edit = FileMeta::toAbstractEdit(mRecent.editor());
+    CodeEditor *ce = FileMeta::toCodeEdit(edit);
     if (ce) {
         ce->getPositionAndAnchor(pos, anchor);
         mStatusWidgets->setPosAndAnchor(pos, anchor);
@@ -548,7 +542,7 @@ void MainWindow::updateEditorPos()
 
 void MainWindow::updateEditorMode()
 {
-    CodeEditor* edit = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEditor* edit = FileMeta::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(EditMode::Readonly);
     } else {
@@ -558,7 +552,7 @@ void MainWindow::updateEditorMode()
 
 void MainWindow::updateEditorBlockCount()
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
+    AbstractEditor* edit = FileMeta::toAbstractEdit(mRecent.editor());
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
@@ -577,8 +571,8 @@ void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
     if (mRecent.editFileId >= 0) {
-        ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editFileId);
-        if (fc) path = QFileInfo(fc->location()).path();
+        FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+        if (fm) path = QFileInfo(fm->location()).path();
     }
     QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
                                                     tr("GAMS code (*.gms *.inc );;"
@@ -600,7 +594,7 @@ void MainWindow::on_actionNew_triggered()
     }
 
     if (ProjectFileNode *fc = addNode("", filePath)) {
-        fc->save();
+        fc->file()->save();
     }
 }
 
@@ -621,23 +615,21 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editFileId);
-    if (!fc) return;
-    if (fc->type() == NodeType::log) {
+    FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    if (!fm) return;
+    if (fm->kind() == FileKind::Log /* TODO(JM) .. or file was new */ ) {
         on_actionSave_As_triggered();
-    } else if (fc->isModified()) {
-        fc->save();
+    } else if (fm->isModified()) {
+        fm->save();
     }
 }
 
 void MainWindow::on_actionSave_As_triggered()
 {
-    QString path = mRecent.path;
-    ProjectFileNode *formerFc;
-    if (mRecent.editFileId >= 0) {
-        formerFc = mProjectRepo.asFile(mRecent.editFileId);
-        if (formerFc) path = QFileInfo(formerFc->location()).path();
-    }
+    if (mRecent.editFileId < 0) return;
+    FileMeta *fileMeta = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    if (!fileMeta) return;
+    QString path = QFileInfo(fileMeta->location()).path();
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
                                                  path,
@@ -645,27 +637,28 @@ void MainWindow::on_actionSave_As_triggered()
                                                  "Text files (*.txt);;"
                                                  "All files (*.*)"));
     if (!filePath.isEmpty()) {
-        mRecent.path = QFileInfo(filePath).path();
-        ProjectFileNode* fc = mProjectRepo.asFile(mRecent.editFileId);
-        if (!fc) return;
 
-        if(fc->location().endsWith(".gms") && !filePath.endsWith(".gms")) {
+        mRecent.path = QFileInfo(filePath).path();
+
+        if(fileMeta->location().endsWith(".gms", Qt::CaseInsensitive) && !filePath.endsWith(".gms", Qt::CaseInsensitive)) {
             filePath = filePath + ".gms";
-        } else if (fc->location().endsWith(".gdx") && !filePath.endsWith(".gdx")) {
+        } else if (fileMeta->location().endsWith(".gdx", Qt::CaseInsensitive) && !filePath.endsWith(".gdx", Qt::CaseInsensitive)) {
             filePath = filePath + ".gdx";
-        } else if (fc->location().endsWith(".lst") && !filePath.endsWith(".lst")) {
+        } else if (fileMeta->location().endsWith(".lst", Qt::CaseInsensitive) && !filePath.endsWith(".lst", Qt::CaseInsensitive)) {
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->file()->save(filePath);
-        openFile(fc->file(), true, fc->parentNode());
-        mStatusWidgets->setFileName(fc->location());
+        fileMeta->saveAs(filePath);
+        ProjectRunGroupNode* runGroup = mRecent.group ? mRecent.group->runParentNode() : nullptr;
+        openFile(fileMeta, true, runGroup);
+        mStatusWidgets->setFileName(fileMeta->location());
     }
 }
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    mProjectRepo.saveAll();
+    for (FileMeta* fm: mFileMetaRepo.openFiles())
+        fm->save();
 }
 
 void MainWindow::on_actionClose_triggered()
@@ -692,24 +685,23 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-    ProjectFileNode *fc = mProjectRepo.asFile(focusWidget());
-    if (fc) {
-        if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    if (fm) {
+        if (fm->document() && !fm->isReadOnly()) fm->document()->setModified(true);
         updateMenuToCodec(action->data().toInt());
-        mStatusWidgets->setEncoding(fc->codecMib());
+        mStatusWidgets->setEncoding(fm->codecMib());
     }
 }
 
 void MainWindow::codecReload(QAction *action)
 {
-    if (!focusWidget()) return;
-    ProjectFileNode *fc = mProjectRepo.asFile(focusWidget());
-    if (fc && fc->codecMib() != action->data().toInt()) {
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
-        if (fc->isModified()) {
+        if (fm->isModified()) {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText(fc->location()+" has been modified.");
+            msgBox.setText(fm->location()+" has been modified.");
             msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
                                       + action->text() + "?");
             msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
@@ -718,20 +710,20 @@ void MainWindow::codecReload(QAction *action)
             reload = msgBox.exec();
         }
         if (reload) {
-            fc->load(action->data().toInt(), true);
+            fm->load(QList<int>() << action->data().toInt());
             updateMenuToCodec(action->data().toInt());
-            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setEncoding(fm->codecMib());
         }
     }
 }
 
 void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
 {
-    ProjectGroupNode* group = fc->parentNode();
+    ProjectRunGroupNode* group = fc->runParentNode();
     if (!group) return;
 
     mCommandLineOption->clear();
-    QStringList option =  mCommandLineHistory->getHistoryFor(group->runnableGms());
+    QStringList option = mCommandLineHistory->getHistoryFor(group->runnableGms()->location());
     foreach(QString str, option) {
        mCommandLineOption->insertItem(0, str );
     }
@@ -751,50 +743,42 @@ void MainWindow::activeTabChanged(int index)
     mOptionEditor->setEnabled(false);
 
     // remove highlights from old tab
-    ProjectFileNode* oldTab = mProjectRepo.asFile(mRecent.editor());
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
+    if (mRecent.editFileId >= 0)
+        mTextMarkRepo.removeMarks(mRecent.editFileId, QSet<TextMark::Type>() << TextMark::match);
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(editWidget);
-    lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
+    AbstractEditor* edit = FileMeta::toAbstractEdit(editWidget);
+    lxiviewer::LxiViewer* lxiViewer = FileMeta::toLxiViewer(editWidget);
+    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
 
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.asFile(lxiViewer ? editWidget : edit);
+    FileMeta* fm = mFileMetaRepo.fileMeta(edit ? edit->fileId() : gdxViewer ? gdxViewer->fileId() : -1);
 
-        if (fc) {
-            mRecent.editFileId = fc->id();
+    // TODO(JM) missing common base class for all viewers/editors
+    if (fm) {
+        mRecent.editFileId = fm->id();
+        mStatusWidgets->setFileName(fm->location());
+        mStatusWidgets->setEncoding(fm->codecMib());
+        if (edit) {
             mRecent.setEditor(lxiViewer ? editWidget : edit, this);
-            mRecent.group = fc->parentNode();
+            mRecent.group = mProjectRepo.asGroup(edit->groupId());
             if (!edit->isReadOnly()) {
-                loadCommandLineOptions(fc);
-
+                loadCommandLineOptions(fm);
                 mCommandWidget->setEnabled(true);
                 mOptionEditor->setEnabled(true);
                 updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
-            updateMenuToCodec(fc->codecMib());
-            mStatusWidgets->setFileName(fc->location());
-            mStatusWidgets->setEncoding(fc->codecMib());
+            updateMenuToCodec(fm->codecMib());
             mStatusWidgets->setLineCount(edit->blockCount());
-        } else {
-            mStatusWidgets->setFileName("");
-            mStatusWidgets->setEncoding(-1);
+            ui->menuEncoding->setEnabled(fm && !edit->isReadOnly());
+        } else if (gdxViewer) {
+            ui->menuEncoding->setEnabled(false);
+            mRecent.setEditor(gdxViewer, this);
+            mRecent.group = mProjectRepo.asGroup(gdxViewer->groupId());
             mStatusWidgets->setLineCount(-1);
+            gdxViewer->reload();
         }
-        ui->menuEncoding->setEnabled(fc && !edit->isReadOnly());
-    } else if (ProjectFileNode::toGdxViewer(editWidget)) {
-        ui->menuEncoding->setEnabled(false);
-        gdxviewer::GdxViewer* gdxViewer = ProjectFileNode::toGdxViewer(editWidget);
-        mRecent.setEditor(gdxViewer, this);
-        ProjectFileNode* fc = mProjectRepo.asFile(gdxViewer);
-        mRecent.editFileId = fc->id();
-        mRecent.group = fc->parentNode();
-        mStatusWidgets->setFileName(fc->location());
-        mStatusWidgets->setEncoding(fc->codecMib());
-        mStatusWidgets->setLineCount(-1);
-        gdxViewer->reload();
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
@@ -804,7 +788,7 @@ void MainWindow::activeTabChanged(int index)
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 
-    CodeEditor* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
 }
@@ -899,6 +883,11 @@ void MainWindow::fileClosed(FileId fileId)
 
 }
 
+void MainWindow::fileEvent(FileMeta *fileMeta, const FileEvent &e)
+{
+    // TODO(JM) handle what has happened to the file
+}
+
 void MainWindow::appendSystemLog(const QString &text)
 {
     QPlainTextEdit *outWin = ui->systemLogView;
@@ -961,7 +950,7 @@ void MainWindow::on_actionExit_Application_triggered()
 void MainWindow::on_actionHelp_triggered()
 {
     if ( (mRecent.editor() != nullptr) && (focusWidget() == mRecent.editor()) ) {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+        CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
@@ -1208,7 +1197,7 @@ void MainWindow::setRunActionsEnabled(bool enable)
 bool MainWindow::isActiveTabEditable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEditor* edit = FileMeta::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.asFile(edit);
         return (fc && !edit->isReadOnly());
@@ -1327,7 +1316,7 @@ void MainWindow::addToOpenedFiles(QString filePath)
 {
     if (!QFileInfo(filePath).exists()) return;
 
-    if (filePath.startsWith("[")) return; // invalid
+    if (filePath.startsWith('[')) return; // invalid
 
     if (history()->lastOpenedFiles.size() >= mSettings->historySize())
         history()->lastOpenedFiles.removeLast();
@@ -1766,6 +1755,11 @@ void MainWindow::changeToLog(ProjectFileNode* fileNode)
     }
 }
 
+TextMarkRepo *MainWindow::textMarkRepo() const
+{
+    return &mTextMarkRepo;
+}
+
 void MainWindow::openFile(FileMeta *fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
 {
     if (!fileMeta) return;
@@ -1790,7 +1784,13 @@ void MainWindow::openFile(FileMeta *fileMeta, bool focus, ProjectRunGroupNode *r
         int tabIndex = tabWidget->addTab(edit, fileMeta->name());
         tabWidget->setTabToolTip(tabIndex, fileMeta->location());
         if (focus) tabWidget->setCurrentIndex(tabIndex);
-        linkToEdit(tabWidget, fileMeta, focus, codecMib);
+        connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        if (focus) {
+            updateMenuToCodec(fileMeta->codecMib());
+            mRecent.setEditor(tabWidget->currentWidget(), this);
+            mRecent.editFileId = fileMeta->id();
+        }
+        fileMeta->load();
     }
     if (tabWidget->currentWidget())
         if (focus) {
@@ -1874,7 +1874,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
 
         FileType fType = FileType::from(fInfo.suffix());
 
-        if (fType == FileType::Gsp) {
+        if (fType.kind() == FileKind::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
             openFilePath(fInfo.filePath()); // open all sorts of files
@@ -1929,8 +1929,8 @@ void MainWindow::on_actionSearch_triggered()
 
            if (ui->mainTab->currentWidget()) {
                int sbs;
-               if (mRecent.editor() && ProjectFileNode::toAbstractEdit(mRecent.editor())
-                       && ProjectFileNode::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
+               if (mRecent.editor() && FileMeta::toAbstractEdit(mRecent.editor())
+                       && FileMeta::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
                    sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
                else
                    sbs = 2;
@@ -1963,8 +1963,8 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     foreach (QWidget* edit, openEditors()) {
-        if (!ProjectFileNode::toGdxViewer(edit))
-            ProjectFileNode::toAbstractEdit(edit)->setFont(font);
+        if (!FileMeta::toGdxViewer(edit))
+            FileMeta::toAbstractEdit(edit)->setFont(font);
     }
     foreach (QWidget* log, openLogs()) {
         log->setFont(font);
@@ -1982,7 +1982,7 @@ void MainWindow::updateEditorLineWrapping()
 
     QWidgetList editList = mProjectRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(editList.at(i));
+        AbstractEditor* ed = FileMeta::toAbstractEdit(editList.at(i));
         if (ed) {
             ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(wrapModeEditor);
@@ -2089,7 +2089,7 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce) ce->redo();
 }
 
@@ -2097,13 +2097,13 @@ void MainWindow::on_actionUndo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
 {
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEditor *ce = FileMeta::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
     ce->pasteClipboard();
 }
@@ -2116,12 +2116,12 @@ void MainWindow::on_actionCopy_triggered()
     if (!fc) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
+        gdxviewer::GdxViewer *gdx = FileMeta::toGdxViewer(mRecent.editor());
         gdx->copyAction();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(focusWidget());
+        AbstractEditor *ae = FileMeta::toAbstractEdit(focusWidget());
         if (!ae) return;
-        CodeEditor *ce = ProjectFileNode::toCodeEdit(ae);
+        CodeEditor *ce = FileMeta::toCodeEdit(ae);
         if (ce && ce->blockEdit()) {
             ce->blockEdit()->selectionToClipboard();
         } else {
@@ -2136,17 +2136,17 @@ void MainWindow::on_actionSelect_All_triggered()
     if (!fc || !focusWidget()) return;
 
     if (fc->metrics().fileType() == FileType::Gdx) {
-        gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
+        gdxviewer::GdxViewer *gdx = FileMeta::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
     } else {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(focusWidget());
+        CodeEditor* ce = FileMeta::toCodeEdit(focusWidget());
         if (ce) ce->selectAll();
     }
 }
 
 void MainWindow::on_actionCut_triggered()
 {
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEditor* ce= FileMeta::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2175,7 +2175,7 @@ void MainWindow::on_actionZoom_Out_triggered()
         getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomOut();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEditor *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
@@ -2189,7 +2189,7 @@ void MainWindow::on_actionZoom_In_triggered()
         getDockHelpView()->isAncestorOf(QApplication::activeWindow())) {
         getDockHelpView()->zoomIn();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEditor *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
@@ -2202,7 +2202,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce= FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toUpper());
@@ -2213,7 +2213,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toLower());
@@ -2222,7 +2222,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
@@ -2235,7 +2235,7 @@ void MainWindow::on_actionIndent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2247,7 +2247,7 @@ void MainWindow::on_actionOutdent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2259,7 +2259,7 @@ void MainWindow::on_actionDuplicate_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->duplicateLine();
 }
@@ -2269,7 +2269,7 @@ void MainWindow::on_actionRemove_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->removeLine();
 }
@@ -2279,7 +2279,7 @@ void MainWindow::on_actionComment_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEditor* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->commentLine();
 }
