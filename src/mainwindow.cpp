@@ -650,9 +650,17 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->save(filePath);
-        openFilePath(filePath, fc->parentEntry(), true);
-        mStatusWidgets->setFileName(fc->location());
+
+        // perform copy when file is a gdx file
+        if (fc->metrics().fileType().kind() == FileType::Gdx) {
+            if (QFile::exists(filePath))
+                QFile::remove(filePath);
+            QFile::copy(fc->location(), filePath);
+        } else {
+            fc->save(filePath);
+            openFilePath(filePath, fc->parentEntry(), true);
+            mStatusWidgets->setFileName(fc->location());
+        }
     }
 }
 
