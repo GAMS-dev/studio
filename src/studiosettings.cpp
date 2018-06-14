@@ -153,6 +153,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // history
     mAppSettings->beginGroup("fileHistory");
+    mAppSettings->remove("lastOpenedFiles");
     mAppSettings->beginWriteArray("lastOpenedFiles");
     for (int i = 0; i < main->history()->lastOpenedFiles.length(); i++) {
 
@@ -163,6 +164,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->endArray();
 
     QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
+    mAppSettings->remove("commandLineOptions");
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);

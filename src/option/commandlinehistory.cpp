@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "commandlinehistory.h"
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -96,6 +97,11 @@ QStringList CommandLineHistory::getHistoryFor(QString context)
 {
     setContext(context);
     return mHistory[mCurrentContext];
+}
+
+void CommandLineHistory::removeFromHistory(const QString &key)
+{
+    mHistory.remove(key);
 }
 
 void CommandLineHistory::setContext(QString context)

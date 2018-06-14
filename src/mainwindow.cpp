@@ -1708,7 +1708,7 @@ void MainWindow::closeFile(ProjectFileNode* file)
     mSettings->saveSettings(this);
 }
 
-/// Closes all open editors and tabs related to a file
+/// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
 void MainWindow::closeFileEditors(FileId fileId)
@@ -1727,6 +1727,8 @@ void MainWindow::closeFileEditors(FileId fileId)
         fc->removeEditor(edit);
         edit->deleteLater();
     }
+    // purge history
+    getGamsOptionWidget()->removeFromHistory(fc->location());
 }
 
 void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip)

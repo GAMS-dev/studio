@@ -161,6 +161,11 @@ QMap<QString, QStringList> OptionWidget::getOptionHistory() const
     return mCommandLineHistory->allHistory();
 }
 
+void OptionWidget::removeFromHistory(const QString &key)
+{
+    mCommandLineHistory->removeFromHistory(key);
+}
+
 void OptionWidget::checkOptionDefinition(bool checked)
 {
     ui->gamsOptionEditorCheckbox->setChecked(checked);

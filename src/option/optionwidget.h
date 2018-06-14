@@ -59,6 +59,7 @@ public:
 
     void setOptionHistory(QMap<QString, QStringList> opts);
     QMap<QString, QStringList> getOptionHistory() const;
+    void removeFromHistory(const QString &key);
 
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
