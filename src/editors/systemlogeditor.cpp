@@ -11,6 +11,7 @@ SystemLogEditor::SystemLogEditor(StudioSettings *settings, QWidget *parent)
 {
     setTextInteractionFlags(textInteractionFlags() |  Qt::TextSelectableByKeyboard);
     setLineWrapMode(AbstractEditor::WidgetWidth);
+    setReadOnly(true);
 }
 
 void SystemLogEditor::appendLog(const QString &msg)
