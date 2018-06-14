@@ -33,7 +33,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWebEngineView" name="webEngineView" native="true">
+    <widget class="gams::studio::HelpView" name="webEngineView" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -213,9 +213,10 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebEngineView</class>
+   <class>gams::studio::HelpView</class>
    <extends>QWidget</extends>
-   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+   <header>help/helpview.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

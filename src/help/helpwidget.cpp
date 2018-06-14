@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include "helpview.h"
 #include "helpwidget.h"
 #include "ui_helpwidget.h"
 
@@ -33,6 +34,7 @@
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
 #include "gclgms.h"
+#include "helppage.h"
 
 namespace gams {
 namespace studio {
@@ -53,6 +55,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
     QToolBar* toolbar = new QToolBar(this);
 
     QString startPageUrl = getStartPageUrl().toString();
