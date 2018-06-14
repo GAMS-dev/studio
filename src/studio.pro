@@ -71,6 +71,7 @@ SOURCES += \
     editors/codeeditor.cpp \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
+    editors/systemlogeditor.cpp \
     exception.cpp \
     file/filemetrics.cpp \
     file/filetype.cpp \
@@ -150,6 +151,7 @@ HEADERS += \
     editors/codeeditor.h \
     editors/logeditor.h \
     editors/selectencodings.h \
+    editors/systemlogeditor.h \
     exception.h \
     file.h \
     file/filemetrics.h \
@@ -231,7 +233,6 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
-    newdialog.ui \
     option/optionwidget.ui \
     resultsview.ui \
     searchwidget.ui \

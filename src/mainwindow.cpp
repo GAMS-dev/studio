@@ -24,6 +24,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeeditor.h"
+#include "editors/logeditor.h"
+#include "editors/abstracteditor.h"
+#include "editors/systemlogeditor.h"
+#include "editors/selectencodings.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
@@ -40,9 +44,6 @@
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
-#include "editors/logeditor.h"
-#include "editors/abstracteditor.h"
-#include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
@@ -58,10 +59,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this))
 {
     mHistory = new HistoryData();
-    QFile css(":/data/style.css");
-    if (css.open(QFile::ReadOnly | QFile::Text)) {
+//    QFile css(":/data/style.css");
+//    if (css.open(QFile::ReadOnly | QFile::Text)) {
 //        this->setStyleSheet(css.readAll());
-    }
+//    }
 
     ui->setupUi(this);
 
@@ -80,12 +81,14 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->systemLogView->setTextInteractionFlags(ui->systemLogView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
+
+    mSyslog = new SystemLogEditor(mSettings.get(), this);
+    ui->logTabs->addTab(mSyslog, "System");
 
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
@@ -130,12 +133,12 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
-    if (mSettings->lineWrapProcess()) // set wrapping for system log
-        ui->systemLogView->setLineWrapMode(AbstractEditor::WidgetWidth);
-    else
-        ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
+    appendSystemLog("This is a placehoder message. say hi");
+    appendSystemLog("This is another message of high importance");
+    appendSystemLog("And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. ");
 
     initTabs();
+    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
@@ -864,13 +867,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    QPlainTextEdit *outWin = ui->systemLogView;
-    if (!text.isNull()) {
-        outWin->moveCursor(QTextCursor::End);
-        outWin->insertPlainText(text);
-        outWin->moveCursor(QTextCursor::End);
-        outWin->document()->setModified(false);
-    }
+    mSyslog->appendLog(text);
 }
 
 void MainWindow::postGamsRun(AbstractProcess* process)
@@ -1051,8 +1048,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
-        // dont remove pointers in ui, otherwise re-adding syslog will crash
-        if (edit != ui->systemLog)
+        // dont remove syslog
+        if (edit != mSyslog)
             edit->deleteLater();
     }
 }
@@ -1100,12 +1097,12 @@ bool MainWindow::isRecentGroupInRunningState()
 
 void MainWindow::on_actionShow_System_Log_triggered()
 {
-    int index = ui->logTabs->indexOf(ui->systemLog);
+    int index = ui->logTabs->indexOf(mSyslog);
     if (index < 0)
-        ui->logTabs->addTab(ui->systemLog, "System");
+        ui->logTabs->addTab(mSyslog, "System");
     else
         ui->logTabs->setCurrentIndex(index);
-    ui->systemLog->raise();
+    mSyslog->raise();
     dockWidgetShow(ui->dockLogView, true);
 }
 
@@ -1869,10 +1866,10 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
         if (!ProjectFileNode::toGdxViewer(edit))
             ProjectFileNode::toAbstractEdit(edit)->setFont(font);
     }
-    foreach (QWidget* log, openLogs()) {
+    foreach (QWidget* log, openLogs())
         log->setFont(font);
-    }
-    ui->systemLogView->setFont(font);
+
+    mSyslog->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()

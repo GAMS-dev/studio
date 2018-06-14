@@ -55,7 +55,7 @@ void DistributionValidator::checkBitness()
                  << gamsPath;
     emit messageReceived(messages.join(" "));
 #else
-    emit messageReceived(QString());
+//    emit messageReceived(QString());
 #endif
 }
 
