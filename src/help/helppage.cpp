@@ -30,10 +30,6 @@ HelpPage::HelpPage(QWidget *parent) : QWebEnginePage(parent)
 
 bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
 {
-    if (url.scheme().startsWith("http") && type == QWebEnginePage::NavigationTypeLinkClicked)  {
-        QDesktopServices::openUrl(url);
-        return false;
-    }
     if (url.path().toLower().endsWith(".pdf")) {
         QDesktopServices::openUrl(url);
         return false;

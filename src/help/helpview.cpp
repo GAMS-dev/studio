@@ -30,13 +30,61 @@ namespace studio {
 class MainWindow;
 
 HelpView::HelpView(QWidget *parent) :
-    QWebEngineView(parent)
+    QWebEngineView(parent), mCurrentHovered("")
 {
 }
 
 void HelpView::setPage(QWebEnginePage *page)
 {
     QWebEngineView::setPage(page);
+}
+
+void HelpView::setCurrentHoveredLink(const QString &url)
+{
+    mCurrentHovered = url;
+}
+
+QWebEngineView *HelpView::createWindow(QWebEnginePage::WebWindowType type)
+{
+    MainWindow *mainWindow = qobject_cast<MainWindow*>(window());
+    if (!mainWindow)
+        return nullptr;
+
+   switch (type) {
+   case QWebEnginePage::WebBrowserTab: {
+       return mainWindow->getHelpWidget()->getHelpView();
+   }
+   case QWebEnginePage::WebBrowserWindow: {
+       return mainWindow->getHelpWidget()->getHelpView();
+   }
+   case QWebEnginePage::WebBrowserBackgroundTab: {
+       return nullptr;
+   }
+   case QWebEnginePage::WebDialog: {
+       return nullptr;
+   }
+   }
+   return QWebEngineView::createWindow(type);
+}
+
+void HelpView::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = new QMenu(this);
+    if (mCurrentHovered.isEmpty()) {
+       menu->addAction( this->pageAction(QWebEnginePage::Back) );
+       menu->addAction( this->pageAction(QWebEnginePage::Forward) );
+       menu->addAction( this->pageAction(QWebEnginePage::Reload ));
+       menu->addAction( this->pageAction(QWebEnginePage::Stop) );
+    } else {
+       menu->addAction( this->pageAction(QWebEnginePage::OpenLinkInThisWindow) );
+       menu->addSeparator();
+       menu->addAction( this->pageAction(QWebEnginePage::CopyLinkToClipboard) );
+    }
+    if (!selectedText().isEmpty()) {
+       menu->addSeparator();
+       menu->addAction( this->pageAction(QWebEnginePage::Copy) );
+    }
+    menu->popup(event->globalPos());
 }
 
 } // namespace studio

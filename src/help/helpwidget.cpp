@@ -55,6 +55,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->webEngineView->showMaximized();
     ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
     QToolBar* toolbar = new QToolBar(this);
 
@@ -324,6 +325,7 @@ void HelpWidget::linkHovered(const QString &url)
         mStatusBarLabel.move(fixPoint.x(), fixPoint.y()-size.height());
         mStatusBarLabel.show();
     }
+    ui->webEngineView->setCurrentHoveredLink(url);
 }
 
 void HelpWidget::on_actionAddBookmark_triggered()
@@ -487,6 +489,12 @@ void HelpWidget::setZoomFactor(qreal factor)
 qreal HelpWidget::getZoomFactor()
 {
     return ui->webEngineView->page()->zoomFactor();
+}
+
+QWebEngineView *HelpWidget::getHelpView()
+{
+    ui->webEngineView->setPage( ui->webEngineView->page() );
+    return ui->webEngineView;
 }
 
 void HelpWidget::closeEvent(QCloseEvent *event)

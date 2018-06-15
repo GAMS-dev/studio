@@ -24,6 +24,7 @@
 #include <QMultiMap>
 #include <QUrl>
 #include <QLabel>
+#include <QWebEngineView>
 
 namespace Ui {
 class HelpWidget;
@@ -87,6 +88,8 @@ public slots:
 
     void setZoomFactor(qreal factor);
     qreal getZoomFactor();
+
+    QWebEngineView *getHelpView();
 
 protected:
     void closeEvent(QCloseEvent *event);

@@ -15,6 +15,14 @@ class HelpView : public QWebEngineView
 public:
     HelpView(QWidget *parent = nullptr);
     void setPage(QWebEnginePage *page);
+    void setCurrentHoveredLink(const QString &url);
+
+protected:
+    void contextMenuEvent(QContextMenuEvent *event) override;
+    QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
+
+private:
+    QString mCurrentHovered;
 };
 
 } // namespace studio
