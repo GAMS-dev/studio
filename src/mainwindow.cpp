@@ -87,9 +87,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
-    mSyslog = new SystemLogEditor(mSettings.get(), this);
-    ui->logTabs->addTab(mSyslog, "System");
-
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->show();
@@ -133,15 +130,18 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
-    appendSystemLog("This is a placehoder message. say hi");
-    appendSystemLog("This is another message of high importance");
-    appendSystemLog("And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. ");
+    mSyslog = new SystemLogEditor(mSettings.get(), this);
+    ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
-    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+//    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
+
+    mSyslog->appendLog("This is a placehoder message. say hi", LogMsgType::Error);
+    mSyslog->appendLog("This is another message of high importance", LogMsgType::Warning);
+    mSyslog->appendLog("And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long.", LogMsgType::Info);
 }
 
 void MainWindow::delayedFileRestoration()
@@ -867,7 +867,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->appendLog(text);
+    mSyslog->appendLog(text, LogMsgType::Info);
 }
 
 void MainWindow::postGamsRun(AbstractProcess* process)
@@ -1466,7 +1466,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
 
     if (gmsFilePath == "")
-        appendSystemLog("No runnable GMS file found.");
+        mSyslog->appendLog("No runnable GMS file found.", LogMsgType::Warning);
 
     QFileInfo gmsFileInfo(gmsFilePath);
 

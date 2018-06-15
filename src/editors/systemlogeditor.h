@@ -16,7 +16,7 @@ class SystemLogEditor : public AbstractEditor
 
 public:
     SystemLogEditor(StudioSettings *settings, QWidget *parent);
-    void appendLog(const QString &msg);
+    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning);
 
     // AbstractEditor interface
 public:

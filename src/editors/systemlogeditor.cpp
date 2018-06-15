@@ -11,22 +11,35 @@ SystemLogEditor::SystemLogEditor(StudioSettings *settings, QWidget *parent)
 {
     setTextInteractionFlags(textInteractionFlags() |  Qt::TextSelectableByKeyboard);
     setLineWrapMode(AbstractEditor::WidgetWidth);
+    setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     setReadOnly(true);
 }
 
-void SystemLogEditor::appendLog(const QString &msg)
+void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
 
-    appendPlainText(msg);
+    QString logMsg("");
 
-//    QPlainTextEdit *outWin = ui->systemLogView;
-//    if (!text.isNull()) {
-//        outWin->moveCursor(QTextCursor::End);
-//        outWin->insertPlainText(text + "\n");
-//        outWin->moveCursor(QTextCursor::End);
-//        outWin->document()->setModified(false);
-    //    }
+    switch (type) {
+    case LogMsgType::Info:
+        logMsg.append("<span style='color:blue;font-weight: bold;'>Info:</span> ");
+        break;
+    case LogMsgType::Warning:
+        logMsg.append("<span style='color:orange;font-weight: bold;'>Warning:</span> ");
+        break;
+    case LogMsgType::Error:
+        logMsg.append("<span style='color:red;font-weight: bold;'>Error:</span> ");
+        break;
+    default:
+        break;
+    }
+
+    logMsg.append(msg + "<br/>");
+
+    moveCursor(QTextCursor::End);
+    appendHtml(logMsg);
+    moveCursor(QTextCursor::End);
 }
 
 AbstractEditor::EditorType SystemLogEditor::type()
