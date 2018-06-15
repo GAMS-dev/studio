@@ -52,10 +52,10 @@ QWebEngineView *HelpView::createWindow(QWebEnginePage::WebWindowType type)
 
    switch (type) {
    case QWebEnginePage::WebBrowserTab: {
-       return mainWindow->getHelpWidget()->getHelpView();
+       return this;
    }
    case QWebEnginePage::WebBrowserWindow: {
-       return mainWindow->getHelpWidget()->getHelpView();
+       return this;
    }
    case QWebEnginePage::WebBrowserBackgroundTab: {
        return nullptr;
