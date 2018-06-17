@@ -1526,8 +1526,7 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    if (state == QProcess::NotRunning)
+    if (isActiveTabSetAsMain() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
 }
 
