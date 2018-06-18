@@ -106,7 +106,6 @@ private:
 
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
-    HelpToolBar* mToolBar;
     QStringList mChapters;
     QLabel mStatusBarLabel;
 
