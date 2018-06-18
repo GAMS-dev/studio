@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include "helptoolbar.h"
 #include "helpview.h"
 #include "helpwidget.h"
 #include "ui_helpwidget.h"
@@ -57,21 +58,10 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     ui->webEngineView->showMaximized();
     ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
-    QToolBar* toolbar = new QToolBar(this);
 
     QString startPageUrl = getStartPageUrl().toString();
     ui->actionHome->setToolTip("Start page ("+ startPageUrl +")");
     ui->actionHome->setStatusTip("Start page ("+ startPageUrl +")");
-
-    toolbar->addAction(ui->actionHome);
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Back));
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Forward));
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Reload));
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Stop));
-    toolbar->addSeparator();
 
     mBookmarkMenu = new QMenu(this);
     mBookmarkMenu->addAction(ui->actionAddBookmark);
@@ -87,11 +77,6 @@ HelpWidget::HelpWidget(QWidget *parent) :
     bookmarkToolButton->setIcon(bookmarkButtonIcon);
     bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     bookmarkToolButton->setMenu(mBookmarkMenu);
-    toolbar->addWidget(bookmarkToolButton);
-
-    QWidget* spacerWidget = new QWidget();
-    spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
     QString onlineStartPageUrl = getOnlineStartPageUrl().toString();
@@ -114,7 +99,22 @@ HelpWidget::HelpWidget(QWidget *parent) :
     helpToolButton->setIcon(toolButtonIcon);
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
-    toolbar->addWidget(helpToolButton);
+
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop );
+
+    HelpToolBar* toolbar = new HelpToolBar(ui->actionHome,
+                               ui->webEngineView->pageAction(QWebEnginePage::Back),
+                               ui->webEngineView->pageAction(QWebEnginePage::Forward),
+                               ui->webEngineView->pageAction(QWebEnginePage::Reload),
+                               ui->webEngineView->pageAction(QWebEnginePage::Stop),
+                               bookmarkToolButton,
+                               helpToolButton,
+                               this);
+    connect(this, &HelpWidget::webActionEnabledChanged, toolbar, &HelpToolBar::on_webActionEnabledChanged);
+    connect(toolbar, &HelpToolBar::webActionTriggered, this, &HelpWidget::on_webActionTriggered);
 
     ui->toolbarVlLayout->addWidget(toolbar);
 
@@ -491,10 +491,30 @@ qreal HelpWidget::getZoomFactor()
     return ui->webEngineView->page()->zoomFactor();
 }
 
-QWebEngineView *HelpWidget::getHelpView()
+QWebEngineView *HelpWidget::createHelpView()
 {
-    ui->webEngineView->setPage( ui->webEngineView->page() );
+    HelpPage* page = new HelpPage(ui->webEngineView);
+    createWebActionTrigger(page, QWebEnginePage::Back );
+    createWebActionTrigger(page, QWebEnginePage::Forward );
+    createWebActionTrigger(page, QWebEnginePage::Reload );
+    createWebActionTrigger(page, QWebEnginePage::Stop );
+    ui->webEngineView->setPage( page );
+    connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     return ui->webEngineView;
+}
+
+void HelpWidget::on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked)
+{
+    ui->webEngineView->page()->triggerAction(webAction, checked);
+}
+
+void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction)
+{
+    QAction *action = page->action(webAction);
+    action->setEnabled(false);
+    connect(action, &QAction::changed, [this, action, webAction]{
+        emit webActionEnabledChanged(webAction, action->isEnabled());
+    });
 }
 
 void HelpWidget::closeEvent(QCloseEvent *event)

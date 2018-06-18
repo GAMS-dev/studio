@@ -32,6 +32,11 @@ class MainWindow;
 HelpView::HelpView(QWidget *parent) :
     QWebEngineView(parent), mCurrentHovered("")
 {
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+    sizePolicy.setHeightForWidth(this->sizePolicy().hasHeightForWidth());
+    this->setSizePolicy(sizePolicy);
 }
 
 void HelpView::setPage(QWebEnginePage *page)
@@ -52,10 +57,10 @@ QWebEngineView *HelpView::createWindow(QWebEnginePage::WebWindowType type)
 
    switch (type) {
    case QWebEnginePage::WebBrowserTab: {
-       return this;
+       return mainWindow->getHelpWidget()->createHelpView();
    }
    case QWebEnginePage::WebBrowserWindow: {
-       return this;
+       return mainWindow->getHelpWidget()->createHelpView();
    }
    case QWebEnginePage::WebBrowserBackgroundTab: {
        return nullptr;
