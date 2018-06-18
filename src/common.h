@@ -31,8 +31,8 @@ class PhantomInt
     int mValue;
 public:
     PhantomInt (int value = -1) : mValue(value) { }
-//    inline int Value () const { return mValue; }
     inline operator int() const {return mValue;}
+    inline bool isValid() const {return mValue>=0;}
     inline PhantomInt<PHANTOM_TYPE>& operator++() {
         mValue++;
         return *this;

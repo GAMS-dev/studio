@@ -109,8 +109,15 @@ FileKind FileMeta::kind()
     return mData.type->kind();
 }
 
-QString FileMeta::name()
+QString FileMeta::name(NameModifier mod)
 {
+    switch (mod) {
+    case NameModifier::editState:
+        return mName + (isModified() ? "*" : "");
+        break;
+    default:
+        break;
+    }
     return mName;
 }
 
@@ -243,7 +250,7 @@ void FileMeta::removeAllEditors()
     mEditors = editors;
 }
 
-bool FileMeta::hasEditor(QWidget *edit) const
+bool FileMeta::hasEditor(QWidget * const &edit) const
 {
     return mEditors.contains(edit);
 }
@@ -388,6 +395,11 @@ bool FileMeta::isReadOnly() const
     AbstractEditor* edit = mEditors.isEmpty() ? nullptr : toAbstractEdit(mEditors.first());
     if (!edit) return true;
     return edit->isReadOnly();
+}
+
+bool FileMeta::isAutoReload() const
+{
+    return mData.type->autoReload();
 }
 
 QTextDocument *FileMeta::document() const

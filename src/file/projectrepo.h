@@ -127,7 +127,7 @@ public:
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
     ProjectFileNode *findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup);
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup);
-    QVector<ProjectFileNode*> fileNodes(const FileId &fileId) const;
+    QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const FileId &runId = -1) const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

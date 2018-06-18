@@ -335,15 +335,18 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
 
 }
 
-QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId) const
+QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const FileId &runId) const
 {
     QVector<ProjectFileNode*> res;
     QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
         ProjectFileNode* fileNode = i.value()->toFile();
-        if (fileNode && fileNode->file()->id() == fileId)
-            res << fileNode;
+        if (fileNode && fileNode->file()->id() == fileId) {
+            if (!runId.isValid() || fileNode->runFileId() == runId) {
+                res << fileNode;
+            }
+        }
     }
     return res;
 }

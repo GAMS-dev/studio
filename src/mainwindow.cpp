@@ -39,6 +39,7 @@
 #include "searchwidget.h"
 #include "option/optioneditor.h"
 #include "option/commandlinehistory.h"
+#include "option/lineeditcompleteevent.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotowidget.h"
@@ -73,6 +74,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     ui->setupUi(this);
 
+    mFileTimer.setSingleShot(true);
+    connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     setAcceptDrops(true);
     TimerID = startTimer(60000);
     QFont font = ui->statusBar->font();
@@ -188,6 +191,14 @@ void MainWindow::timerEvent(QTimerEvent *event)
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
     mSettings->saveSettings(this);
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowActivate) {
+        processFileEvents();
+    }
+    return QMainWindow::event(event);
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -717,19 +728,18 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
+void MainWindow::loadCommandLineOptions(ProjectRunGroupNode* runGroup)
 {
-    ProjectRunGroupNode* group = fc->runParentNode();
-    if (!group) return;
+    if (!runGroup) return;
 
     mCommandLineOption->clear();
-    QStringList option = mCommandLineHistory->getHistoryFor(group->runnableGms()->location());
+    QStringList option = mCommandLineHistory->getHistoryFor(runGroup->runnableGms()->location());
     foreach(QString str, option) {
        mCommandLineOption->insertItem(0, str );
     }
     mCommandLineOption->setCurrentIndex(0);
     mCommandLineOption->setEnabled(true);
-    mCommandLineOption->setCurrentContext(fc->location());
+    mCommandLineOption->setCurrentContext(runGroup->runnableGms()->location());
 }
 
 void MainWindow::activeTabChanged(int index)
@@ -762,8 +772,9 @@ void MainWindow::activeTabChanged(int index)
         if (edit) {
             mRecent.setEditor(lxiViewer ? editWidget : edit, this);
             mRecent.group = mProjectRepo.asGroup(edit->groupId());
-            if (!edit->isReadOnly()) {
-                loadCommandLineOptions(fm);
+            if (!edit->isReadOnly() && mRecent.group) {
+                ProjectRunGroupNode *runGroup = mRecent.group->toRunGroup();
+                loadCommandLineOptions(runGroup);
                 mCommandWidget->setEnabled(true);
                 mOptionEditor->setEnabled(true);
                 updateRunState();
@@ -795,36 +806,33 @@ void MainWindow::activeTabChanged(int index)
 
 void MainWindow::fileChanged(FileId fileId)
 {
-    QWidgetList editors = mProjectRepo.editors(fileId);
+    QWidgetList editors = mFileMetaRepo.fileMeta(fileId)->editors();
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
-            ProjectFileNode *fc = mProjectRepo.asFile(fileId);
-            if (fc) ui->mainTab->setTabText(index, fc->name(NameModifier::editState));
+            FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
+            if (fm) ui->mainTab->setTabText(index, fm->name(NameModifier::editState));
         }
     }
 }
 
 void MainWindow::fileChangedExtern(FileId fileId)
 {
-    ProjectFileNode *fc = mProjectRepo.asFile(fileId);
-
+    FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
-    if (!fc->document()) return;
+    if (!file->isOpen()) return;
 
     int choice;
 
     // TODO(JM) Handle other file-types
-    if (fc->metrics().fileType().autoReload()) {
+    if (file->isAutoReload()) {
         choice = QMessageBox::Yes;
-
     } else {
         QMessageBox msgBox;
         msgBox.setWindowTitle("File modified");
-
-        // file is loaded but unchanged: ASK, if it should be reloaded
-        if (fc->document()) {
-            msgBox.setText(fc->location()+" has been modified externally.");
+        if (!file->isModified()) {
+            // file is loaded but unchanged: ASK, if it should be reloaded
+            msgBox.setText(file->location()+" has been modified externally.");
             msgBox.setInformativeText("Reload?");
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         }
@@ -833,23 +841,22 @@ void MainWindow::fileChangedExtern(FileId fileId)
     }
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
-        fc->load(fc->codecMib(), true);
+        file->load(QList<int>() << file->codecMib());
     } else {
-        fc->document()->setModified();
+        file->document()->setModified();
     }
 }
 
 void MainWindow::fileDeletedExtern(FileId fileId)
 {
-    ProjectFileNode *fc = mProjectRepo.asFile(fileId);
+    FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
-    if (!fc->document()) return;
-
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File vanished");
+    if (!file->isOpen()) return;
 
     // file is loaded: ASK, if it should be closed
-    msgBox.setText(fc->location()+" doesn't exist any more.");
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("File vanished");
+    msgBox.setText(file->location()+" doesn't exist any more.");
     msgBox.setInformativeText("Keep file in editor?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::NoButton);
@@ -858,19 +865,19 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     if (ret == QMessageBox::No)
         fileClosed(fileId);
     else
-        fc->document()->setModified();
+        file->document()->setModified();
 }
 
 void MainWindow::fileClosed(FileId fileId)
 {
-    ProjectFileNode* fc = mProjectRepo.asFile(fileId);
-    mClosedTabs << fc->location();
-    if (!fc)
-        FATAL() << "FileId " << fileId << " is not of class FileNode.";
-    while (!fc->editors().isEmpty()) {
-        QWidget *edit = fc->editors().first();
+    FileMeta *file = mFileMetaRepo.fileMeta(fileId);
+    if (!file) return;
+
+    mClosedTabs << file->location();
+    while (!file->editors().isEmpty()) {
+        QWidget *edit = file->editors().first();
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        fc->removeEditor(edit);
+        file->removeEditor(edit);
         edit->deleteLater();
     }
 
@@ -883,9 +890,49 @@ void MainWindow::fileClosed(FileId fileId)
 
 }
 
-void MainWindow::fileEvent(FileMeta *fileMeta, const FileEvent &e)
+void MainWindow::fileEvent(const FileEvent &e)
 {
-    // TODO(JM) handle what has happened to the file
+    FileMeta *fm = mFileMetaRepo.fileMeta(e.fileId());
+    if (!fm) return;
+    if (e.kind() == FileEvent::Kind::changed)
+        fileChanged(e.fileId()); // Just update display kind
+    else if (e.kind() == FileEvent::Kind::created)
+        fileChanged(e.fileId()); // Just update display kind
+    else if (e.kind() == FileEvent::Kind::closed)
+        fileClosed(e.fileId());
+    else if (!fm->isOpen())
+        fileChanged(e.fileId()); // Just update display kind
+    else {
+        // file handling with user-interaction are delayed
+        QPair<FileId, FileEvent::Kind> pair = QPair<FileId, FileEvent::Kind>(e.fileId(), e.kind());
+        if (!mFileEvents.contains(pair))
+            mFileEvents << pair;
+        mFileTimer.start(100);
+    }
+}
+
+void MainWindow::processFileEvents()
+{
+    while (!mFileEvents.isEmpty()) {
+        if (!isActiveWindow()) break;
+        QPair<FileId, FileEvent::Kind> fileEvent = mFileEvents.takeFirst();
+        FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.first);
+        if (!fm) continue;
+        // Todo
+
+        switch (fileEvent.second) {
+//        case FileEvent::Kind::renamedExtern:
+//            fileRenamedExtern(fm->id());
+//            break;
+        case FileEvent::Kind::changedExtern:
+            fileChangedExtern(fm->id());
+            break;
+        case FileEvent::Kind::removedExtern:
+            fileDeletedExtern(fm->id());
+            break;
+        default: break;
+        }
+    }
 }
 
 void MainWindow::appendSystemLog(const QString &text)
@@ -901,10 +948,12 @@ void MainWindow::appendSystemLog(const QString &text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    ProjectRunGroupNode* runGroup = mProjectRepo.findGroup(process);
+    ProjectRunGroupNode* runGroup = mProjectRepo.findRunGroup(process);
     QFileInfo fileInfo(process->inputFile());
     if(runGroup && fileInfo.exists()) {
-        QString lstFile = runGroup->lstFileName();
+
+        QString lstFile = runGroup->lstFileName(); // TODO(JM) detect options-dependant LST-filename
+
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
         bool doFocus = runGroup->isActive();
 
@@ -913,11 +962,11 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         ProjectAbstractNode * node = mProjectRepo.findNode(lstFile, runGroup);
         ProjectFileNode* lstNode = node ? node->toFile() : nullptr;
-        if (!lstNode) lstNode = mFileMetaRepo.findOrCreateFileMeta(lstFile);
-        if (lstNode) lstNode->updateMarks();
+        if (!lstNode) lstNode = mProjectRepo.findOrCreateFileNode(lstFile, runGroup);
+        if (lstNode) mTextMarkRepo.removeMarks(lstNode->file()->id());
 
         if (mSettings->openLst())
-            openFile(lstNode, true, runGroup);
+            openFile(lstNode->file(), true, runGroup);
 
     }
     ui->dockLogView->raise();
@@ -928,14 +977,21 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     Q_UNUSED(process);
-    ProjectFileNode *fc = nullptr;
-    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
-    if (!fc)
-        fc = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
-    if (fc && !fc->editors().isEmpty()) {
-        fc->load(fc->codecMib());
+    FileMeta *file = mFileMetaRepo.fileMeta(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
+    ProjectFileNode *node = nullptr;
+    if (!file)
+        node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
+    else {
+        QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id(), file->id());
+        if (!nodes.isEmpty()) node = nodes.first();
     }
-    openFile(fc);
+    if (!node)
+        EXCEPT() << "Error creating file '" << mLibProcess->inputFile() << "'";
+
+    if (!file->editors().isEmpty()) {
+        file->load(QList<int>() << file->codecMib());
+    }
+    openFile(file, true, node->runParentNode(), file->codecMib());
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -1015,8 +1071,8 @@ void MainWindow::on_actionUpdate_triggered()
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
     QWidget* edit = ui->mainTab->widget(index);
-    ProjectFileNode* fc = mProjectRepo.asFile(edit);
-    if (!fc) {
+    FileMeta* file = mFileMetaRepo.fileMeta(edit);
+    if (!file) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
         mWp = nullptr;
@@ -1024,7 +1080,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 
     int ret = QMessageBox::Discard;
-    if (fc->editors().size() == 1 && fc->isModified()) {
+    if (file->editors().size() == 1 && file->isModified()) {
         // only ask, if this is the last editor of this file
         QMessageBox msgBox;
         msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
@@ -1034,31 +1090,28 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         ret = msgBox.exec();
     }
     if (ret == QMessageBox::Save)
-        fc->save();
+        file->save();
 
     if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
-        if (fc->editors().size() == 1) {
-            mProjectRepo.close(fc->id());
-//            if (!QFileInfo(fc->location()).exists()) {
-//                emit fc->parentEntry()->removeNode(fc);
-//                fc = nullptr;
-//            }
-        } else {
-            fc->removeEditor(edit);
-            ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        }
+        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        file->removeEditor(edit);
+        edit->deleteLater();
     }
 }
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     QWidget* edit = ui->logTabs->widget(index);
-    if (edit) {
-        ProjectLogNode* log = mProjectRepo.asLog(edit);
-        if (log) log->removeEditor(edit);
+    FileMeta* logMeta = mFileMetaRepo.fileMeta(ui->logTabs->widget(index));
+    if (logMeta) {
+        // TODO(JM) check validity
         ui->logTabs->removeTab(index);
+        logMeta->removeEditor(edit);
+        edit->deleteLater();
+//        ProjectLogNode* log = mProjectRepo.findRunGroup(edit);
+//        if (log) log->removeEditor(edit);
     }
 }
 
@@ -1197,12 +1250,8 @@ void MainWindow::setRunActionsEnabled(bool enable)
 bool MainWindow::isActiveTabEditable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = FileMeta::toAbstractEdit( editWidget );
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.asFile(edit);
-        return (fc && !edit->isReadOnly());
-    }
-    return false;
+    FileMeta* file = mFileMetaRepo.fileMeta(editWidget);
+    return (file && !file->isReadOnly());
 }
 
 QString MainWindow::getCommandLineStrFrom(const QList<OptionItem> optionItems, const QList<OptionItem> forcedOptionItems)
@@ -1262,11 +1311,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 void MainWindow::renameToBackup(QFile *file)
 {
     const int MAX_BACKUPS = 3;
-    ProjectAbstractNode *fsc = mProjectRepo.findNode(file->fileName());
-    if (fsc) {
-        ProjectFileNode *fc = mProjectRepo.asFile(fsc->id());
-        if (fc) fc->unwatch();
-    }
+    FileMeta *fileMeta = mFileMetaRepo.fileMeta(file->fileName());
+    if (fileMeta) mFileMetaRepo.unwatch(fileMeta->location());
 
     QString filename = file->fileName();
 
@@ -1334,7 +1380,6 @@ void MainWindow::on_actionGAMS_Library_triggered()
     ModelDialog dialog(mSettings->userModelLibraryDir(), this);
     if(dialog.exec() == QDialog::Accepted)
     {
-        QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
         QFileInfo fileInfo(item->files().first());
         QString gmsFileName = fileInfo.completeBaseName() + ".gms";
@@ -1690,8 +1735,9 @@ void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 
 void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
-    fc->parentNode()->setRunnableGms(fc);
-    loadCommandLineOptions(fc);
+    ProjectRunGroupNode *runGroup = fc->runParentNode();
+    runGroup->setRunnableGms(fc->file());
+    loadCommandLineOptions(runGroup);
 }
 
 void MainWindow::on_commandLineHelpTriggered()

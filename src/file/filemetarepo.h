@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFileSystemWatcher>
 #include "filemeta.h"
+#include "fileevent.h"
 #include "common.h"
 
 namespace gams {
@@ -12,13 +13,6 @@ namespace studio {
 class TextMarkRepo;
 class ProjectRepo;
 
-enum class FileEvent {
-    changed,
-    changedExtern,
-    removed,        // removed-event is delayed a bit to improve recognition of moved- or changed-events
-    moved,
-};
-
 class FileMetaRepo : public QObject
 {
     Q_OBJECT
@@ -26,23 +20,26 @@ public:
     FileMetaRepo(QObject* parent, StudioSettings* settings);
     FileMeta* fileMeta(const FileId &fileId) const;
     FileMeta* fileMeta(const QString &location) const;
+    FileMeta* fileMeta(QWidget * const &editor) const;
     FileMeta *findOrCreateFileMeta(QString location);
     StudioSettings *settings() const;
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
     ProjectRepo *projectRepo() const;
     QVector<FileMeta*> openFiles() const;
+    void unwatch(const QString &path);
 
 signals:
-    void fileEvent(FileMeta* fm, FileEvent e);
+    void fileEvent(FileEvent &e);
 
 public slots:
     void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
-    void removedFile(FileMeta* fm);
+    void removedFile(FileMeta* fileMeta);
 
 private slots:
-    void dirChanged(const QString& path);
+//    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
+    void reviewMissing();
 
 private:
     FileId addFileMeta(FileMeta* fileMeta);
@@ -54,8 +51,8 @@ private:
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
     QFileSystemWatcher mWatcher;
-    QStringList mMissList;
-
+    QStringList mCheckExistance; // List to be checked once
+    QStringList mMissList; // List to be checked periodically
 
 };
 

@@ -23,13 +23,14 @@ public:
     inline FileId id() const;
     QString location() const;
     FileKind kind();
-    QString name();
+    QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
     int codecMib() const;
     bool exists() const;
     bool isOpen() const;
     bool isModified() const;
     bool isReadOnly() const;
+    bool isAutoReload() const;
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
     QWidgetList editors() const;
@@ -38,7 +39,7 @@ public:
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
     void removeAllEditors();
-    bool hasEditor(QWidget* edit) const;
+    bool hasEditor(QWidget * const &edit) const;
     void load(QList<int> codecMibs = QList<int>());
     void save();
     void saveAs(const QString &location);

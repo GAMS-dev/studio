@@ -136,7 +136,8 @@ SOURCES += \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp
+    wplabel.cpp \
+    file/fileevent.cpp
 
 #    syntax/textmarklist.cpp \
 
@@ -222,7 +223,8 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h
+    wplabel.h \
+    file/fileevent.h
 
 #    syntax/textmarklist.h \
 

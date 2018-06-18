@@ -38,7 +38,6 @@
 //#include "modeldialog/libraryitem.h"
 //#include "option/commandlinehistory.h"
 //#include "option/commandlineoption.h"
-//#include "option/lineeditcompleteevent.h"
 //#include "helpview.h"
 //#include "resultsview.h"
 //#include "commandlineparser.h"
@@ -183,10 +182,9 @@ private slots:
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
     void fileClosed(FileId fileId);
-    void fileEvent(FileMeta *fileMeta, const FileEvent &e);
+    void fileEvent(const FileEvent &e);
+    void processFileEvents();
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
@@ -283,11 +281,14 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
+    bool event(QEvent *event);
 
 private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName);
     void openNode(const QModelIndex& index);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
@@ -301,7 +302,7 @@ private:
     bool isActiveTabEditable();
     QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
                                   const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void loadCommandLineOptions(ProjectFileNode* fc);
+    void loadCommandLineOptions(ProjectRunGroupNode *runGroup);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(ProjectGroupNode *fgc);
@@ -337,6 +338,8 @@ private:
     ResultsView *mResultsView = nullptr;
     bool mBeforeErrorExtraction = true;
     ProjectContextMenu mProjectContextMenu;
+    QVector<QPair<FileId, FileEvent::Kind>> mFileEvents;
+    QTimer mFileTimer;
 
     QToolButton* interruptToolButton = nullptr;
     QToolButton* mRunToolButton = nullptr;
