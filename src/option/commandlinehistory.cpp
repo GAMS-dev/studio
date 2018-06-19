@@ -98,6 +98,11 @@ QStringList CommandLineHistory::getHistoryFor(QString context)
     return mHistory[mCurrentContext];
 }
 
+void CommandLineHistory::removeFromHistory(const QString &key)
+{
+    mHistory.remove(key);
+}
+
 void CommandLineHistory::setContext(QString context)
 {
     mCurrentContext = context;

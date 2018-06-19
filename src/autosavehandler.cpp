@@ -23,7 +23,8 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
 
     for (auto file : list)
     {
-        QString path = CommonPaths::absolutPath(file);
+        QFileInfo fi(file);
+        QString path = fi.absolutePath();
         if (!path.isEmpty()) {
             QDir dir(path);
             dir.setNameFilters(filters);

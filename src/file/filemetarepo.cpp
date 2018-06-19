@@ -1,5 +1,6 @@
 #include "filemetarepo.h"
 #include "filemeta.h"
+#include "projectrepo.h"
 #include "syntax/textmarkrepo.h"
 #include "studiosettings.h"
 #include "exception.h"

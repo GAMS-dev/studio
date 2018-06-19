@@ -29,8 +29,9 @@ namespace studio {
 
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("&Open file location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(0, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
 
+    mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
 //    mActions.insert(1, addSeparator());
 
 //    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
@@ -55,17 +56,18 @@ ProjectContextMenu::ProjectContextMenu()
 void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 {
     mNode = node;
-
+    bool isGroup = mNode && mNode->type() == NodeType::group;
     bool isGmsFile = false;
     if (mNode->type() == NodeType::file) {
         ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
         isGmsFile = (fc->file()->kind() == FileKind::Gms);
     }
 
+    mActions[1]->setVisible(isGroup);
 //    mActions[2]->setVisible(isGmsFile);
 //    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
-    mActions[5]->setVisible(isGmsFile);
+//    mActions[5]->setVisible(isGmsFile);
 
     // all files
     mActions[10]->setVisible(mNode->type() == NodeType::file);
@@ -84,7 +86,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
-    QString filePath = QFileDialog::getOpenFileName(mParent,
+    QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
                                                     "Add existing file",
                                                     sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
@@ -92,9 +94,11 @@ void ProjectContextMenu::onAddExisitingFile()
                                                        "All files (*.*)"),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    if (filePath == "") return;
+    if (filePaths.isEmpty()) return;
     ProjectGroupNode *group = mNode->toGroup() ? mNode->toGroup() : mNode->parentNode();
-    emit addExistingFile(group, filePath);
+    foreach (QString filePath, filePaths) {
+        emit addExistingFile(group, filePath);
+    }
 }
 
 void ProjectContextMenu::onAddNewFile()
@@ -154,8 +158,8 @@ void ProjectContextMenu::onSetMainFile()
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    if (mNode->type() == NodeType::file) {
-        ProjectFileNode *node = static_cast<ProjectFileNode*>(mNode);
+    if (mNode->toFile()) {
+        ProjectFileNode *node = mNode->toFile();
 
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
@@ -180,11 +184,16 @@ void ProjectContextMenu::onOpenFileLoc()
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
-    } else if (mNode->type() == NodeType::group) {
+    } else if (mNode->toGroup()) {
         ProjectGroupNode *group = mNode->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
+}
+
+void ProjectContextMenu::onOpenLog()
+{
+    if (mNode) emit openLogFor(mNode, true);
 }
 
 } // namespace studio

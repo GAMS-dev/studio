@@ -72,7 +72,7 @@ QString CheckForUpdateWrapper::checkForUpdate()
 
     char buffer[GMS_SSSIZE];
     c4uReadLice(mC4UHandle, CommonPaths::systemDir().toLatin1(),
-                CommonPaths::systemDir().append("/gamslice.txt").toLatin1(), false);
+                QString(CommonPaths::systemDir()).append("/gamslice.txt").toLatin1(), false);
     c4uCreateMsg(mC4UHandle);
 
     int messageIndex=0;

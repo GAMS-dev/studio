@@ -47,6 +47,7 @@ public:
     int getHistorySize() const;
     void setHistorySize(int historySize);
     QMap<QString, QStringList> allOptions();
+    void removeFromHistory(const QString &key);
 
 public slots:
     void addIntoCurrentContextHistory(QString option);

@@ -40,8 +40,6 @@ ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type
 
 ProjectGroupNode::~ProjectGroupNode()
 {
-    if (mChildList.size())
-        DEB() << "Group must be empty before deletion";
 }
 
 QIcon ProjectGroupNode::icon()
@@ -73,6 +71,7 @@ void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
         --i;
     if (i < mChildList.size()-1)
         mChildList.move(mChildList.size()-1, i);
+// TODO(JM) set runableGms if missing
 
 //    bool hit;
 //    int pos = peekIndex(child->name(), &hit);
@@ -128,6 +127,20 @@ ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool re
                 ProjectAbstractNode* sub = group->findNode(location, true);
                 if (sub) return sub;
             }
+        }
+    }
+    return nullptr;
+}
+
+ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
+{
+    foreach (ProjectAbstractNode* node, mChildList) {
+        ProjectFileNode* fileNode = node->toFile();
+        if (fileNode && fileNode->file() == fileMeta) return fileNode;
+        const ProjectGroupNode* group = node->toGroup();
+        if (group && recurse) {
+            ProjectFileNode* sub = group->findFile(fileMeta, true);
+            if (sub) return sub;
         }
     }
     return nullptr;
@@ -205,37 +218,34 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
 
 ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
 {
-    if (mLogNode) return mLogNode;
-    QString logName = "[LOG]" + QString::number(id());
-    FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName);
-    mLogNode = new ProjectLogNode(fm, this);
+    if (!mLogNode) {
+        QString logName = "[LOG]" + QString::number(id());
+        FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName);
+        mLogNode = new ProjectLogNode(fm, this);
+    }
+    return mLogNode;
+
 }
 
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
-    // TODO(JM) for projects the project file has to be parsed for the main runableGms
     return mGmsFile;
 }
 
 void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
 {
     if (!gmsFile) {
-        removeRunnableGms();
+        mGmsFile = nullptr;
+        mLstFileName = "";
         return;
     }
-    if (gmsFile->kind() == FileKind::Gms)
+    if (gmsFile->kind() != FileKind::Gms)
         EXCEPT() << "Only files of FileKind::Gms can become runable";
     mGmsFile = gmsFile;
     QString location = gmsFile->location();
     QString lstName = QFileInfo(location).completeBaseName() + ".lst";
     setLstFileName(lstName);
     if (logNode()) logNode()->resetLst();
-}
-
-void ProjectRunGroupNode::removeRunnableGms()
-{
-    mGmsFile = nullptr;
-    mLstFileName = "";
 }
 
 void ProjectRunGroupNode::setLstFileName(const QString &lstFileName)

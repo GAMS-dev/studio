@@ -20,6 +20,7 @@
 #include "application.h"
 #include "exception.h"
 #include "studiosettings.h"
+#include "commonpaths.h"
 
 #include <iostream>
 #include <QMessageBox>
@@ -32,6 +33,7 @@ Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
     parseCmdArgs();
+    CommonPaths::setSystemDir(mCmdParser.gamsDir());
     auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
                                         mCmdParser.resetSettings(),
                                         mCmdParser.resetView());

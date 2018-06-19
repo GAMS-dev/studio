@@ -984,7 +984,9 @@ void CodeEditor::recalcExtraSelections()
                 mWordUnderCursor = text.mid(from, to-from+1);
         }
         mParenthesesDelay.start(100);
-        mWordDelay.start(500);
+        int wordDelay = 10;
+        if (mSettings->wordUnderCursor()) wordDelay = 500;
+        mWordDelay.start(wordDelay);
     }
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
@@ -995,7 +997,12 @@ void CodeEditor::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        if (!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) && sender() == &mWordDelay)
+        // has selection OR did not find parentheses
+        if ((textCursor().hasSelection() || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+              // AND sender is not paren delay OR automatic WUC highlighting is activated
+              && (sender() != &mParenthesesDelay || !mSettings->wordUnderCursor())
+                // AND setting HWUC without seleciton is checked OR tc has selection
+                && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
             extraSelCurrentWord(selections);
     }
     extraSelBlockEdit(selections);
@@ -1025,13 +1032,6 @@ void CodeEditor::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selection
 
 void CodeEditor::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mSettings->wordUnderCursor()) return;
-
-    QHash<int, TextMark*> textMarks;
-    emit requestMarkHash(&textMarks, TextMark::match);
-
-    if (textMarks.size() > 0) return;  // no word highlighting when a user searches
-
     if (!mWordUnderCursor.isEmpty()) {
         QTextBlock block = firstVisibleBlock();
         QRegularExpression rex(QString("(?i)(^|[^\\w]|-)(%1)($|[^\\w]|-)").arg(mWordUnderCursor));

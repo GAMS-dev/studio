@@ -120,6 +120,21 @@ inline ProjectFileNode*ProjectRepo::asFile(const QModelIndex& index) const
     return asFile(index.internalId());
 }
 
+ProjectFileNode *ProjectRepo::asFile(QWidget *editWidget) const
+{
+    AbstractEditor *edit = FileMeta::toAbstractEdit(editWidget);
+    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
+    FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
+    if (!fileMeta) return nullptr;
+
+    NodeId groupId = edit ? edit->groupId() : gdxViewer ? gdxViewer->groupId() : -1;
+    ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
+    ProjectGroupNode *group = node ? node->toGroup() : nullptr;
+    if (!group) return nullptr;
+
+    return group->findFile(fileMeta, true);
+}
+
 inline ProjectLogNode *ProjectRepo::asLog(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
@@ -218,7 +233,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
                     } else {
-                        removeGroup(subGroup); // dont open empty groups
+                        closeGroup(subGroup); // dont open empty groups
                     }
                 }
             }
@@ -296,12 +311,12 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     return group;
 }
 
-void ProjectRepo::removeGroup(ProjectGroupNode* group)
+void ProjectRepo::closeGroup(ProjectGroupNode* group)
 {
     for (int i = 0; i < group->childCount(); ++i) {
         ProjectAbstractNode *node = group->childNode(i);
         ProjectGroupNode* subGroup = node->toGroup();
-        if (subGroup) removeGroup(subGroup);
+        if (subGroup) closeGroup(subGroup);
         else {
             mTreeModel->removeChild(node);
             deleteNode(node);
@@ -309,6 +324,40 @@ void ProjectRepo::removeGroup(ProjectGroupNode* group)
     }
     mTreeModel->removeChild(group);
     deleteNode(group);
+}
+
+void ProjectRepo::closeNode(ProjectFileNode *node)
+{
+    ProjectRunGroupNode *runGroup = node->runParentNode();
+    if (!runGroup)
+        EXCEPT() << "Integrity error: this node has no ProjectRunGroupNode as parent";
+
+    // if this is a lst file referenced in a log
+    if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
+        runGroup->logNode()->setLstNode(nullptr);
+
+    // close actual file and remove repo node
+    deleteNode(node);
+
+    // if this file is marked as runnable remove reference
+    if (runGroup->runnableGms() == node->file()) {
+        runGroup->setRunnableGms();
+        for (int i = 0; i < runGroup->childCount(); i++) {
+            // choose next as main gms file
+            ProjectFileNode *nextRunable = runGroup->childNode(i)->toFile();
+            if (nextRunable && nextRunable->location().endsWith(".gms", Qt::CaseInsensitive)) {
+                runGroup->setRunnableGms(nextRunable->file());
+                break;
+            }
+        }
+    }
+
+    // close group if empty now
+    if (runGroup->childCount() == 0)
+        closeGroup(runGroup);
+
+    // save changes in project structure
+    mSettings->saveSettings(this);
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup)
@@ -504,7 +553,7 @@ ProjectLogNode*ProjectRepo::logNode(QWidget* edit)
         if (fsc->type() == NodeType::Group) {
             ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
 
-            if (!group->logNode()) return nullptr;
+            if (!group->logNode()) continue;
             if (group->logNode()->editors().contains(edit)) {
                 return group->logNode();
             }

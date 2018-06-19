@@ -17,18 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDebug>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QDir>
+#include <QSettings>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
 #include "searchwidget.h"
 #include "version.h"
+#include "commandlineparser.h"
 #include "logger.h"
-#include "helpview.h"
-#include "option/commandlinehistory.h"
+#include "option/optionwidget.h"
+#include "help/helpwidget.h"
 #include "file.h"
 
 namespace gams {
@@ -139,7 +142,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
-    QMultiMap<QString, QString> bookmarkMap(main->getDockHelpView()->getBookmarkMap());
+    QMultiMap<QString, QString> bookmarkMap(main->getHelpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
     mAppSettings->beginWriteArray("bookmarks");
@@ -149,11 +152,12 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
-    mAppSettings->setValue("zoomFactor", main->getDockHelpView()->getZoomFactor());
+    mAppSettings->setValue("zoomFactor", main->getHelpWidget()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
     mAppSettings->beginGroup("fileHistory");
+    mAppSettings->remove("lastOpenedFiles");
     mAppSettings->beginWriteArray("lastOpenedFiles");
     for (int i = 0; i < main->history()->lastOpenedFiles.length(); i++) {
 
@@ -163,7 +167,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(main->commandLineHistory()->allHistory());
+    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
+    mAppSettings->remove("commandLineOptions");
     mAppSettings->beginWriteArray("commandLineOptions");
     for (int i = 0; i < map.size(); i++) {
         mAppSettings->setArrayIndex(i);
@@ -255,11 +260,11 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                            mAppSettings->value("name").toString());
     }
     mAppSettings->endArray();
-    main->getDockHelpView()->setBookmarkMap(bookmarkMap);
+    main->getHelpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
-        main->getDockHelpView()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+        main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
-        main->getDockHelpView()->setZoomFactor(1.0);
+        main->getHelpWidget()->setZoomFactor(1.0);
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");
@@ -280,7 +285,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     mAppSettings->endArray();
     mAppSettings->endGroup();
 
-    main->commandLineHistory()->setAllHistory(map);
+    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()
@@ -305,14 +310,14 @@ void StudioSettings::loadUserSettings()
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
-    setWordUnderCursor(mUserSettings->value("wordUnderCursor", true).toBool());
-    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", true).toBool());
+    setWordUnderCursor(mUserSettings->value("wordUnderCursor", false).toBool());
+    setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", false).toBool());
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
 
-    setHistorySize(mUserSettings->value("historySize", 8).toInt());
+    setHistorySize(mUserSettings->value("historySize", 12).toInt());
 
     mUserSettings->endGroup();
 }

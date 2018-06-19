@@ -31,6 +31,7 @@
 #include <QHeaderView>
 #include <QFileDialog>
 #include <QSettings>
+#include <QHeaderView>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"

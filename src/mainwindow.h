@@ -22,7 +22,6 @@
 
 #include <memory>
 #include <QMainWindow>
-#include <QCheckBox>
 #include <QFile>
 #include <QActionGroup>
 #include <QToolButton>
@@ -66,13 +65,14 @@ class AbstractEditor;
 class SearchWidget;
 class SearchResultList;
 class ProjectFileNode;
-class HelpView;
+class HelpWidget;
 class AbstractProcess;
 class LibraryItem;
 class CommandLineTokenizer;
 class CommandLineOption;
 class Option;
 class OptionEditor;
+class OptionWidget;
 class GAMSLibProcess;
 class GAMSProcess;
 class ResultsView;
@@ -122,7 +122,6 @@ public:
     explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
     void updateMenuToCodec(int mib);
-    QStringList openedFiles();
     void openFiles(QStringList pathList);
 
     bool outputViewVisibility();
@@ -139,10 +138,8 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
-    void setCommandLineHistory(CommandLineHistory* opt);
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
-    CommandLineHistory* commandLineHistory();
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
     TextMarkRepo* textMarkRepo() const;
@@ -154,13 +151,15 @@ public:
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
-    HelpView *getDockHelpView() const;
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
-    QWidget *welcomePage() const;
     void delayedFileRestoration();
     void resetViews();
+    void resizeOptionEditor(const QSize &size);
+    void updateRunState();
 
+    HelpWidget *getHelpWidget() const;
+    OptionWidget *getGamsOptionWidget() const;
 
 public slots:
     void openFilePath(const QString &filePath);
@@ -176,28 +175,32 @@ public slots:
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
+    void on_commandLineHelpTriggered();
+    void on_optionRunChanged();
+
 private slots:
     void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
-    void fileClosed(FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
-    void closeFile(ProjectFileNode* file);
+    void closeNodeConditionally(ProjectFileNode *file);
+    void closeNode(ProjectFileNode* node);
+    void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
+    void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
-    void toggleOptionDefinition(bool checked);
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
@@ -222,6 +225,8 @@ private slots:
     void on_actionRun_with_GDX_Creation_triggered();
     void on_actionCompile_triggered();
     void on_actionCompile_with_GDX_Creation_triggered();
+    void on_actionInterrupt_triggered();
+    void on_actionStop_triggered();
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_triggered();
@@ -240,10 +245,6 @@ private slots:
     void on_logTabs_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
     void on_mainTab_currentChanged(int index);
-     // Command Line Option
-    void on_runWithChangedOptions();
-    void on_runWithParamAndChangedOptions(const QList<OptionItem> forcedOptionItems);
-    void on_commandLineHelpTriggered();
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
@@ -266,8 +267,6 @@ private slots:
     void on_actionRemove_Line_triggered();
     void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
-    void interruptTriggered();
-    void stopTriggered();
     void toggleLogDebug();
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();
@@ -293,21 +292,18 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
-    void updateRunState();
     void createWelcomePage();
-    void createRunAndCommandLineWidgets();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
-    void connectCommandLineWidgets();
-    void setRunActionsEnabled(bool enable);
-    bool isActiveTabEditable();
-    QString getCommandLineStrFrom(const QList<OptionItem> optionItems,
-                                  const QList<OptionItem> forcedOptionItems = QList<OptionItem>());
-    void loadCommandLineOptions(ProjectRunGroupNode *runGroup);
+    bool isActiveTabRunnable();
+    bool isActiveTabSetAsMain();
+    bool isRecentGroupInRunningState();
+    void loadCommandLineOptions(ProjectAbstractNode *node);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    void parseFilesFromCommandLine(ProjectGroupNode *fgc);
+    void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
-    void changeToLog(ProjectFileNode* fileNode);
+    QString studioInfo();
+    void ensureLogEditor(ProjectLogNode* logProc);
 
 private:
     Ui::MainWindow *ui;
@@ -316,17 +312,8 @@ private:
     TextMarkRepo mTextMarkRepo;
 
     SearchWidget *mSearchWidget = nullptr;
-    Option* mGamsOption;
-    OptionEditor* mOptionEditor;
-    QDockWidget* mDockOptionView;
-    CommandLineHistory* mCommandLineHistory;
-    CommandLineOption* mCommandLineOption;
-    CommandLineTokenizer* mCommandLineTokenizer;
-    QWidget* mCommandWidget;
-    QCheckBox* mShowOptionDefintionCheckBox;
-    HelpView* mDockHelpView = nullptr;
-
-    GAMSProcess *mProcess = nullptr;
+    HelpWidget *mHelpWidget = nullptr;
+    OptionWidget *mGamsOptionWidget = nullptr;
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
@@ -336,21 +323,15 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
-    bool mBeforeErrorExtraction = true;
     ProjectContextMenu mProjectContextMenu;
     QVector<QPair<FileId, FileEvent::Kind>> mFileEvents;
     QTimer mFileTimer;
 
-    QToolButton* interruptToolButton = nullptr;
-    QToolButton* mRunToolButton = nullptr;
-    GoToWidget *mGoto;
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
-    QTime mPerformanceTime;
     StatusWidgets* mStatusWidgets;
-    int TimerID;
-    bool mCheckOnce = true;
+    int mTimerID;
     QStringList mOpenTabsList;
 };
 

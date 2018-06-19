@@ -22,7 +22,6 @@
 
 #include <QCommandLineParser>
 
-
 namespace gams {
 namespace studio {
 
@@ -43,12 +42,14 @@ public:
     bool ignoreSettings() const;
     bool resetSettings() const;
     bool resetView() const;
+    QString gamsDir() const;
 
 private:
     QStringList mFiles;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
     bool mResetView = false;
+    QString mGamsDir = QString();
 };
 
 } // namespace studio

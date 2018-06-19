@@ -17,37 +17,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gotowidget.h"
-#include "ui_gotowidget.h"
-#include "file.h"
+#include "gotodialog.h"
+#include "ui_gotodialog.h"
 #include "mainwindow.h"
 #include "editors/abstracteditor.h"
 
 namespace gams {
 namespace studio {
 
-
-GoToWidget::GoToWidget(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::GoToWidget), mMain(parent)
+GoToDialog::GoToDialog(MainWindow *parent) :
+    QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
-    setFixedSize(size());
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
-GoToWidget::~GoToWidget()
+GoToDialog::~GoToDialog()
 {
     delete ui;
 }
 
-void GoToWidget::focusTextBox()
-{
-    this->setWindowTitle("Go To");
-    ui->lineEdit->setFocus();
-}
-
-void GoToWidget::on_GoTo_clicked()
+void GoToDialog::on_goToButton_clicked()
 {
     AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
@@ -56,24 +48,8 @@ void GoToWidget::on_GoTo_clicked()
     int altLine =(ui->lineEdit->text().toInt())-1;
     if (!fm) return;
     fm->jumpTo(-1, true, altLine, 0);
-    ui->lineEdit->setText("");
-}
-
-void GoToWidget::keyPressEvent(QKeyEvent *event)
-{
-    if ( isVisible() &&  (event->key() == Qt::Key_Escape)) {
-        hide();
-    }
-    if ( isVisible() &&  ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return))) {
-        GoToWidget::on_GoTo_clicked();
-    }
-}
-
-void GoToWidget::keyReleaseEvent(QKeyEvent *event)
-{
-    if ( isVisible() &&  ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return))) {
-        hide();
-    }
+    ui->lineEdit->clear();
+    close();
 }
 
 }

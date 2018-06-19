@@ -98,6 +98,8 @@ public:
     /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
     inline ProjectFileNode* asFile(const QModelIndex& index) const;
 
+    ProjectFileNode* asFile(QWidget *editWidget) const;
+
     /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
@@ -135,10 +137,12 @@ signals:
     void isNodeExpanded(const QModelIndex &mi, bool *expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void setSelected(const QModelIndex& ind);
+    void changed();
 
 public slots:
     void nodeChanged(NodeId nodeId);
-    void removeGroup(ProjectGroupNode* group);
+    void closeGroup(ProjectGroupNode* group);
+    void closeNode(ProjectFileNode* node);
 
 private:
     friend class ProjectRunGroupNode;

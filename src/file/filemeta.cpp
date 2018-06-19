@@ -1,5 +1,6 @@
 #include "filemeta.h"
 #include "filemetarepo.h"
+#include "projectrepo.h"
 #include "filetype.h"
 #include "editors/codeeditor.h"
 #include "exception.h"

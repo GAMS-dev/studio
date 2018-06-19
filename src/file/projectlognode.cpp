@@ -119,11 +119,6 @@ void ProjectLogNode::setParentEntry(ProjectGroupNode* parent)
     mParent = parent;
 }
 
-void ProjectLogNode::fileClosed(ProjectFileNode *fc)
-{
-    if (fc == mLstNode) mLstNode = nullptr;
-}
-
 void ProjectLogNode::addProcessData(QString text)
 {
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
@@ -388,6 +383,16 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         }
     }
     return result;
+}
+
+ProjectFileNode *ProjectLogNode::lstNode() const
+{
+    return mLstNode;
+}
+
+void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
+{
+    mLstNode = lstNode;
 }
 
 void ProjectLogNode::setJumpToLogEnd(bool state)

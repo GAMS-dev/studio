@@ -5,7 +5,7 @@ namespace studio {
 
 QEvent::Type FileEvent::mType = QEvent::None;
 
-FileEvent::FileEvent(FileId fileId, , Kind kind) : mFileId(fileId), mKind(kind)
+FileEvent::FileEvent(FileId fileId, Kind kind): QEvent(type()), mFileId(fileId), mKind(kind)
 {
 
 }

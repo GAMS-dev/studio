@@ -24,6 +24,7 @@
 #include "exception.h"
 #include "searchresultlist.h"
 #include "file/filemetarepo.h"
+#include "mainwindow.h"
 #include <QDebug>
 #include <QMessageBox>
 #include <QTextDocumentFragment>
@@ -105,7 +106,7 @@ void SearchWidget::on_btn_FindAll_clicked()
     SearchResultList matches(searchTerm());
     insertHistory();
 
-    setSearchStatus(SearchStatus::Clear);
+    setSearchStatus(SearchStatus::Searching);
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -334,28 +335,27 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, mCachedResults);
 }
 
-void SearchWidget::focusSearchField()
+void SearchWidget::autofillSearchField()
 {
-    ui->combo_search->setFocus();
-    ui->combo_search->lineEdit()->selectAll();
-}
-
-void SearchWidget::showEvent(QShowEvent *event)
-{
-    Q_UNUSED(event);
-
     QWidget *widget = mMain->recent()->editor();
     AbstractEditor *edit = FileMeta::toAbstractEdit(widget);
     if (!edit) return;
     FileMeta *fm = mMain->fileRepo()->fileMeta(edit->fileId());
     if (!fm) return;
 
-    focusSearchField();
     if (edit->textCursor().hasSelection())
         ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
     else
         ui->combo_search->setCurrentText("");
 
+    ui->combo_search->setFocus();
+}
+
+void SearchWidget::showEvent(QShowEvent *event)
+{
+    Q_UNUSED(event);
+
+    autofillSearchField();
     updateReplaceActionAvailability();
 }
 
@@ -412,13 +412,16 @@ void SearchWidget::invalidateCache()
 void SearchWidget::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
+        e->accept();
         hide();
         if (mMain->fileRepo()->fileMeta(mMain->recent()->editFileId))
             mMain->recent()->editor()->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
+        e->accept();
         on_searchPrev();
     } else if (e->key() == Qt::Key_F3) {
+        e->accept();
         on_searchNext();
     }
     QDialog::keyPressEvent(e);

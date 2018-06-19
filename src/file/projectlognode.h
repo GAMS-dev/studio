@@ -40,6 +40,8 @@ public:
 //    void clearLog();
 //    TextMark* firstErrorMark();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+    ProjectFileNode *lstNode() const;
+    void setLstNode(ProjectFileNode *lstNode);
 //public slots:
 //    void addProcessData(QString text);
 //    void setJumpToLogEnd(bool state);

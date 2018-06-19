@@ -63,7 +63,6 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    bookmarkdialog.cpp \
     checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -73,6 +72,7 @@ SOURCES += \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
     exception.cpp \
+    file/fileevent.cpp \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
 #    file/filemetrics.cpp \
@@ -93,8 +93,9 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    gotowidget.cpp \
-    helpview.cpp \
+    gotodialog.cpp \
+    help/bookmarkdialog.cpp \
+    help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
@@ -117,9 +118,9 @@ SOURCES += \
     option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
-    option/optioneditor.cpp \
-    option/optionparametermodel.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/optiontablemodel.cpp \
+    option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
@@ -136,8 +137,7 @@ SOURCES += \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp \
-    file/fileevent.cpp
+    wplabel.cpp
 
 #    syntax/textmarklist.cpp \
 
@@ -145,7 +145,6 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    bookmarkdialog.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -157,6 +156,7 @@ HEADERS += \
     editors/selectencodings.h \
     exception.h \
     file.h \
+    file/fileevent.h \
     file/filemeta.h \
     file/filemetarepo.h \
 #    file/filemetrics.h \
@@ -177,8 +177,9 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    gotowidget.h \
-    helpview.h \
+    gotodialog.h \
+    help/bookmarkdialog.h \
+    help/helpwidget.h \
     keys.h \
     logger.h \
     lxiviewer/lxiparser.h \
@@ -200,9 +201,9 @@ HEADERS += \
     option/optioncompleterdelegate.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
-    option/optioneditor.h \
-    option/optionparametermodel.h \
     option/optionsortfilterproxymodel.h \
+    option/optiontablemodel.h \
+    option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \
     searchresultlist.h \
@@ -223,27 +224,28 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h \
-    file/fileevent.h
+    wplabel.h
 
 #    syntax/textmarklist.h \
 
 FORMS += \
-    bookmarkdialog.ui \
     editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
-    gotowidget.ui \
+    help/bookmarkdialog.ui \
+    help/helpwidget.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     newdialog.ui \
+    option/optionwidget.ui \
     resultsview.ui \
     searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
-    welcomepage.ui
+    welcomepage.ui \
+    gotodialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

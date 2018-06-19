@@ -52,6 +52,7 @@ public:
     QString tooltip() override;
     virtual QString lstErrorText(int line);
     ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
+    ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
     ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
@@ -122,8 +123,7 @@ public:
     void setLogNode(ProjectLogNode* logNode);
     ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
     FileMeta *runnableGms() const;
-    void setRunnableGms(FileMeta *gmsFile);
-    void removeRunnableGms();
+    void setRunnableGms(FileMeta *gmsFile = nullptr);
     FileId runFileId() const;
     QString lstFileName() const;
     void setLstFileName(const QString &lstFileName);

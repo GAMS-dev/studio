@@ -21,15 +21,18 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
-#include "studiosettings.h"
 
 namespace Ui {
 class SettingsDialog;
 }
 
+class QAbstractButton;
+
 namespace gams {
 namespace studio {
 
+class MainWindow;
+class StudioSettings;
 
 class SettingsDialog : public QDialog
 {
