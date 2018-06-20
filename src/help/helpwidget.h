@@ -24,12 +24,14 @@
 #include <QMultiMap>
 #include <QUrl>
 #include <QLabel>
+#include <QWebEngineView>
 
 namespace Ui {
 class HelpWidget;
 }
 
 class QMenu;
+class HelpToolBar;
 
 namespace gams {
 namespace studio {
@@ -88,9 +90,16 @@ public slots:
     void setZoomFactor(qreal factor);
     qreal getZoomFactor();
 
+    QWebEngineView *createHelpView();
+    void on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
+
+signals:
+    void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+
 
 private:
     Ui::HelpWidget *ui;
@@ -112,6 +121,7 @@ private:
         Backward = 1
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
+    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
 };
 
 } // namespace studio
