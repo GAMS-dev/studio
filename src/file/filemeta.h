@@ -38,8 +38,8 @@ public:
     void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
-    void removeAllEditors();
     bool hasEditor(QWidget * const &edit) const;
+    void load(int codecMib);
     void load(QList<int> codecMibs = QList<int>());
     void save();
     void saveAs(const QString &location);

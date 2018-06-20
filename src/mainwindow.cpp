@@ -39,7 +39,7 @@
 #include "searchwidget.h"
 #include "option/optionwidget.h"
 //#include "option/commandlinehistory.h"
-//#include "option/lineeditcompleteevent.h"
+#include "option/lineeditcompleteevent.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
@@ -126,6 +126,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 //    connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
 
 
+    connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -611,7 +612,6 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSave_As_triggered()
 {
-    if (mRecent.editFileId < 0) return;
     FileMeta *fileMeta = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (!fileMeta) return;
     QString path = QFileInfo(fileMeta->location()).path();
@@ -702,7 +702,7 @@ void MainWindow::codecReload(QAction *action)
             reload = msgBox.exec();
         }
         if (reload) {
-            fm->load(QList<int>() << action->data().toInt());
+            fm->load(action->data().toInt());
             updateMenuToCodec(action->data().toInt());
             mStatusWidgets->setEncoding(fm->codecMib());
         }
@@ -732,7 +732,7 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     AbstractEditor* edit = FileMeta::toAbstractEdit(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
-    ProjectFileNode *node = mProjectRepo.asFile(editWidget);
+    ProjectFileNode *node = mProjectRepo.findFileNode(editWidget);
 
     // TODO(JM) missing common base class for all viewers/editors
     if (node) {
@@ -785,6 +785,11 @@ void MainWindow::fileChanged(FileId fileId)
     }
 }
 
+void MainWindow::fileClosed(FileId fileId)
+{
+    // TODO(JM) check if anything needs to be updated
+}
+
 void MainWindow::fileChangedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
@@ -810,7 +815,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
     }
 
     if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
-        file->load(QList<int>() << file->codecMib());
+        file->load(file->codecMib());
     } else {
         file->document()->setModified();
     }
@@ -832,7 +837,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     int ret = msgBox.exec();
 
     if (ret == QMessageBox::No)
-        closeNode(file);
+        closeFileEditors(fileId);
     else
         file->document()->setModified();
 }
@@ -912,7 +917,7 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (!lstNode) lstNode = mProjectRepo.findOrCreateFileNode(lstFile, runGroup);
         if (lstNode) mTextMarkRepo.removeMarks(lstNode->file()->id());
 
-        if (mSettings->openLst())
+        if (mSettings->openLst() && lstNode)
             openFile(lstNode->file(), true, runGroup);
     }
 }
@@ -933,7 +938,7 @@ void MainWindow::postGamsLibRun(AbstractProcess* process)
         EXCEPT() << "Error creating file '" << mLibProcess->inputFile() << "'";
 
     if (!file->editors().isEmpty()) {
-        file->load(QList<int>() << file->codecMib());
+        file->load(file->codecMib());
     }
     openFile(file, true, node->runParentNode(), file->codecMib());
     if (mLibProcess) {
@@ -1062,7 +1067,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
-        mClosedTabs << fc->location();
+        mClosedTabs << file->location();
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         file->removeEditor(edit);
         edit->deleteLater();
@@ -1094,10 +1099,10 @@ void MainWindow::createWelcomePage()
 bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEditor* edit = FileMeta::toAbstractEdit(editWidget);
     if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        return (fc && !edit->isReadOnly());
+        ProjectFileNode* node = mProjectRepo.findFileNode(edit);
+        return (node && !edit->isReadOnly());
     }
     return false;
 }
@@ -1105,14 +1110,13 @@ bool MainWindow::isActiveTabRunnable()
 bool MainWindow::isActiveTabSetAsMain()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEditor* edit = FileMeta::toAbstractEdit(editWidget);
     if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        if (fc) {
-           ProjectGroupNode* group = fc->parentEntry();
-           if (group) {
-               return (fc->location()==group->runnableGms());
-           }
+        ProjectFileNode* node = mProjectRepo.findFileNode(edit);
+        if (node) {
+           ProjectRunGroupNode* runGroup = node->runParentNode();
+           if (runGroup)
+               return (node->file() == runGroup->runnableGms());
         }
     }
     return false;
@@ -1120,7 +1124,8 @@ bool MainWindow::isActiveTabSetAsMain()
 
 bool MainWindow::isRecentGroupInRunningState()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
+    ProjectRunGroupNode *runGroup = mRecent.group ? mRecent.group->toRunGroup() : nullptr;
+    QProcess::ProcessState state = runGroup ? runGroup->gamsProcessState() : QProcess::NotRunning;
     return (state == QProcess::Running);
 }
 
@@ -1249,13 +1254,13 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* node = mProjectRepo.node(index);
     if (node->toRunGroup()) {
-        ProjectLogNode* logNode = node->toRunGroup()->getOrCreateLogNode(mTextMarkRepo, mFileMetaRepo);
-        if (logNode->editors().isEmpty()) {
+        ProjectLogNode* logNode = node->toRunGroup()->getOrCreateLogNode(&mFileMetaRepo);
+        if (!logNode->file()->isOpen()) {
             logNode->setDebugLog(mLogDebugLines);
             LogEditor* logEdit = new LogEditor(mSettings.get(), this);
-            ProjectAbstractNode::initEditorType(logEdit);
+            FileMeta::initEditorType(logEdit);
             int ind = ui->logTabs->addTab(logEdit, logNode->name(NameModifier::editState));
-            logNode->addEditor(logEdit);
+            logNode->file()->addEditor(logEdit);
             ui->logTabs->setCurrentIndex(ind);
         }
     } else if (node->toFile()) {
@@ -1263,23 +1268,23 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     }
 }
 
-bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
+bool MainWindow::requestCloseChanged(QVector<FileMeta*> changedFiles)
 {
     // TODO: make clear that this saves/discrads all modified files?
     if (changedFiles.size() > 0) {
         int ret = QMessageBox::Discard;
         QMessageBox msgBox;
         QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
-                                             : QString::number(changedFiles.size())+" files have been modified";
+                                                   : QString::number(changedFiles.size())+" files have been modified";
         msgBox.setText(filesText);
         msgBox.setInformativeText("Do you want to save your changes?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         ret = msgBox.exec();
         if (ret == QMessageBox::Save) {
-            for (ProjectFileNode* fc: changedFiles) {
-                if (fc->isModified()) {
-                    fc->save();
+            for (FileMeta* file: changedFiles) {
+                if (file->isModified()) {
+                    file->save();
                 }
             }
         }
@@ -1302,8 +1307,8 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    QList<ProjectFileNode*> oFiles = mProjectRepo.modifiedFiles();
-    if (!requestCloseChanged(oFiles)) {
+    QVector<FileMeta*> changedFiles = mFileMetaRepo.modifiedFiles();
+    if (!requestCloseChanged(changedFiles)) {
         event->setAccepted(false);
     } else {
         mSettings->saveSettings(this);
@@ -1397,20 +1402,20 @@ void MainWindow::customEvent(QEvent *event)
         ((LineEditCompleteEvent*)event)->complete();
 }
 
-void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
+void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectRunGroupNode* runnGroup)
 {
     QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
 
     // set default lst file name in case output option changed back to default
-    if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
+    if (runnGroup->runnableGms())
+        runnGroup->setLstFileName(QFileInfo(runnGroup->runnableGms()->location()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
         // output (o) found, case-insensitive
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
-            fgc->setLstFileName(item.value);
+            runnGroup->setLstFileName(item.value);
         }
     }
 }
@@ -1432,33 +1437,39 @@ OptionWidget *MainWindow::getGamsOptionWidget() const
 
 void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 {
-    if (!logProc->editors().isEmpty()) return;
+    if (!logProc->file()->isOpen()) return;
     logProc->setDebugLog(mLogDebugLines);
     LogEditor* logEdit = new LogEditor(mSettings.get(), this);
-    ProjectAbstractNode::initEditorType(logEdit);
+    FileMeta::initEditorType(logEdit);
 
-    ui->logTabs->addTab(logEdit, logProc->caption());
-    logProc->addEditor(logEdit);
+    ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
+    logProc->file()->addEditor(logEdit);
     updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 }
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.asFile(mRecent.editor()));
-    ProjectGroupNode *group = (fc ? fc->parentNode() : nullptr);
-    if (!group) return;
+    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
+    ProjectRunGroupNode *runGroup = (fc ? fc->runParentNode() : nullptr);
+    if (!runGroup) return;
 
-    parseFilesFromCommandLine(commandLineStr, group);
+    parseFilesFromCommandLine(commandLineStr, runGroup);
 
-    group->clearLstErrorTexts();
+    runGroup->clearLstErrorTexts();
 
-    if (mSettings->autosaveOnRun())
-        group->saveGroup();
+    // TODO(JM) check group for open files
+    QVector<ProjectFileNode*> openNodes = runGroup->listOpenNodes();
 
-    if (fc->editors().size() > 0 && fc->isModified()) {
+    bool doSave = !openNodes.isEmpty();
+
+    if (doSave && !mSettings->autosaveOnRun()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText(fc->location()+" has been modified.");
+        if (openNodes.size() > 1)
+            msgBox.setText(openNodes.first()->location()+" has been modified.");
+        else
+            msgBox.setText(openNodes.size()+" files have been modified.");
+
         msgBox.setInformativeText("Do you want to save your changes before running?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
@@ -1467,15 +1478,26 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
         if (ret == QMessageBox::Cancel) {
             return;
-        } else if (ret == QMessageBox::Save) {
-            fc->save();
         } else if (msgBox.clickedButton() == discardButton) {
-            fc->load(fc->codecMib());
+            for (ProjectFileNode *node: openNodes) {
+                if (node->file()->isOpen())
+                    node->file()->load(node->file()->codecMib());
+            }
+            doSave = false;
         }
     }
 
-    mProjectRepo.removeMarks(group);
-    ProjectLogNode* logProc = mProjectRepo.asLog(group);
+    if (doSave)
+        for (ProjectFileNode *node: openNodes) {
+            if (node->file()->isOpen())
+                node->file()->save();
+        }
+
+    // TODO(JM) for each fileNode in runGroup
+    mTextMarkRepo.removeMarks(fileId);
+    //mProjectRepo.removeMarks(runGroup);
+
+    ProjectLogNode* logProc = mProjectRepo.asLogNode(runGroup);
 
     ensureLogEditor(logProc);
 
@@ -1484,13 +1506,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     } else {
         logProc->clearLog();
     }
-    if (!ui->logTabs->children().contains(logProc->editors().first())) {
-        ui->logTabs->addTab(logProc->editors().first(), logProc->name(NameModifier::editState));
+    if (!ui->logTabs->children().contains(logProc->file()->editors().first())) {
+        ui->logTabs->addTab(logProc->file()->editors().first(), logProc->name(NameModifier::editState));
     }
-    ui->logTabs->setCurrentWidget(logProc->editors().first());
+    ui->logTabs->setCurrentWidget(logProc->file()->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->runnableGms()->location());
 
     if (gmsFilePath == "")
         appendSystemLog("No runnable GMS file found.");
@@ -1498,8 +1520,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QFileInfo gmsFileInfo(gmsFilePath);
 
     logProc->setJumpToLogEnd(true);
-    GamsProcess* process = group->gamsProcess();
-    QString lstFileName = group->lstFileName();
+    GamsProcess* process = runGroup->gamsProcess();
+    QString lstFileName = runGroup->lstFileName();
     if (gmsFileNode) {
         QFileInfo fi(gmsFilePath);
         lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
@@ -1586,53 +1608,58 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 
 void MainWindow::on_actionInterrupt_triggered()
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
-    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
+    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fc ? fc->runParentNode() : nullptr);
+    if (!runGroup) return;
+
     mGamsOptionWidget->on_interruptAction();
-    GamsProcess* process = group->gamsProcess();
+    GamsProcess* process = runGroup->gamsProcess();
     QtConcurrent::run(process, &GamsProcess::interrupt);
 }
 
 void MainWindow::on_actionStop_triggered()
 {
-    ProjectFileNode* fc = mProjectRepo.fileNode(mRecent.editor());
-    ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
-    if (!group)
-        return;
+    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fc ? fc->runParentNode() : nullptr);
+    if (!runGroup) return;
+
     mGamsOptionWidget->on_stopAction();
-    GamsProcess* process = group->gamsProcess();
+    GamsProcess* process = runGroup->gamsProcess();
     QtConcurrent::run(process, &GamsProcess::stop);
 }
 
 void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
 {
-    bool moveToEnd = false;
-    ProjectLogNode* logNode = mProjectRepo.logNode(node);
+    if (!node) return;
+    ProjectRunGroupNode *runGroup = node->runParentNode();
+    if (!runGroup) return;
+    ProjectLogNode* logNode = runGroup->logNode();
     if (!logNode) return;
-    if (createMissing) {
-        moveToEnd = true;
-        ensureLogEditor(logNode);
-    }
-    if (!logNode->editors().isEmpty()) {
-        logNode->setDebugLog(mLogDebugLines);
-        AbstractEditor* logEdit = FileMeta::toAbstractEdit(logNode->file()->editors().first());
-        if (logEdit) {
-            if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != mResultsView)
-                    ui->logTabs->setCurrentWidget(logEdit);
-            }
-            if (moveToEnd) {
-                QTextCursor cursor = logEdit->textCursor();
-                cursor.movePosition(QTextCursor::End);
-                logEdit->setTextCursor(cursor);
-            }
+    if (createMissing) ensureLogEditor(logNode);
+    if (!logNode->file()->isOpen()) return;
+
+    logNode->setDebugLog(mLogDebugLines);
+    AbstractEditor* logEdit = FileMeta::toAbstractEdit(logNode->file()->editors().first());
+    if (logEdit) {
+        if (ui->logTabs->currentWidget() != logEdit) {
+            if (ui->logTabs->currentWidget() != mResultsView)
+                ui->logTabs->setCurrentWidget(logEdit);
+        }
+        if (createMissing) { // move to end
+            QTextCursor cursor = logEdit->textCursor();
+            cursor.movePosition(QTextCursor::End);
+            logEdit->setTextCursor(cursor);
         }
     }
 }
 
-TextMarkRepo *MainWindow::textMarkRepo() const
+void MainWindow::storeTree()
+{
+    // TODO(JM) add settings methods to store each part separately
+    mSettings->saveSettings(this);
+}
+
+TextMarkRepo *MainWindow::textMarkRepo()
 {
     return &mTextMarkRepo;
 }
@@ -1681,18 +1708,25 @@ void MainWindow::openFile(FileMeta *fileMeta, bool focus, ProjectRunGroupNode *r
         }
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
-        changeToLog(fileMeta);
+        changeToLog(mProjectRepo.findFileNode(edit));
     }
     addToOpenedFiles(fileMeta->location());
 }
 
 void MainWindow::closeGroup(ProjectGroupNode* group)
 {
+
+    // TODO(JM) what to do here? Don't need to close a file that is linked from a node of another group
+    // 1. gather nodes
+    // 2. gather open files
+    // 3. request
+    // 4. close node via ProjectRepo
+
     if (!group) return;
-    QList<ProjectFileNode*> changedFiles;
-    QList<ProjectFileNode*> openFiles;
+    QVector<FileMeta*> changedFiles;
+    QVector<FileMeta*> openFiles;
     for (int i = 0; i < group->childCount(); ++i) {
-        ProjectAbstractNode* fsc = group->childNode(i);
+        ProjectFileNode* fsc = group->childNode(i)->toFile();
         if (fsc->type() == NodeType::file) {
             ProjectFileNode* file = static_cast<ProjectFileNode*>(fsc);
             openFiles << file;
@@ -1702,8 +1736,8 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     }
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
-        for (ProjectFileNode *file: openFiles) {
-            closeFileEditors(file->id());
+        for (ProjectFileNode *node: openFiles) {
+            closeFileEditors(node->file()->id());
         }
         ProjectRunGroupNode* runGroup = group->toRunGroup();
         ProjectLogNode* log = runGroup ? runGroup->logNode() : nullptr;
@@ -1726,50 +1760,8 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
 ///
 void MainWindow::closeNodeConditionally(ProjectFileNode* file) {
     if (!file->isModified() || requestCloseChanged(QList<ProjectFileNode*>() << file)) {
-        closeNode(file);
+        mProjectRepo.closeNode(file);
     }
-}
-
-/// Removes file from repository. And calls closeFileEditors to clean everything up.
-/// \param file
-///
-void MainWindow::closeNode(ProjectFileNode* node)
-{
-    QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(node->file()->id());
-    if (nodes.size() == 1) {
-        // TODO(JM) this is the last node for this file: close editors
-        closeFileEditors(node->id());
-    }
-    ui->projectView->setCurrentIndex(QModelIndex());
-
-    ProjectGroupNode *parentGroup = node->parentNode();
-
-    // if this is a lst file referenced in a log
-    if (parentGroup->logNode() && parentGroup->logNode()->lstNode() == node)
-        parentGroup->logNode()->setLstNode(nullptr);
-
-    // close actual file and remove repo node
-    closeFileEditors(node->id());
-    mProjectRepo.removeFile(node);
-
-    // if this file is marked as runnable remove reference
-    if (parentGroup->runnableGms() == node->location()) {
-        parentGroup->removeRunnableGms();
-        for (int i = 0; i < parentGroup->childCount(); i++) {
-            // choose next as main gms file
-            if (parentGroup->childEntry(i)->location().endsWith(".gms")) {
-                parentGroup->setRunnableGms(static_cast<ProjectFileNode*>(parentGroup->childEntry(i)));
-                break;
-            }
-        }
-    }
-
-    // close group if empty now
-    if (parentGroup->childCount() == 0)
-        closeGroup(parentGroup);
-
-    // save changes in project structure
-    mSettings->saveSettings(this);
 }
 
 /// Closes all open editors and tabs related to a file and remove option history
@@ -1814,8 +1806,8 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
 
 void MainWindow::openNode(const QModelIndex& index)
 {
-    ProjectFileNode *file = mProjectRepo.asFile(index);
-    if (file) openFilePath(file);
+    ProjectFileNode *file = mProjectRepo.asFileNode(index);
+    if (file) openFilePath(file->location());
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)
@@ -1824,7 +1816,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
     if (!edit) return;
 
     mProjectRepo.editorActivated(edit);
-    ProjectFileNode* fc = mProjectRepo.asFile(edit);
+    ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
         updateRunState();
@@ -1909,7 +1901,8 @@ void MainWindow::updateEditorLineWrapping()
     else
         wrapModeEditor = QPlainTextEdit::NoWrap;
 
-    QWidgetList editList = mProjectRepo.editors();
+    QWidgetList editList = openEditors();
+    for (AbstractEditor* ed: openLogs()) editList << ed;
     for (int i = 0; i < editList.size(); i++) {
         AbstractEditor* ed = FileMeta::toAbstractEdit(editList.at(i));
         if (ed) {
@@ -1967,18 +1960,18 @@ void MainWindow::writeTabs(QJsonObject &json) const
 {
     QJsonArray tabArray;
     for (int i = 0; i < ui->mainTab->count(); ++i) {
-        QWidget *wid = ui->mainTab->widget(i);
-        if (!wid || wid == mWp) continue;
-        ProjectFileNode *fc = mProjectRepo.asFile(wid);
+        QWidget *widget = ui->mainTab->widget(i);
+        if (!widget || widget == mWp) continue;
+        ProjectFileNode *fc = mProjectRepo.findFileNode(widget);
         if (!fc) continue;
         QJsonObject tabObject;
         tabObject["location"] = fc->location();
-        tabObject["codecMib"] = fc->codecMib();
+        tabObject["codecMib"] = fc->file()->codecMib();
         // TODO(JM) store current edit position
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
-    ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.asFile(mRecent.editor()) : nullptr;
+    ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.findFileNode(mRecent.editor()) : nullptr;
     if (fc) json["mainTabRecent"] = fc->location();
 }
 
@@ -2018,10 +2011,10 @@ void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
 
-    ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editor());
+    ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
     if (!fc) return;
 
-    if (fc->metrics().fileType() == FileType::Gdx) {
+    if (fc->file()->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = FileMeta::toGdxViewer(mRecent.editor());
         gdx->copyAction();
     } else {
@@ -2038,10 +2031,10 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
-    ProjectFileNode *fc = mProjectRepo.asFile(mRecent.editor());
+    ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
     if (!fc || !focusWidget()) return;
 
-    if (fc->metrics().fileType() == FileType::Gdx) {
+    if (fc->file()->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = FileMeta::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
     } else {
@@ -2195,10 +2188,9 @@ void MainWindow::toggleLogDebug()
     mLogDebugLines = !mLogDebugLines;
     ProjectGroupNode* root = mProjectRepo.treeModel()->rootNode();
     for (int i = 0; i < root->childCount(); ++i) {
-        ProjectAbstractNode *fsc = root->childNode(i);
-        if (fsc->type() == NodeType::group) {
-            ProjectGroupNode* group = static_cast<ProjectGroupNode*>(fsc);
-            ProjectLogNode* log = group->logNode();
+        ProjectRunGroupNode *runGroup = root->childNode(i)->toRunGroup();
+        if (runGroup) {
+            ProjectLogNode* log = runGroup->logNode();
             if (log) log->setDebugLog(mLogDebugLines);
         }
     }

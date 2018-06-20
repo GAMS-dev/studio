@@ -56,6 +56,7 @@ public:
     ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
+    QVector<ProjectFileNode*> listOpenNodes() const;
 
 protected:
     friend class ProjectRepo;
@@ -68,10 +69,10 @@ protected:
     void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
     int peekIndex(const QString &name, bool* hit = nullptr);
-    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildList; }
+    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildNodes; }
 
 private:
-    QList<ProjectAbstractNode*> mChildList;
+    QList<ProjectAbstractNode*> mChildNodes;
     QString mLocation;
 
 //public:
@@ -135,6 +136,7 @@ public:
     bool isProcess(const AbstractProcess *process) const;
     void jumpToFirstError(bool focus);
     QProcess::ProcessState gamsProcessState() const;
+    GamsProcess *gamsProcess() const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

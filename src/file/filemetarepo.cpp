@@ -95,6 +95,17 @@ QVector<FileMeta*> FileMetaRepo::openFiles() const
     return res;
 }
 
+QVector<FileMeta*> FileMetaRepo::modifiedFiles() const
+{
+    QVector<FileMeta*> res;
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value()->isModified()) res << i.value();
+    }
+    return res;
+}
+
 void FileMetaRepo::unwatch(const QString &path)
 {
     mWatcher.removePath(path);

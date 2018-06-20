@@ -91,24 +91,24 @@ public:
     /// Get the <c>ProjectFileNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectFileNode</c>.
     /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
-    inline ProjectFileNode* asFile(NodeId id) const;
+    inline ProjectFileNode* asFileNode(NodeId id) const;
 
     /// \brief Get the <c>ProjectFileNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectFileNode</c>.
     /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
-    inline ProjectFileNode* asFile(const QModelIndex& index) const;
+    inline ProjectFileNode* asFileNode(const QModelIndex& index) const;
 
-    ProjectFileNode* asFile(QWidget *editWidget) const;
+    ProjectFileNode* findFileNode(QWidget *editWidget) const;
 
     /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
-    inline ProjectLogNode* asLog(NodeId id) const;
+    inline ProjectLogNode* asLogNode(NodeId id) const;
 
     /// \brief Get the <c>ProjectLogNode</c> related to a parent or sibling <c>ProjectAbstractNode</c>.
     /// \param node The <c>ProjectAbstractNode</c> to find the associated <c>ProjectLogNode</c> for.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
-    inline ProjectLogNode* asLog(ProjectAbstractNode* node);
+    inline ProjectLogNode* asLogNode(ProjectAbstractNode* node);
 
     inline bool isActive(const ProjectAbstractNode *node) const;
     inline void setActive(ProjectAbstractNode* node);
@@ -130,6 +130,7 @@ public:
     ProjectFileNode *findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup);
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup);
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const FileId &runId = -1) const;
+    void editorActivated(QWidget *edit);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

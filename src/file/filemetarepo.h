@@ -27,6 +27,7 @@ public:
     TextMarkRepo *textMarkRepo() const;
     ProjectRepo *projectRepo() const;
     QVector<FileMeta*> openFiles() const;
+    QVector<FileMeta*> modifiedFiles() const;
     void unwatch(const QString &path);
 
 signals:

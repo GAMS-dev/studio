@@ -242,18 +242,14 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
     }
 }
 
-void FileMeta::removeAllEditors()
-{
-    auto editors = mEditors;
-    for (auto editor : editors) {
-        removeEditor(editor);
-    }
-    mEditors = editors;
-}
-
 bool FileMeta::hasEditor(QWidget * const &edit) const
 {
     return mEditors.contains(edit);
+}
+
+void FileMeta::load(int codecMib)
+{
+    load(codecMib==-1 ? QList<int>() : QList<int>() << codecMib);
 }
 
 void FileMeta::load(QList<int> codecMibs)

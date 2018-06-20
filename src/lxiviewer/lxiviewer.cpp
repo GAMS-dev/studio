@@ -96,7 +96,7 @@ void LxiViewer::loadLxiFile()
 void LxiViewer::loadLstFile()
 {
     if (QProcess::NotRunning == mRunGroup->gamsProcessState()) {
-        mFileMeta->load(QList<int>() << mFileMeta->codecMib());
+        mFileMeta->load(mFileMeta->codecMib());
     }
 
 }

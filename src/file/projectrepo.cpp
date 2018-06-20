@@ -44,6 +44,7 @@ ProjectRepo::~ProjectRepo()
 
 void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
 {
+    if (fileRepo || textMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
     if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
     if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
     mFileRepo = fileRepo;
@@ -109,18 +110,18 @@ ProjectRunGroupNode *ProjectRepo::asRunGroup(const QModelIndex &index) const
     return asRunGroup(index.internalId());
 }
 
-inline ProjectFileNode *ProjectRepo::asFile(NodeId id) const
+inline ProjectFileNode *ProjectRepo::asFileNode(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
     return (res && res->type() == NodeType::file) ? static_cast<ProjectFileNode*>(res) : nullptr;
 }
 
-inline ProjectFileNode*ProjectRepo::asFile(const QModelIndex& index) const
+inline ProjectFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
 {
-    return asFile(index.internalId());
+    return asFileNode(index.internalId());
 }
 
-ProjectFileNode *ProjectRepo::asFile(QWidget *editWidget) const
+ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
     AbstractEditor *edit = FileMeta::toAbstractEdit(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
@@ -135,13 +136,13 @@ ProjectFileNode *ProjectRepo::asFile(QWidget *editWidget) const
     return group->findFile(fileMeta, true);
 }
 
-inline ProjectLogNode *ProjectRepo::asLog(NodeId id) const
+inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
     return (res && res->type() == NodeType::log) ? static_cast<ProjectLogNode*>(res) : nullptr;
 }
 
-inline ProjectLogNode* ProjectRepo::asLog(ProjectAbstractNode* node)
+inline ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
     const ProjectGroupNode* group = node->toGroup();
@@ -303,6 +304,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     indexNode(group);
     mTreeModel->insertChild(offset, _parent, group);
     connect(group, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
+    emit changed();
 
 //    connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
 //    connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
@@ -324,6 +326,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
     }
     mTreeModel->removeChild(group);
     deleteNode(group);
+    emit changed();
 }
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
@@ -356,8 +359,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     if (runGroup->childCount() == 0)
         closeGroup(runGroup);
 
-    // save changes in project structure
-    mSettings->saveSettings(this);
+    emit changed();
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup)
@@ -379,6 +381,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         if (fileMeta->kind() == FileKind::Log)
             EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
         node = new ProjectFileNode(fileMeta, fileGroup);
+        emit changed();
     }
     return node->toFile();
 
@@ -405,6 +408,13 @@ void ProjectRepo::setSelected(const QModelIndex& ind)
     mTreeModel->setSelected(ind);
 }
 
+void ProjectRepo::editorActivated(QWidget* edit)
+{
+    ProjectFileNode *node = findFileNode(edit);
+    if (!node) return;
+    QModelIndex mi = mTreeModel->index(node);
+    mTreeModel->setCurrent(mi);
+}
 
 /*
 
@@ -531,13 +541,6 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
     if (!nd) return;
     QModelIndex ndIndex = mTreeModel->index(nd);
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
-}
-
-void ProjectRepo::editorActivated(QWidget* edit)
-{
-    ProjectFileNode *fc = fileNode(edit);
-    QModelIndex mi = mTreeModel->index(fc);
-    mTreeModel->setCurrent(mi);
 }
 
 void ProjectRepo::removeFile(ProjectFileNode* file)

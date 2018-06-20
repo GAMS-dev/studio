@@ -142,7 +142,7 @@ public:
     bool isOptionDefinitionChecked();
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
-    TextMarkRepo* textMarkRepo() const;
+    TextMarkRepo* textMarkRepo();
 
     QWidgetList openEditors();
     QList<AbstractEditor *> openLogs();
@@ -184,17 +184,18 @@ private slots:
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
+    void fileClosed(FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *file);
-    void closeNode(ProjectFileNode* node);
     void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
+    void storeTree();
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -293,14 +294,14 @@ private:
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void createWelcomePage();
-    bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
+    bool requestCloseChanged(QVector<FileMeta *> changedFiles);
     bool isActiveTabRunnable();
     bool isActiveTabSetAsMain();
     bool isRecentGroupInRunningState();
     void loadCommandLineOptions(ProjectAbstractNode *node);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
+    void parseFilesFromCommandLine(const QString &commandLineStr, ProjectRunGroupNode *runnGroup);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
