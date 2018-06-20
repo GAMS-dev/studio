@@ -33,6 +33,12 @@ Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
     parseCmdArgs();
+    mServerName = "com.gams.gamsstudio";
+    connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
+}
+
+void Application::init()
+{
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
     auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
                                         mCmdParser.resetSettings(),
@@ -42,6 +48,7 @@ Application::Application(int& argc, char** argv)
     connect(&mDistribValidator, &DistributionValidator::messageReceived,
             mMainWindow.get(), &MainWindow::appendSystemLog);
     mDistribValidator.start();
+    listen();
 }
 
 MainWindow* Application::mainWindow() const
@@ -81,6 +88,42 @@ void Application::openAssociatedFiles()
 
 void Application::showExceptionMessage(const QString &title, const QString &message) {
     QMessageBox::critical(nullptr, title, message);
+}
+
+bool Application::checkForOtherInstance()
+{
+    QLocalSocket socket;
+    socket.connectToServer(mServerName, QLocalSocket::ReadWrite);
+
+    if(socket.waitForConnected()) {
+        QByteArray buffer;
+        for(QString f : mCmdParser.files())
+            buffer.append(f + "\n");
+        socket.write(buffer);
+        socket.waitForBytesWritten();
+        return true;
+    }
+    return false;
+}
+
+void Application::listen()
+{
+    mServer.removeServer(mServerName);
+    mServer.listen(mServerName);
+}
+
+void Application::newConnection()
+{
+    QLocalSocket* socket = mServer.nextPendingConnection();
+    connect(socket, &QLocalSocket::readyRead, this, &Application::receiveFileArguments);
+}
+
+void Application::receiveFileArguments()
+{
+    QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
+    QString files = QString(socket->readAll());
+    mMainWindow->openFiles(files.split("\n", QString::SkipEmptyParts));
+    socket->deleteLater();
 }
 
 bool Application::event(QEvent *event)

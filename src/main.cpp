@@ -28,6 +28,10 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setApplicationVersion(STUDIO_VERSION);
     Application app(argc, argv);
+    if (app.checkForOtherInstance())
+        return 0; // terminate since another instance of studio is already running
+    app.init();
+
     app.setOrganizationName(GAMS_ORGANIZATION_STR);
     app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     app.setApplicationName(GAMS_PRODUCTNAME_STR);
