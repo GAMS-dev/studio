@@ -775,6 +775,7 @@ void MainWindow::activeTabChanged(int index)
 
 void MainWindow::fileChanged(FileId fileId)
 {
+    // TODO(JM) BUG: a FileMeta signaled this, but .fileMeta(fileId) didn't found anything
     QWidgetList editors = mFileMetaRepo.fileMeta(fileId)->editors();
     for (QWidget *edit: editors) {
         int index = ui->mainTab->indexOf(edit);

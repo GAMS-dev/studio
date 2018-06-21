@@ -44,7 +44,7 @@ ProjectRepo::~ProjectRepo()
 
 void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
 {
-    if (fileRepo || textMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
+    if (mFileRepo || mTextMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
     if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
     if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
     mFileRepo = fileRepo;
