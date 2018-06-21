@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "commandlineparser.h"
+#include "commonpaths.h"
 
 namespace gams {
 namespace studio {
@@ -52,7 +53,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mResetView = true;
     if (isSet("gams-dir"))
         mGamsDir = this->value("gams-dir");
-    mFiles = positionalArguments();
+    mFiles = getFileArgs();
 
     return CommandLineOk;
 }
@@ -81,6 +82,15 @@ QString CommandLineParser::gamsDir() const
 {
     return mGamsDir;
 }
+
+inline QStringList CommandLineParser::getFileArgs()
+{
+    QStringList absoluteFilePaths;
+    for (auto file : positionalArguments())
+        absoluteFilePaths << CommonPaths::absolutFilePath(file);
+    return absoluteFilePaths;
+}
+
 
 } // namespace studio
 } // namespace gams
