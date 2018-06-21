@@ -45,6 +45,9 @@ public:
     QString gamsDir() const;
 
 private:
+    inline QStringList getFileArgs();
+
+private:
     QStringList mFiles;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;

@@ -27,8 +27,6 @@
 #include <memory>
 #include <QApplication>
 #include <QLocalServer>
-#include <QLocalSocket>
-
 
 namespace gams {
 namespace studio {

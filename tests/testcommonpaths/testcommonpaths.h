@@ -46,6 +46,7 @@ private slots:
     void testAbsoluteFilePathNullStr();
     void testAbsoluteFilePathExisting();
     void testAbsoluteFilePathNotExisting();
+    void testAbsoluteFilePathFromRelativePath();
 
     void testAbsolutePathEmpty();
     void testAbsolutePathNullStr();

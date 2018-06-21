@@ -25,6 +25,7 @@
 #include <iostream>
 #include <QMessageBox>
 #include <QFileOpenEvent>
+#include <QLocalSocket>
 
 namespace gams {
 namespace studio {
@@ -121,8 +122,7 @@ void Application::newConnection()
 void Application::receiveFileArguments()
 {
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
-    QString files = QString(socket->readAll());
-    mMainWindow->openFiles(files.split("\n", QString::SkipEmptyParts));
+    mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
     socket->deleteLater();
 }
 
