@@ -27,6 +27,9 @@
 #include <QFileOpenEvent>
 #include <QLocalSocket>
 
+//#include <iostream>
+//using namespace std;
+
 namespace gams {
 namespace studio {
 
@@ -34,7 +37,15 @@ Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
     parseCmdArgs();
-    mServerName = "com.gams.gamsstudio";
+    QString userName;
+#ifdef unix
+    userName = qgetenv("USER");
+#else
+    userName = qEnvironmentVariable("USERNAME", QString());
+#endif
+    mServerName = "com.gams.studio." + userName;
+//    cout << mServerName.toStdString() << endl;
+
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
 }
 
