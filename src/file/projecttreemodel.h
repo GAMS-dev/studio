@@ -28,6 +28,8 @@ namespace studio {
 
 class ProjectRepo;
 
+// TODO(JM) add log nodes and hide them with a QSortFilterProxyModel
+
 class ProjectTreeModel : public QAbstractItemModel
 {
 public:

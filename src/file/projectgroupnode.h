@@ -56,7 +56,7 @@ public:
     ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
-    QVector<ProjectFileNode*> listOpenNodes() const;
+    QVector<ProjectFileNode*> listFiles(bool recurse = false) const;
 
 protected:
     friend class ProjectRepo;
@@ -168,14 +168,14 @@ class ProjectRootNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
-    ProjectRootNode(ProjectRepo *repo);
+    ProjectRootNode(ProjectRepo *projectRepo);
     ~ProjectRootNode() {}
     void setParentNode(ProjectRunGroupNode *parent);
-    ProjectRepo *repo() const;
+    ProjectRepo *projectRepo() const;
 
 private:
     friend class ProjectRepo;
-    void init(ProjectRepo* repo);
+    void init(ProjectRepo* projectRepo);
 
 private:
     ProjectRepo* mRepo = nullptr;

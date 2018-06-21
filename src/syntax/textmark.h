@@ -77,8 +77,8 @@ public:
 //    inline int position() const {return document() ? qMin(mPosition,document()->characterCount()-1) : mPosition;}
     inline int blockStart() const {return mColumn;}
     inline int blockEnd() const {return mColumn+mSize;}
-//    inline void incSpread() {mSpread++;}
-//    inline int spread() const {return mSpread;}
+    inline void incSpread() {mSpread++;}
+    inline int spread() const {return mSpread;}
     void rehighlight();
 
 //    void move(int delta);
@@ -104,7 +104,7 @@ private:
     int mColumn = 0;
     int mSize = 0;
     int mValue = 0;
-//    int mSpread = 0;
+    int mSpread = 0;
     TextMark* mReference = nullptr;
 //    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
@@ -119,8 +119,12 @@ struct TextMarkData
         : location(_location), runLocation(QString()), type(_type), line(_line), column(_column), size(_size) {}
     TextMarkData(const QString& _location, const QString &_runLocation, TextMark::Type _type, int _line, int _column, int _size = 0)
         : location(_location), runLocation(_runLocation), type(_type), line(_line), column(_column), size(_size) {}
+    TextMarkData(const FileId _fileId, const FileId _runId, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : fileId(_fileId), runId(_runId), type(_type), line(_line), column(_column), size(_size) {}
     QString location;
+    FileId fileId;
     QString runLocation;
+    FileId runId;
     TextMark::Type type;
     int line;
     int column;

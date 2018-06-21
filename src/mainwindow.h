@@ -190,7 +190,7 @@ private slots:
     void postGamsRun(AbstractProcess* process);
     void postGamsLibRun(AbstractProcess* process);
     void closeGroup(ProjectGroupNode* group);
-    void closeNodeConditionally(ProjectFileNode *file);
+    void closeNodeConditionally(ProjectFileNode *node);
     void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);

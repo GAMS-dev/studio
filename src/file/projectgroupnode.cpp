@@ -150,8 +150,8 @@ ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
 {
     ProjectAbstractNode* fn = findNode(location, false);
     if (fn) return fn->toFile();
-    FileMeta* fm = root()->fileRepo()->findOrCreateFileMeta(location);
-    return root()->repo()->findOrCreateFileNode(fm, this);
+    FileMeta* fm = projectRepo()->fileRepo()->findOrCreateFileMeta(location);
+    return projectRepo()->findOrCreateFileNode(fm, this);
 }
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
@@ -184,16 +184,20 @@ ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
     return nullptr;
 }
 
-QVector<ProjectFileNode *> ProjectGroupNode::listOpenNodes() const
+QVector<ProjectFileNode *> ProjectGroupNode::listFiles(bool recurse) const
 {
     QVector<ProjectFileNode *> res;
     for (ProjectAbstractNode *node: mChildNodes) {
         ProjectFileNode *fileNode = node->toFile();
-        if (fileNode && fileNode->file()->isOpen()) res << fileNode;
+        if (fileNode)
+            res << fileNode;
+        else if (recurse) {
+            ProjectGroupNode *sub = node->toGroup();
+            if (sub) res << sub->listFiles(true);
+        }
     }
     return res;
 }
-
 
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
     : ProjectGroupNode(name, path, NodeType::runGroup)
@@ -206,6 +210,12 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
     }
+}
+
+void ProjectRunGroupNode::updateRunState(const QProcess::ProcessState &state)
+{
+    Q_UNUSED(state)
+    // TODO(JM) visualize if a state is running
 }
 
 GamsProcess *ProjectRunGroupNode::gamsProcess() const
@@ -306,7 +316,7 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 void ProjectRunGroupNode::jumpToFirstError(bool focus)
 {
     if (!mLogNode) return;
-    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), -1, runFileId(), TextMark::error, 1);
+    QList<TextMark*> marks = projectRepo()->textMarkRepo()->marks(mLogNode->file()->id(), -1, runFileId(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
     if (textMark) {
         textMark->jumpToMark(focus);
@@ -366,7 +376,7 @@ void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)
     EXCEPT() << "The root node has no parent";
 }
 
-ProjectRepo *ProjectRootNode::repo() const
+ProjectRepo *ProjectRootNode::projectRepo() const
 {
     return mRepo;
 }

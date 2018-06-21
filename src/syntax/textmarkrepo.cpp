@@ -51,16 +51,20 @@ void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
 //    if (marks->isEmpty()) {
 //        mMarks.remove(fileId);
 //        delete marks;
-//    }
+    //    }
 }
 
-TextMark *TextMarkRepo::createMark(TextMarkData &tmData)
+TextMark *TextMarkRepo::createMark(const FileId fileId, TextMark::Type type, int line, int column, int size)
 {
-    FileId fileId = ensureFileId(tmData.location);
-    if (fileId < 0) return nullptr;
-    FileId runId = ensureFileId(tmData.runLocation);
-    TextMark* mark = new TextMark(this, fileId, tmData.type, runId);
-    mark->setPosition(tmData.line, tmData.column, tmData.size);
+    return createMark(fileId, FileId(), type, 0, line, column, size);
+}
+
+TextMark *TextMarkRepo::createMark(const FileId fileId, const FileId runId, TextMark::Type type, int value
+                                   , int line, int column, int size)
+{
+    if (!fileId.isValid()) return nullptr;
+    TextMark* mark = new TextMark(this, fileId, type, runId);
+    mark->setPosition(line, column, size);
     if (!mMarks.contains(fileId)) mMarks.insert(fileId, new FileMarks());
     FileMarks *marks = mMarks.value(fileId);
     marks->insert(mark->line(), mark);

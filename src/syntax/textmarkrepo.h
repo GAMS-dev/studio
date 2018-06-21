@@ -23,7 +23,8 @@ public:
     inline void deleteMark(TextMark *tm);
     void removeMark(TextMark *tm);
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
-    TextMark* createMark(TextMarkData &tmData);
+    TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
+    TextMark* createMark(const FileId fileId, const FileId runId, TextMark::Type type, int value, int line, int column, int size = 0);
     QTextDocument* document(FileId fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }

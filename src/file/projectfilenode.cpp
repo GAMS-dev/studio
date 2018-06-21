@@ -20,6 +20,7 @@
  */
 #include "projectfilenode.h"
 #include "projectgroupnode.h"
+#include "projectrepo.h"
 #include "exception.h"
 #include "editors/codeeditor.h"
 #include "syntax/textmarkrepo.h"

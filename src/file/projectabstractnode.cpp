@@ -40,10 +40,10 @@ inline const ProjectRootNode *ProjectAbstractNode::root() const
     return par->toRoot();
 }
 
-inline ProjectRepo *ProjectAbstractNode::repo() const
+inline ProjectRepo *ProjectAbstractNode::projectRepo() const
 {
     const ProjectRootNode* rootNode = root();
-    if (rootNode) return rootNode->repo();
+    if (rootNode) return rootNode->projectRepo();
     EXCEPT() << "ProjectRepo is not assigned";
 }
 
@@ -170,12 +170,12 @@ const ProjectLogNode *ProjectAbstractNode::toLog() const
 
 bool ProjectAbstractNode::isActive() const
 {
-    return repo()->isActive(this);
+    return projectRepo()->isActive(this);
 }
 
 void ProjectAbstractNode::setActive()
 {
-    repo()->setActive(this);
+    projectRepo()->setActive(this);
 }
 
 //int ProjectAbstractNode::childCount() const

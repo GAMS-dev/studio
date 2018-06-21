@@ -66,12 +66,12 @@ public:
     /// Get the <c>ProjectAbstractNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectAbstractNode</c>.
     /// \return The associated <c>ProjectAbstractNode</c> or a <c>nullptr</c>.
-    inline ProjectAbstractNode* node(const QModelIndex& index) const;
+    ProjectAbstractNode* node(const QModelIndex& index) const;
 
     /// Get the <c>ProjectGroupNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectGroupNode</c>.
     /// \return The associated <c>ProjectGroupNode</c> or a <c>nullptr</c>.
-    inline ProjectGroupNode* asGroup(NodeId id) const;
+    ProjectGroupNode* asGroup(NodeId id) const;
 
     /// \brief Get the <c>ProjectGroupNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectGroupNode</c>.
@@ -96,7 +96,7 @@ public:
     /// \brief Get the <c>ProjectFileNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectFileNode</c>.
     /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
-    inline ProjectFileNode* asFileNode(const QModelIndex& index) const;
+    ProjectFileNode* asFileNode(const QModelIndex& index) const;
 
     ProjectFileNode* findFileNode(QWidget *editWidget) const;
 
@@ -108,10 +108,10 @@ public:
     /// \brief Get the <c>ProjectLogNode</c> related to a parent or sibling <c>ProjectAbstractNode</c>.
     /// \param node The <c>ProjectAbstractNode</c> to find the associated <c>ProjectLogNode</c> for.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
-    inline ProjectLogNode* asLogNode(ProjectAbstractNode* node);
+    ProjectLogNode* asLogNode(ProjectAbstractNode* node);
 
-    inline bool isActive(const ProjectAbstractNode *node) const;
-    inline void setActive(ProjectAbstractNode* node);
+    bool isActive(const ProjectAbstractNode *node) const;
+    void setActive(ProjectAbstractNode* node);
 
     ProjectTreeModel* treeModel() const;
     FileMetaRepo* fileRepo() const;
@@ -130,20 +130,21 @@ public:
     ProjectFileNode *findOrCreateFileNode(QString filePath, ProjectGroupNode *fileGroup);
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup);
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const FileId &runId = -1) const;
+    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
     void editorActivated(QWidget *edit);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
-    void isNodeExpanded(const QModelIndex &mi, bool *expanded) const;
+    void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
-    void setSelected(const QModelIndex& ind);
     void changed();
 
 public slots:
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
+    void setSelected(const QModelIndex& ind);
 
 private:
     friend class ProjectRunGroupNode;
@@ -198,7 +199,6 @@ signals:
     void fileDeletedExtern(NodeId nodeId);
 
 public slots:
-    void nodeChanged(NodeId nodeId);
     void findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup = nullptr);
     void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
     void removeFile(ProjectFileNode* file);

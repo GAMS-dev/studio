@@ -216,8 +216,8 @@ QList<Result> SearchWidget::findInFile(FileMeta *fm, bool skipFilters)
                 match = i.next();
                 matches.addResult(lineCounter, match.capturedStart(), file.fileName(), line.trimmed());
                 if (isOpenFile) {
-                    TextMarkData tmData(fm->location(), TextMark::match, lineCounter-1, match.capturedStart(), match.capturedLength());
-                    mMain->textMarkRepo()->createMark(tmData);
+                    mMain->textMarkRepo()->createMark(fm->id(), TextMark::match, lineCounter-1
+                                                      , match.capturedStart(), match.capturedLength());
                 }
             }
         }

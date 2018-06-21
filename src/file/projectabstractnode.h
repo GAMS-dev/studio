@@ -83,7 +83,7 @@ public:
     void setActive();
 
     inline const ProjectRootNode *root() const;
-    inline ProjectRepo* repo() const;
+    inline ProjectRepo* projectRepo() const;
 
 //    virtual int childCount() const;
 //    virtual ProjectAbstractNode* childEntry(int index) const;
@@ -95,12 +95,9 @@ protected:
 //    friend class ProjectLogNode;
 
     ProjectAbstractNode(QString name, NodeType type);
-    FileMetaRepo* fileRepo() const;
-    TextMarkRepo* textMarkRepo() const;
 
 private:
     static NodeId mNextNodeId;
-    ProjectRepo* mRepo;
     NodeId mId;
     ProjectGroupNode* mParent;
     QString mName;

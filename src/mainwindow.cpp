@@ -1457,19 +1457,21 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     runGroup->clearLstErrorTexts();
 
-    // TODO(JM) check group for open files
-    QVector<ProjectFileNode*> openNodes = runGroup->listOpenNodes();
+    QVector<FileMeta*> openFiles;
+    for (ProjectFileNode *node: runGroup->listFiles(true)) {
+        if (node->file()->isOpen() && !openFiles.contains(node->file()))
+            openFiles << node->file();
+    }
 
-    bool doSave = !openNodes.isEmpty();
+    bool doSave = !openFiles.isEmpty();
 
     if (doSave && !mSettings->autosaveOnRun()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
-        if (openNodes.size() > 1)
-            msgBox.setText(openNodes.first()->location()+" has been modified.");
+        if (openFiles.size() > 1)
+            msgBox.setText(openFiles.first()->location()+" has been modified.");
         else
-            msgBox.setText(openNodes.size()+" files have been modified.");
-
+            msgBox.setText(openFiles.size()+" files have been modified.");
         msgBox.setInformativeText("Do you want to save your changes before running?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
@@ -1479,22 +1481,23 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         if (ret == QMessageBox::Cancel) {
             return;
         } else if (msgBox.clickedButton() == discardButton) {
-            for (ProjectFileNode *node: openNodes) {
-                if (node->file()->isOpen())
-                    node->file()->load(node->file()->codecMib());
-            }
+            for (FileMeta *file: openFiles)
+                file->load(file->codecMib());
             doSave = false;
         }
     }
 
     if (doSave)
-        for (ProjectFileNode *node: openNodes) {
-            if (node->file()->isOpen())
-                node->file()->save();
+        for (FileMeta *file: openFiles) {
+            file->save();
         }
 
     // TODO(JM) for each fileNode in runGroup
-    mTextMarkRepo.removeMarks(fileId);
+    QSet<TextMark::Type> markTypes;
+    markTypes << TextMark::error << TextMark::link;
+    for (ProjectFileNode *node: runGroup->listFiles(true)) {
+        mTextMarkRepo.removeMarks(node->file()->id(), markTypes);
+    }
     //mProjectRepo.removeMarks(runGroup);
 
     ProjectLogNode* logProc = mProjectRepo.asLogNode(runGroup);
@@ -1725,19 +1728,26 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     if (!group) return;
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
-    for (int i = 0; i < group->childCount(); ++i) {
-        ProjectFileNode* fsc = group->childNode(i)->toFile();
-        if (fsc->type() == NodeType::file) {
-            ProjectFileNode* file = static_cast<ProjectFileNode*>(fsc);
-            openFiles << file;
-            if (file->isModified())
-                changedFiles << file;
+    QVector<FileMeta*> unboundFiles;
+
+
+    for (ProjectFileNode *node: group->listFiles(true)) {
+        QVector<ProjectRunGroupNode*> otherRunGroups = mProjectRepo.runGroups(node->file()->id());
+        otherRunGroups.removeOne(node->runParentNode());
+
+        if (otherRunGroups.size() == 0) { // all nodes are in the same runGroup -> fileMeta can be removed later
+            unboundFiles << node->file();
+            if (node->file()->isOpen()) {
+                openFiles << node->file();
+                if (node->file()->isModified())
+                    changedFiles << node->file();
+            }
         }
     }
+
     if (requestCloseChanged(changedFiles)) {
-        // TODO(JM)  close if selected
-        for (ProjectFileNode *node: openFiles) {
-            closeFileEditors(node->file()->id());
+        for (FileMeta *file: openFiles) {
+            closeFileEditors(file->id());
         }
         ProjectRunGroupNode* runGroup = group->toRunGroup();
         ProjectLogNode* log = runGroup ? runGroup->logNode() : nullptr;
@@ -1751,6 +1761,11 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
 
         mProjectRepo.closeGroup(group);
+        while (!unboundFiles.isEmpty()) {
+            FileMeta* file = unboundFiles.takeFirst();
+            mFileMetaRepo.removedFile(file);
+            delete file;
+        }
         mSettings->saveSettings(this);
     }
 }
@@ -1758,9 +1773,11 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
 /// Asks user for confirmation if a file is modified before calling closeFile
 /// \param file
 ///
-void MainWindow::closeNodeConditionally(ProjectFileNode* file) {
-    if (!file->isModified() || requestCloseChanged(QList<ProjectFileNode*>() << file)) {
-        mProjectRepo.closeNode(file);
+void MainWindow::closeNodeConditionally(ProjectFileNode* node) {
+    QVector<ProjectRunGroupNode*> otherRunGroups = mProjectRepo.runGroups(node->file()->id());
+    otherRunGroups.removeOne(node->runParentNode());
+    if (!node->isModified() || !otherRunGroups.isEmpty() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
+        mProjectRepo.closeNode(node);
     }
 }
 

@@ -83,12 +83,12 @@ inline ProjectAbstractNode *ProjectRepo::node(NodeId id) const
     return mNodes.value(id, nullptr);
 }
 
-inline ProjectAbstractNode*ProjectRepo::node(const QModelIndex& index) const
+ProjectAbstractNode*ProjectRepo::node(const QModelIndex& index) const
 {
     return node(index.internalId());
 }
 
-inline ProjectGroupNode *ProjectRepo::asGroup(NodeId id) const
+ProjectGroupNode *ProjectRepo::asGroup(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
     return (res && res->type() == NodeType::group) ? static_cast<ProjectGroupNode*>(res) : nullptr;
@@ -116,7 +116,7 @@ inline ProjectFileNode *ProjectRepo::asFileNode(NodeId id) const
     return (res && res->type() == NodeType::file) ? static_cast<ProjectFileNode*>(res) : nullptr;
 }
 
-inline ProjectFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
+ProjectFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
 {
     return asFileNode(index.internalId());
 }
@@ -142,7 +142,7 @@ inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
     return (res && res->type() == NodeType::log) ? static_cast<ProjectLogNode*>(res) : nullptr;
 }
 
-inline ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
+ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
     const ProjectGroupNode* group = node->toGroup();
@@ -169,7 +169,6 @@ inline ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 
 bool ProjectRepo::isActive(const ProjectAbstractNode *node) const
 {
-
     ProjectAbstractNode *par = mActiveStack.isEmpty() ? nullptr : mActiveStack.at(0);
     while (par) {
         if (par == node) return true;
@@ -268,7 +267,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
             const ProjectGroupNode *subGroup = node->toGroup();
             jsonObject["path"] = subGroup->location();
             jsonObject["name"] = node->name();
-            emit isNodeExpanded(mTreeModel->index(subGroup), &expand);
+            emit isNodeExpanded(mTreeModel->index(subGroup), expand);
             if (!expand) jsonObject["expand"] = false;
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
@@ -315,14 +314,23 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
 
 void ProjectRepo::closeGroup(ProjectGroupNode* group)
 {
+    // remove normal cildren
     for (int i = 0; i < group->childCount(); ++i) {
         ProjectAbstractNode *node = group->childNode(i);
         ProjectGroupNode* subGroup = node->toGroup();
         if (subGroup) closeGroup(subGroup);
         else {
             mTreeModel->removeChild(node);
-            deleteNode(node);
+            if (!node->toFile())
+                EXCEPT() << "unhandled node of type " << (int)node->type();
+            closeNode(node->toFile());
         }
+    }
+    // remove log-node if present
+    if (group->toRunGroup()) {
+        // TODO(JM) Take the log-node into normal child-list to prevent the need for this extra-saussage
+        if (group->toRunGroup()->logNode())
+            closeNode(group->toRunGroup()->logNode());
     }
     mTreeModel->removeChild(group);
     deleteNode(group);
@@ -403,6 +411,23 @@ QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const Fil
     return res;
 }
 
+QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) const
+{
+    QVector<ProjectRunGroupNode *> res;
+    QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
+    while (i.hasNext()) {
+        i.next();
+        ProjectFileNode* fileNode = i.value()->toFile();
+        if (fileNode && fileNode->file()->id() == fileId) {
+            ProjectRunGroupNode *runGroup = fileNode->runParentNode();
+            if (runGroup && !res.contains(runGroup)) {
+                res << runGroup;
+            }
+        }
+    }
+    return res;
+}
+
 void ProjectRepo::setSelected(const QModelIndex& ind)
 {
     mTreeModel->setSelected(ind);
@@ -415,6 +440,15 @@ void ProjectRepo::editorActivated(QWidget* edit)
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
 }
+
+void ProjectRepo::nodeChanged(NodeId nodeId)
+{
+    ProjectAbstractNode* nd = node(nodeId);
+    if (!nd) return;
+    QModelIndex ndIndex = mTreeModel->index(nd);
+    emit mTreeModel->dataChanged(ndIndex, ndIndex);
+}
+
 
 /*
 
@@ -533,14 +567,6 @@ void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
         ProjectAbstractNode *child = gc->childEntry(i);
         dump(child, lv+1);
     }
-}
-
-void ProjectRepo::nodeChanged(NodeId nodeId)
-{
-    ProjectAbstractNode* nd = node(nodeId);
-    if (!nd) return;
-    QModelIndex ndIndex = mTreeModel->index(nd);
-    emit mTreeModel->dataChanged(ndIndex, ndIndex);
 }
 
 void ProjectRepo::removeFile(ProjectFileNode* file)
