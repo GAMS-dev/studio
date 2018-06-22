@@ -31,7 +31,7 @@ LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor
 
 AbstractEditor::EditorType LogEditor::type()
 {
-    return EditorType::LogEditor;
+    return EditorType::ProcessLog;
 }
 
 }

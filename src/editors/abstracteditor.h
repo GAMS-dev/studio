@@ -32,7 +32,7 @@ class AbstractEditor : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    enum EditorType { CodeEditor, LogEditor, SystemLog };
+    enum EditorType { CodeEditor, ProcessLog, SystemLog };
 
 public:
     virtual ~AbstractEditor() override;
