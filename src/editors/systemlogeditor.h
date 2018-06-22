@@ -2,12 +2,11 @@
 #define SYSTEMLOGEDITOR_H
 
 #include "abstracteditor.h"
-#include "studiosettings.h"
-
-class QWidget;
 
 namespace gams {
 namespace studio {
+
+class StudioSettings;
 
 enum class LogMsgType { Error, Warning, Info };
 

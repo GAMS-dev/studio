@@ -54,8 +54,6 @@ void DistributionValidator::checkBitness()
         messages << "ERROR: GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
                  << gamsPath;
     emit messageReceived(messages.join(" "));
-#else
-//    emit messageReceived(QString());
 #endif
 }
 

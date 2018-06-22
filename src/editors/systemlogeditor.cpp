@@ -1,7 +1,7 @@
 #include "systemlogeditor.h"
+#include "studiosettings.h"
 
 #include <QString>
-
 
 namespace gams {
 namespace studio {
@@ -31,8 +31,6 @@ void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
     case LogMsgType::Error:
         logMsg.append("<span style='color:red;font-weight: bold;'>Error:</span> ");
         break;
-    default:
-        break;
     }
 
     logMsg.append(msg + "<br/>");
@@ -44,7 +42,7 @@ void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
 
 AbstractEditor::EditorType SystemLogEditor::type()
 {
-    return EditorType::SystemLogEditor;
+    return EditorType::SystemLog;
 }
 
 }
