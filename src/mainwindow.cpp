@@ -117,15 +117,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 
-
-    // TODO(JM) mFileMetaRepo should signal just one FileEvent with the kind of change. That makes it easier to stack
-    //          the events to be triggered later if Studio gains the focus again
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
-//    connect(&mFileMetaRepo, &FileMetaRepo::fileClosed, this, &MainWindow::fileClosed);
-//    connect(&mProjectRepo, &ProjectRepo::fileChangedExtern, this, &MainWindow::fileChangedExtern);
-//    connect(&mProjectRepo, &ProjectRepo::fileDeletedExtern, this, &MainWindow::fileDeletedExtern);
-
-
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
