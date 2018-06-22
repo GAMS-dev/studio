@@ -67,7 +67,6 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp \
-    editors/codeeditor.cpp \
     exception.cpp \
     file/filemetrics.cpp \
     file/filetype.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     editors/abstractedit.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
-    encodingsdialog.cpp
+    encodingsdialog.cpp \
+    editors/codeedit.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -147,7 +147,6 @@ HEADERS += \
     commandlineparser.h \
     commonpaths.h \
     distributionvalidator.h \
-    editors/codeeditor.h \
     exception.h \
     file.h \
     file/filemetrics.h \
@@ -221,7 +220,8 @@ HEADERS += \
     editors/abstractedit.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
-    encodingsdialog.h
+    encodingsdialog.h \
+    editors/codeedit.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

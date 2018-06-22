@@ -21,7 +21,7 @@
 #include "projectfilenode.h"
 #include "projectgroupnode.h"
 #include "exception.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "logger.h"
 #include <QScrollBar>
 #include <QToolTip>
@@ -166,7 +166,7 @@ void ProjectFileNode::addEditor(QWidget* edit)
     bool newlyOpen = !document();
     mEditors.prepend(edit);
     AbstractEdit* ptEdit = ProjectFileNode::toAbstractEdit(edit);
-    CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
+    CodeEdit* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (mEditors.size() == 1) {
         if (ptEdit) {
@@ -174,7 +174,7 @@ void ProjectFileNode::addEditor(QWidget* edit)
             connect(document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged, Qt::UniqueConnection);
             if (mSyntaxHighlighter && mSyntaxHighlighter->document() != document()) {
                 mSyntaxHighlighter->setDocument(document());
-                if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
+                if (scEdit) connect(scEdit, &CodeEdit::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
             }
             if (newlyOpen) emit documentOpened();
             QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
@@ -191,9 +191,9 @@ void ProjectFileNode::addEditor(QWidget* edit)
         ptEdit->installEventFilter(this);
     }
     if (scEdit && mMarks) {
-        connect(scEdit, &CodeEditor::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
-        connect(scEdit, &CodeEditor::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
-        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
+        connect(scEdit, &CodeEdit::requestMarkHash, mMarks, &TextMarkList::shareMarkHash);
+        connect(scEdit, &CodeEdit::requestMarksEmpty, mMarks, &TextMarkList::textMarkIconsEmpty);
+        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEdit::afterContentsChanged);
     }
     setFlag(ProjectAbstractNode::cfActive);
 }
@@ -210,7 +210,7 @@ void ProjectFileNode::removeEditor(QWidget* edit)
         return;
     bool wasModified = isModified();
     AbstractEdit* ptEdit = ProjectFileNode::toAbstractEdit(edit);
-    CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
+    CodeEdit* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
         emit documentClosed();
@@ -231,7 +231,7 @@ void ProjectFileNode::removeEditor(QWidget* edit)
         ptEdit->removeEventFilter(this);
     }
     if (scEdit && mSyntaxHighlighter) {
-        disconnect(scEdit, &CodeEditor::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
+        disconnect(scEdit, &CodeEdit::requestSyntaxState, mSyntaxHighlighter, &ErrorHighlighter::syntaxState);
     }
 }
 
@@ -536,7 +536,7 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
 
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
-        CodeEditor* codeEdit = ProjectAbstractNode::toCodeEdit(edit);
+        CodeEdit* codeEdit = ProjectAbstractNode::toCodeEdit(edit);
         mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
 

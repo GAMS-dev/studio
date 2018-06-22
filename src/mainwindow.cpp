@@ -23,7 +23,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
@@ -173,7 +173,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
+            CodeEdit *codeEdit = new CodeEdit(mSettings.get(), this);
             codeEdit->setTabChangesFocus(false);
             ProjectAbstractNode::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
@@ -183,14 +183,14 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
                 ProjectAbstractNode::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
-                connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
+                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(codeEdit, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
 
@@ -527,7 +527,7 @@ void MainWindow::updateEditorPos()
     QPoint pos;
     QPoint anchor;
     AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(edit);
+    CodeEdit *ce = ProjectFileNode::toCodeEdit(edit);
     if (ce) {
         ce->getPositionAndAnchor(pos, anchor);
         mStatusWidgets->setPosAndAnchor(pos, anchor);
@@ -544,7 +544,7 @@ void MainWindow::updateEditorPos()
 
 void MainWindow::updateEditorMode()
 {
-    CodeEditor* edit = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEdit* edit = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(EditMode::Readonly);
     } else {
@@ -792,7 +792,7 @@ void MainWindow::activeTabChanged(int index)
 
     if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
 
-    CodeEditor* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
 }
@@ -921,7 +921,7 @@ void MainWindow::on_actionHelp_triggered()
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+        CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
@@ -1623,7 +1623,7 @@ void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMi
         if (focus) {
             lxiviewer::LxiViewer* lxiViewer = ProjectAbstractNode::toLxiViewer(edit);
             if (lxiViewer)
-                lxiViewer->codeEditor()->setFocus();
+                lxiViewer->codeEdit()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
         }
@@ -1966,7 +1966,7 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce) ce->redo();
 }
 
@@ -1974,13 +1974,13 @@ void MainWindow::on_actionUndo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
 {
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEdit *ce = ProjectFileNode::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
     ce->pasteClipboard();
 }
@@ -1998,7 +1998,7 @@ void MainWindow::on_actionCopy_triggered()
     } else {
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
         if (!ae) return;
-        CodeEditor *ce = ProjectFileNode::toCodeEdit(ae);
+        CodeEdit *ce = ProjectFileNode::toCodeEdit(ae);
         if (ce && ce->blockEdit()) {
             ce->blockEdit()->selectionToClipboard();
         } else {
@@ -2016,14 +2016,14 @@ void MainWindow::on_actionSelect_All_triggered()
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
     } else {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(focusWidget());
+        CodeEdit* ce = ProjectFileNode::toCodeEdit(focusWidget());
         if (ce) ce->selectAll();
     }
 }
 
 void MainWindow::on_actionCut_triggered()
 {
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEdit* ce= ProjectFileNode::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2079,7 +2079,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toUpper());
@@ -2090,7 +2090,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toLower());
@@ -2099,7 +2099,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
@@ -2112,7 +2112,7 @@ void MainWindow::on_actionIndent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2124,7 +2124,7 @@ void MainWindow::on_actionOutdent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2136,7 +2136,7 @@ void MainWindow::on_actionDuplicate_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->duplicateLine();
 }
@@ -2146,7 +2146,7 @@ void MainWindow::on_actionRemove_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->removeLine();
 }
@@ -2156,7 +2156,7 @@ void MainWindow::on_actionComment_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->commentLine();
 }

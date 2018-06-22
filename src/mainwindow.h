@@ -23,7 +23,7 @@
 #include <memory>
 #include <QMainWindow>
 
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "file.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"

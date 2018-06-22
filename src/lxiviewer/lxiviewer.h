@@ -26,7 +26,7 @@
 namespace gams {
 namespace studio {
 
-class CodeEditor;
+class CodeEdit;
 class ProjectFileNode;
 
 namespace lxiviewer {
@@ -40,15 +40,15 @@ class LxiViewer : public QWidget
     Q_OBJECT
 
 public:
-    explicit LxiViewer(CodeEditor *codeEditor, ProjectFileNode *fc, QWidget *parent);
+    explicit LxiViewer(CodeEdit *codeEditor, ProjectFileNode *fc, QWidget *parent);
     ~LxiViewer();
 
-    CodeEditor *codeEditor() const;
+    CodeEdit *codeEdit() const;
 
 private:
     Ui::LxiViewer *ui;
 
-    CodeEditor* mCodeEditor;
+    CodeEdit* mCodeEdit;
     ProjectFileNode *mFileNode;
     QString mLstFile;
     QString mLxiFile;

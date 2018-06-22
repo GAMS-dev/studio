@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-class CodeEditor;
+class CodeEdit;
 class ProjectGroupNode;
 class TextMark;
 typedef QPair<int,QString> ErrorHint;
@@ -139,7 +139,7 @@ public:
     void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
     void unwatch();
-    
+
     TextMarkList* marks() const { return mMarks; }
     void unbindMarks() { mMarks = nullptr; }
 

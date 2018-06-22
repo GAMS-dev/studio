@@ -22,7 +22,7 @@
 
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "editors/processlogedit.h"
 
 namespace gams {
@@ -124,7 +124,7 @@ public:
 
 
 public: // static convenience methods
-    inline static void initEditorType(CodeEditor* w) {
+    inline static void initEditorType(CodeEdit* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
     inline static void initEditorType(AbstractEdit* w) { // obsolete?
@@ -146,14 +146,14 @@ public: // static convenience methods
     inline static AbstractEdit* toAbstractEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
+            return toLxiViewer(w)->codeEdit();
         return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEdit*>(w) : nullptr;
     }
-    inline static CodeEditor* toCodeEdit(QWidget* w) {
+    inline static CodeEdit* toCodeEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
+            return toLxiViewer(w)->codeEdit();
+        return (t == etSourceCode) ? static_cast<CodeEdit*>(w) : nullptr;
     }
     inline static ProcessLogEdit* toLogEdit(QWidget* w) {
         return (editorType(w) == etLog) ? static_cast<ProcessLogEdit*>(w) : nullptr;
