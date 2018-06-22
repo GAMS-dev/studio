@@ -7,10 +7,10 @@ namespace gams {
 namespace studio {
 
 SystemLogEditor::SystemLogEditor(StudioSettings *settings, QWidget *parent)
-    : AbstractEditor(settings, parent)
+    : AbstractEdit(settings, parent)
 {
     setTextInteractionFlags(textInteractionFlags() |  Qt::TextSelectableByKeyboard);
-    setLineWrapMode(AbstractEditor::WidgetWidth);
+    setLineWrapMode(AbstractEdit::WidgetWidth);
     setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     setReadOnly(true);
 }
@@ -40,7 +40,7 @@ void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
     moveCursor(QTextCursor::End);
 }
 
-AbstractEditor::EditorType SystemLogEditor::type()
+AbstractEdit::EditorType SystemLogEditor::type()
 {
     return EditorType::SystemLog;
 }

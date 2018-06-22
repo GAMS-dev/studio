@@ -24,7 +24,7 @@
 #include <QHash>
 #include <QIcon>
 #include <QTimer>
-#include "editors/abstracteditor.h"
+#include "editors/abstractedit.h"
 #include "syntax/textmark.h"
 
 class QPaintEvent;
@@ -83,7 +83,7 @@ private:
     QVector<ParenthesesPos> mparentheses;
 };
 
-class CodeEditor : public AbstractEditor
+class CodeEditor : public AbstractEdit
 {
     Q_OBJECT
 

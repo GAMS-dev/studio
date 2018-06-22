@@ -67,7 +67,6 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp \
-    editors/abstracteditor.cpp \
     editors/codeeditor.cpp \
     editors/logeditor.cpp \
     editors/selectencodings.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     file/projectlognode.cpp \
     file/filemetarepo.cpp \
     file/filemeta.cpp \
-    gotodialog.cpp
+    gotodialog.cpp \
+    editors/abstractedit.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -147,7 +147,6 @@ HEADERS += \
     commandlineparser.h \
     commonpaths.h \
     distributionvalidator.h \
-    editors/abstracteditor.h \
     editors/codeeditor.h \
     editors/logeditor.h \
     editors/selectencodings.h \
@@ -221,7 +220,8 @@ HEADERS += \
     file/filemetarepo.h \
     file/filemeta.h \
     file/projectrepo.h \
-    gotodialog.h
+    gotodialog.h \
+    editors/abstractedit.h
 
 FORMS += \
     editors/selectencodings.ui \

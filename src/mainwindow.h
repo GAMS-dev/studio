@@ -109,7 +109,7 @@ public:
     bool isOptionDefinitionChecked();
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
-    QList<AbstractEditor *> openLogs();
+    QList<AbstractEdit*> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();

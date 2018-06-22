@@ -104,7 +104,7 @@ public:
     ProjectLogNode* logNode(ProjectAbstractNode* node);
     void removeMarks(ProjectGroupNode* group);
 
-    void updateLinkDisplay(AbstractEditor* editUnderCursor);
+    void updateLinkDisplay(AbstractEdit* editUnderCursor);
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 

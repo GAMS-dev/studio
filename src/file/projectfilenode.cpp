@@ -165,7 +165,7 @@ void ProjectFileNode::addEditor(QWidget* edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
     bool newlyOpen = !document();
     mEditors.prepend(edit);
-    AbstractEditor* ptEdit = ProjectFileNode::toAbstractEdit(edit);
+    AbstractEdit* ptEdit = ProjectFileNode::toAbstractEdit(edit);
     CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (mEditors.size() == 1) {
@@ -209,7 +209,7 @@ void ProjectFileNode::removeEditor(QWidget* edit)
     if (i < 0)
         return;
     bool wasModified = isModified();
-    AbstractEditor* ptEdit = ProjectFileNode::toAbstractEdit(edit);
+    AbstractEdit* ptEdit = ProjectFileNode::toAbstractEdit(edit);
     CodeEditor* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
@@ -253,13 +253,13 @@ QTextDocument*ProjectFileNode::document() const
 {
     if (mEditors.isEmpty())
         return nullptr;
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
     return edit ? edit->document() : nullptr;
 }
 
 bool ProjectFileNode::isReadOnly()
 {
-    AbstractEditor* edit = nullptr;
+    AbstractEdit* edit = nullptr;
     if (mEditors.size()) {
         edit = toAbstractEdit(mEditors.first());
     }
@@ -325,7 +325,7 @@ void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine,
 {
     emit openFileNode(this, focus);
     if (mEditors.size()) {
-        AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
+        AbstractEdit* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
         if (!edit) return;
 
         QTextCursor tc;
@@ -353,7 +353,7 @@ void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
     if (mEditors.size() && marks.size() > 0) {
         QTextCursor cursor(marks.first()->textCursor());
         if (cursor.isNull()) return;
-        AbstractEditor* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
+        AbstractEdit* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
         if (!edit) return;
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
@@ -488,7 +488,7 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
 
     // TODO(JM) use updateLinkDisplay
 
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mEditors.first());
     if (!edit) ProjectAbstractNode::eventFilter(watched, event);
 
     QMouseEvent* mouseEvent = (evCheckMouse.contains(event->type())) ? static_cast<QMouseEvent*>(event) : nullptr;
@@ -577,7 +577,7 @@ QVector<QPoint> ProjectFileNode::getEditPositions()
 {
     QVector<QPoint> res;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = ProjectFileNode::toAbstractEdit(widget);
+        AbstractEdit* edit = ProjectFileNode::toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
             res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
@@ -592,7 +592,7 @@ void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = ProjectFileNode::toAbstractEdit(widget);
+        AbstractEdit* edit = ProjectFileNode::toAbstractEdit(widget);
         QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
         if (edit) {
             QTextCursor cursor(edit->document());

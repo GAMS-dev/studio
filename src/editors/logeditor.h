@@ -20,14 +20,14 @@
 #ifndef LOGEDITOR_H
 #define LOGEDITOR_H
 
-#include "abstracteditor.h"
+#include "abstractedit.h"
 
 namespace gams {
 namespace studio {
 
 class StudioSettings;
 
-class LogEditor : public AbstractEditor
+class LogEditor : public AbstractEdit
 {
     Q_OBJECT
 

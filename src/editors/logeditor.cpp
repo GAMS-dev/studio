@@ -23,13 +23,13 @@
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
+LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEdit(settings, parent)
 {
     setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth : AbstractEditor::NoWrap);
+    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
 }
 
-AbstractEditor::EditorType LogEditor::type()
+AbstractEdit::EditorType LogEditor::type()
 {
     return EditorType::ProcessLog;
 }

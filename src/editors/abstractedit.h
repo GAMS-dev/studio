@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ABSTRACTEDITOR_H
-#define ABSTRACTEDITOR_H
+#ifndef ABSTRACTEDIT_H
+#define ABSTRACTEDIT_H
 
 #include <QPlainTextEdit>
 
@@ -27,7 +27,7 @@ namespace studio {
 
 class StudioSettings;
 
-class AbstractEditor : public QPlainTextEdit
+class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
 
@@ -35,7 +35,7 @@ public:
     enum EditorType { CodeEditor, ProcessLog, SystemLog };
 
 public:
-    virtual ~AbstractEditor() override;
+    virtual ~AbstractEdit() override;
     virtual EditorType type() = 0;
     virtual void setOverwriteMode(bool overwrite);
     virtual bool overwriteMode() const;
@@ -47,7 +47,7 @@ public slots:
     void afterContentsChanged(int, int, int);
 
 protected:
-    AbstractEditor(StudioSettings *settings, QWidget *parent);
+    AbstractEdit(StudioSettings *settings, QWidget *parent);
     QMimeData* createMimeDataFromSelection() const override;
 
 protected:
@@ -57,4 +57,4 @@ protected:
 }
 }
 
-#endif // ABSTRACTEDITOR_H
+#endif // ABSTRACTEDIT_H

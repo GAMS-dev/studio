@@ -75,7 +75,7 @@ inline void prevCharClass(int offset, int &size, const QString &text)
 }
 
 CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
-    : AbstractEditor(settings, parent)
+    : AbstractEdit(settings, parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
@@ -98,9 +98,9 @@ CodeEditor::CodeEditor(StudioSettings *settings, QWidget *parent)
     viewport()->setMouseTracking(true);
 
     if(mSettings->lineWrapEditor())
-        setLineWrapMode(AbstractEditor::WidgetWidth);
+        setLineWrapMode(AbstractEdit::WidgetWidth);
     else
-        setLineWrapMode(AbstractEditor::NoWrap);
+        setLineWrapMode(AbstractEdit::NoWrap);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -218,7 +218,7 @@ void CodeEditor::pasteClipboard()
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
-    AbstractEditor::resizeEvent(e);
+    AbstractEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
@@ -320,14 +320,14 @@ void CodeEditor::keyPressEvent(QKeyEvent* e)
     else if (e->key() == Qt::Key_F3)
         emit searchFindNextPressed();
 
-    AbstractEditor::keyPressEvent(e);
+    AbstractEdit::keyPressEvent(e);
 }
 
 
 void CodeEditor::keyReleaseEvent(QKeyEvent* e)
 {
     if (isReadOnly()) {
-        AbstractEditor::keyReleaseEvent(e);
+        AbstractEdit::keyReleaseEvent(e);
         return;
     }
     // return pressed: ignore here
@@ -335,7 +335,7 @@ void CodeEditor::keyReleaseEvent(QKeyEvent* e)
         e->accept();
         return;
     } else {
-        AbstractEditor::keyReleaseEvent(e);
+        AbstractEdit::keyReleaseEvent(e);
     }
 }
 
@@ -416,7 +416,7 @@ void CodeEditor::mousePressEvent(QMouseEvent* e)
     } else {
         if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
             endBlockEdit();
-        AbstractEditor::mousePressEvent(e);
+        AbstractEdit::mousePressEvent(e);
     }
 }
 
@@ -427,7 +427,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* e)
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
         }
     } else
-        AbstractEditor::mouseMoveEvent(e);
+        AbstractEdit::mouseMoveEvent(e);
 }
 
 void CodeEditor::wheelEvent(QWheelEvent *e) {
@@ -445,14 +445,14 @@ void CodeEditor::wheelEvent(QWheelEvent *e) {
         updateTabSize();
         return;
     }
-    AbstractEditor::wheelEvent(e);
+    AbstractEdit::wheelEvent(e);
 }
 
 void CodeEditor::paintEvent(QPaintEvent* e)
 {
     int cw = mBlockEdit ? 0 : 2;
     if (cursorWidth()!=cw) setCursorWidth(cw);
-    AbstractEditor::paintEvent(e);
+    AbstractEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
     }
@@ -508,7 +508,7 @@ void CodeEditor::dragEnterEvent(QDragEnterEvent* e)
     if (e->mimeData()->hasUrls()) {
         e->ignore(); // paste to parent widget
     } else {
-        AbstractEditor::dragEnterEvent(e);
+        AbstractEdit::dragEnterEvent(e);
     }
 }
 
@@ -827,7 +827,7 @@ CodeEditor::BlockEdit *CodeEditor::blockEdit() const
     return mBlockEdit;
 }
 
-AbstractEditor::EditorType CodeEditor::type()
+AbstractEdit::EditorType CodeEditor::type()
 {
     return EditorType::CodeEditor;
 }
@@ -937,13 +937,13 @@ ParenthesesMatch CodeEditor::matchParentheses()
 void CodeEditor::setOverwriteMode(bool overwrite)
 {
     if (mBlockEdit) mBlockEdit->setOverwriteMode(overwrite);
-    else AbstractEditor::setOverwriteMode(overwrite);
+    else AbstractEdit::setOverwriteMode(overwrite);
 }
 
 bool CodeEditor::overwriteMode() const
 {
     if (mBlockEdit) return mBlockEdit->overwriteMode();
-    return AbstractEditor::overwriteMode();
+    return AbstractEdit::overwriteMode();
 }
 
 inline int CodeEditor::assignmentKind(int p)

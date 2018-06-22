@@ -78,9 +78,9 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     curs.select(QTextCursor::Document);
                     curs.insertText(line);
                     destFile.close();
-                    AbstractEditor *abstractEditor = dynamic_cast<AbstractEditor*>(editor);
+                    AbstractEdit *abstractEdit = dynamic_cast<AbstractEdit*>(editor);
                     if (editor)
-                        abstractEditor->moveCursor(QTextCursor::Start);
+                        abstractEdit->moveCursor(QTextCursor::Start);
                 }
                 srcFile.close();
             }

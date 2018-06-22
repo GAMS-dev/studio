@@ -25,7 +25,7 @@
 #include "ui_mainwindow.h"
 #include "editors/codeeditor.h"
 #include "editors/logeditor.h"
-#include "editors/abstracteditor.h"
+#include "editors/abstractedit.h"
 #include "editors/systemlogeditor.h"
 #include "editors/selectencodings.h"
 #include "welcomepage.h"
@@ -348,11 +348,11 @@ QWidgetList MainWindow::openEditors()
     return mProjectRepo.editors();
 }
 
-QList<AbstractEditor*> MainWindow::openLogs()
+QList<AbstractEdit*> MainWindow::openLogs()
 {
-    QList<AbstractEditor*> resList;
+    QList<AbstractEdit*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(ui->logTabs->widget(i));
+        AbstractEdit* ed = ProjectFileNode::toAbstractEdit(ui->logTabs->widget(i));
         if (ed) resList << ed;
     }
     return resList;
@@ -526,7 +526,7 @@ void MainWindow::updateEditorPos()
 {
     QPoint pos;
     QPoint anchor;
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
     CodeEditor *ce = ProjectFileNode::toCodeEdit(edit);
     if (ce) {
         ce->getPositionAndAnchor(pos, anchor);
@@ -554,7 +554,7 @@ void MainWindow::updateEditorMode()
 
 void MainWindow::updateEditorBlockCount()
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
@@ -747,7 +747,7 @@ void MainWindow::activeTabChanged(int index)
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(editWidget);
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
 
     if (edit) {
@@ -1045,7 +1045,7 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ProjectLogNode* log = mProjectRepo.logNode(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
-        AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
+        AbstractEdit* ed = ProjectAbstractNode::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
         // dont remove syslog
@@ -1065,7 +1065,7 @@ void MainWindow::createWelcomePage()
 bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
         return (fc && !edit->isReadOnly());
@@ -1076,7 +1076,7 @@ bool MainWindow::isActiveTabRunnable()
 bool MainWindow::isActiveTabSetAsMain()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
         if (fc) {
@@ -1589,7 +1589,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     }
     if (!logNode->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
-        AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
+        AbstractEdit* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != mResultsView)
@@ -1882,7 +1882,7 @@ void MainWindow::updateEditorLineWrapping()
 
     QWidgetList editList = mProjectRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(editList.at(i));
+        AbstractEdit* ed = ProjectFileNode::toAbstractEdit(editList.at(i));
         if (ed) {
             ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(wrapModeEditor);
@@ -1895,7 +1895,7 @@ void MainWindow::updateEditorLineWrapping()
     else
         wrapModeProcess = QPlainTextEdit::NoWrap;
 
-    QList<AbstractEditor*> logList = openLogs();
+    QList<AbstractEdit*> logList = openLogs();
     for (int i = 0; i < logList.size(); i++) {
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
@@ -1996,7 +1996,7 @@ void MainWindow::on_actionCopy_triggered()
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->copyAction();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
         if (!ae) return;
         CodeEditor *ce = ProjectFileNode::toCodeEdit(ae);
         if (ce && ce->blockEdit()) {
@@ -2052,7 +2052,7 @@ void MainWindow::on_actionZoom_Out_triggered()
         getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
         getHelpWidget()->zoomOut();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
@@ -2066,7 +2066,7 @@ void MainWindow::on_actionZoom_In_triggered()
         getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
         getHelpWidget()->zoomIn();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
@@ -2203,19 +2203,19 @@ QWidget *RecentData::editor() const
 
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditor);
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mEditor);
     if (edit) {
-        MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
     edit = ProjectFileNode::toAbstractEdit(mEditor);
     if (edit) {
-        MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     window->searchWidget()->invalidateCache();

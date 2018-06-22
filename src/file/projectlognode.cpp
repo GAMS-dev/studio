@@ -149,7 +149,7 @@ void ProjectLogNode::addProcessData(QString text)
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: editors()) {
-            AbstractEditor* ed = ProjectFileNode::toAbstractEdit(w);
+            AbstractEdit* ed = ProjectFileNode::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -195,7 +195,7 @@ void ProjectLogNode::addProcessData(QString text)
 
         int i = 0;
         for (QWidget* w: editors()) {
-            AbstractEditor* ed = ProjectFileNode::toAbstractEdit(w);
+            AbstractEdit* ed = ProjectFileNode::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;
