@@ -26,7 +26,7 @@
 #include "editors/codeeditor.h"
 #include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
-#include "editors/systemlogeditor.h"
+#include "editors/systemlogedit.h"
 #include "editors/selectencodings.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
@@ -130,7 +130,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
-    mSyslog = new SystemLogEditor(mSettings.get(), this);
+    mSyslog = new SystemLogEdit(mSettings.get(), this);
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();

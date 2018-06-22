@@ -1,5 +1,5 @@
-#ifndef SYSTEMLOGEDITOR_H
-#define SYSTEMLOGEDITOR_H
+#ifndef SYSTEMLOGEDIT_H
+#define SYSTEMLOGEDIT_H
 
 #include "abstractedit.h"
 
@@ -10,18 +10,17 @@ class StudioSettings;
 
 enum class LogMsgType { Error, Warning, Info };
 
-class SystemLogEditor : public AbstractEdit
+class SystemLogEdit : public AbstractEdit
 {
 public:
-    SystemLogEditor(StudioSettings *settings, QWidget *parent);
+    SystemLogEdit(StudioSettings *settings, QWidget *parent);
     void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning);
 
 public:
     EditorType type() override;
-
 };
 
 }
 }
 
-#endif // SYSTEMLOGEDITOR_H
+#endif // SYSTEMLOGEDIT_H

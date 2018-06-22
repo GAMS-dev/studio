@@ -49,7 +49,7 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class AutosaveHandler;
-class SystemLogEditor;
+class SystemLogEdit;
 
 struct RecentData {
 
@@ -281,7 +281,7 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
-    SystemLogEditor *mSyslog = nullptr;
+    SystemLogEdit *mSyslog = nullptr;
     ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
 

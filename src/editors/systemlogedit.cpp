@@ -1,4 +1,4 @@
-#include "systemlogeditor.h"
+#include "systemlogedit.h"
 #include "studiosettings.h"
 
 #include <QString>
@@ -6,7 +6,7 @@
 namespace gams {
 namespace studio {
 
-SystemLogEditor::SystemLogEditor(StudioSettings *settings, QWidget *parent)
+SystemLogEdit::SystemLogEdit(StudioSettings *settings, QWidget *parent)
     : AbstractEdit(settings, parent)
 {
     setTextInteractionFlags(textInteractionFlags() |  Qt::TextSelectableByKeyboard);
@@ -15,7 +15,7 @@ SystemLogEditor::SystemLogEditor(StudioSettings *settings, QWidget *parent)
     setReadOnly(true);
 }
 
-void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
+void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
 
@@ -40,7 +40,7 @@ void SystemLogEditor::appendLog(const QString &msg, LogMsgType type)
     moveCursor(QTextCursor::End);
 }
 
-AbstractEdit::EditorType SystemLogEditor::type()
+AbstractEdit::EditorType SystemLogEdit::type()
 {
     return EditorType::SystemLog;
 }

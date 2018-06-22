@@ -69,7 +69,6 @@ SOURCES += \
     distributionvalidator.cpp \
     editors/codeeditor.cpp \
     editors/selectencodings.cpp \
-    editors/systemlogeditor.cpp \
     exception.cpp \
     file/filemetrics.cpp \
     file/filetype.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     file/filemeta.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
-    editors/processlogedit.cpp
+    editors/processlogedit.cpp \
+    editors/systemlogedit.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -149,7 +149,6 @@ HEADERS += \
     distributionvalidator.h \
     editors/codeeditor.h \
     editors/selectencodings.h \
-    editors/systemlogeditor.h \
     exception.h \
     file.h \
     file/filemetrics.h \
@@ -221,7 +220,8 @@ HEADERS += \
     file/projectrepo.h \
     gotodialog.h \
     editors/abstractedit.h \
-    editors/processlogedit.h
+    editors/processlogedit.h \
+    editors/systemlogedit.h
 
 FORMS += \
     editors/selectencodings.ui \
