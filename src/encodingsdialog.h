@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_SELECTENCODINGS_H
-#define GAMS_STUDIO_SELECTENCODINGS_H
+#ifndef ENCODINGSDIALOG_H
+#define ENCODINGSDIALOG_H
 
 #include <QDialog>
 
@@ -53,4 +53,4 @@ private:
 }
 }
 
-#endif // GAMS_STUDIO_SELECTENCODINGS_H
+#endif // ENCODINGSDIALOG_H

@@ -68,7 +68,6 @@ SOURCES += \
     commonpaths.cpp \
     distributionvalidator.cpp \
     editors/codeeditor.cpp \
-    editors/selectencodings.cpp \
     exception.cpp \
     file/filemetrics.cpp \
     file/filetype.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     gotodialog.cpp \
     editors/abstractedit.cpp \
     editors/processlogedit.cpp \
-    editors/systemlogedit.cpp
+    editors/systemlogedit.cpp \
+    encodingsdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -148,7 +148,6 @@ HEADERS += \
     commonpaths.h \
     distributionvalidator.h \
     editors/codeeditor.h \
-    editors/selectencodings.h \
     exception.h \
     file.h \
     file/filemetrics.h \
@@ -221,10 +220,10 @@ HEADERS += \
     gotodialog.h \
     editors/abstractedit.h \
     editors/processlogedit.h \
-    editors/systemlogedit.h
+    editors/systemlogedit.h \
+    encodingsdialog.h
 
 FORMS += \
-    editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
@@ -239,7 +238,8 @@ FORMS += \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
-    gotodialog.ui
+    gotodialog.ui \
+    encodingsdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

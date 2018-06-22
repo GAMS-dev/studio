@@ -27,7 +27,7 @@
 #include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
-#include "editors/selectencodings.h"
+#include "encodingsdialog.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
