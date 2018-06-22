@@ -388,8 +388,6 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
-    if (!getHelpWidget()->isVisible()) getHelpWidget()->show();
-
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
@@ -397,6 +395,8 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
         result = QUrl(result.toString() + "#" + anchor);
 
     getHelpWidget()->on_urlOpened(result);
+
+    on_actionHelp_View_triggered(true);
 }
 
 SearchWidget* MainWindow::searchWidget() const
