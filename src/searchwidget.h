@@ -56,7 +56,7 @@ public:
     void clearResults();
     void updateReplaceActionAvailability();
 
-    void focusSearchField();
+    void autofillSearchField();
 
     void clearSearch();
     void invalidateCache();

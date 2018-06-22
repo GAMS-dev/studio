@@ -17,45 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
+#ifndef HELPPAGE_H
+#define HELPPAGE_H
 
-#include <QCommandLineParser>
+#include <QWidget>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
 
-enum CommandLineParseResult
+class HelpPage : public QWebEnginePage
 {
-    CommandLineOk,
-    CommandLineError,
-    CommandLineVersionRequested,
-    CommandLineHelpRequested
-};
+    Q_OBJECT
 
-class CommandLineParser  : public QCommandLineParser
-{
 public:
-    CommandLineParser();
-    CommandLineParseResult parseCommandLine();
-    QStringList files() const;
-    bool ignoreSettings() const;
-    bool resetSettings() const;
-    bool resetView() const;
-    QString gamsDir() const;
+    HelpPage(QWidget *parent = 0);
 
-private:
-    inline QStringList getFileArgs();
+protected:
+    bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame);
 
-private:
-    QStringList mFiles;
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
-    bool mResetView = false;
-    QString mGamsDir = QString();
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEPARSER_H
+#endif // HELPPAGE_H

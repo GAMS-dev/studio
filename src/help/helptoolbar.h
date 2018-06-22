@@ -17,50 +17,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEHISTORY_H
-#define COMMANDLINEHISTORY_H
+#ifndef HELPTOOLBAR_H
+#define HELPTOOLBAR_H
 
-#include <QObject>
-#include <QStringList>
-#include <QMap>
+#include <QToolBar>
+#include <QToolButton>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
 
-class CommandLineHistory : public QObject
+class HelpWidget;
+
+class HelpToolBar : public QToolBar
 {
     Q_OBJECT
 
 public:
-    static const int MAX_HISTORY_SIZE = 20;
+    HelpToolBar(QAction *aHome,
+                QAction *Back, QAction *aForward, QAction *aReload, QAction* aStop,
+                QToolButton* tbBookmark, QToolButton* tbHelp,
+                HelpWidget *parent);
+    ~HelpToolBar();
 
-    CommandLineHistory(QObject* parent, int initialHistorySize = MAX_HISTORY_SIZE);
-    CommandLineHistory(QMap<QString, QStringList> map);
-    ~CommandLineHistory();
-
-    QStringList getHistoryFor(QString context);
-    void setHistory(QString context, QStringList history);
-
-    QMap<QString, QStringList> allHistory() const;
-    void setAllHistory(QMap<QString, QStringList> opts);
-
-    int getHistorySize() const;
-    void setHistorySize(int historySize);
-    QMap<QString, QStringList> allOptions();
-    void removeFromHistory(const QString &key);
+signals:
+    void webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
 
 public slots:
-    void addIntoCurrentContextHistory(QString option);
+    void on_webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
 
 private:
-    QMap<QString, QStringList> mHistory;
-    QString mCurrentContext;
-    int mHistorySize;
+    void createWebActionTrigger(QAction* action, QWebEnginePage::WebAction webAction);
 
-    void setContext(QString context);
+private:
+    QAction* actionBack;
+    QAction* actionForward;
+    QAction* actionReload;
+    QAction* actionStop;
+
+    HelpWidget* helpWidget;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEHISTORY_H
+#endif // HELPTOOLBAR_H

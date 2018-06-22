@@ -22,7 +22,7 @@ GAMS Studio requires the GAMS low-level APIs. All those files are provided by th
 
 ## 3. Get the GAMS Studio source code ##
 
-Download the GAMS Studio sources from GitHub (via git or as zip archive). All information about the usage of this program can be found within the [**GAMS Documentation**](https://www.gams.com/latest/docs/T_STUDIO.html).
+Download the GAMS Studio sources from GitHub (via git or as zip archive). All information about the usage of this program can be found within the [GAMS Documentation](https://www.gams.com/latest/docs/T_STUDIO.html).
 
 ## 4. Building the GAMS Studio project ##
 

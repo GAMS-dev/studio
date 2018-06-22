@@ -26,6 +26,8 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include "helptoolbar.h"
+#include "helpview.h"
 #include "helpwidget.h"
 #include "ui_helpwidget.h"
 
@@ -33,6 +35,7 @@
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
 #include "gclgms.h"
+#include "helppage.h"
 
 namespace gams {
 namespace studio {
@@ -53,26 +56,19 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QToolBar* toolbar = new QToolBar(this);
+    ui->webEngineView->showMaximized();
+    ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
 
     QString startPageUrl = getStartPageUrl().toString();
     ui->actionHome->setToolTip("Start page ("+ startPageUrl +")");
     ui->actionHome->setStatusTip("Start page ("+ startPageUrl +")");
 
-    toolbar->addAction(ui->actionHome);
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Back));
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Forward));
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Reload));
-    toolbar->addSeparator();
-    toolbar->addAction(ui->webEngineView->pageAction(QWebEnginePage::Stop));
-    toolbar->addSeparator();
-
     mBookmarkMenu = new QMenu(this);
     mBookmarkMenu->addAction(ui->actionAddBookmark);
     mBookmarkMenu->addSeparator();
     mBookmarkMenu->addAction(ui->actionOrganizeBookmark);
+    mStatusBarLabel.setWindowFlags(Qt::ToolTip);
+    mStatusBarLabel.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
     QIcon bookmarkButtonIcon(":/img/bookmark");
@@ -81,11 +77,6 @@ HelpWidget::HelpWidget(QWidget *parent) :
     bookmarkToolButton->setIcon(bookmarkButtonIcon);
     bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     bookmarkToolButton->setMenu(mBookmarkMenu);
-    toolbar->addWidget(bookmarkToolButton);
-
-    QWidget* spacerWidget = new QWidget();
-    spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    toolbar->addWidget(spacerWidget);
 
     QMenu* helpMenu = new QMenu;
     QString onlineStartPageUrl = getOnlineStartPageUrl().toString();
@@ -108,7 +99,22 @@ HelpWidget::HelpWidget(QWidget *parent) :
     helpToolButton->setIcon(toolButtonIcon);
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
-    toolbar->addWidget(helpToolButton);
+
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop );
+
+    HelpToolBar* toolbar = new HelpToolBar(ui->actionHome,
+                               ui->webEngineView->pageAction(QWebEnginePage::Back),
+                               ui->webEngineView->pageAction(QWebEnginePage::Forward),
+                               ui->webEngineView->pageAction(QWebEnginePage::Reload),
+                               ui->webEngineView->pageAction(QWebEnginePage::Stop),
+                               bookmarkToolButton,
+                               helpToolButton,
+                               this);
+    connect(this, &HelpWidget::webActionEnabledChanged, toolbar, &HelpToolBar::on_webActionEnabledChanged);
+    connect(toolbar, &HelpToolBar::webActionTriggered, this, &HelpWidget::on_webActionTriggered);
 
     ui->toolbarVlLayout->addWidget(toolbar);
 
@@ -116,7 +122,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
         ui->webEngineView->load( getStartPageUrl() );
     } else {
         QString htmlText;
-        getErrorHTMLText( htmlText, START_CHAPTER);
+        getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
     connect(ui->webEngineView, &QWebEngineView::loadFinished, this, &HelpWidget::on_loadFinished);
@@ -158,7 +164,8 @@ void HelpWidget::setBookmarkMap(const QMultiMap<QString, QString> &value)
 
 void HelpWidget::clearStatusBar()
 {
-    ui->statusbarLabel->clear();
+    mStatusBarLabel.clear();
+    mStatusBarLabel.hide();
     ui->searchLineEdit->clear();
     findText("", Forward, ui->caseSenstivity->isChecked());
 }
@@ -173,7 +180,7 @@ void HelpWidget::on_helpContentRequested(const QString &chapter, const QString &
     QDir dir = QDir(CommonPaths::systemDir()).filePath(chapter);
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
         QString htmlText;
-        getErrorHTMLText( htmlText, chapter);
+        getErrorHTMLText( htmlText, QUrl::fromLocalFile(dir.absolutePath()) );
         ui->webEngineView->setHtml( htmlText );
         return;
     }
@@ -277,7 +284,13 @@ void HelpWidget::on_bookmarkRemoved(const QString &location, const QString &name
 
 void HelpWidget::on_actionHome_triggered()
 {
-    ui->webEngineView->load( getStartPageUrl() );
+    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        ui->webEngineView->load( getStartPageUrl() );
+    } else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, getStartPageUrl() );
+        ui->webEngineView->setHtml( htmlText );
+    }
 }
 
 void HelpWidget::on_loadFinished(bool ok)
@@ -303,11 +316,16 @@ void HelpWidget::on_loadFinished(bool ok)
 void HelpWidget::linkHovered(const QString &url)
 {
     if (url.isEmpty()) {
-        ui->statusbarLabel->hide();
+        mStatusBarLabel.hide();
     } else {
-        ui->statusbarLabel->show();
-        ui->statusbarLabel->setText(url);
+        mStatusBarLabel.setText(url);
+        QSize size = mStatusBarLabel.sizeHint();
+        QPoint fixPoint = mapToGlobal(ui->webEngineView->geometry().bottomLeft());
+        mStatusBarLabel.resize(qAbs(size.width()), qAbs(size.height()));
+        mStatusBarLabel.move(fixPoint.x(), fixPoint.y()-size.height());
+        mStatusBarLabel.show();
     }
+    ui->webEngineView->setCurrentHoveredLink(url);
 }
 
 void HelpWidget::on_actionAddBookmark_triggered()
@@ -361,7 +379,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
             url.setScheme("file");
         } else {
             QString htmlText;
-            getErrorHTMLText( htmlText, "");
+            getErrorHTMLText( htmlText, getStartPageUrl() );
             ui->webEngineView->setHtml( htmlText );
         }
     }
@@ -383,7 +401,13 @@ void HelpWidget::on_actionCopyPageURL_triggered()
 void HelpWidget::on_bookmarkaction()
 {
     QAction* sAction = qobject_cast<QAction*>(sender());
-    ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+    } else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, QUrl(sAction->toolTip(), QUrl::TolerantMode) );
+        ui->webEngineView->setHtml( htmlText );
+    }
 }
 
 void HelpWidget::addBookmarkAction(const QString &objectName, const QString &title)
@@ -467,6 +491,32 @@ qreal HelpWidget::getZoomFactor()
     return ui->webEngineView->page()->zoomFactor();
 }
 
+QWebEngineView *HelpWidget::createHelpView()
+{
+    HelpPage* page = new HelpPage(ui->webEngineView);
+    createWebActionTrigger(page, QWebEnginePage::Back );
+    createWebActionTrigger(page, QWebEnginePage::Forward );
+    createWebActionTrigger(page, QWebEnginePage::Reload );
+    createWebActionTrigger(page, QWebEnginePage::Stop );
+    ui->webEngineView->setPage( page );
+    connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
+    return ui->webEngineView;
+}
+
+void HelpWidget::on_webActionTriggered(QWebEnginePage::WebAction webAction, bool checked)
+{
+    ui->webEngineView->page()->triggerAction(webAction, checked);
+}
+
+void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction)
+{
+    QAction *action = page->action(webAction);
+    action->setEnabled(false);
+    connect(action, &QAction::changed, [this, action, webAction]{
+        emit webActionEnabledChanged(webAction, action->isEnabled());
+    });
+}
+
 void HelpWidget::closeEvent(QCloseEvent *event)
 {
     clearStatusBar();
@@ -528,14 +578,16 @@ QString HelpWidget::getCurrentReleaseVersion()
         return "latest";
 }
 
-void HelpWidget::getErrorHTMLText(QString &htmlText, const QString &chapterText)
+void HelpWidget::getErrorHTMLText(QString &htmlText, const QUrl &url)
 {
     QString downloadPage = QString("https://www.gams.com/%1").arg( getCurrentReleaseVersion() );
 
     htmlText = "<html><head><title>Error Loading Help</title></head><body>";
-    htmlText += "<div id='message'>Help Document Not Found from expected GAMS Installation at ";
-    htmlText += QDir(CommonPaths::systemDir()).filePath(chapterText);
-    htmlText += "</div><br/> <div>Please check your GAMS installation and configuration. You can reinstall GAMS from <a href='";
+    htmlText += "<div id='message'>The requested Help Document (";
+    htmlText += url.toString();
+    htmlText += ") has not been found from expected GAMS Installation at ";
+    htmlText += QDir(CommonPaths::systemDir()).absolutePath();  //.filePath(chapterText);
+    htmlText += ".</div><br/> <div>Please check your GAMS installation and configuration. You can reinstall GAMS from <a href='";
     htmlText += downloadPage;
     htmlText += "'>";
     htmlText += downloadPage;

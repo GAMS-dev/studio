@@ -161,6 +161,11 @@ QMap<QString, QStringList> OptionWidget::getOptionHistory() const
     return mCommandLineHistory->allHistory();
 }
 
+void OptionWidget::removeFromHistory(const QString &key)
+{
+    mCommandLineHistory->removeFromHistory(key);
+}
+
 void OptionWidget::checkOptionDefinition(bool checked)
 {
     ui->gamsOptionEditorCheckbox->setChecked(checked);
@@ -357,7 +362,9 @@ void OptionWidget::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *
 void OptionWidget::setInterruptActionGroup(QAction *aInterrupt, QAction *aStop)
 {
     actionInterrupt = aInterrupt;
+    actionInterrupt->setShortcutVisibleInContextMenu(true);
     actionStop = aStop;
+    actionStop->setShortcutVisibleInContextMenu(true);
 
     QMenu* interruptMenu = new QMenu();
     interruptMenu->addAction(actionInterrupt);

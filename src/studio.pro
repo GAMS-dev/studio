@@ -85,6 +85,9 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     help/bookmarkdialog.cpp \
+    help/helppage.cpp \
+    help/helptoolbar.cpp \
+    help/helpview.cpp \
     help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
@@ -166,6 +169,9 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     help/bookmarkdialog.h \
+    help/helppage.h \
+    help/helptoolbar.h \
+    help/helpview.h \
     help/helpwidget.h \
     keys.h \
     logger.h \

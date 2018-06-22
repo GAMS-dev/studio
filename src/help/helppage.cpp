@@ -17,45 +17,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
+#include <QDesktopServices>
 
-#include <QCommandLineParser>
+#include "helppage.h"
 
 namespace gams {
 namespace studio {
 
-enum CommandLineParseResult
+HelpPage::HelpPage(QWidget *parent) : QWebEnginePage(parent)
 {
-    CommandLineOk,
-    CommandLineError,
-    CommandLineVersionRequested,
-    CommandLineHelpRequested
-};
+}
 
-class CommandLineParser  : public QCommandLineParser
+bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
 {
-public:
-    CommandLineParser();
-    CommandLineParseResult parseCommandLine();
-    QStringList files() const;
-    bool ignoreSettings() const;
-    bool resetSettings() const;
-    bool resetView() const;
-    QString gamsDir() const;
-
-private:
-    inline QStringList getFileArgs();
-
-private:
-    QStringList mFiles;
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
-    bool mResetView = false;
-    QString mGamsDir = QString();
-};
+    if (url.path().toLower().endsWith(".pdf")) {
+        QDesktopServices::openUrl(url);
+        return false;
+    }
+    return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
+}
 
 } // namespace studio
 } // namespace gams
-
-#endif // COMMANDLINEPARSER_H

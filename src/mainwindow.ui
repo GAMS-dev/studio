@@ -817,7 +817,7 @@
     <string>Interrupt</string>
    </property>
    <property name="shortcut">
-    <string>F11</string>
+    <string>F12</string>
    </property>
   </action>
   <action name="actionStop">
@@ -832,7 +832,7 @@
     <string>Stop</string>
    </property>
    <property name="shortcut">
-    <string>Shift+F11</string>
+    <string>Shift+F12</string>
    </property>
   </action>
  </widget>

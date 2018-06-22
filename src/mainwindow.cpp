@@ -388,8 +388,6 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
-    if (!getHelpWidget()->isVisible()) getHelpWidget()->show();
-
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
@@ -397,6 +395,8 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
         result = QUrl(result.toString() + "#" + anchor);
 
     getHelpWidget()->on_urlOpened(result);
+
+    on_actionHelp_View_triggered(true);
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -650,9 +650,17 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".lst";
         } // TODO: check if there are others to add
 
-        fc->save(filePath);
-        openFilePath(filePath, fc->parentEntry(), true);
-        mStatusWidgets->setFileName(fc->location());
+
+        // perform copy when file is a gdx file
+        if (fc->metrics().fileType().kind() == FileType::Gdx) {
+            if (QFile::exists(filePath))
+                QFile::remove(filePath);
+            QFile::copy(fc->location(), filePath);
+        } else {
+            fc->save(filePath);
+            openFilePath(filePath, fc->parentEntry(), true);
+            mStatusWidgets->setFileName(fc->location());
+        }
     }
 }
 
@@ -868,7 +876,6 @@ void MainWindow::appendSystemLog(const QString &text)
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
     ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
-    // TODO(JM) jump to error IF! this is the active group
     QFileInfo fileInfo(process->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
@@ -885,7 +892,6 @@ void MainWindow::postGamsRun(AbstractProcess* process)
 
         if (mSettings->openLst())
             openFileNode(lstCtx, true);
-
     }
 }
 
@@ -1044,7 +1050,10 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ui->logTabs->removeTab(index);
         AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
-        edit->deleteLater();
+
+        // dont remove pointers in ui, otherwise re-adding syslog will crash
+        if (edit != ui->systemLog)
+            edit->deleteLater();
     }
 }
 
@@ -1517,8 +1526,7 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    if (state == QProcess::NotRunning)
+    if (isActiveTabSetAsMain() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
 }
 
@@ -1707,7 +1715,7 @@ void MainWindow::closeFile(ProjectFileNode* file)
     mSettings->saveSettings(this);
 }
 
-/// Closes all open editors and tabs related to a file
+/// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
 void MainWindow::closeFileEditors(FileId fileId)
@@ -1726,6 +1734,8 @@ void MainWindow::closeFileEditors(FileId fileId)
         fc->removeEditor(edit);
         edit->deleteLater();
     }
+    // purge history
+    getGamsOptionWidget()->removeFromHistory(fc->location());
 }
 
 void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip)
@@ -1814,7 +1824,7 @@ void MainWindow::on_actionSearch_triggered()
        // toggle visibility
        if (mSearchWidget->isVisible()) {
            mSearchWidget->activateWindow();
-           mSearchWidget->focusSearchField();
+           mSearchWidget->autofillSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
