@@ -17,28 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LOGEDITOR_H
-#define LOGEDITOR_H
-
-#include "abstractedit.h"
+#include "processlogedit.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-class StudioSettings;
-
-class LogEditor : public AbstractEdit
+ProcessLogEdit::ProcessLogEdit(StudioSettings *settings, QWidget *parent) : AbstractEdit(settings, parent)
 {
-    Q_OBJECT
+    setReadOnly(true);
+    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
+}
 
-public:
-    LogEditor(StudioSettings *settings, QWidget *parent = nullptr);
-
-public:
-    EditorType type() override;
-};
+AbstractEdit::EditorType ProcessLogEdit::type()
+{
+    return EditorType::ProcessLog;
+}
 
 }
 }
-
-#endif // LOGEDITOR_H

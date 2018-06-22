@@ -23,7 +23,7 @@
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "editors/codeeditor.h"
-#include "editors/logeditor.h"
+#include "editors/processlogedit.h"
 
 namespace gams {
 namespace studio {
@@ -130,7 +130,7 @@ public: // static convenience methods
     inline static void initEditorType(AbstractEdit* w) { // obsolete?
         if(w) w->setProperty("EditorType", etPlainText);
     }
-    inline static void initEditorType(LogEditor* w) {
+    inline static void initEditorType(ProcessLogEdit* w) {
         if(w) w->setProperty("EditorType", etLog);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
@@ -155,8 +155,8 @@ public: // static convenience methods
             return toLxiViewer(w)->codeEditor();
         return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
     }
-    inline static LogEditor* toLogEdit(QWidget* w) {
-        return (editorType(w) == etLog) ? static_cast<LogEditor*>(w) : nullptr;
+    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
+        return (editorType(w) == etLog) ? static_cast<ProcessLogEdit*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

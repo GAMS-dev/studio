@@ -24,7 +24,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeeditor.h"
-#include "editors/logeditor.h"
+#include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogeditor.h"
 #include "editors/selectencodings.h"
@@ -1225,7 +1225,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         ProjectLogNode* logProc = mProjectRepo.logNode(fsc);
         if (logProc->editors().isEmpty()) {
             logProc->setDebugLog(mLogDebugLines);
-            LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+            ProcessLogEdit* logEdit = new ProcessLogEdit(mSettings.get(), this);
             ProjectAbstractNode::initEditorType(logEdit);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
@@ -1407,7 +1407,7 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 {
     if (!logProc->editors().isEmpty()) return;
     logProc->setDebugLog(mLogDebugLines);
-    LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+    ProcessLogEdit* logEdit = new ProcessLogEdit(mSettings.get(), this);
     ProjectAbstractNode::initEditorType(logEdit);
 
     ui->logTabs->addTab(logEdit, logProc->caption());

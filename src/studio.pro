@@ -68,7 +68,6 @@ SOURCES += \
     commonpaths.cpp \
     distributionvalidator.cpp \
     editors/codeeditor.cpp \
-    editors/logeditor.cpp \
     editors/selectencodings.cpp \
     editors/systemlogeditor.cpp \
     exception.cpp \
@@ -137,7 +136,8 @@ SOURCES += \
     file/filemetarepo.cpp \
     file/filemeta.cpp \
     gotodialog.cpp \
-    editors/abstractedit.cpp
+    editors/abstractedit.cpp \
+    editors/processlogedit.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -148,7 +148,6 @@ HEADERS += \
     commonpaths.h \
     distributionvalidator.h \
     editors/codeeditor.h \
-    editors/logeditor.h \
     editors/selectencodings.h \
     editors/systemlogeditor.h \
     exception.h \
@@ -221,7 +220,8 @@ HEADERS += \
     file/filemeta.h \
     file/projectrepo.h \
     gotodialog.h \
-    editors/abstractedit.h
+    editors/abstractedit.h \
+    editors/processlogedit.h
 
 FORMS += \
     editors/selectencodings.ui \

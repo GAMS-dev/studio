@@ -24,7 +24,7 @@
 #include "exception.h"
 #include "projectgroupnode.h"
 #include "logger.h"
-#include "editors/logeditor.h"
+#include "editors/processlogedit.h"
 
 namespace gams {
 namespace studio {
@@ -76,7 +76,7 @@ void ProjectLogNode::addEditor(QWidget* edit)
         editorList().move(editorList().indexOf(edit), 0);
         return;
     }
-    LogEditor* logEdit = toLogEdit(edit);
+    ProcessLogEdit* logEdit = toLogEdit(edit);
     if (!logEdit) return;
     logEdit->setDocument(mDocument);
     ProjectFileNode::addEditor(edit);
