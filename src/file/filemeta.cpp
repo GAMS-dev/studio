@@ -36,10 +36,12 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location)
         connect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
     }
 
-    if (kind() == FileKind::Gms || kind() == FileKind::Txt)
+    if (kind() == FileKind::Gms || kind() == FileKind::Txt) {
         mHighlighter = new SyntaxHighlighter(id, mFileRepo->textMarkRepo());
-    else if (kind() != FileKind::Gdx) {
+        mHighlighter->setDocument(document());
+    } else if (kind() != FileKind::Gdx) {
         mHighlighter = new ErrorHighlighter(id, mFileRepo->textMarkRepo());
+        mHighlighter->setDocument(document());
     }
 
 }
@@ -192,7 +194,9 @@ void FileMeta::addEditor(QWidget *edit)
 
     if (ptEdit) {
         ptEdit->setDocument(document());
-        if (scEdit) connect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+        if (scEdit) {
+            connect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+        }
         if (!ptEdit->viewport()->hasMouseTracking()) {
             ptEdit->viewport()->setMouseTracking(true);
         }
@@ -384,7 +388,7 @@ ErrorHighlighter *FileMeta::highlighter() const
 
 bool FileMeta::isModified() const
 {
-    return mDocument->isModified();
+    return mDocument ? mDocument->isModified() : false;
 }
 
 bool FileMeta::isReadOnly() const
@@ -424,6 +428,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     QWidget* res = nullptr;
     if (kind() != FileKind::Gdx) {
         CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
+        codeEdit->setFileId(id());
         codeEdit->setTabChangesFocus(false);
         codeEdit->setGroupId(runGroup ? runGroup->id() : -1);
         initEditorType(codeEdit);
@@ -437,7 +442,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             res = lxiViewer;
         }
 
-        // TODO(JM) load should unbound from createEdit
+        // TODO(JM) load should be unbound from createEdit
 //        if (!mEditors.size())
 //            triggerLoad(codecMibs);
 

@@ -43,7 +43,7 @@ private slots:
     void reviewMissing();
 
 private:
-    FileId addFileMeta(FileMeta* fileMeta);
+    void addFileMeta(FileMeta* fileMeta);
 
 private:
     FileId mNextFileId = 0;

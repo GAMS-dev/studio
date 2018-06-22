@@ -46,10 +46,9 @@ FileMeta *FileMetaRepo::fileMeta(QWidget * const &editor) const
     return nullptr;
 }
 
-FileId FileMetaRepo::addFileMeta(FileMeta *fileMeta)
+void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
-    FileId res = mNextFileId++;
-    mFiles.insert(res, fileMeta);
+    mFiles.insert(fileMeta->id(), fileMeta);
     QFileInfo fi(fileMeta->location());
 
     if (!fileMeta->location().startsWith('[')) {
@@ -60,7 +59,6 @@ FileId FileMetaRepo::addFileMeta(FileMeta *fileMeta)
             mMissList << fi.absoluteFilePath();
         }
     }
-    return res;
 }
 
 void FileMetaRepo::removedFile(FileMeta *fileMeta)

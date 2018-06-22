@@ -17,6 +17,7 @@ TextMarkRepo::~TextMarkRepo()
     while (!mMarks.isEmpty()) {
         int fileId = mMarks.begin().key();
         removeMarks(fileId);
+        mMarks.remove(fileId);
     }
 }
 
@@ -38,14 +39,20 @@ void TextMarkRepo::removeMark(TextMark *tm)
 void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
 {
     FileMarks *marks = mMarks.value(fileId);
+    if (!marks) return;
     if (types.isEmpty() || types.contains(TextMark::all)) {
-        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ++it) {
+        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ) {
             delete *it;
+            it = marks->erase(it);
         }
     } else {
-        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ++it) {
-            if (!types.contains(it.value()->type()))
+        for (FileMarks::iterator it = marks->begin(), endIt = marks->end(); it != endIt; ) {
+            if (types.contains(it.value()->type())) {
                 delete *it;
+                it = marks->erase(it);
+            } else {
+                ++it;
+            }
         }
     }
 //    if (marks->isEmpty()) {
