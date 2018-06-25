@@ -41,7 +41,6 @@ public:
     virtual bool overwriteMode() const;
 
     bool event(QEvent *event) override;
-    StudioSettings *settings() const;
 
 public slots:
     void afterContentsChanged(int, int, int);

@@ -55,11 +55,6 @@ QMimeData* AbstractEdit::createMimeDataFromSelection() const
     return mimeData;
 }
 
-StudioSettings *AbstractEdit::settings() const
-{
-    return mSettings;
-}
-
 void AbstractEdit::afterContentsChanged(int, int, int)
 {
     QTextCursor tc = textCursor();

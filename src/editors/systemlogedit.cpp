@@ -9,7 +9,7 @@ namespace studio {
 SystemLogEdit::SystemLogEdit(StudioSettings *settings, QWidget *parent)
     : AbstractEdit(settings, parent)
 {
-    setTextInteractionFlags(textInteractionFlags() |  Qt::TextSelectableByKeyboard);
+    setTextInteractionFlags(textInteractionFlags() | Qt::TextSelectableByKeyboard);
     setLineWrapMode(AbstractEdit::WidgetWidth);
     setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     setReadOnly(true);
@@ -19,8 +19,7 @@ void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
 
-    QString logMsg("");
-
+    QString logMsg;
     switch (type) {
     case LogMsgType::Info:
         logMsg.append("<span style='color:blue;font-weight: bold;'>Info:</span> ");
