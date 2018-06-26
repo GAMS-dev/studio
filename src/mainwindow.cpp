@@ -1996,6 +1996,10 @@ void MainWindow::on_actionCopy_triggered()
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->copyAction();
     } else {
+        if (focusWidget() == mSyslog) {
+            mSyslog->copy();
+            return;
+        }
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
         if (!ae) return;
         CodeEdit *ce = ProjectFileNode::toCodeEdit(ae);
