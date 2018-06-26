@@ -69,6 +69,9 @@ private:
 
     bool init();
     void free();
+
+private slots:
+    void hideUniverseSymbol();
 };
 
 } // namespace gdxviewer

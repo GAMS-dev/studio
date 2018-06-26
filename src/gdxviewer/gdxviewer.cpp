@@ -211,16 +211,22 @@ bool GdxViewer::init()
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
+    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
     ui.tvSymbols->setModel(mSymbolTableProxyModel);
     ui.tvSymbols->resizeColumnsToContents();
     ui.tvSymbols->sortByColumn(1,Qt::AscendingOrder);
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    connect(ui.lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
 
     ui.splitter->widget(0)->show();
     ui.splitter->widget(1)->show();
 
-    ui.tvSymbols->hideRow(0); //first entry is the universe which we do not want to show
+    this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
     return true;
 }
 
@@ -246,6 +252,18 @@ void GdxViewer::free()
             delete view;
     }
     mSymbolViews.clear();
+}
+
+void GdxViewer::hideUniverseSymbol()
+{
+    int row = mSymbolTableProxyModel->rowCount();
+    for(int r=0; r<row; r++) {
+        QVariant symName = mSymbolTableProxyModel->data(mSymbolTableProxyModel->index(r, 0), Qt::DisplayRole);
+        if (symName == QVariant(0)) {
+            ui.tvSymbols->hideRow(r);
+            return;
+        }
+    }
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
