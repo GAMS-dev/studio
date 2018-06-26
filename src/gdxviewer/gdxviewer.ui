@@ -83,10 +83,17 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit"/>
+          <widget class="QLineEdit" name="lineEdit">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search the symbol table using a &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard &lt;/span&gt;syntax. The &lt;span style=&quot; font-weight:600;&quot;&gt;All Columns&lt;/span&gt; checkbox can be used to toggle between searching in the &lt;span style=&quot; font-weight:600;&quot;&gt;Name&lt;/span&gt; column only or in all columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="cbToggleSearch">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle between searching in the &lt;span style=&quot; font-weight:600;&quot;&gt;Name &lt;/span&gt;column only or in all columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>All Columns</string>
            </property>
