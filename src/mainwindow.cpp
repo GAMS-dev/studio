@@ -139,6 +139,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
 
 
+    mSyslog->appendLog("Link: https://gams.com", LogMsgType::Info);
     mSyslog->appendLog("This is a placehoder message. say hi", LogMsgType::Error);
     mSyslog->appendLog("This is another message of high importance", LogMsgType::Warning);
     mSyslog->appendLog("And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long.", LogMsgType::Info);
