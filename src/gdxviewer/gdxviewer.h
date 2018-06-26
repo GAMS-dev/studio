@@ -72,6 +72,7 @@ private:
 
 private slots:
     void hideUniverseSymbol();
+    void toggleSearchColumns(bool checked);
 };
 
 } // namespace gdxviewer

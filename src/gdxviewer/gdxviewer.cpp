@@ -222,6 +222,7 @@ bool GdxViewer::init()
     connect(ui.lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
+    connect(ui.cbToggleSearch, &QCheckBox::toggled, this, &GdxViewer::toggleSearchColumns);
 
     ui.splitter->widget(0)->show();
     ui.splitter->widget(1)->show();
@@ -264,6 +265,14 @@ void GdxViewer::hideUniverseSymbol()
             return;
         }
     }
+}
+
+void GdxViewer::toggleSearchColumns(bool checked)
+{
+    if (checked)
+        mSymbolTableProxyModel->setFilterKeyColumn(-1);
+    else
+        mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)
