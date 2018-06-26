@@ -1995,11 +1995,9 @@ void MainWindow::on_actionCopy_triggered()
     if (fc->metrics().fileType() == FileType::Gdx) {
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->copyAction();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->copy();
     } else {
-        if (focusWidget() == mSyslog) {
-            mSyslog->copy();
-            return;
-        }
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
         if (!ae) return;
         CodeEdit *ce = ProjectFileNode::toCodeEdit(ae);
@@ -2019,6 +2017,8 @@ void MainWindow::on_actionSelect_All_triggered()
     if (fc->metrics().fileType() == FileType::Gdx) {
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->selectAll();
     } else {
         CodeEdit* ce = ProjectFileNode::toCodeEdit(focusWidget());
         if (ce) ce->selectAll();
