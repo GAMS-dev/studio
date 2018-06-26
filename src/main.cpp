@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion(STUDIO_VERSION);
 
     Application app(argc, argv);
-    QSystemSemaphore sem("_GAMSStudioSemaphore_", 1, QSystemSemaphore::Open);
+    QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();
     if (app.checkForOtherInstance()) {
         sem.release();
