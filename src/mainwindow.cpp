@@ -2020,8 +2020,9 @@ void MainWindow::on_actionSelect_All_triggered()
     } else if (focusWidget() == mSyslog) {
         mSyslog->selectAll();
     } else {
-        CodeEdit* ce = ProjectFileNode::toCodeEdit(focusWidget());
-        if (ce) ce->selectAll();
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
+        if (!ae) return;
+        ae->selectAll();
     }
 }
 
