@@ -17,45 +17,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
+#ifndef HELPTOOLBAR_H
+#define HELPTOOLBAR_H
 
-#include <QCommandLineParser>
+#include <QToolBar>
+#include <QToolButton>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
 
-enum CommandLineParseResult
-{
-    CommandLineOk,
-    CommandLineError,
-    CommandLineVersionRequested,
-    CommandLineHelpRequested
-};
+class HelpWidget;
 
-class CommandLineParser  : public QCommandLineParser
+class HelpToolBar : public QToolBar
 {
+    Q_OBJECT
+
 public:
-    CommandLineParser();
-    CommandLineParseResult parseCommandLine();
-    QStringList files() const;
-    bool ignoreSettings() const;
-    bool resetSettings() const;
-    bool resetView() const;
-    QString gamsDir() const;
+    HelpToolBar(QAction *aHome,
+                QAction *Back, QAction *aForward, QAction *aReload, QAction* aStop,
+                QToolButton* tbBookmark, QToolButton* tbHelp,
+                HelpWidget *parent);
+    ~HelpToolBar();
+
+signals:
+    void webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
+
+public slots:
+    void on_webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
 
 private:
-    inline QStringList getFileArgs();
+    void createWebActionTrigger(QAction* action, QWebEnginePage::WebAction webAction);
 
 private:
-    QStringList mFiles;
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
-    bool mResetView = false;
-    QString mGamsDir = QString();
+    QAction* actionBack;
+    QAction* actionForward;
+    QAction* actionReload;
+    QAction* actionStop;
+
+    HelpWidget* helpWidget;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEPARSER_H
+#endif // HELPTOOLBAR_H

@@ -630,7 +630,7 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
         QString text = block.text();
         int w = 0;
         while (w < text.length() && text.at(w).isSpace()) w++;
-        if (w < text.length() && w < minIndentPos) minIndentPos = w;
+        if (w <= text.length() && w <= minIndentPos) minIndentPos = w;
         block = block.next();
     }
 

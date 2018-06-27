@@ -392,8 +392,6 @@ void MainWindow::receiveModLibLoad(QString model)
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
-    if (!getHelpWidget()->isVisible()) getHelpWidget()->show();
-
     QString link = CommonPaths::systemDir() + "/" + doc;
     QUrl result = QUrl::fromLocalFile(link);
 
@@ -401,6 +399,8 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
         result = QUrl(result.toString() + "#" + anchor);
 
     getHelpWidget()->on_urlOpened(result);
+
+    on_actionHelp_View_triggered(true);
 }
 
 SearchWidget* MainWindow::searchWidget() const
@@ -1524,8 +1524,7 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    QProcess::ProcessState state = mRecent.group ? mRecent.group->gamsProcessState() : QProcess::NotRunning;
-    if (state == QProcess::NotRunning)
+    if (isActiveTabSetAsMain() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
 }
 
