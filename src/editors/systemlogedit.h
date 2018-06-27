@@ -54,7 +54,7 @@ class ErrorHighlightingRule
 public:
     ErrorHighlightingRule()
     {
-        mPattern = QRegularExpression("Error: ");
+        mPattern = QRegularExpression("Error:");
         mFormat.setForeground(Qt::red);
         mFormat.setFontWeight(QFont::Bold);
     }
@@ -66,7 +66,7 @@ class InfoHighlightingRule
 public:
     InfoHighlightingRule()
     {
-        mPattern = QRegularExpression("Info: ");
+        mPattern = QRegularExpression("Info:");
         mFormat.setForeground(Qt::darkBlue);
         mFormat.setFontWeight(QFont::Bold);
     }
@@ -78,7 +78,7 @@ class WarningHighlightingRule
 public:
     WarningHighlightingRule()
     {
-        mPattern = QRegularExpression("Warning: ");
+        mPattern = QRegularExpression("Warning:");
         mFormat.setForeground(Qt::darkYellow);
         mFormat.setFontWeight(QFont::Bold);
     }
