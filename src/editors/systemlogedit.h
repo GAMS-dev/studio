@@ -6,8 +6,6 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 
@@ -18,8 +16,6 @@ enum class LogMsgType { Error, Warning, Info };
 class HighlightingRule
 {
 public:
-    HighlightingRule() {}
-
     QRegularExpression pattern() const
     {
         return mPattern;
@@ -107,7 +103,6 @@ protected:
             QRegularExpressionMatchIterator matchIterator = rule.pattern().globalMatch(text);
             while (matchIterator.hasNext()) {
                 QRegularExpressionMatch match = matchIterator.next();
-                qDebug() << match.captured();
                 setFormat(match.capturedStart(), match.capturedLength(), rule.format());
             }
         }
@@ -124,6 +119,10 @@ public:
     void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning);
 
     EditorType type() override;
+
+protected:
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QString level(LogMsgType type);
