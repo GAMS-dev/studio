@@ -74,7 +74,7 @@ CodeEditor *LxiViewer::codeEditor() const
 void LxiViewer::loadLxiFile()
 {
     if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
-        if (QFileInfo(mLxiFile).exists()) {
+        if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) { //parse the lxi file only if it exists and is not empty (size>0)
             ui->splitter->widget(0)->show();
             LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
             LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
