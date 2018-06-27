@@ -10,12 +10,9 @@ SystemLogEdit::SystemLogEdit(StudioSettings *settings, QWidget *parent)
     : AbstractEdit(settings, parent),
       mHighlighter(new SystemLogHighlighter(this))
 {
-    setTextInteractionFlags(textInteractionFlags() |
-                            Qt::TextSelectableByMouse |
-                            Qt::LinksAccessibleByMouse);
+    setTextInteractionFlags(Qt::TextBrowserInteraction);
     setLineWrapMode(AbstractEdit::WidgetWidth);
     setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-    setReadOnly(true);
     mHighlighter->setDocument(document());
 }
 

@@ -142,7 +142,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mSyslog->appendLog("Link: https://gams.com", LogMsgType::Info);
     mSyslog->appendLog("This is a placehoder message. say hi", LogMsgType::Error);
     mSyslog->appendLog("This is another message of high importance", LogMsgType::Warning);
-    mSyslog->appendLog("And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long.", LogMsgType::Info);
+    mSyslog->appendLog("And this one is very long. And this one is very long. https://doc.qt.io/qt-5/qsyntaxhighlighter.html And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long.", LogMsgType::Info);
 }
 
 void MainWindow::delayedFileRestoration()

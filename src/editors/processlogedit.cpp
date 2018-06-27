@@ -25,7 +25,7 @@ namespace studio {
 
 ProcessLogEdit::ProcessLogEdit(StudioSettings *settings, QWidget *parent) : AbstractEdit(settings, parent)
 {
-    setReadOnly(true);
+    setTextInteractionFlags(Qt::TextBrowserInteraction);
     setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
 }
 
