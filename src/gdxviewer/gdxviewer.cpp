@@ -157,6 +157,11 @@ void GdxViewer::selectAllAction()
     view->selectAll();
 }
 
+void GdxViewer::selectSearchField()
+{
+    ui.lineEdit->setFocus();
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();

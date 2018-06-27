@@ -46,6 +46,7 @@ public:
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
+    void selectSearchField();
 
 private:
     QString mGdxFile;
