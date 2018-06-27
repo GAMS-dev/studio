@@ -22,34 +22,27 @@ SystemLogEdit::SystemLogEdit(StudioSettings *settings, QWidget *parent)
 void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
-
-    QString logMsg;
-    switch (type) {
-    case LogMsgType::Info:
-        logMsg.append("Info: ");
-        //logMsg.append("<span style='color:blue;font-weight: bold;'>Info:</span> ");
-        break;
-    case LogMsgType::Warning:
-        logMsg.append("Warning: ");
-        //logMsg.append("<span style='color:orange;font-weight: bold;'>Warning:</span> ");
-        break;
-    case LogMsgType::Error:
-        logMsg.append("Error: ");
-        //logMsg.append("<span style='color:red;font-weight: bold;'>Error:</span> ");
-        break;
-    }
-
-    logMsg.append(msg);// + "<br/>");
-
-    appendPlainText(logMsg);
-//    moveCursor(QTextCursor::End);
-//    appendHtml(logMsg);
-//    moveCursor(QTextCursor::End);
+    QString logLevel = level(type);
+    appendPlainText(logLevel + msg);
 }
 
 AbstractEdit::EditorType SystemLogEdit::type()
 {
     return EditorType::SystemLog;
+}
+
+QString SystemLogEdit::level(LogMsgType type)
+{
+    switch (type) {
+    case LogMsgType::Info:
+        return "Info: ";
+    case LogMsgType::Warning:
+        return "Warning: ";
+    case LogMsgType::Error:
+        return "Error: ";
+    default:
+        return QString();
+    }
 }
 
 }
