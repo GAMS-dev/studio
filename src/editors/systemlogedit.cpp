@@ -1,5 +1,6 @@
 #include "systemlogedit.h"
 #include "studiosettings.h"
+#include "syntax/systemloghighlighter.h"
 
 #include <QDesktopServices>
 
@@ -67,11 +68,11 @@ QString SystemLogEdit::level(LogMsgType type)
 {
     switch (type) {
     case LogMsgType::Info:
-        return "Info: ";
+        return HighlightingData::InfoKeyword;
     case LogMsgType::Warning:
-        return "Warning: ";
+        return HighlightingData::WarningKeyword;
     case LogMsgType::Error:
-        return "Error: ";
+        return HighlightingData::ErrorKeyword;
     default:
         return QString();
     }

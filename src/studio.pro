@@ -137,7 +137,8 @@ SOURCES += \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
     encodingsdialog.cpp \
-    editors/codeedit.cpp
+    editors/codeedit.cpp \
+    syntax/systemloghighlighter.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -221,7 +222,8 @@ HEADERS += \
     editors/processlogedit.h \
     editors/systemlogedit.h \
     encodingsdialog.h \
-    editors/codeedit.h
+    editors/codeedit.h \
+    syntax/systemloghighlighter.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
