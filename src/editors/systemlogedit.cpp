@@ -22,7 +22,7 @@ void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
     QString logLevel = level(type);
-    appendPlainText(logLevel + msg);
+    appendPlainText(logLevel + " " + msg);
 }
 
 void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
