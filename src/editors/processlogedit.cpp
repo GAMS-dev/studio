@@ -17,21 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "logeditor.h"
+#include "processlogedit.h"
 #include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
+ProcessLogEdit::ProcessLogEdit(StudioSettings *settings, QWidget *parent) : AbstractEdit(settings, parent)
 {
-    setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth : AbstractEditor::NoWrap);
+    setTextInteractionFlags(Qt::TextSelectableByMouse);
+    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
 }
 
-AbstractEditor::EditorType LogEditor::type()
+AbstractEdit::EditorType ProcessLogEdit::type()
 {
-    return EditorType::LogEditor;
+    return EditorType::ProcessLog;
 }
 
 }

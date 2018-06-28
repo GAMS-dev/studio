@@ -332,7 +332,7 @@ void ProjectRepo::removeMarks(ProjectGroupNode* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void ProjectRepo::updateLinkDisplay(AbstractEditor *editUnderCursor)
+void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
 {
     if (editUnderCursor) {
         ProjectFileNode *fc = fileNode(editUnderCursor);

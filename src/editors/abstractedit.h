@@ -17,40 +17,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_SELECTENCODINGS_H
-#define GAMS_STUDIO_SELECTENCODINGS_H
+#ifndef ABSTRACTEDIT_H
+#define ABSTRACTEDIT_H
 
-#include <QDialog>
-
-namespace Ui {
-class SelectEncodings;
-}
+#include <QPlainTextEdit>
 
 namespace gams {
 namespace studio {
 
-class SelectEncodings : public QDialog
+class StudioSettings;
+
+class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = nullptr);
-    ~SelectEncodings();
-    QList<int> selectedMibs();
+    enum EditorType { CodeEdit, ProcessLog, SystemLog };
 
-private slots:
+public:
+    virtual ~AbstractEdit() override;
+    virtual EditorType type() = 0;
+    virtual void setOverwriteMode(bool overwrite);
+    virtual bool overwriteMode() const;
 
-    void on_pbCancel_clicked();
+    bool event(QEvent *event) override;
 
-    void on_pbSave_clicked();
+public slots:
+    void afterContentsChanged(int, int, int);
 
-    void on_pbReset_clicked();
+protected:
+    AbstractEdit(StudioSettings *settings, QWidget *parent);
+    QMimeData* createMimeDataFromSelection() const override;
 
-private:
-    Ui::SelectEncodings *ui;
+protected:
+    StudioSettings *mSettings = nullptr;
 };
 
 }
 }
 
-#endif // GAMS_STUDIO_SELECTENCODINGS_H
+#endif // ABSTRACTEDIT_H

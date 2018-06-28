@@ -82,7 +82,7 @@ void SearchWidget::setSelectedScope(int index)
 
 void SearchWidget::on_btn_Replace_clicked()
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -254,7 +254,7 @@ void SearchWidget::updateMatchAmount(int hits, int current)
 
 void SearchWidget::simpleReplaceAll()
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -332,7 +332,7 @@ void SearchWidget::findNext(SearchDirection direction)
 
     ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
     if (!fc) return;
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
     if (mHasChanged) {
@@ -348,7 +348,7 @@ void SearchWidget::findNext(SearchDirection direction)
 void SearchWidget::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEditor *edit = ProjectFileNode::toAbstractEdit(widget);
+    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(widget);
     ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
     if (!fsc || !edit) return;
 
@@ -370,7 +370,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    AbstractEditor *edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
     bool isSourceCode = ProjectFileNode::editorType(mMain->recent()->editor()) == ProjectAbstractNode::etSourceCode;
 
     bool activateSearch = isSourceCode || ProjectFileNode::editorType(mMain->recent()->editor()) == ProjectAbstractNode::etLxiLst;
@@ -508,7 +508,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
     if (regex()) searchRegex.setPattern(searchTerm);
 
     ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
         matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);

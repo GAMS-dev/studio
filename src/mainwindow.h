@@ -23,7 +23,7 @@
 #include <memory>
 #include <QMainWindow>
 
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "file.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
@@ -49,6 +49,7 @@ class StudioSettings;
 class SearchWidget;
 class SearchResultList;
 class AutosaveHandler;
+class SystemLogEdit;
 
 struct RecentData {
 
@@ -108,7 +109,7 @@ public:
     bool isOptionDefinitionChecked();
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
-    QList<AbstractEditor *> openLogs();
+    QList<AbstractEdit*> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
@@ -280,6 +281,7 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
+    SystemLogEdit *mSyslog = nullptr;
     ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
 

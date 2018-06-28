@@ -22,8 +22,8 @@
 
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "editors/codeeditor.h"
-#include "editors/logeditor.h"
+#include "editors/codeedit.h"
+#include "editors/processlogedit.h"
 
 namespace gams {
 namespace studio {
@@ -117,20 +117,20 @@ public:
     ProjectGroupNode* parentEntry() const;
     virtual void setParentEntry(ProjectGroupNode *parent);
     virtual ProjectAbstractNode* childEntry(int index) const;
-    virtual int childCount() const;    
+    virtual int childCount() const;
     virtual QString tooltip()=0;
 
     ProjectAbstractNode *findFile(QString filePath);
 
 
 public: // static convenience methods
-    inline static void initEditorType(CodeEditor* w) {
+    inline static void initEditorType(CodeEdit* w) {
         if(w) w->setProperty("EditorType", etSourceCode);
     }
-    inline static void initEditorType(AbstractEditor* w) { // obsolete?
+    inline static void initEditorType(AbstractEdit* w) { // obsolete?
         if(w) w->setProperty("EditorType", etPlainText);
     }
-    inline static void initEditorType(LogEditor* w) {
+    inline static void initEditorType(ProcessLogEdit* w) {
         if(w) w->setProperty("EditorType", etLog);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
@@ -143,20 +143,20 @@ public: // static convenience methods
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? v.toInt() : etUndefined);
     }
-    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
+    inline static AbstractEdit* toAbstractEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEditor*>(w) : nullptr;
+            return toLxiViewer(w)->codeEdit();
+        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEdit*>(w) : nullptr;
     }
-    inline static CodeEditor* toCodeEdit(QWidget* w) {
+    inline static CodeEdit* toCodeEdit(QWidget* w) {
         int t = editorType(w);
         if (t == etLxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t == etSourceCode) ? static_cast<CodeEditor*>(w) : nullptr;
+            return toLxiViewer(w)->codeEdit();
+        return (t == etSourceCode) ? static_cast<CodeEdit*>(w) : nullptr;
     }
-    inline static LogEditor* toLogEdit(QWidget* w) {
-        return (editorType(w) == etLog) ? static_cast<LogEditor*>(w) : nullptr;
+    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
+        return (editorType(w) == etLog) ? static_cast<ProcessLogEdit*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
