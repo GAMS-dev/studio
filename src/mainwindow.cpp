@@ -1819,6 +1819,12 @@ void MainWindow::on_actionSearch_triggered()
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
         mHelpWidget->on_searchHelp();
     } else {
+       ProjectFileNode *fc = mProjectRepo.fileNode(mRecent.editor());
+       if (fc && fc->metrics().fileType() == FileType::Gdx) {
+           gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
+           gdx->selectSearchField();
+           return;
+       }
        // toggle visibility
        if (mSearchWidget->isVisible()) {
            mSearchWidget->activateWindow();

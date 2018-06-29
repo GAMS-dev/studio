@@ -46,6 +46,7 @@ public:
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
+    void selectSearchField();
 
 private:
     QString mGdxFile;
@@ -69,6 +70,10 @@ private:
 
     bool init();
     void free();
+
+private slots:
+    void hideUniverseSymbol();
+    void toggleSearchColumns(bool checked);
 };
 
 } // namespace gdxviewer
