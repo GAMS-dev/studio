@@ -128,7 +128,7 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
 
-    NodeId groupId = edit ? edit->groupId() : gdxViewer ? gdxViewer->groupId() : -1;
+    NodeId groupId = edit ? edit->groupId() : gdxViewer ? gdxViewer->groupId() : NodeId();
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;

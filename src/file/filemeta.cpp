@@ -430,7 +430,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
         codeEdit->setFileId(id());
         codeEdit->setTabChangesFocus(false);
-        codeEdit->setGroupId(runGroup ? runGroup->id() : -1);
+        codeEdit->setGroupId(runGroup ? runGroup->id() : NodeId());
         initEditorType(codeEdit);
         codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());

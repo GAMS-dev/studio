@@ -180,7 +180,7 @@ void ProjectContextMenu::onOpenFileLoc()
             proc.waitForFinished();
         }
 #else
-        ProjectGroupNode *group = node->parentEntry();
+        ProjectGroupNode *group = node->parentNode();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif

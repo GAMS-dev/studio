@@ -26,6 +26,7 @@
 //#include <file.h>
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
