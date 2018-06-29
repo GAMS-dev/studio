@@ -25,14 +25,12 @@
 namespace gams {
 namespace studio {
 
-class StudioSettings;
-
 class ProcessLogEdit : public AbstractEdit
 {
     Q_OBJECT
 
 public:
-    ProcessLogEdit(StudioSettings *settings, QWidget *parent = nullptr);
+    ProcessLogEdit(QWidget *parent = nullptr);
 
 public:
     EditorType type() override;

@@ -88,7 +88,7 @@ class CodeEdit : public AbstractEdit
     Q_OBJECT
 
 public:
-    CodeEdit(StudioSettings *settings, QWidget *parent = nullptr);
+    CodeEdit(QWidget *parent = nullptr);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -112,6 +112,7 @@ public:
     ParenthesesMatch matchParentheses();
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
+    void setSettings(StudioSettings *settings);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -218,6 +219,7 @@ private:
     QTimer mWordDelay;
     QTimer mParenthesesDelay;
     ParenthesesMatch mParenthesesMatch;
+    StudioSettings *mSettings = nullptr;
 
 public:
     BlockEdit *blockEdit() const;

@@ -18,15 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "processlogedit.h"
-#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-ProcessLogEdit::ProcessLogEdit(StudioSettings *settings, QWidget *parent) : AbstractEdit(settings, parent)
+ProcessLogEdit::ProcessLogEdit(QWidget *parent)
+    : AbstractEdit(parent)
 {
     setTextInteractionFlags(Qt::TextSelectableByMouse);
-    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
 }
 
 AbstractEdit::EditorType ProcessLogEdit::type()

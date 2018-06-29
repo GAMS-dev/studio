@@ -1,5 +1,4 @@
 #include "systemlogedit.h"
-#include "studiosettings.h"
 #include "syntax/systemloghighlighter.h"
 
 #include <QDesktopServices>
@@ -7,13 +6,12 @@
 namespace gams {
 namespace studio {
 
-SystemLogEdit::SystemLogEdit(StudioSettings *settings, QWidget *parent)
-    : AbstractEdit(settings, parent),
+SystemLogEdit::SystemLogEdit(QWidget *parent)
+    : AbstractEdit(parent),
       mHighlighter(new SystemLogHighlighter(this))
 {
     setTextInteractionFlags(Qt::TextSelectableByMouse);
     setLineWrapMode(AbstractEdit::WidgetWidth);
-    setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     setMouseTracking(true);
     mHighlighter->setDocument(document());
 }

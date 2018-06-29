@@ -25,8 +25,6 @@
 namespace gams {
 namespace studio {
 
-class StudioSettings;
-
 class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -46,11 +44,8 @@ public slots:
     void afterContentsChanged(int, int, int);
 
 protected:
-    AbstractEdit(StudioSettings *settings, QWidget *parent);
+    AbstractEdit(QWidget *parent);
     QMimeData* createMimeDataFromSelection() const override;
-
-protected:
-    StudioSettings *mSettings = nullptr;
 };
 
 }

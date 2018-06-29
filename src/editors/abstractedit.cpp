@@ -20,13 +20,12 @@
 #include <QMimeData>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
-#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-AbstractEdit::AbstractEdit(StudioSettings *settings, QWidget *parent)
-    : QPlainTextEdit(parent), mSettings(settings)
+AbstractEdit::AbstractEdit(QWidget *parent)
+    : QPlainTextEdit(parent)
 {
 }
 

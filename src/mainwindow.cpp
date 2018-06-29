@@ -130,7 +130,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
-    mSyslog = new SystemLogEdit(mSettings.get(), this);
+    mSyslog = new SystemLogEdit(this);
+    mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
@@ -174,7 +175,9 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEdit *codeEdit = new CodeEdit(mSettings.get(), this);
+            CodeEdit *codeEdit = new CodeEdit(this);
+            codeEdit->setSettings(mSettings.get());
+            codeEdit->setLineWrapMode(mSettings->lineWrapEditor() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
             codeEdit->setTabChangesFocus(false);
             ProjectAbstractNode::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
@@ -1226,7 +1229,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         ProjectLogNode* logProc = mProjectRepo.logNode(fsc);
         if (logProc->editors().isEmpty()) {
             logProc->setDebugLog(mLogDebugLines);
-            ProcessLogEdit* logEdit = new ProcessLogEdit(mSettings.get(), this);
+            ProcessLogEdit* logEdit = new ProcessLogEdit(this);
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
             ProjectAbstractNode::initEditorType(logEdit);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
@@ -1408,7 +1412,8 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 {
     if (!logProc->editors().isEmpty()) return;
     logProc->setDebugLog(mLogDebugLines);
-    ProcessLogEdit* logEdit = new ProcessLogEdit(mSettings.get(), this);
+    ProcessLogEdit* logEdit = new ProcessLogEdit(this);
+    logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     ProjectAbstractNode::initEditorType(logEdit);
 
     ui->logTabs->addTab(logEdit, logProc->caption());

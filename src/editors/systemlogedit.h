@@ -6,7 +6,6 @@
 namespace gams {
 namespace studio {
 
-class StudioSettings;
 class SystemLogHighlighter;
 
 enum class LogMsgType { Error, Warning, Info };
@@ -14,7 +13,7 @@ enum class LogMsgType { Error, Warning, Info };
 class SystemLogEdit : public AbstractEdit
 {
 public:
-    SystemLogEdit(StudioSettings *settings, QWidget *parent);
+    SystemLogEdit(QWidget *parent);
     void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning);
 
     EditorType type() override;

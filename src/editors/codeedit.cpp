@@ -74,8 +74,8 @@ inline void prevCharClass(int offset, int &size, const QString &text)
     }
 }
 
-CodeEdit::CodeEdit(StudioSettings *settings, QWidget *parent)
-    : AbstractEdit(settings, parent)
+CodeEdit::CodeEdit(QWidget *parent)
+    : AbstractEdit(parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
@@ -92,15 +92,8 @@ CodeEdit::CodeEdit(StudioSettings *settings, QWidget *parent)
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
 
-    updateLineNumberAreaWidth(0);
-    recalcExtraSelections();
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
-
-    if(mSettings->lineWrapEditor())
-        setLineWrapMode(AbstractEdit::WidgetWidth);
-    else
-        setLineWrapMode(AbstractEdit::NoWrap);
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -944,6 +937,11 @@ bool CodeEdit::overwriteMode() const
 {
     if (mBlockEdit) return mBlockEdit->overwriteMode();
     return AbstractEdit::overwriteMode();
+}
+
+void CodeEdit::setSettings(StudioSettings *settings)
+{
+    mSettings = settings;
 }
 
 inline int CodeEdit::assignmentKind(int p)
