@@ -97,9 +97,8 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
-    else {
+    else
         ui.splitter->replaceWidget(1, ui.widget);
-    }
 }
 
 GdxSymbol *GdxViewer::selectedSymbol()
