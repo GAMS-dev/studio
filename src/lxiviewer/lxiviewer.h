@@ -45,22 +45,18 @@ public:
 
     CodeEdit *codeEdit() const;
 
-private:
-    Ui::LxiViewer *ui;
-
-    CodeEdit* mCodeEdit;
-    ProjectFileNode *mFileNode;
-    QString mLstFile;
-    QString mLxiFile;
-
 private slots:
     void loadLxiFile();
     void loadLstFile();
     void jumpToTreeItem();
-
-
-private slots:
     void jumpToLine(QModelIndex modelIndex);
+
+private:
+    Ui::LxiViewer *ui;
+    CodeEdit* mCodeEdit;
+    ProjectFileNode *mFileNode;
+    QString mLstFile;
+    QString mLxiFile;
 };
 
 

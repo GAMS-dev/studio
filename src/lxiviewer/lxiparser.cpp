@@ -21,7 +21,7 @@
 #include <QDir>
 #include "exception.h"
 #include "lxiparser.h"
-
+#include "lxitreeitem.h"
 
 namespace gams {
 namespace studio {

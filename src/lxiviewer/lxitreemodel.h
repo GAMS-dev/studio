@@ -22,11 +22,12 @@
 
 #include <QAbstractItemModel>
 #include <QVector>
-#include "lxitreeitem.h"
 
 namespace gams {
 namespace studio {
 namespace lxiviewer {
+
+class LxiTreeItem;
 
 class LxiTreeModel : public QAbstractItemModel
 {
@@ -34,7 +35,7 @@ class LxiTreeModel : public QAbstractItemModel
 
 public:
     explicit LxiTreeModel(LxiTreeItem *root, QVector<int> lineNrs, QVector<LxiTreeItem*> treeItems, QObject *parent = nullptr);
-    ~LxiTreeModel();
+    ~LxiTreeModel() override;
 
     // Basic functionality:
     QModelIndex index(int row, int column,
@@ -51,8 +52,7 @@ public:
     QVector<LxiTreeItem *> treeItems() const;
 
 private:
-    LxiTreeItem* mRootItem = nullptr;
-
+    LxiTreeItem* mRootItem;
     QVector<int> mLineNrs;
     QVector<LxiTreeItem*> mTreeItems;
 
