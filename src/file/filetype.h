@@ -21,7 +21,7 @@
 #define FILETYPE_H
 
 #include <QStringList>
-#include"common.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -43,21 +43,19 @@ public:
     bool operator ==(const FileKind& kind) const;
     bool operator !=(const FileKind& kind) const;
 
-    static const QList<FileType*> list();
     static void clear();
     static FileType& from(QString suffix);
     static FileType& from(FileKind kind);
 
-
 private:
-    FileType(FileKind kind, QString suffix, QString description, bool autoReload);
+    FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
 
     const FileKind mKind;
     const QStringList mSuffix;
     const QString mDescription;
     const bool mAutoReload;
 
-    static QList<FileType*> mList;
+    static QList<FileType*> mFileTypes;
     static FileType* mNone;
 };
 

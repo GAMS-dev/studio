@@ -23,11 +23,21 @@
 namespace gams {
 namespace studio {
 
-QList<FileType*> FileType::mList;
-FileType *FileType::mNone = nullptr;
+QList<FileType*> FileType::mFileTypes {
+    new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
+    new FileType(FileKind::Gms, {"gms", "inc"}, "GAMS Source Code", false),
+    new FileType(FileKind::Txt, {"txt"}, "Text File", false),
+    new FileType(FileKind::Lst, {"lst"}, "GAMS List File", true),
+    new FileType(FileKind::Lxi, {"lxi"}, "GAMS List File Index", true),
+    new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
+    new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
+    new FileType(FileKind::Log, {"log"}, "GAMS Log File", false)
+};
 
-FileType::FileType(FileKind kind, QString suffix, QString description, bool autoReload)
-    : mKind(kind), mSuffix(suffix.split(",", QString::SkipEmptyParts)), mDescription(description)
+FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
+
+FileType::FileType(FileKind kind, QStringList suffix, QString description, bool autoReload)
+    : mKind(kind), mSuffix(suffix), mDescription(description)
     , mAutoReload(autoReload)
 {}
 
@@ -71,25 +81,9 @@ QStringList FileType::suffix() const
     return mSuffix;
 }
 
-const QList<FileType*> FileType::list()
-{
-    if (mList.isEmpty()) {
-        mList << new FileType(FileKind::Gsp, "gsp,pro", "GAMS Studio Project", false);
-        mList << new FileType(FileKind::Gms, "gms,inc", "GAMS Source Code", false);
-        mList << new FileType(FileKind::Txt, "txt", "Text File", false);
-        mList << new FileType(FileKind::Lst, "lst", "GAMS List File", true);
-        mList << new FileType(FileKind::Lxi, "lxi", "GAMS List File Index", true);
-        mList << new FileType(FileKind::Gdx, "gdx", "GAMS Data", true);
-        mList << new FileType(FileKind::Ref, "ref", "GAMS Ref File", true);
-        mList << new FileType(FileKind::Log, "log", "GAMS Log File", false);
-        mNone = new FileType(FileKind::None, "", "Unknown File", false);
-    }
-    return mList;
-}
-
 FileType &FileType::from(QString suffix)
 {
-    for (FileType *ft: list()) {
+    for (FileType *ft : mFileTypes) {
         if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
             return *ft;
     }
@@ -98,7 +92,7 @@ FileType &FileType::from(QString suffix)
 
 FileType& FileType::from(FileKind kind)
 {
-    for (FileType *ft: list()) {
+    for (FileType *ft : mFileTypes) {
         if (ft->mKind == kind)
             return *ft;
     }
@@ -107,8 +101,8 @@ FileType& FileType::from(FileKind kind)
 
 void FileType::clear()
 {
-    while (!mList.isEmpty()) {
-        FileType* ft = mList.takeFirst();
+    while (!mFileTypes.isEmpty()) {
+        FileType* ft = mFileTypes.takeFirst();
         delete ft;
     }
     delete mNone;
