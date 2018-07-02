@@ -26,6 +26,8 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
+
+#include <QTabWidget>
 #include <QFileInfo>
 #include <QFile>
 #include <QPlainTextDocumentLayout>

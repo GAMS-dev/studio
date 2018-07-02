@@ -21,7 +21,6 @@
 #define GAMS_STUDIO_GDXVIEWER_COLUMNFILTERFRAME_H
 
 #include "ui_columnfilterframe.h"
-#include "gdxsymbol.h"
 #include "filteruelmodel.h"
 #include <QVector>
 
@@ -42,12 +41,6 @@ protected:
     void mousePressEvent(QMouseEvent * event) override;
     void mouseMoveEvent(QMouseEvent * event) override;
 
-private:
-    Ui::ColumnFilterFrame ui;
-    GdxSymbol* mSymbol = nullptr;
-    int mColumn;
-    FilterUelModel* mModel = nullptr;
-
 private slots:
     void apply();
     void selectAll();
@@ -55,6 +48,12 @@ private slots:
     void filterLabels();
     void toggleHideUnselected(bool checked);
     void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+
+private:
+    Ui::ColumnFilterFrame ui;
+    GdxSymbol* mSymbol;
+    int mColumn;
+    FilterUelModel* mModel;
 };
 
 

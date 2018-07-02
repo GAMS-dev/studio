@@ -23,6 +23,7 @@
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
+#include "lxitreeitem.h"
 #include "editors/codeedit.h"
 #include "ui_lxiviewer.h"
 #include "logger.h"

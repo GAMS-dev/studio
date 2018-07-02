@@ -20,19 +20,27 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
-#include "ui_gdxviewer.h"
-#include "gdxcc.h"
-#include "gdxsymbol.h"
-#include "gdxsymboltable.h"
-#include "common.h"
-#include <memory>
-#include <QMutex>
+#include <QWidget>
 #include <QVector>
-#include <QSortFilterProxyModel>
+#include <QItemSelection>
+
+#include "gdxcc.h"
+#include "common.h"
+
+class QMutex;
+class QSortFilterProxyModel;
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+namespace Ui {
+class GdxViewer;
+}
+
+class GdxSymbol;
+class GdxSymbolTable;
+class GdxSymbolView;
 
 class GdxViewer : public QWidget
 {
@@ -54,7 +62,20 @@ public:
     NodeId groupId() const;
     void setGroupId(const NodeId &groupId = NodeId());
 
+private slots:
+    void hideUniverseSymbol();
+    void toggleSearchColumns(bool checked);
+
 private:
+    void reportIoError(int errNr, QString message);
+    void loadSymbol(GdxSymbol* selectedSymbol);
+    void copySelectionToClipboard();
+    bool init();
+    void free();
+
+private:
+    Ui::GdxViewer *ui;
+
     QString mGdxFile;
     QString mSystemDirectory;
 
@@ -63,26 +84,13 @@ private:
 
     bool mHasChanged = false;
 
-    Ui::GdxViewer ui;
-    void reportIoError(int errNr, QString message);
-
     GdxSymbolTable* mGdxSymbolTable = nullptr;
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
 
     gdxHandle_t mGdx;
     QMutex* mGdxMutex = nullptr;
 
-    void loadSymbol(GdxSymbol* selectedSymbol);
-    void copySelectionToClipboard();
-
     QVector<GdxSymbolView*> mSymbolViews;
-
-    bool init();
-    void free();
-
-private slots:
-    void hideUniverseSymbol();
-    void toggleSearchColumns(bool checked);
 };
 
 } // namespace gdxviewer

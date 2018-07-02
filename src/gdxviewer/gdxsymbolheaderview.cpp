@@ -18,14 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxsymbolheaderview.h"
-#include <QDebug>
+#include "gdxsymbol.h"
+
 #include <QPainter>
 #include <QTableView>
 #include <QMouseEvent>
-#include <QFlags>
-#include <QApplication>
-
-#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {

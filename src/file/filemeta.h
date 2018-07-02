@@ -29,6 +29,8 @@
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 
+class QTabWidget;
+
 namespace gams {
 namespace studio {
 
@@ -37,6 +39,7 @@ class ProjectRunGroupNode;
 class FileMeta: public QObject
 {
     Q_OBJECT
+
 public:
     ~FileMeta() override;
     FileId id() const;

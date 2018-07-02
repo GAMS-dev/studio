@@ -20,9 +20,10 @@
 #include "gdxsymbolview.h"
 #include "ui_gdxsymbolview.h"
 #include "gdxsymbolheaderview.h"
+#include "gdxsymbol.h"
 #include "columnfilter.h"
+
 #include <QClipboard>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -88,7 +89,6 @@ void GdxSymbolView::showColumnFilter(QPoint p)
     }
 }
 
-
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
     if (mSym) {
@@ -125,7 +125,6 @@ void GdxSymbolView::refreshView()
     if(mSym->isLoaded())
         mSym->filterRows();
 }
-
 
 GdxSymbol *GdxSymbolView::sym() const
 {

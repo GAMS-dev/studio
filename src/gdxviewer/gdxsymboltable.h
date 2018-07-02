@@ -21,10 +21,10 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLTABLEMODEL_H
 
 #include <QAbstractItemModel>
-#include <QMutex>
-#include "gdxsymbol.h"
-#include <memory>
+
 #include "gdxcc.h"
+
+class QMutex;
 
 namespace gams {
 namespace studio {
