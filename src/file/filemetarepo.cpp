@@ -54,7 +54,7 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
     return nullptr;
 }
 
-FileMeta *FileMetaRepo::fileMeta(QWidget * const &editor) const
+FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
 {
     if (!editor) return nullptr;
     QHashIterator<FileId, FileMeta*> i(mFiles);

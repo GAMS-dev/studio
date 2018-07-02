@@ -23,7 +23,7 @@
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "ui_lxiviewer.h"
 #include "logger.h"
 
@@ -31,10 +31,10 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEditor *codeEditor, FileMeta *fileMeta, ProjectRunGroupNode* runGroup, QWidget *parent):
+LxiViewer::LxiViewer(CodeEdit *codeEditor, FileMeta *fileMeta, ProjectRunGroupNode* runGroup, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
-    mCodeEditor(codeEditor),
+    mCodeEdit(codeEditor),
     mFileMeta(fileMeta),
     mRunGroup(runGroup)
 {
@@ -42,7 +42,7 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileMeta *fileMeta, ProjectRunGroup
 
     mLstFile = mFileMeta->location();
 
-    ui->splitter->addWidget(mCodeEditor);
+    ui->splitter->addWidget(mCodeEdit);
 
     QFileInfo info(mLstFile);
     mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
@@ -52,14 +52,12 @@ LxiViewer::LxiViewer(CodeEditor *codeEditor, FileMeta *fileMeta, ProjectRunGroup
     ui->splitter->setStretchFactor(1, 3);
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
-    connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 
     if (runGroup) {
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
     }
-
-
 
     //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
@@ -72,15 +70,15 @@ LxiViewer::~LxiViewer()
     delete ui;
 }
 
-CodeEditor *LxiViewer::codeEditor() const
+CodeEdit *LxiViewer::codeEdit() const
 {
-    return mCodeEditor;
+    return mCodeEdit;
 }
 
 void LxiViewer::loadLxiFile()
 {
     if (QProcess::NotRunning == mRunGroup->gamsProcessState()) {
-        if (QFileInfo(mLxiFile).exists()) {
+        if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) { //parse the lxi file only if it exists and is not empty (size>0)
             ui->splitter->widget(0)->show();
             LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
             LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
@@ -106,7 +104,7 @@ void LxiViewer::jumpToTreeItem()
     if (ui->splitter->widget(0)->isHidden())
         return;
 
-    int lineNr  = mCodeEditor->textCursor().block().blockNumber();
+    int lineNr  = mCodeEdit->textCursor().block().blockNumber();
     LxiTreeModel* lxiTreeModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
     if (!lxiTreeModel) return;
     int itemIdx = 0;
@@ -139,14 +137,14 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
         lineNr = selectedItem->lineNr();
     }
 
-    QTextBlock tb = mCodeEditor->document()->findBlockByNumber(lineNr);
+    QTextBlock tb = mCodeEdit->document()->findBlockByNumber(lineNr);
     while (tb.isValid() && tb.text().isEmpty()) {
         tb = tb.next();
     }
     lineNr  = tb.blockNumber();
-    disconnect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    disconnect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
     mFileMeta->jumpTo(mRunGroup->runFileId(), true, lineNr);
-    connect(mCodeEditor, &CodeEditor::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
 } // namespace lxiviewer

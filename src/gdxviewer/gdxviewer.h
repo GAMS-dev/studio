@@ -47,6 +47,7 @@ public:
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
+    void selectSearchField();
 
     FileId fileId() const;
     void setFileId(const FileId &fileId);
@@ -78,6 +79,10 @@ private:
 
     bool init();
     void free();
+
+private slots:
+    void hideUniverseSymbol();
+    void toggleSearchColumns(bool checked);
 };
 
 } // namespace gdxviewer

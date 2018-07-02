@@ -27,6 +27,11 @@
 #include <QToolButton>
 
 #include "common.h"
+#include "editors/codeedit.h"
+#include "file.h"
+#include "modeldialog/libraryitem.h"
+#include "option/lineeditcompleteevent.h"
+#include "option/optionwidget.h"
 #include "projectcontextmenu.h"
 #include "file/filemetarepo.h"
 #include "file/projectrepo.h"
@@ -61,7 +66,7 @@ namespace studio {
 class MainWindow;
 class StudioSettings;
 class CommandLineHistory;
-class AbstractEditor;
+class AbstractEdit;
 class SearchWidget;
 class SearchResultList;
 class ProjectFileNode;
@@ -85,6 +90,7 @@ class FileMetrics;
 class StatusWidgets;
 class GoToWidget;
 class AutosaveHandler;
+class SystemLogEdit;
 
 struct RecentData {
     // TODO(JM) stack for recent-list to keep all in mind
@@ -145,7 +151,7 @@ public:
     TextMarkRepo* textMarkRepo();
 
     QWidgetList openEditors();
-    QList<AbstractEditor *> openLogs();
+    QList<AbstractEdit*> openLogs();
     SearchWidget* searchWidget() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
@@ -324,6 +330,8 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
+
+    SystemLogEdit *mSyslog = nullptr;
     ProjectContextMenu mProjectContextMenu;
     QVector<QPair<FileId, FileEvent::Kind>> mFileEvents;
     QTimer mFileTimer;

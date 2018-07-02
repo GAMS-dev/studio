@@ -17,40 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gotodialog.h"
-#include "ui_gotodialog.h"
-#include "mainwindow.h"
-#include "editors/abstractedit.h"
+#ifndef ENCODINGSDIALOG_H
+#define ENCODINGSDIALOG_H
+
+#include <QDialog>
+
+namespace Ui {
+class SelectEncodings;
+}
 
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
+class SelectEncodings : public QDialog
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
-}
+    Q_OBJECT
 
-GoToDialog::~GoToDialog()
-{
-    delete ui;
-}
+public:
+    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = nullptr);
+    ~SelectEncodings();
+    QList<int> selectedMibs();
 
-void GoToDialog::on_goToButton_clicked()
-{
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
-    if (!edit) return;
+private slots:
 
-    FileMeta* fm = mMain->fileRepo()->fileMeta(edit->fileId());
-    int altLine =(ui->lineEdit->text().toInt())-1;
-    if (!fm) return;
-    fm->jumpTo(-1, true, altLine, 0);
-    ui->lineEdit->clear();
-    close();
-}
+    void on_pbCancel_clicked();
+
+    void on_pbSave_clicked();
+
+    void on_pbReset_clicked();
+
+private:
+    Ui::SelectEncodings *ui;
+};
 
 }
 }
+
+#endif // ENCODINGSDIALOG_H

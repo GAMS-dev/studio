@@ -17,40 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_SELECTENCODINGS_H
-#define GAMS_STUDIO_SELECTENCODINGS_H
+#ifndef PROCESSLOGEDIT_H
+#define PROCESSLOGEDIT_H
 
-#include <QDialog>
-
-namespace Ui {
-class SelectEncodings;
-}
+#include "abstractedit.h"
 
 namespace gams {
 namespace studio {
 
-class SelectEncodings : public QDialog
+class ProcessLogEdit : public AbstractEdit
 {
     Q_OBJECT
 
 public:
-    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = nullptr);
-    ~SelectEncodings();
-    QList<int> selectedMibs();
+    ProcessLogEdit(QWidget *parent = nullptr);
 
-private slots:
-
-    void on_pbCancel_clicked();
-
-    void on_pbSave_clicked();
-
-    void on_pbReset_clicked();
-
-private:
-    Ui::SelectEncodings *ui;
+public:
+    EditorType type() override;
 };
 
 }
 }
 
-#endif // GAMS_STUDIO_SELECTENCODINGS_H
+#endif // PROCESSLOGEDIT_H

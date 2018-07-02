@@ -24,8 +24,8 @@
 #include <QDateTime>
 #include <QTextDocument>
 #include "syntax.h"
-#include "editors/codeeditor.h"
-#include "editors/logeditor.h"
+#include "editors/codeedit.h"
+#include "editors/processlogedit.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 
@@ -70,10 +70,10 @@ public:
 
 
 public: // static convenience methods
-    inline static void initEditorType(CodeEditor* w) {
+    inline static void initEditorType(CodeEdit* w) {
         if(w) w->setProperty("EditorType", (int)EditorType::source);
     }
-    inline static void initEditorType(LogEditor* w) {
+    inline static void initEditorType(ProcessLogEdit* w) {
         if(w) w->setProperty("EditorType", (int)EditorType::log);
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
@@ -88,21 +88,21 @@ public: // static convenience methods
         return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
     }
 
-    inline static AbstractEditor* toAbstractEdit(QWidget* w) {
+    inline static AbstractEdit* toAbstractEdit(QWidget* w) {
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
-            return toLxiViewer(w)->codeEditor();
+            return toLxiViewer(w)->codeEdit();
         return (t == EditorType::log || t == EditorType::source)
-                ? static_cast<AbstractEditor*>(w) : nullptr;
+                ? static_cast<AbstractEdit*>(w) : nullptr;
     }
-    inline static CodeEditor* toCodeEdit(QWidget* w) {
+    inline static CodeEdit* toCodeEdit(QWidget* w) {
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
-            return toLxiViewer(w)->codeEditor();
-        return (t == EditorType::source) ? static_cast<CodeEditor*>(w) : nullptr;
+            return toLxiViewer(w)->codeEdit();
+        return (t == EditorType::source) ? static_cast<CodeEdit*>(w) : nullptr;
     }
-    inline static LogEditor* toLogEdit(QWidget* w) {
-        return (editorType(w) == EditorType::log) ? static_cast<LogEditor*>(w) : nullptr;
+    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
+        return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

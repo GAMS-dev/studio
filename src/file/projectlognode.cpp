@@ -24,7 +24,7 @@
 #include "exception.h"
 #include "projectgroupnode.h"
 #include "logger.h"
-#include "editors/logeditor.h"
+#include "editors/processlogedit.h"
 
 namespace gams {
 namespace studio {
@@ -107,7 +107,7 @@ void ProjectLogNode::addProcessData(QString text)
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: file()->editors()) {
-            AbstractEditor* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -154,7 +154,7 @@ void ProjectLogNode::addProcessData(QString text)
 
         int i = 0;
         for (QWidget* w: file()->editors()) {
-            AbstractEditor* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;

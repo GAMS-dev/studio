@@ -67,15 +67,10 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp \
-    editors/abstracteditor.cpp \
-    editors/codeeditor.cpp \
-    editors/logeditor.cpp \
-    editors/selectencodings.cpp \
     exception.cpp \
     file/fileevent.cpp \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
-#    file/filemetrics.cpp \
     file/filetype.cpp \
     file/projectabstractnode.cpp \
     file/projectfilenode.cpp \
@@ -95,6 +90,9 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gotodialog.cpp \
     help/bookmarkdialog.cpp \
+    help/helppage.cpp \
+    help/helptoolbar.cpp \
+    help/helpview.cpp \
     help/helpwidget.cpp \
     keys.cpp \
     logger.cpp \
@@ -132,14 +130,18 @@ SOURCES += \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxidentifier.cpp \
-   syntax/textmark.cpp \
-   syntax/textmarkrepo.cpp \
+    syntax/textmark.cpp \
+    syntax/textmarkrepo.cpp \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
-    wplabel.cpp
-
-#    syntax/textmarklist.cpp \
+    wplabel.cpp \
+    editors/abstractedit.cpp \
+    editors/processlogedit.cpp \
+    editors/systemlogedit.cpp \
+    encodingsdialog.cpp \
+    editors/codeedit.cpp \
+    syntax/systemloghighlighter.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -150,16 +152,11 @@ HEADERS += \
     common.h \
     commonpaths.h \
     distributionvalidator.h \
-    editors/abstracteditor.h \
-    editors/codeeditor.h \
-    editors/logeditor.h \
-    editors/selectencodings.h \
     exception.h \
     file.h \
     file/fileevent.h \
     file/filemeta.h \
     file/filemetarepo.h \
-#    file/filemetrics.h \
     file/filetype.h \
     file/projectabstractnode.h \
     file/projectfilenode.h \
@@ -179,6 +176,9 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gotodialog.h \
     help/bookmarkdialog.h \
+    help/helppage.h \
+    help/helptoolbar.h \
+    help/helpview.h \
     help/helpwidget.h \
     keys.h \
     logger.h \
@@ -224,12 +224,15 @@ HEADERS += \
     updatedialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h
-
-#    syntax/textmarklist.h \
+    wplabel.h \
+    editors/abstractedit.h \
+    editors/processlogedit.h \
+    editors/systemlogedit.h \
+    encodingsdialog.h \
+    editors/codeedit.h \
+    syntax/systemloghighlighter.h
 
 FORMS += \
-    editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
@@ -238,14 +241,14 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
-    newdialog.ui \
     option/optionwidget.ui \
     resultsview.ui \
     searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
-    gotodialog.ui
+    gotodialog.ui \
+    encodingsdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

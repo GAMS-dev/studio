@@ -17,22 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "logeditor.h"
-#include "studiosettings.h"
+#ifndef HELPPAGE_H
+#define HELPPAGE_H
+
+#include <QWidget>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
+class HelpPage : public QWebEnginePage
 {
-    setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth : AbstractEditor::NoWrap);
-}
+    Q_OBJECT
 
-AbstractEditor::EditorType LogEditor::type()
-{
-    return EditorType::LogEditor;
-}
+public:
+    HelpPage(QWidget *parent = 0);
 
-}
-}
+protected:
+    bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame);
+
+};
+
+} // namespace studio
+} // namespace gams
+
+#endif // HELPPAGE_H

@@ -21,12 +21,11 @@
 #include "filemetarepo.h"
 #include "projectrepo.h"
 #include "filetype.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
-//#include "lxiviewer/lxiviewer.h"
 #include <QFileInfo>
 #include <QFile>
 #include <QPlainTextDocumentLayout>
@@ -74,7 +73,7 @@ QVector<QPoint> FileMeta::getEditPositions()
 {
     QVector<QPoint> res;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = toAbstractEdit(widget);
+        AbstractEdit* edit = toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
             res << QPoint(cursor.positionInBlock(), cursor.blockNumber());
@@ -87,7 +86,7 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
     foreach (QWidget* widget, mEditors) {
-        AbstractEditor* edit = toAbstractEdit(widget);
+        AbstractEdit* edit = toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
             QTextCursor cursor(document());
@@ -208,13 +207,13 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
-    AbstractEditor* ptEdit = toAbstractEdit(edit);
-    CodeEditor* scEdit = toCodeEdit(edit);
+    AbstractEdit* ptEdit = toAbstractEdit(edit);
+    CodeEdit* scEdit = toCodeEdit(edit);
 
     if (ptEdit) {
         ptEdit->setDocument(document());
         if (scEdit) {
-            connect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+            connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
         if (!ptEdit->viewport()->hasMouseTracking()) {
             ptEdit->viewport()->setMouseTracking(true);
@@ -242,8 +241,8 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
     int i = mEditors.indexOf(edit);
     if (i < 0) return;
 
-    AbstractEditor* ptEdit = toAbstractEdit(edit);
-    CodeEditor* scEdit = toCodeEdit(edit);
+    AbstractEdit* ptEdit = toAbstractEdit(edit);
+    CodeEdit* scEdit = toCodeEdit(edit);
     mEditors.removeAt(i);
 
     if (ptEdit) {
@@ -261,7 +260,7 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
         }
     }
     if (scEdit && mHighlighter) {
-        disconnect(scEdit, &CodeEditor::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+        disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
     }
 }
 
@@ -369,7 +368,7 @@ void FileMeta::jumpTo(FileId runId, bool focus, int line, int column)
 {
     emit mFileRepo->openFile(this, runId, focus, codecMib());
 
-    AbstractEditor* edit = mEditors.size() ? toAbstractEdit(mEditors.first()) : nullptr;
+    AbstractEdit* edit = mEditors.size() ? toAbstractEdit(mEditors.first()) : nullptr;
     if (edit && edit->document()->blockCount()-1 < line) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
@@ -412,7 +411,7 @@ bool FileMeta::isModified() const
 
 bool FileMeta::isReadOnly() const
 {
-    AbstractEditor* edit = mEditors.isEmpty() ? nullptr : toAbstractEdit(mEditors.first());
+    AbstractEdit* edit = mEditors.isEmpty() ? nullptr : toAbstractEdit(mEditors.first());
     if (!edit) return true;
     return edit->isReadOnly();
 }
@@ -447,7 +446,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     Q_UNUSED(codecMibs)
     QWidget* res = nullptr;
     if (kind() != FileKind::Gdx) {
-        CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
+        CodeEdit *codeEdit = new CodeEdit(tabWidget);
+        codeEdit->setSettings(mFileRepo->settings());
         codeEdit->setFileId(id());
         codeEdit->setTabChangesFocus(false);
         codeEdit->setGroupId(runGroup ? runGroup->id() : NodeId());

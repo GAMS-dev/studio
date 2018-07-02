@@ -133,6 +133,14 @@ void TestCommonPaths::testAbsoluteFilePathNotExisting()
     QVERIFY(!result.compare(currentDir+"/"+filePath));
 }
 
+void TestCommonPaths::testAbsoluteFilePathFromRelativePath()
+{
+    const QString currentDir(CommonPaths::absolutPath("."));
+    const QString filePath("../bin/testcommonpaths");
+    auto result = CommonPaths::absolutFilePath(filePath);
+    QVERIFY(result.startsWith(currentDir+"/testcommonpaths"));
+}
+
 void TestCommonPaths::testAbsolutePathEmpty()
 {
     auto result = CommonPaths::absolutPath("");

@@ -123,7 +123,7 @@ ProjectFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
 
 ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
-    AbstractEditor *edit = FileMeta::toAbstractEdit(editWidget);
+    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
@@ -596,7 +596,7 @@ void ProjectRepo::removeMarks(ProjectGroupNode* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void ProjectRepo::updateLinkDisplay(AbstractEditor *editUnderCursor)
+void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
 {
     if (editUnderCursor) {
         ProjectFileNode *fc = fileNode(editUnderCursor);

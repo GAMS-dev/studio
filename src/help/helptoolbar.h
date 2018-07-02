@@ -17,53 +17,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
-#define GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+#ifndef HELPTOOLBAR_H
+#define HELPTOOLBAR_H
 
-#include <QWidget>
-#include <QModelIndex>
+#include <QToolBar>
+#include <QToolButton>
+#include <QWebEnginePage>
 
 namespace gams {
 namespace studio {
 
-class CodeEdit;
-class FileMeta;
-class ProjectRunGroupNode;
+class HelpWidget;
 
-namespace lxiviewer {
-
-namespace Ui {
-class LxiViewer;
-}
-
-class LxiViewer : public QWidget
+class HelpToolBar : public QToolBar
 {
     Q_OBJECT
 
 public:
-    explicit LxiViewer(CodeEdit *codeEditor, FileMeta *fileMeta, ProjectRunGroupNode *runGroup, QWidget *parent);
-    ~LxiViewer();
+    HelpToolBar(QAction *aHome,
+                QAction *Back, QAction *aForward, QAction *aReload, QAction* aStop,
+                QToolButton* tbBookmark, QToolButton* tbHelp,
+                HelpWidget *parent);
+    ~HelpToolBar();
 
-    CodeEdit *codeEdit() const;
+signals:
+    void webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
+
+public slots:
+    void on_webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
 
 private:
-    Ui::LxiViewer *ui;
+    void createWebActionTrigger(QAction* action, QWebEnginePage::WebAction webAction);
 
-    CodeEdit* mCodeEdit;
-    FileMeta *mFileMeta;
-    ProjectRunGroupNode* mRunGroup;
-    QString mLstFile;
-    QString mLxiFile;
+private:
+    QAction* actionBack;
+    QAction* actionForward;
+    QAction* actionReload;
+    QAction* actionStop;
 
-private slots:
-    void loadLxiFile();
-    void loadLstFile();
-    void jumpToTreeItem();
-    void jumpToLine(QModelIndex modelIndex);
+    HelpWidget* helpWidget;
 };
 
-
-} // namespace lxiviewer
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+
+#endif // HELPTOOLBAR_H

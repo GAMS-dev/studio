@@ -70,7 +70,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     QTextStream in(&srcFile);
                     QString all = in.readAll();
                     QWidget* wid = mMainWindow->recent()->editor();
-                    AbstractEditor* editor = FileMeta::toAbstractEdit(wid);
+                    AbstractEdit* editor = FileMeta::toAbstractEdit(wid);
                     if (editor) {
                         FileMeta* fm = mMainWindow->fileRepo()->fileMeta(editor->fileId());
                         if (fm) {
@@ -81,7 +81,6 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                             editor->moveCursor(QTextCursor::Start);
                         }
                     }
-
                 }
                 srcFile.close();
             }
@@ -95,7 +94,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 void AutosaveHandler::saveChangedFiles()
 {
     for (auto widget : mMainWindow->openEditors()) {
-        CodeEditor* editor = FileMeta::toCodeEdit(widget);
+        CodeEdit* editor = FileMeta::toCodeEdit(widget);
         if (!editor) continue;
         FileMeta* fm = mMainWindow->fileRepo()->fileMeta(editor->fileId());
         QString filepath = QFileInfo(fm->location()).path();

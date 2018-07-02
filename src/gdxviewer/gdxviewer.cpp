@@ -97,6 +97,8 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
+    else
+        ui.splitter->replaceWidget(1, ui.widget);
 }
 
 GdxSymbol *GdxViewer::selectedSymbol()
@@ -177,6 +179,11 @@ void GdxViewer::setGroupId(const NodeId &groupId)
     mGroupId = groupId;
 }
 
+void GdxViewer::selectSearchField()
+{
+    ui.lineEdit->setFocus();
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
@@ -231,16 +238,23 @@ bool GdxViewer::init()
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
+    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
     ui.tvSymbols->setModel(mSymbolTableProxyModel);
     ui.tvSymbols->resizeColumnsToContents();
     ui.tvSymbols->sortByColumn(1,Qt::AscendingOrder);
 
     connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    connect(ui.lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
+    connect(ui.cbToggleSearch, &QCheckBox::toggled, this, &GdxViewer::toggleSearchColumns);
 
     ui.splitter->widget(0)->show();
     ui.splitter->widget(1)->show();
 
-    ui.tvSymbols->hideRow(0); //first entry is the universe which we do not want to show
+    this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
     return true;
 }
 
@@ -266,6 +280,26 @@ void GdxViewer::free()
             delete view;
     }
     mSymbolViews.clear();
+}
+
+void GdxViewer::hideUniverseSymbol()
+{
+    int row = mSymbolTableProxyModel->rowCount();
+    for(int r=0; r<row; r++) {
+        QVariant symName = mSymbolTableProxyModel->data(mSymbolTableProxyModel->index(r, 0), Qt::DisplayRole);
+        if (symName == QVariant(0)) {
+            ui.tvSymbols->hideRow(r);
+            return;
+        }
+    }
+}
+
+void GdxViewer::toggleSearchColumns(bool checked)
+{
+    if (checked)
+        mSymbolTableProxyModel->setFilterKeyColumn(-1);
+    else
+        mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)

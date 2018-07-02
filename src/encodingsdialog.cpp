@@ -17,8 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "selectencodings.h"
-#include "ui_selectencodings.h"
+#include "encodingsdialog.h"
+#include "ui_encodingsdialog.h"
+
 #include <QtWidgets>
 
 namespace gams {

@@ -190,7 +190,13 @@ private:
     void editorActivated(QWidget* edit);
     void removeMarks(ProjectGroupNode* group);
 
+<<<<<<< HEAD
     void updateLinkDisplay(AbstractEditor* editUnderCursor);
+=======
+    void updateLinkDisplay(AbstractEdit* editUnderCursor);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
+>>>>>>> develop
 
 
 signals:

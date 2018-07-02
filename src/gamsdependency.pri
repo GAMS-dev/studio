@@ -46,10 +46,40 @@ exists($$PWD/gamsinclude.pri) {
     include($$PWD/gamsinclude.pri)
 }
 
-INCLUDEPATH += $$GAMS_DISTRIB_API
+# GAMS_BUILD is GAMS distrib build switch
+GAMS_BUILD_ENV = $$(GAMS_BUILD)
+equals(GAMS_BUILD_ENV, "") {
+    INCLUDEPATH += $$GAMS_DISTRIB_API
 
-SOURCES += \
-    $$GAMS_DISTRIB_API/c4umcc.c \
-    $$GAMS_DISTRIB_API/gclgms.c \
-    $$GAMS_DISTRIB_API/gdxcc.c  \
-    $$GAMS_DISTRIB_API/optcc.c
+    SOURCES += \
+        $$GAMS_DISTRIB_API/c4umcc.c \
+        $$GAMS_DISTRIB_API/gclgms.c \
+        $$GAMS_DISTRIB_API/gdxcc.c  \
+        $$GAMS_DISTRIB_API/optcc.c
+} else {
+    GSYS_ENV = $$(GSYS)
+    equals(GSYS_ENV, "wei") {
+        DEFINES += WEI
+        DEFINES += CIA_WEX
+    }
+    equals(GSYS_ENV, "vs8") {
+        DEFINES += VS8
+        DEFINES += CIA_WIN
+    }
+    equals(GSYS_ENV, "leg") {
+        DEFINES += LEG
+        DEFINES += CIA_LEX
+    }
+    equals(GSYS_ENV, "deg") {
+        DEFINES += DEG
+        DEFINES += CIA_DEX
+    }
+    INCLUDEPATH += $$(GPRODUCTS)/gclib $$(GPRODUCTS)/apiwrap/gdxio $$(GPRODUCTS)/apiwrap/joat $$(GPRODUCTS)/apiwrap/optobj
+
+    SOURCES = \
+        $$(GPRODUCTS)/apiwrap/joat/c4umcc.c \
+        $$(GPRODUCTS)/gclib/gclgms.c \
+        $$(GPRODUCTS)/apiwrap/gdxio/gdxcc.c  \
+        $$(GPRODUCTS)/apiwrap/optobj/optcc.c
+}
+

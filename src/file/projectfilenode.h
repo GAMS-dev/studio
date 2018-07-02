@@ -24,12 +24,11 @@
 #include "projectabstractnode.h"
 #include "filemetrics.h"
 #include "syntax.h"
-#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {
 
-class CodeEditor;
+class CodeEdit;
 class ProjectGroupNode;
 class TextMark;
 class FileMeta;
@@ -84,7 +83,6 @@ protected:
 private:
     FileMeta* mFileMeta;
     ErrorHighlighter* mSyntaxHighlighter = nullptr;
-
 
 //    void setParentEntry(ProjectGroupNode *parent) override;
 
@@ -161,7 +159,7 @@ private:
 //    void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
 //    void addFileWatcherForGdx();
 //    void unwatch();
-    
+
 //    // TODO(JM) move handling to FileMetaRepo
 //    TextMarkRepo* marks() const { return mMarks; }
 //    void unbindMarks() { mMarks = nullptr; }

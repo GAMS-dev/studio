@@ -84,7 +84,7 @@ void SearchWidget::setSelectedScope(int index)
 
 void SearchWidget::on_btn_Replace_clicked()
 {
-    AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -245,7 +245,7 @@ void SearchWidget::updateMatchAmount(int hits, int current)
 
 void SearchWidget::simpleReplaceAll()
 {
-    AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -320,7 +320,7 @@ void SearchWidget::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
     FileMeta *fm = mMain->fileRepo()->fileMeta(mMain->recent()->editFileId);
     if (!fm) return;
@@ -338,7 +338,7 @@ void SearchWidget::findNext(SearchDirection direction)
 void SearchWidget::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEditor *edit = FileMeta::toAbstractEdit(widget);
+    AbstractEdit *edit = FileMeta::toAbstractEdit(widget);
     if (!edit) return;
     FileMeta *fm = mMain->fileRepo()->fileMeta(edit->fileId());
     if (!fm) return;
@@ -361,7 +361,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 
 void SearchWidget::updateReplaceActionAvailability()
 {
-    AbstractEditor *edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit *edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     bool isSourceCode = FileMeta::editorType(mMain->recent()->editor()) == EditorType::source;
 
     bool activateSearch = isSourceCode || FileMeta::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
@@ -499,7 +499,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
     if (regex()) searchRegex.setPattern(searchTerm);
 
     FileMeta *fm = mMain->fileRepo()->fileMeta(mMain->recent()->editFileId);
-    AbstractEditor* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
         matchSelection = fm->document()->find(searchRegex, edit->textCursor(), flags);

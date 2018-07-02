@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <QApplication>
+#include <QLocalServer>
 
 namespace gams {
 namespace studio {
@@ -58,6 +59,35 @@ public:
     ///
     static void showExceptionMessage(const QString &title, const QString &message);
 
+    ///
+    /// \brief Check if other GAMS Studio instances are running and forward files from the command line that needs to be opened to the running instance.
+    /// \return True if another instance is already running, false otherwise.
+    ///
+    bool checkForOtherInstance();
+
+    ///
+    /// \brief Initialize the application
+    ///
+    void init();
+
+    ///
+    /// \brief Get the server name.
+    /// \return Returns the server name.
+    ///
+    QString serverName() const;
+
+public slots:
+
+    ///
+    /// \brief Bind a new connection for command line argument awareness
+    ///
+    void newConnection();
+
+    ///
+    /// \brief Read command line arguments (files) send from another GAMS Studio instance and open them
+    ///
+    void receiveFileArguments();
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.
@@ -70,10 +100,17 @@ protected:
 private:
     void parseCmdArgs();
 
+    ///
+    /// \brief Start listening
+    ///
+    void listen();
+
 private:
     std::unique_ptr<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
     DistributionValidator mDistribValidator;
+    QString mServerName;
+    QLocalServer mServer;
 };
 
 } // namespace studio

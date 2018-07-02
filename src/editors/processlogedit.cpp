@@ -17,39 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gotodialog.h"
-#include "ui_gotodialog.h"
-#include "mainwindow.h"
-#include "editors/abstractedit.h"
+#include "processlogedit.h"
 
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
+ProcessLogEdit::ProcessLogEdit(QWidget *parent)
+    : AbstractEdit(parent)
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
+    setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 
-GoToDialog::~GoToDialog()
+AbstractEdit::EditorType ProcessLogEdit::type()
 {
-    delete ui;
-}
-
-void GoToDialog::on_goToButton_clicked()
-{
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
-    if (!edit) return;
-
-    FileMeta* fm = mMain->fileRepo()->fileMeta(edit->fileId());
-    int altLine =(ui->lineEdit->text().toInt())-1;
-    if (!fm) return;
-    fm->jumpTo(-1, true, altLine, 0);
-    ui->lineEdit->clear();
-    close();
+    return EditorType::ProcessLog;
 }
 
 }
