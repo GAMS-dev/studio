@@ -20,6 +20,8 @@
 #include <QDir>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QApplication>
+
 #include "projectrepo.h"
 #include "exception.h"
 #include "syntax.h"

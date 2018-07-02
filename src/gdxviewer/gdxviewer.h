@@ -20,10 +20,10 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
-//#include <QWidget>
+#include <QWidget>
 #include <QVector>
+#include <QItemSelection>
 
-#include "ui_gdxviewer.h"
 #include "gdxcc.h"
 
 class QMutex;
@@ -33,12 +33,13 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-//namespace Ui {
-//class GdxViewer;
-//}
+namespace Ui {
+class GdxViewer;
+}
 
 class GdxSymbol;
 class GdxSymbolTable;
+class GdxSymbolView;
 
 class GdxViewer : public QWidget
 {
@@ -67,7 +68,7 @@ private:
     void free();
 
 private:
-    Ui::GdxViewer ui;
+    Ui::GdxViewer *ui;
 
     QString mGdxFile;
     QString mSystemDirectory;
