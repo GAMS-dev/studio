@@ -20,11 +20,15 @@
 #ifndef MODELDIALOG_H
 #define MODELDIALOG_H
 
-#include "ui_modeldialog.h"
+#include <QDialog>
 #include "libraryitem.h"
 
 class QTableView;
 class QSortFilterProxyModel;
+
+namespace Ui {
+class ModelDialog;
+}
 
 namespace gams {
 namespace studio {
@@ -36,6 +40,7 @@ class ModelDialog : public QDialog
 public:
     explicit ModelDialog(QWidget *parent = nullptr);
     explicit ModelDialog(QString userLibPath, QWidget* parent = nullptr);
+    ~ModelDialog();
     LibraryItem *selectedLibraryItem() const;
 
 public slots:
@@ -52,7 +57,7 @@ private:
     void addLibrary(QList<LibraryItem> items, bool isUserLibrary=false);
 
 private:
-    Ui::ModelDialog ui;
+    Ui::ModelDialog *ui;
     LibraryItem* mSelectedLibraryItem;
 
     QList<QTableView*> tableViewList;
