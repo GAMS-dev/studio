@@ -116,7 +116,7 @@ void FileMeta::internalSave(const QString &location)
     document()->setModified(false);
 }
 
-inline FileId FileMeta::id() const
+FileId FileMeta::id() const
 {
     return mId;
 }
@@ -444,6 +444,7 @@ bool FileMeta::isOpen() const
 
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs)
 {
+    Q_UNUSED(codecMibs)
     QWidget* res = nullptr;
     if (kind() != FileKind::Gdx) {
         CodeEditor *codeEdit = new CodeEditor(mFileRepo->settings(), tabWidget);
@@ -489,7 +490,7 @@ FileMeta::Data::Data(QString location)
         QFileInfo fi(location);
         exist = fi.exists();
         size = fi.size();
-        created = fi.created();
+        created = fi.birthTime();
         modified = fi.lastModified();
         type = &FileType::from(fi.suffix());
     }

@@ -71,6 +71,7 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, TextMark::Type type, int
 TextMark *TextMarkRepo::createMark(const FileId fileId, const FileId runId, TextMark::Type type, int value
                                    , int line, int column, int size)
 {
+    Q_UNUSED(value)
     if (!fileId.isValid()) return nullptr;
     TextMark* mark = new TextMark(this, fileId, type, runId);
     mark->setPosition(line, column, size);

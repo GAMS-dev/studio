@@ -60,11 +60,11 @@ namespace studio {
 MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mSettings(settings),
-      mAutosaveHandler(new AutosaveHandler(this)),
-      mProjectRepo(this),
       mFileMetaRepo(this, settings),
-      mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this)
+      mProjectRepo(this),
+      mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
+      mSettings(settings),
+      mAutosaveHandler(new AutosaveHandler(this))
 {
     mHistory = new HistoryData();
     QFile css(":/data/style.css");
@@ -779,6 +779,7 @@ void MainWindow::fileChanged(FileId fileId)
 
 void MainWindow::fileClosed(FileId fileId)
 {
+    Q_UNUSED(fileId)
     // TODO(JM) check if anything needs to be updated
 }
 

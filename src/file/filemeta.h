@@ -39,7 +39,7 @@ class FileMeta: public QObject
     Q_OBJECT
 public:
     ~FileMeta() override;
-    inline FileId id() const;
+    FileId id() const;
     QString location() const;
     FileKind kind();
     QString name(NameModifier mod = NameModifier::raw);

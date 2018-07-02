@@ -40,7 +40,7 @@ inline const ProjectRootNode *ProjectAbstractNode::root() const
     return par->toRoot();
 }
 
-inline ProjectRepo *ProjectAbstractNode::projectRepo() const
+ProjectRepo *ProjectAbstractNode::projectRepo() const
 {
     const ProjectRootNode* rootNode = root();
     if (rootNode) return rootNode->projectRepo();

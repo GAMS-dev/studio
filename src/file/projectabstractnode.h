@@ -83,7 +83,7 @@ public:
     void setActive();
 
     inline const ProjectRootNode *root() const;
-    inline ProjectRepo* projectRepo() const;
+    ProjectRepo* projectRepo() const;
 
 //    virtual int childCount() const;
 //    virtual ProjectAbstractNode* childEntry(int index) const;
