@@ -18,24 +18,26 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxviewer.h"
-#include "gdxsymboltable.h"
+
 #include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
 #include "exception.h"
-#include <algorithm>
-#include <memory>
+
+#include <QMutex>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <QMessageBox>
 #include <QClipboard>
-#include <QModelIndexList>
+#include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
-    QWidget(parent), mGdxFile(gdxFile), mSystemDirectory(systemDirectory)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent)
+    : QWidget(parent),
+      mGdxFile(gdxFile),
+      mSystemDirectory(systemDirectory)
 {
     ui.setupUi(this);
 

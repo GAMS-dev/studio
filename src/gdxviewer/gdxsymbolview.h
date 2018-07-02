@@ -22,7 +22,6 @@
 
 #include <QFrame>
 #include <QMenu>
-#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {
@@ -31,6 +30,8 @@ namespace gdxviewer {
 namespace Ui {
 class GdxSymbolView;
 }
+
+class GdxSymbol;
 
 class GdxSymbolView : public QWidget
 {
@@ -44,12 +45,6 @@ public:
     void setSym(GdxSymbol *sym);
     void copySelectionToClipboard(QString separator);
 
-private:
-    Ui::GdxSymbolView *ui;
-    GdxSymbol *mSym = nullptr;
-    QByteArray mInitialHeaderState;
-    QMenu mContextMenu;
-
 public slots:
     void enableControls();
     void refreshView();
@@ -59,6 +54,12 @@ public slots:
 
 private slots:
     void showContextMenu(QPoint p);
+
+private:
+    Ui::GdxSymbolView *ui;
+    GdxSymbol *mSym = nullptr;
+    QByteArray mInitialHeaderState;
+    QMenu mContextMenu;
 };
 
 
