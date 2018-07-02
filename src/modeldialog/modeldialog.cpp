@@ -19,21 +19,14 @@
  */
 #include "modeldialog.h"
 #include "commonpaths.h"
-
-#include <QDir>
-#include <QDirIterator>
-#include <QFile>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QDebug>
-#include <QPair>
-#include <QStandardPaths>
-#include <QFileDialog>
-#include <QSettings>
-#include <QHeaderView>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
+
+#include <QDirIterator>
+#include <QMessageBox>
+#include <QTableView>
+#include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {

@@ -18,8 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "librarymodel.h"
-#include "library.h"
-#include <QDebug>
 
 namespace gams {
 namespace studio {
