@@ -18,7 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths
-#SUBDIRS += testoption
+include(../../src/gamsdependency.pri)
+include(../uitests.pri)
+
+INCLUDEPATH += $$TESTSROOT/../src
+SRCPATH = $$TESTSROOT/../src
+
+HEADERS += \
+    testgamsoption.h
+
+SOURCES += \
+    testgamsoption.cpp \
+    $$SRCPATH/option/option.cpp \
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp

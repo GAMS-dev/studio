@@ -20,5 +20,4 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testcommonpaths
-#SUBDIRS += testoption
+SUBDIRS += testoption

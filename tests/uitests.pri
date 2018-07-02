@@ -18,7 +18,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+QT += widgets testlib
+#QT += gui
 
-SUBDIRS += testcommonpaths
-#SUBDIRS += testoption
+CONFIG += c++14
+CONFIG -= app_bundle
+
+DESTDIR = ../bin
+
+unix {
+  LIBS += -ldl
+}
+
+TESTSROOT = $$_PRO_FILE_PWD_/..
