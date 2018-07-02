@@ -43,7 +43,7 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::addColumn<QString>("optionSynonym");
     QTest::addColumn<QString>("optionName");
 
-    QTest::newRow("EY") << "EY" <<"EolOnly";
+    QTest::newRow("EY") << "EY" << "EolOnly";
     QTest::newRow("R")  << "R"  << "Restart";
     QTest::newRow("I")  << "I"  << "Input";
     QTest::newRow("O")  << "O"  << "Output";
@@ -163,6 +163,11 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::newRow("SO")    << "SO" << "SaveObfuscate";
     QTest::newRow("XSO")   << "XSO" << "XSaveObfuscate";
     QTest::newRow("RN")    << "RN" << "RestartNamed";
+
+    QTest::newRow("IterLim")     << "" << "IterLim";
+    QTest::newRow("gdxConvert")  << "" << "gdxConvert";
+    QTest::newRow("ProcDirPath") << "" << "ProcDirPath";
+
 }
 
 void TestGamsOption::testOptionSynonym()
@@ -170,8 +175,15 @@ void TestGamsOption::testOptionSynonym()
     QFETCH(QString, optionSynonym);
     QFETCH(QString, optionName);
 
-   QCOMPARE( gamsOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
-   QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
+    if (optionSynonym.isEmpty()) {
+        QVERIFY( gamsOption->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
+        QVERIFY( !gamsOption->isThereASynonym(optionName) );
+        QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
+    } else {
+       QVERIFY( !gamsOption->isThereASynonym(optionName) );
+       QCOMPARE( gamsOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
+       QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
+    }
 }
 
 void TestGamsOption::testDeprecatedOption_data()
@@ -206,8 +218,44 @@ void TestGamsOption::testDeprecatedOption()
     QFETCH(QString, deprecatedOption);
     QFETCH(QString, optionDescription);
 
+    QVERIFY( gamsOption->isValid(deprecatedOption) );
     QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
     QCOMPARE( gamsOption->getDescription(deprecatedOption).trimmed().toUpper(), optionDescription.trimmed().toUpper());
+}
+
+void TestGamsOption::testDoubleDashedOption_data()
+{
+    QTest::addColumn<QString>("option");
+    QTest::addColumn<bool>("isDoubleDashedOption");
+    QTest::addColumn<bool>("isValidDoubleDashedOptionName");
+
+    QTest::newRow("EY") << "EY" << false << true;
+    QTest::newRow("R")  << "R"  << false << true;
+    QTest::newRow("--xyz")  << "--xyz" << true << true;
+    QTest::newRow("//xyz")  << "//xyz" << true << true;
+    QTest::newRow("-/xyz")  << "//xyz" << true << true;
+    QTest::newRow("/-xyz")  << "//xyz" << true << true;
+    QTest::newRow("----xyz")    << "----xyz" << true << true;
+    QTest::newRow("-/-/--xyz")  << "----xyz" << true << true;
+    QTest::newRow("-xyz")   << "-xyz"   << false << true;
+    QTest::newRow("-%xyz")  << "-%xyz"  << false << false;
+    QTest::newRow("--")     << "--"    << true << false;
+    QTest::newRow("-- ")    << "-- "   << true << false;
+    QTest::newRow("--xyz_1234")   << "--xyz_1234"  << true << true;
+    QTest::newRow("--1234xyz")    << "--1234xyz"   << true << false;
+    QTest::newRow("--_xyz_1234")  << "--_xyz_1234" << true << false;
+    QTest::newRow("--xyz@1234")   << "--xyz@1234" << true  << false;
+}
+
+void TestGamsOption::testDoubleDashedOption()
+{
+    QFETCH(QString, option);
+    QFETCH(bool, isDoubleDashedOption);
+    QFETCH(bool, isValidDoubleDashedOptionName);
+
+    QCOMPARE( gamsOption->isDoubleDashedOption(option), isDoubleDashedOption );
+    QCOMPARE( gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(option) ),
+              isValidDoubleDashedOptionName );
 }
 
 void TestGamsOption::cleanupTestCase()

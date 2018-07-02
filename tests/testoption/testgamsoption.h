@@ -39,6 +39,9 @@ private slots:
     void testDeprecatedOption_data();
     void testDeprecatedOption();
 
+    void testDoubleDashedOption_data();
+    void testDoubleDashedOption();
+
     void cleanupTestCase();
 
 private:
