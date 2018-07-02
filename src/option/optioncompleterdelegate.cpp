@@ -45,7 +45,7 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
         if (gamsOption->isValid(key.toString())) {
             completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(key.toString())) );
         } else {
-            QString keyStr = gamsOption->getSynonym(key.toString());
+            QString keyStr = gamsOption->getNameFromSynonym(key.toString());
             completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(keyStr)) );
         }
     }

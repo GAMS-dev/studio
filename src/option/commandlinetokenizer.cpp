@@ -204,7 +204,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
 
                 QString keyStr = key;
                 if (!mGamsOption->isValid(key))
-                    key = mGamsOption->getSynonym(key);
+                    key = mGamsOption->getNameFromSynonym(key);
 
                 QString value = item.value;
 

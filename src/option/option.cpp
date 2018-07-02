@@ -118,7 +118,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
 {
     QString key = optionName;
     if (!isValid(key))
-        key = getSynonym(optionName);
+        key = getNameFromSynonym(optionName);
 
     switch(getOptionType(key)) {
      case optTypeEnumInt : {
@@ -206,9 +206,14 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
     return No_Error;  //Unknown_Error;
 }
 
-QString Option::getSynonym(const QString &optionName) const
+QString Option::getNameFromSynonym(const QString &optionSynonym) const
 {
-    return mSynonymMap[optionName.toUpper()];
+    return mSynonymMap[optionSynonym.toUpper()];
+}
+
+QString Option::getSynonymFromName(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].synonym;
 }
 
 optOptionType Option::getOptionType(const QString &optionName) const
@@ -229,6 +234,16 @@ QVariant Option::getUpperBound(const QString &optionName) const
 QVariant Option::getLowerBound(const QString &optionName) const
 {
     return mOption[optionName.toUpper()].lowerBound;
+}
+
+QVariant Option::getDefaultValue(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].defaultValue;
+}
+
+QString Option::getDescription(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].description;
 }
 
 QList<OptionValue> Option::getValueList(const QString &optionName) const
