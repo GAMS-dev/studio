@@ -130,7 +130,7 @@ pipeline {
                             # TODO (AF) take a look at linuxdeployqt
                             # workaround for linuxdeployqt and svg
                             mkdir -p appdir/usr/plugins/imageformats
-                            cp /opt/Qt/5.10.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
+                            cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
 
                             chmod +x linuxdeployqt-continuous-x86_64.AppImage
                             ./linuxdeployqt-continuous-x86_64.AppImage --version
