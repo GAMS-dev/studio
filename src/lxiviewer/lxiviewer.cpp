@@ -26,7 +26,6 @@
 #include "lxitreeitem.h"
 #include "editors/codeedit.h"
 #include "ui_lxiviewer.h"
-#include "logger.h"
 #include "file/projectgroupnode.h"
 
 namespace gams {
