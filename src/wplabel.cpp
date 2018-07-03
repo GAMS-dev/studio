@@ -18,10 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "wplabel.h"
-#include <QDebug>
-#include <QDesktopServices>
-#include <QUrl>
 #include "mainwindow.h"
+#include <QDesktopServices>
 
 namespace gams {
 namespace studio {
