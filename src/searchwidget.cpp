@@ -549,14 +549,14 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
         }
     } else {
         setSearchStatus(SearchStatus::NoResults);
-        return; // search had no matches anyway, so do nothing at all
+        return; // search had no matches so do nothing at all
     }
 
     // set match and counter
     int count = 0;
     foreach (Result match, matches) {
-        if (matches.at(count).locLineNr() == matchSelection.blockNumber()+1
-                && matches.at(count).locCol() == matchSelection.columnNumber() - searchLength) {
+        if (match.locLineNr() == matchSelection.blockNumber()+1
+                && match.locCol() == matchSelection.columnNumber() - searchLength) {
             updateMatchAmount(matches.size(), count+1);
             break;
         } else {
