@@ -38,6 +38,89 @@ void TestGamsOption::initTestCase()
     }
 }
 
+void TestGamsOption::testOptionEnumStrType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("numberOfEnumstr");
+    QTest::addColumn<QString>("defaultValue");
+
+    QTest::newRow("Action")     << "Action"      << true  << 6 << "CE";
+    QTest::newRow("gdxConvert") << "gdxConvert"  << true  << 3 << "V7";
+    QTest::newRow("gdxUels")    << "gdxUels"     << true  << 2 << "squeezed";
+    QTest::newRow("SparseRun")  << "SparseRun"   << false << 2 << "On" ;
+}
+
+void TestGamsOption::testOptionEnumStrType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, numberOfEnumstr);
+    QFETCH(QString, defaultValue);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeEnumStr);
+    QCOMPARE( gamsOption->getValueList(optionName).size() , numberOfEnumstr);
+    QVERIFY( QString::compare(gamsOption->getDefaultValue(optionName).toString(), defaultValue, Qt::CaseInsensitive) == 0 );
+}
+
+void TestGamsOption::testOptionEnumIntType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("numberOfEnumint");
+    QTest::addColumn<int>("defaultValue");
+
+    QTest::newRow("PageContr")  << "PageContr"   << true  << 4  << 3;
+    QTest::newRow("LogOption")  << "LogOption"   << true  << 5  << 1;
+    QTest::newRow("AppendLog")  << "AppendLog"   << true  << 2  << 0;
+    QTest::newRow("MultiPass")  << "MultiPass"   << true  << 3  << 0;
+    QTest::newRow("DFormat")    << "DFormat"     << true  << 3  << 0;
+}
+
+void TestGamsOption::testOptionEnumIntType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, numberOfEnumint);
+    QFETCH(int, defaultValue);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeEnumInt);
+    QCOMPARE( gamsOption->getValueList(optionName).size() , numberOfEnumint);
+    QCOMPARE( gamsOption->getDefaultValue(optionName).toInt(), defaultValue );
+}
+
+void TestGamsOption::testOptionDoubleType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<double>("lowerBound");
+    QTest::addColumn<double>("upperBound");
+    QTest::addColumn<double>("defaultValue");
+
+    QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 1000.0;
+    QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.10;
+    QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("Bratio")  << "Bratio"   << true  << 0.0 << 1.0 << 0.25;
+    QTest::newRow("FDDelta") << "FDDelta"  << true << 1.000000000000000E-9 << 1.0 << 1.000000000000000E-5;
+}
+
+void TestGamsOption::testOptionDoubleType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(double, lowerBound);
+    QFETCH(double, upperBound);
+    QFETCH(double, defaultValue);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( gamsOption->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( gamsOption->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( gamsOption->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
 void TestGamsOption::testOptionSynonym_data()
 {
     QTest::addColumn<QString>("optionSynonym");
