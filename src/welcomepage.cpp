@@ -20,16 +20,14 @@
 #include "welcomepage.h"
 #include "studiosettings.h"
 #include "ui_welcomepage.h"
+#include "mainwindow.h"
 #include "wplabel.h"
-#include <QDesktopServices>
-#include <QUrl>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::WelcomePage), mMain(parent)
+WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent)
+    : QWidget(parent), ui(new Ui::WelcomePage), mMain(parent)
 {
     ui->setupUi(this);
     historyChanged(history);

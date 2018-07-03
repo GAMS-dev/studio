@@ -21,14 +21,18 @@
 #define WELCOMEPAGE_H
 
 #include <QWidget>
-#include "mainwindow.h"
 
 namespace Ui {
 class WelcomePage;
 }
 
+class QLabel;
+
 namespace gams {
 namespace studio {
+
+class HistoryData;
+class MainWindow;
 
 class WelcomePage : public QWidget
 {
@@ -38,12 +42,6 @@ public:
     explicit WelcomePage(HistoryData *history, MainWindow *parent = nullptr);
     void historyChanged(HistoryData *history);
     ~WelcomePage();
-
-private:
-    Ui::WelcomePage *ui;
-    QList<QLabel*> mFileHistory;
-    MainWindow *mMain;
-    bool mOutputVisible;
 
 signals:
     void linkActivated(const QString &link);
@@ -56,10 +54,15 @@ public slots:
     void on_relayModLibLoad(QString lib);
     void on_relayOpenDoc(QString doc, QString anchor);
 
-    // QWidget interface
 protected:
     void showEvent(QShowEvent *event);
     void hideEvent(QHideEvent *event);
+
+private:
+    Ui::WelcomePage *ui;
+    QList<QLabel*> mFileHistory;
+    MainWindow *mMain;
+    bool mOutputVisible;
 };
 
 }
