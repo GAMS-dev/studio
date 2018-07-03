@@ -19,17 +19,17 @@
  */
 #include "gotodialog.h"
 #include "ui_gotodialog.h"
-#include "mainwindow.h"
 
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::GoToDialog), mMain(parent)
+GoToDialog::GoToDialog(QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::GoToDialog)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this) );
+    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this));
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
@@ -38,14 +38,14 @@ GoToDialog::~GoToDialog()
     delete ui;
 }
 
+int GoToDialog::lineNumber() const
+{
+    return mLineNumber;
+}
+
 void GoToDialog::on_goToButton_clicked()
 {
-    int altLine =(ui->lineEdit->text().toInt())-1;
-    QTextCursor cursor;
-    ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-    if (!fc) return;
-    fc->jumpTo(cursor, true, altLine, 0);
-    ui->lineEdit->clear();
+    mLineNumber =(ui->lineEdit->text().toInt())-1;
     close();
 }
 

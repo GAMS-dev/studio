@@ -1976,6 +1976,9 @@ void MainWindow::on_actionGo_To_triggered()
         return;
     GoToDialog dialog(this);
     dialog.exec();
+    CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
+    if (codeEdit)
+        codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());
 }
 
 
