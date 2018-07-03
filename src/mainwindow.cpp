@@ -184,11 +184,17 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
             if (fc->metrics().fileType() == FileType::Lst) {
-                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc->location(), this);
                 ProjectAbstractNode::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
-                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLxiFile);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLstFile);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed,
+                        mSearchWidget, &SearchWidget::on_searchNext);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed,
+                        mSearchWidget, &SearchWidget::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
