@@ -144,7 +144,7 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
     cursor.setPosition(tb.position());
 
     disconnect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    //mFileNode->jumpTo(cursor, true);
+    mCodeEdit->jumpTo(cursor);
     connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
