@@ -164,6 +164,7 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::newRow("XSO")   << "XSO" << "XSaveObfuscate";
     QTest::newRow("RN")    << "RN" << "RestartNamed";
 
+    QTest::newRow("Bratio")     << "" << "Bratio";
     QTest::newRow("IterLim")     << "" << "IterLim";
     QTest::newRow("gdxConvert")  << "" << "gdxConvert";
     QTest::newRow("ProcDirPath") << "" << "ProcDirPath";
@@ -180,9 +181,8 @@ void TestGamsOption::testOptionSynonym()
         QVERIFY( !gamsOption->isThereASynonym(optionName) );
         QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
     } else {
-       QVERIFY( !gamsOption->isThereASynonym(optionName) );
+       QVERIFY( gamsOption->isThereASynonym(optionSynonym) );
        QCOMPARE( gamsOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
-       QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
     }
 }
 
@@ -235,16 +235,17 @@ void TestGamsOption::testDoubleDashedOption_data()
     QTest::newRow("//xyz")  << "//xyz" << true << true;
     QTest::newRow("-/xyz")  << "//xyz" << true << true;
     QTest::newRow("/-xyz")  << "//xyz" << true << true;
-    QTest::newRow("----xyz")    << "----xyz" << true << true;
-    QTest::newRow("-/-/--xyz")  << "----xyz" << true << true;
-    QTest::newRow("-xyz")   << "-xyz"   << false << true;
-    QTest::newRow("-%xyz")  << "-%xyz"  << false << false;
-    QTest::newRow("--")     << "--"    << true << false;
-    QTest::newRow("-- ")    << "-- "   << true << false;
-    QTest::newRow("--xyz_1234")   << "--xyz_1234"  << true << true;
-    QTest::newRow("--1234xyz")    << "--1234xyz"   << true << false;
-    QTest::newRow("--_xyz_1234")  << "--_xyz_1234" << true << false;
-    QTest::newRow("--xyz@1234")   << "--xyz@1234" << true  << false;
+    QTest::newRow("----xyz")    << "----xyz" << true  << true;
+    QTest::newRow("-/-/--xyz")  << "----xyz" << true  << true;
+    QTest::newRow("-xyz")   << "-xyz"        << false << true;
+    QTest::newRow("-%xyz")  << "-%xyz"       << false << false;
+    QTest::newRow("--")     << "--"          << true  << false;
+    QTest::newRow("--x")    << "--x"         << true  << true;
+    QTest::newRow("--1")    << "--1"         << true  << false;
+    QTest::newRow("--xyz_1234")   << "--xyz_1234"  << true  << true;
+    QTest::newRow("--1234xyz")    << "--1234xyz"   << true  << false;
+    QTest::newRow("--_xyz_1234")  << "--_xyz_1234" << true  << false;
+    QTest::newRow("--xyz@1234")   << "--xyz@1234"  << true  << false;
 }
 
 void TestGamsOption::testDoubleDashedOption()

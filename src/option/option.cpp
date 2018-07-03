@@ -356,7 +356,7 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
          char syn[GMS_SSSIZE];
          for (int i = 1; i <= optSynonymCount(mOPTHandle); ++i) {
              optGetSynonym(mOPTHandle, i, syn, name);
-             synonym[QString::fromLatin1(name).toUpper()] = QString::fromLatin1(syn).toUpper();
+             synonym.insertMulti(QString::fromLatin1(name).toUpper(), QString::fromLatin1(syn).toUpper());
          }
 
          for (int i=1; i <= optGroupCount(mOPTHandle); ++i) {
@@ -393,10 +393,13 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
                      opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
                      opt.valid = (helpContextNr == 1);
                      if (synonym.contains(nameStr)) {
-                         opt.synonym = synonym[nameStr];
-                         mSynonymMap[opt.synonym] = nameStr;
+                         QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
+                         while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
+                             opt.synonym = it.value();
+                             mSynonymMap.insertMulti(it.value(), it.key());
+                             ++it;
+                         }
                      }
-
 
                      char optTypeName[GMS_SSSIZE];
                      optGetTypeName(mOPTHandle, opt.type, optTypeName);
