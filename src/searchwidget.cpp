@@ -353,9 +353,9 @@ void SearchWidget::autofillSearchField()
     if (!fsc || !edit) return;
 
     if (edit->textCursor().hasSelection())
-        ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
+        ui->combo_search->setEditText(edit->textCursor().selection().toPlainText());
     else
-        ui->combo_search->setCurrentText("");
+        ui->combo_search->setEditText("");
 
     ui->combo_search->setFocus();
 }
