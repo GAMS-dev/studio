@@ -66,6 +66,9 @@ public slots:
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
 
+protected slots:
+    void returnPressed();
+
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
@@ -83,6 +86,7 @@ private:
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     bool mHasChanged = false;
     QList<Result> mCachedResults;
+    bool firstReturn = false;
 
 
     void showEvent(QShowEvent *event);

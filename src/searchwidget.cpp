@@ -43,6 +43,8 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
     adjustSize();
+
+    connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchWidget::returnPressed);
 }
 
 SearchWidget::~SearchWidget()
@@ -345,6 +347,20 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, mCachedResults);
 }
 
+
+// this is a workaround for the QLineEdit field swallowing the first enter after a show event
+// leading to a search using the last search term instead of the current.
+void SearchWidget::returnPressed() {
+    QWidget *widget = mMain->recent()->editor();
+    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(widget);
+    ui->combo_search->setEditText(edit->textCursor().selectedText());
+
+    if (firstReturn) {
+        findNext(SearchWidget::Forward);
+        firstReturn = false;
+    }
+}
+
 void SearchWidget::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
@@ -357,6 +373,7 @@ void SearchWidget::autofillSearchField()
     else
         ui->combo_search->setEditText("");
 
+    this->setFocus();
     ui->combo_search->setFocus();
 }
 
@@ -364,6 +381,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
+    firstReturn = true;
     autofillSearchField();
     updateReplaceActionAvailability();
 }
@@ -573,6 +591,7 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     mHasChanged = true;
+    setSearchStatus(SearchStatus::Clear);
 
 // removed due to performance issues in larger files:
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
