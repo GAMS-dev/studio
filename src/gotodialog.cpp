@@ -20,6 +20,8 @@
 #include "gotodialog.h"
 #include "ui_gotodialog.h"
 
+#include <QIntValidator>
+
 namespace gams {
 namespace studio {
 
