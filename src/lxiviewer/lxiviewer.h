@@ -51,7 +51,7 @@ public slots:
 
 private slots:
     void jumpToTreeItem();
-    void jumpToLine(QModelIndex modelIndex);
+    void jumpToLine(const QModelIndex &modelIndex);
 
 private:
     void loadLxi();

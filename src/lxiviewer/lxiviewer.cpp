@@ -119,7 +119,7 @@ void LxiViewer::jumpToTreeItem()
     ui->lxiTreeView->scrollTo(treeItem->modelIndex());
 }
 
-void LxiViewer::jumpToLine(QModelIndex modelIndex)
+void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
 {
     LxiTreeItem* selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
     int lineNr = selectedItem->lineNr();
@@ -127,8 +127,8 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     //jump to first child for virtual nodes
     if (lineNr == -1) {
         if (!ui->lxiTreeView->isExpanded(modelIndex)) {
-            modelIndex = modelIndex.model()->index(0, 0, modelIndex);
-            selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
+            QModelIndex mi = modelIndex.model()->index(0, 0, modelIndex);
+            selectedItem = static_cast<LxiTreeItem*>(mi.internalPointer());
             lineNr = selectedItem->lineNr();
         }
         else
