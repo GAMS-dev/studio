@@ -592,6 +592,7 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
     Q_UNUSED(arg1);
     mHasChanged = true;
     setSearchStatus(SearchStatus::Clear);
+    clearResults();
 
 // removed due to performance issues in larger files:
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
