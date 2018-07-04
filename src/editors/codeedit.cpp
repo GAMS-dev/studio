@@ -971,9 +971,9 @@ inline int CodeEdit::assignmentKind(int p)
     int postState = 0;
     emit requestSyntaxState(p-1, preState);
     emit requestSyntaxState(p+1, postState);
-    if (postState == (int)SyntaxState::IdentifierAssignment) return 1;
-    if (preState == (int)SyntaxState::IdentifierAssignment) return -1;
-    if (preState == (int)SyntaxState::IdentifierAssignmentEnd) return -1;
+    if (postState == static_cast<int>(SyntaxState::IdentifierAssignment)) return 1;
+    if (preState == static_cast<int>(SyntaxState::IdentifierAssignment)) return -1;
+    if (preState == static_cast<int>(SyntaxState::IdentifierAssignmentEnd)) return -1;
     return 0;
 }
 
