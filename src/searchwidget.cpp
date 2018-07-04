@@ -351,10 +351,6 @@ void SearchWidget::findNext(SearchDirection direction)
 // this is a workaround for the QLineEdit field swallowing the first enter after a show event
 // leading to a search using the last search term instead of the current.
 void SearchWidget::returnPressed() {
-    QWidget *widget = mMain->recent()->editor();
-    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(widget);
-    ui->combo_search->setEditText(edit->textCursor().selectedText());
-
     if (firstReturn) {
         findNext(SearchWidget::Forward);
         firstReturn = false;
@@ -368,10 +364,12 @@ void SearchWidget::autofillSearchField()
     ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
     if (!fsc || !edit) return;
 
-    if (edit->textCursor().hasSelection())
-        ui->combo_search->setEditText(edit->textCursor().selection().toPlainText());
-    else
+    if (edit->textCursor().hasSelection()) {
+        ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
+        ui->combo_search->setCurrentIndex(0);
+    } else {
         ui->combo_search->setEditText("");
+    }
 
     this->setFocus();
     ui->combo_search->setFocus();
