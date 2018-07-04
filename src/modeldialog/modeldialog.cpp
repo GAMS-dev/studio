@@ -220,8 +220,3 @@ void ModelDialog::on_cbRegEx_toggled(bool checked)
 
 }
 }
-
-
-
-
-

@@ -149,7 +149,6 @@ SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxState state) : SyntaxKeywordBas
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxDeclaration";
-        break;
     }
     mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
                << SyntaxState::CommentInline;

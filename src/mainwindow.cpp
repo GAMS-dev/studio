@@ -1372,7 +1372,7 @@ void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);
     if (event->type() == LineEditCompleteEvent::type())
-        ((LineEditCompleteEvent*)event)->complete();
+        (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
 void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)

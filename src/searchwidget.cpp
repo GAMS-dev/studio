@@ -310,18 +310,13 @@ void SearchWidget::setSearchStatus(SearchStatus status)
         ui->lbl_nrResults->setText("Searching...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
-
     case SearchStatus::NoResults:
         ui->lbl_nrResults->setText("No results.");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
-
     case SearchStatus::Clear:
         ui->lbl_nrResults->setText("");
         ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
-        break;
-
-    default:
         break;
     }
 }

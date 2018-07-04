@@ -20,7 +20,8 @@
 #include "encodingsdialog.h"
 #include "ui_encodingsdialog.h"
 
-#include <QtWidgets>
+#include <QCheckBox>
+#include <QTextCodec>
 
 namespace gams {
 namespace studio {
