@@ -185,7 +185,6 @@ QList<Result> SearchWidget::findInFile(ProjectAbstractNode *fsc, bool skipFilter
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
-    // (scope not current file && wildcard not matching) || has gdx extension
     if (!skipFilters) {
         if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fsc->location()) == -1))
                 || fsc->location().endsWith("gdx")) {
@@ -351,9 +350,9 @@ void SearchWidget::findNext(SearchDirection direction)
 // this is a workaround for the QLineEdit field swallowing the first enter after a show event
 // leading to a search using the last search term instead of the current.
 void SearchWidget::returnPressed() {
-    if (firstReturn) {
+    if (mFirstReturn) {
         findNext(SearchWidget::Forward);
-        firstReturn = false;
+        mFirstReturn = false;
     }
 }
 
@@ -369,10 +368,9 @@ void SearchWidget::autofillSearchField()
         ui->combo_search->setCurrentIndex(0);
     } else {
         ui->combo_search->setEditText("");
-        firstReturn = false;
+        mFirstReturn = false;
     }
 
-    this->setFocus();
     ui->combo_search->setFocus();
 }
 
@@ -380,7 +378,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    firstReturn = true;
+    mFirstReturn = true;
     autofillSearchField();
     updateReplaceActionAvailability();
 }
@@ -543,6 +541,7 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
                 edit->setTextCursor(tc);
             }
             selectNextMatch(direction, matches);
+
         } else { // found next match
             edit->setTextCursor(matchSelection);
         }

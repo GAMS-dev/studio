@@ -86,7 +86,7 @@ private:
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     bool mHasChanged = false;
     QList<Result> mCachedResults;
-    bool firstReturn = false;
+    bool mFirstReturn = false;
 
 
     void showEvent(QShowEvent *event);
