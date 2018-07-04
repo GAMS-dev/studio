@@ -369,6 +369,7 @@ void SearchWidget::autofillSearchField()
         ui->combo_search->setCurrentIndex(0);
     } else {
         ui->combo_search->setEditText("");
+        firstReturn = false;
     }
 
     this->setFocus();
