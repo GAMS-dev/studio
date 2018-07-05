@@ -79,20 +79,13 @@ private slots:
     void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString &arg1);
 
-private:
-    Ui::SearchWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;       // selected with find
-    QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool mHasChanged = false;
-    QList<Result> mCachedResults;
-    bool mFirstReturn = false;
-
-
+protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
-    QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
+
+private:
+    QFlags<QTextDocument::FindFlag> getFlags();
     void simpleReplaceAll();
     QList<Result> findInGroup(ProjectAbstractNode *fsc = nullptr);
     QList<Result> findInOpenFiles();
@@ -115,6 +108,15 @@ private:
     };
 
     void setSearchStatus(SearchStatus status);
+
+private:
+    Ui::SearchWidget *ui;
+    MainWindow *mMain;
+    QTextCursor mSelection;       // selected with find
+    QTextCursor mLastSelection;   // last selection, as starting point for find next
+    bool mHasChanged = false;
+    QList<Result> mCachedResults;
+    bool mFirstReturn = false;
 };
 
 }
