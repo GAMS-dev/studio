@@ -255,7 +255,6 @@ private:
     void createWelcomePage();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     bool isActiveTabRunnable();
-    bool isActiveTabSetAsMain();
     bool isRecentGroupInRunningState();
     void loadCommandLineOptions(ProjectFileNode* fc);
     void updateFixedFonts(const QString &fontFamily, int fontSize);

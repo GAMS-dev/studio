@@ -80,9 +80,10 @@ public slots:
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
-    void updateRunState(bool isRunnable, bool isMain, bool isRunning);
+    void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QString &location);
+    void loadCommandLineOption(const QStringList &history);
     void disableOptionEditor();
 
 private slots:

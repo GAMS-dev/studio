@@ -231,6 +231,30 @@ QString ProjectGroupNode::tooltip()
     return tooltip;
 }
 
+void ProjectGroupNode::addRunParametersHistory(QString runParameters)
+{
+    if (!runParameters.simplified().isEmpty()) {
+       QStringList list = mRunParametersHistory.filter(runParameters.simplified());
+       if (list.size() > 0) {
+           mRunParametersHistory.removeOne(runParameters.simplified());
+       }
+    } else {
+        for (int i=0; i< mRunParametersHistory.size(); ++i) {
+            QString str = mRunParametersHistory.at(i);
+            if (str.simplified().isEmpty()) {
+                mRunParametersHistory.removeAt(i);
+                break;
+            }
+        }
+    }
+    mRunParametersHistory.append(runParameters.simplified());
+}
+
+QStringList ProjectGroupNode::getRunParametersHistory()
+{
+    return mRunParametersHistory;
+}
+
 void ProjectGroupNode::attachFile(const QString &filepath)
 {
     if(filepath == "") return;

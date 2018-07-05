@@ -733,18 +733,23 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
+void MainWindow::loadCommandLineOptions(ProjectFileNode* fn)
 {
-    ProjectGroupNode* group = fc->parentEntry();
+    QStringList runParametersHistory;
+    if (!fn) { // asssuming a welcome page
+        mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+        return;
+    }
+
+    ProjectGroupNode* group = fn->parentEntry();
     if (!group) return;
 
-    emit mGamsOptionWidget->loadCommandLineOption(fc->location());
+    runParametersHistory = group->getRunParametersHistory();
+    mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    emit mGamsOptionWidget->optionEditorDisabled();
-
     // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
     if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
@@ -754,6 +759,9 @@ void MainWindow::activeTabChanged(int index)
     AbstractEdit* edit = ProjectFileNode::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
 
+    loadCommandLineOptions(mProjectRepo.fileNode(editWidget));
+    updateRunState();
+
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(lxiViewer ? editWidget : edit);
 
@@ -762,8 +770,6 @@ void MainWindow::activeTabChanged(int index)
             mRecent.setEditor(lxiViewer ? editWidget : edit, this);
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
-                loadCommandLineOptions(fc);
-                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -1068,27 +1074,14 @@ void MainWindow::createWelcomePage()
 
 bool MainWindow::isActiveTabRunnable()
 {
-    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        return (fc && !edit->isReadOnly());
-    }
-    return false;
-}
-
-bool MainWindow::isActiveTabSetAsMain()
-{
-    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        if (fc) {
-           ProjectGroupNode* group = fc->parentEntry();
-           if (group) {
-               return (fc->location()==group->runnableGms());
-           }
-        }
+    QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    if (editWidget) {
+       ProjectFileNode* fc = mProjectRepo.fileNode(editWidget);
+       if (!fc) { // assuming a welcome page here
+           return false;
+       } else {
+           return true;
+       }
     }
     return false;
 }
@@ -1428,7 +1421,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     if (!group) return;
 
     parseFilesFromCommandLine(commandLineStr, group);
-
+    group->addRunParametersHistory( commandLineStr );
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
@@ -1496,7 +1489,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isActiveTabSetAsMain(), isRecentGroupInRunningState());
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
 }
 
 HelpWidget *MainWindow::getHelpWidget() const
@@ -1529,36 +1522,28 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    if (isActiveTabSetAsMain() && !isRecentGroupInRunningState())
+    if (isActiveTabRunnable() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
 }
 
 void MainWindow::on_actionRun_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
 }
 
 void MainWindow::on_actionInterrupt_triggered()
