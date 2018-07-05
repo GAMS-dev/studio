@@ -23,7 +23,8 @@
 #include "syntax.h"
 #include "exception.h"
 #include "searchresultlist.h"
-#include <QDebug>
+
+#include <QCompleter>
 #include <QMessageBox>
 #include <QTextDocumentFragment>
 
@@ -591,6 +592,15 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
 //    if (fn)
 //        fn->removeTextMarks(TextMark::match);
+}
+
+void SearchDialog::on_cb_caseSens_stateChanged(int state)
+{
+    QCompleter *completer = ui->combo_search->completer();
+    if (Qt::Checked == state)
+        completer->setCaseSensitivity(Qt::CaseSensitive);
+    else
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
 }
 
 void SearchDialog::insertHistory()
