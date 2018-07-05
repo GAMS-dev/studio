@@ -43,6 +43,8 @@ SearchWidget::SearchWidget(MainWindow *parent) :
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
     adjustSize();
+
+    connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchWidget::returnPressed);
 }
 
 SearchWidget::~SearchWidget()
@@ -183,7 +185,6 @@ QList<Result> SearchWidget::findInFile(ProjectAbstractNode *fsc, bool skipFilter
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
-    // (scope not current file && wildcard not matching) || has gdx extension
     if (!skipFilters) {
         if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fsc->location()) == -1))
                 || fsc->location().endsWith("gdx")) {
@@ -340,6 +341,16 @@ void SearchWidget::findNext(SearchDirection direction)
     selectNextMatch(direction, mCachedResults);
 }
 
+
+// this is a workaround for the QLineEdit field swallowing the first enter after a show event
+// leading to a search using the last search term instead of the current.
+void SearchWidget::returnPressed() {
+    if (mFirstReturn) {
+        findNext(SearchWidget::Forward);
+        mFirstReturn = false;
+    }
+}
+
 void SearchWidget::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
@@ -347,10 +358,13 @@ void SearchWidget::autofillSearchField()
     ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
     if (!fsc || !edit) return;
 
-    if (edit->textCursor().hasSelection())
-        ui->combo_search->setCurrentText(edit->textCursor().selection().toPlainText());
-    else
-        ui->combo_search->setCurrentText("");
+    if (edit->textCursor().hasSelection()) {
+        ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
+        ui->combo_search->setCurrentIndex(0);
+    } else {
+        ui->combo_search->setEditText("");
+        mFirstReturn = false;
+    }
 
     ui->combo_search->setFocus();
 }
@@ -359,6 +373,7 @@ void SearchWidget::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
+    mFirstReturn = true;
     autofillSearchField();
     updateReplaceActionAvailability();
 }
@@ -521,19 +536,20 @@ void SearchWidget::selectNextMatch(SearchDirection direction, QList<Result> matc
                 edit->setTextCursor(tc);
             }
             selectNextMatch(direction, matches);
+
         } else { // found next match
             edit->setTextCursor(matchSelection);
         }
     } else {
         setSearchStatus(SearchStatus::NoResults);
-        return; // search had no matches anyway, so do nothing at all
+        return; // search had no matches so do nothing at all
     }
 
     // set match and counter
     int count = 0;
     foreach (Result match, matches) {
-        if (matches.at(count).locLineNr() == matchSelection.blockNumber()+1
-                && matches.at(count).locCol() == matchSelection.columnNumber() - searchLength) {
+        if (match.locLineNr() == matchSelection.blockNumber()+1
+                && match.locCol() == matchSelection.columnNumber() - searchLength) {
             updateMatchAmount(matches.size(), count+1);
             break;
         } else {
@@ -568,6 +584,8 @@ void SearchWidget::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     mHasChanged = true;
+    setSearchStatus(SearchStatus::Clear);
+    clearResults();
 
 // removed due to performance issues in larger files:
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
