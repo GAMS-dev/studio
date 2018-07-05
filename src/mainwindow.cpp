@@ -40,7 +40,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
@@ -126,7 +126,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
-    mSearchWidget = new SearchWidget(this);
+    mSearchDialog = new SearchDialog(this);
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
@@ -186,14 +186,14 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
                 connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
                         lxiViewer, &lxiviewer::LxiViewer::loadLstFile);
                 connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed,
-                        mSearchWidget, &SearchWidget::on_searchNext);
+                        mSearchDialog, &SearchDialog::on_searchNext);
                 connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed,
-                        mSearchWidget, &SearchWidget::on_searchPrev);
+                        mSearchDialog, &SearchDialog::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
-                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
                 connect(codeEdit, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
@@ -406,9 +406,9 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     on_actionHelp_View_triggered(true);
 }
 
-SearchWidget* MainWindow::searchWidget() const
+SearchDialog* MainWindow::searchDialog() const
 {
-    return mSearchWidget;
+    return mSearchDialog;
 }
 
 QString MainWindow::encodingMIBsString()
@@ -564,7 +564,7 @@ void MainWindow::updateEditorBlockCount()
 
 void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -794,7 +794,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+    if (searchDialog()) searchDialog()->updateReplaceActionAvailability();
 
     CodeEdit* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
@@ -1296,8 +1296,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
-        mSearchWidget->hide();
-        mSearchWidget->clearResults();
+        mSearchDialog->hide();
+        mSearchDialog->clearResults();
     }
 
     QMainWindow::keyPressEvent(event);
@@ -1831,9 +1831,9 @@ void MainWindow::on_actionSearch_triggered()
            return;
        }
        // toggle visibility
-       if (mSearchWidget->isVisible()) {
-           mSearchWidget->activateWindow();
-           mSearchWidget->autofillSearchField();
+       if (mSearchDialog->isVisible()) {
+           mSearchDialog->activateWindow();
+           mSearchDialog->autofillSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
@@ -1846,10 +1846,10 @@ void MainWindow::on_actionSearch_triggered()
                else
                    sbs = 2;
 
-               int offset = (this->width() - mSearchWidget->width() - sbs);
-               mSearchWidget->move(newP.x() + offset, newP.y());
+               int offset = (this->width() - mSearchDialog->width() - sbs);
+               mSearchDialog->move(newP.x() + offset, newP.y());
            }
-           mSearchWidget->show();
+           mSearchDialog->show();
        }
     }
 }
@@ -1859,7 +1859,7 @@ void MainWindow::showResults(SearchResultList &results)
     int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
 
     mResultsView = new ResultsView(results, this);
-    QString title("Results: " + mSearchWidget->searchTerm());
+    QString title("Results: " + mSearchDialog->searchTerm());
 
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();
@@ -2237,7 +2237,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
-    window->searchWidget()->invalidateCache();
+    window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 

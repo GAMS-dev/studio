@@ -17,26 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHWIDGET_H
-#define SEARCHWIDGET_H
+#ifndef SEARCHDIALOG_H
+#define SEARCHDIALOG_H
 
-#include "mainwindow.h"
 #include <QDialog>
+#include "mainwindow.h"
 
 namespace Ui {
-class SearchWidget;
+class SearchDialog;
 }
 
 namespace gams {
 namespace studio {
 
-class SearchWidget : public QDialog
+class SearchDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit SearchWidget(MainWindow *parent = nullptr);
-    ~SearchWidget();
+    explicit SearchDialog(MainWindow *parent = nullptr);
+    ~SearchDialog();
 
     bool regex();
     bool caseSens();
@@ -52,7 +52,7 @@ public:
         Forward = 0,
         Backward = 1
     };
-    void findNext(SearchWidget::SearchDirection direction);
+    void findNext(SearchDialog::SearchDirection direction);
     void clearResults();
     void updateReplaceActionAvailability();
 
@@ -110,7 +110,7 @@ private:
     void setSearchStatus(SearchStatus status);
 
 private:
-    Ui::SearchWidget *ui;
+    Ui::SearchDialog *ui;
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
@@ -121,4 +121,4 @@ private:
 
 }
 }
-#endif // SEARCHWIDGET_H
+#endif // SEARCHDIALOG_H

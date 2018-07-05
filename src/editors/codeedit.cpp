@@ -20,7 +20,7 @@
 #include <QtWidgets>
 #include "editors/codeedit.h"
 #include "studiosettings.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "exception.h"
 #include "logger.h"
 #include "syntax.h"
