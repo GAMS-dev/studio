@@ -23,7 +23,11 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
+#include "editors/processlogedit.h"
+#include "editors/abstractedit.h"
+#include "editors/systemlogedit.h"
+#include "encodingsdialog.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
@@ -36,13 +40,10 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
-#include "editors/logeditor.h"
-#include "editors/abstracteditor.h"
-#include "editors/selectencodings.h"
 #include "updatedialog.h"
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
@@ -58,10 +59,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this))
 {
     mHistory = new HistoryData();
-    QFile css(":/data/style.css");
-    if (css.open(QFile::ReadOnly | QFile::Text)) {
+//    QFile css(":/data/style.css");
+//    if (css.open(QFile::ReadOnly | QFile::Text)) {
 //        this->setStyleSheet(css.readAll());
-    }
+//    }
 
     ui->setupUi(this);
 
@@ -80,7 +81,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
-    ui->systemLogView->setTextInteractionFlags(ui->systemLogView->textInteractionFlags() | Qt::TextSelectableByKeyboard);
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
@@ -126,19 +126,18 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
-    mSearchWidget = new SearchWidget(this);
+    mSearchDialog = new SearchDialog(this);
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
-    if (mSettings->lineWrapProcess()) // set wrapping for system log
-        ui->systemLogView->setLineWrapMode(AbstractEditor::WidgetWidth);
-    else
-        ui->systemLogView->setLineWrapMode(AbstractEditor::NoWrap);
+    mSyslog = new SystemLogEdit(this);
+    mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+    ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
+//    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
-
 }
 
 void MainWindow::delayedFileRestoration()
@@ -170,24 +169,32 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
         int tabIndex;
         if (fc->metrics().fileType() != FileType::Gdx) {
 
-            CodeEditor *codeEdit = new CodeEditor(mSettings.get(), this);
+            CodeEdit *codeEdit = new CodeEdit(this);
+            codeEdit->setSettings(mSettings.get());
+            codeEdit->setLineWrapMode(mSettings->lineWrapEditor() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
             codeEdit->setTabChangesFocus(false);
             ProjectAbstractNode::initEditorType(codeEdit);
             codeEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
             if (fc->metrics().fileType() == FileType::Lst) {
-                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc->location(), this);
                 ProjectAbstractNode::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(lxiViewer->codeEditor(), &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLxiFile);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLstFile);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed,
+                        mSearchDialog, &SearchDialog::on_searchNext);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed,
+                        mSearchDialog, &SearchDialog::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
-                connect(codeEdit, &CodeEditor::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(codeEdit, &CodeEditor::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
-                connect(codeEdit, &CodeEditor::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+                connect(codeEdit, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
 
@@ -345,11 +352,11 @@ QWidgetList MainWindow::openEditors()
     return mProjectRepo.editors();
 }
 
-QList<AbstractEditor*> MainWindow::openLogs()
+QList<AbstractEdit*> MainWindow::openLogs()
 {
-    QList<AbstractEditor*> resList;
+    QList<AbstractEdit*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(ui->logTabs->widget(i));
+        AbstractEdit* ed = ProjectFileNode::toAbstractEdit(ui->logTabs->widget(i));
         if (ed) resList << ed;
     }
     return resList;
@@ -399,9 +406,9 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     on_actionHelp_View_triggered(true);
 }
 
-SearchWidget* MainWindow::searchWidget() const
+SearchDialog* MainWindow::searchDialog() const
 {
-    return mSearchWidget;
+    return mSearchDialog;
 }
 
 QString MainWindow::encodingMIBsString()
@@ -523,8 +530,8 @@ void MainWindow::updateEditorPos()
 {
     QPoint pos;
     QPoint anchor;
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(edit);
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
+    CodeEdit *ce = ProjectFileNode::toCodeEdit(edit);
     if (ce) {
         ce->getPositionAndAnchor(pos, anchor);
         mStatusWidgets->setPosAndAnchor(pos, anchor);
@@ -541,7 +548,7 @@ void MainWindow::updateEditorPos()
 
 void MainWindow::updateEditorMode()
 {
-    CodeEditor* edit = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEdit* edit = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(EditMode::Readonly);
     } else {
@@ -551,13 +558,13 @@ void MainWindow::updateEditorMode()
 
 void MainWindow::updateEditorBlockCount()
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mRecent.editor());
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
 void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -744,7 +751,7 @@ void MainWindow::activeTabChanged(int index)
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(editWidget);
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
 
     if (edit) {
@@ -787,9 +794,9 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+    if (searchDialog()) searchDialog()->updateReplaceActionAvailability();
 
-    CodeEditor* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
 }
@@ -864,13 +871,7 @@ void MainWindow::fileDeletedExtern(FileId fileId)
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    QPlainTextEdit *outWin = ui->systemLogView;
-    if (!text.isNull()) {
-        outWin->moveCursor(QTextCursor::End);
-        outWin->insertPlainText(text);
-        outWin->moveCursor(QTextCursor::End);
-        outWin->document()->setModified(false);
-    }
+    mSyslog->appendLog(text, LogMsgType::Info);
 }
 
 void MainWindow::postGamsRun(AbstractProcess* process)
@@ -924,7 +925,7 @@ void MainWindow::on_actionHelp_triggered()
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+        CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
         QString word;
         int istate = 0;
         ce->wordInfo(ce->textCursor(), word, istate);
@@ -1048,11 +1049,11 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         ProjectLogNode* log = mProjectRepo.logNode(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
-        AbstractEditor* ed = ProjectAbstractNode::toAbstractEdit(edit);
+        AbstractEdit* ed = ProjectAbstractNode::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
-        // dont remove pointers in ui, otherwise re-adding syslog will crash
-        if (edit != ui->systemLog)
+        // dont remove syslog
+        if (edit != mSyslog)
             edit->deleteLater();
     }
 }
@@ -1068,7 +1069,7 @@ void MainWindow::createWelcomePage()
 bool MainWindow::isActiveTabRunnable()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
         return (fc && !edit->isReadOnly());
@@ -1079,7 +1080,7 @@ bool MainWindow::isActiveTabRunnable()
 bool MainWindow::isActiveTabSetAsMain()
 {
     QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit( editWidget );
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(edit);
         if (fc) {
@@ -1100,12 +1101,12 @@ bool MainWindow::isRecentGroupInRunningState()
 
 void MainWindow::on_actionShow_System_Log_triggered()
 {
-    int index = ui->logTabs->indexOf(ui->systemLog);
+    int index = ui->logTabs->indexOf(mSyslog);
     if (index < 0)
-        ui->logTabs->addTab(ui->systemLog, "System");
+        ui->logTabs->addTab(mSyslog, "System");
     else
         ui->logTabs->setCurrentIndex(index);
-    ui->systemLog->raise();
+    mSyslog->raise();
     dockWidgetShow(ui->dockLogView, true);
 }
 
@@ -1228,7 +1229,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
         ProjectLogNode* logProc = mProjectRepo.logNode(fsc);
         if (logProc->editors().isEmpty()) {
             logProc->setDebugLog(mLogDebugLines);
-            LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+            ProcessLogEdit* logEdit = new ProcessLogEdit(this);
+            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
             ProjectAbstractNode::initEditorType(logEdit);
             int ind = ui->logTabs->addTab(logEdit, logProc->caption());
             logProc->addEditor(logEdit);
@@ -1294,8 +1296,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
-        mSearchWidget->hide();
-        mSearchWidget->clearResults();
+        mSearchDialog->hide();
+        mSearchDialog->clearResults();
     }
 
     QMainWindow::keyPressEvent(event);
@@ -1370,7 +1372,7 @@ void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);
     if (event->type() == LineEditCompleteEvent::type())
-        ((LineEditCompleteEvent*)event)->complete();
+        (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
 void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
@@ -1410,7 +1412,8 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 {
     if (!logProc->editors().isEmpty()) return;
     logProc->setDebugLog(mLogDebugLines);
-    LogEditor* logEdit = new LogEditor(mSettings.get(), this);
+    ProcessLogEdit* logEdit = new ProcessLogEdit(this);
+    logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     ProjectAbstractNode::initEditorType(logEdit);
 
     ui->logTabs->addTab(logEdit, logProc->caption());
@@ -1469,7 +1472,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
 
     if (gmsFilePath == "")
-        appendSystemLog("No runnable GMS file found.");
+        mSyslog->appendLog("No runnable GMS file found.", LogMsgType::Warning);
 
     QFileInfo gmsFileInfo(gmsFilePath);
 
@@ -1591,7 +1594,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     }
     if (!logNode->editors().isEmpty()) {
         logNode->setDebugLog(mLogDebugLines);
-        AbstractEditor* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
+        AbstractEdit* logEdit = ProjectFileNode::toAbstractEdit(logNode->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != mResultsView)
@@ -1625,7 +1628,7 @@ void MainWindow::openFileNode(ProjectFileNode* fileNode, bool focus, int codecMi
         if (focus) {
             lxiviewer::LxiViewer* lxiViewer = ProjectAbstractNode::toLxiViewer(edit);
             if (lxiViewer)
-                lxiViewer->codeEditor()->setFocus();
+                lxiViewer->codeEdit()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
         }
@@ -1821,10 +1824,16 @@ void MainWindow::on_actionSearch_triggered()
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
         mHelpWidget->on_searchHelp();
     } else {
+       ProjectFileNode *fc = mProjectRepo.fileNode(mRecent.editor());
+       if (fc && fc->metrics().fileType() == FileType::Gdx) {
+           gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
+           gdx->selectSearchField();
+           return;
+       }
        // toggle visibility
-       if (mSearchWidget->isVisible()) {
-           mSearchWidget->activateWindow();
-           mSearchWidget->autofillSearchField();
+       if (mSearchDialog->isVisible()) {
+           mSearchDialog->activateWindow();
+           mSearchDialog->autofillSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
@@ -1837,10 +1846,10 @@ void MainWindow::on_actionSearch_triggered()
                else
                    sbs = 2;
 
-               int offset = (this->width() - mSearchWidget->width() - sbs);
-               mSearchWidget->move(newP.x() + offset, newP.y());
+               int offset = (this->width() - mSearchDialog->width() - sbs);
+               mSearchDialog->move(newP.x() + offset, newP.y());
            }
-           mSearchWidget->show();
+           mSearchDialog->show();
        }
     }
 }
@@ -1850,7 +1859,7 @@ void MainWindow::showResults(SearchResultList &results)
     int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
 
     mResultsView = new ResultsView(results, this);
-    QString title("Results: " + mSearchWidget->searchTerm());
+    QString title("Results: " + mSearchDialog->searchTerm());
 
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();
@@ -1868,10 +1877,10 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
         if (!ProjectFileNode::toGdxViewer(edit))
             ProjectFileNode::toAbstractEdit(edit)->setFont(font);
     }
-    foreach (QWidget* log, openLogs()) {
+    foreach (QWidget* log, openLogs())
         log->setFont(font);
-    }
-    ui->systemLogView->setFont(font);
+
+    mSyslog->setFont(font);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -1884,7 +1893,7 @@ void MainWindow::updateEditorLineWrapping()
 
     QWidgetList editList = mProjectRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
-        AbstractEditor* ed = ProjectFileNode::toAbstractEdit(editList.at(i));
+        AbstractEdit* ed = ProjectFileNode::toAbstractEdit(editList.at(i));
         if (ed) {
             ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(wrapModeEditor);
@@ -1897,7 +1906,7 @@ void MainWindow::updateEditorLineWrapping()
     else
         wrapModeProcess = QPlainTextEdit::NoWrap;
 
-    QList<AbstractEditor*> logList = openLogs();
+    QList<AbstractEdit*> logList = openLogs();
     for (int i = 0; i < logList.size(); i++) {
         if (logList.at(i))
             logList.at(i)->setLineWrapMode(wrapModeProcess);
@@ -1961,6 +1970,9 @@ void MainWindow::on_actionGo_To_triggered()
         return;
     GoToDialog dialog(this);
     dialog.exec();
+    CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
+    if (codeEdit)
+        codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());
 }
 
 
@@ -1968,7 +1980,7 @@ void MainWindow::on_actionRedo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce) ce->redo();
 }
 
@@ -1976,13 +1988,13 @@ void MainWindow::on_actionUndo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce) ce->undo();
 }
 
 void MainWindow::on_actionPaste_triggered()
 {
-    CodeEditor *ce = ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEdit *ce = ProjectFileNode::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
     ce->pasteClipboard();
 }
@@ -1997,10 +2009,12 @@ void MainWindow::on_actionCopy_triggered()
     if (fc->metrics().fileType() == FileType::Gdx) {
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->copyAction();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->copy();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
         if (!ae) return;
-        CodeEditor *ce = ProjectFileNode::toCodeEdit(ae);
+        CodeEdit *ce = ProjectFileNode::toCodeEdit(ae);
         if (ce && ce->blockEdit()) {
             ce->blockEdit()->selectionToClipboard();
         } else {
@@ -2017,15 +2031,18 @@ void MainWindow::on_actionSelect_All_triggered()
     if (fc->metrics().fileType() == FileType::Gdx) {
         gdxviewer::GdxViewer *gdx = ProjectFileNode::toGdxViewer(mRecent.editor());
         gdx->selectAllAction();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->selectAll();
     } else {
-        CodeEditor* ce = ProjectFileNode::toCodeEdit(focusWidget());
-        if (ce) ce->selectAll();
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(focusWidget());
+        if (!ae) return;
+        ae->selectAll();
     }
 }
 
 void MainWindow::on_actionCut_triggered()
 {
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(focusWidget());
+    CodeEdit* ce= ProjectFileNode::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
 
     if (ce->blockEdit()) {
@@ -2054,7 +2071,7 @@ void MainWindow::on_actionZoom_Out_triggered()
         getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
         getHelpWidget()->zoomOut();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
@@ -2068,7 +2085,7 @@ void MainWindow::on_actionZoom_In_triggered()
         getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
         getHelpWidget()->zoomIn();
     } else {
-        AbstractEditor *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
+        AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
@@ -2081,7 +2098,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toUpper());
@@ -2092,7 +2109,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         QTextCursor c = ce->textCursor();
         c.insertText(c.selectedText().toLower());
@@ -2101,7 +2118,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
         mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
@@ -2114,7 +2131,7 @@ void MainWindow::on_actionIndent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2126,7 +2143,7 @@ void MainWindow::on_actionOutdent_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
@@ -2138,7 +2155,7 @@ void MainWindow::on_actionDuplicate_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->duplicateLine();
 }
@@ -2148,7 +2165,7 @@ void MainWindow::on_actionRemove_Line_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->removeLine();
 }
@@ -2158,7 +2175,7 @@ void MainWindow::on_actionComment_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
 
-    CodeEditor* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly())
         ce->commentLine();
 }
@@ -2205,22 +2222,22 @@ QWidget *RecentData::editor() const
 
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
-    AbstractEditor* edit = ProjectFileNode::toAbstractEdit(mEditor);
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mEditor);
     if (edit) {
-        MainWindow::disconnect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
     mEditor = editor;
     edit = ProjectFileNode::toAbstractEdit(mEditor);
     if (edit) {
-        MainWindow::connect(edit, &AbstractEditor::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEditor::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEditor::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+        MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
-    window->searchWidget()->invalidateCache();
+    window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 

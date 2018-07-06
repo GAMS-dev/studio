@@ -51,6 +51,8 @@
         <file alias="square-gray">square-gray.svg</file>
         <file alias="insert">insert.svg</file>
         <file alias="camera">camera.png</file>
+        <file alias="show">angle-double-down.svg</file>
+        <file alias="hide">angle-double-up.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

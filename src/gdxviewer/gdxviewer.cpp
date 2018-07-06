@@ -18,31 +18,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxviewer.h"
-#include "gdxsymboltable.h"
+#include "ui_gdxviewer.h"
 #include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
 #include "exception.h"
-#include <algorithm>
-#include <memory>
+
+#include <QMutex>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <QMessageBox>
 #include <QClipboard>
-#include <QModelIndexList>
+#include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) :
-    QWidget(parent), mGdxFile(gdxFile), mSystemDirectory(systemDirectory)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent)
+    : QWidget(parent),
+      ui(new Ui::GdxViewer),
+      mGdxFile(gdxFile),
+      mSystemDirectory(systemDirectory)
 {
-    ui.setupUi(this);
+    ui->setupUi(this);
 
     QPalette palette;
-    palette.setColor(QPalette::Highlight, ui.tvSymbols->palette().highlight().color());
-    palette.setColor(QPalette::HighlightedText, ui.tvSymbols->palette().highlightedText().color());
-    ui.tvSymbols->setPalette(palette);
+    palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
+    palette.setColor(QPalette::HighlightedText, ui->tvSymbols->palette().highlightedText().color());
+    ui->tvSymbols->setPalette(palette);
 
     mGdxMutex = new QMutex();
     char msg[GMS_SSSIZE];
@@ -53,16 +56,17 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent) 
     QAction* cpAction = new QAction("Copy");
 //    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
-    ui.tvSymbols->addAction(cpAction);
+    ui->tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
 
-    ui.tvSymbols->setColumnHidden(5,true);
+    ui->tvSymbols->setColumnHidden(5,true);
 }
 
 GdxViewer::~GdxViewer()
 {
     free();
     delete mGdxMutex;
+    delete ui;
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -95,15 +99,17 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (!selectedSymbol->isLoaded())
             QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
 
-        ui.splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
+        ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
+    else
+        ui->splitter->replaceWidget(1, ui->widget);
 }
 
 GdxSymbol *GdxViewer::selectedSymbol()
 {
     GdxSymbol* selected = nullptr;
-    if (ui.tvSymbols->selectionModel()) {
-        QModelIndexList selectedIdx = ui.tvSymbols->selectionModel()->selectedRows();
+    if (ui->tvSymbols->selectionModel()) {
+        QModelIndexList selectedIdx = ui->tvSymbols->selectionModel()->selectedRows();
         if(!selectedIdx.isEmpty())
             selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
     }
@@ -113,8 +119,8 @@ GdxSymbol *GdxViewer::selectedSymbol()
 bool GdxViewer::reload()
 {
     if (mHasChanged) {
-        if (ui.splitter->widget(1) != ui.widget)
-            ui.splitter->replaceWidget(1, ui.widget);
+        if (ui->splitter->widget(1) != ui->widget)
+            ui->splitter->replaceWidget(1, ui->widget);
         free();
         bool initSuccess = init();
         if (initSuccess) {
@@ -140,7 +146,7 @@ void GdxViewer::copyAction()
 {
     QWidget *source = focusWidget();
 
-    if (static_cast<QTableView*>(source) == ui.tvSymbols)
+    if (static_cast<QTableView*>(source) == ui->tvSymbols)
         copySelectionToClipboard();
     else if (static_cast<GdxSymbolView*>(source->parent())) {
         GdxSymbolView* gdxView = static_cast<GdxSymbolView*>(source->parent());
@@ -157,6 +163,11 @@ void GdxViewer::selectAllAction()
     view->selectAll();
 }
 
+void GdxViewer::selectSearchField()
+{
+    ui->lineEdit->setFocus();
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
@@ -164,10 +175,10 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 
 void GdxViewer::copySelectionToClipboard()
 {
-    if (!ui.tvSymbols->model())
+    if (!ui->tvSymbols->model())
         return;
 
-    QModelIndexList selection = ui.tvSymbols->selectionModel()->selectedIndexes();
+    QModelIndexList selection = ui->tvSymbols->selectionModel()->selectedIndexes();
     if (selection.isEmpty())
         return;
     std::sort(selection.begin(), selection.end());
@@ -202,8 +213,8 @@ bool GdxViewer::init()
         return false;
     }
 
-    ui.splitter->widget(0)->hide();
-    ui.splitter->widget(1)->hide();
+    ui->splitter->widget(0)->hide();
+    ui->splitter->widget(1)->hide();
 
     mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
@@ -211,16 +222,23 @@ bool GdxViewer::init()
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
-    ui.tvSymbols->setModel(mSymbolTableProxyModel);
-    ui.tvSymbols->resizeColumnsToContents();
-    ui.tvSymbols->sortByColumn(1,Qt::AscendingOrder);
+    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    connect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    ui->tvSymbols->setModel(mSymbolTableProxyModel);
+    ui->tvSymbols->resizeColumnsToContents();
+    ui->tvSymbols->sortByColumn(1,Qt::AscendingOrder);
 
-    ui.splitter->widget(0)->show();
-    ui.splitter->widget(1)->show();
+    connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    connect(ui->lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
+    connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
+    connect(ui->cbToggleSearch, &QCheckBox::toggled, this, &GdxViewer::toggleSearchColumns);
 
-    ui.tvSymbols->hideRow(0); //first entry is the universe which we do not want to show
+    ui->splitter->widget(0)->show();
+    ui->splitter->widget(1)->show();
+
+    this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
     return true;
 }
 
@@ -230,8 +248,8 @@ void GdxViewer::free()
     if(selected)
         selected->stopLoadingData();
 
-    disconnect(ui.tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    ui.tvSymbols->setModel(nullptr);
+    disconnect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
+    ui->tvSymbols->setModel(nullptr);
 
     if(mGdxSymbolTable) {
         delete mGdxSymbolTable;
@@ -246,6 +264,26 @@ void GdxViewer::free()
             delete view;
     }
     mSymbolViews.clear();
+}
+
+void GdxViewer::hideUniverseSymbol()
+{
+    int row = mSymbolTableProxyModel->rowCount();
+    for(int r=0; r<row; r++) {
+        QVariant symName = mSymbolTableProxyModel->data(mSymbolTableProxyModel->index(r, 0), Qt::DisplayRole);
+        if (symName == QVariant(0)) {
+            ui->tvSymbols->hideRow(r);
+            return;
+        }
+    }
+}
+
+void GdxViewer::toggleSearchColumns(bool checked)
+{
+    if (checked)
+        mSymbolTableProxyModel->setFilterKeyColumn(-1);
+    else
+        mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
 void GdxViewer::reportIoError(int errNr, QString message)

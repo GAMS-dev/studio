@@ -19,14 +19,9 @@
  */
 #include "gdxsymbol.h"
 #include "exception.h"
-#include <memory>
-#include <QThread>
-#include <QtConcurrent>
-#include <QTime>
-#include <QIcon>
-#include <QVarLengthArray>
-#include <algorithm>
-#include <limits>
+#include "gdxsymboltable.h"
+
+#include <QMutex>
 
 namespace gams {
 namespace studio {

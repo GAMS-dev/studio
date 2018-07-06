@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lxitreemodel.h"
-#include <QDebug>
+#include "lxitreeitem.h"
 
 namespace gams {
 namespace studio {

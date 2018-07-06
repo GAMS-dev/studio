@@ -40,15 +40,15 @@ protected:
     void enterEvent(QEvent* event);
     void leaveEvent(QEvent* event);
 
-private:
-    QString mContent;
-    QString mLink;
-    bool mInactive = false;
-
 signals:
     void relayActionLab(QString action);
     void relayModLibLoad(QString lib);
     void relayOpenDoc(QString doc, QString anchor);
+
+private:
+    QString mContent;
+    QString mLink;
+    bool mInactive = false;
 };
 
 }

@@ -51,7 +51,6 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : SyntaxAbstract(state)
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentifier: " << syntaxStateName(state);
-        break;
     }
 }
 
@@ -108,7 +107,6 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxState state) : SyntaxAbstract(sta
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentDescript: " << syntaxStateName(state);
-        break;
     }
     if (!delims.contains(static_cast<int>(state)))
         FATAL() << "missing delimiter for state " << syntaxStateName(state);
@@ -157,7 +155,6 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxState state) : SyntaxAbstract(state)
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxIdentAssign: " << syntaxStateName(state);
-        break;
     }
 }
 
@@ -202,7 +199,6 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxState state) : SyntaxAbstract(state)
         break;
     default:
         FATAL() << "invalid SyntaxState to initialize SyntaxTableAssign: " << syntaxStateName(state);
-        break;
     }
 }
 

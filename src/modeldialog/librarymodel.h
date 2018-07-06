@@ -21,7 +21,6 @@
 #define GAMS_STUDIO_LIBRARYMODEL_H
 
 #include <QAbstractTableModel>
-#include <QList>
 #include "libraryitem.h"
 
 namespace gams {
@@ -32,7 +31,7 @@ class LibraryModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit LibraryModel(QList<LibraryItem> data, QObject *parent = 0);
+    explicit LibraryModel(QList<LibraryItem> data, QObject *parent = nullptr);
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

@@ -67,10 +67,6 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp \
-    editors/abstracteditor.cpp \
-    editors/codeeditor.cpp \
-    editors/logeditor.cpp \
-    editors/selectencodings.cpp \
     exception.cpp \
     file/filemetrics.cpp \
     file/filetype.cpp \
@@ -117,7 +113,6 @@ SOURCES += \
     projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
-    searchwidget.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
@@ -139,7 +134,14 @@ SOURCES += \
     file/projectlognode.cpp \
     file/filemetarepo.cpp \
     file/filemeta.cpp \
-    gotodialog.cpp
+    gotodialog.cpp \
+    editors/abstractedit.cpp \
+    editors/processlogedit.cpp \
+    editors/systemlogedit.cpp \
+    encodingsdialog.cpp \
+    editors/codeedit.cpp \
+    syntax/systemloghighlighter.cpp \
+    searchdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -149,10 +151,6 @@ HEADERS += \
     commandlineparser.h \
     commonpaths.h \
     distributionvalidator.h \
-    editors/abstracteditor.h \
-    editors/codeeditor.h \
-    editors/logeditor.h \
-    editors/selectencodings.h \
     exception.h \
     file.h \
     file/filemetrics.h \
@@ -200,7 +198,6 @@ HEADERS += \
     projectcontextmenu.h \
     resultsview.h \
     searchresultlist.h \
-    searchwidget.h \
     settingsdialog.h \
     statuswidgets.h \
     studiosettings.h \
@@ -225,10 +222,16 @@ HEADERS += \
     file/filemetarepo.h \
     file/filemeta.h \
     file/projectrepo.h \
-    gotodialog.h
+    gotodialog.h \
+    editors/abstractedit.h \
+    editors/processlogedit.h \
+    editors/systemlogedit.h \
+    encodingsdialog.h \
+    editors/codeedit.h \
+    syntax/systemloghighlighter.h \
+    searchdialog.h
 
 FORMS += \
-    editors/selectencodings.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
@@ -237,14 +240,14 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
-    newdialog.ui \
     option/optionwidget.ui \
     resultsview.ui \
-    searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
-    gotodialog.ui
+    gotodialog.ui \
+    encodingsdialog.ui \
+    searchdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

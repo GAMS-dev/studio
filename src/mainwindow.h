@@ -23,7 +23,7 @@
 #include <memory>
 #include <QMainWindow>
 
-#include "editors/codeeditor.h"
+#include "editors/codeedit.h"
 #include "file.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
@@ -46,9 +46,10 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
-class SearchWidget;
+class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
+class SystemLogEdit;
 
 struct RecentData {
 
@@ -108,8 +109,8 @@ public:
     bool isOptionDefinitionChecked();
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
-    QList<AbstractEditor *> openLogs();
-    SearchWidget* searchWidget() const;
+    QList<AbstractEdit*> openLogs();
+    SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
@@ -266,7 +267,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    SearchWidget *mSearchWidget = nullptr;
+    SearchDialog *mSearchDialog = nullptr;
 
     HelpWidget *mHelpWidget = nullptr;
     OptionWidget *mGamsOptionWidget = nullptr;
@@ -280,6 +281,7 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     WelcomePage *mWp = nullptr;
     ResultsView *mResultsView = nullptr;
+    SystemLogEdit *mSyslog = nullptr;
     ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
 

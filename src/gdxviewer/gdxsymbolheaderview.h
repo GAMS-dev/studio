@@ -21,8 +21,6 @@
 #define GDXSYMBOLHEADERVIEW_H
 
 #include <QHeaderView>
-#include <QString>
-#include <QIcon>
 
 namespace gams {
 namespace studio {
@@ -41,6 +39,9 @@ protected:
     void mousePressEvent(QMouseEvent * event) override;
 
 private:
+    bool pointFilterIconCollision(QPoint p);
+
+private:
     QString iconFilterOn = ":/img/filter";
     QString iconFilterOff = ":/img/filter-off";
     const double ICON_SCALE_FACTOR = 0.5;
@@ -49,8 +50,6 @@ private:
     mutable std::vector<int> mFilterIconWidth;
     mutable std::vector<int> mFilterIconX;
     mutable std::vector<int> mFilterIconY;
-
-    bool pointFilterIconCollision(QPoint p);
 };
 
 } // namespace gdxviewer

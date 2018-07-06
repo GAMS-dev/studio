@@ -18,36 +18,33 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "modeldialog.h"
+#include "ui_modeldialog.h"
 #include "commonpaths.h"
-
-#include <QDir>
-#include <QDirIterator>
-#include <QFile>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QDebug>
-#include <QPair>
-#include <QStandardPaths>
-#include <QFileDialog>
-#include <QSettings>
-#include <QHeaderView>
 #include "glbparser.h"
 #include "libraryitem.h"
 #include "librarymodel.h"
 
+#include <QDirIterator>
+#include <QMessageBox>
+#include <QTableView>
+#include <QHeaderView>
+#include <QSortFilterProxyModel>
+
 namespace gams {
 namespace studio {
 
-ModelDialog::ModelDialog(QWidget *parent):
-    ModelDialog("", parent)
+ModelDialog::ModelDialog(QWidget *parent)
+    : ModelDialog("", parent)
 {
 
 }
 
-ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
-    QDialog(parent), mUserLibPath(userLibPath)
+ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::ModelDialog),
+      mUserLibPath(userLibPath)
 {
-    ui.setupUi(this);
+    ui->setupUi(this);
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     QDir gamsSysDir(CommonPaths::systemDir());
@@ -88,39 +85,44 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent):
     if (!mUserLibPath.isEmpty())
         loadUserLibs();
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
-    connect(ui.tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
+    connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
+}
+
+ModelDialog::~ModelDialog()
+{
+    delete ui;
 }
 
 //TODO(CW): updating the header and displaying the number of models in a library works but this solution is not optimal
 void ModelDialog::changeHeader()
 {
-    for (int i=0; i<ui.tabWidget->count(); i++) {
+    for (int i=0; i<ui->tabWidget->count(); i++) {
         QTableView *tv = tableViewList.at(i);
         int rowCount = tv->model()->rowCount();
-        QString baseName = ui.tabWidget->tabText(i).split("(").at(0).trimmed();
-        ui.tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
+        QString baseName = ui->tabWidget->tabText(i).split("(").at(0).trimmed();
+        ui->tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
     }
 }
 
 void ModelDialog::updateSelectedLibraryItem()
 {
-    int idx = ui.tabWidget->currentIndex();
+    int idx = ui->tabWidget->currentIndex();
     QModelIndexList modelIndexList = tableViewList.at(idx)->selectionModel()->selectedIndexes();
     if (modelIndexList.size()>0) {
         QModelIndex index = modelIndexList.at(0);
         index = static_cast<const QAbstractProxyModel*>(index.model())->mapToSource(index);
         mSelectedLibraryItem = static_cast<LibraryItem*>(index.data(Qt::UserRole).value<void*>());
-        ui.pbLoad->setEnabled(true);
+        ui->pbLoad->setEnabled(true);
         if (mSelectedLibraryItem->longDescription().isEmpty()) //enable button only if a long description is available
-            ui.pbDescription->setEnabled(false);
+            ui->pbDescription->setEnabled(false);
         else
-            ui.pbDescription->setEnabled(true);
+            ui->pbDescription->setEnabled(true);
     }
     else {
         mSelectedLibraryItem = nullptr;
-        ui.pbLoad->setEnabled(false);
-        ui.pbDescription->setEnabled(false);
+        ui->pbLoad->setEnabled(false);
+        ui->pbDescription->setEnabled(false);
     }
 }
 
@@ -156,18 +158,18 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
     int tabIdx=0;
     if (isUserLibrary)
-        tabIdx = ui.tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
+        tabIdx = ui->tabWidget->addTab(tableView, QIcon(mIconUserLib), label);
     else
-        tabIdx = ui.tabWidget->addTab(tableView, label);
-    ui.tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());
+        tabIdx = ui->tabWidget->addTab(tableView, label);
+    ui->tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
 
     connect(tableView  , &QTableView::doubleClicked, this, &ModelDialog::accept);
-    connect(ui.pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
-    connect(ui.pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
+    connect(ui->pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
+    connect(ui->pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
-    connect(ui.lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(ui->lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterWildcard);
 
     connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
     connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
@@ -203,23 +205,18 @@ void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
     if (checked) {
         for (auto proxy : proxyModelList) {
-            disconnect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
-            connect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
+            disconnect(ui->lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
+            connect(ui->lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
         }
     }
     else {
         for (auto proxy : proxyModelList) {
-            disconnect(ui.lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
-            connect(ui.lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
+            disconnect(ui->lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
+            connect(ui->lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
         }
     }
-    emit ui.lineEdit->textChanged(ui.lineEdit->text());
+    emit ui->lineEdit->textChanged(ui->lineEdit->text());
 }
 
 }
 }
-
-
-
-
-

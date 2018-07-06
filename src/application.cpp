@@ -59,6 +59,11 @@ void Application::init()
     listen();
 }
 
+QString Application::serverName() const
+{
+    return mServerName;
+}
+
 MainWindow* Application::mainWindow() const
 {
     return mMainWindow.get();

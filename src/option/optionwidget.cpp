@@ -46,8 +46,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     setInterruptActionGroup(aInterrupt, actionStop);
 
     ui->gamsOptionWidget->hide();
-    ui->gamsOptionEditorCheckbox->setChecked(false);
-    connect(ui->gamsOptionEditorCheckbox, &QCheckBox::clicked, this, &OptionWidget::toggleOptionDefinition);
+    connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleOptionDefinition);
     connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::on_commandLineHelpTriggered);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
@@ -168,13 +167,12 @@ void OptionWidget::removeFromHistory(const QString &key)
 
 void OptionWidget::checkOptionDefinition(bool checked)
 {
-    ui->gamsOptionEditorCheckbox->setChecked(checked);
     toggleOptionDefinition(checked);
 }
 
 bool OptionWidget::isOptionDefinitionChecked()
 {
-    return ui->gamsOptionEditorCheckbox->isChecked();
+    return ui->gamsOptionEditorButton->isChecked();
 }
 
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
@@ -325,12 +323,17 @@ void OptionWidget::disableOptionEditor()
 
 void OptionWidget::toggleOptionDefinition(bool checked)
 {
+    ui->gamsOptionEditorButton->setChecked(checked);
     if (checked) {
+        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
+        ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  ) ;
         ui->gamsOptionWidget->show();
         main->updateRunState();
         emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
 
     } else {
+        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
+        ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  ) ;
         ui->gamsOptionWidget->hide();
         main->updateRunState();
         main->resizeOptionEditor(ui->gamsCommandWidget->size());

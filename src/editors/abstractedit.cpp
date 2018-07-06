@@ -19,33 +19,32 @@
  */
 #include <QMimeData>
 #include <QTextDocumentFragment>
-#include "editors/abstracteditor.h"
-#include "studiosettings.h"
+#include "editors/abstractedit.h"
 
 namespace gams {
 namespace studio {
 
-AbstractEditor::AbstractEditor(StudioSettings *settings, QWidget *parent)
-    : QPlainTextEdit(parent), mSettings(settings)
+AbstractEdit::AbstractEdit(QWidget *parent)
+    : QPlainTextEdit(parent)
 {
 }
 
-AbstractEditor::~AbstractEditor()
+AbstractEdit::~AbstractEdit()
 {
 
 }
 
-void AbstractEditor::setOverwriteMode(bool overwrite)
+void AbstractEdit::setOverwriteMode(bool overwrite)
 {
     QPlainTextEdit::setOverwriteMode(overwrite);
 }
 
-bool AbstractEditor::overwriteMode() const
+bool AbstractEdit::overwriteMode() const
 {
     return QPlainTextEdit::overwriteMode();
 }
 
-QMimeData* AbstractEditor::createMimeDataFromSelection() const
+QMimeData* AbstractEdit::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
     QTextCursor c = textCursor();
@@ -55,12 +54,7 @@ QMimeData* AbstractEditor::createMimeDataFromSelection() const
     return mimeData;
 }
 
-StudioSettings *AbstractEditor::settings() const
-{
-    return mSettings;
-}
-
-void AbstractEditor::afterContentsChanged(int, int, int)
+void AbstractEdit::afterContentsChanged(int, int, int)
 {
     QTextCursor tc = textCursor();
     int pos = tc.position();
@@ -68,7 +62,7 @@ void AbstractEditor::afterContentsChanged(int, int, int)
     setTextCursor(tc);
 }
 
-bool AbstractEditor::event(QEvent *e)
+bool AbstractEdit::event(QEvent *e)
 {
     if (e->type() == QEvent::ShortcutOverride) {
         e->ignore();

@@ -70,6 +70,12 @@ public:
     ///
     void init();
 
+    ///
+    /// \brief Get the server name.
+    /// \return Returns the server name.
+    ///
+    QString serverName() const;
+
 public slots:
 
     ///

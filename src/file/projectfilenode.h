@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-class CodeEditor;
+class CodeEdit;
 class ProjectGroupNode;
 class TextMark;
 typedef QPair<int,QString> ErrorHint;
@@ -123,7 +123,7 @@ public:
     bool isReadOnly();
 
     const FileMetrics& metrics() const;
-    void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
+    void jumpTo(const QTextCursor& cursor, int altLine = 0, int altColumn = 0);
     void showToolTip(const QVector<TextMark*> marks);
 
     void rehighlightAt(int pos);
@@ -139,7 +139,7 @@ public:
     void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
     void addFileWatcherForGdx();
     void unwatch();
-    
+
     TextMarkList* marks() const { return mMarks; }
     void unbindMarks() { mMarks = nullptr; }
 

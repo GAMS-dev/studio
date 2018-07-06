@@ -20,6 +20,8 @@
 #include <QDir>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QApplication>
+
 #include "projectrepo.h"
 #include "exception.h"
 #include "syntax.h"
@@ -332,7 +334,7 @@ void ProjectRepo::removeMarks(ProjectGroupNode* group)
     group->removeMarks(QSet<TextMark::Type>() << TextMark::error << TextMark::link << TextMark::none);
 }
 
-void ProjectRepo::updateLinkDisplay(AbstractEditor *editUnderCursor)
+void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
 {
     if (editUnderCursor) {
         ProjectFileNode *fc = fileNode(editUnderCursor);

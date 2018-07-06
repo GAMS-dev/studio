@@ -17,22 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "logeditor.h"
-#include "studiosettings.h"
+#ifndef ENCODINGSDIALOG_H
+#define ENCODINGSDIALOG_H
+
+#include <QDialog>
+
+namespace Ui {
+class SelectEncodings;
+}
 
 namespace gams {
 namespace studio {
 
-LogEditor::LogEditor(StudioSettings *settings, QWidget *parent) : AbstractEditor(settings, parent)
+class SelectEncodings : public QDialog
 {
-    setReadOnly(true);
-    setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEditor::WidgetWidth : AbstractEditor::NoWrap);
+    Q_OBJECT
+
+public:
+    explicit SelectEncodings(QList<int> selectedMibs, QWidget *parent = nullptr);
+    ~SelectEncodings();
+    QList<int> selectedMibs();
+
+private slots:
+
+    void on_pbCancel_clicked();
+
+    void on_pbSave_clicked();
+
+    void on_pbReset_clicked();
+
+private:
+    Ui::SelectEncodings *ui;
+};
+
+}
 }
 
-AbstractEditor::EditorType LogEditor::type()
-{
-    return EditorType::LogEditor;
-}
-
-}
-}
+#endif // ENCODINGSDIALOG_H

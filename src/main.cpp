@@ -21,17 +21,24 @@
 #include "exception.h"
 #include "version.h"
 
+#include <QSystemSemaphore>
+
 using gams::studio::Application;
 
 int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setApplicationVersion(STUDIO_VERSION);
-    Application app(argc, argv);
-    if (app.checkForOtherInstance())
-        return EXIT_SUCCESS; // terminate since another instance of studio is already running
-    app.init();
 
+    Application app(argc, argv);
+    QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
+    sem.acquire();
+    if (app.checkForOtherInstance()) {
+        sem.release();
+        return EXIT_SUCCESS; // terminate since another instance of studio is already running
+    }
+    app.init();
+    sem.release();
     app.setOrganizationName(GAMS_ORGANIZATION_STR);
     app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     app.setApplicationName(GAMS_PRODUCTNAME_STR);

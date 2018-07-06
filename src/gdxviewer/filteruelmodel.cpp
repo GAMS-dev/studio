@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "filteruelmodel.h"
+#include "gdxsymbol.h"
+#include "gdxsymboltable.h"
 
 #include <QTime>
 #include <QDebug>
@@ -54,7 +56,7 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return (int) mUels->size();
+    return static_cast<int>(mUels->size());
 }
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const

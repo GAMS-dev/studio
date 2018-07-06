@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CODEEDITOR_H
-#define CODEEDITOR_H
+#ifndef CODEEDIT_H
+#define CODEEDIT_H
 
 #include <QTextBlockUserData>
 #include <QHash>
 #include <QIcon>
 #include <QTimer>
-#include "editors/abstracteditor.h"
+#include "editors/abstractedit.h"
 #include "syntax/textmark.h"
 
 class QPaintEvent;
@@ -83,12 +83,12 @@ private:
     QVector<ParenthesesPos> mparentheses;
 };
 
-class CodeEditor : public AbstractEditor
+class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
 public:
-    CodeEditor(StudioSettings *settings, QWidget *parent = nullptr);
+    CodeEdit(QWidget *parent = nullptr);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -112,6 +112,8 @@ public:
     ParenthesesMatch matchParentheses();
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
+    void setSettings(StudioSettings *settings);
+    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -167,7 +169,7 @@ private:
     class BlockEdit
     {
     public:
-        BlockEdit(CodeEditor* edit, int blockNr, int colNr);
+        BlockEdit(CodeEdit* edit, int blockNr, int colNr);
         virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
@@ -195,7 +197,7 @@ private:
         bool overwriteMode() const;
 
     private:
-        CodeEditor* mEdit;
+        CodeEdit* mEdit;
         int mStartLine = 0;
         int mCurrentLine = 0;
         int mColumn = 0;
@@ -218,6 +220,7 @@ private:
     QTimer mWordDelay;
     QTimer mParenthesesDelay;
     ParenthesesMatch mParenthesesMatch;
+    StudioSettings *mSettings = nullptr;
 
 public:
     BlockEdit *blockEdit() const;
@@ -230,7 +233,7 @@ public:
 class LineNumberArea : public QWidget
 {
 public:
-    LineNumberArea(CodeEditor *editor) : QWidget(editor) {
+    LineNumberArea(CodeEdit *editor) : QWidget(editor) {
         mCodeEditor = editor;
     }
 
@@ -247,7 +250,7 @@ protected:
     }
 
 private:
-    CodeEditor *mCodeEditor;
+    CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
 
 };
@@ -256,4 +259,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // CODEEDITOR_H
+#endif // CODEEDIT_H
