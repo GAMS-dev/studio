@@ -78,6 +78,7 @@ private slots:
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString &arg1);
+    void on_cb_caseSens_stateChanged(int state);
 
 protected:
     void showEvent(QShowEvent *event);
