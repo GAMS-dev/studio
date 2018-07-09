@@ -325,7 +325,8 @@ void ProjectFileNode::jumpTo(const QTextCursor &cursor, int altLine, int altColu
     if (!mEditors.size())
         return;
     CodeEdit* edit = ProjectAbstractNode::toCodeEdit(mEditors.first());
-    edit->jumpTo(cursor, altLine, altColumn);
+    if (edit)
+        edit->jumpTo(cursor, altLine, altColumn);
 }
 
 void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
