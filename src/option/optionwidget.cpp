@@ -116,8 +116,6 @@ OptionWidget::~OptionWidget()
 
 QString OptionWidget::on_runAction(RunActionState state)
 {
-//    mCommandLineHistory->addIntoCurrentContextHistory( ui->gamsOptionCommandLine->getCurrentOption());
-//    //   Tokenizer->tokenize(ui->gamsOptionCommandLine->getCurrentOption()),forcedOptionItems) );
     QString commandLineStr =  ui->gamsOptionCommandLine->getCurrentOption();
 
     if (!commandLineStr.endsWith(" "))
@@ -267,11 +265,11 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
-    setRunActionsEnabled( isRunnable & !isRunning ); //isRunnable && isMain && !isRunning );
-    setInterruptActionsEnabled( isRunnable & isRunning ); //isRunnable && isMain && isRunning );
+    setRunActionsEnabled( isRunnable & !isRunning );
+    setInterruptActionsEnabled( isRunnable & isRunning );
 
-    ui->gamsOptionWidget->setEnabled( isRunnable & !isRunning ); //isRunnable && (!isMain || (isMain && !isRunning)) );
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly( isRunning ); // isMain && isRunning );
+    ui->gamsOptionWidget->setEnabled( isRunnable & !isRunning );
+    ui->gamsOptionCommandLine->lineEdit()->setReadOnly( isRunning );
     ui->gamsOptionCommandLine->lineEdit()->setEnabled( isRunnable & ui->gamsOptionWidget->isHidden() );
 }
 
@@ -295,20 +293,20 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
 
-void OptionWidget::loadCommandLineOption(const QString &location)
-{
-    ui->gamsOptionCommandLine->clear();
-    QStringList option =  mCommandLineHistory->getHistoryFor(location);
-    foreach(QString str, option) {
-       ui->gamsOptionCommandLine->insertItem(0, str );
-    }
-    ui->gamsOptionCommandLine->setCurrentIndex(0);
-    ui->gamsOptionCommandLine->setCurrentContext(location);
-    ui->gamsOptionCommandLine->setEnabled(true);
+//void OptionWidget::loadCommandLineOption(const QString &location)
+//{
+//    ui->gamsOptionCommandLine->clear();
+//    QStringList option =  mCommandLineHistory->getHistoryFor(location);
+//    foreach(QString str, option) {
+//       ui->gamsOptionCommandLine->insertItem(0, str );
+//    }
+//    ui->gamsOptionCommandLine->setCurrentIndex(0);
+//    ui->gamsOptionCommandLine->setCurrentContext(location);
+//    ui->gamsOptionCommandLine->setEnabled(true);
 
-//    setRunActionsEnabled(false);
-//    setInterruptActionsEnabled(false);
-}
+////    setRunActionsEnabled(false);
+////    setInterruptActionsEnabled(false);
+//}
 
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {
@@ -448,6 +446,11 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
     } /*else if (widget == ui->gamsOptionCommandLine) {
     }*/
     return selectedOptions;
+}
+
+QString OptionWidget::getCurrentCommandLineData() const
+{
+    return ui->gamsOptionCommandLine->getCurrentOption();
 }
 
 }

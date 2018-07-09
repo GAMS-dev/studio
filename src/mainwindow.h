@@ -256,7 +256,7 @@ private:
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     bool isActiveTabRunnable();
     bool isRecentGroupInRunningState();
-    void loadCommandLineOptions(ProjectFileNode* fc);
+    void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);

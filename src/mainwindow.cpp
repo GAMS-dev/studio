@@ -733,19 +733,37 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* fn)
+void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
     QStringList runParametersHistory;
-    if (!fn) { // asssuming a welcome page
-        mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
-        return;
+
+    if (oldfn) { // switch from a non-welcome page
+        ProjectGroupNode* oldgroup = oldfn->parentEntry();
+        if (!oldgroup) return;
+
+        oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
+
+        if (!fn) { // switch to a welcome page
+            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            return;
+        }
+
+        ProjectGroupNode* group = fn->parentEntry();
+        if (!group) return;
+
+        if (group == oldgroup) return;
+
+        runParametersHistory = group->getRunParametersHistory();
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+
+    } else { // switch from a welcome page
+        if (!fn) return;
+
+        ProjectGroupNode* group = fn->parentEntry();
+        if (!group) return;
+
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
     }
-
-    ProjectGroupNode* group = fn->parentEntry();
-    if (!group) return;
-
-    runParametersHistory = group->getRunParametersHistory();
-    mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
 }
 
 void MainWindow::activeTabChanged(int index)
@@ -759,7 +777,7 @@ void MainWindow::activeTabChanged(int index)
     AbstractEdit* edit = ProjectFileNode::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
 
-    loadCommandLineOptions(mProjectRepo.fileNode(editWidget));
+    loadCommandLineOptions(oldTab, mProjectRepo.fileNode(editWidget));
     updateRunState();
 
     if (edit) {
@@ -1421,7 +1439,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     if (!group) return;
 
     parseFilesFromCommandLine(commandLineStr, group);
-    group->addRunParametersHistory( commandLineStr );
+    group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())

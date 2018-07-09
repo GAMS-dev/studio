@@ -68,6 +68,8 @@ public:
     bool isAnOptionWidgetFocused(QWidget* focusWidget);
     QString getSelectedOptionName(QWidget* widget) const;
 
+    QString getCurrentCommandLineData() const;
+
 signals:
     void optionEditorDisabled();
     void optionLoaded(const QString &location);
@@ -82,7 +84,7 @@ public slots:
     void showOptionContextMenu(const QPoint &pos);
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
-    void loadCommandLineOption(const QString &location);
+//    void loadCommandLineOption(const QString &location);
     void loadCommandLineOption(const QStringList &history);
     void disableOptionEditor();
 
