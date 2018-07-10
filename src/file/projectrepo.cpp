@@ -362,6 +362,11 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = ensureGroup(node["file"].toString());
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
+                    if (node.contains("options") && node["options"].isArray()) {
+                       foreach (const QJsonValue & val, node["options"].toArray()) {
+                           subGroup->addRunParametersHistory( val.toString() );
+                       }
+                    }
                     readGroup(subGroup, gprArray);
 
                     if (subGroup->childCount() > 0) {
@@ -399,6 +404,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
                                                                 : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
+            nodeObject["options"] = QJsonArray::fromStringList(subGroup->getRunParametersHistory());
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
             nodeObject["nodes"] = subArray;

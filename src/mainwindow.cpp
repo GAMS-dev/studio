@@ -735,29 +735,29 @@ void MainWindow::codecReload(QAction *action)
 
 void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
-    QStringList runParametersHistory;
-
     if (oldfn) { // switch from a non-welcome page
         ProjectGroupNode* oldgroup = oldfn->parentEntry();
         if (!oldgroup) return;
-
         oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
 
         if (!fn) { // switch to a welcome page
+            QStringList runParametersHistory;
             mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
             return;
         }
 
         ProjectGroupNode* group = fn->parentEntry();
-        if (!group) return;
-
+        if (!group) return;       
         if (group == oldgroup) return;
 
-        runParametersHistory = group->getRunParametersHistory();
         mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
 
     } else { // switch from a welcome page
-        if (!fn) return;
+        if (!fn) { // switch to a welcome page
+            QStringList runParametersHistory;
+            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            return;
+        }
 
         ProjectGroupNode* group = fn->parentEntry();
         if (!group) return;
@@ -1439,6 +1439,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     if (!group) return;
 
     parseFilesFromCommandLine(commandLineStr, group);
+
     group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
 
@@ -1523,9 +1524,6 @@ void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
-    // loadCommandLineOptions(fc);
-    // TODO As an activated tab should synchronize with the shown option,
-    // also activate Tab in addition to loadCommandLineOptions(fc).
     updateRunState();
 }
 
@@ -1740,8 +1738,6 @@ void MainWindow::closeFileEditors(FileId fileId)
         fc->removeEditor(edit);
         edit->deleteLater();
     }
-    // purge history
-    getGamsOptionWidget()->removeFromHistory(fc->location());
 }
 
 void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip)
@@ -1764,6 +1760,7 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mProjectRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
     } else {
         openFileNode(fileNode, focus, codecMip);
     }
