@@ -544,6 +544,9 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
         }
     } else {
         setSearchStatus(SearchStatus::NoResults);
+        QTextCursor tc = edit->textCursor();
+        tc.clearSelection();
+        edit->setTextCursor(tc);
         return; // search had no matches so do nothing at all
     }
 
@@ -588,12 +591,12 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
     mHasChanged = true;
     setSearchStatus(SearchStatus::Clear);
     clearResults();
+    searchParameterChanged();
 
 // removed due to performance issues in larger files:
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
 //    if (fn)
 //        fn->removeTextMarks(TextMark::match);
-    searchParameterChanged();
 }
 
 void SearchDialog::insertHistory()
@@ -626,11 +629,13 @@ void SearchDialog::searchParameterChanged() {
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     searchParameterChanged();
 }
 
 void SearchDialog::on_cb_regex_stateChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     searchParameterChanged();
 }
 
