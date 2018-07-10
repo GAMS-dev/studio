@@ -25,7 +25,6 @@
 #include "option.h"
 #include "commandlineoption.h"
 #include "commandlinetokenizer.h"
-#include "commandlinehistory.h"
 
 namespace Ui {
 class OptionWidget;
@@ -56,10 +55,6 @@ public:
     QString on_runAction(RunActionState state);
     void on_interruptAction();
     void on_stopAction();
-
-    void setOptionHistory(QMap<QString, QStringList> opts);
-    QMap<QString, QStringList> getOptionHistory() const;
-    void removeFromHistory(const QString &key);
 
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
@@ -109,7 +104,7 @@ private:
 
     MainWindow* main;
 
-    CommandLineHistory* mCommandLineHistory;
+//    CommandLineHistory* mCommandLineHistory;
     CommandLineTokenizer* mGamsOptionTokenizer;
 };
 

@@ -40,7 +40,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->setupUi(this);
 
     mGamsOptionTokenizer = new CommandLineTokenizer(QString("optgams.def"));
-    mCommandLineHistory = new CommandLineHistory(this);
+//    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
@@ -110,7 +110,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 OptionWidget::~OptionWidget()
 {
     delete ui;
-    delete mCommandLineHistory;
+//    delete mCommandLineHistory;
     delete mGamsOptionTokenizer;
 }
 
@@ -146,21 +146,6 @@ void OptionWidget::on_interruptAction()
 void OptionWidget::on_stopAction()
 {
     ui->gamsInterruptToolButton->setDefaultAction( actionStop );
-}
-
-void OptionWidget::setOptionHistory(QMap<QString, QStringList> opts)
-{
-    mCommandLineHistory->setAllHistory(opts);
-}
-
-QMap<QString, QStringList> OptionWidget::getOptionHistory() const
-{
-    return mCommandLineHistory->allHistory();
-}
-
-void OptionWidget::removeFromHistory(const QString &key)
-{
-    mCommandLineHistory->removeFromHistory(key);
 }
 
 void OptionWidget::checkOptionDefinition(bool checked)

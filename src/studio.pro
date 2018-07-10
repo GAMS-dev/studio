@@ -99,7 +99,6 @@ SOURCES += \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
-    option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
     option/commandlinetokenizer.cpp \
     option/lineeditcompleteevent.cpp \
@@ -184,7 +183,6 @@ HEADERS += \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
-    option/commandlinehistory.h \
     option/commandlineoption.h \
     option/commandlinetokenizer.h \
     option/lineeditcompleteevent.h \
