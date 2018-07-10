@@ -80,6 +80,10 @@ private slots:
     void on_combo_search_currentTextChanged(const QString &arg1);
     void on_cb_caseSens_stateChanged(int state);
 
+    void on_cb_wholeWords_stateChanged(int arg1);
+
+    void on_cb_regex_stateChanged(int arg1);
+
 protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
@@ -94,6 +98,7 @@ private:
     void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
     void insertHistory();
+    void searchParameterChanged();
 
     enum SearchScope {
         ThisFile = 0,

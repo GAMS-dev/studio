@@ -489,6 +489,7 @@ Result::Result(int locLineNr, int locCol, QString locFile, QString node) :
 void SearchDialog::on_combo_scope_currentIndexChanged(int index)
 {
     ui->combo_filePattern->setEnabled(index != SearchScope::ThisFile);
+    searchParameterChanged();
 }
 
 void SearchDialog::on_btn_back_clicked()
@@ -592,15 +593,7 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
 //    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
 //    if (fn)
 //        fn->removeTextMarks(TextMark::match);
-}
-
-void SearchDialog::on_cb_caseSens_stateChanged(int state)
-{
-    QCompleter *completer = ui->combo_search->completer();
-    if (Qt::Checked == state)
-        completer->setCaseSensitivity(Qt::CaseSensitive);
-    else
-        completer->setCaseSensitivity(Qt::CaseInsensitive);
+    searchParameterChanged();
 }
 
 void SearchDialog::insertHistory()
@@ -624,6 +617,32 @@ void SearchDialog::insertHistory()
         ui->combo_filePattern->insertItem(0, filePattern);
         ui->combo_filePattern->setCurrentIndex(0);
     }
+}
+
+void SearchDialog::searchParameterChanged() {
+    setSearchStatus(SearchDialog::Clear);
+    invalidateCache();
+}
+
+void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
+{
+    searchParameterChanged();
+}
+
+void SearchDialog::on_cb_regex_stateChanged(int arg1)
+{
+    searchParameterChanged();
+}
+
+void SearchDialog::on_cb_caseSens_stateChanged(int state)
+{
+    QCompleter *completer = ui->combo_search->completer();
+    if (Qt::Checked == state)
+        completer->setCaseSensitivity(Qt::CaseSensitive);
+    else
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+
+    searchParameterChanged();
 }
 
 }
