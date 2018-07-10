@@ -574,12 +574,12 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
             edit->setTextCursor(matchSelection);
             edit->centerCursor();
         }
-    } else {
+    } else { // search had no matches so do nothing
         setSearchStatus(SearchStatus::NoResults);
         QTextCursor tc = edit->textCursor();
         tc.clearSelection();
         edit->setTextCursor(tc);
-        return; // search had no matches so do nothing at all
+        return;
     }
 
     // set match and counter
