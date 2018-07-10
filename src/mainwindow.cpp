@@ -747,7 +747,8 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
+    if (oldTab)
+        oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, true);
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));

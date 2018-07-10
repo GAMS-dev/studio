@@ -570,6 +570,7 @@ void SearchDialog::on_btn_clear_clicked()
 
 void SearchDialog::clearResults()
 {
+    // TODO: maybe this should remove matches in all files
     ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
     if (!fc) return;
     fc->removeTextMarks(TextMark::match, true);
@@ -594,9 +595,7 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
     searchParameterChanged();
 
 // removed due to performance issues in larger files:
-//    FileNode *fn = mMain->fileRepository()->fileNode(mMain->recent()->editor);
-//    if (fn)
-//        fn->removeTextMarks(TextMark::match);
+//    clearResults();
 }
 
 void SearchDialog::insertHistory()
