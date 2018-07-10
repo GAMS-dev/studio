@@ -35,6 +35,10 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
     explicit SearchDialog(MainWindow *parent = nullptr);
     ~SearchDialog();
 
@@ -48,10 +52,6 @@ public:
 
     QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false);
 
-    enum SearchDirection {
-        Forward = 0,
-        Backward = 1
-    };
     void findNext(SearchDialog::SearchDirection direction);
     void clearResults();
     void updateReplaceActionAvailability();
@@ -99,6 +99,8 @@ private:
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
     void insertHistory();
     void searchParameterChanged();
+    void findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
 
     enum SearchScope {
         ThisFile = 0,

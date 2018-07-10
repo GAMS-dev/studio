@@ -179,6 +179,52 @@ QList<Result> SearchDialog::findInGroup(ProjectAbstractNode *fsc)
     return matches;
 }
 
+void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+{
+    int lineCounter = 0;
+    QFile file(fc->location());
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        while (!in.atEnd()) { // read file
+            lineCounter++;
+            QString line = in.readLine();
+
+            QRegularExpressionMatch match;
+            QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
+            while (i.hasNext()) {
+                match = i.next();
+                matches->addResult(lineCounter, match.capturedStart(),
+                                  file.fileName(), line.trimmed());
+                if (isOpenFile)
+                    fc->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
+            }
+        }
+        file.close();
+    }
+}
+
+void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+{
+    QTextCursor lastItem = QTextCursor(fc->document());
+    QTextCursor item;
+    do {
+        item = fc->document()->find(searchRegex, lastItem, getFlags());
+        if (item != lastItem) lastItem = item;
+        else break;
+
+        if (!item.isNull()) {
+            matches->addResult(item.blockNumber()+1, item.columnNumber() - searchTerm().length(),
+                              fc->location(), item.block().text().trimmed());
+            if (isOpenFile) {
+                int length = item.selectionEnd() - item.selectionStart();
+                fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
+                                     item.columnNumber() - length, length);
+            }
+        }
+    } while (!item.isNull());
+
+}
+
 QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilters)
 {
     if (!fsc) return QList<Result>();
@@ -213,26 +259,11 @@ QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilter
 
         bool isOpenFile = (fc == mMain->projectRepo()->fileNode(mMain->recent()->editor()));
 
-        int lineCounter = 0;
-        QFile file(fc->location());
-        if (file.open(QIODevice::ReadOnly)) {
-            QTextStream in(&file);
-            while (!in.atEnd()) { // read file
-                lineCounter++;
-                QString line = in.readLine();
-
-                QRegularExpressionMatch match;
-                QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
-                while (i.hasNext()) {
-                    match = i.next();
-                    matches.addResult(lineCounter, match.capturedStart(),
-                                      file.fileName(), line.trimmed());
-                    if (isOpenFile)
-                        fc->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
-                }
-            }
-            file.close();
-        }
+        // when a file has unsaved changes a different search strategy is used.
+        if (fc->isModified())
+            findInDoc(searchRegex, isOpenFile, fc, &matches);
+        else
+            findOnDisk(searchRegex, isOpenFile, fc, &matches);
 
         if (isOpenFile && fc->highlighter())
             fc->highlighter()->rehighlight();
