@@ -572,6 +572,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
 
         } else { // found next match
             edit->setTextCursor(matchSelection);
+            edit->centerCursor();
         }
     } else {
         setSearchStatus(SearchStatus::NoResults);
