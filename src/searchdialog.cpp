@@ -222,7 +222,6 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, Pr
             }
         }
     } while (!item.isNull());
-
 }
 
 QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilters)
@@ -450,9 +449,10 @@ void SearchDialog::on_searchPrev()
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
-    Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
     //TODO: make smarter
+    Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
     invalidateCache();
+    searchParameterChanged();
 }
 
 void SearchDialog::invalidateCache()
