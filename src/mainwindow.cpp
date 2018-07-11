@@ -1704,7 +1704,8 @@ void MainWindow::closeFile(ProjectFileNode* file)
         parentGroup->removeRunnableGms();
         for (int i = 0; i < parentGroup->childCount(); i++) {
             // choose next as main gms file
-            if (parentGroup->childEntry(i)->location().endsWith(".gms")) {
+            QFileInfo fi(parentGroup->childEntry(i)->location());
+            if (FileType::from(fi.suffix()) == FileType::Gms) {
                 parentGroup->setRunnableGms(static_cast<ProjectFileNode*>(parentGroup->childEntry(i)));
                 break;
             }
