@@ -1298,7 +1298,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_Escape) {
         mSearchDialog->hide();
-        mSearchDialog->clearResults();
+        mSearchDialog->clearSearch();
     }
 
     QMainWindow::keyPressEvent(event);
