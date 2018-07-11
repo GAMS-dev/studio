@@ -266,7 +266,7 @@ void ProjectGroupNode::attachFile(const QString &filepath)
             updateChildNodes();
         }
 
-        if (runnableGms().isEmpty() && filepath.endsWith(".gms", Qt::CaseInsensitive)) {
+        if (runnableGms().isEmpty() && FileType::from(fi.suffix()) == FileType::Gms) {
             ProjectFileNode *gms = nullptr;
             findOrCreateFileNode(filepath, gms, this);
             setRunnableGms(gms);
