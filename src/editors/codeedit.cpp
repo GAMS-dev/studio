@@ -526,50 +526,87 @@ void CodeEdit::removeLine()
 
 void CodeEdit::commentLine()
 {
-    QPoint beFrom;
-    QPoint beTo;
-    bool inBlockEdit = mBlockEdit;
-    QTextCursor cursor = textCursor();
-    if (inBlockEdit) {
-        beFrom.setX(mBlockEdit->colTo());
-        beTo.setX(mBlockEdit->colFrom());
-        beFrom.setY(mBlockEdit->startLine());
-        beTo.setY(mBlockEdit->currentLine());
-        QTextBlock anc = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
-        cursor.setPosition(anc.position() + mBlockEdit->colFrom());
-        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
-        endBlockEdit();
-    }
-    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
-    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
-    bool removeComment = true;
-    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
-        if (!block.text().startsWith('*')) {
-            removeComment = false;
-            break;
+    if (mBlockEdit) {
+        QTextCursor cursor = textCursor();
+        qDebug() << "start line: " << mBlockEdit->startLine();
+        QTextBlock startBlock = cursor.document()->findBlockByLineNumber(mBlockEdit->startLine());
+        qDebug() << "start block pos: " << startBlock.position();
+    } else {
+        QTextCursor cursor = textCursor();
+        QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+        int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+
+        bool hasComment = hasLineComment(startBlock, lastBlockNr);
+        cursor.beginEditBlock();
+        QTextCursor anchor = cursor;
+        anchor.setPosition(anchor.anchor());
+        for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+            cursor.setPosition(block.position());
+            if (hasComment)
+                cursor.deleteChar();
+            else
+                cursor.insertText("*");
         }
+        cursor.setPosition(anchor.position());
+        cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+        cursor.endEditBlock();
+        setTextCursor(cursor);
     }
-    cursor.beginEditBlock();
-    QTextCursor anchor = cursor;
-    anchor.setPosition(anchor.anchor());
+
+    //recalcExtraSelections();
+
+//    QPoint beFrom;
+//    QPoint beTo;
+//    bool inBlockEdit = mBlockEdit;
+//    QTextCursor cursor = textCursor();
+//    if (inBlockEdit) {
+//        beFrom.setX(mBlockEdit->colTo());
+//        beTo.setX(mBlockEdit->colFrom());
+//        beFrom.setY(mBlockEdit->startLine());
+//        beTo.setY(mBlockEdit->currentLine());
+//        QTextBlock anc = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
+//        cursor.setPosition(anc.position() + mBlockEdit->colFrom());
+//        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
+//        endBlockEdit();
+//    }
+//    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+//    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+//    bool removeComment = true;
+//    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+//        if (!block.text().startsWith('*')) {
+//            removeComment = false;
+//            break;
+//        }
+//    }
+//    cursor.beginEditBlock();
+//    QTextCursor anchor = cursor;
+//    anchor.setPosition(anchor.anchor());
+//    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+//        cursor.setPosition(block.position());
+//        if (removeComment) {
+//            cursor.deleteChar();
+//        } else {
+//            cursor.insertText("*");
+//        }
+//    }
+//    cursor.setPosition(anchor.position());
+//    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+//    cursor.endEditBlock();
+//    setTextCursor(cursor);
+//    if (inBlockEdit) {
+//        int offset = removeComment ? -1 : 1;
+//        startBlockEdit(beFrom.y(), beFrom.x()+offset);
+//        mBlockEdit->selectTo(beTo.y(), beTo.x()+offset);
+//    }
+}
+
+bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
+    bool hasComment = true;
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
-        cursor.setPosition(block.position());
-        if (removeComment) {
-            cursor.deleteChar();
-        } else {
-            cursor.insertText("*");
-        }
+        if (!block.text().startsWith('*'))
+            hasComment = false;
     }
-    cursor.setPosition(anchor.position());
-    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
-    cursor.endEditBlock();
-    setTextCursor(cursor);
-    if (inBlockEdit) {
-        int offset = removeComment ? -1 : 1;
-        startBlockEdit(beFrom.y(), beFrom.x()+offset);
-        mBlockEdit->selectTo(beTo.y(), beTo.x()+offset);
-    }
-    recalcExtraSelections();
+    return hasComment;
 }
 
 int CodeEdit::minIndentCount(int fromLine, int toLine)
