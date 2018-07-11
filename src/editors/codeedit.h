@@ -163,6 +163,7 @@ private:
     void updateTabSize();
     inline int assignmentKind(int p);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
+    void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
 
     static int findAlphaNum(const QString &text, int start, bool back);
 

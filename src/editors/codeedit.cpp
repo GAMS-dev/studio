@@ -526,30 +526,15 @@ void CodeEdit::removeLine()
 
 void CodeEdit::commentLine()
 {
+    QTextCursor cursor = textCursor();
     if (mBlockEdit) {
-        QTextCursor cursor = textCursor();
         qDebug() << "start line: " << mBlockEdit->startLine();
         QTextBlock startBlock = cursor.document()->findBlockByLineNumber(mBlockEdit->startLine());
         qDebug() << "start block pos: " << startBlock.position();
     } else {
-        QTextCursor cursor = textCursor();
         QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
         int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
-
-        bool hasComment = hasLineComment(startBlock, lastBlockNr);
-        cursor.beginEditBlock();
-        QTextCursor anchor = cursor;
-        anchor.setPosition(anchor.anchor());
-        for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
-            cursor.setPosition(block.position());
-            if (hasComment)
-                cursor.deleteChar();
-            else
-                cursor.insertText("*");
-        }
-        cursor.setPosition(anchor.position());
-        cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
-        cursor.endEditBlock();
+        applyLineComment(cursor, startBlock, lastBlockNr);
         setTextCursor(cursor);
     }
 
@@ -608,6 +593,25 @@ bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
     }
     return hasComment;
 }
+
+void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr)
+{
+    bool hasComment = hasLineComment(startBlock, lastBlockNr);
+    cursor.beginEditBlock();
+    QTextCursor anchor = cursor;
+    anchor.setPosition(anchor.anchor());
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        cursor.setPosition(block.position());
+        if (hasComment)
+            cursor.deleteChar();
+        else
+            cursor.insertText("*");
+    }
+    cursor.setPosition(anchor.position());
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+}
+
 
 int CodeEdit::minIndentCount(int fromLine, int toLine)
 {
