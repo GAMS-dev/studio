@@ -194,7 +194,7 @@ void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, P
             while (i.hasNext()) {
                 match = i.next();
                 matches->addResult(lineCounter, match.capturedStart(),
-                                  file.fileName(), line.trimmed());
+                                   file.fileName(), line.trimmed());
                 if (isOpenFile)
                     fc->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
             }
@@ -264,8 +264,9 @@ QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilter
         else
             findOnDisk(searchRegex, isOpenFile, fc, &matches);
 
-        if (isOpenFile && fc->highlighter())
-            fc->highlighter()->rehighlight();
+// TODO: check this:
+//        if (isOpenFile && fc->highlighter())
+//            fc->highlighter()->rehighlight();
     }
     return matches.resultList();
 }
@@ -600,15 +601,6 @@ void SearchDialog::on_btn_clear_clicked()
     clearSearch();
 }
 
-void SearchDialog::clearResults()
-{
-    // TODO: maybe this should remove matches in all files
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-    if (!fc) return;
-    fc->removeTextMarks(TextMark::match, true);
-    setSearchStatus(SearchStatus::Clear);
-}
-
 void SearchDialog::clearSearch()
 {
     ui->combo_search->clearEditText();
@@ -617,17 +609,26 @@ void SearchDialog::clearSearch()
     clearResults();
 }
 
+void SearchDialog::clearResults()
+{
+    // TODO: maybe this should remove matches in all files
+    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    if (!fc) return;
+    fc->removeTextMarks(TextMark::match, true);
+    setSearchStatus(SearchStatus::Clear);
+
+    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    QTextCursor tc = edit->textCursor();
+    tc.clearSelection();
+    edit->setTextCursor(tc);
+}
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     mHasChanged = true;
     setSearchStatus(SearchStatus::Clear);
-    clearResults();
     searchParameterChanged();
-
-// removed due to performance issues in larger files:
-//    clearResults();
 }
 
 void SearchDialog::insertHistory()
