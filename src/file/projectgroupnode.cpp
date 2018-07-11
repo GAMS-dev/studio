@@ -40,7 +40,7 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
 
     // fix for .lst-as-mainfile bug
-    if (runnableFile.suffix() == "gms")
+    if (FileMetrics(runnableFile).fileType() == FileType::Gms)
         mGmsFileName = runnableFile.absoluteFilePath();
     else if (alternateFile.exists())
         mGmsFileName = alternateFile.fileName();
