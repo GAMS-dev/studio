@@ -1483,8 +1483,11 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
 
-    if (gmsFilePath == "")
-        mSyslog->appendLog("No runnable GMS file found.", LogMsgType::Warning);
+    if (gmsFilePath == "") {
+        mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
+        ui->actionShow_System_Log->trigger();
+        return;
+    }
 
     QFileInfo gmsFileInfo(gmsFilePath);
 
