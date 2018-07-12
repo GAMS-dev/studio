@@ -46,7 +46,7 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
-class SearchWidget;
+class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
@@ -110,7 +110,7 @@ public:
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEdit*> openLogs();
-    SearchWidget* searchWidget() const;
+    SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
     RecentData *recent();
     StudioSettings *settings() const;
@@ -266,7 +266,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    SearchWidget *mSearchWidget = nullptr;
+    SearchDialog *mSearchDialog = nullptr;
 
     HelpWidget *mHelpWidget = nullptr;
     OptionWidget *mGamsOptionWidget = nullptr;

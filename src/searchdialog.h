@@ -17,26 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHWIDGET_H
-#define SEARCHWIDGET_H
+#ifndef SEARCHDIALOG_H
+#define SEARCHDIALOG_H
 
-#include "mainwindow.h"
 #include <QDialog>
+#include "mainwindow.h"
 
 namespace Ui {
-class SearchWidget;
+class SearchDialog;
 }
 
 namespace gams {
 namespace studio {
 
-class SearchWidget : public QDialog
+class SearchDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit SearchWidget(MainWindow *parent = nullptr);
-    ~SearchWidget();
+    explicit SearchDialog(MainWindow *parent = nullptr);
+    ~SearchDialog();
 
     bool regex();
     bool caseSens();
@@ -52,7 +52,7 @@ public:
         Forward = 0,
         Backward = 1
     };
-    void findNext(SearchWidget::SearchDirection direction);
+    void findNext(SearchDialog::SearchDirection direction);
     void clearResults();
     void updateReplaceActionAvailability();
 
@@ -66,6 +66,9 @@ public slots:
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
 
+protected slots:
+    void returnPressed();
+
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
@@ -75,20 +78,15 @@ private slots:
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString &arg1);
+    void on_cb_caseSens_stateChanged(int state);
 
-private:
-    Ui::SearchWidget *ui;
-    MainWindow *mMain;
-    QTextCursor mSelection;       // selected with find
-    QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool mHasChanged = false;
-    QList<Result> mCachedResults;
-
-
+protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
-    QFlags<QTextDocument::FindFlag> getFlags();
     void closeEvent(QCloseEvent *event);
+
+private:
+    QFlags<QTextDocument::FindFlag> getFlags();
     void simpleReplaceAll();
     QList<Result> findInGroup(ProjectAbstractNode *fsc = nullptr);
     QList<Result> findInOpenFiles();
@@ -111,8 +109,17 @@ private:
     };
 
     void setSearchStatus(SearchStatus status);
+
+private:
+    Ui::SearchDialog *ui;
+    MainWindow *mMain;
+    QTextCursor mSelection;       // selected with find
+    QTextCursor mLastSelection;   // last selection, as starting point for find next
+    bool mHasChanged = false;
+    QList<Result> mCachedResults;
+    bool mFirstReturn = false;
 };
 
 }
 }
-#endif // SEARCHWIDGET_H
+#endif // SEARCHDIALOG_H

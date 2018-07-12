@@ -26,7 +26,7 @@
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
 
@@ -118,10 +118,10 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("windowState", main->saveState());
 
     // search window
-    mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
-    mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
-    mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
-    mAppSettings->setValue("selectedScope", main->searchWidget()->selectedScope());
+    mAppSettings->setValue("searchRegex", main->searchDialog()->regex());
+    mAppSettings->setValue("searchCaseSens", main->searchDialog()->caseSens());
+    mAppSettings->setValue("searchWholeWords", main->searchDialog()->wholeWords());
+    mAppSettings->setValue("selectedScope", main->searchDialog()->selectedScope());
 
     mAppSettings->endGroup();
 
