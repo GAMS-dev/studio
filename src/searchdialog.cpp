@@ -224,7 +224,7 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, Pr
     } while (!item.isNull());
 }
 
-QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilters)
+QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilters, QString searchRegex)
 {
     if (!fsc) return QList<Result>();
 
@@ -238,7 +238,14 @@ QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilter
         }
     }
 
-    QString searchTerm = ui->combo_search->currentText();
+    QString searchTerm;
+    if (searchRegex.isEmpty())
+        searchTerm = ui->combo_search->currentText();
+    else
+        searchTerm = searchRegex;
+
+    if (searchTerm.isEmpty()) return QList<Result>();
+
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
