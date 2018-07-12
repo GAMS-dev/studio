@@ -528,9 +528,18 @@ void CodeEdit::commentLine()
 {
     QTextCursor cursor = textCursor();
     if (mBlockEdit) {
-        qDebug() << "start line: " << mBlockEdit->startLine();
-        QTextBlock startBlock = cursor.document()->findBlockByLineNumber(mBlockEdit->startLine());
-        qDebug() << "start block pos: " << startBlock.position();
+        QTextBlock startBlock = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
+        QTextBlock endBlock = cursor.document()->findBlockByNumber(mBlockEdit->currentLine());
+        int columnFrom = mBlockEdit->colFrom();
+        int columnTo = mBlockEdit->colTo();
+        cursor.setPosition(startBlock.position() + mBlockEdit->colFrom());
+        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
+
+        endBlockEdit();
+        applyLineComment(cursor, qMin(startBlock, endBlock), qMax(startBlock.blockNumber(), endBlock.blockNumber()));
+        setTextCursor(cursor);
+        startBlockEdit(startBlock.blockNumber(), columnTo);
+        mBlockEdit->selectTo(endBlock.blockNumber(), columnFrom);
     } else {
         QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
         int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
@@ -538,51 +547,7 @@ void CodeEdit::commentLine()
         setTextCursor(cursor);
     }
 
-    //recalcExtraSelections();
-
-//    QPoint beFrom;
-//    QPoint beTo;
-//    bool inBlockEdit = mBlockEdit;
-//    QTextCursor cursor = textCursor();
-//    if (inBlockEdit) {
-//        beFrom.setX(mBlockEdit->colTo());
-//        beTo.setX(mBlockEdit->colFrom());
-//        beFrom.setY(mBlockEdit->startLine());
-//        beTo.setY(mBlockEdit->currentLine());
-//        QTextBlock anc = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
-//        cursor.setPosition(anc.position() + mBlockEdit->colFrom());
-//        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
-//        endBlockEdit();
-//    }
-//    QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
-//    int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
-//    bool removeComment = true;
-//    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
-//        if (!block.text().startsWith('*')) {
-//            removeComment = false;
-//            break;
-//        }
-//    }
-//    cursor.beginEditBlock();
-//    QTextCursor anchor = cursor;
-//    anchor.setPosition(anchor.anchor());
-//    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
-//        cursor.setPosition(block.position());
-//        if (removeComment) {
-//            cursor.deleteChar();
-//        } else {
-//            cursor.insertText("*");
-//        }
-//    }
-//    cursor.setPosition(anchor.position());
-//    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
-//    cursor.endEditBlock();
-//    setTextCursor(cursor);
-//    if (inBlockEdit) {
-//        int offset = removeComment ? -1 : 1;
-//        startBlockEdit(beFrom.y(), beFrom.x()+offset);
-//        mBlockEdit->selectTo(beTo.y(), beTo.x()+offset);
-//    }
+    recalcExtraSelections();
 }
 
 bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
