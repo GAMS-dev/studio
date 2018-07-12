@@ -112,6 +112,7 @@ public:
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
+    void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");

@@ -607,6 +607,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
 
     clearResults();
+    mMain->closeResults();
 }
 
 void SearchDialog::clearResults()

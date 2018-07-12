@@ -1857,18 +1857,22 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
-
     mResultsView = new ResultsView(results, this);
     QString title("Results: " + mSearchDialog->searchTerm());
 
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();
 
-    if (index != -1) ui->logTabs->removeTab(index); // remove old result page
+    closeResults();
 
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
+}
+
+void MainWindow::closeResults()
+{
+    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
+    if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
