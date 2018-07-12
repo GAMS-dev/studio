@@ -1833,6 +1833,7 @@ void MainWindow::on_actionSearch_triggered()
        }
        // toggle visibility
        if (mSearchDialog->isVisible()) {
+           mSearchDialog->raise();
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
