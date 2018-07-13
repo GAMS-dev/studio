@@ -1833,11 +1833,9 @@ void MainWindow::on_actionSearch_triggered()
        }
        // toggle visibility
        if (mSearchDialog->isVisible()) {
+           mSearchDialog->raise();
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
-           mSearchDialog->raise();
-           mSearchDialog->update();
-           qDebug() << "mSearchDialog->raise()";
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
