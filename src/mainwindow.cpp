@@ -1836,6 +1836,8 @@ void MainWindow::on_actionSearch_triggered()
            mSearchDialog->setWindowState(Qt::WindowMaximized);
        // toggle visibility
        if (mSearchDialog->isVisible()) {
+           // e.g. needed for macOS to rasise search dialog when minimized
+           mSearchDialog->raise();
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
