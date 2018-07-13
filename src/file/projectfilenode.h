@@ -158,7 +158,6 @@ signals:
     void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
     void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
-    void documentClosed();
 
 protected slots:
     void onFileChangedExtern(QString filepath);
