@@ -1831,9 +1831,11 @@ void MainWindow::on_actionSearch_triggered()
            gdx->selectSearchField();
            return;
        }
+       // e.g. needed for KDE to raise the search dialog when minimized
+       if (mSearchDialog->isMinimized())
+           mSearchDialog->setWindowState(Qt::WindowMaximized);
        // toggle visibility
        if (mSearchDialog->isVisible()) {
-           mSearchDialog->raise();
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
