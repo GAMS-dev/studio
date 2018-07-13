@@ -270,7 +270,7 @@ void ProjectRepo::setSelected(const QModelIndex& ind)
 
 void ProjectRepo::removeGroup(ProjectGroupNode* fileGroup)
 {
-    for (int i = 0; i < fileGroup->childCount(); ++i) {
+    for (int i = fileGroup->childCount()-1; i >= 0; i--) {
         ProjectAbstractNode *child = fileGroup->childEntry(i);
         mTreeModel->removeChild(child);
         deleteNode(child);
