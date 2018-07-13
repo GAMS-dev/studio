@@ -747,7 +747,8 @@ void MainWindow::activeTabChanged(int index)
 
     // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
+    if (oldTab)
+        oldTab->removeTextMarks(TextMark::match, true);
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
@@ -1297,7 +1298,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_Escape) {
         mSearchDialog->hide();
-        mSearchDialog->clearResults();
+        mSearchDialog->clearSearch();
     }
 
     QMainWindow::keyPressEvent(event);
@@ -1830,8 +1831,13 @@ void MainWindow::on_actionSearch_triggered()
            gdx->selectSearchField();
            return;
        }
+       // e.g. needed for KDE to raise the search dialog when minimized
+       if (mSearchDialog->isMinimized())
+           mSearchDialog->setWindowState(Qt::WindowMaximized);
        // toggle visibility
        if (mSearchDialog->isVisible()) {
+           // e.g. needed for macOS to rasise search dialog when minimized
+           mSearchDialog->raise();
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
@@ -1868,6 +1874,12 @@ void MainWindow::showResults(SearchResultList &results)
 
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
+}
+
+void MainWindow::closeResults()
+{
+    int index = ui->logTabs->indexOf(mResultsView);
+    if (index != -1) ui->logTabs->removeTab(index);
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)

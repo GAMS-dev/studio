@@ -35,6 +35,10 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
+    enum SearchDirection {
+        Forward = 0,
+        Backward = 1
+    };
     explicit SearchDialog(MainWindow *parent = nullptr);
     ~SearchDialog();
 
@@ -46,12 +50,8 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false);
+    QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false, QString searchRegex = "");
 
-    enum SearchDirection {
-        Forward = 0,
-        Backward = 1
-    };
     void findNext(SearchDialog::SearchDirection direction);
     void clearResults();
     void updateReplaceActionAvailability();
@@ -80,6 +80,10 @@ private slots:
     void on_combo_search_currentTextChanged(const QString &arg1);
     void on_cb_caseSens_stateChanged(int state);
 
+    void on_cb_wholeWords_stateChanged(int arg1);
+
+    void on_cb_regex_stateChanged(int arg1);
+
 protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
@@ -94,6 +98,9 @@ private:
     void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, QList<Result> matches);
     void insertHistory();
+    void searchParameterChanged();
+    void findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
 
     enum SearchScope {
         ThisFile = 0,
