@@ -35,15 +35,15 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
 {
     if (fileName == "") return;
 
-    // only set runInfo if it's a .gms file, otherwise find gms file and set that
+    // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
     QFileInfo runnableFile(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
 
     // fix for .lst-as-mainfile bug
-    if (runnableFile.suffix() == "gms")
+    if (FileMetrics(runnableFile).fileType() == FileType::Gms)
         mGmsFileName = runnableFile.absoluteFilePath();
     else if (alternateFile.exists())
-        mGmsFileName = alternateFile.fileName();
+        mGmsFileName = alternateFile.absoluteFilePath();
     else
         mGmsFileName = "";
 
@@ -231,6 +231,30 @@ QString ProjectGroupNode::tooltip()
     return tooltip;
 }
 
+void ProjectGroupNode::addRunParametersHistory(QString runParameters)
+{
+    if (!runParameters.simplified().isEmpty()) {
+       QStringList list = mRunParametersHistory.filter(runParameters.simplified());
+       if (list.size() > 0) {
+           mRunParametersHistory.removeOne(runParameters.simplified());
+       }
+    } else {
+        for (int i=0; i< mRunParametersHistory.size(); ++i) {
+            QString str = mRunParametersHistory.at(i);
+            if (str.simplified().isEmpty()) {
+                mRunParametersHistory.removeAt(i);
+                break;
+            }
+        }
+    }
+    mRunParametersHistory.append(runParameters.simplified());
+}
+
+QStringList ProjectGroupNode::getRunParametersHistory()
+{
+    return mRunParametersHistory;
+}
+
 void ProjectGroupNode::attachFile(const QString &filepath)
 {
     if(filepath == "") return;
@@ -242,7 +266,7 @@ void ProjectGroupNode::attachFile(const QString &filepath)
             updateChildNodes();
         }
 
-        if (runnableGms().isEmpty() && filepath.endsWith(".gms", Qt::CaseInsensitive)) {
+        if (runnableGms().isEmpty() && FileType::from(fi.suffix()) == FileType::Gms) {
             ProjectFileNode *gms = nullptr;
             findOrCreateFileNode(filepath, gms, this);
             setRunnableGms(gms);

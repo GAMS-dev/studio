@@ -163,16 +163,6 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
-    mAppSettings->remove("commandLineOptions");
-    mAppSettings->beginWriteArray("commandLineOptions");
-    for (int i = 0; i < map.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("path", map.keys().at(i));
-        mAppSettings->setValue("opt", map.values().at(i));
-    }
-    mAppSettings->endArray();
-
     QJsonObject jsonProject;
     main->projectRepo()->write(jsonProject);
     QJsonDocument saveDoc(jsonProject);
@@ -271,17 +261,6 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map;
-    int size = mAppSettings->beginReadArray("commandLineOptions");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        map.insert(mAppSettings->value("path").toString(),
-                   mAppSettings->value("opt").toStringList());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()
