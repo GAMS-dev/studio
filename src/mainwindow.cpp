@@ -89,7 +89,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
-    ui->dockHelpView->show();
+    ui->dockHelpView->hide();
+    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
