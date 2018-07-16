@@ -1026,15 +1026,10 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     }
 
     if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->save();
-        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
-            QFile::remove(file);
-
-        mClosedTabs << fc->location();
-        fc->removeEditor(edit);
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        edit->deleteLater();
     } else if (ret == QMessageBox::Discard) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
     }
 }
@@ -1258,6 +1253,7 @@ bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
                                              : QString::number(changedFiles.size())+" files have been modified";
         ret = showSaveChangesMsgBox(filesText);
         if (ret == QMessageBox::Save) {
+            mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
             for (ProjectFileNode* fc : changedFiles) {
                 if (fc->isModified()) {
                     fc->save();
@@ -1265,7 +1261,8 @@ bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
             }
         } else if (ret == QMessageBox::Cancel) {
             return false;
-        } else {
+        } else { // Discard
+            mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
             for (ProjectFileNode* fc : changedFiles) {
                 if (fc->isModified()) {
                     closeFile(fc);
