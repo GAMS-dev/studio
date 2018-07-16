@@ -125,6 +125,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
+    resetViews();
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchDialog = new SearchDialog(this);
