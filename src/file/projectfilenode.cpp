@@ -212,14 +212,12 @@ void ProjectFileNode::removeEditor(QWidget* edit)
     CodeEdit* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
-        emit documentClosed();
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
         disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
-        if (!document()) emit documentClosed();
         unsetFlag(ProjectAbstractNode::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {
