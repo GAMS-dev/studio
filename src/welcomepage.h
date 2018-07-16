@@ -31,7 +31,7 @@ class QLabel;
 namespace gams {
 namespace studio {
 
-class HistoryData;
+struct HistoryData;
 class MainWindow;
 
 class WelcomePage : public QWidget
