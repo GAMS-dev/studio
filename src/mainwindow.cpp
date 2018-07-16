@@ -1027,7 +1027,6 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
 
     if (ret == QMessageBox::Save) {
         fc->save();
-    } else if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
 
@@ -1035,8 +1034,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->removeEditor(edit);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         edit->deleteLater();
-    } else {
-        closeFile(fc);
+    } else if (ret == QMessageBox::Discard) {
+        closeFileEditors(fc->id());
     }
 }
 
@@ -1289,14 +1288,14 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    mSettings->saveSettings(this);
     QList<ProjectFileNode*> oFiles = mProjectRepo.modifiedFiles();
-    if (!requestCloseChanged(oFiles)) {
-        event->setAccepted(false);
+    if (requestCloseChanged(oFiles)) {
+        on_actionClose_All_triggered();
+        closeHelpView();
     } else {
-        mSettings->saveSettings(this);
+        event->setAccepted(false);
     }
-    on_actionClose_All_triggered();
-    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1678,7 +1677,6 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
 
         mProjectRepo.removeGroup(group);
-        mSettings->saveSettings(this);
     }
 }
 
@@ -1722,9 +1720,6 @@ void MainWindow::closeFile(ProjectFileNode* file)
     // close group if empty now
     if (parentGroup->childCount() == 0)
         closeGroup(parentGroup);
-
-    // save changes in project structure
-    mSettings->saveSettings(this);
 }
 
 /// Closes all open editors and tabs related to a file and remove option history
