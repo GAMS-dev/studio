@@ -1028,6 +1028,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->save();
+        closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
@@ -1245,31 +1246,31 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 
 bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
 {
-    // TODO: make clear that this saves/discrads all modified files?
-    if (changedFiles.size() > 0) {
-        int ret = QMessageBox::Discard;
-        QMessageBox msgBox;
-        QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
-                                             : QString::number(changedFiles.size())+" files have been modified";
-        ret = showSaveChangesMsgBox(filesText);
-        if (ret == QMessageBox::Save) {
-            mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-            for (ProjectFileNode* fc : changedFiles) {
-                if (fc->isModified()) {
-                    fc->save();
-                }
+    if (changedFiles.size() <= 0) return true;
+
+    int ret = QMessageBox::Discard;
+    QMessageBox msgBox;
+    QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
+                                         : QString::number(changedFiles.size())+" files have been modified";
+    ret = showSaveChangesMsgBox(filesText);
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                fc->save();
             }
-        } else if (ret == QMessageBox::Cancel) {
-            return false;
-        } else { // Discard
-            mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-            for (ProjectFileNode* fc : changedFiles) {
-                if (fc->isModified()) {
-                    closeFile(fc);
-                }
+        }
+    } else if (ret == QMessageBox::Cancel) {
+        return false;
+    } else { // Discard
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                closeFile(fc);
             }
         }
     }
+
     return true;
 }
 
