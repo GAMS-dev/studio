@@ -265,6 +265,7 @@ private:
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
+    int showSaveChangesMsgBox(const QString &text);
 
 private:
     Ui::MainWindow *ui;

@@ -1022,17 +1022,12 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
-        QMessageBox msgBox;
-        msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
+        ret = showSaveChangesMsgBox(ui->mainTab->tabText(index)+" has been modified.");
     }
-    if (ret == QMessageBox::Save)
-        fc->save();
 
-    if (ret != QMessageBox::Cancel) {
+    if (ret == QMessageBox::Save) {
+        fc->save();
+    } else if (ret != QMessageBox::Cancel) {
         for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
             QFile::remove(file);
 
@@ -1040,7 +1035,19 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         fc->removeEditor(edit);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         edit->deleteLater();
+    } else {
+        closeFile(fc);
     }
+}
+
+int MainWindow::showSaveChangesMsgBox(const QString &text)
+{
+    QMessageBox msgBox;
+    msgBox.setText(text);
+    msgBox.setInformativeText("Do you want to save your changes?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    return msgBox.exec();
 }
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
@@ -1250,20 +1257,21 @@ bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
         QMessageBox msgBox;
         QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
                                              : QString::number(changedFiles.size())+" files have been modified";
-        msgBox.setText(filesText);
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
+        ret = showSaveChangesMsgBox(filesText);
         if (ret == QMessageBox::Save) {
-            for (ProjectFileNode* fc: changedFiles) {
+            for (ProjectFileNode* fc : changedFiles) {
                 if (fc->isModified()) {
                     fc->save();
                 }
             }
-        }
-        if (ret == QMessageBox::Cancel) {
+        } else if (ret == QMessageBox::Cancel) {
             return false;
+        } else {
+            for (ProjectFileNode* fc : changedFiles) {
+                if (fc->isModified()) {
+                    closeFile(fc);
+                }
+            }
         }
     }
     return true;
