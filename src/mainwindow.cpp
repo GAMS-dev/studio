@@ -747,7 +747,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
         }
 
         ProjectGroupNode* group = fn->parentEntry();
-        if (!group) return;       
+        if (!group) return;
         if (group == oldgroup) return;
 
         mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
@@ -1987,7 +1987,9 @@ void MainWindow::on_actionGo_To_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
         return;
     GoToDialog dialog(this);
-    dialog.exec();
+    int result = dialog.exec();
+    if (QDialog::Rejected == result)
+        return;
     CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (codeEdit)
         codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());

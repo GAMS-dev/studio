@@ -48,7 +48,7 @@ int GoToDialog::lineNumber() const
 void GoToDialog::on_goToButton_clicked()
 {
     mLineNumber =(ui->lineEdit->text().toInt())-1;
-    close();
+    accept();
 }
 
 }
