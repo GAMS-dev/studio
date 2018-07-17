@@ -92,13 +92,16 @@ void WelcomePage::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
     mOutputVisible = mMain->outputViewVisibility();
+    mOptionsVisible = mMain->optionEditorVisibility();
     mMain->setOutputViewVisibility(false);
+    mMain->setOptionEditorVisibility(false);
 }
 
 void WelcomePage::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event);
     mMain->setOutputViewVisibility(mOutputVisible);
+    mMain->setOptionEditorVisibility(mOptionsVisible);
 }
 
 }
