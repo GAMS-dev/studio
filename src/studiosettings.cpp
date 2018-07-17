@@ -79,7 +79,7 @@ void StudioSettings::resetSettings()
 void StudioSettings::resetViewSettings()
 {
     mAppSettings->beginGroup("mainWindow");
-    mAppSettings->setValue("size", QSize(1000, 700));
+    mAppSettings->setValue("size", QSize(1024, 768));
     mAppSettings->setValue("pos", QPoint());
     mAppSettings->setValue("windowState", QByteArray());
     mAppSettings->endGroup();

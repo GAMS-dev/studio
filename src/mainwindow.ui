@@ -80,9 +80,6 @@
         <property name="acceptDrops">
          <bool>true</bool>
         </property>
-        <property name="tabShape">
-         <enum>QTabWidget::Rounded</enum>
-        </property>
         <property name="currentIndex">
          <number>-1</number>
         </property>
@@ -110,7 +107,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>31</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
