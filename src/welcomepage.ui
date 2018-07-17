@@ -105,7 +105,7 @@
         <bool>true</bool>
        </property>
        <property name="margin">
-        <number>10</number>
+        <number>5</number>
        </property>
       </widget>
      </item>
@@ -120,7 +120,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>659</width>
-         <height>13</height>
+         <height>5</height>
         </size>
        </property>
       </spacer>
@@ -146,7 +146,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
+           <width>5</width>
            <height>0</height>
           </size>
          </property>
@@ -193,6 +193,12 @@
          </item>
          <item>
           <widget class="QScrollArea" name="sa_lastFiles">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>
@@ -210,8 +216,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>426</width>
-              <height>886</height>
+              <width>466</width>
+              <height>904</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -258,11 +264,11 @@
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Maximum</enum>
+          <enum>QSizePolicy::Minimum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>30</width>
+           <width>5</width>
            <height>0</height>
           </size>
          </property>
@@ -314,7 +320,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>210</width>
+             <width>100</width>
              <height>0</height>
             </size>
            </property>
@@ -332,8 +338,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>425</width>
-              <height>886</height>
+              <width>465</width>
+              <height>904</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -581,11 +587,11 @@
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Maximum</enum>
+          <enum>QSizePolicy::Minimum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>30</width>
+           <width>5</width>
            <height>0</height>
           </size>
          </property>
@@ -741,7 +747,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
+           <width>5</width>
            <height>0</height>
           </size>
          </property>
