@@ -903,7 +903,7 @@ void MainWindow::appendSystemLog(const QString &text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
+    ProjectGroupNode* groupNode = mProjectRepo.groupNode(process->groupId());
     QFileInfo fileInfo(process->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
@@ -1048,25 +1048,27 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
-        QMessageBox msgBox;
-        msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
+        ret = showSaveChangesMsgBox(ui->mainTab->tabText(index)+" has been modified.");
     }
-    if (ret == QMessageBox::Save)
+
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->save();
-
-    if (ret != QMessageBox::Cancel) {
-        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
-            QFile::remove(file);
-
-        mClosedTabs << fc->location();
-        fc->removeEditor(edit);
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        edit->deleteLater();
+        closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Discard) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        closeFileEditors(fc->id());
     }
+}
+
+int MainWindow::showSaveChangesMsgBox(const QString &text)
+{
+    QMessageBox msgBox;
+    msgBox.setText(text);
+    msgBox.setInformativeText("Do you want to save your changes?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    return msgBox.exec();
 }
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
@@ -1257,28 +1259,31 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 
 bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
 {
-    // TODO: make clear that this saves/discrads all modified files?
-    if (changedFiles.size() > 0) {
-        int ret = QMessageBox::Discard;
-        QMessageBox msgBox;
-        QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
-                                             : QString::number(changedFiles.size())+" files have been modified";
-        msgBox.setText(filesText);
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
-        if (ret == QMessageBox::Save) {
-            for (ProjectFileNode* fc: changedFiles) {
-                if (fc->isModified()) {
-                    fc->save();
-                }
+    if (changedFiles.size() <= 0) return true;
+
+    int ret = QMessageBox::Discard;
+    QMessageBox msgBox;
+    QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
+                                         : QString::number(changedFiles.size())+" files have been modified";
+    ret = showSaveChangesMsgBox(filesText);
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                fc->save();
             }
         }
-        if (ret == QMessageBox::Cancel) {
-            return false;
+    } else if (ret == QMessageBox::Cancel) {
+        return false;
+    } else { // Discard
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                closeFile(fc);
+            }
         }
     }
+
     return true;
 }
 
@@ -1294,14 +1299,14 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    mSettings->saveSettings(this);
     QList<ProjectFileNode*> oFiles = mProjectRepo.modifiedFiles();
-    if (!requestCloseChanged(oFiles)) {
-        event->setAccepted(false);
+    if (requestCloseChanged(oFiles)) {
+        on_actionClose_All_triggered();
+        closeHelpView();
     } else {
-        mSettings->saveSettings(this);
+        event->setAccepted(false);
     }
-    on_actionClose_All_triggered();
-    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1501,6 +1506,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         QFileInfo fi(gmsFilePath);
         lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
     }
+    process->setGroupId(group->id());
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
@@ -1676,7 +1682,6 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
 
         mProjectRepo.removeGroup(group);
-        mSettings->saveSettings(this);
     }
 }
 
@@ -1721,9 +1726,6 @@ void MainWindow::closeFile(ProjectFileNode* file)
     // close group if empty now
     if (parentGroup->childCount() == 0)
         closeGroup(parentGroup);
-
-    // save changes in project structure
-    mSettings->saveSettings(this);
 }
 
 /// Closes all open editors and tabs related to a file and remove option history

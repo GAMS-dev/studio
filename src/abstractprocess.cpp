@@ -96,5 +96,15 @@ QString AbstractProcess::nativeAppPath()
     return QDir::toNativeSeparators(appPath);
 }
 
+FileId AbstractProcess::groupId() const
+{
+    return mGroupId;
+}
+
+void AbstractProcess::setGroupId(const FileId &groupId)
+{
+    mGroupId = groupId;
+}
+
 } // namespace studio
 } // namespace gams
