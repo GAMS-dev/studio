@@ -90,7 +90,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->hide();
-    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
@@ -2274,8 +2273,6 @@ void MainWindow::resetViews()
     mSettings->resetViewSettings();
     mSettings->loadSettings(this);
 
-    QDockWidget* stackedFirst;
-    QDockWidget* stackedSecond;
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     foreach (QDockWidget* dock, dockWidgets) {
@@ -2288,18 +2285,16 @@ void MainWindow::resetViews()
         } else if (dock == ui->dockLogView) {
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-            stackedFirst = dock;
         } else if (dock == ui->dockHelpView) {
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-            stackedSecond = dock;
         } else if (dock == ui->dockOptionEditor) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
-    // stack help over output
-    tabifyDockWidget(stackedFirst, stackedSecond);
+    // stack help under output
+    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
