@@ -901,7 +901,7 @@ void MainWindow::appendSystemLog(const QString &text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
+    ProjectGroupNode* groupNode = mProjectRepo.groupNode(process->objectName().toInt());
     QFileInfo fileInfo(process->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
@@ -1504,6 +1504,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         QFileInfo fi(gmsFilePath);
         lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
     }
+    process->setObjectName(QString::number(group->id()));
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
