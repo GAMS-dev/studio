@@ -61,10 +61,10 @@ BookmarkDialog::BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget* pare
     connect(ui.bookmarkTableView, &QTableView::customContextMenuRequested,
             this, &BookmarkDialog::on_contextMenuShowed);
 
-    connect(this, &BookmarkDialog::openUrl, (HelpWidget*)parent, &HelpWidget::on_urlOpened );
-    connect(this, &BookmarkDialog::removeBookmark, (HelpWidget*)parent, &HelpWidget::on_bookmarkRemoved );
-    connect(this, &BookmarkDialog::updateBookmarkName, (HelpWidget*)parent, &HelpWidget::on_bookmarkNameUpdated );
-    connect(this, &BookmarkDialog::updateBookmarkLocation, (HelpWidget*)parent, &HelpWidget::on_bookmarkLocationUpdated );
+    connect(this, &BookmarkDialog::openUrl, static_cast<HelpWidget*>(parent), &HelpWidget::on_urlOpened );
+    connect(this, &BookmarkDialog::removeBookmark, static_cast<HelpWidget*>(parent), &HelpWidget::on_bookmarkRemoved );
+    connect(this, &BookmarkDialog::updateBookmarkName, static_cast<HelpWidget*>(parent), &HelpWidget::on_bookmarkNameUpdated );
+    connect(this, &BookmarkDialog::updateBookmarkLocation, static_cast<HelpWidget*>(parent), &HelpWidget::on_bookmarkLocationUpdated );
 }
 
 BookmarkDialog::~BookmarkDialog()

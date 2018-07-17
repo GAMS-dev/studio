@@ -123,7 +123,7 @@ public:
     bool isReadOnly();
 
     const FileMetrics& metrics() const;
-    void jumpTo(const QTextCursor& cursor, bool focus, int altLine = 0, int altColumn = 0);
+    void jumpTo(const QTextCursor& cursor, int altLine = 0, int altColumn = 0);
     void showToolTip(const QVector<TextMark*> marks);
 
     void rehighlightAt(int pos);
@@ -158,7 +158,6 @@ signals:
     void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
     void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
-    void documentClosed();
 
 protected slots:
     void onFileChangedExtern(QString filepath);

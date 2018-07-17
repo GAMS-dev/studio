@@ -26,37 +26,31 @@
 #include "lxitreeitem.h"
 #include "editors/codeedit.h"
 #include "ui_lxiviewer.h"
-#include "logger.h"
+#include "file/projectgroupnode.h"
 
 namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEdit *codeEditor, ProjectFileNode *fc, QWidget *parent):
+LxiViewer::LxiViewer(CodeEdit *codeEditor, const QString &lstFile, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
     mCodeEdit(codeEditor),
-    mFileNode(fc)
+    mLstFile(lstFile)
 {
     ui->setupUi(this);
-
-    mLstFile = mFileNode->location();
 
     ui->splitter->addWidget(mCodeEdit);
 
     QFileInfo info(mLstFile);
     mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
 
-    loadLxiFile();
+    loadLxi();
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLxiFile);
-    connect(mFileNode->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged, this, &LxiViewer::loadLstFile);
-
-    //connect(mCodeEditor, &CodeEditor::textChanged, this, &LxiViewer::loadLxiFile);
 }
 
 LxiViewer::~LxiViewer()
@@ -72,28 +66,32 @@ CodeEdit *LxiViewer::codeEdit() const
     return mCodeEdit;
 }
 
-void LxiViewer::loadLxiFile()
+void LxiViewer::loadLxiFile(ProjectGroupNode* group)
 {
-    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
-        if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) { //parse the lxi file only if it exists and is not empty (size>0)
-            ui->splitter->widget(0)->show();
-            LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
-            LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
-            ui->lxiTreeView->setModel(model);
-            if (oldModel)
-                delete oldModel;
-        }
-        else
-            ui->splitter->widget(0)->hide();
-    }
+    if (group && QProcess::NotRunning == group->gamsProcessState())
+        loadLxi();
 }
 
-void LxiViewer::loadLstFile()
+void LxiViewer::loadLxi()
 {
-    if (QProcess::NotRunning == mFileNode->parentEntry()->gamsProcessState()) {
-        mFileNode->load(mFileNode->codecMib());
+    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) {
+        ui->splitter->widget(0)->show();
+        LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
+        LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
+        ui->lxiTreeView->setModel(model);
+        if (oldModel)
+            delete oldModel;
     }
+    else
+        ui->splitter->widget(0)->hide();
+}
 
+void LxiViewer::loadLstFile(ProjectGroupNode* group)
+{
+    if (group && QProcess::NotRunning == group->gamsProcessState()) {
+        ProjectFileNode *fileNode = group->findFile(group->gamsProcess()->inputFile());
+        fileNode->load(fileNode->codecMib(), true);
+    }
 }
 
 void LxiViewer::jumpToTreeItem()
@@ -120,7 +118,7 @@ void LxiViewer::jumpToTreeItem()
     ui->lxiTreeView->scrollTo(treeItem->modelIndex());
 }
 
-void LxiViewer::jumpToLine(QModelIndex modelIndex)
+void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
 {
     LxiTreeItem* selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
     int lineNr = selectedItem->lineNr();
@@ -128,8 +126,8 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     //jump to first child for virtual nodes
     if (lineNr == -1) {
         if (!ui->lxiTreeView->isExpanded(modelIndex)) {
-            modelIndex = modelIndex.model()->index(0, 0, modelIndex);
-            selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
+            QModelIndex mi = modelIndex.model()->index(0, 0, modelIndex);
+            selectedItem = static_cast<LxiTreeItem*>(mi.internalPointer());
             lineNr = selectedItem->lineNr();
         }
         else
@@ -145,7 +143,7 @@ void LxiViewer::jumpToLine(QModelIndex modelIndex)
     cursor.setPosition(tb.position());
 
     disconnect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    mFileNode->jumpTo(cursor, true);
+    mCodeEdit->jumpTo(cursor);
     connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 

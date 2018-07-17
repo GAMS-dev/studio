@@ -46,7 +46,7 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
-class SearchWidget;
+class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
@@ -110,8 +110,9 @@ public:
     ProjectRepo* projectRepo();
     QWidgetList openEditors();
     QList<AbstractEdit*> openLogs();
-    SearchWidget* searchWidget() const;
+    SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
+    void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
@@ -255,19 +256,19 @@ private:
     void createWelcomePage();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     bool isActiveTabRunnable();
-    bool isActiveTabSetAsMain();
     bool isRecentGroupInRunningState();
-    void loadCommandLineOptions(ProjectFileNode* fc);
+    void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
+    int showSaveChangesMsgBox(const QString &text);
 
 private:
     Ui::MainWindow *ui;
-    SearchWidget *mSearchWidget = nullptr;
+    SearchDialog *mSearchDialog = nullptr;
 
     HelpWidget *mHelpWidget = nullptr;
     OptionWidget *mGamsOptionWidget = nullptr;

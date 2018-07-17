@@ -18,8 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxsymboltable.h"
+#include "gdxsymbol.h"
 #include "exception.h"
 
+#include <QMutex>
 #include <limits>
 
 namespace gams {
@@ -87,13 +89,13 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         GdxSymbol* symbol = mGdxSymbols.at(index.row());
         switch(index.column()) {
-            case 0: return symbol->nr(); break;
-            case 1: return symbol->name(); break;
-            case 2: return typeAsString(symbol->type()); break;
-            case 3: return symbol->dim(); break;
-            case 4: return symbol->recordCount(); break;
-            case 5: return symbol->isLoaded(); break;
-            case 6: return symbol->explText(); break;
+            case 0: return symbol->nr();
+            case 1: return symbol->name();
+            case 2: return typeAsString(symbol->type());
+            case 3: return symbol->dim();
+            case 4: return symbol->recordCount();
+            case 5: return symbol->isLoaded();
+            case 6: return symbol->explText();
         }
     }
     else if (role == Qt::TextAlignmentRole) {
@@ -211,12 +213,12 @@ QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
 QString GdxSymbolTable::typeAsString(int type) const
 {
     switch(type) {
-        case GMS_DT_SET: return "Set"; break;
-        case GMS_DT_PAR: return "Parameter"; break;
-        case GMS_DT_VAR: return "Variable"; break;
-        case GMS_DT_EQU: return "Equation"; break;
-        case GMS_DT_ALIAS: return "Alias"; break;
-        default: return ""; break;
+        case GMS_DT_SET: return "Set";
+        case GMS_DT_PAR: return "Parameter";
+        case GMS_DT_VAR: return "Variable";
+        case GMS_DT_EQU: return "Equation";
+        case GMS_DT_ALIAS: return "Alias";
+        default: return "";
     }
 }
 

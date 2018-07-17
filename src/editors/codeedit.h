@@ -113,6 +113,7 @@ public:
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void setSettings(StudioSettings *settings);
+    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -161,6 +162,8 @@ private:
     CharType charType(QChar c);
     void updateTabSize();
     inline int assignmentKind(int p);
+    bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
+    void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
 
     static int findAlphaNum(const QString &text, int start, bool back);
 

@@ -22,8 +22,10 @@
 namespace gams {
 namespace studio {
 
-SearchResultList::SearchResultList(SearchResultList &searchResultList) :
-    QAbstractTableModel(searchResultList.parent()), mResultList(searchResultList.resultList())
+SearchResultList::SearchResultList(SearchResultList &searchResultList)
+    : QAbstractTableModel(searchResultList.parent()),
+      mSearchTerm(searchResultList.searchTerm()),
+      mResultList(searchResultList.resultList())
 {
 }
 

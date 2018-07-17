@@ -35,11 +35,6 @@ ErrorHighlighter::ErrorHighlighter(ProjectFileNode* node)
 {
 }
 
-void ErrorHighlighter::setDocAndConnect(QTextDocument* doc)
-{
-    setDocument(doc);
-}
-
 TextMarkList* ErrorHighlighter::marks()
 {
     return (mNode) ? mNode->marks() : nullptr;

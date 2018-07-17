@@ -20,9 +20,6 @@
 #ifndef LIBRARYITEM_H
 #define LIBRARYITEM_H
 
-#include <memory>
-#include <QString>
-#include <QStringList>
 #include "library.h"
 #include <memory>
 

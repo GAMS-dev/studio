@@ -26,7 +26,7 @@
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
 
@@ -118,10 +118,10 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->setValue("windowState", main->saveState());
 
     // search window
-    mAppSettings->setValue("searchRegex", main->searchWidget()->regex());
-    mAppSettings->setValue("searchCaseSens", main->searchWidget()->caseSens());
-    mAppSettings->setValue("searchWholeWords", main->searchWidget()->wholeWords());
-    mAppSettings->setValue("selectedScope", main->searchWidget()->selectedScope());
+    mAppSettings->setValue("searchRegex", main->searchDialog()->regex());
+    mAppSettings->setValue("searchCaseSens", main->searchDialog()->caseSens());
+    mAppSettings->setValue("searchWholeWords", main->searchDialog()->wholeWords());
+    mAppSettings->setValue("selectedScope", main->searchDialog()->selectedScope());
 
     mAppSettings->endGroup();
 
@@ -160,16 +160,6 @@ void StudioSettings::saveSettings(MainWindow *main)
         if (main->history()->lastOpenedFiles.at(i) == "") break;
         mAppSettings->setArrayIndex(i);
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
-    }
-    mAppSettings->endArray();
-
-    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
-    mAppSettings->remove("commandLineOptions");
-    mAppSettings->beginWriteArray("commandLineOptions");
-    for (int i = 0; i < map.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("path", map.keys().at(i));
-        mAppSettings->setValue("opt", map.values().at(i));
     }
     mAppSettings->endArray();
 
@@ -271,17 +261,6 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    QMap<QString, QStringList> map;
-    int size = mAppSettings->beginReadArray("commandLineOptions");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        map.insert(mAppSettings->value("path").toString(),
-                   mAppSettings->value("opt").toStringList());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
-    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()

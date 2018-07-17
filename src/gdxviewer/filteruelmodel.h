@@ -21,11 +21,12 @@
 #define GAMS_STUDIO_GDXVIEWER_FILTERUELMODEL_H
 
 #include <QAbstractListModel>
-#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+class GdxSymbol;
 
 class FilterUelModel : public QAbstractListModel
 {
@@ -44,7 +45,7 @@ public:
     void filterLabels(QString filterString);
 
 private:
-    GdxSymbol* mSymbol = nullptr;
+    GdxSymbol* mSymbol;
     int mColumn;
     std::vector<int>* mUels;
     bool* mChecked = nullptr;

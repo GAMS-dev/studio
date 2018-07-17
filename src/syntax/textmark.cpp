@@ -121,15 +121,12 @@ QIcon TextMark::icon()
     switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
     case error:
         return QIcon(":/img/exclam-circle-r");
-        break;
     case link:
         return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
-        break;
     case bookmark: {
         QIcon ico(":/img/bookmark");
         // TODO(JM) insert bookmark-number from value (0-9)
         return ico;
-        break;
     }
     default:
         break;
@@ -156,7 +153,7 @@ QTextCursor TextMark::textCursor()
     if (!document())
         return QTextCursor();
     QTextCursor cursor(document());
-    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
+    int pos = qMin(mPosition, document()->characterCount()-1);
     cursor.setPosition(pos);
     return cursor;
 }

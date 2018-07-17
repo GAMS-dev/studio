@@ -29,6 +29,7 @@ class GlbParser
 {
 public:
     static QList<LibraryItem> parseFile(QString glbFile);
+
 private:
     GlbParser();
 };

@@ -25,7 +25,6 @@
 #include "option.h"
 #include "commandlineoption.h"
 #include "commandlinetokenizer.h"
-#include "commandlinehistory.h"
 
 namespace Ui {
 class OptionWidget;
@@ -57,16 +56,14 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
-    void setOptionHistory(QMap<QString, QStringList> opts);
-    QMap<QString, QStringList> getOptionHistory() const;
-    void removeFromHistory(const QString &key);
-
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
 
     CommandLineTokenizer *getGamsOptionTokenizer() const;
     bool isAnOptionWidgetFocused(QWidget* focusWidget);
     QString getSelectedOptionName(QWidget* widget) const;
+
+    QString getCurrentCommandLineData() const;
 
 signals:
     void optionEditorDisabled();
@@ -80,9 +77,10 @@ public slots:
     void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
-    void updateRunState(bool isRunnable, bool isMain, bool isRunning);
+    void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
-    void loadCommandLineOption(const QString &location);
+//    void loadCommandLineOption(const QString &location);
+    void loadCommandLineOption(const QStringList &history);
     void disableOptionEditor();
 
 private slots:
@@ -106,7 +104,7 @@ private:
 
     MainWindow* main;
 
-    CommandLineHistory* mCommandLineHistory;
+//    CommandLineHistory* mCommandLineHistory;
     CommandLineTokenizer* mGamsOptionTokenizer;
 };
 

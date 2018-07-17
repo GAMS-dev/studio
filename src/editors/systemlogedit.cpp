@@ -73,9 +73,8 @@ QString SystemLogEdit::level(LogMsgType type)
         return HighlightingData::WarningKeyword;
     case LogMsgType::Error:
         return HighlightingData::ErrorKeyword;
-    default:
-        return QString();
     }
+    return QString();
 }
 
 }

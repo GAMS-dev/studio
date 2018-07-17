@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "resultsview.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "ui_resultsview.h"
 #include "exception.h"
 #include "searchresultlist.h"
@@ -49,6 +49,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     int selectedRow = index.row();
     Result item = mResultList.resultList().at(selectedRow);
 
+    // open so we have a document of the file
     if (QFileInfo(item.locFile()).exists())
         mMain->openFile(item.locFile());
 
@@ -62,7 +63,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->searchWidget()->findInFile(jmpFc, true);
+    mMain->searchDialog()->findInFile(jmpFc, true, mResultList.searchTerm());
 
     // jump to line
     QTextCursor tc(jmpFc->document());

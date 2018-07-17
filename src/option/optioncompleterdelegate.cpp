@@ -87,7 +87,7 @@ void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
     if (text.simplified().isEmpty()) {
         foreach(QWidget* widget, qApp->topLevelWidgets())
             if (QMainWindow*  mainWindow = qobject_cast<QMainWindow *>(widget))
-                QApplication::postEvent(mainWindow, new LineEditCompleteEvent((QLineEdit*)sender()));
+                QApplication::postEvent(mainWindow, new LineEditCompleteEvent(static_cast<QLineEdit*>(sender())));
     }
 }
 

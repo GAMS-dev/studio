@@ -18,9 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "columnfilterframe.h"
+#include "gdxsymbol.h"
 
 #include <QSet>
-#include <QDebug>
 #include <QMenu>
 #include <QMouseEvent>
 
@@ -29,7 +29,10 @@ namespace studio {
 namespace gdxviewer {
 
 ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *parent)
-    :QFrame(parent), mSymbol(symbol), mColumn(column)
+    : QFrame(parent),
+      mSymbol(symbol),
+      mColumn(column),
+      mModel(new FilterUelModel(symbol, column, this))
 {
     ui.setupUi(this);
 
@@ -37,10 +40,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
     connect(ui.leSearch, &QLineEdit::textChanged, this, &ColumnFilterFrame::filterLabels);
-
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
-
-    mModel = new FilterUelModel(symbol, column, this);
     connect(mModel, &FilterUelModel::dataChanged, this, &ColumnFilterFrame::listDataHasChanged);
 
     ui.lvLabels->setModel(mModel);
@@ -51,18 +51,15 @@ ColumnFilterFrame::~ColumnFilterFrame()
     delete mModel;
 }
 
-
 void ColumnFilterFrame::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
 }
 
-
 void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
 }
-
 
 void ColumnFilterFrame::apply()
 {

@@ -40,7 +40,7 @@
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
-#include "searchwidget.h"
+#include "searchdialog.h"
 #include "searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
@@ -126,7 +126,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
-    mSearchWidget = new SearchWidget(this);
+    mSearchDialog = new SearchDialog(this);
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
@@ -138,12 +138,6 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
-
-
-    mSyslog->appendLog("Link: https://gams.com", LogMsgType::Info);
-    mSyslog->appendLog("This is a placehoder message. say hi", LogMsgType::Error);
-    mSyslog->appendLog("This is another message of high importance", LogMsgType::Warning);
-    mSyslog->appendLog("And this one is very long. And this one is very long. https://doc.qt.io/qt-5/qsyntaxhighlighter.html And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long. And this one is very long.", LogMsgType::Info);
 }
 
 void MainWindow::delayedFileRestoration()
@@ -184,16 +178,22 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             QFontMetrics metric(codeEdit->font());
             codeEdit->setTabStopDistance(8*metric.width(' '));
             if (fc->metrics().fileType() == FileType::Lst) {
-                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc, this);
+                lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, fc->location(), this);
                 ProjectAbstractNode::initEditorType(lxiViewer);
                 fc->addEditor(lxiViewer);
-                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLxiFile);
+                connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                        lxiViewer, &lxiviewer::LxiViewer::loadLstFile);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindNextPressed,
+                        mSearchDialog, &SearchDialog::on_searchNext);
+                connect(lxiViewer->codeEdit(), &CodeEdit::searchFindPrevPressed,
+                        mSearchDialog, &SearchDialog::on_searchPrev);
                 tabIndex = tabWidget->addTab(lxiViewer, fc->caption());
             } else {
                 fc->addEditor(codeEdit);
-                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchWidget, &SearchWidget::on_searchNext);
-                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchWidget, &SearchWidget::on_searchPrev);
+                connect(codeEdit, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+                connect(codeEdit, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
                 connect(codeEdit, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
                 tabIndex = tabWidget->addTab(codeEdit, fc->caption());
             }
@@ -406,9 +406,9 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     on_actionHelp_View_triggered(true);
 }
 
-SearchWidget* MainWindow::searchWidget() const
+SearchDialog* MainWindow::searchDialog() const
 {
-    return mSearchWidget;
+    return mSearchDialog;
 }
 
 QString MainWindow::encodingMIBsString()
@@ -564,7 +564,7 @@ void MainWindow::updateEditorBlockCount()
 
 void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    searchWidget()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -733,26 +733,53 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* fc)
+void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
-    ProjectGroupNode* group = fc->parentEntry();
-    if (!group) return;
+    if (oldfn) { // switch from a non-welcome page
+        ProjectGroupNode* oldgroup = oldfn->parentEntry();
+        if (!oldgroup) return;
+        oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
 
-    emit mGamsOptionWidget->loadCommandLineOption(fc->location());
+        if (!fn) { // switch to a welcome page
+            QStringList runParametersHistory;
+            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            return;
+        }
+
+        ProjectGroupNode* group = fn->parentEntry();
+        if (!group) return;       
+        if (group == oldgroup) return;
+
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+
+    } else { // switch from a welcome page
+        if (!fn) { // switch to a welcome page
+            QStringList runParametersHistory;
+            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            return;
+        }
+
+        ProjectGroupNode* group = fn->parentEntry();
+        if (!group) return;
+
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+    }
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    emit mGamsOptionWidget->optionEditorDisabled();
-
     // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.fileNode(mRecent.editor());
-    if (oldTab) oldTab->removeTextMarks(QSet<TextMark::Type>() << TextMark::match, false);
+    if (oldTab)
+        oldTab->removeTextMarks(TextMark::match, true);
 
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     AbstractEdit* edit = ProjectFileNode::toAbstractEdit(editWidget);
     lxiviewer::LxiViewer* lxiViewer = ProjectFileNode::toLxiViewer(editWidget);
+
+    loadCommandLineOptions(oldTab, mProjectRepo.fileNode(editWidget));
+    updateRunState();
 
     if (edit) {
         ProjectFileNode* fc = mProjectRepo.fileNode(lxiViewer ? editWidget : edit);
@@ -762,8 +789,6 @@ void MainWindow::activeTabChanged(int index)
             mRecent.setEditor(lxiViewer ? editWidget : edit, this);
             mRecent.group = fc->parentEntry();
             if (!edit->isReadOnly()) {
-                loadCommandLineOptions(fc);
-                updateRunState();
                 ui->menuEncoding->setEnabled(true);
             }
             updateMenuToCodec(fc->codecMib());
@@ -794,7 +819,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    if (searchWidget()) searchWidget()->updateReplaceActionAvailability();
+    if (searchDialog()) searchDialog()->updateReplaceActionAvailability();
 
     CodeEdit* ce = ProjectAbstractNode::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
@@ -1021,25 +1046,27 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
-        QMessageBox msgBox;
-        msgBox.setText(ui->mainTab->tabText(index)+" has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
+        ret = showSaveChangesMsgBox(ui->mainTab->tabText(index)+" has been modified.");
     }
-    if (ret == QMessageBox::Save)
+
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->save();
-
-    if (ret != QMessageBox::Cancel) {
-        for (const auto& file : mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList))
-            QFile::remove(file);
-
-        mClosedTabs << fc->location();
-        fc->removeEditor(edit);
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
-        edit->deleteLater();
+        closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Discard) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        closeFileEditors(fc->id());
     }
+}
+
+int MainWindow::showSaveChangesMsgBox(const QString &text)
+{
+    QMessageBox msgBox;
+    msgBox.setText(text);
+    msgBox.setInformativeText("Do you want to save your changes?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    return msgBox.exec();
 }
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
@@ -1068,27 +1095,14 @@ void MainWindow::createWelcomePage()
 
 bool MainWindow::isActiveTabRunnable()
 {
-    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        return (fc && !edit->isReadOnly());
-    }
-    return false;
-}
-
-bool MainWindow::isActiveTabSetAsMain()
-{
-    QWidget *editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit( editWidget );
-    if (edit) {
-        ProjectFileNode* fc = mProjectRepo.fileNode(edit);
-        if (fc) {
-           ProjectGroupNode* group = fc->parentEntry();
-           if (group) {
-               return (fc->location()==group->runnableGms());
-           }
-        }
+    QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    if (editWidget) {
+       ProjectFileNode* fc = mProjectRepo.fileNode(editWidget);
+       if (!fc) { // assuming a welcome page here
+           return false;
+       } else {
+           return true;
+       }
     }
     return false;
 }
@@ -1243,28 +1257,31 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
 
 bool MainWindow::requestCloseChanged(QList<ProjectFileNode*> changedFiles)
 {
-    // TODO: make clear that this saves/discrads all modified files?
-    if (changedFiles.size() > 0) {
-        int ret = QMessageBox::Discard;
-        QMessageBox msgBox;
-        QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
-                                             : QString::number(changedFiles.size())+" files have been modified";
-        msgBox.setText(filesText);
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        ret = msgBox.exec();
-        if (ret == QMessageBox::Save) {
-            for (ProjectFileNode* fc: changedFiles) {
-                if (fc->isModified()) {
-                    fc->save();
-                }
+    if (changedFiles.size() <= 0) return true;
+
+    int ret = QMessageBox::Discard;
+    QMessageBox msgBox;
+    QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
+                                         : QString::number(changedFiles.size())+" files have been modified";
+    ret = showSaveChangesMsgBox(filesText);
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                fc->save();
             }
         }
-        if (ret == QMessageBox::Cancel) {
-            return false;
+    } else if (ret == QMessageBox::Cancel) {
+        return false;
+    } else { // Discard
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        for (ProjectFileNode* fc : changedFiles) {
+            if (fc->isModified()) {
+                closeFile(fc);
+            }
         }
     }
+
     return true;
 }
 
@@ -1280,14 +1297,14 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    mSettings->saveSettings(this);
     QList<ProjectFileNode*> oFiles = mProjectRepo.modifiedFiles();
-    if (!requestCloseChanged(oFiles)) {
-        event->setAccepted(false);
+    if (requestCloseChanged(oFiles)) {
+        on_actionClose_All_triggered();
+        closeHelpView();
     } else {
-        mSettings->saveSettings(this);
+        event->setAccepted(false);
     }
-    on_actionClose_All_triggered();
-    closeHelpView();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1296,8 +1313,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
-        mSearchWidget->hide();
-        mSearchWidget->clearResults();
+        mSearchDialog->hide();
+        mSearchDialog->clearSearch();
     }
 
     QMainWindow::keyPressEvent(event);
@@ -1372,7 +1389,7 @@ void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);
     if (event->type() == LineEditCompleteEvent::type())
-        ((LineEditCompleteEvent*)event)->complete();
+        (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
 void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
@@ -1429,6 +1446,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     parseFilesFromCommandLine(commandLineStr, group);
 
+    group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
 
     if (mSettings->autosaveOnRun())
@@ -1471,8 +1489,11 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
 
-    if (gmsFilePath == "")
-        mSyslog->appendLog("No runnable GMS file found.", LogMsgType::Warning);
+    if (gmsFilePath == "") {
+        mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
+        ui->actionShow_System_Log->trigger();
+        return;
+    }
 
     QFileInfo gmsFileInfo(gmsFilePath);
 
@@ -1496,7 +1517,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isActiveTabSetAsMain(), isRecentGroupInRunningState());
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
 }
 
 HelpWidget *MainWindow::getHelpWidget() const
@@ -1512,9 +1533,6 @@ void MainWindow::on_runGmsFile(ProjectFileNode *fc)
 void MainWindow::on_setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
-    // loadCommandLineOptions(fc);
-    // TODO As an activated tab should synchronize with the shown option,
-    // also activate Tab in addition to loadCommandLineOptions(fc).
     updateRunState();
 }
 
@@ -1529,36 +1547,28 @@ void MainWindow::on_commandLineHelpTriggered()
 
 void MainWindow::on_optionRunChanged()
 {
-    if (isActiveTabSetAsMain() && !isRecentGroupInRunningState())
+    if (isActiveTabRunnable() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
 }
 
 void MainWindow::on_actionRun_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    if (isActiveTabRunnable()) {
-        execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
-    }
+    execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -1669,7 +1679,6 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
 
         mProjectRepo.removeGroup(group);
-        mSettings->saveSettings(this);
     }
 }
 
@@ -1703,7 +1712,8 @@ void MainWindow::closeFile(ProjectFileNode* file)
         parentGroup->removeRunnableGms();
         for (int i = 0; i < parentGroup->childCount(); i++) {
             // choose next as main gms file
-            if (parentGroup->childEntry(i)->location().endsWith(".gms")) {
+            QFileInfo fi(parentGroup->childEntry(i)->location());
+            if (FileType::from(fi.suffix()) == FileType::Gms) {
                 parentGroup->setRunnableGms(static_cast<ProjectFileNode*>(parentGroup->childEntry(i)));
                 break;
             }
@@ -1713,9 +1723,6 @@ void MainWindow::closeFile(ProjectFileNode* file)
     // close group if empty now
     if (parentGroup->childCount() == 0)
         closeGroup(parentGroup);
-
-    // save changes in project structure
-    mSettings->saveSettings(this);
 }
 
 /// Closes all open editors and tabs related to a file and remove option history
@@ -1737,8 +1744,6 @@ void MainWindow::closeFileEditors(FileId fileId)
         fc->removeEditor(edit);
         edit->deleteLater();
     }
-    // purge history
-    getGamsOptionWidget()->removeFromHistory(fc->location());
 }
 
 void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip)
@@ -1761,6 +1766,7 @@ void MainWindow::openFilePath(QString filePath, ProjectGroupNode *parent, bool f
             if (focus) tabWidget->currentWidget()->setFocus();
         ui->projectView->expand(mProjectRepo.treeModel()->index(group));
         addToOpenedFiles(filePath);
+        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
     } else {
         openFileNode(fileNode, focus, codecMip);
     }
@@ -1830,10 +1836,15 @@ void MainWindow::on_actionSearch_triggered()
            gdx->selectSearchField();
            return;
        }
+       // e.g. needed for KDE to raise the search dialog when minimized
+       if (mSearchDialog->isMinimized())
+           mSearchDialog->setWindowState(Qt::WindowMaximized);
        // toggle visibility
-       if (mSearchWidget->isVisible()) {
-           mSearchWidget->activateWindow();
-           mSearchWidget->autofillSearchField();
+       if (mSearchDialog->isVisible()) {
+           // e.g. needed for macOS to rasise search dialog when minimized
+           mSearchDialog->raise();
+           mSearchDialog->activateWindow();
+           mSearchDialog->autofillSearchField();
        } else {
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
@@ -1846,10 +1857,10 @@ void MainWindow::on_actionSearch_triggered()
                else
                    sbs = 2;
 
-               int offset = (this->width() - mSearchWidget->width() - sbs);
-               mSearchWidget->move(newP.x() + offset, newP.y());
+               int offset = (this->width() - mSearchDialog->width() - sbs);
+               mSearchDialog->move(newP.x() + offset, newP.y());
            }
-           mSearchWidget->show();
+           mSearchDialog->show();
        }
     }
 }
@@ -1859,7 +1870,7 @@ void MainWindow::showResults(SearchResultList &results)
     int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
 
     mResultsView = new ResultsView(results, this);
-    QString title("Results: " + mSearchWidget->searchTerm());
+    QString title("Results: " + mSearchDialog->searchTerm());
 
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();
@@ -1868,6 +1879,12 @@ void MainWindow::showResults(SearchResultList &results)
 
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
+}
+
+void MainWindow::closeResults()
+{
+    int index = ui->logTabs->indexOf(mResultsView);
+    if (index != -1) ui->logTabs->removeTab(index);
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
@@ -1970,6 +1987,9 @@ void MainWindow::on_actionGo_To_triggered()
         return;
     GoToDialog dialog(this);
     dialog.exec();
+    CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
+    if (codeEdit)
+        codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());
 }
 
 
@@ -2234,7 +2254,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
     }
-    window->searchWidget()->invalidateCache();
+    window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 

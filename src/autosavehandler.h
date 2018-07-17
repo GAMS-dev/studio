@@ -19,6 +19,8 @@ public:
 
     void saveChangedFiles();
 
+    void clearAutosaveFiles(const QStringList &openTabs);
+
 private:
     MainWindow *mMainWindow;
     const QString mAutosavedFileMarker = "~$";

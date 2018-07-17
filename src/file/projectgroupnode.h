@@ -76,6 +76,9 @@ public:
     void dumpMarks();
     QString tooltip() override;
 
+    void addRunParametersHistory(QString option);
+    QStringList getRunParametersHistory();
+
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
@@ -104,6 +107,7 @@ protected:
     void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
+    QStringList mRunParametersHistory;
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;

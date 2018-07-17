@@ -29,23 +29,23 @@ class GoToDialog;
 namespace gams {
 namespace studio {
 
-class MainWindow;
-
 class GoToDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit GoToDialog(MainWindow *parent = nullptr);
+    explicit GoToDialog(QWidget *parent = nullptr);
 
     ~GoToDialog();
+
+    int lineNumber() const;
 
 private slots:
     void on_goToButton_clicked();
 
 private:
     Ui::GoToDialog *ui;
-    MainWindow *mMain;
+    int mLineNumber = -1;
 };
 
 }

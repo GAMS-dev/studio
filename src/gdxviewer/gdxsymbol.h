@@ -21,19 +21,17 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLDATATABLEMODEL_H
 
 #include <QAbstractTableModel>
-#include <QMutex>
-#include "gdxsymboltable.h"
-#include <memory>
-#include "gdxcc.h"
 #include <QString>
-#include <QSet>
+
+#include "gdxcc.h"
+
+class QMutex;
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
 class GdxSymbolTable;
-
 
 class GdxSymbol : public QAbstractTableModel
 {
@@ -75,6 +73,13 @@ signals:
     void loadFinished();
 
 private:
+    void calcDefaultColumns();
+    void calcUelsInColumn();
+    void loadMetaData();
+    void loadDomains();
+    double specVal2SortVal(double val);
+
+private:
     gdxHandle_t mGdx = nullptr;
     int mNr;
     QMutex* mGdxMutex = nullptr;
@@ -103,13 +108,6 @@ private:
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
 
-    void calcDefaultColumns();
-    void calcUelsInColumn();
-    void loadMetaData();
-    void loadDomains();
-
-
-    double specVal2SortVal(double val);
     std::vector<double> mSpecValSortVal;
 
     std::vector<std::vector<int>*> mUelsInColumn;

@@ -1,5 +1,4 @@
 /*
- *
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -213,14 +212,12 @@ void ProjectFileNode::removeEditor(QWidget* edit)
     CodeEdit* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
-        emit documentClosed();
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
         disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
-        if (!document()) emit documentClosed();
         unsetFlag(ProjectAbstractNode::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {
@@ -321,31 +318,14 @@ void ProjectFileNode::load(int codecMib, bool keepMarks)
     load(QList<int>() << codecMib, keepMarks);
 }
 
-void ProjectFileNode::jumpTo(const QTextCursor &cursor, bool focus, int altLine, int altColumn)
+void ProjectFileNode::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
 {
-    emit openFileNode(this, focus);
-    if (mEditors.size()) {
-        AbstractEdit* edit = ProjectAbstractNode::toAbstractEdit(mEditors.first());
-        if (!edit) return;
-
-        QTextCursor tc;
-        if (cursor.isNull()) {
-            if (edit->document()->blockCount()-1 < altLine) return;
-            tc = QTextCursor(edit->document()->findBlockByNumber(altLine));
-        } else {
-            tc = cursor;
-        }
-
-        if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
-        tc.clearSelection();
-        edit->setTextCursor(tc);
-        // center line vertically
-        qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
-        qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
-        int mv = line - lines/2;
-        if (qAbs(mv) > lines/3)
-            edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
-    }
+    emit openFileNode(this, true);
+    if (!mEditors.size())
+        return;
+    CodeEdit* edit = ProjectAbstractNode::toCodeEdit(mEditors.first());
+    if (edit)
+        edit->jumpTo(cursor, altLine, altColumn);
 }
 
 void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)

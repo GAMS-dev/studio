@@ -99,7 +99,6 @@ SOURCES += \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
-    option/commandlinehistory.cpp \
     option/commandlineoption.cpp \
     option/commandlinetokenizer.cpp \
     option/lineeditcompleteevent.cpp \
@@ -113,7 +112,6 @@ SOURCES += \
     projectcontextmenu.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
-    searchwidget.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
@@ -141,7 +139,8 @@ SOURCES += \
     editors/systemlogedit.cpp \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
-    syntax/systemloghighlighter.cpp
+    syntax/systemloghighlighter.cpp \
+    searchdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -184,7 +183,6 @@ HEADERS += \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
-    option/commandlinehistory.h \
     option/commandlineoption.h \
     option/commandlinetokenizer.h \
     option/lineeditcompleteevent.h \
@@ -198,7 +196,6 @@ HEADERS += \
     projectcontextmenu.h \
     resultsview.h \
     searchresultlist.h \
-    searchwidget.h \
     settingsdialog.h \
     statuswidgets.h \
     studiosettings.h \
@@ -229,7 +226,8 @@ HEADERS += \
     editors/systemlogedit.h \
     encodingsdialog.h \
     editors/codeedit.h \
-    syntax/systemloghighlighter.h
+    syntax/systemloghighlighter.h \
+    searchdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -242,12 +240,12 @@ FORMS += \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     resultsview.ui \
-    searchwidget.ui \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
     gotodialog.ui \
-    encodingsdialog.ui
+    encodingsdialog.ui \
+    searchdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc
