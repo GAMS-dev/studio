@@ -162,7 +162,9 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
 
+    mAppSettings->beginGroup("json");
     QJsonObject jsonProject;
     main->projectRepo()->write(jsonProject);
     QJsonDocument saveDoc(jsonProject);
@@ -172,8 +174,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     main->writeTabs(jsonTabs);
     saveDoc = QJsonDocument(jsonTabs);
     mAppSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
-
     mAppSettings->endGroup();
+
 
     // User Settings
     mUserSettings->beginGroup("General");
@@ -246,6 +248,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                            mAppSettings->value("name").toString());
     }
     mAppSettings->endArray();
+
     main->getHelpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
         main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
@@ -260,6 +263,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
         main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
 
 }
 
@@ -322,7 +326,7 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 
 void StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
-    mAppSettings->beginGroup("fileHistory");
+    mAppSettings->beginGroup("json");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->projectRepo()->read(loadDoc.object());
