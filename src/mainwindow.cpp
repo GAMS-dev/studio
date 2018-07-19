@@ -1036,12 +1036,13 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QWidget* edit = ui->mainTab->widget(index);
-    ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+    QWidget* widget = ui->mainTab->widget(index);
+    ProjectFileNode* fc = mProjectRepo.fileNode(widget);
     if (!fc) {
         ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
         mWp = nullptr;
+        mClosedTabs << "Wp Closed";
         return;
     }
 
@@ -2221,6 +2222,12 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
+
+    if ((mClosedTabs.last()=="Wp Closed")&&( mWp== nullptr)){
+        createWelcomePage();
+        mClosedTabs.removeLast();
+        return;
+    }
     QFile file(mClosedTabs.last());
     mClosedTabs.removeLast();
     if (file.exists())
