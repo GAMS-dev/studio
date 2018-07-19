@@ -1734,11 +1734,10 @@ void MainWindow::closeFile(ProjectFileNode* file)
 void MainWindow::closeFileEditors(FileId fileId)
 {
     ProjectFileNode* fc = mProjectRepo.fileNode(fileId);
+    if (!fc) return; // TODO(AF) add logging but no execption
 
     // add to recently closed tabs
     mClosedTabs << fc->location();
-    if (!fc)
-        FATAL() << "FileId " << fileId << " is not of class FileContext.";
 
     // close all related editors, tabs and clean up
     while (!fc->editors().isEmpty()) {
