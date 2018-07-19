@@ -1287,7 +1287,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->tabSize());
         return;
-    } else if (e->text().length()) {
+    } else if (e->text().length() && e->text().isSimpleText()) {
         replaceBlockText(e->text());
     }
 
