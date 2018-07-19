@@ -266,19 +266,19 @@ void MainWindow::updateMenuToCodec(int mib)
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(ui->dockLogView).count();
-    ui->dockLogView->setVisible(visibility);
+    ui->actionOutput_View->setChecked(visibility);
 }
 
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(ui->dockProjectView).count();
-    ui->dockProjectView->setVisible(visibility);
+    ui->actionProject_View->setChecked(visibility);
 }
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
     visibility = visibility || tabifiedDockWidgets(ui->dockOptionEditor).count();
-    ui->dockOptionEditor->setVisible(visibility);
+    ui->actionOption_View->setChecked(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -288,7 +288,7 @@ void MainWindow::setHelpViewVisibility(bool visibility)
         mHelpWidget->clearStatusBar();
     else
         mHelpWidget->setFocus();
-    ui->dockHelpView->setVisible(visibility);
+    ui->actionHelp_View->setChecked(visibility);
 }
 
 bool MainWindow::outputViewVisibility()

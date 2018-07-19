@@ -212,11 +212,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->sync();
 }
 
-void StudioSettings::loadAppSettings(MainWindow *main)
+void StudioSettings::loadViewStates(MainWindow *main)
 {
     // main window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
+    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
 
@@ -230,7 +230,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
-    main->setOutputViewVisibility(mAppSettings->value("outputView", true).toBool());
+    main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
     main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
@@ -347,7 +347,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     }
 
     loadUserSettings();
-    loadAppSettings(main);
+    loadViewStates(main);
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
