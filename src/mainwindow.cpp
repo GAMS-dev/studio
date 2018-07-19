@@ -161,8 +161,11 @@ void MainWindow::initTabs()
 
     mWp = new WelcomePage(history(), this);
     connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
-    if (!mSettings->skipWelcomePage())
+    if (mSettings->skipWelcomePage())
+        mWp->hide();
+    else
         showWelcomePage();
+
 }
 
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
@@ -1129,8 +1132,7 @@ void MainWindow::on_actionShow_System_Log_triggered()
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
-    ui->mainTab->setCurrentIndex(0); // go to welcome page
+    showWelcomePage();
 }
 
 void MainWindow::renameToBackup(QFile *file)
