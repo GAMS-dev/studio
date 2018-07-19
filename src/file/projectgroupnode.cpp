@@ -417,7 +417,7 @@ GamsProcess*ProjectGroupNode::gamsProcess()
 
 QProcess::ProcessState ProjectGroupNode::gamsProcessState() const
 {
-    return mGamsProcess->state();
+    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
 int ProjectGroupNode::childCount() const
