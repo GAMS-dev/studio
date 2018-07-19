@@ -1129,10 +1129,10 @@ void MainWindow::on_actionShow_System_Log_triggered()
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(mWp == nullptr)
-        createWelcomePage();
-    else
+    if(mWp)
         ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
+    else
+        createWelcomePage();
 }
 
 void MainWindow::renameToBackup(QFile *file)
@@ -2223,7 +2223,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     if (mClosedTabs.isEmpty())
         return;
 
-    if ((mClosedTabs.last()=="Wp Closed")&&( mWp== nullptr)){
+    if (mClosedTabs.last()=="Wp Closed" && !mWp) {
         createWelcomePage();
         mClosedTabs.removeLast();
         return;
