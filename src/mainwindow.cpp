@@ -806,12 +806,14 @@ void MainWindow::activeTabChanged(int index)
         gdxviewer::GdxViewer* gdxViewer = ProjectFileNode::toGdxViewer(editWidget);
         mRecent.setEditor(gdxViewer, this);
         ProjectFileNode* fc = mProjectRepo.fileNode(gdxViewer);
-        mRecent.editFileId = fc->id();
-        mRecent.group = fc->parentEntry();
-        mStatusWidgets->setFileName(fc->location());
-        mStatusWidgets->setEncoding(fc->codecMib());
-        mStatusWidgets->setLineCount(-1);
-        gdxViewer->reload();
+        if (fc) {
+            mRecent.editFileId = fc->id();
+            mRecent.group = fc->parentEntry();
+            mStatusWidgets->setFileName(fc->location());
+            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setLineCount(-1);
+            gdxViewer->reload();
+        }
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
