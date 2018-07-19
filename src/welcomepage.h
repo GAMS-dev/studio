@@ -63,7 +63,6 @@ private:
     QList<QLabel*> mFileHistory;
     MainWindow *mMain;
     bool mOutputVisible;
-    bool mOptionsVisible;
 };
 
 }
