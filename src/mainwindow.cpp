@@ -149,6 +149,7 @@ void MainWindow::delayedFileRestoration()
 MainWindow::~MainWindow()
 {
     killTimer(mTimerID);
+    delete mWp;
     delete ui;
 }
 
@@ -158,8 +159,10 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
+    mWp = new WelcomePage(history(), this);
+    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
     if (!mSettings->skipWelcomePage())
-        createWelcomePage();
+        showWelcomePage();
 }
 
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
@@ -1039,9 +1042,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     QWidget* widget = ui->mainTab->widget(index);
     ProjectFileNode* fc = mProjectRepo.fileNode(widget);
     if (!fc) {
-        ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        mWp = nullptr;
+        ui->mainTab->removeTab(index);
         mClosedTabs << "Wp Closed";
         return;
     }
@@ -1088,11 +1090,9 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     }
 }
 
-void MainWindow::createWelcomePage()
+void MainWindow::showWelcomePage()
 {
-    mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
-    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
@@ -1129,10 +1129,8 @@ void MainWindow::on_actionShow_System_Log_triggered()
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(mWp)
-        ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
-    else
-        createWelcomePage();
+    ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
+    ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
 void MainWindow::renameToBackup(QFile *file)
@@ -2223,9 +2221,9 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     if (mClosedTabs.isEmpty())
         return;
 
-    if (mClosedTabs.last()=="Wp Closed" && !mWp) {
-        createWelcomePage();
+    if (mClosedTabs.last()=="Wp Closed") {
         mClosedTabs.removeLast();
+        showWelcomePage();
         return;
     }
     QFile file(mClosedTabs.last());
