@@ -159,7 +159,7 @@ private:
     // user model library directory
     QString mUserModelLibraryDir;
     void initSettingsFiles();
-    void loadAppSettings(MainWindow *main);
+    void loadViewStates(MainWindow *main);
 };
 
 }
