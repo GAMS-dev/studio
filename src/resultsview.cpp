@@ -49,6 +49,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     int selectedRow = index.row();
     Result item = mResultList.resultList().at(selectedRow);
 
+    // open so we have a document of the file
     if (QFileInfo(item.locFile()).exists())
         mMain->openFile(item.locFile());
 
@@ -62,7 +63,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
     // open and highlight
-    mMain->searchDialog()->findInFile(jmpFc, true);
+    mMain->searchDialog()->findInFile(jmpFc, true, mResultList.searchTerm());
 
     // jump to line
     QTextCursor tc(jmpFc->document());

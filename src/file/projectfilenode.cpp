@@ -212,14 +212,12 @@ void ProjectFileNode::removeEditor(QWidget* edit)
     CodeEdit* scEdit = ProjectFileNode::toCodeEdit(edit);
 
     if (ptEdit && mEditors.size() == 1) {
-        emit documentClosed();
         // On removing last editor: paste document-parency back to editor
         ptEdit->document()->setParent(ptEdit);
         disconnect(ptEdit->document(), &QTextDocument::modificationChanged, this, &ProjectFileNode::modificationChanged);
     }
     mEditors.removeAt(i);
     if (mEditors.isEmpty()) {
-        if (!document()) emit documentClosed();
         unsetFlag(ProjectAbstractNode::cfActive);
         if (wasModified) emit changed(id());
     } else if (ptEdit) {
@@ -322,10 +320,12 @@ void ProjectFileNode::load(int codecMib, bool keepMarks)
 
 void ProjectFileNode::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
 {
+    emit openFileNode(this, true);
     if (!mEditors.size())
         return;
     CodeEdit* edit = ProjectAbstractNode::toCodeEdit(mEditors.first());
-    edit->jumpTo(cursor, altLine, altColumn);
+    if (edit)
+        edit->jumpTo(cursor, altLine, altColumn);
 }
 
 void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)

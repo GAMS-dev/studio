@@ -115,6 +115,12 @@ void AutosaveHandler::saveChangedFiles()
     }
 }
 
+void AutosaveHandler::clearAutosaveFiles(const QStringList &openTabs)
+{
+    for (const auto& file : checkForAutosaveFiles(openTabs))
+        QFile::remove(file);
+}
+
 
 } // namespace studio
 } // namespace gams

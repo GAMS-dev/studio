@@ -52,7 +52,6 @@ class ErrorHighlighter : public QSyntaxHighlighter
 public:
     ErrorHighlighter(ProjectFileNode *node);
     void highlightBlock(const QString &text);
-    void setDocAndConnect(QTextDocument* doc);
     TextMarkList* marks();
 
 public slots:

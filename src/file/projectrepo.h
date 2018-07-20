@@ -89,7 +89,7 @@ public:
     /// \return a <c>QModelIndex</c> to the new node.
     ProjectFileNode* addFile(QString name, QString location, ProjectGroupNode* parent = nullptr);
 
-    ProjectGroupNode* ensureGroup(const QString& filePath);
+    ProjectGroupNode* ensureGroup(const QString& filePath, const QString& groupName = "");
     void close(FileId fileId);
     void setSuffixFilter(QStringList filter);
     void dump(ProjectAbstractNode* fc, int lv = 0);

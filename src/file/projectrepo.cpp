@@ -90,10 +90,10 @@ void ProjectRepo::findOrCreateFileNode(QString filePath, ProjectFileNode*& resul
     if (!QFileInfo(filePath).exists()) {
         filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
     }
-    if (!QFileInfo(filePath).exists()) {
+    if (!QFileInfo(filePath).exists()) { // TODO(AF) logging instead of exception
         EXCEPT() << "File not found: " << filePath;
     }
-    if (!fileGroup)
+    if (!fileGroup) // TODO(AF) logging instead of exception
         EXCEPT() << "The group must not be null";
     ProjectAbstractNode* fsc = findNode(filePath, fileGroup);
     if (!fsc) {
@@ -194,16 +194,17 @@ void ProjectRepo::removeNode(ProjectAbstractNode* node)
     deleteNode(node);
 }
 
-ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath)
+ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath, const QString& groupName)
 {
     bool extendedCaption = false;
     ProjectGroupNode* group = nullptr;
 
     QFileInfo fi(filePath);
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
+    QString groupNameToAdd = groupName.isEmpty() ? fi.completeBaseName() : groupName;
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         ProjectAbstractNode* fsc = mTreeModel->rootNode()->childEntry(i);
-        if (fsc && fsc->type() == ProjectAbstractNode::FileGroup && fsc->name() == fi.completeBaseName()) {
+        if (fsc && fsc->type() == ProjectAbstractNode::FileGroup && fsc->name() == groupNameToAdd) {
             group = static_cast<ProjectGroupNode*>(fsc);
             if (di == QFileInfo(group->location())) {
                 group->attachFile(fi.filePath());
@@ -215,7 +216,7 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath)
             }
         }
     }
-    group = addGroup(fi.completeBaseName(), fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
+    group = addGroup(groupNameToAdd, fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(ProjectAbstractNode::cfExtendCaption);
 
@@ -270,7 +271,7 @@ void ProjectRepo::setSelected(const QModelIndex& ind)
 
 void ProjectRepo::removeGroup(ProjectGroupNode* fileGroup)
 {
-    for (int i = 0; i < fileGroup->childCount(); ++i) {
+    for (int i = fileGroup->childCount()-1; i >= 0; i--) {
         ProjectAbstractNode *child = fileGroup->childEntry(i);
         mTreeModel->removeChild(child);
         deleteNode(child);
@@ -359,9 +360,15 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         if (node.contains("nodes")) {
             if (node.contains("file") && node["file"].isString()) {
                 // TODO(JM) later, groups of deeper level need to be created, too
-                ProjectGroupNode* subGroup = ensureGroup(node["file"].toString());
+                QString groupName = (node.contains("name") && node["name"].isString()) ? node["name"].toString() : "";
+                ProjectGroupNode* subGroup = ensureGroup(node["file"].toString(), groupName);
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
+                    if (node.contains("options") && node["options"].isArray()) {
+                       foreach (const QJsonValue & val, node["options"].toArray()) {
+                           subGroup->addRunParametersHistory( val.toString() );
+                       }
+                    }
                     readGroup(subGroup, gprArray);
 
                     if (subGroup->childCount() > 0) {
@@ -399,6 +406,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
                                                                 : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
+            nodeObject["options"] = QJsonArray::fromStringList(subGroup->getRunParametersHistory());
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
             nodeObject["nodes"] = subArray;

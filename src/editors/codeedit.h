@@ -146,6 +146,7 @@ private slots:
     void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
+    void checkBlockInsertion();
 
 private:
     friend class BlockEdit;
@@ -162,8 +163,11 @@ private:
     CharType charType(QChar c);
     void updateTabSize();
     inline int assignmentKind(int p);
+    bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
+    void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
 
     static int findAlphaNum(const QString &text, int start, bool back);
+    void rawKeyPressEvent(QKeyEvent *e);
 
 private:
     class BlockEdit
@@ -221,6 +225,8 @@ private:
     QTimer mParenthesesDelay;
     ParenthesesMatch mParenthesesMatch;
     StudioSettings *mSettings = nullptr;
+    int mBlockEditRealPos = -1;
+    QString mBlockEditInsText;
 
 public:
     BlockEdit *blockEdit() const;

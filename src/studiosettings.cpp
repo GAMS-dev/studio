@@ -79,7 +79,7 @@ void StudioSettings::resetSettings()
 void StudioSettings::resetViewSettings()
 {
     mAppSettings->beginGroup("mainWindow");
-    mAppSettings->setValue("size", QSize(1000, 700));
+    mAppSettings->setValue("size", QSize(1024, 768));
     mAppSettings->setValue("pos", QPoint());
     mAppSettings->setValue("windowState", QByteArray());
     mAppSettings->endGroup();
@@ -162,17 +162,9 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
     }
     mAppSettings->endArray();
+    mAppSettings->endGroup();
 
-    QMap<QString, QStringList> map(main->getGamsOptionWidget()->getOptionHistory());
-    mAppSettings->remove("commandLineOptions");
-    mAppSettings->beginWriteArray("commandLineOptions");
-    for (int i = 0; i < map.size(); i++) {
-        mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("path", map.keys().at(i));
-        mAppSettings->setValue("opt", map.values().at(i));
-    }
-    mAppSettings->endArray();
-
+    mAppSettings->beginGroup("json");
     QJsonObject jsonProject;
     main->projectRepo()->write(jsonProject);
     QJsonDocument saveDoc(jsonProject);
@@ -182,8 +174,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     main->writeTabs(jsonTabs);
     saveDoc = QJsonDocument(jsonTabs);
     mAppSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
-
     mAppSettings->endGroup();
+
 
     // User Settings
     mUserSettings->beginGroup("General");
@@ -220,11 +212,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->sync();
 }
 
-void StudioSettings::loadAppSettings(MainWindow *main)
+void StudioSettings::loadViewStates(MainWindow *main)
 {
     // main window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1000, 700)).toSize());
+    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
 
@@ -238,7 +230,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
-    main->setOutputViewVisibility(mAppSettings->value("outputView", true).toBool());
+    main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
     main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
@@ -256,6 +248,7 @@ void StudioSettings::loadAppSettings(MainWindow *main)
                            mAppSettings->value("name").toString());
     }
     mAppSettings->endArray();
+
     main->getHelpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
         main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
@@ -270,18 +263,8 @@ void StudioSettings::loadAppSettings(MainWindow *main)
         main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
-
-    QMap<QString, QStringList> map;
-    int size = mAppSettings->beginReadArray("commandLineOptions");
-    for (int i = 0; i < size; i++) {
-        mAppSettings->setArrayIndex(i);
-        map.insert(mAppSettings->value("path").toString(),
-                   mAppSettings->value("opt").toStringList());
-    }
-    mAppSettings->endArray();
     mAppSettings->endGroup();
 
-    main->getGamsOptionWidget()->setOptionHistory(map);
 }
 
 void StudioSettings::loadUserSettings()
@@ -343,7 +326,7 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 
 void StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
-    mAppSettings->beginGroup("fileHistory");
+    mAppSettings->beginGroup("json");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     main->projectRepo()->read(loadDoc.object());
@@ -364,7 +347,7 @@ void StudioSettings::loadSettings(MainWindow *main)
     }
 
     loadUserSettings();
-    loadAppSettings(main);
+    loadViewStates(main);
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future

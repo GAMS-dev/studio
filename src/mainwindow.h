@@ -112,6 +112,7 @@ public:
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
+    void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
@@ -252,18 +253,18 @@ private:
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
-    void createWelcomePage();
+    void showWelcomePage();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
     bool isActiveTabRunnable();
-    bool isActiveTabSetAsMain();
     bool isRecentGroupInRunningState();
-    void loadCommandLineOptions(ProjectFileNode* fc);
+    void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
+    int showSaveChangesMsgBox(const QString &text);
 
 private:
     Ui::MainWindow *ui;
@@ -279,7 +280,7 @@ private:
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
-    WelcomePage *mWp = nullptr;
+    WelcomePage *mWp;
     ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     ProjectRepo mProjectRepo;
