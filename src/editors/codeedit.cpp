@@ -91,9 +91,16 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
+    connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+}
+
+CodeEdit::~CodeEdit()
+{
+    while (mBlockEditPos.size())
+        delete mBlockEditPos.takeLast();
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -179,6 +186,41 @@ void CodeEdit::checkBlockInsertion()
         cur.endEditBlock();
     }
     mBlockEditRealPos = -1;
+}
+
+void CodeEdit::undoCommandAdded()
+{
+    while (document()->availableUndoSteps()-1 < mBlockEditPos.size())
+        delete mBlockEditPos.takeLast();
+    while (document()->availableUndoSteps() > mBlockEditPos.size()) {
+        BlockEditPos *bPos = nullptr;
+        if (mBlockEdit) bPos = new BlockEditPos(mBlockEdit->startLine(), mBlockEdit->currentLine(), mBlockEdit->column());
+        mBlockEditPos.append(bPos);
+    }
+}
+
+void CodeEdit::extendedRedo()
+{
+    redo();
+    updateBlockEditPos();
+}
+
+void CodeEdit::extendedUndo()
+{
+    undo();
+    updateBlockEditPos();
+}
+
+void CodeEdit::updateBlockEditPos()
+{
+    if (document()->availableUndoSteps() <= 0 || document()->availableUndoSteps() >= mBlockEditPos.size())
+        return;
+    BlockEditPos * bPos = mBlockEditPos.at(document()->availableUndoSteps()-1);
+    if (mBlockEdit) endBlockEdit();
+    if (bPos && !mBlockEdit) {
+        startBlockEdit(bPos->startLine, bPos->column);
+        mBlockEdit->selectTo(bPos->currentLine, bPos->column);
+    }
 }
 
 void CodeEdit::clearSelection()
@@ -1472,9 +1514,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
-    DEB() << "newUndoBlock " << (newUndoBlock?"true":"false");
     if (missingLines > 0) {
-        DEB() << "missingLines";
         QTextBlock block = mEdit->document()->lastBlock();
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::End);
@@ -1499,7 +1539,6 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
         if (maxLen < s.length()) maxLen = s.length();
     }
 
-    DEB() << "newUndoBlock " << (newUndoBlock?"true":"false");
     if (newUndoBlock) cursor.beginEditBlock();
     else cursor.joinPreviousEditBlock();
 
@@ -1531,6 +1570,11 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
         block = block.previous();
         i = (i>0) ? i-1 : texts.count()-1;
     }
+    // unjoin the Block-Edit insertion from the may-follow normal insertion
+    cursor.insertText(" ");
+    cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+
     cursor.endEditBlock();
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;

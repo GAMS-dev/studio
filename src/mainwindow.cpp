@@ -2006,7 +2006,7 @@ void MainWindow::on_actionRedo_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce) ce->redo();
+    if (ce) ce->extendedRedo();
 }
 
 void MainWindow::on_actionUndo_triggered()
@@ -2014,7 +2014,7 @@ void MainWindow::on_actionUndo_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce) ce->undo();
+    if (ce) ce->extendedUndo();
 }
 
 void MainWindow::on_actionPaste_triggered()

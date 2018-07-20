@@ -83,12 +83,22 @@ private:
     QVector<ParenthesesPos> mparentheses;
 };
 
+struct BlockEditPos
+{
+    BlockEditPos(int _startLine, int _endLine, int _column)
+        : startLine(_startLine), currentLine(_endLine), column(_column) {}
+    int startLine;
+    int currentLine;
+    int column;
+};
+
 class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
 public:
     CodeEdit(QWidget *parent = nullptr);
+    ~CodeEdit();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -114,6 +124,8 @@ public:
     bool overwriteMode() const override;
     void setSettings(StudioSettings *settings);
     void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
+    void extendedRedo();
+    void extendedUndo();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -147,6 +159,7 @@ private slots:
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
+    void undoCommandAdded();
 
 private:
     friend class BlockEdit;
@@ -168,6 +181,7 @@ private:
 
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
+    void updateBlockEditPos();
 
 private:
     class BlockEdit
@@ -227,6 +241,7 @@ private:
     StudioSettings *mSettings = nullptr;
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
+    QVector<BlockEditPos*> mBlockEditPos;
 
 public:
     BlockEdit *blockEdit() const;
