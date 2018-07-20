@@ -90,10 +90,10 @@ void ProjectRepo::findOrCreateFileNode(QString filePath, ProjectFileNode*& resul
     if (!QFileInfo(filePath).exists()) {
         filePath = QFileInfo(QDir(fileGroup->location()), filePath).absoluteFilePath();
     }
-    if (!QFileInfo(filePath).exists()) {
+    if (!QFileInfo(filePath).exists()) { // TODO(AF) logging instead of exception
         EXCEPT() << "File not found: " << filePath;
     }
-    if (!fileGroup)
+    if (!fileGroup) // TODO(AF) logging instead of exception
         EXCEPT() << "The group must not be null";
     ProjectAbstractNode* fsc = findNode(filePath, fileGroup);
     if (!fsc) {
