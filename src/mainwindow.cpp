@@ -130,6 +130,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
+    // stack help under output
+    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
+
     mSyslog = new SystemLogEdit(this);
     mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
@@ -2301,8 +2304,6 @@ void MainWindow::resetViews()
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
-    // stack help under output
-    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
