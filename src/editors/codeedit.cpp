@@ -162,6 +162,25 @@ void CodeEdit::blockEditBlink()
     if (mBlockEdit) mBlockEdit->refreshCursors();
 }
 
+void CodeEdit::checkBlockInsertion()
+{
+    bool extraJoin = mBlockEditInsText.isNull();
+    QTextCursor cur = textCursor();
+    bool validText = (mBlockEditRealPos != cur.position());
+    if (validText) {
+        cur.setPosition(mBlockEditRealPos, QTextCursor::KeepAnchor);
+        mBlockEditInsText = cur.selectedText();
+        cur.removeSelectedText();
+        if (!extraJoin) cur.endEditBlock();
+        mBlockEdit->replaceBlockText(mBlockEditInsText);
+        mBlockEditInsText = "";
+    }
+    if (!validText || extraJoin) {
+        cur.endEditBlock();
+    }
+    mBlockEditRealPos = -1;
+}
+
 void CodeEdit::clearSelection()
 {
     if (isReadOnly()) return;
@@ -821,6 +840,11 @@ int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
     return pos;
 }
 
+void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
+{
+    AbstractEdit::keyPressEvent(e);
+}
+
 CodeEdit::BlockEdit *CodeEdit::blockEdit() const
 {
     return mBlockEdit;
@@ -1287,8 +1311,15 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->tabSize());
         return;
-    } else if (e->text().length() && e->text().isSimpleText()) {
-        replaceBlockText(e->text());
+    } else if (e->text().length()) {
+//        replaceBlockText(e->text());
+
+        mEdit->mBlockEditRealPos = mEdit->textCursor().position();
+        QTextCursor cur = mEdit->textCursor();
+        cur.joinPreviousEditBlock();
+        mEdit->setTextCursor(cur);
+        mEdit->rawKeyPressEvent(e);
+        QTimer::singleShot(0, mEdit, &CodeEdit::checkBlockInsertion);
     }
 
     startCursorTimer();
@@ -1441,7 +1472,9 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
+    DEB() << "newUndoBlock " << (newUndoBlock?"true":"false");
     if (missingLines > 0) {
+        DEB() << "missingLines";
         QTextBlock block = mEdit->document()->lastBlock();
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::End);
@@ -1466,6 +1499,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
         if (maxLen < s.length()) maxLen = s.length();
     }
 
+    DEB() << "newUndoBlock " << (newUndoBlock?"true":"false");
     if (newUndoBlock) cursor.beginEditBlock();
     else cursor.joinPreviousEditBlock();
 
