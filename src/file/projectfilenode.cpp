@@ -513,12 +513,17 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
         return ProjectAbstractNode::eventFilter(watched, event);
 
     } else if (mouseEvent || helpEvent) {
+        static QPoint ttPos;
 
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEdit* codeEdit = ProjectAbstractNode::toCodeEdit(edit);
         mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
+        if (QToolTip::isVisible() && (ttPos-pos).manhattanLength() > 3) {
+            QToolTip::hideText();
+            ttPos = QPoint();
+        }
 
         // if in CodeEditors lineNumberArea
         if (codeEdit && watched == codeEdit && event->type() != QEvent::ToolTip) {
@@ -542,6 +547,7 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
             }
         } else if (event->type() == QEvent::ToolTip) {
             if (!mMarksAtMouse.isEmpty()) showToolTip(mMarksAtMouse);
+            ttPos = pos;
             return !mMarksAtMouse.isEmpty();
         }
     }
