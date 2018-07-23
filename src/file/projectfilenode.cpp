@@ -475,7 +475,6 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
     QHelpEvent* helpEvent = (event->type() == QEvent::ToolTip)  ? static_cast<QHelpEvent*>(event) : nullptr;
     QKeyEvent *keyEvent = (evCheckKey.contains(event->type())) ? static_cast<QKeyEvent*>(event) : nullptr;
 
-    // TODO(JM) FileType of Log should be set to Log
     if (mMetrics.fileType() == FileType::Log
         && (event->type() == QEvent::MouseButtonDblClick
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
@@ -501,7 +500,10 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
                     }
                 }
             }
-            if (linkMark) linkMark->jumpToRefMark(true);
+            if (linkMark) {
+                linkMark->jumpToRefMark(true);
+                edit->setFocus();
+            }
         }
 
     } else if (keyEvent) {

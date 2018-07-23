@@ -64,7 +64,7 @@ void TextMark::jumpToMark(bool focus)
 
     if (fc->document()) {
         updatePos();
-        fc->jumpTo(textCursor(), focus);
+        fc->jumpTo(textCursor());
     } else if (fc->metrics().fileType() == FileType::Gdx) {
         fc->openFileNode(fc, focus);
     }
