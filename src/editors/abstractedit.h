@@ -39,6 +39,7 @@ public:
     virtual bool overwriteMode() const;
 
     bool event(QEvent *event) override;
+    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
 
 public slots:
     void afterContentsChanged(int, int, int);

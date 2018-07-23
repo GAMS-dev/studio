@@ -123,7 +123,6 @@ public:
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void setSettings(StudioSettings *settings);
-    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
     void extendedRedo();
     void extendedUndo();
 

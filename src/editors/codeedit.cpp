@@ -1021,27 +1021,6 @@ void CodeEdit::setSettings(StudioSettings *settings)
     mSettings = settings;
 }
 
-void CodeEdit::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
-{
-    QTextCursor tc;
-    if (cursor.isNull()) {
-        if (document()->blockCount()-1 < altLine) return;
-        tc = QTextCursor(document()->findBlockByNumber(altLine));
-    } else {
-        tc = cursor;
-    }
-
-    if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
-    tc.clearSelection();
-    setTextCursor(tc);
-    // center line vertically
-    qreal lines = qreal(rect().height()) / cursorRect().height();
-    qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
-    int mv = line - lines/2;
-    if (qAbs(mv) > lines/3)
-        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
-}
-
 inline int CodeEdit::assignmentKind(int p)
 {
     int preState = 0;
