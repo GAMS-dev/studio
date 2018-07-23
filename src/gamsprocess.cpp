@@ -21,6 +21,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
+#include <QDebug>
 #ifdef _WIN32
 #include "windows.h"
 #endif
@@ -58,10 +59,12 @@ void GamsProcess::execute()
     mProcess.setWorkingDirectory(mWorkingDir);
     QStringList args({QDir::toNativeSeparators(mInputFile)});
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
+    qDebug() << "arguments:";
     for(QString a : mArguments) {
 #ifdef _WIN32
         a.replace(QRegExp("\""), "");
 #endif
+        qDebug() << "[" << a << "]";
         args << a;
     }
     mProcess.start(nativeAppPath(), args);
