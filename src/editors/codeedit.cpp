@@ -1058,7 +1058,7 @@ void CodeEdit::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = ParenthesesMatch();
-    if (!isReadOnly() && !mBlockEdit) {
+    if (!mBlockEdit) {
         extraSelCurrentLine(selections);
 
         mWordUnderCursor = "";
