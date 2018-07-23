@@ -188,8 +188,20 @@ void CodeEdit::checkBlockInsertion()
     mBlockEditRealPos = -1;
 }
 
+//void debugUndoStack(QVector<BlockEditPos*> &posStack, int index)
+//{
+//    DEB() << "---- Undo/Redo position stack ---- " << index;
+//    int i = 0;
+//    for (BlockEditPos* bp: posStack) {
+//        if (bp) DEB() << (index==i ? "* " : "  ") << bp->startLine << "-" << bp->currentLine << " / " << bp->column;
+//        else    DEB() << (index==i ? "* " : "  ") << "---";
+//        i++;
+//    }
+//}
+
 void CodeEdit::undoCommandAdded()
 {
+//    DEB() << "undo added, steps:  " << document()->availableUndoSteps();
     while (document()->availableUndoSteps()-1 < mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
     while (document()->availableUndoSteps() > mBlockEditPos.size()) {
@@ -197,24 +209,30 @@ void CodeEdit::undoCommandAdded()
         if (mBlockEdit) bPos = new BlockEditPos(mBlockEdit->startLine(), mBlockEdit->currentLine(), mBlockEdit->column());
         mBlockEditPos.append(bPos);
     }
+//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
 }
 
 void CodeEdit::extendedRedo()
 {
+//    DEB() << "REDO";
+    if (mBlockEdit) endBlockEdit();
     redo();
     updateBlockEditPos();
 }
 
 void CodeEdit::extendedUndo()
 {
+//    DEB() << "UNDO";
+    if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
 }
 
 void CodeEdit::updateBlockEditPos()
 {
-    if (document()->availableUndoSteps() <= 0 || document()->availableUndoSteps() >= mBlockEditPos.size())
+    if (document()->availableUndoSteps() <= 0 || document()->availableUndoSteps() > mBlockEditPos.size())
         return;
+//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
     BlockEditPos * bPos = mBlockEditPos.at(document()->availableUndoSteps()-1);
     if (mBlockEdit) endBlockEdit();
     if (bPos && !mBlockEdit) {
@@ -289,7 +307,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (mBlockEdit) {
-        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
+        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
         } else {
             mBlockEdit->keyPressEvent(e);
@@ -1559,7 +1577,6 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
 
-    cursor.endEditBlock();
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;
     for (QString s: texts) {
@@ -1570,6 +1587,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     mColumn += insertWidth;
     mSize = 0;
     mLastCharType = charType;
+    cursor.endEditBlock();
 }
 
 QChar BlockData::charForPos(int relPos)

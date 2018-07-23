@@ -67,8 +67,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
-
     mTimerID = startTimer(60000);
+    QList<QKeySequence> redoShortcuts;
+    redoShortcuts << ui->actionRedo->shortcut() << QKeySequence("Ctrl+Shift+Z");
+    ui->actionRedo->setShortcuts(redoShortcuts);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
