@@ -101,10 +101,11 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             combinedFormat.setAnchorName(QString::number(mark->line()));
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
         }
-        if (mark->type() == TextMark::match) {
-            combinedFormat.setBackground(mark->color());
-            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
-        }
+        // JM: Now matches are displayed via extraSelections in CodeEdit
+//        if (mark->type() == TextMark::match) {
+//            combinedFormat.setBackground(mark->color());
+//            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
+//        }
     }
 }
 

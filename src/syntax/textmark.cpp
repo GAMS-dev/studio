@@ -94,7 +94,7 @@ void TextMark::clearBackRefs()
 QColor TextMark::color()
 {
     if (type() == TextMark::match)
-        return Qt::yellow;
+        return QColor(Qt::green).lighter(160);
 
     if (!mReference) return Qt::darkRed;
     if (mReference->type() == TextMark::error)

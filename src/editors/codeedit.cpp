@@ -1091,6 +1091,7 @@ void CodeEdit::updateExtraSelections()
                 && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
             extraSelCurrentWord(selections);
     }
+    extraSelMatches(selections);
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
 }
@@ -1172,6 +1173,27 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
         selections << selection;
     }
     return true;
+}
+
+void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
+{
+    // TODO(JM) if we get our matches from SearchWidget directly no TextMarks need to be created anymore
+    QHash<int, TextMark*> marks;
+    emit requestMarkHash(&marks, TextMark::match);
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    while (block.isValid() && top < viewport()->height()) {
+        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
+        for (TextMark* mark: lineMarks) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = mark->textCursor();
+            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
+            selection.format.setBackground(QColor(Qt::green).lighter(160));
+            selections << selection;
+        }
+        top += qRound(blockBoundingRect(block).height());
+        block = block.next();
+    }
 }
 
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
