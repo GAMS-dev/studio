@@ -1443,7 +1443,7 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 
     ui->logTabs->addTab(logEdit, logProc->caption());
     logProc->addEditor(logEdit);
-    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    logEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 }
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
@@ -2001,7 +2001,6 @@ void MainWindow::on_actionGo_To_triggered()
     if (codeEdit)
         codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());
 }
-
 
 void MainWindow::on_actionRedo_triggered()
 {
