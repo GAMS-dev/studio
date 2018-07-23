@@ -614,6 +614,8 @@ void CodeEdit::commentLine()
 bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
     bool hasComment = true;
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid())
+            break;
         if (!block.text().startsWith('*'))
             hasComment = false;
     }
@@ -632,6 +634,9 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
             cursor.deleteChar();
         else
             cursor.insertText("*");
+
+        if (!block.isValid())
+            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
