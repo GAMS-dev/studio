@@ -44,14 +44,23 @@ QString GamsProcess::workingDir() const
     return mWorkingDir;
 }
 
+QStringList GamsProcess::arguments() const
+{
+    return mArguments;
+}
+
+void GamsProcess::setArguments(const QStringList &arguments)
+{
+    mArguments = arguments;
+}
+
 void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
     QStringList args({QDir::toNativeSeparators(mInputFile)});
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
-    if (!mCommandLineStr.isEmpty()) {
-        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
-        args.append(paramList);
+    for(QString a : mArguments) {
+        args << a;
     }
     mProcess.start(nativeAppPath(), args);
 }
@@ -74,16 +83,6 @@ QString GamsProcess::aboutGAMS()
     lines.removeLast();
     lines.removeLast();
     return lines.join("\n");
-}
-
-QString GamsProcess::commandLineStr() const
-{
-    return mCommandLineStr;
-}
-
-void GamsProcess::setCommandLineStr(const QString &commandLineStr)
-{
-    mCommandLineStr = commandLineStr;
 }
 
 void GamsProcess::interrupt()

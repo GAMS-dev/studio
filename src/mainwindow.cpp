@@ -1398,15 +1398,16 @@ void MainWindow::customEvent(QEvent *event)
         (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
-void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
+QStringList MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
 {
     QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-
+    QStringList commandLineArgs;
     // set default lst file name in case output option changed back to default
     if (!fgc->runnableGms().isEmpty())
         fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
 
     foreach (OptionItem item, items) {
+        commandLineArgs << QString("%1=%2").arg(item.key).arg(item.value);
         // output (o) found, case-insensitive
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
@@ -1414,6 +1415,7 @@ void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, Projec
             fgc->setLstFileName(item.value);
         }
     }
+    return commandLineArgs;
 }
 
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
@@ -1450,7 +1452,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
-    parseFilesFromCommandLine(commandLineStr, group);
+    QStringList commandLineArgs = parseFilesFromCommandLine(commandLineStr, group);
 
     group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
@@ -1513,7 +1515,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->setGroupId(group->id());
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
-    process->setCommandLineStr(commandLineStr);
+    process->setArguments( commandLineArgs );
     process->execute();
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
