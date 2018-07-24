@@ -83,12 +83,22 @@ private:
     QVector<ParenthesesPos> mparentheses;
 };
 
+struct BlockEditPos
+{
+    BlockEditPos(int _startLine, int _endLine, int _column)
+        : startLine(_startLine), currentLine(_endLine), column(_column) {}
+    int startLine;
+    int currentLine;
+    int column;
+};
+
 class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
 public:
     CodeEdit(QWidget *parent = nullptr);
+    ~CodeEdit();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -113,7 +123,8 @@ public:
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void setSettings(StudioSettings *settings);
-    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
+    void extendedRedo();
+    void extendedUndo();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -146,6 +157,8 @@ private slots:
     void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
+    void checkBlockInsertion();
+    void undoCommandAdded();
 
 private:
     friend class BlockEdit;
@@ -155,6 +168,7 @@ private:
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
+    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit();
@@ -166,6 +180,8 @@ private:
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
 
     static int findAlphaNum(const QString &text, int start, bool back);
+    void rawKeyPressEvent(QKeyEvent *e);
+    void updateBlockEditPos();
 
 private:
     class BlockEdit
@@ -223,6 +239,9 @@ private:
     QTimer mParenthesesDelay;
     ParenthesesMatch mParenthesesMatch;
     StudioSettings *mSettings = nullptr;
+    int mBlockEditRealPos = -1;
+    QString mBlockEditInsText;
+    QVector<BlockEditPos*> mBlockEditPos;
 
 public:
     BlockEdit *blockEdit() const;

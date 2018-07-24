@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QMimeData>
+#include <QTextBlock>
+#include <QScrollBar>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
 
@@ -70,6 +72,27 @@ bool AbstractEdit::event(QEvent *e)
     } else {
         return QPlainTextEdit::event(e);
     }
+}
+
+void AbstractEdit::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
+{
+    QTextCursor tc;
+    if (cursor.isNull()) {
+        if (document()->blockCount()-1 < altLine) return;
+        tc = QTextCursor(document()->findBlockByNumber(altLine));
+    } else {
+        tc = cursor;
+    }
+
+    if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
+    tc.clearSelection();
+    setTextCursor(tc);
+    // center line vertically
+    qreal lines = qreal(rect().height()) / cursorRect().height();
+    qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
+    int mv = line - lines/2;
+    if (qAbs(mv) > lines/3)
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
 }
 
 }

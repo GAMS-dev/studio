@@ -62,19 +62,18 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
     if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
 
-    // open and highlight
+    // highlight
     mMain->searchDialog()->findInFile(jmpFc, true, mResultList.searchTerm());
 
     // jump to line
     QTextCursor tc(jmpFc->document());
-    if (item.locCol() <= 0) {
+    if (item.locCol() <= 0)
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
-    } else {
+    else
         tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
                        + item.locCol());
 
-    }
-    jmpFc->jumpTo(tc, false);
+    jmpFc->jumpTo(tc);
     jmpFc->editors().first()->setFocus();
 }
 

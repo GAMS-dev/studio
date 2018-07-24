@@ -47,7 +47,11 @@ QString GamsProcess::workingDir() const
 void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(mWorkingDir);
+#ifdef __unix__
+    QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
+#else
     QStringList args({QDir::toNativeSeparators(mInputFile)});
+#endif
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
     if (!mCommandLineStr.isEmpty()) {
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));

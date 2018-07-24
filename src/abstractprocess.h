@@ -24,6 +24,8 @@
 #include <QProcess>
 #include <QMutex>
 
+#include "file/projectabstractnode.h"
+
 namespace gams {
 namespace studio {
 
@@ -47,6 +49,9 @@ public:
     virtual void execute() = 0;
     QProcess::ProcessState state() const;
 
+    FileId groupId() const;
+    void setGroupId(const FileId &groupId);
+
 signals:
     void finished(AbstractProcess *process, int exitCode);
     void newStdChannelData(const QString &data);
@@ -62,6 +67,7 @@ protected:
     QString nativeAppPath();
 
 protected:
+    FileId mGroupId = -1;
     QString mInputFile;
     QString mLstFile;
     QProcess mProcess;

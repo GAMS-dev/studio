@@ -91,9 +91,16 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
+    connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+}
+
+CodeEdit::~CodeEdit()
+{
+    while (mBlockEditPos.size())
+        delete mBlockEditPos.takeLast();
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -162,6 +169,78 @@ void CodeEdit::blockEditBlink()
     if (mBlockEdit) mBlockEdit->refreshCursors();
 }
 
+void CodeEdit::checkBlockInsertion()
+{
+    bool extraJoin = mBlockEditInsText.isNull();
+    QTextCursor cur = textCursor();
+    bool validText = (mBlockEditRealPos != cur.position());
+    if (validText) {
+        cur.setPosition(mBlockEditRealPos, QTextCursor::KeepAnchor);
+        mBlockEditInsText = cur.selectedText();
+        cur.removeSelectedText();
+        if (!extraJoin) cur.endEditBlock();
+        mBlockEdit->replaceBlockText(mBlockEditInsText);
+        mBlockEditInsText = "";
+    }
+    if (!validText || extraJoin) {
+        cur.endEditBlock();
+    }
+    mBlockEditRealPos = -1;
+}
+
+//void debugUndoStack(QVector<BlockEditPos*> &posStack, int index)
+//{
+//    DEB() << "---- Undo/Redo position stack ---- " << index;
+//    int i = 0;
+//    for (BlockEditPos* bp: posStack) {
+//        if (bp) DEB() << (index==i ? "* " : "  ") << bp->startLine << "-" << bp->currentLine << " / " << bp->column;
+//        else    DEB() << (index==i ? "* " : "  ") << "---";
+//        i++;
+//    }
+//}
+
+void CodeEdit::undoCommandAdded()
+{
+//    DEB() << "undo added, steps:  " << document()->availableUndoSteps();
+    while (document()->availableUndoSteps()-1 < mBlockEditPos.size())
+        delete mBlockEditPos.takeLast();
+    while (document()->availableUndoSteps() > mBlockEditPos.size()) {
+        BlockEditPos *bPos = nullptr;
+        if (mBlockEdit) bPos = new BlockEditPos(mBlockEdit->startLine(), mBlockEdit->currentLine(), mBlockEdit->column());
+        mBlockEditPos.append(bPos);
+    }
+//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
+}
+
+void CodeEdit::extendedRedo()
+{
+//    DEB() << "REDO";
+    if (mBlockEdit) endBlockEdit();
+    redo();
+    updateBlockEditPos();
+}
+
+void CodeEdit::extendedUndo()
+{
+//    DEB() << "UNDO";
+    if (mBlockEdit) endBlockEdit();
+    undo();
+    updateBlockEditPos();
+}
+
+void CodeEdit::updateBlockEditPos()
+{
+    if (document()->availableUndoSteps() <= 0 || document()->availableUndoSteps() > mBlockEditPos.size())
+        return;
+//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
+    BlockEditPos * bPos = mBlockEditPos.at(document()->availableUndoSteps()-1);
+    if (mBlockEdit) endBlockEdit();
+    if (bPos && !mBlockEdit) {
+        startBlockEdit(bPos->startLine, bPos->column);
+        mBlockEdit->selectTo(bPos->currentLine, bPos->column);
+    }
+}
+
 void CodeEdit::clearSelection()
 {
     if (isReadOnly()) return;
@@ -228,7 +307,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (mBlockEdit) {
-        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd || e == Hotkey::Undo || e == Hotkey::Redo) {
+        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
         } else {
             mBlockEdit->keyPressEvent(e);
@@ -553,6 +632,8 @@ void CodeEdit::commentLine()
 bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
     bool hasComment = true;
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid())
+            break;
         if (!block.text().startsWith('*'))
             hasComment = false;
     }
@@ -571,6 +652,9 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
             cursor.deleteChar();
         else
             cursor.insertText("*");
+
+        if (!block.isValid())
+            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
@@ -821,6 +905,11 @@ int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
     return pos;
 }
 
+void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
+{
+    AbstractEdit::keyPressEvent(e);
+}
+
 CodeEdit::BlockEdit *CodeEdit::blockEdit() const
 {
     return mBlockEdit;
@@ -950,27 +1039,6 @@ void CodeEdit::setSettings(StudioSettings *settings)
     mSettings = settings;
 }
 
-void CodeEdit::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
-{
-    QTextCursor tc;
-    if (cursor.isNull()) {
-        if (document()->blockCount()-1 < altLine) return;
-        tc = QTextCursor(document()->findBlockByNumber(altLine));
-    } else {
-        tc = cursor;
-    }
-
-    if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
-    tc.clearSelection();
-    setTextCursor(tc);
-    // center line vertically
-    qreal lines = qreal(rect().height()) / cursorRect().height();
-    qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
-    int mv = line - lines/2;
-    if (qAbs(mv) > lines/3)
-        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
-}
-
 inline int CodeEdit::assignmentKind(int p)
 {
     int preState = 0;
@@ -987,7 +1055,7 @@ void CodeEdit::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = ParenthesesMatch();
-    if (!isReadOnly() && !mBlockEdit) {
+    if (!mBlockEdit) {
         extraSelCurrentLine(selections);
 
         mWordUnderCursor = "";
@@ -1023,6 +1091,7 @@ void CodeEdit::updateExtraSelections()
                 && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
             extraSelCurrentWord(selections);
     }
+    extraSelMatches(selections);
     extraSelBlockEdit(selections);
     setExtraSelections(selections);
 }
@@ -1104,6 +1173,27 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
         selections << selection;
     }
     return true;
+}
+
+void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
+{
+    // TODO(JM) if we get our matches from SearchWidget directly no TextMarks need to be created anymore
+    QHash<int, TextMark*> marks;
+    emit requestMarkHash(&marks, TextMark::match);
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    while (block.isValid() && top < viewport()->height()) {
+        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
+        for (TextMark* mark: lineMarks) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = mark->textCursor();
+            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
+            selection.format.setBackground(QColor(Qt::green).lighter(160));
+            selections << selection;
+        }
+        top += qRound(blockBoundingRect(block).height());
+        block = block.next();
+    }
 }
 
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
@@ -1288,7 +1378,14 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->indent(-mEdit->mSettings->tabSize());
         return;
     } else if (e->text().length()) {
-        replaceBlockText(e->text());
+//        replaceBlockText(e->text());
+
+        mEdit->mBlockEditRealPos = mEdit->textCursor().position();
+        QTextCursor cur = mEdit->textCursor();
+        cur.joinPreviousEditBlock();
+        mEdit->setTextCursor(cur);
+        mEdit->rawKeyPressEvent(e);
+        QTimer::singleShot(0, mEdit, &CodeEdit::checkBlockInsertion);
     }
 
     startCursorTimer();
@@ -1497,7 +1594,11 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
         block = block.previous();
         i = (i>0) ? i-1 : texts.count()-1;
     }
-    cursor.endEditBlock();
+    // unjoin the Block-Edit insertion from the may-follow normal insertion
+    cursor.insertText(" ");
+    cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;
     for (QString s: texts) {
@@ -1508,6 +1609,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     mColumn += insertWidth;
     mSize = 0;
     mLastCharType = charType;
+    cursor.endEditBlock();
 }
 
 QChar BlockData::charForPos(int relPos)

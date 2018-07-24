@@ -475,7 +475,6 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
     QHelpEvent* helpEvent = (event->type() == QEvent::ToolTip)  ? static_cast<QHelpEvent*>(event) : nullptr;
     QKeyEvent *keyEvent = (evCheckKey.contains(event->type())) ? static_cast<QKeyEvent*>(event) : nullptr;
 
-    // TODO(JM) FileType of Log should be set to Log
     if (mMetrics.fileType() == FileType::Log
         && (event->type() == QEvent::MouseButtonDblClick
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
@@ -501,7 +500,10 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
                     }
                 }
             }
-            if (linkMark) linkMark->jumpToRefMark(true);
+            if (linkMark) {
+                linkMark->jumpToRefMark(true);
+                edit->setFocus();
+            }
         }
 
     } else if (keyEvent) {
@@ -513,12 +515,17 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
         return ProjectAbstractNode::eventFilter(watched, event);
 
     } else if (mouseEvent || helpEvent) {
+        static QPoint ttPos;
 
         QPoint pos = mouseEvent ? mouseEvent->pos() : helpEvent->pos();
         QTextCursor cursor = edit->cursorForPosition(pos);
         CodeEdit* codeEdit = ProjectAbstractNode::toCodeEdit(edit);
         mMarksAtMouse = mMarks ? mMarks->findMarks(cursor) : QVector<TextMark*>();
         bool isValidLink = false;
+        if (QToolTip::isVisible() && (ttPos-pos).manhattanLength() > 3) {
+            QToolTip::hideText();
+            ttPos = QPoint();
+        }
 
         // if in CodeEditors lineNumberArea
         if (codeEdit && watched == codeEdit && event->type() != QEvent::ToolTip) {
@@ -542,6 +549,7 @@ bool ProjectFileNode::eventFilter(QObject* watched, QEvent* event)
             }
         } else if (event->type() == QEvent::ToolTip) {
             if (!mMarksAtMouse.isEmpty()) showToolTip(mMarksAtMouse);
+            ttPos = pos;
             return !mMarksAtMouse.isEmpty();
         }
     }

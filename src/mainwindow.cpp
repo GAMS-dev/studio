@@ -67,8 +67,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     setAcceptDrops(true);
-
     mTimerID = startTimer(60000);
+    QList<QKeySequence> redoShortcuts;
+    redoShortcuts << ui->actionRedo->shortcut() << QKeySequence("Ctrl+Shift+Z");
+    ui->actionRedo->setShortcuts(redoShortcuts);
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -89,7 +91,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
-    ui->dockHelpView->show();
+    ui->dockHelpView->hide();
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
@@ -130,6 +132,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
 
+    // stack help under output
+    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
+
     mSyslog = new SystemLogEdit(this);
     mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
@@ -149,6 +154,7 @@ void MainWindow::delayedFileRestoration()
 MainWindow::~MainWindow()
 {
     killTimer(mTimerID);
+    delete mWp;
     delete ui;
 }
 
@@ -158,8 +164,13 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    if (!mSettings->skipWelcomePage())
-        createWelcomePage();
+    mWp = new WelcomePage(history(), this);
+    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
+    if (mSettings->skipWelcomePage())
+        mWp->hide();
+    else
+        showWelcomePage();
+
 }
 
 void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codecMip)
@@ -265,30 +276,30 @@ void MainWindow::updateMenuToCodec(int mib)
 
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(ui->dockLogView).count();
     ui->actionOutput_View->setChecked(visibility);
+    ui->dockLogView->setVisible(visibility);
 }
 
 void MainWindow::setProjectViewVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(ui->dockProjectView).count();
     ui->actionProject_View->setChecked(visibility);
+    ui->dockProjectView->setVisible(visibility);
 }
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(ui->dockOptionEditor).count();
     ui->actionOption_View->setChecked(visibility);
+    ui->dockOptionEditor->setVisible(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
-    visibility = visibility || tabifiedDockWidgets(ui->dockHelpView).count();
     if (!visibility)
         mHelpWidget->clearStatusBar();
     else
         mHelpWidget->setFocus();
     ui->actionHelp_View->setChecked(visibility);
+    ui->dockHelpView->setVisible(visibility);
 }
 
 bool MainWindow::outputViewVisibility()
@@ -747,7 +758,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
         }
 
         ProjectGroupNode* group = fn->parentEntry();
-        if (!group) return;       
+        if (!group) return;
         if (group == oldgroup) return;
 
         mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
@@ -806,12 +817,14 @@ void MainWindow::activeTabChanged(int index)
         gdxviewer::GdxViewer* gdxViewer = ProjectFileNode::toGdxViewer(editWidget);
         mRecent.setEditor(gdxViewer, this);
         ProjectFileNode* fc = mProjectRepo.fileNode(gdxViewer);
-        mRecent.editFileId = fc->id();
-        mRecent.group = fc->parentEntry();
-        mStatusWidgets->setFileName(fc->location());
-        mStatusWidgets->setEncoding(fc->codecMib());
-        mStatusWidgets->setLineCount(-1);
-        gdxViewer->reload();
+        if (fc) {
+            mRecent.editFileId = fc->id();
+            mRecent.group = fc->parentEntry();
+            mStatusWidgets->setFileName(fc->location());
+            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setLineCount(-1);
+            gdxViewer->reload();
+        }
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
@@ -901,7 +914,7 @@ void MainWindow::appendSystemLog(const QString &text)
 
 void MainWindow::postGamsRun(AbstractProcess* process)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.findGroup(process->inputFile());
+    ProjectGroupNode* groupNode = mProjectRepo.groupNode(process->groupId());
     QFileInfo fileInfo(process->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
@@ -1034,12 +1047,12 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_mainTab_tabCloseRequested(int index)
 {
-    QWidget* edit = ui->mainTab->widget(index);
-    ProjectFileNode* fc = mProjectRepo.fileNode(edit);
+    QWidget* widget = ui->mainTab->widget(index);
+    ProjectFileNode* fc = mProjectRepo.fileNode(widget);
     if (!fc) {
-        ui->mainTab->removeTab(index);
         // assuming we are closing a welcome page here
-        mWp = nullptr;
+        ui->mainTab->removeTab(index);
+        mClosedTabs << "Wp Closed";
         return;
     }
 
@@ -1085,11 +1098,9 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     }
 }
 
-void MainWindow::createWelcomePage()
+void MainWindow::showWelcomePage()
 {
-    mWp = new WelcomePage(history(), this);
     ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
-    connect(mWp, &WelcomePage::linkActivated, this, &MainWindow::openFile);
     ui->mainTab->setCurrentIndex(0); // go to welcome page
 }
 
@@ -1126,10 +1137,7 @@ void MainWindow::on_actionShow_System_Log_triggered()
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
 {
-    if(mWp == nullptr)
-        createWelcomePage();
-    else
-        ui->mainTab->setCurrentIndex(ui->mainTab->indexOf(mWp));
+    showWelcomePage();
 }
 
 void MainWindow::renameToBackup(QFile *file)
@@ -1435,7 +1443,7 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 
     ui->logTabs->addTab(logEdit, logProc->caption());
     logProc->addEditor(logEdit);
-    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+    logEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 }
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
@@ -1504,6 +1512,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         QFileInfo fi(gmsFilePath);
         lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
     }
+    process->setGroupId(group->id());
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
     process->setCommandLineStr(commandLineStr);
@@ -1731,11 +1740,10 @@ void MainWindow::closeFile(ProjectFileNode* file)
 void MainWindow::closeFileEditors(FileId fileId)
 {
     ProjectFileNode* fc = mProjectRepo.fileNode(fileId);
+    if (!fc) return; // TODO(AF) add logging but no execption
 
     // add to recently closed tabs
     mClosedTabs << fc->location();
-    if (!fc)
-        FATAL() << "FileId " << fileId << " is not of class FileContext.";
 
     // close all related editors, tabs and clean up
     while (!fc->editors().isEmpty()) {
@@ -1986,19 +1994,20 @@ void MainWindow::on_actionGo_To_triggered()
     if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
         return;
     GoToDialog dialog(this);
-    dialog.exec();
+    int result = dialog.exec();
+    if (QDialog::Rejected == result)
+        return;
     CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
     if (codeEdit)
         codeEdit->jumpTo(QTextCursor(), dialog.lineNumber());
 }
-
 
 void MainWindow::on_actionRedo_triggered()
 {
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce) ce->redo();
+    if (ce) ce->extendedRedo();
 }
 
 void MainWindow::on_actionUndo_triggered()
@@ -2006,7 +2015,7 @@ void MainWindow::on_actionUndo_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce) ce->undo();
+    if (ce) ce->extendedUndo();
 }
 
 void MainWindow::on_actionPaste_triggered()
@@ -2216,6 +2225,12 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
+
+    if (mClosedTabs.last()=="Wp Closed") {
+        mClosedTabs.removeLast();
+        showWelcomePage();
+        return;
+    }
     QFile file(mClosedTabs.last());
     mClosedTabs.removeLast();
     if (file.exists())
@@ -2271,9 +2286,6 @@ void MainWindow::resetViews()
     mSettings->resetViewSettings();
     mSettings->loadSettings(this);
 
-    QDockWidget* stackedFirst;
-    QDockWidget* stackedSecond;
-
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     foreach (QDockWidget* dock, dockWidgets) {
         dock->setFloating(false);
@@ -2285,18 +2297,14 @@ void MainWindow::resetViews()
         } else if (dock == ui->dockLogView) {
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-            stackedFirst = dock;
         } else if (dock == ui->dockHelpView) {
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-            stackedSecond = dock;
         } else if (dock == ui->dockOptionEditor) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
-    // stack help over output
-    tabifyDockWidget(stackedFirst, stackedSecond);
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
