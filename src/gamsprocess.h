@@ -39,10 +39,6 @@ public:
 
     void interrupt();
     void stop();
-
-private:
-    QString mWorkingDir;
-    QString mCommandLineStr;
 };
 
 } // namespace studio

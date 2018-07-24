@@ -319,7 +319,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 
         if (posB+5 < line.length()) {
             if (line.midRef(posB+1,4) == "LST:") {
-                QString fName = parentEntry()->lstFileName();
+                QString fName = parentEntry()->lstFile();
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;

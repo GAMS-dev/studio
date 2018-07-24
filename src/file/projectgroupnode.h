@@ -55,8 +55,8 @@ public:
     QString runnableGms();
     void setRunnableGms(ProjectFileNode *gmsFileNode);
     void removeRunnableGms();
-    QString lstFileName();
-    void setLstFileName(const QString &lstFileName);
+    QString lstFile();
+    void setLstFile(const QString &lstFile);
     ProjectLogNode* logNode() const;
 
     GamsProcess* gamsProcess();
@@ -114,8 +114,7 @@ private:
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
-    QString mLastLstFile;
-    QString mLstFileName;
+    QString mLstFile;
     QString mGmsFileName;
     QFileInfoList mAttachedFiles;
 

@@ -7,13 +7,14 @@ namespace gams {
 namespace studio {
 
 class ProjectGroupNode;
+class OptionItem;
 class GamsArgManager
 {
 
 public:
     GamsArgManager(ProjectGroupNode *origin);
 
-    void setGamsParameters(const QString &cmd);
+    void setGamsParameters(QList<OptionItem> itemList);
     QStringList getGamsParameters();
 
     QString getInputFile() const;

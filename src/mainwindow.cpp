@@ -916,7 +916,7 @@ void MainWindow::postGamsRun(GamsArgManager* argManager)
     ProjectGroupNode* groupNode = argManager->getOriginGroup();
     QFileInfo fileInfo(argManager->getInputFile());
     if(groupNode && fileInfo.exists()) {
-        QString lstFile = groupNode->lstFileName();
+        QString lstFile = groupNode->lstFile();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
         bool doFocus = groupNode == mRecent.group;
 
@@ -1489,7 +1489,10 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     GamsProcess* process = group->gamsProcess();
     GamsArgManager argManager(group);
     qDebug() << "cmdStr" << commandLineStr; // rogo: delete
-    argManager.setGamsParameters(commandLineStr);
+
+    QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
+    argManager.setInputFile(gmsFilePath);
+    argManager.setGamsParameters(itemList);
     process->execute(&argManager);
 
 //    analyzeCommandLine(process, commandLineStr, group);
@@ -1503,27 +1506,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     ui->dockLogView->raise();
 }
-/*
-void MainWindow::analyzeCommandLine(GamsProcess &process, const QString &commandLineStr, ProjectGroupNode* fgc)
-{
-    QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
 
-    // always set default lst file name in case output option changed back to default
-    if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
-
-    foreach (OptionItem item, items) {
-        // output (o) found
-        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-            fgc->setLstFileName(item.value);
-        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
-                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-
-        }
-    }
-}
-*/
 void MainWindow::updateRunState()
 {
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());

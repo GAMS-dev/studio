@@ -1,9 +1,12 @@
 #include "gamsargmanager.h"
 #include "file/projectgroupnode.h"
+#include "exception.h"
+#include <option/option.h>
 
 #include <QDir>
 #include <QTime>
 #include <QDebug>
+
 
 namespace gams {
 namespace studio {
@@ -19,33 +22,34 @@ GamsArgManager::GamsArgManager(ProjectGroupNode *origin) : mOriginGroup(origin)
     mGamsArgs.insert("LstTitleLeftAligned", "1");
 }
 
-void GamsArgManager::setGamsParameters(const QString &cmd)
+void GamsArgManager::setGamsParameters(QList<OptionItem> itemList)
 {
-#ifdef __unix__
-    mInputFile = "\""+QDir::toNativeSeparators(mInputFile)+"\"";
-#else
-    mInputFile = QDir::toNativeSeparators(mInputFile);
-#endif
-    if (!cmd.isEmpty()) {
-        QStringList paramList = cmd.split(QRegExp("\\s+"));
+    mOriginGroup->setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
-        for (QString s : paramList) {
-            QStringList item = s.split("=");
-
-            // TODO: warning if overriding default argument?
-            mGamsArgs[item[0]] = item[1];
+    foreach (OptionItem item, itemList) {
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+            mOriginGroup->setLstFile(item.value);
+        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+            // TODO: save workingdir somewhere
         }
+        mGamsArgs[item.key] = item.value;
     }
-// TODO rogo: set group->lastLstFile
-// TODO rogo: add this: "curdir="+mWorkingDir;
+
+    // TODO: warning if overriding default argument?
+    // TODO: add this: "curdir="+mWorkingDir;
 }
 
 QStringList GamsArgManager::getGamsParameters()
 {
-    QStringList output;
-    // 1. mInputFile
-    output.append(mInputFile);
+    if (mInputFile.isEmpty())
+        FATAL() << "No input file set. Do so before setting other parameters!";
 
+    QStringList output;
+
+    output.append(mInputFile);
     for(QString k : mGamsArgs.keys()) {
         output.append(k + "=" + mGamsArgs.value(k));
         qDebug() << output.last(); // rogo: delete
@@ -61,7 +65,11 @@ QString GamsArgManager::getInputFile() const
 
 void GamsArgManager::setInputFile(const QString &inputFile)
 {
-    mInputFile = inputFile;
+#ifdef __unix__
+    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
+#else
+    mInputFile = QDir::toNativeSeparators(inputFile);
+#endif
 }
 
 ProjectGroupNode *GamsArgManager::getOriginGroup() const
