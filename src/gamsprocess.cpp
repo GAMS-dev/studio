@@ -46,7 +46,6 @@ QString GamsProcess::workingDir() const
 
 void GamsProcess::execute()
 {
-    mProcess.setWorkingDirectory(mWorkingDir);
 #ifdef __unix__
     QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
 #else

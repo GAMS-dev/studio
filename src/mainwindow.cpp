@@ -1506,12 +1506,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QFileInfo gmsFileInfo(gmsFilePath);
 
     logProc->setJumpToLogEnd(true);
+
     GamsProcess* process = group->gamsProcess();
-    QString lstFileName = group->lstFileName();
-    if (gmsFileNode) {
-        QFileInfo fi(gmsFilePath);
-        lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
-    }
     process->setGroupId(group->id());
     process->setWorkingDir(gmsFileInfo.path());
     process->setInputFile(gmsFilePath);
