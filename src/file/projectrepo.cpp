@@ -172,9 +172,9 @@ ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGro
     if (!parent)
         parent = mTreeModel->rootNode();
     bool hit;
-    int offset = parent->peekIndex(name, &hit);
+    int offset = parent->peekIndex(location, &hit);
     if (hit)
-        FATAL() << "The group '" << parent->name() << "' already contains '" << name << "'";
+        EXCEPT() << "The group '" << parent->name() << "' already contains '" << name << "'";
     ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location);
     storeNode(file);
     mTreeModel->insertChild(offset, parent, file);
