@@ -3,6 +3,7 @@
 #include <QStatusBar>
 #include <QLabel>
 #include <QTextCodec>
+#include <logger.h>
 
 namespace gams {
 namespace studio {

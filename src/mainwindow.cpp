@@ -713,7 +713,9 @@ void MainWindow::codecChanged(QAction *action)
 {
     ProjectFileNode *fc = mProjectRepo.fileNode(focusWidget());
     if (fc) {
-        if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
+        if (fc->document() && !fc->isReadOnly()) {
+            fc->setCodecMib(action->data().toInt());
+        }
         updateMenuToCodec(action->data().toInt());
         mStatusWidgets->setEncoding(fc->codecMib());
     }
