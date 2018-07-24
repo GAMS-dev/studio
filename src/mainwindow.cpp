@@ -48,6 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "gamsargmanager.h"
 
 namespace gams {
 namespace studio {
@@ -1400,24 +1401,6 @@ void MainWindow::customEvent(QEvent *event)
         (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
-void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
-{
-    QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-
-    // set default lst file name in case output option changed back to default
-    if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
-
-    foreach (OptionItem item, items) {
-        // output (o) found, case-insensitive
-        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-
-            fgc->setLstFileName(item.value);
-        }
-    }
-}
-
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 {
     if (show) {
@@ -1452,7 +1435,6 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
-    parseFilesFromCommandLine(commandLineStr, group);
 
     group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
@@ -1495,8 +1477,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->logTabs->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
 
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger();
@@ -1508,18 +1490,44 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logProc->setJumpToLogEnd(true);
 
     GamsProcess* process = group->gamsProcess();
-    process->setGroupId(group->id());
-    process->setWorkingDir(gmsFileInfo.path());
-    process->setInputFile(gmsFilePath);
-    process->setCommandLineStr(commandLineStr);
+    GamsArgManager argManager(group);
+    qDebug() << "cmdStr" << commandLineStr; // rogo: delete
+    argManager.setGamsParameters(commandLineStr);
+    process->setArgManager(&argManager);
     process->execute();
+
+//    analyzeCommandLine(process, commandLineStr, group);
+//    process->setGroupId(group->id());
+//    process->setWorkingDir(gmsFileInfo.path());
+//    process->setInputFile(gmsFilePath);
+//    process->setCommandLineStr(commandLineStr);
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
     ui->dockLogView->raise();
 }
+/*
+void MainWindow::analyzeCommandLine(GamsProcess &process, const QString &commandLineStr, ProjectGroupNode* fgc)
+{
+    QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
 
+    // always set default lst file name in case output option changed back to default
+    if (!fgc->runnableGms().isEmpty())
+        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
+
+    foreach (OptionItem item, items) {
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+            fgc->setLstFileName(item.value);
+        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+
+        }
+    }
+}
+*/
 void MainWindow::updateRunState()
 {
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());

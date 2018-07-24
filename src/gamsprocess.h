@@ -25,29 +25,27 @@
 namespace gams {
 namespace studio {
 
-class GamsProcess
-        : public AbstractProcess
+class GamsArgManager;
+class GamsProcess : public AbstractProcess
 {
     Q_OBJECT
 
 public:
     GamsProcess(QObject *parent = Q_NULLPTR);
 
-    void setWorkingDir(const QString &workingDir);
-    QString workingDir() const;
-
     void execute() override;
 
     QString aboutGAMS();
 
-    QString commandLineStr() const;
-    void setCommandLineStr(const QString &commandLineStr);
-
     void interrupt();
     void stop();
 
+    GamsArgManager *argManager();
+    void setArgManager(GamsArgManager *argManager);
+
 private:
     QString mWorkingDir;
+    GamsArgManager *mArgManager;
     QString mCommandLineStr;
 };
 

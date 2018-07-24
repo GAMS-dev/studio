@@ -17,10 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "gamsargmanager.h"
 #include "gamsprocess.h"
 
 #include <QStandardPaths>
 #include <QDir>
+#include <QDebug>
 
 #ifdef _WIN32
 #include "windows.h"
@@ -34,30 +36,9 @@ GamsProcess::GamsProcess(QObject *parent)
 {
 }
 
-void GamsProcess::setWorkingDir(const QString &workingDir)
-{
-    mWorkingDir = workingDir;
-}
-
-QString GamsProcess::workingDir() const
-{
-    return mWorkingDir;
-}
-
 void GamsProcess::execute()
 {
-#ifdef __unix__
-    QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
-#else
-    QStringList args({QDir::toNativeSeparators(mInputFile)});
-#endif
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0"
-         << "LstTitleLeftAligned=1" << "curdir="+mWorkingDir;
-    if (!mCommandLineStr.isEmpty()) {
-        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
-        args.append(paramList);
-    }
-    mProcess.start(nativeAppPath(), args);
+    mProcess.start(nativeAppPath(), mArgManager->getGamsParameters());
 }
 
 QString GamsProcess::aboutGAMS()
@@ -78,16 +59,6 @@ QString GamsProcess::aboutGAMS()
     lines.removeLast();
     lines.removeLast();
     return lines.join("\n");
-}
-
-QString GamsProcess::commandLineStr() const
-{
-    return mCommandLineStr;
-}
-
-void GamsProcess::setCommandLineStr(const QString &commandLineStr)
-{
-    mCommandLineStr = commandLineStr;
 }
 
 void GamsProcess::interrupt()
@@ -120,6 +91,16 @@ void GamsProcess::interrupt()
 void GamsProcess::stop()
 {
     mProcess.kill();
+}
+
+GamsArgManager* GamsProcess::argManager()
+{
+    return mArgManager;
+}
+
+void GamsProcess::setArgManager(GamsArgManager *argManager)
+{
+    mArgManager = argManager;
 }
 
 } // namespace studio
