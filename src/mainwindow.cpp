@@ -425,7 +425,7 @@ SearchDialog* MainWindow::searchDialog() const
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;
-    foreach (QAction *act, ui->menuEncoding->actions()) {
+    foreach (QAction *act, ui->menuconvert_to->actions()) {
         if (!act->data().isNull()) res << act->data().toString();
     }
     return res.join(",");
@@ -434,7 +434,7 @@ QString MainWindow::encodingMIBsString()
 QList<int> MainWindow::encodingMIBs()
 {
     QList<int> res;
-    foreach (QAction *act, ui->menuEncoding->actions())
+    foreach (QAction *act, mCodecGroupReload->actions())
         if (!act->data().isNull()) res << act->data().toInt();
     return res;
 }
@@ -453,8 +453,8 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 {
     while (mCodecGroupSwitch->actions().size()) {
         QAction *act = mCodecGroupSwitch->actions().last();
-        if (ui->menuEncoding->actions().contains(act))
-            ui->menuEncoding->removeAction(act);
+        if (ui->menuconvert_to->actions().contains(act))
+            ui->menuconvert_to->removeAction(act);
         mCodecGroupSwitch->removeAction(act);
     }
     while (mCodecGroupReload->actions().size()) {
@@ -465,7 +465,8 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
     }
     foreach (int mib, mibs) {
         if (!QTextCodec::availableMibs().contains(mib)) continue;
-        QAction *act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
+        QAction *act;
+        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
         act->setCheckable(true);
         act->setData(mib);
         act->setChecked(mib == active);
@@ -475,13 +476,13 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
         act->setData(mib);
         act->setChecked(mib == active);
     }
-    ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
+    ui->menuconvert_to->addActions(mCodecGroupSwitch->actions());
     ui->menureload_with->addActions(mCodecGroupReload->actions());
 }
 
 void MainWindow::setActiveMIB(int active)
 {
-    foreach (QAction *act, ui->menuEncoding->actions())
+    foreach (QAction *act, ui->menuconvert_to->actions())
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
