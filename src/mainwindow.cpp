@@ -381,10 +381,9 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
+void MainWindow::openModelFromLib(QString glbFile, QString model)
 {
-    if (gmsFileName.isEmpty())
-        gmsFileName = model.toLower() + ".gms";
+    QString gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
@@ -1174,9 +1173,9 @@ void MainWindow::renameToBackup(QFile *file)
     file->rename(filename + ".1.bak");
 }
 
-void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
+void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
+    openModelFromLib(item->library()->glbFile(), item->name());
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1236,13 +1235,13 @@ void MainWindow::on_actionGAMS_Library_triggered()
                 break;
             case 1: // replace
                 renameToBackup(&gmsFile);
-                triggerGamsLibFileCreation(item, gmsFileName);
+                triggerGamsLibFileCreation(item);
                 break;
             case QMessageBox::Abort:
                 break;
             }
         } else {
-            triggerGamsLibFileCreation(item, gmsFileName);
+            triggerGamsLibFileCreation(item);
         }
     }
 }
