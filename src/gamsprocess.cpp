@@ -56,18 +56,24 @@ void GamsProcess::setArguments(const QStringList &arguments)
 
 void GamsProcess::execute()
 {
+    mProcess.setProgram(nativeAppPath());
     mProcess.setWorkingDirectory(mWorkingDir);
+#ifdef _WIN32
+    QStringList args({QDir::toNativeSeparators(mInputFile)});
+    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
+    for(QString a : mArguments) {
+        args << a;
+    }
+    mProcess.setNativeArguments(args.join(" "));
+#else // Linux and Mac OS X
     QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
     for(QString a : mArguments) {
         args << a;
     }
-#ifdef _WIN32
-    mProcess.setNativeArguments(args.join(" "));
-    mProcess.start(nativeAppPath(), QStringList() << args.join(" "));
-#else // Linux and Mac OS X
-    mProcess.start(nativeAppPath(), args);
+    mProcess.setArguments(args);
 #endif
+    mProcess.start();
 }
 
 QString GamsProcess::aboutGAMS()
