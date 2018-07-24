@@ -202,6 +202,16 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
+QString ProjectGroupNode::lastLstFile() const
+{
+    return mLastLstFile;
+}
+
+void ProjectGroupNode::setLastLstFile(const QString &lastLstFile)
+{
+    mLastLstFile = lastLstFile;
+}
+
 void ProjectGroupNode::setLstFileName(const QString &lstFileName)
 {
     QFileInfo fi(lstFileName);
@@ -390,6 +400,8 @@ void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
     QString location = gmsFileNode->location();
 
     mGmsFileName = location;
+
+    // TODO rogo: move setting of LST to GamsArgManager
     setLstFileName(QFileInfo(location).baseName() + ".lst");
     if (logNode()) logNode()->resetLst();
 }

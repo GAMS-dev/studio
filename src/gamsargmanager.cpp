@@ -36,9 +36,9 @@ void GamsArgManager::setGamsParameters(const QString &cmd)
             mGamsArgs[item[0]] = item[1];
         }
     }
-
+// TODO rogo: set group->lastLstFile
+// TODO rogo: add this: "curdir="+mWorkingDir;
 }
-//     << "curdir="+mWorkingDir;
 
 QStringList GamsArgManager::getGamsParameters()
 {
@@ -62,6 +62,16 @@ QString GamsArgManager::getInputFile() const
 void GamsArgManager::setInputFile(const QString &inputFile)
 {
     mInputFile = inputFile;
+}
+
+ProjectGroupNode *GamsArgManager::getOriginGroup() const
+{
+    return mOriginGroup;
+}
+
+void GamsArgManager::setOriginGroup(ProjectGroupNode *originGroup)
+{
+    mOriginGroup = originGroup;
 }
 
 }

@@ -44,6 +44,7 @@ namespace studio {
 class AbstractProcess;
 class GAMSProcess;
 class GAMSLibProcess;
+class GamsArgManager;
 class WelcomePage;
 class StudioSettings;
 class SearchDialog;
@@ -150,8 +151,8 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void postGamsRun(AbstractProcess* process);
-    void postGamsLibRun(AbstractProcess* process);
+    void postGamsRun(GamsArgManager *argManager);
+    void postGamsLibRun(GamsArgManager *argManager);
     void closeGroup(ProjectGroupNode* group);
     void closeFileConditionally(ProjectFileNode *file);
     void closeFile(ProjectFileNode* file);

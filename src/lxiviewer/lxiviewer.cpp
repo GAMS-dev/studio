@@ -89,7 +89,7 @@ void LxiViewer::loadLxi()
 void LxiViewer::loadLstFile(ProjectGroupNode* group)
 {
     if (group && QProcess::NotRunning == group->gamsProcessState()) {
-        ProjectFileNode *fileNode = group->findFile(group->gamsProcess()->inputFile());
+        ProjectFileNode *fileNode = group->findFile(group->lastLstFile());
         fileNode->load(fileNode->codecMib(), true);
     }
 }

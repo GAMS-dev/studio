@@ -25,6 +25,7 @@
 namespace gams {
 namespace studio {
 
+class GamsArgManager;
 class GAMSLibProcess
         : public AbstractProcess
 {
@@ -42,7 +43,8 @@ public:
     void setModelName(const QString &modelName);
     QString modelName() const;
 
-    void execute() override;
+    void execute();
+    void execute(GamsArgManager *argManager);
 
     void setGlbFile(const QString &glbFile);
 

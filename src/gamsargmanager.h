@@ -19,6 +19,9 @@ public:
     QString getInputFile() const;
     void setInputFile(const QString &inputFile);
 
+    ProjectGroupNode *getOriginGroup() const;
+    void setOriginGroup(ProjectGroupNode *originGroup);
+
 private:
     QMap<QString, QString> mGamsArgs;
     QString mInputFile;

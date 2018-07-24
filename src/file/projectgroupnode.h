@@ -79,6 +79,9 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory();
 
+    QString lastLstFile() const;
+    void setLastLstFile(const QString &lastLstFile);
+
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
@@ -111,6 +114,7 @@ private:
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
+    QString mLastLstFile;
     QString mLstFileName;
     QString mGmsFileName;
     QFileInfoList mAttachedFiles;

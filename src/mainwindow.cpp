@@ -390,7 +390,6 @@ void MainWindow::openModelFromLib(QString glbFile, QString model)
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
     mLibProcess->setModelName(model);
-    mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
@@ -912,10 +911,10 @@ void MainWindow::appendSystemLog(const QString &text)
     mSyslog->appendLog(text, LogMsgType::Info);
 }
 
-void MainWindow::postGamsRun(AbstractProcess* process)
+void MainWindow::postGamsRun(GamsArgManager* argManager)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.groupNode(process->groupId());
-    QFileInfo fileInfo(process->inputFile());
+    ProjectGroupNode* groupNode = argManager->getOriginGroup();
+    QFileInfo fileInfo(argManager->getInputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFileName();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
@@ -934,14 +933,13 @@ void MainWindow::postGamsRun(AbstractProcess* process)
     }
 }
 
-void MainWindow::postGamsLibRun(AbstractProcess* process)
+void MainWindow::postGamsLibRun(GamsArgManager* argManager)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
-    Q_UNUSED(process);
     ProjectFileNode *fc = nullptr;
-    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
+    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + argManager->getInputFile(), &fc);
     if (!fc)
-        fc = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
+        fc = addNode(mLibProcess->targetDir(), argManager->getInputFile());
     if (fc && !fc->editors().isEmpty()) {
         fc->load(fc->codecMib());
     }
@@ -1492,8 +1490,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     GamsArgManager argManager(group);
     qDebug() << "cmdStr" << commandLineStr; // rogo: delete
     argManager.setGamsParameters(commandLineStr);
-    process->setArgManager(&argManager);
-    process->execute();
+    process->execute(&argManager);
 
 //    analyzeCommandLine(process, commandLineStr, group);
 //    process->setGroupId(group->id());
