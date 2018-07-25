@@ -21,6 +21,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
+#include <QDebug>
 
 #ifdef _WIN32
 #include "windows.h"
@@ -46,13 +47,11 @@ QString GamsProcess::workingDir() const
 
 void GamsProcess::execute()
 {
-#ifdef __unix__
-    QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
-#else
-    QStringList args({QDir::toNativeSeparators(mInputFile)});
-#endif
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0"
-         << "LstTitleLeftAligned=1" << "curdir="+mWorkingDir;
+    QStringList args {
+        QDir::toNativeSeparators(mInputFile), "lo=3",
+        "ide=1", "er=99", "errmsg=1", "pagesize=0",
+        "LstTitleLeftAligned=1"
+    };
     if (!mCommandLineStr.isEmpty()) {
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
         args.append(paramList);
