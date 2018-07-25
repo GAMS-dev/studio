@@ -41,7 +41,7 @@ protected:
     virtual ~AbstractProcess() {}
 
 public:
-    virtual void execute(GamsProperties *args) = 0;
+    virtual void execute() = 0;
     QProcess::ProcessState state() const;
 
     FileId groupId() const;

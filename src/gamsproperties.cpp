@@ -22,10 +22,18 @@ GamsProperties::GamsProperties(ProjectGroupNode *origin) : mOriginGroup(origin)
     mGamsArgs.insert("LstTitleLeftAligned", "1");
 }
 
-void GamsProperties::setGamsParameters(QList<OptionItem> itemList)
+void GamsProperties::analyzeCmdParameters(const QString &inputFile, QList<OptionItem> itemList)
 {
+    // set input file
+#ifdef __unix__
+    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
+#else
+    mInputFile = QDir::toNativeSeparators(inputFile);
+#endif
+    // set lst file
     mOriginGroup->setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
+    // iterate options
     foreach (OptionItem item, itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
@@ -44,9 +52,6 @@ void GamsProperties::setGamsParameters(QList<OptionItem> itemList)
 
 QStringList GamsProperties::gamsParameters()
 {
-    if (mInputFile.isEmpty())
-        FATAL() << "No input file set. Do so before setting other parameters!";
-
     QStringList output;
 
     output.append(mInputFile);
@@ -58,18 +63,9 @@ QStringList GamsProperties::gamsParameters()
     return output;
 }
 
-QString GamsProperties::getInputFile() const
+QString GamsProperties::inputFile() const
 {
     return mInputFile;
-}
-
-void GamsProperties::inputFile(const QString &inputFile)
-{
-#ifdef __unix__
-    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
-#else
-    mInputFile = QDir::toNativeSeparators(inputFile);
-#endif
 }
 
 ProjectGroupNode *GamsProperties::originGroup() const

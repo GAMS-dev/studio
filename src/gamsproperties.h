@@ -14,11 +14,10 @@ class GamsProperties
 public:
     GamsProperties(ProjectGroupNode *origin);
 
-    void setGamsParameters(QList<OptionItem> itemList);
+    void analyzeCmdParameters(const QString &inputFile, QList<OptionItem> itemList);
     QStringList gamsParameters();
 
-    QString getInputFile() const;
-    void inputFile(const QString &inputFile);
+    QString inputFile() const;
 
     ProjectGroupNode *originGroup() const;
     void setOriginGroup(ProjectGroupNode *originGroup);

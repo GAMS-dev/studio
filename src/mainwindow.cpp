@@ -914,7 +914,7 @@ void MainWindow::appendSystemLog(const QString &text)
 void MainWindow::postGamsRun(GamsProperties* argManager)
 {
     ProjectGroupNode* groupNode = argManager->originGroup();
-    QFileInfo fileInfo(argManager->getInputFile());
+    QFileInfo fileInfo(argManager->inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFile();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
@@ -937,9 +937,9 @@ void MainWindow::postGamsLibRun(GamsProperties* argManager)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *fc = nullptr;
-    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + argManager->getInputFile(), &fc);
+    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + argManager->inputFile(), &fc);
     if (!fc)
-        fc = addNode(mLibProcess->targetDir(), argManager->getInputFile());
+        fc = addNode(mLibProcess->targetDir(), argManager->inputFile());
     if (fc && !fc->editors().isEmpty()) {
         fc->load(fc->codecMib());
     }
@@ -1486,20 +1486,15 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     logProc->setJumpToLogEnd(true);
 
-    GamsProcess* process = group->gamsProcess();
     GamsProperties argManager(group);
     qDebug() << "cmdStr" << commandLineStr; // rogo: delete
 
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    argManager.inputFile(gmsFilePath);
-    argManager.setGamsParameters(itemList);
-    process->execute(&argManager);
+    argManager.analyzeCmdParameters(gmsFilePath, itemList);
 
-//    analyzeCommandLine(process, commandLineStr, group);
-//    process->setGroupId(group->id());
-//    process->setWorkingDir(gmsFileInfo.path());
-//    process->setInputFile(gmsFilePath);
-//    process->setCommandLineStr(commandLineStr);
+    GamsProcess* process = group->gamsProcess();
+    process->setParameters(argManager.gamsParameters());
+    process->execute();
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);

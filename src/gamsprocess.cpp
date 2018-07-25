@@ -36,10 +36,9 @@ GamsProcess::GamsProcess(QObject *parent)
 {
 }
 
-void GamsProcess::execute(GamsProperties *args)
+void GamsProcess::execute()
 {
-    mArgManager = args;
-    mProcess.start(nativeAppPath(), args->gamsParameters());
+    mProcess.start(nativeAppPath(), mParameters);
 }
 
 QString GamsProcess::aboutGAMS()
@@ -92,6 +91,11 @@ void GamsProcess::interrupt()
 void GamsProcess::stop()
 {
     mProcess.kill();
+}
+
+void GamsProcess::setParameters(const QStringList &parameters)
+{
+    mParameters = parameters;
 }
 
 } // namespace studio

@@ -33,12 +33,17 @@ class GamsProcess : public AbstractProcess
 public:
     GamsProcess(QObject *parent = Q_NULLPTR);
 
-    void execute(GamsProperties *args) override;
+    void execute() override;
 
     QString aboutGAMS();
 
     void interrupt();
     void stop();
+
+    void setParameters(const QStringList &parameters);
+
+private:
+    QStringList mParameters;
 };
 
 } // namespace studio

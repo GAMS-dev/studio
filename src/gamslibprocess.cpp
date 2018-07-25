@@ -71,12 +71,6 @@ void GAMSLibProcess::execute()
     mProcess.start(nativeAppPath(), args);
 }
 
-void GAMSLibProcess::execute(GamsProperties *argManager)
-{
-    // TODO rogo: this doesnt do anything and it shouldnt
-    Q_UNUSED(argManager);
-}
-
 void GAMSLibProcess::setGlbFile(const QString &glbFile)
 {
     mGlbFile = glbFile;

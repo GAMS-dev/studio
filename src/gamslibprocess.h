@@ -44,7 +44,6 @@ public:
     QString modelName() const;
 
     void execute();
-    void execute(GamsProperties *argManager);
 
     void setGlbFile(const QString &glbFile);
 
