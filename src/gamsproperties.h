@@ -8,19 +8,19 @@ namespace studio {
 
 class ProjectGroupNode;
 class OptionItem;
-class GamsArgManager
+class GamsProperties
 {
 
 public:
-    GamsArgManager(ProjectGroupNode *origin);
+    GamsProperties(ProjectGroupNode *origin);
 
     void setGamsParameters(QList<OptionItem> itemList);
-    QStringList getGamsParameters();
+    QStringList gamsParameters();
 
     QString getInputFile() const;
-    void setInputFile(const QString &inputFile);
+    void inputFile(const QString &inputFile);
 
-    ProjectGroupNode *getOriginGroup() const;
+    ProjectGroupNode *originGroup() const;
     void setOriginGroup(ProjectGroupNode *originGroup);
 
 private:

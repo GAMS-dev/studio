@@ -48,7 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
-#include "gamsargmanager.h"
+#include "gamsproperties.h"
 
 namespace gams {
 namespace studio {
@@ -411,7 +411,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
-    getHelpWidget()->on_urlOpened(result);
+    helpWidget()->on_urlOpened(result);
 
     on_actionHelp_View_triggered(true);
 }
@@ -911,9 +911,9 @@ void MainWindow::appendSystemLog(const QString &text)
     mSyslog->appendLog(text, LogMsgType::Info);
 }
 
-void MainWindow::postGamsRun(GamsArgManager* argManager)
+void MainWindow::postGamsRun(GamsProperties* argManager)
 {
-    ProjectGroupNode* groupNode = argManager->getOriginGroup();
+    ProjectGroupNode* groupNode = argManager->originGroup();
     QFileInfo fileInfo(argManager->getInputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFile();
@@ -933,7 +933,7 @@ void MainWindow::postGamsRun(GamsArgManager* argManager)
     }
 }
 
-void MainWindow::postGamsLibRun(GamsArgManager* argManager)
+void MainWindow::postGamsLibRun(GamsProperties* argManager)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *fc = nullptr;
@@ -1408,7 +1408,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-OptionWidget *MainWindow::getGamsOptionWidget() const
+OptionWidget *MainWindow::gamsOptionWidget() const
 {
     return mGamsOptionWidget;
 }
@@ -1487,11 +1487,11 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logProc->setJumpToLogEnd(true);
 
     GamsProcess* process = group->gamsProcess();
-    GamsArgManager argManager(group);
+    GamsProperties argManager(group);
     qDebug() << "cmdStr" << commandLineStr; // rogo: delete
 
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    argManager.setInputFile(gmsFilePath);
+    argManager.inputFile(gmsFilePath);
     argManager.setGamsParameters(itemList);
     process->execute(&argManager);
 
@@ -1512,7 +1512,7 @@ void MainWindow::updateRunState()
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
 }
 
-HelpWidget *MainWindow::getHelpWidget() const
+HelpWidget *MainWindow::helpWidget() const
 {
     return mHelpWidget;
 }
@@ -2065,9 +2065,9 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->resetZoom(); // reset help view
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->resetZoom(); // reset help view
     } else {
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
     }
@@ -2076,9 +2076,9 @@ void MainWindow::on_actionReset_Zoom_triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->zoomOut();
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->zoomOut();
     } else {
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2090,9 +2090,9 @@ void MainWindow::on_actionZoom_Out_triggered()
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->zoomIn();
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->zoomIn();
     } else {
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {

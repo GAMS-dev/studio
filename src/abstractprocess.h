@@ -30,7 +30,7 @@ namespace gams {
 namespace studio {
 
 class ProjectGroupNode;
-class GamsArgManager;
+class GamsProperties;
 class AbstractProcess
         : public QObject
 {
@@ -41,14 +41,14 @@ protected:
     virtual ~AbstractProcess() {}
 
 public:
-    virtual void execute(GamsArgManager *args) = 0;
+    virtual void execute(GamsProperties *args) = 0;
     QProcess::ProcessState state() const;
 
     FileId groupId() const;
     void setGroupId(const FileId &groupId);
 
 signals:
-    void finished(GamsArgManager *argManager, int exitCode);
+    void finished(GamsProperties *argManager, int exitCode);
     void newStdChannelData(const QString &data);
     void stateChanged(QProcess::ProcessState newState);
 
@@ -63,7 +63,7 @@ protected:
 
 protected:
     FileId mGroupId = -1;
-    GamsArgManager *mArgManager;
+    GamsProperties *mArgManager;
     QProcess mProcess;
     QMutex mOutputMutex;
 

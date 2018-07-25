@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-class GamsArgManager;
+class GamsProperties;
 class GAMSLibProcess
         : public AbstractProcess
 {
@@ -44,7 +44,7 @@ public:
     QString modelName() const;
 
     void execute();
-    void execute(GamsArgManager *argManager);
+    void execute(GamsProperties *argManager);
 
     void setGlbFile(const QString &glbFile);
 

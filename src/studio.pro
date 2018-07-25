@@ -141,7 +141,7 @@ SOURCES += \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
     searchdialog.cpp \
-    gamsargmanager.cpp
+    gamsproperties.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -229,7 +229,7 @@ HEADERS += \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
     searchdialog.h \
-    gamsargmanager.h
+    gamsproperties.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

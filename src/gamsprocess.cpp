@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamsargmanager.h"
+#include "gamsproperties.h"
 #include "gamsprocess.h"
 
 #include <QStandardPaths>
@@ -36,10 +36,10 @@ GamsProcess::GamsProcess(QObject *parent)
 {
 }
 
-void GamsProcess::execute(GamsArgManager *args)
+void GamsProcess::execute(GamsProperties *args)
 {
     mArgManager = args;
-    mProcess.start(nativeAppPath(), args->getGamsParameters());
+    mProcess.start(nativeAppPath(), args->gamsParameters());
 }
 
 QString GamsProcess::aboutGAMS()

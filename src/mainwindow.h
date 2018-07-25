@@ -44,7 +44,7 @@ namespace studio {
 class AbstractProcess;
 class GAMSProcess;
 class GAMSLibProcess;
-class GamsArgManager;
+class GamsProperties;
 class WelcomePage;
 class StudioSettings;
 class SearchDialog;
@@ -124,8 +124,8 @@ public:
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
 
-    HelpWidget *getHelpWidget() const;
-    OptionWidget *getGamsOptionWidget() const;
+    HelpWidget *helpWidget() const;
+    OptionWidget *gamsOptionWidget() const;
 
 public slots:
     void receiveAction(QString action);
@@ -151,8 +151,8 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void postGamsRun(GamsArgManager *argManager);
-    void postGamsLibRun(GamsArgManager *argManager);
+    void postGamsRun(GamsProperties *argManager);
+    void postGamsLibRun(GamsProperties *argManager);
     void closeGroup(ProjectGroupNode* group);
     void closeFileConditionally(ProjectFileNode *file);
     void closeFile(ProjectFileNode* file);

@@ -71,7 +71,7 @@ void GAMSLibProcess::execute()
     mProcess.start(nativeAppPath(), args);
 }
 
-void GAMSLibProcess::execute(GamsArgManager *argManager)
+void GAMSLibProcess::execute(GamsProperties *argManager)
 {
     // TODO rogo: this doesnt do anything and it shouldnt
     Q_UNUSED(argManager);

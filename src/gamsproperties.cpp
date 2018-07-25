@@ -1,4 +1,4 @@
-#include "gamsargmanager.h"
+#include "gamsproperties.h"
 #include "file/projectgroupnode.h"
 #include "exception.h"
 #include <option/option.h>
@@ -11,7 +11,7 @@
 namespace gams {
 namespace studio {
 
-GamsArgManager::GamsArgManager(ProjectGroupNode *origin) : mOriginGroup(origin)
+GamsProperties::GamsProperties(ProjectGroupNode *origin) : mOriginGroup(origin)
 {
     // set default path
     mGamsArgs.insert("lo", "3");
@@ -22,7 +22,7 @@ GamsArgManager::GamsArgManager(ProjectGroupNode *origin) : mOriginGroup(origin)
     mGamsArgs.insert("LstTitleLeftAligned", "1");
 }
 
-void GamsArgManager::setGamsParameters(QList<OptionItem> itemList)
+void GamsProperties::setGamsParameters(QList<OptionItem> itemList)
 {
     mOriginGroup->setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
@@ -42,7 +42,7 @@ void GamsArgManager::setGamsParameters(QList<OptionItem> itemList)
     // TODO: add this: "curdir="+mWorkingDir;
 }
 
-QStringList GamsArgManager::getGamsParameters()
+QStringList GamsProperties::gamsParameters()
 {
     if (mInputFile.isEmpty())
         FATAL() << "No input file set. Do so before setting other parameters!";
@@ -58,12 +58,12 @@ QStringList GamsArgManager::getGamsParameters()
     return output;
 }
 
-QString GamsArgManager::getInputFile() const
+QString GamsProperties::getInputFile() const
 {
     return mInputFile;
 }
 
-void GamsArgManager::setInputFile(const QString &inputFile)
+void GamsProperties::inputFile(const QString &inputFile)
 {
 #ifdef __unix__
     mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
@@ -72,12 +72,12 @@ void GamsArgManager::setInputFile(const QString &inputFile)
 #endif
 }
 
-ProjectGroupNode *GamsArgManager::getOriginGroup() const
+ProjectGroupNode *GamsProperties::originGroup() const
 {
     return mOriginGroup;
 }
 
-void GamsArgManager::setOriginGroup(ProjectGroupNode *originGroup)
+void GamsProperties::setOriginGroup(ProjectGroupNode *originGroup)
 {
     mOriginGroup = originGroup;
 }

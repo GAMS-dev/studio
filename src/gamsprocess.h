@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-class GamsArgManager;
+class GamsProperties;
 class GamsProcess : public AbstractProcess
 {
     Q_OBJECT
@@ -33,7 +33,7 @@ class GamsProcess : public AbstractProcess
 public:
     GamsProcess(QObject *parent = Q_NULLPTR);
 
-    void execute(GamsArgManager *args) override;
+    void execute(GamsProperties *args) override;
 
     QString aboutGAMS();
 
