@@ -62,9 +62,13 @@ void GamsProcess::execute()
         "LstTitleLeftAligned=1"
     };
     mProcess.setProgram(nativeAppPath());
+
     mProcess.setWorkingDirectory(mWorkingDir);
-    //mProcess.setNativeArguments(args); TODO AF do we need a platform switch?
+#ifdef __unix__
     mProcess.setArguments(args << mArguments);
+#else
+    mProcess.setNativeArguments(args << mArguments);
+#endif
     mProcess.start();
 }
 
