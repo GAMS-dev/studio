@@ -38,12 +38,13 @@ GamsProcess::GamsProcess(QObject *parent)
 
 void GamsProcess::execute()
 {
-    #if defined(__unix__) || defined(__APPLE__)
+#if defined(__unix__) || defined(__APPLE__)
     mProcess.start(nativeAppPath(), mParameters);
-    #else
+#else
+    // TODO(AF): move next line to properties
     mParameters[0] = "\""+QDir::toNativeSeparators(mParameters[0])+"\"";
     mProcess.setNativeArguments(mParameters.join(" "));
-    #endif
+#endif
 }
 
 QString GamsProcess::aboutGAMS()

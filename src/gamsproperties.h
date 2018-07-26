@@ -8,7 +8,7 @@ namespace gams {
 namespace studio {
 
 class ProjectGroupNode;
-class OptionItem;
+struct OptionItem;
 
 class GamsProperties
 {

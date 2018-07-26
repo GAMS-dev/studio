@@ -44,9 +44,7 @@ void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<Opt
 
 QStringList GamsProperties::gamsParameters()
 {
-    QStringList output;
-
-    output.append(mInputFile);
+    QStringList output { mInputFile };
     for(QString k : mGamsArgs.keys()) {
         output.append(k + "=" + mGamsArgs.value(k));
     }
