@@ -49,7 +49,6 @@ QStringList GamsProperties::gamsParameters()
     output.append(mInputFile);
     for(QString k : mGamsArgs.keys()) {
         output.append(k + "=" + mGamsArgs.value(k));
-        qDebug() << output.last(); // rogo: delete
     }
 
     return output;
