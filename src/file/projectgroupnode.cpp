@@ -36,8 +36,10 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
     if (fileName == "") return;
 
     // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + fileName);
-    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+    QFileInfo runnableFile(fileName);
+    if (!runnableFile.isAbsolute())
+        runnableFile = QFileInfo(location + "/" + fileName);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
 
     // fix for .lst-as-mainfile bug
     if (FileMetrics(runnableFile).fileType() == FileType::Gms)
@@ -94,6 +96,7 @@ ProjectAbstractNode* ProjectGroupNode::findNode(QString filePath)
 
 ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
 {
+    location();
     ProjectAbstractNode* fsc = findNode(filePath);
     return (fsc && (fsc->type() == ProjectAbstractNode::File || fsc->type() == ProjectAbstractNode::Log))
             ? static_cast<ProjectFileNode*>(fsc) : nullptr;
@@ -101,8 +104,7 @@ ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
 
 void ProjectGroupNode::setLocation(const QString& location)
 {
-    Q_UNUSED(location);
-    EXCEPT() << "The location of a FileGroupNode can't be changed.";
+    ProjectAbstractNode::setLocation(location);
 }
 
 int ProjectGroupNode::peekIndex(const QString& location, bool *hit)
@@ -368,7 +370,7 @@ bool ProjectGroupNode::hasLstErrorText(int line)
 
 void ProjectGroupNode::saveGroup()
 {
-    foreach (ProjectAbstractNode* child, mChildList) {
+    for (ProjectAbstractNode* child: mChildList) {
         if (child->type() == ContextType::FileGroup) {
             ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
             fgc->saveGroup();
@@ -387,10 +389,11 @@ QString ProjectGroupNode::runnableGms()
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
-    QString location = gmsFileNode->location();
+    QString gmsFilePath = gmsFileNode->location();
+    setLocation(QFileInfo(gmsFilePath).path());
 
-    mGmsFileName = location;
-    setLstFileName(QFileInfo(location).baseName() + ".lst");
+    mGmsFileName = gmsFilePath;
+    setLstFileName(QFileInfo(gmsFilePath).completeBaseName() + ".lst");
     if (logNode()) logNode()->resetLst();
 }
 

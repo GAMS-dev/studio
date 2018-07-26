@@ -1408,7 +1408,7 @@ QStringList MainWindow::parseFilesFromCommandLine(const QString &commandLineStr,
     QStringList commandLineArgs;
     // set default lst file name in case output option changed back to default
     if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
+        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).completeBaseName() + ".lst");
 
     foreach (OptionItem item, items) {
         commandLineArgs << QString("%1=%2").arg(item.key).arg(item.value);
@@ -1500,20 +1500,17 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
-
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger();
         return;
     }
-
-    QFileInfo gmsFileInfo(gmsFilePath);
-
+    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
     GamsProcess* process = group->gamsProcess();
     process->setGroupId(group->id());
-    process->setWorkingDir(gmsFileInfo.path());
+    process->setWorkingDir(workDir);
     process->setInputFile(gmsFilePath);
     process->setArguments( commandLineArgs );
     process->execute();

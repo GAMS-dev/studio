@@ -139,7 +139,16 @@ void ProjectFileNode::setLocation(const QString& _location)
     // TODO(JM) adapt parent group
     if (document())
         document()->setModified(true);
+
+    QFileInfo fi(_location);
+    if(!fi.exists()) {
+        QFile newFile(_location);
+        newFile.open(QIODevice::WriteOnly);
+        newFile.close();
+    }
+
     ProjectAbstractNode::setLocation(_location);
+    setName(fi.fileName());
     mMetrics = FileMetrics(newLoc);
 }
 

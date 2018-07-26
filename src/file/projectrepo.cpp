@@ -216,7 +216,7 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath, const QStrin
             }
         }
     }
-    group = addGroup(groupNameToAdd, fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
+    group = addGroup(groupNameToAdd, fi.path(), fi.filePath(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(ProjectAbstractNode::cfExtendCaption);
 
@@ -404,7 +404,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         if (node->type() == ProjectAbstractNode::FileGroup) {
             ProjectGroupNode *subGroup = static_cast<ProjectGroupNode*>(node);
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
-                                                                : subGroup->childEntry(0)->location());
+                                                                     : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
             nodeObject["options"] = QJsonArray::fromStringList(subGroup->getRunParametersHistory());
             QJsonArray subArray;
