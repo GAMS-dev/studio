@@ -56,7 +56,7 @@ void GamsProcess::setArguments(const QStringList &arguments)
 
 void GamsProcess::execute()
 {
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     QStringList args {
         QDir::toNativeSeparators(mInputFile), "lo=3",
         "ide=1", "er=99", "errmsg=1", "pagesize=0",
