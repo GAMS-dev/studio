@@ -44,6 +44,7 @@ public:
 
 private:
     QStringList mParameters;
+//    GamsProperties
 };
 
 } // namespace studio

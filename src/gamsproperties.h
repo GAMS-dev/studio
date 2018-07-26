@@ -2,17 +2,19 @@
 #define GAMSARGMANAGER_H
 
 #include <QMap>
+#include "file/projectabstractnode.h"
 
 namespace gams {
 namespace studio {
 
 class ProjectGroupNode;
 class OptionItem;
+
 class GamsProperties
 {
 
 public:
-    GamsProperties(ProjectGroupNode *origin);
+    GamsProperties(FileId origin);
 
     void setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
     QStringList gamsParameters();
@@ -20,15 +22,18 @@ public:
     QString inputFile() const;
     void setInputFile(const QString &inputFile);
 
-    ProjectGroupNode *originGroup() const;
-    void setOriginGroup(ProjectGroupNode *originGroup);
+    QString lstFile() const;
+    void setLstFile(const QString &lstFile);
 
+    FileId fileId() const;
+    void setFileId(const FileId &fileId);
 
 private:
     QMap<QString, QString> mGamsArgs;
-    QString mInputFile;
 
-    ProjectGroupNode *mOriginGroup;
+    QString mInputFile;
+    QString mLstFile;
+    FileId mFileId;
 };
 
 } // namespace studio

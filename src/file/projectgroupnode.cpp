@@ -31,7 +31,7 @@ namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
     : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProcess(new GamsProcess)
+      mGamsProps(id), mGamsProcess(new GamsProcess)
 {
     if (fileName == "") return;
 
@@ -39,13 +39,13 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
     QFileInfo runnableFile(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
 
-    // fix for .lst-as-mainfile bug
+    // fix for .lst-as-mainfile bug // TODO: check if this is still relevant
     if (FileMetrics(runnableFile).fileType() == FileType::Gms)
-        mGmsFileName = runnableFile.absoluteFilePath();
+        mGamsProps.setInputFile(runnableFile.absoluteFilePath());
     else if (alternateFile.exists())
-        mGmsFileName = alternateFile.absoluteFilePath();
+        mGamsProps.setInputFile(alternateFile.absoluteFilePath());
     else
-        mGmsFileName = "";
+        mGamsProps.setInputFile("");
 
     //mGamsProcess->setContext(this);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
@@ -202,18 +202,28 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
+GamsProperties& ProjectGroupNode::gamsProperties()
+{
+    return mGamsProps;
+}
+
+void ProjectGroupNode::setGamsProperties(GamsProperties &gamsProps)
+{
+    mGamsProps = gamsProps;
+}
+
 void ProjectGroupNode::setLstFile(const QString &lstFileName)
 {
     QFileInfo fi(lstFileName);
     if (fi.isRelative())
-        mLstFile = location() + "/" + lstFileName;
+        mGamsProps.setLstFile(location() + "/" + lstFileName);
     else
-        mLstFile = lstFileName;
+        mGamsProps.setLstFile(lstFileName);
 }
 
 QString ProjectGroupNode::lstFile()
 {
-    return mLstFile;
+    return mGamsProps.lstFile();
 }
 
 void ProjectGroupNode::dumpMarks()
@@ -387,20 +397,20 @@ void ProjectGroupNode::saveGroup()
 QString ProjectGroupNode::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mGmsFileName;
+    return mGamsProps.inputFile();
 }
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
     QString location = gmsFileNode->location();
-    mGmsFileName = location;
+    mGamsProps.setInputFile(location);
     if (logNode()) logNode()->resetLst();
 }
 
 void ProjectGroupNode::removeRunnableGms()
 {
-    mGmsFileName = "";
-    mLstFile = "";
+    mGamsProps.setInputFile("");
+    mGamsProps.setLstFile("");
 }
 
 ProjectLogNode*ProjectGroupNode::logNode() const

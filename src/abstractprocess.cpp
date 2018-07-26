@@ -43,7 +43,7 @@ QProcess::ProcessState AbstractProcess::state() const
 
 void AbstractProcess::completed(int exitCode)
 {
-    emit finished(mArgManager, exitCode);
+    emit finished(mGroupId, exitCode);
 }
 
 void AbstractProcess::readStdOut()
@@ -80,6 +80,17 @@ QString AbstractProcess::nativeAppPath()
     auto appPath = QDir(systemDir).filePath(mAppPath);
     return QDir::toNativeSeparators(appPath);
 }
+
+FileId AbstractProcess::groupId() const
+{
+    return mGroupId;
+}
+
+void AbstractProcess::setGroupId(const FileId &groupId)
+{
+    mGroupId = groupId;
+}
+
 
 } // namespace studio
 } // namespace gams

@@ -911,10 +911,14 @@ void MainWindow::appendSystemLog(const QString &text)
     mSyslog->appendLog(text, LogMsgType::Info);
 }
 
-void MainWindow::postGamsRun(GamsProperties* argManager)
+void MainWindow::postGamsRun(FileId origin)
 {
-    ProjectGroupNode* groupNode = argManager->originGroup();
-    QFileInfo fileInfo(argManager->inputFile());
+    if (origin == -1) {
+        mSyslog->appendLog("No fileId set to process", LogMsgType::Error);
+        return;
+    }
+    ProjectGroupNode* groupNode = mProjectRepo.groupNode(origin);
+    QFileInfo fileInfo(groupNode->gamsProperties().inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFile();
 //        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
@@ -933,13 +937,14 @@ void MainWindow::postGamsRun(GamsProperties* argManager)
     }
 }
 
-void MainWindow::postGamsLibRun(GamsProperties* argManager)
+void MainWindow::postGamsLibRun(FileId origin)
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *fc = nullptr;
-    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + argManager->inputFile(), &fc);
+    ProjectGroupNode *fgn = mProjectRepo.groupNode(origin);
+    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + fgn->gamsProperties().inputFile(), &fc);
     if (!fc)
-        fc = addNode(mLibProcess->targetDir(), argManager->inputFile());
+        fc = addNode(mLibProcess->targetDir(), fgn->gamsProperties().inputFile());
     if (fc && !fc->editors().isEmpty()) {
         fc->load(fc->codecMib());
     }
@@ -1478,22 +1483,18 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger();
+        ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
         return;
     }
 
-    QFileInfo gmsFileInfo(gmsFilePath);
-
     logProc->setJumpToLogEnd(true);
 
-    GamsProperties argManager(group);
-    qDebug() << "cmdStr" << commandLineStr; // rogo: delete
-
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    argManager.setAndAnalyzeParameters(gmsFilePath, itemList);
+    group->gamsProperties().setAndAnalyzeParameters(gmsFilePath, itemList);
 
     GamsProcess* process = group->gamsProcess();
-    process->setParameters(argManager.gamsParameters());
+    process->setParameters(group->gamsProperties().gamsParameters());
+    process->setGroupId(group->id());
     process->execute();
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);

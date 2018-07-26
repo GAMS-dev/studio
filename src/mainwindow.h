@@ -151,8 +151,8 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void postGamsRun(GamsProperties *argManager);
-    void postGamsLibRun(GamsProperties *argManager);
+    void postGamsRun(FileId origin);
+    void postGamsLibRun(FileId origin);
     void closeGroup(ProjectGroupNode* group);
     void closeFileConditionally(ProjectFileNode *file);
     void closeFile(ProjectFileNode* file);

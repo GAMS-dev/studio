@@ -23,6 +23,7 @@
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
+#include "gamsproperties.h"
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
 
@@ -82,6 +83,9 @@ public:
     QString lastLstFile() const;
     void setLastLstFile(const QString &lastLstFile);
 
+    GamsProperties &gamsProperties();
+    void setGamsProperties(GamsProperties &gamsProps);
+
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
@@ -110,12 +114,11 @@ protected:
     void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
+    GamsProperties mGamsProps;
     QStringList mRunParametersHistory;
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
-    QString mLstFile;
-    QString mGmsFileName;
     QFileInfoList mAttachedFiles;
 
     QHash<int, QString> mLstErrorTexts;

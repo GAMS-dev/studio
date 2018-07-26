@@ -1,17 +1,15 @@
-#include "gamsproperties.h"
-#include "file/projectgroupnode.h"
-#include "exception.h"
-#include <option/option.h>
-
 #include <QDir>
 #include <QTime>
 #include <QDebug>
 
+#include "gamsproperties.h"
+#include "exception.h"
+#include "option/option.h"
 
 namespace gams {
 namespace studio {
 
-GamsProperties::GamsProperties(ProjectGroupNode *origin) : mOriginGroup(origin)
+GamsProperties::GamsProperties(FileId origin) : mFileId(origin)
 {
     // set default path
     mGamsArgs.insert("lo", "3");
@@ -25,14 +23,14 @@ GamsProperties::GamsProperties(ProjectGroupNode *origin) : mOriginGroup(origin)
 void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
 {
     setInputFile(inputFile);
-    mOriginGroup->setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
+    setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
     // iterate options
     foreach (OptionItem item, itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-            mOriginGroup->setLstFile(item.value);
+            setLstFile(item.value);
         } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                    || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
             // TODO: save workingdir somewhere
@@ -57,14 +55,24 @@ QStringList GamsProperties::gamsParameters()
     return output;
 }
 
-ProjectGroupNode *GamsProperties::originGroup() const
+QString GamsProperties::lstFile() const
 {
-    return mOriginGroup;
+    return mLstFile;
 }
 
-void GamsProperties::setOriginGroup(ProjectGroupNode *originGroup)
+void GamsProperties::setLstFile(const QString &lstFile)
 {
-    mOriginGroup = originGroup;
+    mLstFile = lstFile;
+}
+
+FileId GamsProperties::fileId() const
+{
+    return mFileId;
+}
+
+void GamsProperties::setFileId(const FileId &fileId)
+{
+    mFileId = fileId;
 }
 
 QString GamsProperties::inputFile() const
