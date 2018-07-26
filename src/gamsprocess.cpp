@@ -64,7 +64,7 @@ void GamsProcess::execute()
     mProcess.setProgram(nativeAppPath());
 
     mProcess.setWorkingDirectory(mWorkingDir);
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     mProcess.setArguments(args << mArguments);
 #else
     mProcess.setNativeArguments((args << mArguments).join(" "));
