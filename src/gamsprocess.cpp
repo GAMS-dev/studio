@@ -56,6 +56,7 @@ void GamsProcess::execute()
         QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
         args.append(paramList);
     }
+    mProcess.setWorkingDirectory(mWorkingDir);
     mProcess.start(nativeAppPath(), args);
 }
 
