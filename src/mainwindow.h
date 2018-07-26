@@ -260,7 +260,7 @@ private:
     void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    void parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
+    QStringList parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
