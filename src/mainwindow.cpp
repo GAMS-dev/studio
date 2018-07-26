@@ -1490,7 +1490,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     qDebug() << "cmdStr" << commandLineStr; // rogo: delete
 
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    argManager.analyzeCmdParameters(gmsFilePath, itemList);
+    argManager.setAndAnalyzeParameters(gmsFilePath, itemList);
 
     GamsProcess* process = group->gamsProcess();
     process->setParameters(argManager.gamsParameters());

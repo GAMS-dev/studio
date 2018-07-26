@@ -14,13 +14,15 @@ class GamsProperties
 public:
     GamsProperties(ProjectGroupNode *origin);
 
-    void analyzeCmdParameters(const QString &inputFile, QList<OptionItem> itemList);
+    void setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
     QStringList gamsParameters();
 
     QString inputFile() const;
+    void setInputFile(const QString &inputFile);
 
     ProjectGroupNode *originGroup() const;
     void setOriginGroup(ProjectGroupNode *originGroup);
+
 
 private:
     QMap<QString, QString> mGamsArgs;

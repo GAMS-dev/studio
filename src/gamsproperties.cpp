@@ -22,15 +22,9 @@ GamsProperties::GamsProperties(ProjectGroupNode *origin) : mOriginGroup(origin)
     mGamsArgs.insert("LstTitleLeftAligned", "1");
 }
 
-void GamsProperties::analyzeCmdParameters(const QString &inputFile, QList<OptionItem> itemList)
+void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
 {
-    // set input file
-#ifdef __unix__
-    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
-#else
-    mInputFile = QDir::toNativeSeparators(inputFile);
-#endif
-    // set lst file
+    setInputFile(inputFile);
     mOriginGroup->setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
     // iterate options
@@ -63,11 +57,6 @@ QStringList GamsProperties::gamsParameters()
     return output;
 }
 
-QString GamsProperties::inputFile() const
-{
-    return mInputFile;
-}
-
 ProjectGroupNode *GamsProperties::originGroup() const
 {
     return mOriginGroup;
@@ -76,6 +65,20 @@ ProjectGroupNode *GamsProperties::originGroup() const
 void GamsProperties::setOriginGroup(ProjectGroupNode *originGroup)
 {
     mOriginGroup = originGroup;
+}
+
+QString GamsProperties::inputFile() const
+{
+    return mInputFile;
+}
+
+void GamsProperties::setInputFile(const QString &inputFile)
+{
+#ifdef __unix__
+    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
+#else
+    mInputFile = QDir::toNativeSeparators(inputFile);
+#endif
 }
 
 }
