@@ -82,11 +82,7 @@ QString GamsProperties::inputFile() const
 
 void GamsProperties::setInputFile(const QString &inputFile)
 {
-#ifdef __unix__
-    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
-#else
     mInputFile = QDir::toNativeSeparators(inputFile);
-#endif
 }
 
 }
