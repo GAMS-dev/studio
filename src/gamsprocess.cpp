@@ -67,7 +67,7 @@ void GamsProcess::execute()
 #ifdef __unix__
     mProcess.setArguments(args << mArguments);
 #else
-    mProcess.setNativeArguments(args << mArguments);
+    mProcess.setNativeArguments((args << mArguments).join(" "));
 #endif
     mProcess.start();
 }
