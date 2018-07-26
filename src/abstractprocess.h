@@ -69,7 +69,6 @@ protected:
 protected:
     FileId mGroupId = -1;
     QString mInputFile;
-    QString mLstFile;
     QProcess mProcess;
     QMutex mOutputMutex;
 

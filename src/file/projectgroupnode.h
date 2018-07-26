@@ -95,7 +95,7 @@ protected:
     friend class ProjectLogNode;
 
     ProjectGroupNode(FileId id, QString name, QString location, QString fileName);
-    int peekIndex(const QString &name, bool* hit = nullptr);
+    int peekIndex(const QString &location, bool* hit = nullptr);
     void insertChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
     void checkFlags() override;

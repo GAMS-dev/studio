@@ -105,13 +105,13 @@ void ProjectGroupNode::setLocation(const QString& location)
     EXCEPT() << "The location of a FileGroupNode can't be changed.";
 }
 
-int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
+int ProjectGroupNode::peekIndex(const QString& location, bool *hit)
 {
     if (hit) *hit = false;
     for (int i = 0; i < childCount(); ++i) {
         ProjectAbstractNode *child = childEntry(i);
-        QString other = child->name();
-        int comp = name.compare(other, Qt::CaseInsensitive);
+        QString other = child->location();
+        int comp = location.compare(other, Qt::CaseInsensitive);
         if (comp < 0) return i;
         if (comp == 0) {
             if (hit) *hit = true;

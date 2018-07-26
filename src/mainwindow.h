@@ -115,7 +115,7 @@ public:
     void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
-    void openModelFromLib(QString glbFile, QString model, QString gmsFileName = "");
+    void openModelFromLib(QString glbFile, QString model);
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     void delayedFileRestoration();
@@ -251,7 +251,7 @@ private:
     void openNode(const QModelIndex& index);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
-    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item, QString gmsFileName);
+    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void showWelcomePage();
     bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);

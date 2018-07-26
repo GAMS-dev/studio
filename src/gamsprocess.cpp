@@ -21,7 +21,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
-#include <QDebug>
+
 #ifdef _WIN32
 #include "windows.h"
 #endif
@@ -56,8 +56,7 @@ void GamsProcess::setArguments(const QStringList &arguments)
 
 void GamsProcess::execute()
 {
-    mProcess.setProgram(nativeAppPath());
-    mProcess.setWorkingDirectory(mWorkingDir);
+/*  TODO AF finalize
 #ifdef _WIN32
     QStringList args({QDir::toNativeSeparators(mInputFile)});
     args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
@@ -72,8 +71,19 @@ void GamsProcess::execute()
         args << a;
     }
     mProcess.setArguments(args);
-#endif
-    mProcess.start();
+*/
+    QStringList args {
+        QDir::toNativeSeparators(mInputFile), "lo=3",
+        "ide=1", "er=99", "errmsg=1", "pagesize=0",
+        "LstTitleLeftAligned=1"
+    };
+    if (!mCommandLineStr.isEmpty()) {
+        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
+        args.append(paramList);
+    }
+    //mProcess.setProgram(nativeAppPath());
+    mProcess.setWorkingDirectory(mWorkingDir);
+    mProcess.start(nativeAppPath(), args);
 }
 
 QString GamsProcess::aboutGAMS()

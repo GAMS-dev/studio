@@ -579,8 +579,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
             selectNextMatch(direction, matches);
 
         } else { // found next match
+            edit->jumpTo(matchSelection);
             edit->setTextCursor(matchSelection);
-            edit->centerCursor();
         }
     } else { // search had no matches so do nothing
         setSearchStatus(SearchStatus::NoResults);
