@@ -22,7 +22,11 @@ GamsProperties::GamsProperties(FileId origin) : mFileId(origin)
 
 void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
 {
+#if defined(__unix__) || defined(__APPLE__)
     setInputFile(inputFile);
+#else
+    setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"")
+#endif
     setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
 
     // iterate options
