@@ -36,19 +36,19 @@ public:
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
 
+    QStringList arguments() const;
+    void setArguments(const QStringList &arguments);
+
     void execute() override;
 
     QString aboutGAMS();
-
-    QString commandLineStr() const;
-    void setCommandLineStr(const QString &commandLineStr);
 
     void interrupt();
     void stop();
 
 private:
     QString mWorkingDir;
-    QString mCommandLineStr;
+    QStringList mArguments;
 };
 
 } // namespace studio

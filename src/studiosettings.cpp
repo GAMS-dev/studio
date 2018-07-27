@@ -19,6 +19,7 @@
  */
 #include <QDebug>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QDir>
@@ -29,6 +30,7 @@
 #include "searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -43,6 +45,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     }
     else if (mAppSettings == nullptr) {
         initSettingsFiles();
+        initDefaultColors();
     }
     if (resetViews)
         resetViewSettings();
@@ -69,9 +72,21 @@ void StudioSettings::initSettingsFiles()
                                   GAMS_ORGANIZATION_STR, "usersettings");
 }
 
+void StudioSettings::initDefaultColors()
+{
+    if (mColorSchemes.size() == 0) {
+        mColorSchemes << QHash<QString, QColor>();
+    }
+    mColorSchemes[0].clear();
+    mColorSchemes[0].insert("Edit.currentLineBg", QColor(255, 250, 170));
+    mColorSchemes[0].insert("Edit.currentWordBg", QColor(Qt::lightGray));
+    mColorSchemes[0].insert("Edit.matchesBg", QColor(Qt::green).lighter(160));
+}
+
 void StudioSettings::resetSettings()
 {
     initSettingsFiles();
+    initDefaultColors();
     mAppSettings->sync();
     mUserSettings->sync();
 }
@@ -110,6 +125,10 @@ void StudioSettings::saveSettings(MainWindow *main)
         qDebug() << "ERROR: settings file missing.";
         return;
     }
+    mAppSettings->beginGroup("settings");
+    mAppSettings->setValue("version", QString(STUDIO_VERSION));
+    mAppSettings->endGroup();
+
     // Main Application Settings
     // main window
     mAppSettings->beginGroup("mainWindow");
@@ -186,6 +205,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
     mUserSettings->setValue("openLst", openLst());
     mUserSettings->setValue("jumpToError", jumpToError());
+    mUserSettings->setValue("colorScheme", exportJsonColorSchemes());
+    mUserSettings->setValue("colorSchemeIndex", colorSchemeIndex());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
@@ -214,6 +235,11 @@ void StudioSettings::saveSettings(MainWindow *main)
 
 void StudioSettings::loadViewStates(MainWindow *main)
 {
+    mAppSettings->beginGroup("settings");
+    // TODO: write settings converter
+    mAppSettings->value("version").toString();
+    mAppSettings->endGroup();
+
     // main window
     mAppSettings->beginGroup("mainWindow");
     main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
@@ -277,6 +303,8 @@ void StudioSettings::loadUserSettings()
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
     setOpenLst(mUserSettings->value("openLst", false).toBool());
     setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+    importJsonColorSchemes(mUserSettings->value("colorScheme").toByteArray());
+    setColorSchemeIndex(mUserSettings->value("colorSchemeIndex", 0).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
@@ -506,6 +534,57 @@ bool StudioSettings::clearLog() const
 void StudioSettings::setClearLog(bool value)
 {
     mClearLog = value;
+}
+
+int StudioSettings::colorSchemeIndex()
+{
+    return mColorSchemeIndex;
+}
+
+void StudioSettings::setColorSchemeIndex(int value)
+{
+    if (value >= mColorSchemes.size())
+        value = mColorSchemes.size() -1;
+    mColorSchemeIndex = value;
+}
+
+QHash<QString, QColor> &StudioSettings::colorScheme()
+{
+    return mColorSchemes[mColorSchemeIndex];
+}
+
+QByteArray StudioSettings::exportJsonColorSchemes()
+{
+    QJsonArray schemes;
+
+    for (const QHash<QString, QColor> &scheme: mColorSchemes) {
+        QJsonObject json;
+        QJsonObject colorObject;
+        for (QString key: scheme.keys()) {
+            colorObject[key] = scheme.value(key).name();
+        }
+        json["colorScheme"] = colorObject;
+        schemes.append(json);
+    }
+
+    QJsonDocument saveDoc = QJsonDocument(schemes);
+    return saveDoc.toJson(QJsonDocument::Compact);
+}
+
+void StudioSettings::importJsonColorSchemes(const QByteArray &jsonData)
+{
+    QJsonArray schemes = QJsonDocument::fromJson(jsonData).array();
+    if (mColorSchemes.size() < schemes.size())
+        mColorSchemes.append(QHash<QString, QColor>());
+    for (int i = 0; i < schemes.size(); ++i) {
+        QJsonObject json = schemes[i].toObject();
+        if (json.contains("colorScheme") && json["colorScheme"].isObject()) {
+            QJsonObject colorObject = json["colorScheme"].toObject();
+            for (QString key: colorObject.keys()) {
+                mColorSchemes[i].insert(key, QColor(colorObject[key].toString()));
+            }
+        }
+    }
 }
 
 bool StudioSettings::searchUseRegex() const

@@ -172,9 +172,9 @@ ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGro
     if (!parent)
         parent = mTreeModel->rootNode();
     bool hit;
-    int offset = parent->peekIndex(name, &hit);
+    int offset = parent->peekIndex(location, &hit);
     if (hit)
-        FATAL() << "The group '" << parent->name() << "' already contains '" << name << "'";
+        EXCEPT() << "The group '" << parent->name() << "' already contains '" << name << "'";
     ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location);
     storeNode(file);
     mTreeModel->insertChild(offset, parent, file);
@@ -216,7 +216,7 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath, const QStrin
             }
         }
     }
-    group = addGroup(groupNameToAdd, fi.path(), fi.fileName(), mTreeModel->rootModelIndex());
+    group = addGroup(groupNameToAdd, fi.path(), fi.filePath(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(ProjectAbstractNode::cfExtendCaption);
 
@@ -404,7 +404,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         if (node->type() == ProjectAbstractNode::FileGroup) {
             ProjectGroupNode *subGroup = static_cast<ProjectGroupNode*>(node);
             nodeObject["file"] = (!subGroup->runnableGms().isEmpty() ? subGroup->runnableGms()
-                                                                : subGroup->childEntry(0)->location());
+                                                                     : subGroup->childEntry(0)->location());
             nodeObject["name"] = node->name();
             nodeObject["options"] = QJsonArray::fromStringList(subGroup->getRunParametersHistory());
             QJsonArray subArray;

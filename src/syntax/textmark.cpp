@@ -64,7 +64,7 @@ void TextMark::jumpToMark(bool focus)
 
     if (fc->document()) {
         updatePos();
-        fc->jumpTo(textCursor(), focus);
+        fc->jumpTo(textCursor());
     } else if (fc->metrics().fileType() == FileType::Gdx) {
         fc->openFileNode(fc, focus);
     }
@@ -94,7 +94,7 @@ void TextMark::clearBackRefs()
 QColor TextMark::color()
 {
     if (type() == TextMark::match)
-        return Qt::yellow;
+        return QColor(Qt::green).lighter(160);
 
     if (!mReference) return Qt::darkRed;
     if (mReference->type() == TextMark::error)
