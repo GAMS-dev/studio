@@ -83,7 +83,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mProjectRepo.setSuffixFilter(QStringList() << ".gms" << ".lst" << ".gdx");
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
+    ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
@@ -481,12 +481,12 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 
 void MainWindow::setActiveMIB(int active)
 {
-    foreach (QAction *act, ui->menuconvert_to->actions())
+    for (QAction *act: ui->menuconvert_to->actions())
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
 
-    foreach (QAction *act, ui->menureload_with->actions())
+    for (QAction *act: ui->menureload_with->actions())
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }

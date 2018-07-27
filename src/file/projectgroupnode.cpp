@@ -213,15 +213,6 @@ void ProjectGroupNode::setGamsProperties(GamsProperties &gamsProps)
     mGamsProps = gamsProps;
 }
 
-void ProjectGroupNode::setLstFile(const QString &lstFileName)
-{
-    QFileInfo fi(lstFileName);
-    if (fi.isRelative())
-        mGamsProps.setLstFile(location() + "/" + lstFileName);
-    else
-        mGamsProps.setLstFile(lstFileName);
-}
-
 QString ProjectGroupNode::lstFile()
 {
     return mGamsProps.lstFile();

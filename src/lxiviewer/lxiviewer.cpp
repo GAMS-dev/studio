@@ -90,10 +90,14 @@ void LxiViewer::loadLxi()
 void LxiViewer::loadLstFile(ProjectGroupNode* group)
 {
     if (group && QProcess::NotRunning == group->gamsProcessState()) {
-        ProjectFileNode *fileNode = group->findFile(group->lstFile());
-        if (!fileNode)
+        ProjectFileNode *fileNode = nullptr;
+        group->findOrCreateFileNode(group->lstFile(), fileNode, group);
+        if (fileNode) {
+            fileNode->openFileNode(fileNode);
+            fileNode->load(fileNode->codecMib(), true);
+        } else {
             EXCEPT() << "Error finding lst file " + group->lstFile() + " in group.";
-        fileNode->load(fileNode->codecMib(), true);
+        }
     }
 }
 

@@ -57,7 +57,6 @@ public:
     void setRunnableGms(ProjectFileNode *gmsFileNode);
     void removeRunnableGms();
     QString lstFile();
-    void setLstFile(const QString &lstFile);
     ProjectLogNode* logNode() const;
 
     GamsProcess* gamsProcess();

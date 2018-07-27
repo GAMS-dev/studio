@@ -28,7 +28,7 @@ void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<Opt
     setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"")
 #endif
     QFileInfo fi(mInputFile);
-    setLstFile(fi.absolutePath() + fi.baseName() + ".lst");
+    setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
 
     // iterate options
     foreach (OptionItem item, itemList) {
