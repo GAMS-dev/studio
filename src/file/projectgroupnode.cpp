@@ -37,7 +37,9 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
 
     // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
     QFileInfo runnableFile(location + "/" + fileName);
-    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.baseName() + ".gms");
+    if (!runnableFile.isAbsolute())
+        runnableFile = QFileInfo(location + "/" + fileName);
+    QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
 
     // fix for .lst-as-mainfile bug // TODO: check if this is still relevant
     if (FileMetrics(runnableFile).fileType() == FileType::Gms)
@@ -101,8 +103,7 @@ ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
 
 void ProjectGroupNode::setLocation(const QString& location)
 {
-    Q_UNUSED(location);
-    EXCEPT() << "The location of a FileGroupNode can't be changed.";
+    ProjectAbstractNode::setLocation(location);
 }
 
 int ProjectGroupNode::peekIndex(const QString& location, bool *hit)
@@ -383,7 +384,7 @@ bool ProjectGroupNode::hasLstErrorText(int line)
 
 void ProjectGroupNode::saveGroup()
 {
-    foreach (ProjectAbstractNode* child, mChildList) {
+    for (ProjectAbstractNode* child: mChildList) {
         if (child->type() == ContextType::FileGroup) {
             ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
             fgc->saveGroup();

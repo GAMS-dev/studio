@@ -38,11 +38,24 @@ GamsProcess::GamsProcess(QObject *parent)
 
 void GamsProcess::execute()
 {
+    mProcess.setWorkingDirectory(mWorkingDir);
 #if defined(__unix__) || defined(__APPLE__)
     mProcess.start(nativeAppPath(), mParameters);
 #else
     mProcess.setNativeArguments(mParameters.join(" "));
+    mProcess.setProgram(nativeAppPath());
+    mProcess.start();
 #endif
+
+}
+void GamsProcess::setWorkingDir(const QString &workingDir)
+{
+    mWorkingDir = workingDir;
+}
+
+QString GamsProcess::workingDir() const
+{
+    return mWorkingDir;
 }
 
 QString GamsProcess::aboutGAMS()

@@ -1108,8 +1108,7 @@ void CodeEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
     if (!mSettings->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    QColor lineColor = QColor(255, 250, 170); // TODO: read from style sheet
-    selection.format.setBackground(lineColor);
+    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.movePosition(QTextCursor::StartOfBlock);
@@ -1135,8 +1134,7 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
 //                QPen outlinePen( Qt::lightGray, 1);
 //                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
-                QColor wordColor = QColor(Qt::lightGray)/*.lighter(115)*/;
-                selection.format.setBackground(wordColor);
+                selection.format.setBackground(mSettings->colorScheme().value("Edit.currentWordBg", QColor(Qt::lightGray)));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
             }
@@ -1188,7 +1186,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextEdit::ExtraSelection selection;
             selection.cursor = mark->textCursor();
             selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
-            selection.format.setBackground(QColor(Qt::green).lighter(160));
+            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
             selections << selection;
         }
         top += qRound(blockBoundingRect(block).height());
