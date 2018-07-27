@@ -78,11 +78,10 @@ void ProjectFileNode::setCodecMib(int mib)
     QTextCodec *codec = QTextCodec::codecForMib(mib);
     if (!codec)
         EXCEPT() << "TextCodec not found for MIB " << mib;
-    if (document() && !isReadOnly() && !isModified() && codec != mCodec) {
+    if (document() && !isReadOnly() && codec != mCodec) {
         document()->setModified();
         mCodec = codec;
     }
-    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
 }
 
 const QString ProjectFileNode::caption()
