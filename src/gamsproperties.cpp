@@ -27,7 +27,8 @@ void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<Opt
 #else
     setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"")
 #endif
-    setLstFile(QFileInfo(mInputFile).baseName() + ".lst");
+    QFileInfo fi(mInputFile);
+    setLstFile(fi.absolutePath() + fi.baseName() + ".lst");
 
     // iterate options
     foreach (OptionItem item, itemList) {
@@ -63,7 +64,12 @@ QString GamsProperties::lstFile() const
 
 void GamsProperties::setLstFile(const QString &lstFile)
 {
-    mLstFile = lstFile;
+    if (QFileInfo(lstFile).isAbsolute()) {
+        mLstFile = lstFile;
+    } else {
+        QFileInfo fi(mInputFile);
+        mLstFile = fi.absolutePath() + "/" + lstFile;
+    }
 }
 
 FileId GamsProperties::fileId() const

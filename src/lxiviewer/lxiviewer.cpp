@@ -25,6 +25,7 @@
 #include "lxitreemodel.h"
 #include "lxitreeitem.h"
 #include "editors/codeedit.h"
+#include "exception.h"
 #include "ui_lxiviewer.h"
 #include "file/projectgroupnode.h"
 
@@ -90,6 +91,8 @@ void LxiViewer::loadLstFile(ProjectGroupNode* group)
 {
     if (group && QProcess::NotRunning == group->gamsProcessState()) {
         ProjectFileNode *fileNode = group->findFile(group->lstFile());
+        if (!fileNode)
+            EXCEPT() << "Error finding lst file " + group->lstFile() + " in group.";
         fileNode->load(fileNode->codecMib(), true);
     }
 }

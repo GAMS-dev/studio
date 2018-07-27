@@ -36,8 +36,8 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
     if (fileName == "") return;
 
     // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
-    QFileInfo runnableFile(location + "/" + fileName);
-    if (!runnableFile.isAbsolute())
+    QFileInfo runnableFile(fileName);
+    if (runnableFile.isRelative())
         runnableFile = QFileInfo(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
 
