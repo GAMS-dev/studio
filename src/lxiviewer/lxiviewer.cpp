@@ -92,7 +92,6 @@ void LxiViewer::loadLstFile(ProjectGroupNode* group)
         ProjectFileNode *fileNode = nullptr;
         group->findOrCreateFileNode(group->lstFileName(), fileNode, group);
         if (fileNode) {
-            fileNode->openFileNode(fileNode);
             fileNode->load(fileNode->codecMib(), true);
         }
     }
