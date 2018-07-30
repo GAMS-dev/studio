@@ -44,20 +44,36 @@ QString GamsProcess::workingDir() const
     return mWorkingDir;
 }
 
+QStringList GamsProcess::arguments() const
+{
+    return mArguments;
+}
+
+void GamsProcess::setArguments(const QStringList &arguments)
+{
+    mArguments = arguments;
+}
+
 void GamsProcess::execute()
 {
-    mProcess.setWorkingDirectory(mWorkingDir);
-#ifdef __unix__
-    QStringList args({"\""+QDir::toNativeSeparators(mInputFile)+"\""});
+#if defined(__unix__) || defined(__APPLE__)
+    QStringList args {
+        QDir::toNativeSeparators(mInputFile), "lo=3",
+        "ide=1", "er=99", "errmsg=1", "pagesize=0",
+        "LstTitleLeftAligned=1"
+    };
+    mProcess.setArguments(args << mArguments);
 #else
-    QStringList args({QDir::toNativeSeparators(mInputFile)});
+    QStringList args {
+        "\""+QDir::toNativeSeparators(mInputFile)+"\"",
+        "lo=3", "ide=1", "er=99", "errmsg=1", "pagesize=0",
+        "LstTitleLeftAligned=1"
+    };
+    mProcess.setNativeArguments((args << mArguments).join(" "));
 #endif
-    args << "lo=3" << "ide=1" << "er=99" << "errmsg=1" << "pagesize=0" << "LstTitleLeftAligned=1";
-    if (!mCommandLineStr.isEmpty()) {
-        QStringList paramList = mCommandLineStr.split(QRegExp("\\s+"));
-        args.append(paramList);
-    }
-    mProcess.start(nativeAppPath(), args);
+    mProcess.setProgram(nativeAppPath());
+    mProcess.setWorkingDirectory(mWorkingDir);
+    mProcess.start();
 }
 
 QString GamsProcess::aboutGAMS()
@@ -78,16 +94,6 @@ QString GamsProcess::aboutGAMS()
     lines.removeLast();
     lines.removeLast();
     return lines.join("\n");
-}
-
-QString GamsProcess::commandLineStr() const
-{
-    return mCommandLineStr;
-}
-
-void GamsProcess::setCommandLineStr(const QString &commandLineStr)
-{
-    mCommandLineStr = commandLineStr;
 }
 
 void GamsProcess::interrupt()

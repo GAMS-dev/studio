@@ -82,7 +82,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mProjectRepo.setSuffixFilter(QStringList() << ".gms" << ".lst" << ".gdx");
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(iconSize*0.8,iconSize*0.8));
+    ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
@@ -381,10 +381,9 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString model, QString gmsFileName)
+void MainWindow::openModelFromLib(QString glbFile, QString model)
 {
-    if (gmsFileName.isEmpty())
-        gmsFileName = model.toLower() + ".gms";
+    QString gmsFileName = model.toLower() + ".gms";
 
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
@@ -425,7 +424,7 @@ SearchDialog* MainWindow::searchDialog() const
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;
-    foreach (QAction *act, ui->menuEncoding->actions()) {
+    foreach (QAction *act, ui->menuconvert_to->actions()) {
         if (!act->data().isNull()) res << act->data().toString();
     }
     return res.join(",");
@@ -434,7 +433,7 @@ QString MainWindow::encodingMIBsString()
 QList<int> MainWindow::encodingMIBs()
 {
     QList<int> res;
-    foreach (QAction *act, ui->menuEncoding->actions())
+    foreach (QAction *act, mCodecGroupReload->actions())
         if (!act->data().isNull()) res << act->data().toInt();
     return res;
 }
@@ -453,8 +452,8 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 {
     while (mCodecGroupSwitch->actions().size()) {
         QAction *act = mCodecGroupSwitch->actions().last();
-        if (ui->menuEncoding->actions().contains(act))
-            ui->menuEncoding->removeAction(act);
+        if (ui->menuconvert_to->actions().contains(act))
+            ui->menuconvert_to->removeAction(act);
         mCodecGroupSwitch->removeAction(act);
     }
     while (mCodecGroupReload->actions().size()) {
@@ -465,7 +464,8 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
     }
     foreach (int mib, mibs) {
         if (!QTextCodec::availableMibs().contains(mib)) continue;
-        QAction *act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
+        QAction *act;
+        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
         act->setCheckable(true);
         act->setData(mib);
         act->setChecked(mib == active);
@@ -475,18 +475,18 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
         act->setData(mib);
         act->setChecked(mib == active);
     }
-    ui->menuEncoding->addActions(mCodecGroupSwitch->actions());
+    ui->menuconvert_to->addActions(mCodecGroupSwitch->actions());
     ui->menureload_with->addActions(mCodecGroupReload->actions());
 }
 
 void MainWindow::setActiveMIB(int active)
 {
-    foreach (QAction *act, ui->menuEncoding->actions())
+    for (QAction *act: ui->menuconvert_to->actions())
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
 
-    foreach (QAction *act, ui->menureload_with->actions())
+    for (QAction *act: ui->menureload_with->actions())
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
@@ -713,7 +713,9 @@ void MainWindow::codecChanged(QAction *action)
 {
     ProjectFileNode *fc = mProjectRepo.fileNode(focusWidget());
     if (fc) {
-        if (fc->document() && !fc->isReadOnly()) fc->document()->setModified(true);
+        if (fc->document() && !fc->isReadOnly()) {
+            fc->setCodecMib(action->data().toInt());
+        }
         updateMenuToCodec(action->data().toInt());
         mStatusWidgets->setEncoding(fc->codecMib());
     }
@@ -1171,9 +1173,9 @@ void MainWindow::renameToBackup(QFile *file)
     file->rename(filename + ".1.bak");
 }
 
-void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileName)
+void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item->name(), gmsFileName);
+    openModelFromLib(item->library()->glbFile(), item->name());
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1233,13 +1235,13 @@ void MainWindow::on_actionGAMS_Library_triggered()
                 break;
             case 1: // replace
                 renameToBackup(&gmsFile);
-                triggerGamsLibFileCreation(item, gmsFileName);
+                triggerGamsLibFileCreation(item);
                 break;
             case QMessageBox::Abort:
                 break;
             }
         } else {
-            triggerGamsLibFileCreation(item, gmsFileName);
+            triggerGamsLibFileCreation(item);
         }
     }
 }
@@ -1400,15 +1402,16 @@ void MainWindow::customEvent(QEvent *event)
         (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
-void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
+QStringList MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
 {
     QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-
+    QStringList commandLineArgs;
     // set default lst file name in case output option changed back to default
     if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).baseName() + ".lst");
+        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).completeBaseName() + ".lst");
 
     foreach (OptionItem item, items) {
+        commandLineArgs << QString("%1=%2").arg(item.key).arg(item.value);
         // output (o) found, case-insensitive
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
@@ -1416,6 +1419,7 @@ void MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, Projec
             fgc->setLstFileName(item.value);
         }
     }
+    return commandLineArgs;
 }
 
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
@@ -1452,7 +1456,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
 
-    parseFilesFromCommandLine(commandLineStr, group);
+    QStringList commandLineArgs = parseFilesFromCommandLine(commandLineStr, group);
 
     group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
@@ -1496,26 +1500,19 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     ui->dockLogView->setVisible(true);
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
-
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger();
         return;
     }
-
-    QFileInfo gmsFileInfo(gmsFilePath);
-
+    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
+
     GamsProcess* process = group->gamsProcess();
-    QString lstFileName = group->lstFileName();
-    if (gmsFileNode) {
-        QFileInfo fi(gmsFilePath);
-        lstFileName = fi.path() + "/" + fi.completeBaseName() + ".lst";
-    }
     process->setGroupId(group->id());
-    process->setWorkingDir(gmsFileInfo.path());
+    process->setWorkingDir(workDir);
     process->setInputFile(gmsFilePath);
-    process->setCommandLineStr(commandLineStr);
+    process->setArguments( commandLineArgs );
     process->execute();
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);

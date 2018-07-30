@@ -21,6 +21,8 @@
 #define STUDIOSETTINGS_H
 
 #include <QString>
+#include <QColor>
+#include <QHash>
 
 class QSettings;
 
@@ -83,6 +85,13 @@ public:
     bool clearLog() const;
     void setClearLog(bool value);
 
+    int colorSchemeIndex();
+    void setColorSchemeIndex(int value);
+
+    QHash<QString, QColor> &colorScheme();
+    QByteArray exportJsonColorSchemes();
+    void importJsonColorSchemes(const QByteArray &jsonData);
+
     bool searchUseRegex() const;
     void setSearchUseRegex(bool searchUseRegex);
 
@@ -134,6 +143,8 @@ private:
     bool mAutosaveOnRun;
     bool mOpenLst;
     bool mJumpToError;
+    QList<QHash<QString, QColor>> mColorSchemes;
+    int mColorSchemeIndex = 0;
 
     // editor settings page
     QString mFontFamily;
@@ -159,6 +170,7 @@ private:
     // user model library directory
     QString mUserModelLibraryDir;
     void initSettingsFiles();
+    void initDefaultColors();
     void loadViewStates(MainWindow *main);
 };
 
