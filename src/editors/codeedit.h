@@ -125,6 +125,8 @@ public:
     void setSettings(StudioSettings *settings);
     void extendedRedo();
     void extendedUndo();
+    void convertToLower();
+    void convertToUpper();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

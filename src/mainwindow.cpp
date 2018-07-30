@@ -2122,10 +2122,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toUpper());
-    }
+    if (ce) ce->convertToUpper();
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
@@ -2133,10 +2130,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toLower());
-    }
+    if (ce) ce->convertToLower();
 }
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
