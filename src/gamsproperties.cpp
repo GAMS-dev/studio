@@ -25,7 +25,7 @@ void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<Opt
 #if defined(__unix__) || defined(__APPLE__)
     setInputFile(inputFile);
 #else
-    setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"")
+    setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"");
 #endif
     QFileInfo fi(mInputFile);
     setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
