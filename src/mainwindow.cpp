@@ -926,13 +926,13 @@ void MainWindow::postGamsRun(AbstractProcess* process)
         if (mSettings->jumpToError())
             groupNode->jumpToFirstError(doFocus);
 
-        ProjectFileNode* lstCtx = nullptr;
-        mProjectRepo.findOrCreateFileNode(lstFile, lstCtx, groupNode);
+        ProjectFileNode* lstNode = nullptr;
+        mProjectRepo.findOrCreateFileNode(lstFile, lstNode, groupNode);
 
-        if (lstCtx) lstCtx->updateMarks();
+        if (lstNode) lstNode->updateMarks();
 
         if (mSettings->openLst())
-            openFileNode(lstCtx, true);
+            openFileNode(lstNode, true);
     }
 }
 
