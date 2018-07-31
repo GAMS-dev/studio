@@ -129,7 +129,7 @@ void GdxSymbolTable::createSortIndex()
     QList<QPair<QString, int>> l;
     for(int uel=0; uel<=mUelCount; uel++)
         l.append(QPair<QString, int>(uel2Label(uel), uel));
-    std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+    std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first.compare(b.first, Qt::CaseInsensitive); });
 
     mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
