@@ -359,7 +359,6 @@ void ProjectRepo::read(const QJsonObject &json)
 
 void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray)
 {
-    DEB() << "readGroup from json " << group->location();
     for (int i = 0; i < jsonArray.size(); ++i) {
         QJsonObject node = jsonArray[i].toObject();
         if (node.contains("nodes")) {
@@ -404,7 +403,6 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
 
 bool ProjectRepo::parseGdxHeader(QString location)
 {
-    DEB() << "parseGdxHeader(" << location << ")";
     QFile file(location);
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.read(50);
