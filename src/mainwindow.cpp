@@ -924,7 +924,6 @@ void MainWindow::postGamsRun(FileId origin)
     QFileInfo fileInfo(groupNode->gamsProperties().inputFile());
     if(groupNode && fileInfo.exists()) {
         QString lstFile = groupNode->lstFile();
-//        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
         bool doFocus = groupNode == mRecent.group;
 
         if (mSettings->jumpToError())
