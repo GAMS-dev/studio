@@ -160,10 +160,6 @@ ProjectGroupNode* ProjectRepo::addGroup(QString name, QString location, QString 
     connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
     connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
     connect(group, &ProjectGroupNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-//    for (QString suff: mSuffixFilter) {
-//        QFileInfo fi(location, group->name() + suff);
-//        if (fi.exists()) group->attachFile(fi.filePath());
-//    }
     return group;
 }
 
@@ -208,24 +204,15 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath, const QStrin
         ProjectAbstractNode* node = mTreeModel->rootNode()->childEntry(i);
         if (node && node->type() == ProjectAbstractNode::FileGroup && node->name() == groupNameToAdd) {
             group = static_cast<ProjectGroupNode*>(node);
-            if (di == QFileInfo(group->location())) {
-                // JM: removed creation of fileNode
-//                group->attachFile(fi.filePath());
-//                group->updateChildNodes();
+            if (di == QFileInfo(group->location()))
                 return group;
-            } else {
-                extendedCaption = true;
-                group->setFlag(ProjectAbstractNode::cfExtendCaption);
-            }
+            extendedCaption = true;
+            group->setFlag(ProjectAbstractNode::cfExtendCaption);
         }
     }
     group = addGroup(groupNameToAdd, fi.path(), fi.filePath(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(ProjectAbstractNode::cfExtendCaption);
-
-    // JM: removed creation of fileNode
-//    if (!fi.isDir())
-//        group->attachFile(fi.filePath());
 
     group->updateChildNodes();
     return group;
