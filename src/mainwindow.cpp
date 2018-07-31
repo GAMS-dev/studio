@@ -1711,10 +1711,11 @@ void MainWindow::closeFile(ProjectFileNode* file)
 
     // close actual file and remove repo node
     closeFileEditors(file->id());
+    QString filePath = file->location();
     mProjectRepo.removeFile(file);
 
     // if this file is marked as runnable remove reference
-    if (parentGroup->runnableGms() == file->location()) {
+    if (parentGroup->runnableGms() == filePath) {
         parentGroup->removeRunnableGms();
         for (int i = 0; i < parentGroup->childCount(); i++) {
             // choose next as main gms file
