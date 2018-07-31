@@ -46,8 +46,8 @@ const FileType& FileMetrics::fileType() const
     return *mType;
 }
 
-FileMetrics::FileMetrics(QFileInfo fileInfo)
-    : mType(&FileType::from(fileInfo.suffix()))
+FileMetrics::FileMetrics(QFileInfo fileInfo, const FileType* knownType)
+    : mType(knownType ? knownType : &FileType::from(fileInfo.suffix()))
 {
     mExists = fileInfo.exists();
     mSize = mExists ? fileInfo.size() : 0;

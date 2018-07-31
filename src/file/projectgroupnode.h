@@ -83,7 +83,7 @@ signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
     void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
