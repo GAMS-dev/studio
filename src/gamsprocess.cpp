@@ -22,7 +22,6 @@
 
 #include <QStandardPaths>
 #include <QDir>
-#include <QDebug>
 
 #ifdef _WIN32
 #include "windows.h"
@@ -46,8 +45,8 @@ void GamsProcess::execute()
     mProcess.setProgram(nativeAppPath());
     mProcess.start();
 #endif
-
 }
+
 void GamsProcess::setWorkingDir(const QString &workingDir)
 {
     mWorkingDir = workingDir;
