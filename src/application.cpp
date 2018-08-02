@@ -136,13 +136,13 @@ void Application::receiveFileArguments()
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
     socket->deleteLater();
-    Qt::WindowFlags eFlags = Qt::WindowStaysOnTopHint;
-    mMainWindow->setWindowFlags(eFlags);
+#if defined (WIN32)
+    mMainWindow->setForeground();
+#else
     mMainWindow->show();
+    mMainWindow->raise();
     mMainWindow->activateWindow();
-    eFlags &= ~Qt::WindowStaysOnTopHint;
-    mMainWindow->setWindowFlags(eFlags);
-    mMainWindow->show();
+#endif
 }
 
 bool Application::event(QEvent *event)

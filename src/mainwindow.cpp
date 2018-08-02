@@ -2310,6 +2310,22 @@ void MainWindow::resizeOptionEditor(const QSize &size)
     this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
 }
 
+void MainWindow::setForeground()
+{
+   HWND WinId= (HWND) winId();
+   if (this->windowState() == Qt::WindowMinimized) {
+       this->setWindowState(Qt::WindowActive);
+   }
+   DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
+   DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);
+   if (foregroundThreadPId != mwThreadPId) {
+       AttachThreadInput(foregroundThreadPId,mwThreadPId,true);
+       SetForegroundWindow(WinId);
+       AttachThreadInput(foregroundThreadPId, mwThreadPId, false);
+   } else {
+       SetForegroundWindow(WinId);
+   }
+}
 
 }
 }

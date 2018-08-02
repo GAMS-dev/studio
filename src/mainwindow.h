@@ -122,6 +122,7 @@ public:
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
+    void setForeground();
 
     HelpWidget *getHelpWidget() const;
     OptionWidget *getGamsOptionWidget() const;
