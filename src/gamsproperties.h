@@ -16,16 +16,16 @@ class GamsProperties
 public:
     GamsProperties(FileId origin);
 
-    void setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
-    QStringList gamsParameters();
+    QStringList analyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
 
-    QString inputFile() const;
     void setInputFile(const QString &inputFile);
+    QString inputFile() const;
 
     QString lstFile() const;
-    void setLstFile(const QString &lstFile);
-
     FileId fileId() const;
+
+private:
+    void setLstFile(const QString &lstFile);
     void setFileId(const FileId &fileId);
 
 private:

@@ -1491,10 +1491,9 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logProc->setJumpToLogEnd(true);
 
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    group->gamsProperties().setAndAnalyzeParameters(gmsFilePath, itemList);
 
     GamsProcess* process = group->gamsProcess();
-    process->setParameters(group->gamsProperties().gamsParameters());
+    process->setParameters(group->gamsProperties().analyzeParameters(gmsFilePath, itemList));
     process->setGroupId(group->id());
     process->setWorkingDir(workDir);
     process->execute();

@@ -35,21 +35,11 @@ ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QS
 {
     if (fileName == "") return;
 
-    // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
     QFileInfo runnableFile(fileName);
     if (runnableFile.isRelative())
         runnableFile = QFileInfo(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
 
-    // fix for .lst-as-mainfile bug // TODO: check if this is still relevant
-    if (FileMetrics(runnableFile).fileType() == FileType::Gms)
-        mGamsProps.setInputFile(runnableFile.absoluteFilePath());
-    else if (alternateFile.exists())
-        mGamsProps.setInputFile(alternateFile.absoluteFilePath());
-    else
-        mGamsProps.setInputFile("");
-
-    //mGamsProcess->setContext(this);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
 }
 
@@ -402,7 +392,6 @@ void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 void ProjectGroupNode::removeRunnableGms()
 {
     mGamsProps.setInputFile("");
-    mGamsProps.setLstFile("");
 }
 
 ProjectLogNode*ProjectGroupNode::logNode() const

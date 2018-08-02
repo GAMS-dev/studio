@@ -20,13 +20,10 @@ GamsProperties::GamsProperties(FileId origin) : mFileId(origin)
     mGamsArgs.insert("LstTitleLeftAligned", "1");
 }
 
-void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
+QStringList GamsProperties::analyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
 {
-#if defined(__unix__) || defined(__APPLE__)
     setInputFile(inputFile);
-#else
-    setInputFile("\""+QDir::toNativeSeparators(inputFile)+"\"");
-#endif
+
     QFileInfo fi(mInputFile);
     setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
 
@@ -41,14 +38,10 @@ void GamsProperties::setAndAnalyzeParameters(const QString &inputFile, QList<Opt
             // TODO: save workingdir somewhere
         }
         mGamsArgs[item.key] = item.value;
+        // TODO: warning if overriding default argument?
     }
 
-    // TODO: warning if overriding default argument?
-    // TODO: add this: "curdir="+mWorkingDir;
-}
-
-QStringList GamsProperties::gamsParameters()
-{
+    // prepare return value
     QStringList output { mInputFile };
     for(QString k : mGamsArgs.keys()) {
         output.append(k + "=" + mGamsArgs.value(k));
@@ -89,7 +82,11 @@ QString GamsProperties::inputFile() const
 
 void GamsProperties::setInputFile(const QString &inputFile)
 {
+#if defined(__unix__) || defined(__APPLE__)
     mInputFile = QDir::toNativeSeparators(inputFile);
+#else
+    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
+#endif
 }
 
 }
