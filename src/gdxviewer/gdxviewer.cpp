@@ -58,8 +58,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent)
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui->tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
-
-    ui->tvSymbols->setColumnHidden(5,true);
 }
 
 GdxViewer::~GdxViewer()
@@ -239,6 +237,7 @@ bool GdxViewer::init()
     ui->splitter->widget(1)->show();
 
     this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
+    ui->tvSymbols->setColumnHidden(5,true); //hide the "Loaded" column
     return true;
 }
 
