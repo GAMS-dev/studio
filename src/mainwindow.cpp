@@ -1958,9 +1958,11 @@ void MainWindow::readTabs(const QJsonObject &json)
         if (QFileInfo(location).exists()) {
             openFilePath(location, nullptr, true);
             mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
         }
     }
-    QTimer::singleShot(0,this,SLOT(initAutoSave()));
+    QTimer::singleShot(0, this, SLOT(initAutoSave()));
 }
 
 void MainWindow::initAutoSave()
@@ -1983,8 +1985,12 @@ void MainWindow::writeTabs(QJsonObject &json) const
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
+
     ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
-    if (fc) json["mainTabRecent"] = fc->location();
+    if (fc)
+        json["mainTabRecent"] = fc->location();
+    else if (ui->mainTab->currentWidget() == mWp)
+        json["mainTabRecent"] = "WELCOME_PAGE";
 }
 
 void MainWindow::on_actionGo_To_triggered()
