@@ -2336,9 +2336,9 @@ void MainWindow::setForegroundOSCheck()
 #if defined (WIN32)
     setForeground();
 #else
-    mMainWindow->show();
-    mMainWindow->raise();
-    mMainWindow->activateWindow();
+    this->show();
+    this->raise();
+    this->activateWindow();
 #endif
     }
 
