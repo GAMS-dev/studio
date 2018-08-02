@@ -2329,5 +2329,20 @@ void MainWindow::setForeground()
 #endif
 }
 
+void MainWindow::setForegroundOSCheck()
+{
+    if (mSettings->foregroundOnDemand())
+    {
+#if defined (WIN32)
+    setForeground();
+#else
+    mMainWindow->show();
+    mMainWindow->raise();
+    mMainWindow->activateWindow();
+#endif
+    }
+
+}
+
 }
 }
