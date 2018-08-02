@@ -2,7 +2,6 @@
 #define GAMSARGMANAGER_H
 
 #include <QMap>
-#include "file/projectabstractnode.h"
 
 namespace gams {
 namespace studio {
@@ -14,26 +13,12 @@ class GamsProperties
 {
 
 public:
-    GamsProperties(FileId origin);
+    GamsProperties(ProjectGroupNode* parent);
 
     QStringList analyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
-
-    void setInputFile(const QString &inputFile);
-    QString inputFile() const;
-
-    QString lstFile() const;
-    FileId fileId() const;
-
-private:
-    void setLstFile(const QString &lstFile);
-    void setFileId(const FileId &fileId);
-
 private:
     QMap<QString, QString> mGamsArgs;
-
-    QString mInputFile;
-    QString mLstFile;
-    FileId mFileId;
+    ProjectGroupNode* mParent;
 };
 
 } // namespace studio

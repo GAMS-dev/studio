@@ -26,12 +26,14 @@
 #include "logger.h"
 #include "syntax.h"
 
+#include <QDir>
+
 namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
     : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProps(id), mGamsProcess(new GamsProcess)
+      mGamsProps(this), mGamsProcess(new GamsProcess)
 {
     if (fileName == "") return;
 
@@ -193,6 +195,33 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
+QString ProjectGroupNode::inputFile() const
+{
+    return mInputFile;
+}
+
+void ProjectGroupNode::setInputFile(const QString &inputFile)
+{
+#if defined(__unix__) || defined(__APPLE__)
+    mInputFile = QDir::toNativeSeparators(inputFile);
+#else
+    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
+#endif
+}
+
+QString ProjectGroupNode::lstFile() const
+{
+    return mLstFile;
+}
+
+void ProjectGroupNode::setLstFile(const QString &lstFile)
+{
+    if (QFileInfo(lstFile).isAbsolute())
+        mLstFile = lstFile;
+    else
+        mLstFile = QFileInfo(mInputFile).absolutePath() + "/" + lstFile;
+}
+
 GamsProperties& ProjectGroupNode::gamsProperties()
 {
     return mGamsProps;
@@ -201,11 +230,6 @@ GamsProperties& ProjectGroupNode::gamsProperties()
 void ProjectGroupNode::setGamsProperties(GamsProperties &gamsProps)
 {
     mGamsProps = gamsProps;
-}
-
-QString ProjectGroupNode::lstFile()
-{
-    return mGamsProps.lstFile();
 }
 
 void ProjectGroupNode::dumpMarks()
@@ -379,19 +403,19 @@ void ProjectGroupNode::saveGroup()
 QString ProjectGroupNode::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mGamsProps.inputFile();
+    return inputFile();
 }
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
     QString location = gmsFileNode->location();
-    mGamsProps.setInputFile(location);
+    setInputFile(location);
     if (logNode()) logNode()->resetLst();
 }
 
 void ProjectGroupNode::removeRunnableGms()
 {
-    mGamsProps.setInputFile("");
+    setInputFile("");
 }
 
 ProjectLogNode*ProjectGroupNode::logNode() const
