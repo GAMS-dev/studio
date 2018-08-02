@@ -2312,6 +2312,7 @@ void MainWindow::resizeOptionEditor(const QSize &size)
 
 void MainWindow::setForeground()
 {
+#if defined (WIN32)
    HWND WinId= (HWND) winId();
    if (this->windowState() == Qt::WindowMinimized) {
        this->setWindowState(Qt::WindowActive);
@@ -2325,6 +2326,7 @@ void MainWindow::setForeground()
    } else {
        SetForegroundWindow(WinId);
    }
+#endif
 }
 
 }
