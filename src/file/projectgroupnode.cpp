@@ -195,20 +195,6 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
-QString ProjectGroupNode::inputFile() const
-{
-    return mInputFile;
-}
-
-void ProjectGroupNode::setInputFile(const QString &inputFile)
-{
-#if defined(__unix__) || defined(__APPLE__)
-    mInputFile = QDir::toNativeSeparators(inputFile);
-#else
-    mInputFile = "\""+QDir::toNativeSeparators(inputFile)+"\"";
-#endif
-}
-
 QString ProjectGroupNode::lstFile() const
 {
     return mLstFile;
@@ -219,7 +205,7 @@ void ProjectGroupNode::setLstFile(const QString &lstFile)
     if (QFileInfo(lstFile).isAbsolute())
         mLstFile = lstFile;
     else
-        mLstFile = QFileInfo(mInputFile).absolutePath() + "/" + lstFile;
+        mLstFile = QFileInfo(mRunnableGms).absolutePath() + "/" + lstFile;
 }
 
 void ProjectGroupNode::dumpMarks()
@@ -390,7 +376,7 @@ void ProjectGroupNode::saveGroup()
     }
 }
 
-QStringList ProjectGroupNode::analyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
+QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
 {
     // set studio default parameters
     QMap<QString, QString> defaultGamsArgs;
@@ -403,7 +389,7 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &inputFile, QList<
 
     QMap<QString, QString> gamsArgs(defaultGamsArgs);
 
-    QFileInfo fi(inputFile);
+    QFileInfo fi(gmsLocation);
     // set default lst name to revert deleted o parameter values
     setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
 
@@ -427,7 +413,7 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &inputFile, QList<
     }
 
     // prepare return value
-    QStringList output { inputFile };
+    QStringList output { gmsLocation };
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
@@ -439,19 +425,30 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &inputFile, QList<
 QString ProjectGroupNode::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return inputFile();
+    return mRunnableGms;
 }
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
     QString location = gmsFileNode->location();
-    setInputFile(location);
+
+    setRunnableGms(location);
+
     if (logNode()) logNode()->resetLst();
+}
+
+void ProjectGroupNode::setRunnableGms(const QString &gmsFilePath)
+{
+#if defined(__unix__) || defined(__APPLE__)
+    mRunnableGms = QDir::toNativeSeparators(gmsFilePath);
+#else
+    mRunnableGms = "\""+QDir::toNativeSeparators(gmsFilePath)+"\"";
+#endif
 }
 
 void ProjectGroupNode::removeRunnableGms()
 {
-    setInputFile("");
+    setRunnableGms("");
 }
 
 ProjectLogNode*ProjectGroupNode::logNode() const

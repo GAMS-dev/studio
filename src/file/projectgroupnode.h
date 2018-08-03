@@ -55,6 +55,7 @@ public:
 
     QString runnableGms();
     void setRunnableGms(ProjectFileNode *gmsFileNode);
+    void setRunnableGms(const QString &gmsFilePath);
     void removeRunnableGms();
     ProjectLogNode* logNode() const;
 
@@ -81,10 +82,7 @@ public:
     QString lstFile() const;
     void setLstFile(const QString &lstFile);
 
-    QString inputFile() const;
-    void setInputFile(const QString &inputFile);
-
-    QStringList analyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
+    QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -120,7 +118,7 @@ private:
     std::unique_ptr<GamsProcess> mGamsProcess;
     QFileInfoList mAttachedFiles;
 
-    QString mInputFile;
+    QString mRunnableGms;
     QString mLstFile;
 
     QHash<int, QString> mLstErrorTexts;
