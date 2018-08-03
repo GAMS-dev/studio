@@ -381,15 +381,21 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString model)
+void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 {
-    QString gmsFileName = model.toLower() + ".gms";
+    QFileInfo file(model->files().first());
+    QString inputFile = file.completeBaseName() + ".gms";
 
+    openModelFromLib(glbFile, model->name(), inputFile);
+}
+
+void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
+{
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(model);
-    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setModelName(modelName);
+    mLibProcess->setInputFile(inputFile);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
@@ -398,9 +404,9 @@ void MainWindow::openModelFromLib(QString glbFile, QString model)
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString model)
+void MainWindow::receiveModLibLoad(QString gmsFile)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", model);
+    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms");
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
@@ -1177,7 +1183,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item->name());
+    openModelFromLib(item->library()->glbFile(), item);
 }
 
 void MainWindow::openFile(const QString &filePath)
