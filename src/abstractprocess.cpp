@@ -36,6 +36,16 @@ AbstractProcess::AbstractProcess(const QString &appPath, QObject *parent)
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
+void AbstractProcess::setInputFile(const QString &file)
+{
+    mInputFile = file;
+}
+
+QString AbstractProcess::inputFile() const
+{
+    return mInputFile;
+}
+
 QProcess::ProcessState AbstractProcess::state() const
 {
     return mProcess.state();

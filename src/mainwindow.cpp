@@ -389,6 +389,7 @@ void MainWindow::openModelFromLib(QString glbFile, QString model)
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
     mLibProcess->setModelName(model);
+    mLibProcess->setInputFile(gmsFileName);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
@@ -943,9 +944,9 @@ void MainWindow::postGamsLibRun(FileId origin)
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *fc = nullptr;
     ProjectGroupNode *fgn = mProjectRepo.groupNode(origin);
-    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + fgn->inputFile(), &fc);
+    mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
     if (!fc)
-        fc = addNode(mLibProcess->targetDir(), fgn->inputFile());
+        fc = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
     if (fc && !fc->editors().isEmpty()) {
         fc->load(fc->codecMib());
     }

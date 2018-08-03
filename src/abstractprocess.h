@@ -41,6 +41,9 @@ protected:
     virtual ~AbstractProcess() {}
 
 public:
+    void setInputFile(const QString &file);
+    QString inputFile() const;
+
     virtual void execute() = 0;
     QProcess::ProcessState state() const;
 
@@ -68,6 +71,7 @@ protected:
 
 private:
     QString mAppPath;
+    QString mInputFile;
 };
 
 } // namespace studio
