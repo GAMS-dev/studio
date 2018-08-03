@@ -25,7 +25,6 @@
 namespace gams {
 namespace studio {
 
-class GamsProperties;
 class GAMSLibProcess
         : public AbstractProcess
 {

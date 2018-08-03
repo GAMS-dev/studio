@@ -44,7 +44,6 @@ namespace studio {
 class AbstractProcess;
 class GAMSProcess;
 class GAMSLibProcess;
-class GamsProperties;
 class WelcomePage;
 class StudioSettings;
 class SearchDialog;

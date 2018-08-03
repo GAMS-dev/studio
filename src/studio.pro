@@ -140,8 +140,7 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    searchdialog.cpp \
-    gamsproperties.cpp
+    searchdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -228,8 +227,7 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    searchdialog.h \
-    gamsproperties.h
+    searchdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

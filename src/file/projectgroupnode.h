@@ -23,7 +23,6 @@
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
-#include "gamsproperties.h"
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
 
@@ -34,6 +33,7 @@ class ProjectLogNode;
 class ProjectFileNode;
 class GamsProcess;
 class TextMarkList;
+struct OptionItem;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
@@ -78,14 +78,13 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory();
 
-    GamsProperties &gamsProperties();
-    void setGamsProperties(GamsProperties &gamsProps);
-
     QString lstFile() const;
     void setLstFile(const QString &lstFile);
 
     QString inputFile() const;
     void setInputFile(const QString &inputFile);
+
+    QStringList analyzeParameters(const QString &inputFile, QList<OptionItem> itemList);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -115,7 +114,6 @@ protected:
     void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
 
 private:
-    GamsProperties mGamsProps;
     QStringList mRunParametersHistory;
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
@@ -127,7 +125,6 @@ private:
 
     QHash<int, QString> mLstErrorTexts;
     QHash<QString, TextMarkList*> mMarksForFilenames;
-
 };
 
 } // namespace studio

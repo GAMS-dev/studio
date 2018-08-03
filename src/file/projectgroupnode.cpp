@@ -17,23 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDir>
+#include "commonpaths.h"
+#include "exception.h"
+#include "gamsprocess.h"
+#include "logger.h"
+#include "option/option.h"
 #include "projectgroupnode.h"
 #include "projectfilenode.h"
 #include "projectlognode.h"
-#include "exception.h"
-#include "gamsprocess.h"
-#include "commonpaths.h"
-#include "logger.h"
 #include "syntax.h"
 
-#include <QDir>
 
 namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
-    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProps(this), mGamsProcess(new GamsProcess)
+    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup), mGamsProcess(new GamsProcess)
 {
     if (fileName == "") return;
 
@@ -222,16 +222,6 @@ void ProjectGroupNode::setLstFile(const QString &lstFile)
         mLstFile = QFileInfo(mInputFile).absolutePath() + "/" + lstFile;
 }
 
-GamsProperties& ProjectGroupNode::gamsProperties()
-{
-    return mGamsProps;
-}
-
-void ProjectGroupNode::setGamsProperties(GamsProperties &gamsProps)
-{
-    mGamsProps = gamsProps;
-}
-
 void ProjectGroupNode::dumpMarks()
 {
     foreach (QString file, mMarksForFilenames.keys()) {
@@ -398,6 +388,52 @@ void ProjectGroupNode::saveGroup()
             fc->save();
         }
     }
+}
+
+QStringList ProjectGroupNode::analyzeParameters(const QString &inputFile, QList<OptionItem> itemList)
+{
+    // set studio default parameters
+    QMap<QString, QString> defaultGamsArgs;
+    defaultGamsArgs.insert("lo", "3");
+    defaultGamsArgs.insert("ide", "1");
+    defaultGamsArgs.insert("er", "99");
+    defaultGamsArgs.insert("errmsg", "1");
+    defaultGamsArgs.insert("pagesize", "0");
+    defaultGamsArgs.insert("LstTitleLeftAligned", "1");
+
+    QMap<QString, QString> gamsArgs(defaultGamsArgs);
+
+    QFileInfo fi(inputFile);
+    // set default lst name to revert deleted o parameter values
+    setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
+
+    // iterate options
+    foreach (OptionItem item, itemList) {
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+            setLstFile(item.value);
+        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+            // TODO: save workingdir somewhere
+        }
+
+        if (defaultGamsArgs.contains(item.key)) {
+            qDebug() << "Warning: You are about to overwrite GAMS Studio default arguments. "
+                        "Some of these are necessary to ensure a smooth experience. "
+                        "Use at your own risk!";
+        }
+        gamsArgs[item.key] = item.value;
+    }
+
+    // prepare return value
+    QStringList output { inputFile };
+    for(QString k : gamsArgs.keys()) {
+        output.append(k + "=" + gamsArgs.value(k));
+    }
+
+    qDebug() << "Running GAMS:" << output;
+    return output;
 }
 
 QString ProjectGroupNode::runnableGms()

@@ -25,8 +25,6 @@
 namespace gams {
 namespace studio {
 
-class GamsProperties;
-
 class GamsProcess : public AbstractProcess
 {
     Q_OBJECT

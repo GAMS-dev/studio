@@ -48,7 +48,6 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
-#include "gamsproperties.h"
 
 namespace gams {
 namespace studio {
@@ -1493,7 +1492,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
 
     GamsProcess* process = group->gamsProcess();
-    process->setParameters(group->gamsProperties().analyzeParameters(gmsFilePath, itemList));
+    process->setParameters(group->analyzeParameters(gmsFilePath, itemList));
     process->setGroupId(group->id());
     process->setWorkingDir(workDir);
     process->execute();
