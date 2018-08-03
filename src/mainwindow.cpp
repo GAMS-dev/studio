@@ -966,16 +966,18 @@ void MainWindow::on_actionHelp_triggered()
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-        QString word;
-        int istate = 0;
-        ce->wordInfo(ce->textCursor(), word, istate);
+        if (ce) {
+            QString word;
+            int istate = 0;
+            ce->wordInfo(ce->textCursor(), word, istate);
 
-        if (istate == static_cast<int>(SyntaxState::Title)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
-        } else {
-            mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            if (istate == static_cast<int>(SyntaxState::Title)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
+            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
+            } else {
+                mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            }
         }
     }
     if (ui->dockHelpView->isHidden())
