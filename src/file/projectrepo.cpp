@@ -160,14 +160,10 @@ ProjectGroupNode* ProjectRepo::addGroup(QString name, QString location, QString 
     connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
     connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
     connect(group, &ProjectGroupNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-    for (QString suff: mSuffixFilter) {
-        QFileInfo fi(location, group->name() + suff);
-        if (fi.exists()) group->attachFile(fi.filePath());
-    }
     return group;
 }
 
-ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGroupNode* parent)
+ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGroupNode* parent, FileType *fileType)
 {
     if (!parent)
         parent = mTreeModel->rootNode();
@@ -175,7 +171,9 @@ ProjectFileNode* ProjectRepo::addFile(QString name, QString location, ProjectGro
     int offset = parent->peekIndex(location, &hit);
     if (hit)
         EXCEPT() << "The group '" << parent->name() << "' already contains '" << name << "'";
-    ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location);
+    if (!fileType)
+        fileType = parseGdxHeader(location) ? &FileType::from(FileType::Gdx) : nullptr;
+    ProjectFileNode* file = new ProjectFileNode(mNextId++, name, location, fileType);
     storeNode(file);
     mTreeModel->insertChild(offset, parent, file);
     connect(file, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
@@ -203,25 +201,18 @@ ProjectGroupNode* ProjectRepo::ensureGroup(const QString &filePath, const QStrin
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
     QString groupNameToAdd = groupName.isEmpty() ? fi.completeBaseName() : groupName;
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
-        ProjectAbstractNode* fsc = mTreeModel->rootNode()->childEntry(i);
-        if (fsc && fsc->type() == ProjectAbstractNode::FileGroup && fsc->name() == groupNameToAdd) {
-            group = static_cast<ProjectGroupNode*>(fsc);
-            if (di == QFileInfo(group->location())) {
-                group->attachFile(fi.filePath());
-                group->updateChildNodes();
+        ProjectAbstractNode* node = mTreeModel->rootNode()->childEntry(i);
+        if (node && node->type() == ProjectAbstractNode::FileGroup && node->name() == groupNameToAdd) {
+            group = static_cast<ProjectGroupNode*>(node);
+            if (di == QFileInfo(group->location()))
                 return group;
-            } else {
-                extendedCaption = true;
-                group->setFlag(ProjectAbstractNode::cfExtendCaption);
-            }
+            extendedCaption = true;
+            group->setFlag(ProjectAbstractNode::cfExtendCaption);
         }
     }
     group = addGroup(groupNameToAdd, fi.path(), fi.filePath(), mTreeModel->rootModelIndex());
     if (extendedCaption)
         group->setFlag(ProjectAbstractNode::cfExtendCaption);
-
-    if (!fi.isDir())
-        group->attachFile(fi.filePath());
 
     group->updateChildNodes();
     return group;
@@ -358,6 +349,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
     for (int i = 0; i < jsonArray.size(); ++i) {
         QJsonObject node = jsonArray[i].toObject();
         if (node.contains("nodes")) {
+            // read the group
             if (node.contains("file") && node["file"].isString()) {
                 // TODO(JM) later, groups of deeper level need to be created, too
                 QString groupName = (node.contains("name") && node["name"].isString()) ? node["name"].toString() : "";
@@ -365,7 +357,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 if (subGroup) {
                     QJsonArray gprArray = node["nodes"].toArray();
                     if (node.contains("options") && node["options"].isArray()) {
-                       foreach (const QJsonValue & val, node["options"].toArray()) {
+                       for (const QJsonValue & val: node["options"].toArray()) {
                            subGroup->addRunParametersHistory( val.toString() );
                        }
                     }
@@ -380,13 +372,31 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 }
             }
         } else {
+            // read the leaf
             if (node.contains("name") && node["name"].isString() && node.contains("file") && node["file"].isString()) {
-                if (!group->findNode(node["file"].toString()))
-                    group->attachFile(node["file"].toString());
-//                    addFile(node["name"].toString(), node["file"].toString(), group);
+                QString filePath = node["file"].toString();
+                if (!group->findNode(filePath)) {
+                    if (QFileInfo(filePath).exists()) {
+                        FileType* fileType = (node.contains("type") && node["type"].isString())
+                                ? &FileType::from(node["type"].toString()) : nullptr;
+                        addFile(node["name"].toString(), filePath, group, fileType);
+                    }
+                    group->attachFile(filePath);
+                }
             }
         }
     }
+}
+
+bool ProjectRepo::parseGdxHeader(QString location)
+{
+    QFile file(location);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.read(50);
+        file.close();
+        return data.contains("\aGAMSGDX\a");
+    }
+    return false;
 }
 
 void ProjectRepo::write(QJsonObject& json) const
@@ -413,6 +423,11 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         } else {
             nodeObject["file"] = node->location();
             nodeObject["name"] = node->name();
+            if (node->type() == ProjectAbstractNode::File) {
+                ProjectFileNode * fileNode = static_cast<ProjectFileNode*>(node);
+                if (!fileNode->metrics().fileType().suffix().isEmpty())
+                    nodeObject["type"] = fileNode->metrics().fileType().suffix().first();
+            }
         }
         jsonArray.append(nodeObject);
     }
@@ -450,12 +465,12 @@ void ProjectRepo::addNode(QString name, QString location, ProjectGroupNode* pare
 
 ProjectAbstractNode*ProjectRepo::node(const QModelIndex& index) const
 {
-    return node(index.internalId());
+    return node(FileId(index.internalId()));
 }
 
 ProjectFileNode*ProjectRepo::fileNode(const QModelIndex& index) const
 {
-    return fileNode(index.internalId());
+    return fileNode(FileId(index.internalId()));
 }
 
 ProjectFileNode* ProjectRepo::fileNode(QWidget* edit) const

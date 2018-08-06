@@ -32,7 +32,7 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileId fileId, QString name)
-    : ProjectFileNode(fileId, name, "[LOG]", ProjectAbstractNode::Log)
+    : ProjectFileNode(fileId, name, "[LOG]", nullptr, ProjectAbstractNode::Log)
 {
     mMetrics = FileMetrics(QFileInfo(name+".log"));
     mDocument = new QTextDocument(this);

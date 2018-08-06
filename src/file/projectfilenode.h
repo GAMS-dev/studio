@@ -156,7 +156,7 @@ signals:
     void deletedExtern(FileId fileId);
 
     void findFileNode(QString filePath, ProjectFileNode** fileContext, ProjectGroupNode* fileGroup = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup);
     void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
 
@@ -168,7 +168,7 @@ protected slots:
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
-    ProjectFileNode(FileId fileId, QString name, QString location, ContextType type = ProjectAbstractNode::File);
+    ProjectFileNode(FileId fileId, QString name, QString location, FileType *knownType = nullptr, ContextType type = ProjectAbstractNode::File);
 
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;

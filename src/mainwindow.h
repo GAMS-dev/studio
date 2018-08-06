@@ -293,7 +293,6 @@ private:
     bool mOverwriteMode = false;
     StatusWidgets* mStatusWidgets;
     int mTimerID;
-    FileMetrics mMetrics;
     QStringList mOpenTabsList;
 };
 
