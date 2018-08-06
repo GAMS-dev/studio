@@ -1,0 +1,138 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include <QDebug>
+#include <QFile>
+#include <QTextStream>
+
+#include "referencewidget.h"
+#include "ui_referencewidget.h"
+#include "symbolreferenceitem.h"
+
+namespace gams {
+namespace studio {
+
+ReferenceWidget::ReferenceWidget(QString referenceFile, QWidget *parent) :
+    QWidget(parent),
+    mReferenceFile(referenceFile),
+    ui(new Ui::ReferenceWidget)
+{
+    ui->setupUi(this);
+}
+
+ReferenceWidget::~ReferenceWidget()
+{
+    delete ui;
+}
+
+bool ReferenceWidget::parseFile(QString referenceFile)
+{
+    QFile file(referenceFile);
+    if(!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "cannot open file [" << referenceFile << "]";
+        return false;
+    }
+    QTextStream in(&file);
+
+    QStringList recordList;
+    QString idx;
+    while (!in.atEnd()) {
+        recordList = in.readLine().split(' ');
+        idx = recordList.first();
+        if (idx.toInt()== 0)
+            break;
+        recordList.removeFirst();
+        QString id = recordList.at(0);
+        QString symbolName = recordList.at(1);
+        QString symbolType = recordList.at(2);
+        QString referenceType = recordList.at(3);
+        QString lineNumber = recordList.at(5);
+        QString columnNumber = recordList.at(6);
+        QString location = recordList.at(9);
+
+        SymbolDataType type = SymbolDataType::from(symbolType);
+        if (!mReference.contains(id.toInt()))
+            mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
+        SymbolReferenceItem* ref = mReference[id.toInt()];
+        addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
+    }
+    if (in.atEnd())
+        return false;
+
+    recordList.removeFirst();
+    int size = recordList.first().toInt();
+    while (!in.atEnd()) {
+        recordList = in.readLine().split(' ');
+        idx = recordList.first();
+        QString id = recordList.at(0);
+        QString symbolName = recordList.at(1);
+        QString symbolType = recordList.at(3);
+        QString dimension = recordList.at(4);
+        QString numberOfElements = recordList.at(5);
+
+        SymbolDataType type = SymbolDataType::from(symbolType);
+        if (!mReference.contains(id.toInt()))
+            mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
+        SymbolReferenceItem* ref = mReference[id.toInt()];
+        ref->setDimension(dimension.toInt());
+        mSymbolNameMap[symbolName] = id.toInt();
+
+        QList<SymbolId> domain;
+        if (dimension.toInt() > 0) {
+            for(int dim=0; dim < dimension.toInt(); dim++) {
+                QString d = recordList.at(6+dim);
+                domain << d.toInt();
+           }
+        } // do not have dimension reference if dimension = 0;
+        ref->setDomain(domain);
+        ref->setNumberOfElements(numberOfElements.toInt());
+        QStringList text;
+        for (int idx=6+dimension.toInt(); idx< recordList.size(); idx++)
+            text << recordList.at(idx);
+        ref->setExplanatoryText(text.join(' '));
+    }
+
+    if (idx.toInt()!=size)
+        return false;
+
+    return true;
+
+}
+
+void ReferenceWidget::addReferenceInfo(SymbolReferenceItem *ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
+{
+    if (QString::compare(referenceType, "declared", Qt::CaseInsensitive)==0) {
+        ref->addDeclare(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "defined", Qt::CaseInsensitive)==0) {
+        ref->addDefine(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "assigned", Qt::CaseInsensitive)==0) {
+        ref->addAssign(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "impl-assign", Qt::CaseInsensitive)==0) {
+        ref->addImplicitAssign(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "ref", Qt::CaseInsensitive)==0) {
+        ref->addReference(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "control", Qt::CaseInsensitive)==0) {
+        ref->addControl(new ReferenceItem(location, lineNumber, columnNumber));
+    } else if (QString::compare(referenceType, "index", Qt::CaseInsensitive)==0) {
+        ref->addIndex(new ReferenceItem(location, lineNumber, columnNumber));
+    }
+}
+
+} // namespace studio
+} // namespace gams

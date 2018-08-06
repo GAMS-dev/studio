@@ -142,7 +142,8 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    searchdialog.cpp
+    searchdialog.cpp \
+    reference/referencewidget.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -231,7 +232,8 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    searchdialog.h
+    searchdialog.h \
+    reference/referencewidget.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -243,6 +245,7 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
+    reference/referencewidget.ui \
     resultsview.ui \
     settingsdialog.ui \
     updatedialog.ui \
