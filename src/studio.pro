@@ -111,6 +111,7 @@ SOURCES += \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
     reference/symboldatatype.cpp \
+    reference/symbolreferenceitem.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
     settingsdialog.cpp \
@@ -196,6 +197,7 @@ HEADERS += \
     option/optionwidget.h \
     projectcontextmenu.h \
     reference/symboldatatype.h \
+    reference/symbolreferenceitem.h \
     resultsview.h \
     searchresultlist.h \
     settingsdialog.h \
