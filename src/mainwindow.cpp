@@ -2151,8 +2151,8 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    mOverwriteMode = overwriteMode;
     if (ce && !ce->isReadOnly()) {
-        mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
         updateEditorMode();
     }
