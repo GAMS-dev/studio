@@ -381,15 +381,21 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString model)
+void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 {
-    QString gmsFileName = model.toLower() + ".gms";
+    QFileInfo file(model->files().first());
+    QString inputFile = file.completeBaseName() + ".gms";
 
+    openModelFromLib(glbFile, model->name(), inputFile);
+}
+
+void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
+{
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(model);
-    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setModelName(modelName);
+    mLibProcess->setInputFile(inputFile);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
@@ -398,9 +404,9 @@ void MainWindow::openModelFromLib(QString glbFile, QString model)
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString model)
+void MainWindow::receiveModLibLoad(QString gmsFile)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", model);
+    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms");
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
@@ -929,13 +935,13 @@ void MainWindow::postGamsRun(FileId origin)
         if (mSettings->jumpToError())
             groupNode->jumpToFirstError(doFocus);
 
-        ProjectFileNode* lstCtx = nullptr;
-        mProjectRepo.findOrCreateFileNode(lstFile, lstCtx, groupNode);
+        ProjectFileNode* lstNode = nullptr;
+        mProjectRepo.findOrCreateFileNode(lstFile, lstNode, groupNode);
 
-        if (lstCtx) lstCtx->updateMarks();
+        if (lstNode) lstNode->updateMarks();
 
         if (mSettings->openLst())
-            openFileNode(lstCtx, true);
+            openFileNode(lstNode, true);
     }
 }
 
@@ -968,16 +974,18 @@ void MainWindow::on_actionHelp_triggered()
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-        QString word;
-        int istate = 0;
-        ce->wordInfo(ce->textCursor(), word, istate);
+        if (ce) {
+            QString word;
+            int istate = 0;
+            ce->wordInfo(ce->textCursor(), word, istate);
 
-        if (istate == static_cast<int>(SyntaxState::Title)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
-        } else {
-            mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            if (istate == static_cast<int>(SyntaxState::Title)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
+            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
+            } else {
+                mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            }
         }
     }
     if (ui->dockHelpView->isHidden())
@@ -1177,7 +1185,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item->name());
+    openModelFromLib(item->library()->glbFile(), item);
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1486,6 +1494,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
         return;
     }
+    if (gmsFileNode)
+        logProc->setCodecMib(fc->codecMib());
+    else {
+        ProjectFileNode *runNode = group->findFile(gmsFilePath);
+        logProc->setCodecMib(runNode ? runNode->codecMib() : -1);
+    }
+
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
@@ -1693,10 +1708,11 @@ void MainWindow::closeFile(ProjectFileNode* file)
 
     // close actual file and remove repo node
     closeFileEditors(file->id());
+    QString filePath = file->location();
     mProjectRepo.removeFile(file);
 
     // if this file is marked as runnable remove reference
-    if (parentGroup->runnableGms() == file->location()) {
+    if (parentGroup->runnableGms() == filePath) {
         parentGroup->removeRunnableGms();
         for (int i = 0; i < parentGroup->childCount(); i++) {
             // choose next as main gms file
@@ -1939,9 +1955,11 @@ void MainWindow::readTabs(const QJsonObject &json)
         if (QFileInfo(location).exists()) {
             openFilePath(location, nullptr, true);
             mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
         }
     }
-    QTimer::singleShot(0,this,SLOT(initAutoSave()));
+    QTimer::singleShot(0, this, SLOT(initAutoSave()));
 }
 
 void MainWindow::initAutoSave()
@@ -1964,8 +1982,12 @@ void MainWindow::writeTabs(QJsonObject &json) const
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
+
     ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
-    if (fc) json["mainTabRecent"] = fc->location();
+    if (fc)
+        json["mainTabRecent"] = fc->location();
+    else if (ui->mainTab->currentWidget() == mWp)
+        json["mainTabRecent"] = "WELCOME_PAGE";
 }
 
 void MainWindow::on_actionGo_To_triggered()
@@ -2104,10 +2126,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toUpper());
-    }
+    if (ce) ce->convertToUpper();
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
@@ -2115,17 +2134,14 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toLower());
-    }
+    if (ce) ce->convertToLower();
 }
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    mOverwriteMode = overwriteMode;
     if (ce && !ce->isReadOnly()) {
-        mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
         updateEditorMode();
     }

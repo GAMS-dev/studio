@@ -52,7 +52,7 @@ public:
 
 signals:
     void finished(FileId origin, int exitCode);
-    void newStdChannelData(const QString &data);
+    void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
 
 protected slots:

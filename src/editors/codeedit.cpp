@@ -228,6 +228,30 @@ void CodeEdit::extendedUndo()
     updateBlockEditPos();
 }
 
+void CodeEdit::convertToLower()
+{
+    if (isReadOnly()) return;
+
+    textCursor().insertText(textCursor().selectedText().toLower());
+    if (mBlockEdit) {
+        QStringList lowerLines = mBlockEdit->blockText().toLower()
+                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+        mBlockEdit->replaceBlockText(lowerLines);
+    }
+}
+
+void CodeEdit::convertToUpper()
+{
+    if (isReadOnly()) return;
+
+    textCursor().insertText(textCursor().selectedText().toUpper());
+    if (mBlockEdit) {
+        QStringList lowerLines = mBlockEdit->blockText().toUpper()
+                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+        mBlockEdit->replaceBlockText(lowerLines);
+    }
+}
+
 void CodeEdit::updateBlockEditPos()
 {
     if (document()->availableUndoSteps() <= 0 || document()->availableUndoSteps() > mBlockEditPos.size())

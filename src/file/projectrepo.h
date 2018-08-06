@@ -87,7 +87,7 @@ public:
     /// \param location The filename with full path.
     /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
     /// \return a <c>QModelIndex</c> to the new node.
-    ProjectFileNode* addFile(QString name, QString location, ProjectGroupNode* parent = nullptr);
+    ProjectFileNode* addFile(QString name, QString location, ProjectGroupNode* parent, FileType* fileType = nullptr);
 
     ProjectGroupNode* ensureGroup(const QString& filePath, const QString& groupName = "");
     void close(FileId fileId);
@@ -136,7 +136,7 @@ signals:
 public slots:
     void nodeChanged(FileId fileId);
     void findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup);
     void setSelected(const QModelIndex& ind);
     void removeGroup(ProjectGroupNode* fileGroup);
     void removeFile(ProjectFileNode* file);
@@ -159,6 +159,7 @@ private:
         mNode.remove(node->id());
         delete node;
     }
+    bool parseGdxHeader(QString location);
 
 private:
     FileId mNextId;

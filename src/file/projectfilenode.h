@@ -60,7 +60,7 @@ public:
 
     /// Changes the codec for this file.
     /// \param codec The name of the new codec.
-    void setCodecMib(int mib);
+    virtual void setCodecMib(int mib);
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -144,6 +144,7 @@ public:
     void unbindMarks() { mMarks = nullptr; }
 
     QString tooltip() override;
+    QTextCodec *codec() const;
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -155,7 +156,7 @@ signals:
     void deletedExtern(FileId fileId);
 
     void findFileNode(QString filePath, ProjectFileNode** fileContext, ProjectGroupNode* fileGroup = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode*& fileContext, ProjectGroupNode* fileGroup);
     void openFileNode(ProjectFileNode* fileContext, bool focus = true, int codecMib = -1);
     void documentOpened();
 
@@ -167,11 +168,12 @@ protected slots:
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
-    ProjectFileNode(FileId fileId, QString name, QString location, ContextType type = ProjectAbstractNode::File);
+    ProjectFileNode(FileId fileId, QString name, QString location, FileType *knownType = nullptr, ContextType type = ProjectAbstractNode::File);
 
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
+    void setCodec(QTextCodec *codec);
 
 private:
     QVector<QPoint> getEditPositions();

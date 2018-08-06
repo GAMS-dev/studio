@@ -180,8 +180,10 @@ QVector<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
         if (tc.isNull()) break;
         if (tc.blockNumber() > cursor.blockNumber()) break;
         if (tc.blockNumber() < cursor.blockNumber()) continue;
-        if (cursor.atBlockStart())
+        if (cursor.atBlockStart()) {
             res << mark;
+            continue;
+        }
 
         int a = tc.block().position() + mark->column();
         int b = a + (mark->size() ? mark->size() : tc.block().length());

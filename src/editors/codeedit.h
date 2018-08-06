@@ -98,7 +98,7 @@ class CodeEdit : public AbstractEdit
 
 public:
     CodeEdit(QWidget *parent = nullptr);
-    ~CodeEdit();
+    ~CodeEdit() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -125,6 +125,8 @@ public:
     void setSettings(StudioSettings *settings);
     void extendedRedo();
     void extendedUndo();
+    void convertToLower();
+    void convertToUpper();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

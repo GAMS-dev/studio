@@ -39,9 +39,10 @@ public:
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
     ProjectFileNode *lstNode() const;
     void setLstNode(ProjectFileNode *lstNode);
+    void setCodecMib(int mib) override;
 
 public slots:
-    void addProcessData(QString text);
+    void addProcessData(const QByteArray &data);
     void setJumpToLogEnd(bool state);
 
 protected:
