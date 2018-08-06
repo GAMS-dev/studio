@@ -76,11 +76,13 @@ int ProjectFileNode::codecMib() const
 void ProjectFileNode::setCodecMib(int mib)
 {
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    if (!codec)
-        EXCEPT() << "TextCodec not found for MIB " << mib;
+    if (!codec) {
+        DEB() << "TextCodec not found for MIB " << mib;
+        return;
+    }
     if (document() && !isReadOnly() && codec != mCodec) {
         document()->setModified();
-        mCodec = codec;
+        setCodec(codec);
     }
 }
 
@@ -632,6 +634,16 @@ void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
         }
 
     }
+}
+
+void ProjectFileNode::setCodec(QTextCodec *codec)
+{
+    mCodec = codec;
+}
+
+QTextCodec *ProjectFileNode::codec() const
+{
+    return mCodec;
 }
 
 void ProjectFileNode::modificationChanged(bool modiState)

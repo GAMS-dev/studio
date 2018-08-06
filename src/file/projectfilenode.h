@@ -60,7 +60,7 @@ public:
 
     /// Changes the codec for this file.
     /// \param codec The name of the new codec.
-    void setCodecMib(int mib);
+    virtual void setCodecMib(int mib);
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.
@@ -144,6 +144,7 @@ public:
     void unbindMarks() { mMarks = nullptr; }
 
     QString tooltip() override;
+    QTextCodec *codec() const;
 
 signals:
     /// Signal is emitted when the file has been modified externally.
@@ -172,6 +173,7 @@ protected:
     QWidgetList& editorList();
     bool eventFilter(QObject *watched, QEvent *event) override;
     bool mouseOverLink();
+    void setCodec(QTextCodec *codec);
 
 private:
     QVector<QPoint> getEditPositions();

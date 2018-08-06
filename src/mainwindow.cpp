@@ -1513,6 +1513,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         ui->actionShow_System_Log->trigger();
         return;
     }
+    if (gmsFileNode)
+        logProc->setCodecMib(fc->codecMib());
+    else {
+        ProjectFileNode *runNode = group->findFile(gmsFilePath);
+        logProc->setCodecMib(runNode ? runNode->codecMib() : -1);
+    }
+
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
