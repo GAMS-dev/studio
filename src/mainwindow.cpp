@@ -70,6 +70,10 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     setAcceptDrops(true);
     mTimerID = startTimer(60000);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+#ifdef __APPLE__
+    ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
+    ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
+#endif
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
