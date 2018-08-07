@@ -18,30 +18,56 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
+#include <QStackedWidget>
 
-#include "referencewidget.h"
-#include "ui_referencewidget.h"
+#include "referenceviewer.h"
+#include "ui_referenceviewer.h"
+#include "referencetabstyle.h"
 #include "symbolreferenceitem.h"
 
 namespace gams {
 namespace studio {
 
-ReferenceWidget::ReferenceWidget(QString referenceFile, QWidget *parent) :
+ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     QWidget(parent),
-    mReferenceFile(referenceFile),
-    ui(new Ui::ReferenceWidget)
+    ui(new Ui::ReferenceViewer)
 {
     ui->setupUi(this);
+
+    mReferenceFile = QDir::toNativeSeparators(referenceFile);
+    mValid = parseFile(mReferenceFile);
+
+    mTabWidget =  new QTabWidget(this);
+    mTabWidget->setObjectName(QStringLiteral("tabWidget"));
+    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    sizePolicy.setHorizontalStretch(3);
+    sizePolicy.setVerticalStretch(0);
+    sizePolicy.setHeightForWidth(mTabWidget->sizePolicy().hasHeightForWidth());
+    mTabWidget->setSizePolicy(sizePolicy);
+    mTabWidget->setTabsClosable(false);
+    mTabWidget->setTabBarAutoHide(false);
+    mTabWidget->setTabPosition(QTabWidget::West);
+    mTabWidget->tabBar()->setStyle( new ReferenceTabStyle );
+
+    SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Undefined), this);
+    SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Set), this);
+
+    ui->referenceLayout->addWidget(mTabWidget);
+    mTabWidget->addTab(allSymbolsRefWidget, "All Symbols");
+    mTabWidget->addTab(setRefWidget, "Set");
+    mTabWidget->setCurrentIndex(0);
+
 }
 
-ReferenceWidget::~ReferenceWidget()
+ReferenceViewer::~ReferenceViewer()
 {
     delete ui;
 }
 
-bool ReferenceWidget::parseFile(QString referenceFile)
+bool ReferenceViewer::parseFile(QString referenceFile)
 {
     QFile file(referenceFile);
     if(!file.open(QIODevice::ReadOnly)) {
@@ -115,7 +141,7 @@ bool ReferenceWidget::parseFile(QString referenceFile)
 
 }
 
-void ReferenceWidget::addReferenceInfo(SymbolReferenceItem *ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
+void ReferenceViewer::addReferenceInfo(SymbolReferenceItem *ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
 {
     if (QString::compare(referenceType, "declared", Qt::CaseInsensitive)==0) {
         ref->addDeclare(new ReferenceItem(location, lineNumber, columnNumber));

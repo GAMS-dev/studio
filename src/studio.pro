@@ -110,8 +110,11 @@ SOURCES += \
     option/optiontablemodel.cpp \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
+    reference/referencetabstyle.cpp \
+    reference/referenceviewer.cpp \
     reference/symboldatatype.cpp \
     reference/symbolreferenceitem.cpp \
+    reference/symbolreferencewidget.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
     settingsdialog.cpp \
@@ -142,8 +145,7 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    searchdialog.cpp \
-    reference/referencewidget.cpp
+    searchdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -197,8 +199,11 @@ HEADERS += \
     option/optiontablemodel.h \
     option/optionwidget.h \
     projectcontextmenu.h \
+    reference/referencetabstyle.h \
+    reference/referenceviewer.h \
     reference/symboldatatype.h \
     reference/symbolreferenceitem.h \
+    reference/symbolreferencewidget.h \
     resultsview.h \
     searchresultlist.h \
     settingsdialog.h \
@@ -232,8 +237,7 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    searchdialog.h \
-    reference/referencewidget.h
+    searchdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -245,7 +249,8 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
-    reference/referencewidget.ui \
+    reference/referenceviewer.ui \
+    reference/symbolreferencewidget.ui \
     resultsview.ui \
     settingsdialog.ui \
     updatedialog.ui \

@@ -178,8 +178,20 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
     ProjectFileNode *fc = mProjectRepo.fileNode(id);
     if (fc) {
         int tabIndex;
-        if (fc->metrics().fileType() != FileType::Gdx) {
+        if (fc->metrics().fileType() == FileType::Gdx) {
 
+            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
+            ProjectAbstractNode::initEditorType(gdxView);
+            fc->addEditor(gdxView);
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
+            fc->addFileWatcherForGdx();
+        } else if (fc->metrics().fileType() == FileType::Ref) {
+            qDebug() << "open ref:" << fc->location();
+            ReferenceViewer* refView = new ReferenceViewer(fc->location(), this);
+            ProjectAbstractNode::initEditorType(refView);
+            fc->addEditor(refView);
+            tabIndex = tabWidget->addTab(refView, fc->caption());
+        } else {
             CodeEdit *codeEdit = new CodeEdit(this);
             codeEdit->setSettings(mSettings.get());
             codeEdit->setLineWrapMode(mSettings->lineWrapEditor() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
@@ -225,12 +237,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             }
             if (focus) updateMenuToCodec(fc->codecMib());
 
-        } else {
-            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
-            ProjectAbstractNode::initEditorType(gdxView);
-            fc->addEditor(gdxView);
-            tabIndex = tabWidget->addTab(gdxView, fc->caption());
-            fc->addFileWatcherForGdx();
         }
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
