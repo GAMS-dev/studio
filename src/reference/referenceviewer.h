@@ -21,6 +21,7 @@
 #define REFERENCEWIDGET_H
 
 #include <QWidget>
+#include <QList>
 #include <QMap>
 #include <QTabWidget>
 
@@ -51,6 +52,7 @@ private:
 
     bool parseFile(QString referenceFile);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
+    QList<SymbolReferenceItem*> findReference(SymbolDataType::SymbolType type);
 
     bool mValid;
     QString mReferenceFile;

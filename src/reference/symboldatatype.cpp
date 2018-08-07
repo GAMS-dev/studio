@@ -72,6 +72,15 @@ const QList<SymbolDataType*> SymbolDataType::list()
     return mList;
 }
 
+SymbolDataType::SymbolType SymbolDataType::typeFrom(QString typeDescription)
+{
+    for (SymbolDataType* t : list()) {
+        if (t->mDescription.contains(typeDescription, Qt::CaseInsensitive))
+            return t->type();
+    }
+    return Undefined;
+}
+
 SymbolDataType &SymbolDataType::from(QString typeDescription)
 {
     for (SymbolDataType* t : list()) {

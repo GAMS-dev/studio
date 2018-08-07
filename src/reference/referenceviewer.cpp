@@ -52,12 +52,52 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     mTabWidget->setTabPosition(QTabWidget::West);
     mTabWidget->tabBar()->setStyle( new ReferenceTabStyle );
 
-    SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Undefined), this);
-    SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Set), this);
+    QList<SymbolReferenceItem*> setList = findReference(SymbolDataType::Set);
+    QList<SymbolReferenceItem*> acronymList = findReference(SymbolDataType::Acronym);
+    QList<SymbolReferenceItem*> varList = findReference(SymbolDataType::Variable);
+    QList<SymbolReferenceItem*> parList = findReference(SymbolDataType::Parameter);
+    QList<SymbolReferenceItem*> equList = findReference(SymbolDataType::Equation);
+    QList<SymbolReferenceItem*> fileList = findReference(SymbolDataType::File);
+    QList<SymbolReferenceItem*> modelList = findReference(SymbolDataType::Model);
+    QList<SymbolReferenceItem*> functList = findReference(SymbolDataType::Funct);
 
+    if (mReference.size() > 0) {
+         SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Undefined), this);
+         mTabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg(mReference.size()));
+    }
+    if (acronymList.size() > 0) {
+        SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Set), this);
+        mTabWidget->addTab(setRefWidget, QString("Set (%1)").arg(setList.size()));
+    }
+    if (acronymList.size() > 0) {
+        SymbolReferenceWidget* acronymRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Acronym), this);
+        mTabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg(acronymList.size()));
+    }
+    if (varList.size() > 0) {
+        SymbolReferenceWidget* varRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Variable), this);
+        mTabWidget->addTab(varRefWidget, QString("Variable (%1)").arg(varList.size()));
+    }
+    if (parList.size() > 0) {
+        SymbolReferenceWidget* parRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Parameter), this);
+        mTabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg(parList.size()));
+    }
+    if (equList.size() > 0) {
+        SymbolReferenceWidget* equRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Equation), this);
+        mTabWidget->addTab(equRefWidget, QString("Equation (%1)").arg(equList.size()));
+    }
+    if (fileList.size() > 0) {
+        SymbolReferenceWidget* fileRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::File), this);
+        mTabWidget->addTab(fileRefWidget, QString("File (%1)").arg(fileList.size()));
+    }
+    if (modelList.size() > 0) {
+        SymbolReferenceWidget* modelRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Model), this);
+        mTabWidget->addTab(modelRefWidget, QString("Model (%1)").arg(modelList.size()));
+    }
+    if (functList.size() > 0) {
+        SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(SymbolDataType::from(SymbolDataType::Funct), this);
+        mTabWidget->addTab(functRefWidget, QString("Function (%1)").arg(functList.size()));
+    }
     ui->referenceLayout->addWidget(mTabWidget);
-    mTabWidget->addTab(allSymbolsRefWidget, "All Symbols");
-    mTabWidget->addTab(setRefWidget, "Set");
     mTabWidget->setCurrentIndex(0);
 
 }
@@ -92,7 +132,7 @@ bool ReferenceViewer::parseFile(QString referenceFile)
         QString columnNumber = recordList.at(6);
         QString location = recordList.at(9);
 
-        SymbolDataType type = SymbolDataType::from(symbolType);
+        SymbolDataType::SymbolType type = SymbolDataType::typeFrom(symbolType);
         if (!mReference.contains(id.toInt()))
             mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
         SymbolReferenceItem* ref = mReference[id.toInt()];
@@ -112,7 +152,7 @@ bool ReferenceViewer::parseFile(QString referenceFile)
         QString dimension = recordList.at(4);
         QString numberOfElements = recordList.at(5);
 
-        SymbolDataType type = SymbolDataType::from(symbolType);
+        SymbolDataType::SymbolType type = SymbolDataType::typeFrom(symbolType);
         if (!mReference.contains(id.toInt()))
             mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
         SymbolReferenceItem* ref = mReference[id.toInt()];
@@ -158,6 +198,21 @@ void ReferenceViewer::addReferenceInfo(SymbolReferenceItem *ref, const QString &
     } else if (QString::compare(referenceType, "index", Qt::CaseInsensitive)==0) {
         ref->addIndex(new ReferenceItem(location, lineNumber, columnNumber));
     }
+}
+
+QList<SymbolReferenceItem *> ReferenceViewer::findReference(SymbolDataType::SymbolType type)
+{
+    QList<SymbolReferenceItem*> refList;
+    if (mValid) {
+        QMap<SymbolId, SymbolReferenceItem*>::const_iterator i = mReference.constBegin();
+        while(i != mReference.constEnd()) {
+            SymbolReferenceItem* ref = i.value();
+            if (type == ref->type())
+                refList.append(ref);
+            ++i;
+        }
+    }
+    return refList;
 }
 
 } // namespace studio

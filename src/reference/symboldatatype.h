@@ -51,6 +51,7 @@ public:
     bool operator !=(const SymbolDataType::SymbolType& type) const;
 
     static const QList<SymbolDataType*> list();
+    static SymbolType typeFrom(QString typeDescription);
     static SymbolDataType& from(QString typeDescription);
     static SymbolDataType& from(SymbolType type);
 
