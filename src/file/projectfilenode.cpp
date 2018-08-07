@@ -32,10 +32,10 @@ namespace studio {
 const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
         // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
-ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, ContextType type)
+ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, FileType *knownType, ContextType type)
     : ProjectAbstractNode(fileId, name, location, type)
 {
-    mMetrics = FileMetrics(QFileInfo(location));
+    mMetrics = FileMetrics(QFileInfo(location), knownType);
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
         mSyntaxHighlighter = new SyntaxHighlighter(this);
     else if (mMetrics.fileType() != FileType::Gdx) {
@@ -76,13 +76,14 @@ int ProjectFileNode::codecMib() const
 void ProjectFileNode::setCodecMib(int mib)
 {
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    if (!codec)
-        EXCEPT() << "TextCodec not found for MIB " << mib;
-    if (document() && !isReadOnly() && !isModified() && codec != mCodec) {
-        document()->setModified();
-        mCodec = codec;
+    if (!codec) {
+        DEB() << "TextCodec not found for MIB " << mib;
+        return;
     }
-    // TODO(JM) changing the codec must trigger conversion (not necessarily HERE)
+    if (document() && !isReadOnly() && codec != mCodec) {
+        document()->setModified();
+        setCodec(codec);
+    }
 }
 
 const QString ProjectFileNode::caption()
@@ -284,7 +285,7 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
-        mMetrics = FileMetrics();
+//        mMetrics = FileMetrics();
         const QByteArray data(file.readAll());
         QString text;
         QTextCodec *codec = nullptr;
@@ -312,7 +313,7 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
         }
         file.close();
         document()->setModified(false);
-        mMetrics = FileMetrics(QFileInfo(file));
+        mMetrics = FileMetrics(QFileInfo(file), &mMetrics.fileType());
         QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
     }
     if (!mWatcher) {
@@ -320,6 +321,7 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
         connect(mWatcher, &QFileSystemWatcher::fileChanged, this, &ProjectFileNode::onFileChangedExtern);
         mWatcher->addPath(location());
     }
+    mMarksEnhanced = false;
 }
 
 void ProjectFileNode::load(int codecMib, bool keepMarks)
@@ -346,8 +348,14 @@ void ProjectFileNode::showToolTip(const QVector<TextMark*> marks)
         if (!edit) return;
         cursor.setPosition(cursor.anchor());
         QPoint pos = edit->cursorRect(cursor).bottomLeft();
-        QString tip = parentEntry()->lstErrorText(marks.first()->value());
-        QToolTip::showText(edit->mapToGlobal(pos), tip, edit);
+        QStringList tips;
+        for (TextMark* mark: marks) {
+            QString newTip = parentEntry()->lstErrorText(mark->value());
+            if (!tips.contains(newTip))
+                tips << newTip;
+        }
+//        QString tip = parentEntry()->lstErrorText(marks.first()->value());
+        QToolTip::showText(edit->mapToGlobal(pos), tips.join("\n"), edit);
     }
 }
 
@@ -373,29 +381,54 @@ void ProjectFileNode::updateMarks()
     if (!mMarks) return;
     mMarks->updateMarks();
     if (mMarksEnhanced) return;
-    QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
+    //                     0     1 2       3 4                    5               6           7       8
+    //                            (    $nr               |        nr+description      |  descr.   |  any  )
+    QRegularExpression rex("\\*{4}((\\s+)\\$(([0-9,]+).*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
     if (mMetrics.fileType() == FileType::Lst && document()) {
+        QVector<int> lines;
         for (TextMark* mark: mMarks->marks()) {
-            QList<int> errNrs;
             int lineNr = mark->line();
+            if (!lines.contains(lineNr)) lines << lineNr;
+        }
+        for (int lineNr: lines) {
+            QList<int> errNrs;
+            QList<int> errTextNr;
+            QStringList errNrsDeb;
             QTextBlock block = document()->findBlockByNumber(lineNr).next();
             QStringList errText;
             while (block.isValid()) {
                 QRegularExpressionMatch match = rex.match(block.text());
                 if (!match.hasMatch()) break;
-                if (match.capturedLength(3)) { // first line with error numbers and indent
-                    for (QString nrText: match.captured(3).split(",")) errNrs << nrText.toInt();
-                    if (match.capturedLength(4)) errText << match.captured(4);
+                if (match.capturedLength(4)) { // first line with error numbers and indent
+                    int ind = 0;
+                    QString line(match.captured(3));
+                    QRegularExpression xpNr("[^0-9]*([0-9]+)");
+                    do {
+                        QRegularExpressionMatch nrMatch = xpNr.match(line, ind);
+                        if (!nrMatch.hasMatch()) break;
+                        errNrsDeb << nrMatch.captured(1);
+                        errNrs << nrMatch.captured(1).toInt();
+                        ind = nrMatch.capturedEnd(1);
+                    } while (true);
                 } else if (match.capturedLength(5)) { // line with error number and description
                     errText << match.captured(5)+"\t"+match.captured(6);
+                    errTextNr << match.captured(5).toInt();
                 } else if (match.capturedLength(7)) { // indented follow-up line for error description
                     errText << "\t"+match.captured(7);
+                    errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
                 } else if (match.capturedLength(8)) { // non-indented line for additional error description
                     errText << match.captured(8);
+                    errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
                 }
                 block = block.next();
             }
-            parentEntry()->setLstErrorText(lineNr, errText.join("\n"));
+            QStringList orderedErrText;
+            for (int nr = 0; nr < errNrs.size(); ++nr) {
+                for (int errLn = 0; errLn < errTextNr.size(); ++errLn) {
+                    if (errTextNr.at(errLn) == errNrs.at(nr)) orderedErrText << errText.at(errLn);
+                }
+            }
+            parentEntry()->setLstErrorText(lineNr, orderedErrText.join("\n"));
         }
         mMarksEnhanced = true;
     }
@@ -601,6 +634,16 @@ void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
         }
 
     }
+}
+
+void ProjectFileNode::setCodec(QTextCodec *codec)
+{
+    mCodec = codec;
+}
+
+QTextCodec *ProjectFileNode::codec() const
+{
+    return mCodec;
 }
 
 void ProjectFileNode::modificationChanged(bool modiState)

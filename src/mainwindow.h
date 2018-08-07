@@ -115,7 +115,7 @@ public:
     void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
-    void openModelFromLib(QString glbFile, QString model);
+    void openModelFromLib(QString glbFile, LibraryItem *model);
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     void delayedFileRestoration();
@@ -128,9 +128,10 @@ public:
     HelpWidget *getHelpWidget() const;
     OptionWidget *getGamsOptionWidget() const;
 
+
 public slots:
     void receiveAction(QString action);
-    void receiveModLibLoad(QString model);
+    void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
@@ -172,6 +173,7 @@ private slots:
     void projectViewVisibiltyChanged(bool visibility);
     void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
+    void showTabsMenu();
 
 private slots:
     // File
@@ -238,6 +240,10 @@ private slots:
     void on_actionReset_Views_triggered();
     void initAutoSave();
 
+    void on_actionNextTab_triggered();
+
+    void on_actionPreviousTab_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -251,6 +257,7 @@ private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName);
     void openNode(const QModelIndex& index);
+    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
@@ -293,7 +300,6 @@ private:
     bool mOverwriteMode = false;
     StatusWidgets* mStatusWidgets;
     int mTimerID;
-    FileMetrics mMetrics;
     QStringList mOpenTabsList;
 };
 

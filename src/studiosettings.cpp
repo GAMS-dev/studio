@@ -125,6 +125,10 @@ void StudioSettings::saveSettings(MainWindow *main)
         qDebug() << "ERROR: settings file missing.";
         return;
     }
+    mAppSettings->beginGroup("settings");
+    mAppSettings->setValue("version", QString(STUDIO_VERSION));
+    mAppSettings->endGroup();
+
     // Main Application Settings
     // main window
     mAppSettings->beginGroup("mainWindow");
@@ -232,6 +236,11 @@ void StudioSettings::saveSettings(MainWindow *main)
 
 void StudioSettings::loadViewStates(MainWindow *main)
 {
+    mAppSettings->beginGroup("settings");
+    // TODO: write settings converter
+    mAppSettings->value("version").toString();
+    mAppSettings->endGroup();
+
     // main window
     mAppSettings->beginGroup("mainWindow");
     main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
