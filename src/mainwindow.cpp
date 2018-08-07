@@ -2355,9 +2355,7 @@ void MainWindow::on_actionNextTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs && tabs->currentIndex() < tabs->count()-1) {
-        tabs->setCurrentIndex(tabs->currentIndex()+1);
-    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
 }
 
 void MainWindow::on_actionPreviousTab_triggered()
@@ -2375,9 +2373,7 @@ void MainWindow::on_actionPreviousTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs && tabs->currentIndex() > 0) {
-        tabs->setCurrentIndex(tabs->currentIndex()-1);
-    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
 }
 
 }
