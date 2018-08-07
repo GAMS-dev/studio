@@ -23,7 +23,7 @@
 namespace gams {
 namespace studio {
 
-SymbolReferenceItem::SymbolReferenceItem(SymbolId id, QString name, SymbolDataType type) :
+SymbolReferenceItem::SymbolReferenceItem(SymbolId id, QString name, SymbolDataType::SymbolType type) :
     mID(id), mName(name), mType(type)
 {
 
@@ -55,7 +55,7 @@ SymbolReferenceItem::~SymbolReferenceItem()
     mIndex.clear();
 }
 
-SymbolDataType SymbolReferenceItem::type() const
+SymbolDataType::SymbolType SymbolReferenceItem::type() const
 {
     return mType;
 }
@@ -172,7 +172,7 @@ void SymbolReferenceItem::addIndex(ReferenceItem *index)
 
 void SymbolReferenceItem::dumpAll()
 {
-    qDebug() << "id:" << mID << "type:" << mType.description().join(',') << ", name=[" << mName << "], noElements="<< mNumberOfElements << ", explanatory text=["<< mExplanatoryText << "]";
+    qDebug() << "id:" << mID << "type:" << SymbolDataType::from(mType).description().join(',') << ", name=[" << mName << "], noElements="<< mNumberOfElements << ", explanatory text=["<< mExplanatoryText << "]";
     QStringList dim;
     for(int i=0; i<mDimension; i++) {
         dim << QString::number(mDomain.at(i));

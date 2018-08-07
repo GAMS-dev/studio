@@ -39,12 +39,12 @@ struct ReferenceItem {
 class SymbolReferenceItem
 {
 public:
-    SymbolReferenceItem(SymbolId id, QString name, SymbolDataType type);
+    SymbolReferenceItem(SymbolId id, QString name, SymbolDataType::SymbolType type);
     ~SymbolReferenceItem();
 
     QString name() const;
     SymbolId id() const;
-    SymbolDataType type() const;
+    SymbolDataType::SymbolType type() const;
 
     int dimension() const;
     void setDimension(int dimension);
@@ -82,7 +82,7 @@ public:
     void dumpAll();
 private:
     SymbolId mID;
-    SymbolDataType mType;
+    SymbolDataType::SymbolType mType;
     QString mName;
     int mDimension;
     QList<SymbolId> mDomain;
