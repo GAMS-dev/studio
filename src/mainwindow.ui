@@ -193,6 +193,9 @@
     <addaction name="actionZoom_Out"/>
     <addaction name="actionReset_Zoom"/>
     <addaction name="separator"/>
+    <addaction name="actionNextTab"/>
+    <addaction name="actionPreviousTab"/>
+    <addaction name="separator"/>
     <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -861,6 +864,28 @@
    </property>
    <property name="shortcut">
     <string>Shift+F12</string>
+   </property>
+  </action>
+  <action name="actionNextTab">
+   <property name="text">
+    <string>Next Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>switches to the next tab of the current tab view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="actionPreviousTab">
+   <property name="text">
+    <string>Previous Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>switches to the previous tab of the current tab view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
    </property>
   </action>
  </widget>

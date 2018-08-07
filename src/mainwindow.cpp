@@ -140,6 +140,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
+//    QPushButton *cornerMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
+//    connect(cornerMenu, &QPushButton::pressed, this, &MainWindow::showTabsMenu);
+//    cornerMenu->setMaximumWidth(40);
+//    ui->mainTab->setCornerWidget(cornerMenu);
+
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
@@ -541,6 +546,11 @@ void MainWindow::optionViewVisibiltyChanged(bool visibility)
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
+}
+
+void MainWindow::showTabsMenu()
+{
+
 }
 
 void MainWindow::updateEditorPos()
@@ -2300,7 +2310,7 @@ void MainWindow::resetViews()
     mSettings->loadSettings(this);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
-    foreach (QDockWidget* dock, dockWidgets) {
+    for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
         dock->setVisible(true);
 
@@ -2326,6 +2336,47 @@ void MainWindow::resizeOptionEditor(const QSize &size)
     this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
 }
 
+void MainWindow::on_actionNextTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs && tabs->currentIndex() < tabs->count()-1) {
+        tabs->setCurrentIndex(tabs->currentIndex()+1);
+    }
+}
+
+void MainWindow::on_actionPreviousTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs && tabs->currentIndex() > 0) {
+        tabs->setCurrentIndex(tabs->currentIndex()-1);
+    }
+}
 
 }
 }
+
+
