@@ -140,7 +140,8 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    searchdialog.cpp
+    searchdialog.cpp \
+    tabdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -227,7 +228,8 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    searchdialog.h
+    searchdialog.h \
+    tabdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -245,7 +247,8 @@ FORMS += \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    searchdialog.ui
+    searchdialog.ui \
+    tabdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

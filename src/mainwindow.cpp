@@ -48,6 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "tabdialog.h"
 
 namespace gams {
 namespace studio {
@@ -68,9 +69,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
     mTimerID = startTimer(60000);
-    QList<QKeySequence> redoShortcuts;
-    redoShortcuts << ui->actionRedo->shortcut() << QKeySequence("Ctrl+Shift+Z");
-    ui->actionRedo->setShortcuts(redoShortcuts);
+    ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -550,6 +549,7 @@ void MainWindow::helpViewVisibilityChanged(bool visibility)
 
 void MainWindow::showTabsMenu()
 {
+    tabdialog::TabDialog *tabDialog = new tabdialog::TabDialog(ui->mainTab, this);
 
 }
 
