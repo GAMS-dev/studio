@@ -116,8 +116,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFileConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
-    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
-    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -579,7 +579,7 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
-void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
+void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
     searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
@@ -1528,18 +1528,18 @@ HelpWidget *MainWindow::helpWidget() const
     return mHelpWidget;
 }
 
-void MainWindow::on_runGmsFile(ProjectFileNode *fc)
+void MainWindow::runGmsFile(ProjectFileNode *fc)
 {
     execute("", fc);
 }
 
-void MainWindow::on_setMainGms(ProjectFileNode *fc)
+void MainWindow::setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
     updateRunState();
 }
 
-void MainWindow::on_commandLineHelpTriggered()
+void MainWindow::commandLineHelpTriggered()
 {
     mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
     if (ui->dockHelpView->isHidden())
@@ -1548,7 +1548,7 @@ void MainWindow::on_commandLineHelpTriggered()
         ui->dockHelpView->raise();
 }
 
-void MainWindow::on_optionRunChanged()
+void MainWindow::optionRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
@@ -2254,7 +2254,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
+        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
     mEditor = editor;
     edit = ProjectFileNode::toAbstractEdit(mEditor);
@@ -2262,7 +2262,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
+        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();

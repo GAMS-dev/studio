@@ -47,10 +47,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     ui->gamsOptionWidget->hide();
     connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleOptionDefinition);
-    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::on_commandLineHelpTriggered);
+    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::commandLineHelpTriggered);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
-            main, &MainWindow::on_optionRunChanged);
+            main, &MainWindow::optionRunChanged);
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
             ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,

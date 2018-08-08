@@ -134,14 +134,14 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
-    void on_runGmsFile(ProjectFileNode *fc);
-    void on_setMainGms(ProjectFileNode *fc);
-    void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
+    void runGmsFile(ProjectFileNode *fc);
+    void setMainGms(ProjectFileNode *fc);
+    void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
-    void on_commandLineHelpTriggered();
-    void on_optionRunChanged();
+    void commandLineHelpTriggered();
+    void optionRunChanged();
 
 private slots:
     void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
