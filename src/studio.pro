@@ -110,6 +110,7 @@ SOURCES += \
     option/optiontablemodel.cpp \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
+    reference/reference.cpp \
     reference/referencetabstyle.cpp \
     reference/referenceviewer.cpp \
     reference/symboldatatype.cpp \
@@ -199,6 +200,7 @@ HEADERS += \
     option/optiontablemodel.h \
     option/optionwidget.h \
     projectcontextmenu.h \
+    reference/reference.h \
     reference/referencetabstyle.h \
     reference/referenceviewer.h \
     reference/symboldatatype.h \
