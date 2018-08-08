@@ -110,6 +110,16 @@ void SymbolReferenceItem::setExplanatoryText(const QString &text)
     mExplanatoryText = text;
 }
 
+QList<ReferenceItem *> SymbolReferenceItem::define() const
+{
+    return mDefine;
+}
+
+void SymbolReferenceItem::addDefine(ReferenceItem *define)
+{
+    mDefine.append(define);
+}
+
 QList<ReferenceItem *> SymbolReferenceItem::declare() const
 {
     return mDeclare;
@@ -170,6 +180,41 @@ void SymbolReferenceItem::addIndex(ReferenceItem *index)
     mIndex.append(index);
 }
 
+bool SymbolReferenceItem::isDefined() const
+{
+    return (mDefine.isEmpty());
+}
+
+bool SymbolReferenceItem::isAssigned() const
+{
+    return (mAssign.isEmpty());
+}
+
+bool SymbolReferenceItem::isImplicitAssigned() const
+{
+    return (mImplicitAssign.isEmpty());
+}
+
+bool SymbolReferenceItem::isReferenced() const
+{
+    return (mReference.isEmpty());
+}
+
+bool SymbolReferenceItem::isControlled() const
+{
+    return (mControl.isEmpty());
+}
+
+bool SymbolReferenceItem::isIndexed() const
+{
+    return (mIndex.isEmpty());
+}
+
+bool SymbolReferenceItem::isUnused() const
+{
+    return (mAssign.size()+mImplicitAssign.size()+mReference.size()+mControl.size()+mIndex.size() == 0);
+}
+
 void SymbolReferenceItem::dumpAll()
 {
     qDebug() << "id:" << mID << "type:" << SymbolDataType::from(mType).description().join(',') << ", name=[" << mName << "], noElements="<< mNumberOfElements << ", explanatory text=["<< mExplanatoryText << "]";
@@ -203,16 +248,6 @@ void SymbolReferenceItem::dumpAll()
     for(auto ctrl : mControl) {
         qDebug() << QString("    #[%1:%2:%3]").arg(ctrl->location).arg(ctrl->lineNumber).arg(ctrl->columnNumber);
     }
-}
-
-QList<ReferenceItem *> SymbolReferenceItem::define() const
-{
-    return mDefine;
-}
-
-void SymbolReferenceItem::addDefine(ReferenceItem *define)
-{
-    mDefine.append(define);
 }
 
 } // namespace studio

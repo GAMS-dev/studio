@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QTabBar>
 #include <QTextStream>
 #include <QStackedWidget>
 
@@ -153,8 +154,8 @@ bool ReferenceViewer::parseFile(QString referenceFile)
         QString numberOfElements = recordList.at(5);
 
         SymbolDataType::SymbolType type = SymbolDataType::typeFrom(symbolType);
-        if (!mReference.contains(id.toInt()))
-            mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
+        if (!mReference.contains(id.toInt())) // ignore other unreferenced symbols
+            continue;
         SymbolReferenceItem* ref = mReference[id.toInt()];
         ref->setDimension(dimension.toInt());
         mSymbolNameMap[symbolName] = id.toInt();

@@ -79,7 +79,16 @@ public:
     QList<ReferenceItem *> index() const;
     void addIndex(ReferenceItem* index);
 
+    bool isDefined() const;
+    bool isAssigned() const;
+    bool isImplicitAssigned() const;
+    bool isReferenced() const;
+    bool isControlled() const;
+    bool isIndexed() const;
+    bool isUnused() const;
+
     void dumpAll();
+
 private:
     SymbolId mID;
     SymbolDataType::SymbolType mType;
