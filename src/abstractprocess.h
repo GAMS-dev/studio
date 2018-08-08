@@ -29,8 +29,6 @@
 namespace gams {
 namespace studio {
 
-class ProjectGroupNode;
-
 class AbstractProcess
         : public QObject
 {

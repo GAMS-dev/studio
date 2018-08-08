@@ -945,7 +945,7 @@ void MainWindow::postGamsRun(FileId origin)
     }
 }
 
-void MainWindow::postGamsLibRun(FileId origin)
+void MainWindow::postGamsLibRun()
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *fc = nullptr;
