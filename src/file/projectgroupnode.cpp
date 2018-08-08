@@ -35,12 +35,20 @@ namespace studio {
 ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
     : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup), mGamsProcess(new GamsProcess)
 {
-    if (fileName == "") return;
+    if (fileName.isEmpty()) return;
 
     QFileInfo runnableFile(fileName);
     if (runnableFile.isRelative())
         runnableFile = QFileInfo(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
+
+    // fix for .lst-as-mainfile bug
+    if (FileMetrics(runnableFile).fileType() == FileType::Gms)
+        setRunnableGms(runnableFile.absoluteFilePath());
+    else if (alternateFile.exists())
+        setRunnableGms(alternateFile.absoluteFilePath());
+    else
+        setRunnableGms("");
 
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
 }
@@ -430,11 +438,8 @@ QString ProjectGroupNode::runnableGms()
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
-    QString location = gmsFileNode->location();
-
-    setRunnableGms(location);
-
-    if (logNode()) logNode()->resetLst();
+   setRunnableGms(gmsFileNode->location());
+   if (logNode()) logNode()->resetLst();
 }
 
 void ProjectGroupNode::setRunnableGms(const QString &gmsFilePath)
