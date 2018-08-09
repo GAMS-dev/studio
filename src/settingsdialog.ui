@@ -68,7 +68,7 @@
           <item>
            <widget class="QCheckBox" name="cb_bringontop">
             <property name="text">
-             <string>Bring GAMS on top when opening a file</string>
+             <string>Raise GAMS Studio when opening a file</string>
             </property>
            </widget>
           </item>
