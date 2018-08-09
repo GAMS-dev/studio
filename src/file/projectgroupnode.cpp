@@ -409,10 +409,11 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QLis
             setLstFile(item.value);
         } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                    || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            // TODO: save workingdir somewhere
+            // TODO: save workingdir somewhere, wait for the file handling update
         }
 
         if (defaultGamsArgs.contains(item.key)) {
+            // TODO(AF) real log message
             qDebug() << "Warning: You are about to overwrite GAMS Studio default arguments. "
                         "Some of these are necessary to ensure a smooth experience. "
                         "Use at your own risk!";
@@ -426,7 +427,7 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QLis
         output.append(k + "=" + gamsArgs.value(k));
     }
 
-    qDebug() << "Running GAMS:" << output;
+    qDebug() << "Running GAMS:" << output; // TODO(AF) real log message
     return output;
 }
 
