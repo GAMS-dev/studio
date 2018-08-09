@@ -42,7 +42,7 @@ public:
     void setModelName(const QString &modelName);
     QString modelName() const;
 
-    void execute();
+    void execute() override;
 
     void setGlbFile(const QString &glbFile);
 
