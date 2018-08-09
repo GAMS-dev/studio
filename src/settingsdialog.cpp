@@ -46,6 +46,7 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -69,6 +70,7 @@ void SettingsDialog::loadSettings()
     ui->cb_autosave->setChecked(mSettings->autosaveOnRun());
     ui->cb_openlst->setChecked(mSettings->openLst());
     ui->cb_jumptoerror->setChecked(mSettings->jumpToError());
+    ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
@@ -108,6 +110,7 @@ void SettingsDialog::saveSettings()
     mSettings->setAutosaveOnRun(ui->cb_autosave->isChecked());
     mSettings->setOpenLst(ui->cb_openlst->isChecked());
     mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
+    mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
 
     // editor page
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
@@ -223,4 +226,3 @@ void SettingsDialog::on_btn_resetView_clicked()
 
 }
 }
-

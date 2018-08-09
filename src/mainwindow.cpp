@@ -2340,6 +2340,36 @@ void MainWindow::resizeOptionEditor(const QSize &size)
     this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
 }
 
+
+void MainWindow::setForeground()
+{
+#if defined (WIN32)
+   HWND WinId= (HWND) winId();
+   if (this->windowState() == Qt::WindowMinimized) {
+       this->setWindowState(Qt::WindowActive);
+   }
+   DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
+   DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);
+   if (foregroundThreadPId != mwThreadPId) {
+       AttachThreadInput(foregroundThreadPId,mwThreadPId,true);
+       SetForegroundWindow(WinId);
+       AttachThreadInput(foregroundThreadPId, mwThreadPId, false);
+   } else {
+       SetForegroundWindow(WinId);
+   }
+#else
+    this->show();
+    this->raise();
+    this->activateWindow();
+#endif
+}
+
+void MainWindow::setForegroundOSCheck()
+{
+    if (mSettings->foregroundOnDemand())
+        setForeground();
+}
+  
 void MainWindow::on_actionNextTab_triggered()
 {
     QWidget *wid = focusWidget();

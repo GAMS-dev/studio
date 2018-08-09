@@ -205,6 +205,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
     mUserSettings->setValue("openLst", openLst());
     mUserSettings->setValue("jumpToError", jumpToError());
+    mUserSettings->setValue("setStudioOnTop",foregroundOnDemand());
     mUserSettings->setValue("colorScheme", exportJsonColorSchemes());
     mUserSettings->setValue("colorSchemeIndex", colorSchemeIndex());
 
@@ -303,6 +304,7 @@ void StudioSettings::loadUserSettings()
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
     setOpenLst(mUserSettings->value("openLst", false).toBool());
     setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+    setForegroundOnDemand(mUserSettings->value("bringOnTop",true).toBool());
     importJsonColorSchemes(mUserSettings->value("colorScheme").toByteArray());
     setColorSchemeIndex(mUserSettings->value("colorSchemeIndex", 0).toInt());
 
@@ -444,6 +446,16 @@ bool StudioSettings::autosaveOnRun() const
 void StudioSettings::setAutosaveOnRun(bool value)
 {
     mAutosaveOnRun = value;
+}
+
+bool StudioSettings::foregroundOnDemand() const
+{
+    return mForegroundOnDemand;
+}
+
+void StudioSettings::setForegroundOnDemand(bool value)
+{
+    mForegroundOnDemand = value;
 }
 
 bool StudioSettings::openLst() const
