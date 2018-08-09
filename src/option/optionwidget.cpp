@@ -414,6 +414,8 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
             QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
             if (mGamsOptionTokenizer->getGamsOption()->isDoubleDashedOption(data.toString())) {
                return "";
+            } else if (mGamsOptionTokenizer->getGamsOption()->isASynonym(data.toString())) {
+                return mGamsOptionTokenizer->getGamsOption()->getNameFromSynonym(data.toString());
             }
             return data.toString();
         }
