@@ -30,6 +30,11 @@ SymbolDataType::SymbolType SymbolDataType::type() const
     return mType;
 }
 
+QString SymbolDataType::name() const
+{
+    return mDescription.last();
+}
+
 QStringList SymbolDataType::description() const
 {
     return mDescription;
@@ -58,16 +63,16 @@ bool SymbolDataType::operator !=(const SymbolDataType::SymbolType &type) const
 const QList<SymbolDataType*> SymbolDataType::list()
 {
     if (mList.isEmpty()) {
-        mUndefined = new SymbolDataType(Undefined, "UNDEFINED");
-        mList << new SymbolDataType(Funct, "FUNCT,FUNCTIONS");
-        mList << new SymbolDataType(Set, "SET,SETS");
-        mList << new SymbolDataType(Acronym, "ACRNM,ACRONYMS");
-        mList << new SymbolDataType(Parameter, "PARAM,PARAMETERS");
-        mList << new SymbolDataType(Variable, "VAR,VARIABLES");
-        mList << new SymbolDataType(Equation, "EQU,EQUATIONS");
-        mList << new SymbolDataType(Model, "MODEL,MODELS");
-        mList << new SymbolDataType(File, "FILE,FILES");
-        mList << new SymbolDataType(Pred, "PRED");
+        mUndefined = new SymbolDataType(Undefined, "UNDEFINED,,Undefined");
+        mList << new SymbolDataType(Funct, "FUNCT,FUNCTIONS,Function");
+        mList << new SymbolDataType(Set, "SET,SETS,Set");
+        mList << new SymbolDataType(Acronym, "ACRNM,ACRONYMS,Acronym");
+        mList << new SymbolDataType(Parameter, "PARAM,PARAMETERS,Parameter");
+        mList << new SymbolDataType(Variable, "VAR,VARIABLES,Variable");
+        mList << new SymbolDataType(Equation, "EQU,EQUATIONS,Equation");
+        mList << new SymbolDataType(Model, "MODEL,MODELS,Model");
+        mList << new SymbolDataType(File, "FILE,FILES,File");
+        mList << new SymbolDataType(Pred, "PRED,Pred");
     }
     return mList;
 }

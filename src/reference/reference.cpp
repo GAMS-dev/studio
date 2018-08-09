@@ -32,6 +32,15 @@ Reference::Reference(QString referenceFile)
 
 Reference::~Reference()
 {
+    mSetReference.clear();
+    mAcronymReference.clear();
+    mParReference.clear();
+    mVarReference.clear();
+    mEquReference.clear();
+    mFileReference.clear();
+    mModelReference.clear();
+    mFunctionReference.clear();
+
     mSymbolNameMap.clear();
 
     qDeleteAll(mReference);
@@ -40,18 +49,27 @@ Reference::~Reference()
 
 QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType type)
 {
-    QList<SymbolReferenceItem *> list;
-    if (isValid()) {
-        QMap<SymbolId, SymbolReferenceItem*>::const_iterator i = mReference.constBegin();
-        while (i != mReference.constEnd()) {
-             SymbolReferenceItem* ref = i.value();
-             if (type == ref->type()) {
-                 list.append(ref);
-             }
-             ++i;
-        }
+    switch(type) {
+    case SymbolDataType::Set :
+        return mSetReference;
+    case SymbolDataType::Acronym :
+        return mAcronymReference;
+    case SymbolDataType::Parameter :
+        return mParReference;
+    case SymbolDataType::Variable :
+        return mVarReference;
+    case SymbolDataType::Equation :
+        return mEquReference;
+    case SymbolDataType::File :
+        return mFileReference;
+    case SymbolDataType::Model :
+        return mModelReference;
+    case SymbolDataType::Funct :
+        return mFunctionReference;
+    default:
+        return mReference.values();
     }
-    return list;
+
 }
 
 SymbolReferenceItem *Reference::findReference(SymbolId symbolid)
@@ -83,15 +101,11 @@ bool Reference::contains(const QString &symbolName) const
     return mSymbolNameMap.contains(symbolName);
 }
 
-QList<SymbolId> Reference::symbolIDList() const
+bool Reference::isEmpty() const
 {
-    return mReference.keys();
+    return mReference.isEmpty();
 }
 
-QList<QString> Reference::symbolNameList() const
-{
-    return mSymbolNameMap.keys();
-}
 
 bool Reference::isValid() const
 {
@@ -101,6 +115,16 @@ bool Reference::isValid() const
 int Reference::size() const
 {
     return mReference.size();
+}
+
+QList<SymbolId> Reference::symbolIDList() const
+{
+    return mReference.keys();
+}
+
+QList<QString> Reference::symbolNameList() const
+{
+    return mSymbolNameMap.keys();
 }
 
 QString Reference::getFileLocation() const
@@ -153,7 +177,7 @@ bool Reference::parseFile(QString referenceFile)
             continue;
 
         QString symbolName = recordList.at(1);
-        QString symbolType = recordList.at(3);
+//        QString symbolType = recordList.at(3);
         QString dimension = recordList.at(4);
         QString numberOfElements = recordList.at(5);
 
@@ -165,7 +189,8 @@ bool Reference::parseFile(QString referenceFile)
         if (dimension.toInt() > 0) {
             for(int dim=0; dim < dimension.toInt(); dim++) {
                 QString d = recordList.at(6+dim);
-                domain << d.toInt();
+                if (d.toInt() > 0)
+                    domain << d.toInt();
            }
         } // do not have dimension reference if dimension = 0;
         ref->setDomain(domain);
@@ -178,6 +203,40 @@ bool Reference::parseFile(QString referenceFile)
 
     if (idx.toInt()!=size)
         return false;
+
+     QMap<SymbolId, SymbolReferenceItem*>::const_iterator it = mReference.constBegin();
+     while (it != mReference.constEnd()) {
+         SymbolReferenceItem* ref = it.value();
+         switch(ref->type()) {
+         case SymbolDataType::Set :
+             mSetReference.append( ref );
+             break;
+         case SymbolDataType::Acronym :
+             mAcronymReference.append( ref );
+             break;
+         case SymbolDataType::Parameter :
+             mParReference.append( ref );
+             break;
+         case SymbolDataType::Variable :
+             mVarReference.append( ref );
+             break;
+         case SymbolDataType::Equation :
+             mEquReference.append( ref );
+             break;
+         case SymbolDataType::File :
+             mFileReference.append( ref );
+             break;
+         case SymbolDataType::Model :
+             mModelReference.append( ref );
+             break;
+         case SymbolDataType::Funct :
+             mFunctionReference.append( ref );
+             break;
+         default:
+             break;
+         }
+         ++it;
+    }
 
     return true;
 }

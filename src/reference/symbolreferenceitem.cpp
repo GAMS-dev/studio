@@ -219,7 +219,7 @@ void SymbolReferenceItem::dumpAll()
 {
     qDebug() << "id:" << mID << "type:" << SymbolDataType::from(mType).description().join(',') << ", name=[" << mName << "], noElements="<< mNumberOfElements << ", explanatory text=["<< mExplanatoryText << "]";
     QStringList dim;
-    for(int i=0; i<mDimension; i++) {
+    for(int i=0; i<mDomain.size(); i++) {
         dim << QString::number(mDomain.at(i));
     }
     qDebug() << QString("  dim=%1:[%2]").arg(mDimension).arg(dim.join(','));

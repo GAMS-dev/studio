@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "symbolreferencemodel.h"
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
@@ -30,6 +31,20 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mType(type)
 {
     ui->setupUi(this);
+
+    SymbolReferenceModel* refModel = new SymbolReferenceModel(mReference, mType, this);
+    ui->symbolView->setModel( refModel );
+    ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->symbolView->setAutoScroll(true);
+    ui->symbolView->setSortingEnabled(true);
+    ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    ui->symbolView->setAlternatingRowColors(true);
+
+    ui->symbolView->horizontalHeader()->setStretchLastSection(true);
+    ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+
 }
 
 SymbolReferenceWidget::~SymbolReferenceWidget()
@@ -37,5 +52,5 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
     delete ui;
 }
 
-} // namespace lxiviewer
 } // namespace studio
+} // namespace gams

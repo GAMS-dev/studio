@@ -116,6 +116,7 @@ SOURCES += \
     reference/symboldatatype.cpp \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
+    reference/symbolreferencemodel.cpp \
     resultsview.cpp \
     searchresultlist.cpp \
     settingsdialog.cpp \
@@ -207,6 +208,7 @@ HEADERS += \
     reference/symboldatatype.h \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
+    reference/symbolreferencemodel.h \
     resultsview.h \
     searchresultlist.h \
     settingsdialog.h \

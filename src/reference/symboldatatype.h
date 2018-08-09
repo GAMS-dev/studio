@@ -43,6 +43,8 @@ public:
     };
 
     SymbolType type() const;
+    QString name() const;
+
     QStringList description() const;
 
     bool operator ==(const SymbolDataType& symbolDataType) const;

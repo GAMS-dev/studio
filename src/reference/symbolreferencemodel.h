@@ -17,36 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SYMBOLREFERENCEWIDGET_H
-#define SYMBOLREFERENCEWIDGET_H
+#ifndef SYMBOLREFERENCEMODEL_H
+#define SYMBOLREFERENCEMODEL_H
 
-#include <QWidget>
+#include <QAbstractTableModel>
 #include "reference.h"
-#include "symboldatatype.h"
-
-namespace Ui {
-class SymbolReferenceWidget;
-}
 
 namespace gams {
 namespace studio {
 
-class SymbolReferenceWidget : public QWidget
+class SymbolReferenceModel : public QAbstractTableModel
 {
-    Q_OBJECT
-
 public:
-    explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent = nullptr);
-    ~SymbolReferenceWidget();
+    SymbolReferenceModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+
+    QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
 private:
-    Ui::SymbolReferenceWidget *ui;
+    SymbolDataType::SymbolType mType;
+
+    QStringList mSymbolsHeader;
+    QStringList mFileHeader;
 
     Reference* mReference;
-    SymbolDataType::SymbolType mType;
 };
 
 } // namespace studio
 } // namespace gams
 
-#endif // SYMBOLREFERENCEWIDGET_H
+#endif // SYMBOLREFERENCEMODEL_H

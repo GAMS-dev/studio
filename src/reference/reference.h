@@ -42,12 +42,12 @@ public:
 
     bool contains(SymbolId id) const;
     bool contains(const QString &symbolName) const;
+    bool isEmpty() const;
+    bool isValid() const;
+    int size() const;
 
     QList<SymbolId> symbolIDList() const;
     QList<QString> symbolNameList() const;
-
-    bool isValid() const;
-    int size() const;
 
     QString getFileLocation() const;
 
@@ -59,6 +59,15 @@ private:
 
     bool mValid;
     QString mReferenceFile;
+
+    QList<SymbolReferenceItem *> mSetReference;
+    QList<SymbolReferenceItem *> mAcronymReference;
+    QList<SymbolReferenceItem *> mParReference;
+    QList<SymbolReferenceItem *> mVarReference;
+    QList<SymbolReferenceItem *> mEquReference;
+    QList<SymbolReferenceItem *> mFileReference;
+    QList<SymbolReferenceItem *> mModelReference;
+    QList<SymbolReferenceItem *> mFunctionReference;
 
     QMap<QString, SymbolId> mSymbolNameMap;
     QMap<SymbolId, SymbolReferenceItem*> mReference;
