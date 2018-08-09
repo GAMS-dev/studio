@@ -402,7 +402,7 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QLis
     setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
 
     // iterate options
-    foreach (OptionItem item, itemList) {
+    for (OptionItem item : itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
