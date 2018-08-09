@@ -75,7 +75,6 @@ public:
     /// \return Returns the server name.
     ///
     QString serverName() const;
-    void setForeground();
 
 public slots:
 
