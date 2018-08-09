@@ -173,6 +173,8 @@ private slots:
     void projectViewVisibiltyChanged(bool visibility);
     void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
+    void showMainTabsMenu();
+    void showLogTabsMenu();
     void showTabsMenu();
 
 private slots:

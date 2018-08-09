@@ -143,10 +143,15 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
-//    QPushButton *cornerMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
-//    connect(cornerMenu, &QPushButton::pressed, this, &MainWindow::showTabsMenu);
-//    cornerMenu->setMaximumWidth(40);
-//    ui->mainTab->setCornerWidget(cornerMenu);
+    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
+    connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
+    tabMenu->setMaximumWidth(40);
+    ui->mainTab->setCornerWidget(tabMenu);
+    tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->logTabs);
+    connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
+    tabMenu->setMaximumWidth(40);
+    ui->logTabs->setCornerWidget(tabMenu);
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), this, SLOT(showTabsMenu()));
 
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
@@ -551,10 +556,34 @@ void MainWindow::helpViewVisibilityChanged(bool visibility)
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
 }
 
+void MainWindow::showMainTabsMenu()
+{
+    TabDialog *tabDialog = new TabDialog(ui->mainTab, this);
+    tabDialog->exec();
+    tabDialog->deleteLater();
+}
+
+void MainWindow::showLogTabsMenu()
+{
+    TabDialog *tabDialog = new TabDialog(ui->logTabs, this);
+    tabDialog->exec();
+    tabDialog->deleteLater();
+}
+
 void MainWindow::showTabsMenu()
 {
-    tabdialog::TabDialog *tabDialog = new tabdialog::TabDialog(ui->mainTab, this);
-
+    QWidget * wid = focusWidget();
+    while (wid) {
+        if (wid == ui->mainTab) {
+            showMainTabsMenu();
+            break;
+        }
+        if (wid == ui->logTabs) {
+            showLogTabsMenu();
+            break;
+        }
+        wid = wid->parentWidget();
+    }
 }
 
 void MainWindow::updateEditorPos()
