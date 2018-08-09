@@ -25,7 +25,8 @@
 #include <QMap>
 #include <QTabWidget>
 
-#include "symbolreferenceitem.h"
+#include "reference.h"
+//#include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
 
 namespace Ui {
@@ -34,7 +35,6 @@ class ReferenceViewer;
 
 namespace gams {
 namespace studio {
-
 
 class ReferenceViewer : public QWidget
 {
@@ -50,15 +50,7 @@ private:
     QTabWidget* mTabWidget;
     QList<SymbolReferenceWidget *> mPages;
 
-    bool parseFile(QString referenceFile);
-    void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
-    QList<SymbolReferenceItem*> findReference(SymbolDataType::SymbolType type);
-
-    bool mValid;
-    QString mReferenceFile;
-    QMap<QString, SymbolId> mSymbolNameMap;
-    QMap<SymbolId, SymbolReferenceItem*> mReference;
-
+    Reference* mReference;
 };
 
 } // namespace studio

@@ -98,6 +98,11 @@ bool Reference::isValid() const
     return mValid;
 }
 
+int Reference::size() const
+{
+    return mReference.size();
+}
+
 QString Reference::getFileLocation() const
 {
     return mReferenceFile;
@@ -143,14 +148,14 @@ bool Reference::parseFile(QString referenceFile)
         recordList = in.readLine().split(' ');
         idx = recordList.first();
         QString id = recordList.at(0);
+
+        if (!mReference.contains(id.toInt())) // ignore other unreferenced symbols
+            continue;
+
         QString symbolName = recordList.at(1);
         QString symbolType = recordList.at(3);
         QString dimension = recordList.at(4);
         QString numberOfElements = recordList.at(5);
-
-        SymbolDataType::SymbolType type = SymbolDataType::typeFrom(symbolType);
-        if (!mReference.contains(id.toInt())) // ignore other unreferenced symbols
-            continue;
 
         SymbolReferenceItem* ref = mReference[id.toInt()];
         ref->setDimension(dimension.toInt());
@@ -193,6 +198,17 @@ void Reference::addReferenceInfo(SymbolReferenceItem *ref, const QString &refere
         ref->addControl(new ReferenceItem(location, lineNumber, columnNumber));
     } else if (QString::compare(referenceType, "index", Qt::CaseInsensitive)==0) {
         ref->addIndex(new ReferenceItem(location, lineNumber, columnNumber));
+    }
+}
+
+void Reference::dumpAll()
+{
+    QMap<SymbolId, SymbolReferenceItem*>::const_iterator i = mReference.constBegin();
+    while (i != mReference.constEnd()) {
+        qDebug() << "--- id=" << i.key() << "---";
+        SymbolReferenceItem* ref = i.value();
+        ref->dumpAll();
+        ++i;
     }
 }
 

@@ -47,8 +47,11 @@ public:
     QList<QString> symbolNameList() const;
 
     bool isValid() const;
+    int size() const;
 
     QString getFileLocation() const;
+
+    void dumpAll();
 
 private:
     bool parseFile(QString referenceFile);

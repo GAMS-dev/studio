@@ -21,6 +21,7 @@
 #define SYMBOLREFERENCEWIDGET_H
 
 #include <QWidget>
+#include "reference.h"
 #include "symboldatatype.h"
 
 namespace Ui {
@@ -35,13 +36,14 @@ class SymbolReferenceWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SymbolReferenceWidget(SymbolDataType type, QWidget *parent = nullptr);
+    explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent = nullptr);
     ~SymbolReferenceWidget();
 
 private:
     Ui::SymbolReferenceWidget *ui;
 
-    SymbolDataType mType;
+    Reference* mReference;
+    SymbolDataType::SymbolType mType;
 };
 
 } // namespace lxiviewer

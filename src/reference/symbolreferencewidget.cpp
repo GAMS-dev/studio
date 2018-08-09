@@ -23,9 +23,10 @@
 namespace gams {
 namespace studio {
 
-SymbolReferenceWidget::SymbolReferenceWidget(SymbolDataType type, QWidget *parent) :
+SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SymbolReferenceWidget),
+    mReference(ref),
     mType(type)
 {
     ui->setupUi(this);
