@@ -2357,21 +2357,17 @@ void MainWindow::setForeground()
    } else {
        SetForegroundWindow(WinId);
    }
+#else
+    this->show();
+    this->raise();
+    this->activateWindow();
 #endif
 }
 
 void MainWindow::setForegroundOSCheck()
 {
     if (mSettings->foregroundOnDemand())
-    {
-#if defined (WIN32)
-    setForeground();
-#else
-    this->show();
-    this->raise();
-    this->activateWindow();
-#endif
-    }
+        setForeground();
 }
   
 void MainWindow::on_actionNextTab_triggered()
