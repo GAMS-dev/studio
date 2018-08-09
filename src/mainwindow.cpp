@@ -1075,25 +1075,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
     }
-    if (mClosedTabsIndexes.isEmpty())
-    {
-        mClosedTabsIndexes << index;
-        mCounter = 0;
-    }
-    else
-    {
-        if (mClosedTabsIndexes.last() > index)
-        {
-            mCounter = mCounter +1;
-            mClosedTabsIndexes << index;
-        }
-        else
-        {
-            index = index + mCounter;
-            mClosedTabsIndexes << index +1;
-            mCounter=0;
-        }
-    }
+    mClosedTabsIndexes << index;
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -2242,9 +2224,6 @@ void MainWindow::toggleLogDebug()
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
-     qDebug() << "the number of tabs opened in studio tabbar" <<ui->mainTab->count();
-     for (int i= 0 ; i< mClosedTabsIndexes.size();++i )
-         qDebug() << "index vector in case number " << i << mClosedTabsIndexes.at(i) ;
     // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
@@ -2260,23 +2239,16 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     mClosedTabs.removeLast();
     if (file.exists()) {
         openFile(file.fileName());
-        int numTabs = ui->mainTab->count();
-        qDebug() << "numTabs = " << numTabs;
-        qDebug() << "Lastindex = " << mClosedTabsIndexes.last();
-        int index = mClosedTabsIndexes.last();
-        if (numTabs > index)
-        {
-            qDebug() << "if is in ";
-            QWidget* pPreviouslyClosedwidget = ui->mainTab->widget(mClosedTabsIndexes.last()-1);
-            QString Tabtext = ui->mainTab->tabText(mClosedTabsIndexes.last());
-            ui->mainTab->addTab(pPreviouslyClosedwidget,Tabtext);
-            qDebug() << "index of " << ui->mainTab->indexOf(pPreviouslyClosedwidget);
-        }
+        QWidget* pPreviouslyClosedwidget = ui->mainTab->widget(ui->mainTab->count()-1);
+        QString Tabtext = ui->mainTab->tabText(ui->mainTab->count()-1);
+        ui->mainTab->insertTab(mClosedTabsIndexes.last(),pPreviouslyClosedwidget,Tabtext);
+        ui->mainTab->widget(mClosedTabsIndexes.last())->setFocus();
         mClosedTabsIndexes.removeLast();
     }
     else
         on_actionRestore_Recently_Closed_Tab_triggered();
 }
+
 
 void MainWindow::on_actionSelect_encodings_triggered()
 {
