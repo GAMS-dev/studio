@@ -25,10 +25,10 @@
 namespace gams {
 namespace studio {
 
-AbstractProcess::AbstractProcess(const QString &appPath, QObject *parent)
+AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
     : QObject (parent),
       mProcess(this),
-      mAppPath(appPath)
+      mAppName(appName)
 {
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);
@@ -87,7 +87,7 @@ QString AbstractProcess::nativeAppPath()
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(mAppPath);
+    auto appPath = QDir(systemDir).filePath(mAppName);
     return QDir::toNativeSeparators(appPath);
 }
 

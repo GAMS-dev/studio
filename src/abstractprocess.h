@@ -35,7 +35,7 @@ class AbstractProcess
     Q_OBJECT
 
 protected:
-    AbstractProcess(const QString &app, QObject *parent = Q_NULLPTR);
+    AbstractProcess(const QString &appName, QObject *parent = Q_NULLPTR);
     virtual ~AbstractProcess() {}
 
 public:
@@ -68,7 +68,7 @@ protected:
     QMutex mOutputMutex;
 
 private:
-    QString mAppPath;
+    QString mAppName;
     QString mInputFile;
 };
 
