@@ -193,7 +193,7 @@ bool GdxViewer::init()
 {
     int errNr = 0;
 
-    gdxOpenRead(mGdx, mGdxFile.toLatin1(), &errNr);
+    gdxOpenRead(mGdx, mGdxFile.toLocal8Bit(), &errNr);
     if (errNr) {
         gdxClose(mGdx);
         char msg[GMS_SSSIZE];

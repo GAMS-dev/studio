@@ -171,6 +171,7 @@ private slots:
     void projectViewVisibiltyChanged(bool visibility);
     void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
+    void showTabsMenu();
 
 private slots:
     // File
@@ -237,6 +238,10 @@ private slots:
     void on_actionReset_Views_triggered();
     void initAutoSave();
 
+    void on_actionNextTab_triggered();
+
+    void on_actionPreviousTab_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -293,7 +298,6 @@ private:
     bool mOverwriteMode = false;
     StatusWidgets* mStatusWidgets;
     int mTimerID;
-    FileMetrics mMetrics;
     QStringList mOpenTabsList;
 };
 

@@ -32,10 +32,10 @@ namespace studio {
 const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
         // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
 
-ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, ContextType type)
+ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, FileType *knownType, ContextType type)
     : ProjectAbstractNode(fileId, name, location, type)
 {
-    mMetrics = FileMetrics(QFileInfo(location));
+    mMetrics = FileMetrics(QFileInfo(location), knownType);
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
         mSyntaxHighlighter = new SyntaxHighlighter(this);
     else if (mMetrics.fileType() != FileType::Gdx) {
@@ -76,11 +76,13 @@ int ProjectFileNode::codecMib() const
 void ProjectFileNode::setCodecMib(int mib)
 {
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    if (!codec)
-        EXCEPT() << "TextCodec not found for MIB " << mib;
+    if (!codec) {
+        DEB() << "TextCodec not found for MIB " << mib;
+        return;
+    }
     if (document() && !isReadOnly() && codec != mCodec) {
         document()->setModified();
-        mCodec = codec;
+        setCodec(codec);
     }
 }
 
@@ -283,7 +285,7 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
-        mMetrics = FileMetrics();
+//        mMetrics = FileMetrics();
         const QByteArray data(file.readAll());
         QString text;
         QTextCodec *codec = nullptr;
@@ -311,7 +313,7 @@ void ProjectFileNode::load(QList<int> codecMibs, bool keepMarks)
         }
         file.close();
         document()->setModified(false);
-        mMetrics = FileMetrics(QFileInfo(file));
+        mMetrics = FileMetrics(QFileInfo(file), &mMetrics.fileType());
         QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
     }
     if (!mWatcher) {
@@ -632,6 +634,16 @@ void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
         }
 
     }
+}
+
+void ProjectFileNode::setCodec(QTextCodec *codec)
+{
+    mCodec = codec;
+}
+
+QTextCodec *ProjectFileNode::codec() const
+{
+    return mCodec;
 }
 
 void ProjectFileNode::modificationChanged(bool modiState)

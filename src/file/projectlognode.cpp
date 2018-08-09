@@ -20,6 +20,8 @@
  */
 #include <QScrollBar>
 #include <QDir>
+#include <QByteArray>
+#include <QTextCodec>
 #include "projectlognode.h"
 #include "exception.h"
 #include "projectgroupnode.h"
@@ -30,7 +32,7 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileId fileId, QString name)
-    : ProjectFileNode(fileId, name, "[LOG]", ProjectAbstractNode::Log)
+    : ProjectFileNode(fileId, name, "[LOG]", nullptr, ProjectAbstractNode::Log)
 {
     mMetrics = FileMetrics(QFileInfo(name+".log"));
     mDocument = new QTextDocument(this);
@@ -115,12 +117,21 @@ TextMark*ProjectLogNode::firstErrorMark()
     return mMarks->firstErrorMark();
 }
 
-void ProjectLogNode::addProcessData(QString text)
+void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!mDocument)
         EXCEPT() << "no log-document to add process data";
+    QTextCodec::ConverterState convState;
+    QString text(codec()->toUnicode(data.constData(), data.size(), &convState));
+    if (codec()) {
+        text =codec()->toUnicode(data.constData(), data.size(), &convState);
+    }
+    if (!codec() || convState.invalidChars > 0) {
+        QTextCodec* locCodec = QTextCodec::codecForLocale();
+        text = locCodec->toUnicode(data.constData(), data.size(), &convState);
+    }
 
     ExtractionState state = Outside;
     QRegularExpressionMatch match;
@@ -394,6 +405,20 @@ ProjectFileNode *ProjectLogNode::lstNode() const
 void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
 {
     mLstNode = lstNode;
+}
+
+void ProjectLogNode::setCodecMib(int mib)
+{
+    if (mib == -1) {
+        mCodec = nullptr;
+        return;
+    }
+    QTextCodec *codec = QTextCodec::codecForMib(mib);
+    if (!codec) {
+        DEB() << "TextCodec not found for MIB " << mib;
+        return;
+    }
+    setCodec(codec);
 }
 
 void ProjectLogNode::setJumpToLogEnd(bool state)

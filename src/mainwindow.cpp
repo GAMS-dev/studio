@@ -48,6 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "tabdialog.h"
 
 namespace gams {
 namespace studio {
@@ -68,9 +69,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
     mTimerID = startTimer(60000);
-    QList<QKeySequence> redoShortcuts;
-    redoShortcuts << ui->actionRedo->shortcut() << QKeySequence("Ctrl+Shift+Z");
-    ui->actionRedo->setShortcuts(redoShortcuts);
+    ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+#ifdef __APPLE__
+    ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
+    ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
+#endif
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -140,6 +143,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
+//    QPushButton *cornerMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
+//    connect(cornerMenu, &QPushButton::pressed, this, &MainWindow::showTabsMenu);
+//    cornerMenu->setMaximumWidth(40);
+//    ui->mainTab->setCornerWidget(cornerMenu);
+
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
@@ -547,6 +555,12 @@ void MainWindow::optionViewVisibiltyChanged(bool visibility)
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
+}
+
+void MainWindow::showTabsMenu()
+{
+    tabdialog::TabDialog *tabDialog = new tabdialog::TabDialog(ui->mainTab, this);
+
 }
 
 void MainWindow::updateEditorPos()
@@ -1519,6 +1533,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         ui->actionShow_System_Log->trigger();
         return;
     }
+    if (gmsFileNode)
+        logProc->setCodecMib(fc->codecMib());
+    else {
+        ProjectFileNode *runNode = group->findFile(gmsFilePath);
+        logProc->setCodecMib(runNode ? runNode->codecMib() : -1);
+    }
+
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
@@ -2157,8 +2178,8 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    mOverwriteMode = overwriteMode;
     if (ce && !ce->isReadOnly()) {
-        mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
         updateEditorMode();
     }
@@ -2299,7 +2320,7 @@ void MainWindow::resetViews()
     mSettings->loadSettings(this);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
-    foreach (QDockWidget* dock, dockWidgets) {
+    for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
         dock->setVisible(true);
 
@@ -2325,6 +2346,43 @@ void MainWindow::resizeOptionEditor(const QSize &size)
     this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
 }
 
+void MainWindow::on_actionNextTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
+}
+
+void MainWindow::on_actionPreviousTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+}
 
 }
 }
+
+

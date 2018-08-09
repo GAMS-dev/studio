@@ -98,9 +98,8 @@ void AutosaveHandler::saveChangedFiles()
         ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
         QString filepath = QFileInfo(fc->location()).path();
         QString filename = filepath+fc->name();
-        FileMetrics metrics = FileMetrics(QFileInfo(filename));
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fc->name();
-        if (fc->isModified() && (metrics.fileType() == FileType::Gms || metrics.fileType() == FileType::Txt))
+        if (fc->isModified() && (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Txt))
         {
             QFile file(autosaveFile);
             file.open(QIODevice::WriteOnly);

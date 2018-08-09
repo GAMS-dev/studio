@@ -111,7 +111,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
                     break;
                 }
             } else if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
-                        !gamsOption->isThereASynonym(mOptionItem.at(row).key)
+                        !gamsOption->isASynonym(mOptionItem.at(row).key)
                       )  {
                          return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
             } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
@@ -139,7 +139,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
             else
                  return QVariant::fromValue(QColor(Qt::black));
         }
-        if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isThereASynonym(mOptionItem.at(row).key)) { // valid option
+        if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isASynonym(mOptionItem.at(row).key)) { // valid option
             if (col==0) { // key
                 if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
@@ -348,7 +348,7 @@ void OptionTableModel::validateOption()
               item.error = OptionErrorType::Invalid_Key;
            continue;
        }
-       if (gamsOption->isValid(item.key) || gamsOption->isThereASynonym(item.key)) { // valid option
+       if (gamsOption->isValid(item.key) || gamsOption->isASynonym(item.key)) { // valid option
            if (gamsOption->isDeprecated(item.key)) { // deprecated option
                item.error = OptionErrorType::Deprecated_Option;
            } else { // valid and not deprected Option
