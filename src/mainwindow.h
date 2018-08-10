@@ -294,7 +294,6 @@ private:
     FileMetrics mMetrics;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
-    int mCounter=0;
 };
 
 }
