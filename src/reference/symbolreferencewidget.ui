@@ -23,7 +23,7 @@
    <item>
     <widget class="QSplitter" name="symbolReferenceSplitter">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -32,7 +32,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTableView" name="symbolView"/>
-     <widget class="QTreeView" name="treeView"/>
+     <widget class="QTreeView" name="referenceView"/>
     </widget>
    </item>
   </layout>

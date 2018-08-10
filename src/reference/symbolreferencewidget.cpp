@@ -17,7 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "symbolreferencemodel.h"
+
+#include <QDebug>
+
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
@@ -32,24 +34,62 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 {
     ui->setupUi(this);
 
-    SymbolReferenceModel* refModel = new SymbolReferenceModel(mReference, mType, this);
-    ui->symbolView->setModel( refModel );
+    mSymbolTableModel = new SymbolReferenceModel(mReference, mType, this);
+
+    mSymbolTableProxyModel= new QSortFilterProxyModel(this);
+    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
+    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    ui->symbolView->setModel( mSymbolTableModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->symbolView->setAutoScroll(true);
-    ui->symbolView->setSortingEnabled(true);
+//    ui->symbolView->setAutoScroll(true);
+//    ui->symbolView->setSortingEnabled(true);
+//    ui->symbolView->resizeColumnsToContents();
     ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    QItemSelectionModel* selectModel = ui->symbolView->selectionModel();
+    connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
+
+    mReferenceTreeProxyModel = new QSortFilterProxyModel(this);
+    mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
+
+    mReferenceTreeProxyModel->setFilterKeyColumn(-1);
+    mReferenceTreeProxyModel->setSourceModel( mReferenceTreeModel );
+    mReferenceTreeProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    mReferenceTreeProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    ui->referenceView->setModel( mReferenceTreeProxyModel );
+    ui->referenceView->setItemsExpandable(true);
+    ui->referenceView->expandAll();
+    ui->referenceView->resizeColumnToContents(0);
+    ui->referenceView->resizeColumnToContents(1);
+//    ui->referenceView->resizeColumnToContents(2);
+    ui->referenceView->setAlternatingRowColors(true);
 
 }
 
 SymbolReferenceWidget::~SymbolReferenceWidget()
 {
     delete ui;
+}
+
+void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
+{
+   if (selected.indexes().size() > 0) {
+      qDebug() << selected.indexes().size() << ":" << selected.indexes().at(0).data();
+
+      SymbolId id = selected.indexes().at(0).data().toInt();
+      emit mReferenceTreeModel->updateSelectedSymbol(id);
+//            QList<SymbolReferenceItem*> ref = mReference->findReference(mType);
+//            selected.indexes().at(0).data()
+        }
 }
 
 } // namespace studio

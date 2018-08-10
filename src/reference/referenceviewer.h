@@ -44,13 +44,13 @@ public:
     explicit ReferenceViewer(QString referenceFile, QWidget *parent = nullptr);
     ~ReferenceViewer();
 
+signals:
+    void symbolSelectedChanged(SymbolId SymbolId);
+
 private:
     Ui::ReferenceViewer *ui;
 
     QTabWidget* mTabWidget;
-    QList<SymbolReferenceWidget *> mPages;
-
-    Reference* mReference;
 };
 
 } // namespace studio

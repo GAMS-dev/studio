@@ -21,8 +21,13 @@
 #define SYMBOLREFERENCEWIDGET_H
 
 #include <QWidget>
+#include <QSortFilterProxyModel>
+#include <QItemSelection>
+
 #include "reference.h"
+#include "referencetreemodel.h"
 #include "symboldatatype.h"
+#include "symbolreferencemodel.h"
 
 namespace Ui {
 class SymbolReferenceWidget;
@@ -39,8 +44,17 @@ public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent = nullptr);
     ~SymbolReferenceWidget();
 
+public slots:
+    void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+
 private:
     Ui::SymbolReferenceWidget *ui;
+
+    QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
+    QSortFilterProxyModel* mReferenceTreeProxyModel = nullptr;
+
+    SymbolReferenceModel* mSymbolTableModel;
+    ReferenceTreeModel* mReferenceTreeModel;
 
     Reference* mReference;
     SymbolDataType::SymbolType mType;
