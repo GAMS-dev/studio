@@ -53,7 +53,7 @@ public:
     ~ProjectRepo();
     void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
-    const ProjectGroupNode *findGroup(const QString& filePath);
+    ProjectGroupNode *findGroup(const QString& filePath);
     ProjectRunGroupNode *findRunGroup(FileId runId, ProjectGroupNode *group = nullptr) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
     ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
@@ -154,11 +154,7 @@ private:
     inline void indexNode(ProjectAbstractNode* node) {
         mNodes.insert(node->id(), node);
     }
-    inline void deleteNode(ProjectAbstractNode* node) {
-        node->setParentNode(nullptr);
-        mNodes.remove(node->id());
-        delete node;
-    }
+    void deleteNode(ProjectAbstractNode* node);
 
 private:
     ProjectTreeModel* mTreeModel = nullptr;

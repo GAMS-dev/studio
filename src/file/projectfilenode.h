@@ -51,7 +51,6 @@ public:
     };
 
     ~ProjectFileNode() override;
-    void setParentNode(ProjectGroupNode *parent) override;
 
 
     /// The icon for this file type.
@@ -77,6 +76,7 @@ protected:
     friend class FileMeta;
 
     ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::file);
+    void setParentNode(ProjectGroupNode *parent) override;
     void replaceFile(FileMeta* fileMeta);
 //    void showToolTip(const QVector<TextMark*> marks);
 

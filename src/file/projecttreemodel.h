@@ -49,8 +49,10 @@ public:
 protected:
     friend class ProjectRepo;
 
-    bool insertChild(int row, ProjectGroupNode *parent, ProjectAbstractNode* child);
-    bool removeChild(ProjectAbstractNode* child);
+    bool insertPrepare(int row, ProjectGroupNode *parent);
+    void insertDone();
+    bool removePrepare(ProjectAbstractNode* child);
+    void removeDone();
 
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);

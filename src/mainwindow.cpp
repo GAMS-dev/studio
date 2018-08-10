@@ -1180,8 +1180,30 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item, QString gmsFileNa
 void MainWindow::openFilePath(const QString &filePath)
 {
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    // TODO(JM) Do we need to find a ProjectRunGroupNode as context?
-    openFile(fm, true, nullptr, -1);
+
+    // We need to find a ProjectRunGroupNode
+    ProjectRunGroupNode * runGroup = nullptr;
+    ProjectFileNode * node = nullptr;
+    // search for node in active group
+    if (mRecent.group) {
+        runGroup = mRecent.group->runParentNode();
+        node = runGroup->findFile(fm);
+    }
+    // search for node
+    if (!node) {
+        node = mProjectRepo.treeModel()->rootNode()->findFile(fm);
+        if (node) runGroup = node->runParentNode();
+    }
+    // no node exists
+    if (!node) {
+        QFileInfo fi(fm->location());
+        ProjectGroupNode *group = mProjectRepo.findGroup(fm->location());
+        if (!group)
+            group = mProjectRepo.createGroup(fm->name(), fi.absolutePath(), fm->location());
+        group->findOrCreateFileNode(fm->location());
+        runGroup = group->runParentNode();
+    }
+    openFile(fm, true, runGroup, -1);
 }
 
 HistoryData *MainWindow::history()

@@ -213,7 +213,7 @@ void FileMeta::addEditor(QWidget *edit)
     CodeEdit* scEdit = toCodeEdit(edit);
 
     if (ptEdit) {
-        ptEdit->setDocument(document());
+        ptEdit->setDocument(mDocument);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
@@ -250,7 +250,9 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
     if (ptEdit) {
         ptEdit->viewport()->removeEventFilter(this);
         ptEdit->removeEventFilter(this);
-        ptEdit->setDocument(new QTextDocument(ptEdit));
+        QTextDocument *doc = new QTextDocument(ptEdit);
+        doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
+        ptEdit->setDocument(doc);
 
         if (mEditors.isEmpty()) {
             if (!suppressCloseSignal) emit documentClosed();
@@ -463,10 +465,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
-
-        // TODO(JM) load should be unbound from createEdit
-//        if (!mEditors.size())
-//            triggerLoad(codecMibs);
 
         if (kind() == FileKind::Log ||
                 kind() == FileKind::Lst ||

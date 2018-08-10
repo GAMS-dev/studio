@@ -171,11 +171,11 @@ class ProjectRootNode : public ProjectGroupNode
 public:
     ProjectRootNode(ProjectRepo *projectRepo);
     ~ProjectRootNode() {}
-    void setParentNode(ProjectRunGroupNode *parent);
     ProjectRepo *projectRepo() const;
 
 private:
     friend class ProjectRepo;
+    void setParentNode(ProjectGroupNode *parent);
     void init(ProjectRepo* projectRepo);
 
 private:

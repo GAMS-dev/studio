@@ -33,7 +33,6 @@ public:
     void markOld();
 
 //public:
-    void setParentNode(ProjectGroupNode *parent) override;
 //    void fileClosed(ProjectFileNode* fc);
 //    TextMark* firstErrorMark();
     void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
@@ -47,7 +46,9 @@ public slots:
 protected:
     friend class ProjectRepo;
     friend class ProjectRunGroupNode;
+
     ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *runGroup);
+    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {
         TextMark* textMark = nullptr;

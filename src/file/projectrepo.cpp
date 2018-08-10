@@ -53,11 +53,11 @@ void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
     mTextMarkRepo = textMarkRepo;
 }
 
-const ProjectGroupNode* ProjectRepo::findGroup(const QString &filePath)
+ProjectGroupNode *ProjectRepo::findGroup(const QString &filePath)
 {
     QFileInfo fi(filePath);
     QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
-    const ProjectAbstractNode* node = mTreeModel->rootNode()->findNode(di.filePath(), false);
+    ProjectAbstractNode* node = mTreeModel->rootNode()->findNode(di.filePath(), false);
     return node ? node->toGroup() : nullptr;
 }
 
@@ -244,10 +244,22 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
             if (!name.isEmpty() || !file.isEmpty()) {
                 FileMeta* fileMeta = fileRepo()->findOrCreateFileMeta(file);
                 if (!group->findNode(file, false))
-                    indexNode(new ProjectFileNode(fileMeta, group));
+                    findOrCreateFileNode(fileMeta, group);
             }
         }
     }
+}
+
+void ProjectRepo::deleteNode(ProjectAbstractNode *node)
+{
+    if (!mTreeModel->removePrepare(node)) {
+        DEB() << "Error deleting node '" << node->name() << "'";
+        return;
+    }
+    node->setParentNode(nullptr);
+    mNodes.remove(node->id());
+    mTreeModel->removeDone();
+    delete node;
 }
 
 void ProjectRepo::write(QJsonObject& json) const
@@ -284,26 +296,28 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
     }
 }
 
-ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent)
+ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *parentNode)
 {
-    if (!_parent) _parent = mTreeModel->rootNode();
-    if (!_parent) FATAL() << "Can't get parent object";
+    if (!parentNode) parentNode = mTreeModel->rootNode();
+    if (!parentNode) FATAL() << "Can't get parent object";
 
     bool hit;
-    int offset = _parent->peekIndex(name, &hit);
+    int offset = parentNode->peekIndex(name, &hit);
     if (hit) offset++;
 
     ProjectGroupNode* group;
     ProjectRunGroupNode* runGroup = nullptr;
-    if (_parent == mTreeModel->rootNode()) {
+    mTreeModel->insertPrepare(offset, parentNode);
+    if (parentNode == mTreeModel->rootNode()) {
         FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
         runGroup = new ProjectRunGroupNode(name, path, runFile);
         group = runGroup;
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     } else
         group = new ProjectGroupNode(name, path);
+    group->setParentNode(parentNode);
     indexNode(group);
-    mTreeModel->insertChild(offset, _parent, group);
+    mTreeModel->insertDone();
     connect(group, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
 
@@ -321,12 +335,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
         ProjectAbstractNode *node = group->childNode(i);
         ProjectGroupNode* subGroup = node->toGroup();
         if (subGroup) closeGroup(subGroup);
-        else {
-            mTreeModel->removeChild(node);
-            if (!node->toFile())
-                EXCEPT() << "unhandled node of type " << (int)node->type();
-            closeNode(node->toFile());
-        }
+        else deleteNode(node);
     }
     // remove log-node if present
     if (group->toRunGroup()) {
@@ -334,7 +343,6 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
         if (group->toRunGroup()->logNode())
             closeNode(group->toRunGroup()->logNode());
     }
-    mTreeModel->removeChild(group);
     deleteNode(group);
     emit changed();
 }
@@ -389,8 +397,16 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     ProjectAbstractNode* node = findNode(fileMeta->location(), fileGroup);
     if (!node) {
         if (fileMeta->kind() == FileKind::Log)
-            EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
-        node = new ProjectFileNode(fileMeta, fileGroup);
+            DEB() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
+        else {
+            bool hit;
+            int offset = fileGroup->peekIndex(fileMeta->location(), &hit);
+            if (hit) offset++;
+            mTreeModel->insertPrepare(offset, fileGroup);
+            node = new ProjectFileNode(fileMeta, fileGroup);
+            indexNode(node);
+            mTreeModel->insertDone();
+        }
         emit changed();
     }
     return node->toFile();

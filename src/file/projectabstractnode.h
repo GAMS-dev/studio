@@ -59,7 +59,6 @@ public:
     virtual QIcon icon() = 0;
 
     virtual ProjectGroupNode *parentNode() const;
-    virtual void setParentNode(ProjectGroupNode *parent);
     const ProjectRunGroupNode *runParentNode() const;
     ProjectRunGroupNode *runParentNode();
 
@@ -90,9 +89,10 @@ signals:
     void changed(NodeId nodeId);
 
 protected:
-//    friend class ProjectLogNode;
+    friend class ProjectRepo;
 
     ProjectAbstractNode(QString name, NodeType type);
+    virtual void setParentNode(ProjectGroupNode *parent);
 
 private:
     static NodeId mNextNodeId;

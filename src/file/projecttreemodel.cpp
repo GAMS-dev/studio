@@ -82,7 +82,10 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 
 int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    const ProjectGroupNode* entry = mProjectRepo->node(parent)->toGroup();
+    ProjectAbstractNode* node = mProjectRepo->node(parent);
+    if (!node)
+        return 0;
+    const ProjectGroupNode* entry = node->toGroup();
     if (!entry) return 0;
     return entry->childCount();
 }
@@ -156,25 +159,31 @@ bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     return false;
 }
 
-bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child)
+bool ProjectTreeModel::insertPrepare(int row, ProjectGroupNode *parent)
 {
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
     beginInsertRows(parMi, row, row);
-    child->setParentNode(parent);
-    endInsertRows();
     return true;
 }
 
-bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
+void ProjectTreeModel::insertDone()
+{
+    endInsertRows();
+}
+
+bool ProjectTreeModel::removePrepare(ProjectAbstractNode *child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) return false;
     QModelIndex parMi = index(child->parentNode());
     beginRemoveRows(parMi, mi.row(), mi.row());
-    child->setParentNode(nullptr);
-    endRemoveRows();
     return true;
+}
+
+void ProjectTreeModel::removeDone()
+{
+    endRemoveRows();
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
@@ -196,8 +205,13 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
         }
         if (mCurrent.isValid()) {
             dataChanged(mCurrent, mCurrent);            // invalidate new
-            QModelIndex par = index(mProjectRepo->node(mCurrent)->parentNode());
-            if (par.isValid()) dataChanged(par, par);
+            ProjectAbstractNode * n1 = mProjectRepo->node(mCurrent);
+            if (!n1) {
+                DEB() << "Error: TreeModel inconsistent, nodeId " << mCurrent.internalId() << " not found";
+            } else {
+                QModelIndex par = index(n1->parentNode());
+                if (par.isValid()) dataChanged(par, par);
+            }
         }
     }
 }

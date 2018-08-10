@@ -35,7 +35,7 @@ namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type)
-    : ProjectAbstractNode(name, type), mLocation(location)
+    : ProjectAbstractNode("G-"+name, type), mLocation(location)
 {}
 
 ProjectGroupNode::~ProjectGroupNode()
@@ -92,7 +92,6 @@ void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
 void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
 {
     mChildNodes.removeOne(child);
-//    detachFile(child->location());
 }
 
 QString ProjectGroupNode::location() const
@@ -117,7 +116,7 @@ QString ProjectGroupNode::lstErrorText(int line)
 
 ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool recurse) const
 {
-    foreach (ProjectAbstractNode* node, mChildNodes) {
+    for (ProjectAbstractNode* node: mChildNodes) {
         const ProjectFileNode* file = node->toFile();
         if (file && file->location() == location) return node;
         const ProjectGroupNode* group = node->toGroup();
@@ -134,7 +133,7 @@ ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool re
 
 ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
 {
-    foreach (ProjectAbstractNode* node, mChildNodes) {
+    for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
         const ProjectGroupNode* group = node->toGroup();
@@ -156,7 +155,7 @@ ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
 {
-    foreach (ProjectAbstractNode* node, internalNodeList()) {
+    for (ProjectAbstractNode* node: internalNodeList()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->isProcess(process))
             return runGroup;
@@ -171,7 +170,7 @@ ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *proce
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
 {
-    foreach (ProjectAbstractNode* node, internalNodeList()) {
+    for (ProjectAbstractNode* node: internalNodeList()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->runFileId() == runId)
             return runGroup;
@@ -370,7 +369,7 @@ ProjectRootNode::ProjectRootNode(ProjectRepo* repo)
     if (!mRepo) EXCEPT() << "The ProjectRepo must not be null";
 }
 
-void ProjectRootNode::setParentNode(ProjectRunGroupNode *parent)
+void ProjectRootNode::setParentNode(ProjectGroupNode *parent)
 {
     Q_UNUSED(parent);
     EXCEPT() << "The root node has no parent";
