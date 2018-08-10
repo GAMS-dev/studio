@@ -45,16 +45,13 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setModel( mSymbolTableModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-//    ui->symbolView->setAutoScroll(true);
-//    ui->symbolView->setSortingEnabled(true);
-//    ui->symbolView->resizeColumnsToContents();
+        ui->symbolView->setSortingEnabled(true);
     ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
-    ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    QItemSelectionModel* selectModel = ui->symbolView->selectionModel();
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
 
     mReferenceTreeProxyModel = new QSortFilterProxyModel(this);
@@ -70,9 +67,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->expandAll();
     ui->referenceView->resizeColumnToContents(0);
     ui->referenceView->resizeColumnToContents(1);
-//    ui->referenceView->resizeColumnToContents(2);
     ui->referenceView->setAlternatingRowColors(true);
 
+    connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
 }
 
 SymbolReferenceWidget::~SymbolReferenceWidget()
@@ -82,14 +79,18 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-   if (selected.indexes().size() > 0) {
-      qDebug() << selected.indexes().size() << ":" << selected.indexes().at(0).data();
+    Q_UNUSED(deselected);
+    if (selected.indexes().size() > 0) {
+        SymbolId id = selected.indexes().at(0).data().toInt();
+        emit mReferenceTreeModel->updateSelectedSymbol(id);
+    }
+}
 
-      SymbolId id = selected.indexes().at(0).data().toInt();
-      emit mReferenceTreeModel->updateSelectedSymbol(id);
-//            QList<SymbolReferenceItem*> ref = mReference->findReference(mType);
-//            selected.indexes().at(0).data()
-        }
+void SymbolReferenceWidget::expandResetModel()
+{
+    ui->referenceView->expandAll();
+    ui->referenceView->resizeColumnToContents(0);
+    ui->referenceView->resizeColumnToContents(1);
 }
 
 } // namespace studio

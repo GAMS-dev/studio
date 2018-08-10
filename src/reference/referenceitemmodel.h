@@ -32,14 +32,17 @@ public:
     ReferenceItemModel(const QList<QVariant>& data, ReferenceItemModel* parentItem = nullptr);
     ~ReferenceItemModel();
 
-    void appendChild(ReferenceItemModel *child);
+    void appendChild(ReferenceItemModel* child);
 
-    ReferenceItemModel *child(int row);
+    ReferenceItemModel* child(int row);
+    ReferenceItemModel *parent();
     int childCount() const;
     int columnCount() const;
     QVariant data(int column) const;
     int row() const;
     ReferenceItemModel *parentItem();
+
+    bool removeChildren(int position, int count);
 
 private:
     QList<ReferenceItemModel*> mChildItems;

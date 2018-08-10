@@ -29,17 +29,14 @@ ReferenceTreeModel::ReferenceTreeModel(Reference* ref, QObject *parent) :
 {
     QList<QVariant> rootData;
     rootData << "Location" << "Line" << "Column";
-    rootItem = new ReferenceItemModel(rootData);
+    mRootItem = new ReferenceItemModel(rootData);
 
     connect(this, &ReferenceTreeModel::symbolSelectionChanged, this, &ReferenceTreeModel::updateSelectedSymbol);
-
-    updateSelectedSymbol(136);
-//    setupTreeItemModelData(ref, rootItem);
 }
 
 ReferenceTreeModel::~ReferenceTreeModel()
 {
-    delete rootItem;
+    delete mRootItem;
 }
 
 QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
@@ -65,7 +62,7 @@ Qt::ItemFlags ReferenceTreeModel::flags(const QModelIndex &index) const
 QVariant ReferenceTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return rootItem->data(section);
+        return mRootItem->data(section);
 
     return QVariant();
 }
@@ -78,7 +75,7 @@ QModelIndex ReferenceTreeModel::index(int row, int column, const QModelIndex &pa
     ReferenceItemModel* parentItem;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = mRootItem;
     else
         parentItem = static_cast<ReferenceItemModel*>(parent.internalPointer());
 
@@ -97,7 +94,7 @@ QModelIndex ReferenceTreeModel::parent(const QModelIndex &index) const
     ReferenceItemModel* childItem = static_cast<ReferenceItemModel*>(index.internalPointer());
     ReferenceItemModel* parentItem = childItem->parentItem();
 
-    if (parentItem == rootItem)
+    if (parentItem == mRootItem)
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
@@ -110,7 +107,7 @@ int ReferenceTreeModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = mRootItem;
     else
         parentItem = static_cast<ReferenceItemModel*>(parent.internalPointer());
 
@@ -122,16 +119,34 @@ int ReferenceTreeModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return static_cast<ReferenceItemModel*>(parent.internalPointer())->columnCount();
     else
-        return rootItem->columnCount();
+        return mRootItem->columnCount();
+}
+
+bool ReferenceTreeModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    if (!mRootItem) return false;
+
+    bool success = false;
+    if (count > 0) {
+        beginRemoveRows(parent, row, row + count - 1);
+        success = mRootItem->removeChildren(row, count);
+        endRemoveRows();
+    }
+    return success;
 }
 
 void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
 {
-qDebug() << "update " <<symbolid;
     mCurrentSymbolID = symbolid;
 
+    beginResetModel();
+
+    if (rowCount() > 0) {
+        removeRows(0, rowCount(), QModelIndex());
+    }
+
     QList<ReferenceItemModel*> parents;
-    parents << rootItem;
+    parents << mRootItem;
 
     QList<QVariant> columnData;
     SymbolReferenceItem* symbolRef = mReference->findReference(mCurrentSymbolID);
@@ -245,7 +260,8 @@ qDebug() << "update " <<symbolid;
         parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
     }
     parents.pop_back();
-
+    this->
+    endResetModel();
 }
 
 

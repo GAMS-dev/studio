@@ -46,6 +46,7 @@ public:
 
 public slots:
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    void expandResetModel();
 
 private:
     Ui::SymbolReferenceWidget *ui;

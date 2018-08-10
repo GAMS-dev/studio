@@ -45,6 +45,8 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    bool removeRows(int row, int count, const QModelIndex &parent) override;
+
 signals:
     void symbolSelectionChanged(SymbolId symbolid);
 
@@ -56,7 +58,7 @@ private:
 
     Reference* mReference;
     SymbolId mCurrentSymbolID;
-    ReferenceItemModel *rootItem;
+    ReferenceItemModel* mRootItem;
 };
 
 } // namespace studio

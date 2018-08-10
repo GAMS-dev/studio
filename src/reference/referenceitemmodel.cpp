@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include  <QDebug>
 #include "referenceitemmodel.h"
 
 namespace gams {
@@ -29,7 +30,10 @@ ReferenceItemModel::ReferenceItemModel(const QList<QVariant> &data, ReferenceIte
 
 ReferenceItemModel::~ReferenceItemModel()
 {
+    mItemData.clear();
+
     qDeleteAll(mChildItems);
+    mChildItems.clear();
 }
 
 void ReferenceItemModel::appendChild(ReferenceItemModel *child)
@@ -40,6 +44,11 @@ void ReferenceItemModel::appendChild(ReferenceItemModel *child)
 ReferenceItemModel *ReferenceItemModel::child(int row)
 {
     return mChildItems.value(row);
+}
+
+ReferenceItemModel *ReferenceItemModel::parent()
+{
+    return mParentItem;
 }
 
 int ReferenceItemModel::childCount() const
@@ -67,8 +76,20 @@ int ReferenceItemModel::row() const
 
 ReferenceItemModel *ReferenceItemModel::parentItem()
 {
-   return mParentItem;
+    return mParentItem;
 }
+
+bool ReferenceItemModel::removeChildren(int position, int count)
+{
+    if (position < 0 || position + count > mChildItems.size())
+        return false;
+
+    for (int row = 0; row < count; ++row)
+        delete mChildItems.takeAt(position);
+
+    return true;
+}
+
 
 } // namespace studio
 } // namespace gams
