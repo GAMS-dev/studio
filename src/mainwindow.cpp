@@ -2242,7 +2242,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
         QWidget* pPreviouslyClosedwidget = ui->mainTab->widget(ui->mainTab->count()-1);
         QString Tabtext = ui->mainTab->tabText(ui->mainTab->count()-1);
         ui->mainTab->insertTab(mClosedTabsIndexes.last(),pPreviouslyClosedwidget,Tabtext);
-        ui->mainTab->widget(mClosedTabsIndexes.last())->setFocus();
+        ui->mainTab->setCurrentIndex(mClosedTabsIndexes.last());
         mClosedTabsIndexes.removeLast();
     }
     else
