@@ -27,7 +27,7 @@
 #include "reference.h"
 #include "referencetreemodel.h"
 #include "symboldatatype.h"
-#include "symbolreferencemodel.h"
+#include "symboltablemodel.h"
 
 namespace Ui {
 class SymbolReferenceWidget;
@@ -54,7 +54,7 @@ private:
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
     QSortFilterProxyModel* mReferenceTreeProxyModel = nullptr;
 
-    SymbolReferenceModel* mSymbolTableModel;
+    SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;
 
     Reference* mReference;

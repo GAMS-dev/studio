@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SYMBOLREFERENCEMODEL_H
-#define SYMBOLREFERENCEMODEL_H
+#ifndef SYMBOLTABLEMODEL_H
+#define SYMBOLTABLEMODEL_H
 
 #include <QAbstractTableModel>
 #include "reference.h"
@@ -26,10 +26,10 @@
 namespace gams {
 namespace studio {
 
-class SymbolReferenceModel : public QAbstractTableModel
+class SymbolTableModel : public QAbstractTableModel
 {
 public:
-    SymbolReferenceModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -50,4 +50,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // SYMBOLREFERENCEMODEL_H
+#endif // SYMBOLTABLEMODEL_H

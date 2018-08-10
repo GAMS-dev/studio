@@ -34,7 +34,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 {
     ui->setupUi(this);
 
-    mSymbolTableModel = new SymbolReferenceModel(mReference, mType, this);
+    mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
 
     mSymbolTableProxyModel= new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);

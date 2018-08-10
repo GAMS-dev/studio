@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "symbolreferencemodel.h"
+#include "symboltablemodel.h"
 
 namespace gams {
 namespace studio {
 
-SymbolReferenceModel::SymbolReferenceModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
+SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
      QAbstractTableModel(parent), mReference(ref), mType(type)
 {
     mSymbolsHeader << "ID" << "Name" << "Type" << "Dim" << "Domain" << "Text";
     mFileHeader << "ID" << "Name" << "Type" << "Text";
 }
 
-QVariant SymbolReferenceModel::headerData(int index, Qt::Orientation orientation, int role) const
+QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
@@ -57,7 +57,7 @@ QVariant SymbolReferenceModel::headerData(int index, Qt::Orientation orientation
     return QVariant();
 }
 
-int SymbolReferenceModel::rowCount(const QModelIndex &parent) const
+int SymbolTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -78,7 +78,7 @@ int SymbolReferenceModel::rowCount(const QModelIndex &parent) const
     }
 }
 
-int SymbolReferenceModel::columnCount(const QModelIndex &parent) const
+int SymbolTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -103,7 +103,7 @@ int SymbolReferenceModel::columnCount(const QModelIndex &parent) const
 
 }
 
-QVariant SymbolReferenceModel::data(const QModelIndex &index, int role) const
+QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 {
     if (mReference->isEmpty())
         return QVariant();
@@ -163,7 +163,7 @@ QVariant SymbolReferenceModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-QModelIndex SymbolReferenceModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex SymbolTableModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
