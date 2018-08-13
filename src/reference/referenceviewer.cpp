@@ -52,7 +52,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     mTabWidget->setTabPosition(QTabWidget::West);
     mTabWidget->tabBar()->setStyle( new ReferenceTabStyle );
 
-    SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Undefined, this);
+    SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Unknown, this);
     mTabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg(reference->size()));
 
     SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Set, this);
@@ -78,6 +78,9 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
 
     SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Funct, this);
     mTabWidget->addTab(functRefWidget, QString("Function used (%1)").arg(reference->findReference(SymbolDataType::Funct).size()));
+
+    SymbolReferenceWidget* unusedRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Unused, this);
+    mTabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg(reference->findReference(SymbolDataType::Unused).size()));
 
     ui->referenceLayout->addWidget(mTabWidget);
     mTabWidget->setCurrentIndex(0);

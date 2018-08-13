@@ -30,7 +30,7 @@ class SymbolDataType
 {
 public:
     enum SymbolType {
-        Undefined = 0,
+        Unknown = 0,
         Funct = 1,
         Set = 2,
         Acronym = 3,
@@ -39,7 +39,7 @@ public:
         Equation = 6,
         Model = 7,
         File = 8,
-        Pred = 10
+        Unused = 100
     };
 
     SymbolType type() const;
@@ -65,7 +65,7 @@ private:
     const QStringList mDescription;
 
     static QList<SymbolDataType*> mList;
-    static SymbolDataType* mUndefined;
+    static SymbolDataType* mUnknown;
 };
 
 } // namespace studio

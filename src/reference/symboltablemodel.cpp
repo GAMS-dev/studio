@@ -39,7 +39,8 @@ QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, in
            case SymbolDataType::Parameter :
            case SymbolDataType::Variable :
            case SymbolDataType::Equation :
-           case SymbolDataType::Undefined :
+           case SymbolDataType::Unknown :
+           case SymbolDataType::Unused :
                if (index < mSymbolsHeader.size())
                   return mSymbolsHeader[index];
                break;
@@ -71,8 +72,9 @@ int SymbolTableModel::rowCount(const QModelIndex &parent) const
     case SymbolDataType::File :
     case SymbolDataType::Funct :
     case SymbolDataType::Model :
+    case SymbolDataType::Unused :
         return mReference->findReference(mType).size();
-    case SymbolDataType::Undefined :
+    case SymbolDataType::Unknown :
     default:
         return mReference->size();
     }
@@ -90,7 +92,8 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
     case SymbolDataType::Parameter :
     case SymbolDataType::Variable :
     case SymbolDataType::Equation :
-    case SymbolDataType::Undefined :
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused :
         return mSymbolsHeader.size();
     case SymbolDataType::File :
     case SymbolDataType::Funct :
@@ -117,7 +120,8 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Parameter :
          case SymbolDataType::Variable :
          case SymbolDataType::Equation :
-         case SymbolDataType::Undefined :
+         case SymbolDataType::Unknown :
+         case SymbolDataType::Unused :
               switch(index.column()) {
               case 0: return QString::number(refList.at(index.row())->id());
               case 1: return refList.at(index.row())->name();

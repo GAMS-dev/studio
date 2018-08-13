@@ -66,6 +66,8 @@ QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType
         return mModelReference;
     case SymbolDataType::Funct :
         return mFunctionReference;
+    case SymbolDataType::Unused :
+        return mUnusedReference;
     default:
         return mReference.values();
     }
@@ -235,6 +237,8 @@ bool Reference::parseFile(QString referenceFile)
          default:
              break;
          }
+         if (ref->isUnused())
+             mUnusedReference.append( ref );
          ++it;
     }
 

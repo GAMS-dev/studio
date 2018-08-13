@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 
 QList<SymbolDataType*> SymbolDataType::mList;
-SymbolDataType* SymbolDataType::mUndefined = nullptr;
+SymbolDataType* SymbolDataType::mUnknown = nullptr;
 
 SymbolDataType::SymbolType SymbolDataType::type() const
 {
@@ -63,7 +63,7 @@ bool SymbolDataType::operator !=(const SymbolDataType::SymbolType &type) const
 const QList<SymbolDataType*> SymbolDataType::list()
 {
     if (mList.isEmpty()) {
-        mUndefined = new SymbolDataType(Undefined, "UNDEFINED,,Undefined");
+        mUnknown = new SymbolDataType(Unknown, "UNKNOWN,,Unknown");
         mList << new SymbolDataType(Funct, "FUNCT,FUNCTIONS,Function");
         mList << new SymbolDataType(Set, "SET,SETS,Set");
         mList << new SymbolDataType(Acronym, "ACRNM,ACRONYMS,Acronym");
@@ -72,7 +72,7 @@ const QList<SymbolDataType*> SymbolDataType::list()
         mList << new SymbolDataType(Equation, "EQU,EQUATIONS,Equation");
         mList << new SymbolDataType(Model, "MODEL,MODELS,Model");
         mList << new SymbolDataType(File, "FILE,FILES,File");
-        mList << new SymbolDataType(Pred, "PRED,Pred");
+        mList << new SymbolDataType(Unused, "UNUSED,,Unused");
     }
     return mList;
 }
@@ -83,7 +83,7 @@ SymbolDataType::SymbolType SymbolDataType::typeFrom(QString typeDescription)
         if (t->mDescription.contains(typeDescription, Qt::CaseInsensitive))
             return t->type();
     }
-    return Undefined;
+    return Unknown;
 }
 
 SymbolDataType &SymbolDataType::from(QString typeDescription)
@@ -92,7 +92,7 @@ SymbolDataType &SymbolDataType::from(QString typeDescription)
         if (t->mDescription.contains(typeDescription, Qt::CaseInsensitive))
             return *t;
     }
-    return *mUndefined;
+    return *mUnknown;
 }
 
 SymbolDataType &SymbolDataType::from(SymbolDataType::SymbolType type)
@@ -101,7 +101,7 @@ SymbolDataType &SymbolDataType::from(SymbolDataType::SymbolType type)
         if (t->mType == type)
             return *t;
     }
-    return *mUndefined;
+    return *mUnknown;
 }
 
 void SymbolDataType::clear()
@@ -110,8 +110,8 @@ void SymbolDataType::clear()
         SymbolDataType* t = mList.takeFirst();
         delete t;
     }
-    delete mUndefined;
-    mUndefined = nullptr;
+    delete mUnknown;
+    mUnknown = nullptr;
 }
 
 SymbolDataType::SymbolDataType(SymbolType type, QString typeDescription) :
