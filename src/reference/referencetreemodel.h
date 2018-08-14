@@ -54,7 +54,7 @@ public slots:
     void updateSelectedSymbol(SymbolId symbolid);
 
 private:
-//    void setupTreeItemModelData(Reference* refitem, ReferenceItemModel* parent);
+    void insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem*>& referenceItemList, const QString& referenceType);
 
     Reference* mReference;
     SymbolId mCurrentSymbolID;

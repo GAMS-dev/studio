@@ -148,120 +148,34 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     QList<ReferenceItemModel*> parents;
     parents << mRootItem;
 
-    QList<QVariant> columnData;
     SymbolReferenceItem* symbolRef = mReference->findReference(mCurrentSymbolID);
+    insertSymbolReference(parents, symbolRef->declare(), "Declared");
+    insertSymbolReference(parents, symbolRef->define(), "Defined");
+    insertSymbolReference(parents, symbolRef->assign(), "Assigned");
+    insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicit Assigned");
+    insertSymbolReference(parents, symbolRef->control(), "Controlled");
+    insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+    insertSymbolReference(parents, symbolRef->index(), "Indexed");
 
-    columnData << QString("(%1) Declared %2").arg(symbolRef->declare().size()).arg((symbolRef->declare().size()==0)?"":"in")
-               << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, symbolRef->declare()) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    QList<ReferenceItem*> referenceItemList = symbolRef->define();
-    columnData.clear();
-    columnData <<  QString("(%1) Defined %2").arg(referenceItemList.size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, referenceItemList) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    referenceItemList = symbolRef->assign();
-    columnData.clear();
-    columnData <<  QString("(%1) Assigned %2").arg(referenceItemList.size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, referenceItemList) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    referenceItemList = symbolRef->implicitAssign();
-    columnData.clear();
-    columnData <<  QString(" (%1) Implicit Assigned %2").arg(referenceItemList.size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, referenceItemList) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    referenceItemList = symbolRef->reference();
-    columnData.clear();
-    columnData <<  QString(" (%1) Referenced %2").arg(referenceItemList.size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, symbolRef->reference()) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    referenceItemList = symbolRef->control();
-    columnData.clear();
-    columnData <<  QString("(%1) Controlled %2").arg(referenceItemList.size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, symbolRef->control()) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-
-    referenceItemList = symbolRef->index();
-    columnData.clear();
-    columnData <<  QString("(%1) Indexed %2").arg(symbolRef->index().size()).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
-    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
-
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, symbolRef->index()) {
-        QList<QVariant> itemData;
-        itemData << item->location;
-        itemData << QString::number(item->lineNumber);
-        itemData << QString::number(item->columnNumber);
-        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
-    }
-    parents.pop_back();
-    this->
     endResetModel();
+}
+
+void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel *>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
+{
+    QList<QVariant> columnData;
+    columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType).arg((referenceItemList.size()==0)?"":"in")
+                << "" << "";
+    parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
+
+    parents << parents.last()->child(parents.last()->childCount()-1);
+    foreach(const ReferenceItem* item, referenceItemList) {
+        QList<QVariant> itemData;
+        itemData << item->location;
+        itemData << QString::number(item->lineNumber);
+        itemData << QString::number(item->columnNumber);
+        parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
+    }
+    parents.pop_back();
 }
 
 
