@@ -74,11 +74,6 @@ int ReferenceItemModel::row() const
     return 0;
 }
 
-ReferenceItemModel *ReferenceItemModel::parentItem()
-{
-    return mParentItem;
-}
-
 bool ReferenceItemModel::removeChildren(int position, int count)
 {
     if (position < 0 || position + count > mChildItems.size())

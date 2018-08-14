@@ -28,7 +28,7 @@ ReferenceTreeModel::ReferenceTreeModel(Reference* ref, QObject *parent) :
     QAbstractItemModel(parent), mReference(ref), mCurrentSymbolID(-1)
 {
     QList<QVariant> rootData;
-    rootData << "Location" << "Line" << "Column";
+    rootData << "Location" << "Line" << "Column" << "Type";
     mRootItem = new ReferenceItemModel(rootData);
 
     connect(this, &ReferenceTreeModel::symbolSelectionChanged, this, &ReferenceTreeModel::updateSelectedSymbol);
@@ -44,12 +44,31 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
 
     ReferenceItemModel* item = static_cast<ReferenceItemModel*>(index.internalPointer());
+    switch (role) {
+    case Qt::DisplayRole: {
+        if (index.column()==0) {
+            QFileInfo fileInfo(item->data(index.column()).toString());
+            return QString(fileInfo.fileName());
+        }
+        return item->data(index.column());
+    }
+    case Qt::ToolTipRole: {
+        ReferenceItemModel* item = static_cast<ReferenceItemModel*>(index.internalPointer());
+        ReferenceItemModel* parentItem = item->parent();
 
-    return item->data(index.column());
+        if (parentItem == mRootItem) {
+            QString name = item->data(columnCount()-1).toString();
+            QString description = ReferenceDataType::from(name).description();
+            return QString("%1 : %2").arg(name).arg(description);
+        } else {
+            return QString("%1 : Line %2 : Column %3").arg(item->data(0).toString()).arg(item->data(1).toString()).arg(item->data(2).toString());
+        }
+    }
+    }
+
+    return QVariant();
 }
 
 Qt::ItemFlags ReferenceTreeModel::flags(const QModelIndex &index) const
@@ -92,7 +111,7 @@ QModelIndex ReferenceTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     ReferenceItemModel* childItem = static_cast<ReferenceItemModel*>(index.internalPointer());
-    ReferenceItemModel* parentItem = childItem->parentItem();
+    ReferenceItemModel* parentItem = childItem->parent();
 
     if (parentItem == mRootItem)
         return QModelIndex();
@@ -160,11 +179,11 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     endResetModel();
 }
 
-void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel *>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
+void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
 {
     QList<QVariant> columnData;
     columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType).arg((referenceItemList.size()==0)?"":"in")
-                << "" << "";
+                << "" << ""  << referenceType;
     parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
 
     parents << parents.last()->child(parents.last()->childCount()-1);
@@ -173,6 +192,7 @@ void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel *>& pare
         itemData << item->location;
         itemData << QString::number(item->lineNumber);
         itemData << QString::number(item->columnNumber);
+        itemData << ReferenceDataType::from(item->referenceType).name();
         parents.last()->appendChild(new ReferenceItemModel(itemData, parents.last()));
     }
     parents.pop_back();

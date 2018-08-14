@@ -40,7 +40,6 @@ public:
     int columnCount() const;
     QVariant data(int column) const;
     int row() const;
-    ReferenceItemModel *parentItem();
 
     bool removeChildren(int position, int count);
 

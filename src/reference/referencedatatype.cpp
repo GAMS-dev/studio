@@ -32,10 +32,10 @@ ReferenceDataType::ReferenceType ReferenceDataType::type() const
 
 QString ReferenceDataType::name() const
 {
-    return mName;
+    return mName.last();
 }
 
-QStringList ReferenceDataType::description() const
+QString ReferenceDataType::description() const
 {
     return mDescription;
 }
@@ -63,29 +63,38 @@ bool ReferenceDataType::operator !=(const ReferenceDataType::ReferenceType &type
 const QList<ReferenceDataType*> ReferenceDataType::list()
 {
     if (mList.isEmpty()) {
-        mUnknown = new ReferenceDataType(Unknown, "Unknown", "");
-        mList << new ReferenceDataType(Declare, "declared", "The identifier is declared as to type. This must be the first appearance of the identifier");
-        mList << new ReferenceDataType(Define, "defined", "An initialization (for a table or a data list between slashes) or symbolic definition (for an equation) starts for the identifier");
-        mList << new ReferenceDataType(Assign, "assign", "Values are replaced because the identifier appears on the left-hand side of an assignment statement");
-        mList << new ReferenceDataType(ImplicitAssign, "impl-asn", "An equation or variable will be updated as a result of being referred to implicitly in a solve statement");
-        mList << new ReferenceDataType(Control, "control", "A set is used as (part of) the driving index in an assignment, equation, loop or indexed operation");
-        mList << new ReferenceDataType(Reference, "ref", "The symbol has been referenced on the right-hand side of an assignment or in a display, equation, model, solve statement or put statetement");
-        mList << new ReferenceDataType(Index, "index", "A set is used as (part of) the driving index only for set labels. Appears only in the cross reference map of unique elements");
+        mUnknown = new ReferenceDataType(Unknown, "Unknown,Unknown", "Unknown reference type");
+        mList << new ReferenceDataType(Declare, "declared,Declared", "The identifier is declared as to type. This must be the first appearance of the identifier");
+        mList << new ReferenceDataType(Define, "defined,Defined", "An initialization (for a table or a data list between slashes) or symbolic definition (for an equation) starts for the identifier");
+        mList << new ReferenceDataType(Assign, "assign,Assigned", "Values are replaced because the identifier appears on the left-hand side of an assignment statement");
+        mList << new ReferenceDataType(ImplicitAssign, "impl-asn,Implicit Assigned", "An equation or variable will be updated as a result of being referred to implicitly in a solve statement");
+        mList << new ReferenceDataType(Control, "control,Controlled", "A set is used as (part of) the driving index in an assignment, equation, loop or indexed operation");
+        mList << new ReferenceDataType(Reference, "ref,Referenced", "The symbol has been referenced on the right-hand side of an assignment or in a display, equation, model, solve statement or put statetement");
+        mList << new ReferenceDataType(Index, "index,Indexed", "A set is used as (part of) the driving index only for set labels. Appears only in the cross reference map of unique elements");
     }
     return mList;
 }
 
-
-ReferenceDataType &ReferenceDataType::from(QString& name)
+ReferenceDataType::ReferenceType ReferenceDataType::typeFrom(const QString &name)
 {
     for (ReferenceDataType* t : list()) {
-        if (QString::compare(t->mName, name, Qt::CaseInsensitive)==0)
+        if (t->mName.contains(name, Qt::CaseInsensitive))
+            return t->type();
+    }
+    return Unknown;
+}
+
+
+ReferenceDataType &ReferenceDataType::from(const QString& name)
+{
+    for (ReferenceDataType* t : list()) {
+        if (t->mName.contains(name, Qt::CaseInsensitive))
             return *t;
     }
     return *mUnknown;
 }
 
-ReferenceDataType &ReferenceDataType::from(ReferenceDataType::ReferenceType type)
+ReferenceDataType &ReferenceDataType::from(const ReferenceType type)
 {
     for (ReferenceDataType* t : list()) {
         if (t->mType == type)
@@ -105,7 +114,7 @@ void ReferenceDataType::clear()
 }
 
 ReferenceDataType::ReferenceDataType(ReferenceDataType::ReferenceType type, QString name, QString typeDescription) :
-    mType(type), mName(name), mDescription(typeDescription)
+    mType(type), mName(name.split(",", QString::SkipEmptyParts)), mDescription(typeDescription)
 {
 
 }

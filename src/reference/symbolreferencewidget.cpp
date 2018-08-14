@@ -68,6 +68,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->resizeColumnToContents(0);
     ui->referenceView->resizeColumnToContents(1);
     ui->referenceView->setAlternatingRowColors(true);
+    ui->referenceView->setColumnHidden(3, true);
 
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
 }

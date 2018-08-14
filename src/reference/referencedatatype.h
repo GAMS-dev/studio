@@ -43,7 +43,7 @@ public:
     ReferenceType type() const;
     QString name() const;
 
-    QStringList description() const;
+    QString description() const;
 
     bool operator ==(const ReferenceDataType& refDataType) const;
     bool operator !=(const ReferenceDataType& refDataType) const;
@@ -51,16 +51,17 @@ public:
     bool operator !=(const ReferenceDataType::ReferenceType& type) const;
 
     static const QList<ReferenceDataType*> list();
-    static ReferenceDataType& from(QString& name);
-    static ReferenceDataType& from(ReferenceType type);
+    static ReferenceType typeFrom(const QString& name);
+    static ReferenceDataType& from(const QString& name);
+    static ReferenceDataType& from(const ReferenceType type);
 
 private:
     static void clear();
     ReferenceDataType(ReferenceType type, QString name, QString typeDescription);
 
     const ReferenceType mType;
-    const ReferenceType mName;
-    const QStringList mDescription;
+    const QStringList mName;
+    const QString mDescription;
 
     static QList<ReferenceDataType*> mList;
     static ReferenceDataType*  mUnknown;

@@ -24,6 +24,7 @@
 #include <QMap>
 #include <QDir>
 
+#include "referencedatatype.h"
 #include "symbolreferenceitem.h"
 
 namespace gams {

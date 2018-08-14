@@ -179,7 +179,6 @@ bool Reference::parseFile(QString referenceFile)
             continue;
 
         QString symbolName = recordList.at(1);
-//        QString symbolType = recordList.at(3);
         QString dimension = recordList.at(4);
         QString numberOfElements = recordList.at(5);
 
@@ -191,10 +190,10 @@ bool Reference::parseFile(QString referenceFile)
         if (dimension.toInt() > 0) {
             for(int dim=0; dim < dimension.toInt(); dim++) {
                 QString d = recordList.at(6+dim);
-                if (d.toInt() > 0)
+                if (d.toInt() > 0) // if dimension > 0 and domain is specified
                     domain << d.toInt();
            }
-        } // do not have dimension reference if dimension = 0;
+        } // do not have dimension reference if dimension = 0
         ref->setDomain(domain);
         ref->setNumberOfElements(numberOfElements.toInt());
         QStringList text;
@@ -245,22 +244,31 @@ bool Reference::parseFile(QString referenceFile)
     return true;
 }
 
-void Reference::addReferenceInfo(SymbolReferenceItem *ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
+void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
 {
-    if (QString::compare(referenceType, "declared", Qt::CaseInsensitive)==0) {
-        ref->addDeclare(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "defined", Qt::CaseInsensitive)==0) {
-        ref->addDefine(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "assigned", Qt::CaseInsensitive)==0) {
-        ref->addAssign(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "impl-assign", Qt::CaseInsensitive)==0) {
-        ref->addImplicitAssign(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "ref", Qt::CaseInsensitive)==0) {
-        ref->addReference(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "control", Qt::CaseInsensitive)==0) {
-        ref->addControl(new ReferenceItem(location, lineNumber, columnNumber));
-    } else if (QString::compare(referenceType, "index", Qt::CaseInsensitive)==0) {
-        ref->addIndex(new ReferenceItem(location, lineNumber, columnNumber));
+    ReferenceDataType::ReferenceType type = ReferenceDataType::typeFrom(referenceType);
+    switch (type) {
+    case ReferenceDataType::Declare :
+        ref->addDeclare(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::Define :
+        ref->addDefine(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::Assign :
+        ref->addAssign(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::ImplicitAssign :
+        ref->addImplicitAssign(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::Reference :
+        ref->addReference(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::Control :
+        ref->addControl(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
+    case ReferenceDataType::Index :
+        ref->addIndex(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
+        break;
     }
 }
 

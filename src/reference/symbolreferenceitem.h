@@ -20,6 +20,7 @@
 #ifndef SYMBOLREFERENCEITEM_H
 #define SYMBOLREFERENCEITEM_H
 
+#include "referencedatatype.h"
 #include "symboldatatype.h"
 
 namespace gams {
@@ -28,9 +29,11 @@ namespace studio {
 typedef int SymbolId;
 
 struct ReferenceItem {
-    ReferenceItem(QString loc, int line, int col) :
-        location(loc), lineNumber(line), columnNumber(col) { }
+    ReferenceItem(SymbolId id, ReferenceDataType::ReferenceType type, QString loc, int line, int col) :
+        symbolID(id), referenceType(type), location(loc), lineNumber(line), columnNumber(col) { }
 
+    SymbolId symbolID;
+    ReferenceDataType::ReferenceType referenceType;
     QString location;
     int lineNumber;
     int columnNumber;
