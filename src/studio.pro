@@ -112,6 +112,7 @@ SOURCES += \
     projectcontextmenu.cpp \
     reference/reference.cpp \
     reference/referencetabstyle.cpp \
+    reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
     reference/referencetreemodel.cpp \
     reference/referenceviewer.cpp \
@@ -206,6 +207,7 @@ HEADERS += \
     projectcontextmenu.h \
     reference/reference.h \
     reference/referencetabstyle.h \
+    reference/referencedatatype.h \
     reference/referenceitemmodel.h \
     reference/referencetreemodel.h \
     reference/referenceviewer.h \
