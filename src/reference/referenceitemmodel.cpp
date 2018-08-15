@@ -24,7 +24,7 @@ namespace gams {
 namespace studio {
 
 ReferenceItemModel::ReferenceItemModel(const QList<QVariant> &data, ReferenceItemModel *parent) :
-    mParentItem(parent), mItemData(data)
+    mItemData(data), mParentItem(parent)
 {
 }
 

@@ -94,8 +94,8 @@ public:
 
 private:
     SymbolId mID;
-    SymbolDataType::SymbolType mType;
     QString mName;
+    SymbolDataType::SymbolType mType;
     int mDimension;
     QList<SymbolId> mDomain;
     int mNumberOfElements;

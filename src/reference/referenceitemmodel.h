@@ -46,7 +46,7 @@ public:
 private:
     QList<ReferenceItemModel*> mChildItems;
     QList<QVariant> mItemData;
-    ReferenceItemModel* mParentItem;
+    ReferenceItemModel* mParentItem = nullptr;
 };
 
 

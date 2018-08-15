@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 
 SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
-     QAbstractTableModel(parent), mReference(ref), mType(type)
+     QAbstractTableModel(parent), mType(type), mReference(ref)
 {
     mSymbolsHeader << "ID" << "Name" << "Type" << "Dim" << "Domain" << "Text";
     mFileHeader << "ID" << "Name" << "Type" << "Text";

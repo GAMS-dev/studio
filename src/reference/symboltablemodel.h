@@ -44,7 +44,7 @@ private:
     QStringList mSymbolsHeader;
     QStringList mFileHeader;
 
-    Reference* mReference;
+    Reference* mReference = nullptr;
 };
 
 } // namespace studio
