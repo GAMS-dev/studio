@@ -24,10 +24,10 @@
 namespace gams {
 namespace studio {
 
-Reference::Reference(QString referenceFile)
+Reference::Reference(QString referenceFile, QObject *parent) :
+    QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile)), mState(Initializing)
 {
-    mReferenceFile = QDir::toNativeSeparators(referenceFile);
-    mValid = parseFile(mReferenceFile);
+    loadReferenceFile();
 }
 
 Reference::~Reference()
@@ -132,6 +132,11 @@ QList<QString> Reference::symbolNameList() const
 QString Reference::getFileLocation() const
 {
     return mReferenceFile;
+}
+
+Reference::ReferenceState Reference::state() const
+{
+    return mState;
 }
 
 bool Reference::parseFile(QString referenceFile)
@@ -269,6 +274,8 @@ void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &refere
     case ReferenceDataType::Index :
         ref->addIndex(new ReferenceItem(ref->id(), type, location, lineNumber, columnNumber));
         break;
+    default:
+        break;
     }
 }
 
@@ -281,6 +288,15 @@ void Reference::dumpAll()
         ref->dumpAll();
         ++i;
     }
+}
+
+void Reference::loadReferenceFile()
+{
+    emit loadStarted();
+    mState = ReferenceState::Loading;
+    mValid = parseFile(mReferenceFile);
+    mState = ReferenceState::Loaded;
+    emit loadFinished(mValid ? LoadStatus::SuccesffullyLoaded : LoadStatus::UnsuccesffullyLoaded);
 }
 
 } // namespace studio

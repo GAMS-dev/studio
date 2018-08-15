@@ -30,10 +30,24 @@
 namespace gams {
 namespace studio {
 
-class Reference
+class Reference : public QObject
 {
+    Q_OBJECT
 public:
-    Reference(QString referenceFile);
+    enum ReferenceState {
+        Initializing,
+        Loaded,
+        Loading
+    };
+    Q_ENUM(ReferenceState)
+
+    enum LoadStatus {
+        SuccesffullyLoaded,
+        UnsuccesffullyLoaded
+    };
+    Q_ENUM(LoadStatus)
+
+    explicit Reference(QString referenceFile, QObject* parent = Q_NULLPTR);
     ~Reference();
 
     QList<SymbolReferenceItem *> findReference(SymbolDataType::SymbolType type);
@@ -52,14 +66,25 @@ public:
 
     QString getFileLocation() const;
 
+    Reference::ReferenceState state() const;
+
     void dumpAll();
+
+signals:
+    void loadStarted();
+    void loadFinished(bool status);
+//    void stateChanged(Reference::ReferenceState newState);
+
+public slots:
+    void loadReferenceFile();
 
 private:
     bool parseFile(QString referenceFile);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
 
-    bool mValid;
     QString mReferenceFile;
+    ReferenceState mState;
+    bool mValid;
 
     QList<SymbolReferenceItem *> mSetReference;
     QList<SymbolReferenceItem *> mAcronymReference;
