@@ -58,8 +58,14 @@ public:
     bool openLst() const;
     void setOpenLst(bool value);
 
+
     bool jumpToError() const;
     void setJumpToError(bool value);
+
+
+    bool foregroundOnDemand() const;
+    void setForegroundOnDemand(bool value);
+
 
     int fontSize() const;
     void setFontSize(int value);
@@ -142,6 +148,7 @@ private:
     bool mRestoreTabs;
     bool mAutosaveOnRun;
     bool mOpenLst;
+    bool mForegroundOnDemand;
     bool mJumpToError;
     QList<QHash<QString, QColor>> mColorSchemes;
     int mColorSchemeIndex = 0;
