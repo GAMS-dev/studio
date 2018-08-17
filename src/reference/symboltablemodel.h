@@ -41,6 +41,7 @@ public:
 private:
     SymbolDataType::SymbolType mType;
 
+    QStringList mAllSymbolsHeader;
     QStringList mSymbolsHeader;
     QStringList mFileHeader;
 

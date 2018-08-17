@@ -25,8 +25,9 @@ namespace studio {
 SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
      QAbstractTableModel(parent), mType(type), mReference(ref)
 {
-    mSymbolsHeader << "ID" << "Name" << "Type" << "Dim" << "Domain" << "Text";
-    mFileHeader << "ID" << "Name" << "Type" << "Text";
+    mAllSymbolsHeader << "ID" << "Name" << "Type" << "Dim" << "Domain" << "Text";
+    mSymbolsHeader    << "ID" << "Name"           << "Dim" << "Domain" << "Text";
+    mFileHeader       << "ID" << "Name" << "Type" << "Text";
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -34,13 +35,16 @@ QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, in
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
            switch(mType) {
+           case SymbolDataType::Unknown :
+           case SymbolDataType::Unused :
+               if (index < mAllSymbolsHeader.size())
+                  return mAllSymbolsHeader[index];
+               break;
            case SymbolDataType::Set :
            case SymbolDataType::Acronym :
            case SymbolDataType::Parameter :
            case SymbolDataType::Variable :
            case SymbolDataType::Equation :
-           case SymbolDataType::Unknown :
-           case SymbolDataType::Unused :
                if (index < mSymbolsHeader.size())
                   return mSymbolsHeader[index];
                break;
@@ -86,14 +90,14 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
         return 0;
 
     switch(mType) {
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused :
+        return mAllSymbolsHeader.size();
     case SymbolDataType::Set :
-        return mSymbolsHeader.size();
     case SymbolDataType::Acronym :
     case SymbolDataType::Parameter :
     case SymbolDataType::Variable :
     case SymbolDataType::Equation :
-    case SymbolDataType::Unknown :
-    case SymbolDataType::Unused :
         return mSymbolsHeader.size();
     case SymbolDataType::File :
     case SymbolDataType::Funct :
@@ -120,6 +124,28 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Parameter :
          case SymbolDataType::Variable :
          case SymbolDataType::Equation :
+             switch(index.column()) {
+             case 0: return QString::number(refList.at(index.row())->id());
+             case 1: return refList.at(index.row())->name();
+             case 2: return QString::number(refList.at(index.row())->dimension());
+             case 3: {
+                 QList<SymbolId> dom = refList.at(index.row())->domain();
+                 if (dom.size() > 0) {
+                    QString domainStr = "(";
+                    domainStr.append(  mReference->findReference( dom.at(0) )->name() );
+                    for(int i=1; i<dom.size(); i++) {
+                        domainStr.append( "," );
+                        domainStr.append( mReference->findReference( dom.at(i) )->name() );
+                    }
+                    domainStr.append( ")" );
+                    return domainStr;
+                 }
+                 break;
+             }
+             case 4: return refList.at(index.row())->explanatoryText();
+             default: break;
+             }
+             break;
          case SymbolDataType::Unknown :
          case SymbolDataType::Unused :
               switch(index.column()) {
