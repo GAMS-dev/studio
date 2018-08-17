@@ -39,6 +39,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mSymbolTableProxyModel= new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
+    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     ui->symbolView->setModel( mSymbolTableProxyModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -49,8 +51,11 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
+//    ui->symbolView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
 
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
+    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
 
     mReferenceTreeProxyModel = new QSortFilterProxyModel(this);
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
@@ -75,6 +80,14 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 SymbolReferenceWidget::~SymbolReferenceWidget()
 {
     delete ui;
+}
+
+void SymbolReferenceWidget::toggleSearchColumns(bool checked)
+{
+    if (checked)
+        mSymbolTableProxyModel->setFilterKeyColumn(-1);
+    else
+        mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)

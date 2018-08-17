@@ -174,7 +174,7 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicit Assigned");
     insertSymbolReference(parents, symbolRef->control(), "Controlled");
     insertSymbolReference(parents, symbolRef->reference(), "Referenced");
-    insertSymbolReference(parents, symbolRef->index(), "Indexed");
+//    insertSymbolReference(parents, symbolRef->index(), "Indexed");
 
     endResetModel();
 }
