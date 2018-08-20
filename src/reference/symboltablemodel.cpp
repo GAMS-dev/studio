@@ -25,9 +25,9 @@ namespace studio {
 SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
      QAbstractTableModel(parent), mType(type), mReference(ref)
 {
-    mAllSymbolsHeader << "ID" << "Name" << "Type" << "Dim" << "Domain" << "Text";
-    mSymbolsHeader    << "ID" << "Name"           << "Dim" << "Domain" << "Text";
-    mFileHeader       << "ID" << "Name" << "Type" << "Text";
+    mAllSymbolsHeader << "Entry" << "Name" << "Type" << "Dim" << "Domain" << "Text";
+    mSymbolsHeader    << "Entry" << "Name"           << "Dim" << "Domain" << "Text";
+    mFileHeader       << "Entry" << "Name" << "Type" << "Text";
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
