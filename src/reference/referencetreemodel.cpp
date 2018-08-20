@@ -192,7 +192,10 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
 }
 
 void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
-{
+{  
+    if (referenceItemList.size()==0)
+        return;
+
     QList<QVariant> columnData;
     columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType).arg((referenceItemList.size()==0)?"":"in")
                 << "" << ""  << referenceType;
