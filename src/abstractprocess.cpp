@@ -25,20 +25,15 @@
 namespace gams {
 namespace studio {
 
-AbstractProcess::AbstractProcess(const QString &app, QObject *parent)
+AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
     : QObject (parent),
       mProcess(this),
-      mApp(app)
+      mAppName(appName)
 {
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);
     connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractProcess::readStdErr);
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
-}
-
-QString AbstractProcess::app() const
-{
-    return mApp;
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -58,7 +53,7 @@ QProcess::ProcessState AbstractProcess::state() const
 
 void AbstractProcess::completed(int exitCode)
 {
-    emit finished(this, exitCode);
+    emit finished(mGroupId, exitCode);
 }
 
 void AbstractProcess::readStdOut()
@@ -81,7 +76,7 @@ void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
     while (avail) {
         mOutputMutex.lock();
         mProcess.setReadChannel(channel);
-        emit newStdChannelData(mProcess.readLine());
+        emit newStdChannelData(mProcess.readLine().constData());
         avail = mProcess.bytesAvailable();
         mOutputMutex.unlock();
     }
@@ -92,7 +87,7 @@ QString AbstractProcess::nativeAppPath()
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(mApp);
+    auto appPath = QDir(systemDir).filePath(mAppName);
     return QDir::toNativeSeparators(appPath);
 }
 
@@ -105,6 +100,7 @@ void AbstractProcess::setGroupId(const FileId &groupId)
 {
     mGroupId = groupId;
 }
+
 
 } // namespace studio
 } // namespace gams

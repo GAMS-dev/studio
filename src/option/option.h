@@ -105,14 +105,13 @@ public:
     void dumpAll();
 
     bool isValid(const QString &optionName) const;
-    bool isThereASynonym(const QString &optionName) const;
+    bool isASynonym(const QString &optionName) const;
     bool isDeprecated(const QString &optionName) const;
     bool isDoubleDashedOption(const QString &option) const;
     bool isDoubleDashedOptionNameValid(const QString &optionName) const;
     OptionErrorType getValueErrorType(const QString &optionName, const QString &value) const;
 
-    QString getNameFromSynonym(const QString &optionSynonym) const;
-    QString getSynonymFromName(const QString &optionName) const;
+    QString getNameFromSynonym(const QString &synonym) const;
     optOptionType getOptionType(const QString &optionName) const;
     optDataType getDataType(const QString &optionName) const;
     QVariant getUpperBound(const QString &optionName) const;

@@ -157,7 +157,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
-    QMultiMap<QString, QString> bookmarkMap(main->getHelpWidget()->getBookmarkMap());
+    QMultiMap<QString, QString> bookmarkMap(main->helpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
     mAppSettings->beginWriteArray("bookmarks");
@@ -167,7 +167,7 @@ void StudioSettings::saveSettings(MainWindow *main)
         mAppSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mAppSettings->endArray();
-    mAppSettings->setValue("zoomFactor", main->getHelpWidget()->getZoomFactor());
+    mAppSettings->setValue("zoomFactor", main->helpWidget()->getZoomFactor());
     mAppSettings->endGroup();
 
     // history
@@ -205,6 +205,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
     mUserSettings->setValue("openLst", openLst());
     mUserSettings->setValue("jumpToError", jumpToError());
+    mUserSettings->setValue("setStudioOnTop",foregroundOnDemand());
     mUserSettings->setValue("colorScheme", exportJsonColorSchemes());
     mUserSettings->setValue("colorSchemeIndex", colorSchemeIndex());
 
@@ -275,11 +276,11 @@ void StudioSettings::loadViewStates(MainWindow *main)
     }
     mAppSettings->endArray();
 
-    main->getHelpWidget()->setBookmarkMap(bookmarkMap);
+    main->helpWidget()->setBookmarkMap(bookmarkMap);
     if (mAppSettings->value("zoomFactor") > 0.0)
-        main->getHelpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
+        main->helpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
-        main->getHelpWidget()->setZoomFactor(1.0);
+        main->helpWidget()->setZoomFactor(1.0);
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");
@@ -303,6 +304,7 @@ void StudioSettings::loadUserSettings()
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
     setOpenLst(mUserSettings->value("openLst", false).toBool());
     setJumpToError(mUserSettings->value("jumpToError", true).toBool());
+    setForegroundOnDemand(mUserSettings->value("bringOnTop",true).toBool());
     importJsonColorSchemes(mUserSettings->value("colorScheme").toByteArray());
     setColorSchemeIndex(mUserSettings->value("colorSchemeIndex", 0).toInt());
 
@@ -444,6 +446,16 @@ bool StudioSettings::autosaveOnRun() const
 void StudioSettings::setAutosaveOnRun(bool value)
 {
     mAutosaveOnRun = value;
+}
+
+bool StudioSettings::foregroundOnDemand() const
+{
+    return mForegroundOnDemand;
+}
+
+void StudioSettings::setForegroundOnDemand(bool value)
+{
+    mForegroundOnDemand = value;
 }
 
 bool StudioSettings::openLst() const

@@ -91,7 +91,7 @@ bool Option::isValid(const QString &optionName) const
     return mOption.contains(optionName.toUpper());
 }
 
-bool Option::isThereASynonym(const QString &optionName) const
+bool Option::isASynonym(const QString &optionName) const
 {
     return mSynonymMap.contains( optionName.toUpper() );
 }
@@ -206,14 +206,9 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
     return No_Error;  //Unknown_Error;
 }
 
-QString Option::getNameFromSynonym(const QString &optionSynonym) const
+QString Option::getNameFromSynonym(const QString &synonym) const
 {
-    return mSynonymMap[optionSynonym.toUpper()];
-}
-
-QString Option::getSynonymFromName(const QString &optionName) const
-{
-    return mOption[optionName.toUpper()].synonym;
+    return mSynonymMap[synonym.toUpper()];
 }
 
 optOptionType Option::getOptionType(const QString &optionName) const

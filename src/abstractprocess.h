@@ -29,20 +29,16 @@
 namespace gams {
 namespace studio {
 
-class ProjectGroupNode;
-
 class AbstractProcess
         : public QObject
 {
     Q_OBJECT
 
 protected:
-    AbstractProcess(const QString &app, QObject *parent = Q_NULLPTR);
+    AbstractProcess(const QString &appName, QObject *parent = Q_NULLPTR);
     virtual ~AbstractProcess() {}
 
 public:
-    QString app() const;
-
     void setInputFile(const QString &file);
     QString inputFile() const;
 
@@ -53,8 +49,8 @@ public:
     void setGroupId(const FileId &groupId);
 
 signals:
-    void finished(AbstractProcess *process, int exitCode);
-    void newStdChannelData(const QString &data);
+    void finished(FileId origin, int exitCode);
+    void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
 
 protected slots:
@@ -68,12 +64,12 @@ protected:
 
 protected:
     FileId mGroupId = -1;
-    QString mInputFile;
     QProcess mProcess;
     QMutex mOutputMutex;
 
 private:
-    QString mApp;
+    QString mAppName;
+    QString mInputFile;
 };
 
 } // namespace studio

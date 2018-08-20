@@ -115,32 +115,35 @@ public:
     void closeResults();
     RecentData *recent();
     StudioSettings *settings() const;
-    void openModelFromLib(QString glbFile, QString model);
+    void openModelFromLib(QString glbFile, LibraryItem *model);
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
+    void setForeground();
+    void setForegroundOSCheck();
 
-    HelpWidget *getHelpWidget() const;
-    OptionWidget *getGamsOptionWidget() const;
+    HelpWidget *helpWidget() const;
+    OptionWidget *gamsOptionWidget() const;
+
 
 public slots:
     void receiveAction(QString action);
-    void receiveModLibLoad(QString model);
+    void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
-    void on_runGmsFile(ProjectFileNode *fc);
-    void on_setMainGms(ProjectFileNode *fc);
-    void on_currentDocumentChanged(int from, int charsRemoved, int charsAdded);
+    void runGmsFile(ProjectFileNode *fc);
+    void setMainGms(ProjectFileNode *fc);
+    void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
-    void on_commandLineHelpTriggered();
-    void on_optionRunChanged();
+    void commandLineHelpTriggered();
+    void optionRunChanged();
 
 private slots:
     void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
@@ -150,8 +153,8 @@ private slots:
     void fileChanged(FileId fileId);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    void postGamsRun(AbstractProcess* process);
-    void postGamsLibRun(AbstractProcess* process);
+    void postGamsRun(FileId origin);
+    void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
     void closeFileConditionally(ProjectFileNode *file);
     void closeFile(ProjectFileNode* file);
@@ -170,6 +173,9 @@ private slots:
     void projectViewVisibiltyChanged(bool visibility);
     void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
+    void showMainTabsMenu();
+    void showLogTabsMenu();
+    void showTabsMenu();
 
 private slots:
     // File
@@ -191,6 +197,7 @@ private slots:
     void on_actionCompile_with_GDX_Creation_triggered();
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
+    void on_actionGAMS_Library_triggered();
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_triggered();
@@ -203,7 +210,6 @@ private slots:
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
-    void on_actionGAMS_Library_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTabs_tabCloseRequested(int index);
@@ -236,6 +242,10 @@ private slots:
     void on_actionReset_Views_triggered();
     void initAutoSave();
 
+    void on_actionNextTab_triggered();
+
+    void on_actionPreviousTab_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -249,6 +259,7 @@ private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName);
     void openNode(const QModelIndex& index);
+    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
     void renameToBackup(QFile *file);
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
@@ -260,7 +271,7 @@ private:
     void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
-    QStringList parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode *fgc);
+    void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
@@ -291,7 +302,6 @@ private:
     bool mOverwriteMode = false;
     StatusWidgets* mStatusWidgets;
     int mTimerID;
-    FileMetrics mMetrics;
     QStringList mOpenTabsList;
 };
 

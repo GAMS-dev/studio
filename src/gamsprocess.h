@@ -25,8 +25,7 @@
 namespace gams {
 namespace studio {
 
-class GamsProcess
-        : public AbstractProcess
+class GamsProcess : public AbstractProcess
 {
     Q_OBJECT
 
@@ -36,9 +35,6 @@ public:
     void setWorkingDir(const QString &workingDir);
     QString workingDir() const;
 
-    QStringList arguments() const;
-    void setArguments(const QStringList &arguments);
-
     void execute() override;
 
     QString aboutGAMS();
@@ -46,9 +42,11 @@ public:
     void interrupt();
     void stop();
 
+    void setParameters(const QStringList &parameters);
+
 private:
+    QStringList mParameters;
     QString mWorkingDir;
-    QStringList mArguments;
 };
 
 } // namespace studio

@@ -47,10 +47,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     ui->gamsOptionWidget->hide();
     connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleOptionDefinition);
-    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::on_commandLineHelpTriggered);
+    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::commandLineHelpTriggered);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
-            main, &MainWindow::on_optionRunChanged);
+            main, &MainWindow::optionRunChanged);
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
             ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
@@ -80,7 +80,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
 
@@ -414,6 +413,8 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
             QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
             if (mGamsOptionTokenizer->getGamsOption()->isDoubleDashedOption(data.toString())) {
                return "";
+            } else if (mGamsOptionTokenizer->getGamsOption()->isASynonym(data.toString())) {
+                return mGamsOptionTokenizer->getGamsOption()->getNameFromSynonym(data.toString());
             }
             return data.toString();
         }

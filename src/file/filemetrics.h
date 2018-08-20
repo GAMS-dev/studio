@@ -36,13 +36,13 @@ class FileMetrics
     qint64 mSize;
     QDateTime mCreated;
     QDateTime mModified;
-    FileType *mType;
+    const FileType *mType;
 
 public:
     enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
 
     FileMetrics();
-    explicit FileMetrics(QFileInfo fileInfo);
+    explicit FileMetrics(QFileInfo fileInfo, const FileType *knownType = nullptr);
     FileMetrics(const FileMetrics &other);
     FileMetrics &operator=(const FileMetrics& other);
 

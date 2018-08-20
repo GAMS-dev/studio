@@ -136,6 +136,7 @@ void Application::receiveFileArguments()
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
     socket->deleteLater();
+    mMainWindow->setForegroundOSCheck();
 }
 
 bool Application::event(QEvent *event)

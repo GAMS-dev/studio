@@ -33,6 +33,7 @@ class ProjectLogNode;
 class ProjectFileNode;
 class GamsProcess;
 class TextMarkList;
+struct OptionItem;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
@@ -54,9 +55,8 @@ public:
 
     QString runnableGms();
     void setRunnableGms(ProjectFileNode *gmsFileNode);
+    void setRunnableGms(const QString &gmsFilePath);
     void removeRunnableGms();
-    QString lstFileName();
-    void setLstFileName(const QString &lstFileName);
     ProjectLogNode* logNode() const;
 
     GamsProcess* gamsProcess();
@@ -79,11 +79,16 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory();
 
+    QString lstFile() const;
+    void setLstFile(const QString &lstFile);
+
+    QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void removeNode(ProjectAbstractNode *node);
     void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -111,13 +116,13 @@ private:
     QList<ProjectAbstractNode*> mChildList;
     ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
-    QString mLstFileName;
-    QString mGmsFileName;
     QFileInfoList mAttachedFiles;
+
+    QString mRunnableGms;
+    QString mLstFile;
 
     QHash<int, QString> mLstErrorTexts;
     QHash<QString, TextMarkList*> mMarksForFilenames;
-
 };
 
 } // namespace studio

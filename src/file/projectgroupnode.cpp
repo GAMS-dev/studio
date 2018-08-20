@@ -17,39 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDir>
+#include "commonpaths.h"
+#include "exception.h"
+#include "gamsprocess.h"
+#include "logger.h"
+#include "option/option.h"
 #include "projectgroupnode.h"
 #include "projectfilenode.h"
 #include "projectlognode.h"
-#include "exception.h"
-#include "gamsprocess.h"
-#include "commonpaths.h"
-#include "logger.h"
 #include "syntax.h"
+
 
 namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(FileId id, QString name, QString location, QString fileName)
-    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup),
-      mGamsProcess(new GamsProcess)
+    : ProjectAbstractNode(id, name, location, ProjectAbstractNode::FileGroup), mGamsProcess(new GamsProcess)
 {
-    if (fileName == "") return;
+    if (fileName.isEmpty()) return;
 
-    // only set runInfo if it's a .gms or .inc file, otherwise find gms file and set that
     QFileInfo runnableFile(fileName);
-    if (!runnableFile.isAbsolute())
+    if (runnableFile.isRelative())
         runnableFile = QFileInfo(location + "/" + fileName);
     QFileInfo alternateFile(runnableFile.absolutePath() + "/" + runnableFile.completeBaseName() + ".gms");
 
     // fix for .lst-as-mainfile bug
     if (FileMetrics(runnableFile).fileType() == FileType::Gms)
-        mGmsFileName = runnableFile.absoluteFilePath();
+        setRunnableGms(runnableFile.absoluteFilePath());
     else if (alternateFile.exists())
-        mGmsFileName = alternateFile.absoluteFilePath();
+        setRunnableGms(alternateFile.absoluteFilePath());
     else
-        mGmsFileName = "";
+        setRunnableGms("");
 
-    //mGamsProcess->setContext(this);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectGroupNode::onGamsProcessStateChanged);
 }
 
@@ -96,7 +96,6 @@ ProjectAbstractNode* ProjectGroupNode::findNode(QString filePath)
 
 ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
 {
-    location();
     ProjectAbstractNode* fsc = findNode(filePath);
     return (fsc && (fsc->type() == ProjectAbstractNode::File || fsc->type() == ProjectAbstractNode::Log))
             ? static_cast<ProjectFileNode*>(fsc) : nullptr;
@@ -204,13 +203,17 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 
-void ProjectGroupNode::setLstFileName(const QString &lstFileName)
+QString ProjectGroupNode::lstFile() const
 {
-    QFileInfo fi(lstFileName);
-    if (fi.isRelative())
-        mLstFileName = location() + "/" + lstFileName;
+    return mLstFile;
+}
+
+void ProjectGroupNode::setLstFile(const QString &lstFile)
+{
+    if (QFileInfo(lstFile).isAbsolute())
+        mLstFile = lstFile;
     else
-        mLstFileName = lstFileName;
+        mLstFile = QFileInfo(mRunnableGms).absolutePath() + "/" + lstFile;
 }
 
 void ProjectGroupNode::dumpMarks()
@@ -381,31 +384,77 @@ void ProjectGroupNode::saveGroup()
     }
 }
 
+QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
+{
+    // set studio default parameters
+    QMap<QString, QString> defaultGamsArgs;
+    defaultGamsArgs.insert("lo", "3");
+    defaultGamsArgs.insert("ide", "1");
+    defaultGamsArgs.insert("er", "99");
+    defaultGamsArgs.insert("errmsg", "1");
+    defaultGamsArgs.insert("pagesize", "0");
+    defaultGamsArgs.insert("LstTitleLeftAligned", "1");
+
+    QMap<QString, QString> gamsArgs(defaultGamsArgs);
+
+    QFileInfo fi(gmsLocation);
+    // set default lst name to revert deleted o parameter values
+    setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
+
+    // iterate options
+    for (OptionItem item : itemList) {
+        // output (o) found
+        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+            setLstFile(item.value);
+        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+            // TODO: save workingdir somewhere, wait for the file handling update
+        }
+
+        if (defaultGamsArgs.contains(item.key)) {
+            // TODO(AF) real log message
+            qDebug() << "Warning: You are about to overwrite GAMS Studio default arguments. "
+                        "Some of these are necessary to ensure a smooth experience. "
+                        "Use at your own risk!";
+        }
+        gamsArgs[item.key] = item.value;
+    }
+
+    // prepare return value
+    QStringList output { gmsLocation };
+    for(QString k : gamsArgs.keys()) {
+        output.append(k + "=" + gamsArgs.value(k));
+    }
+
+    qDebug() << "Running GAMS:" << output; // TODO(AF) real log message
+    return output;
+}
+
 QString ProjectGroupNode::runnableGms()
 {
     // TODO(JM) for projects the project file has to be parsed for the main runableGms
-    return mGmsFileName;
+    return mRunnableGms;
 }
 
 void ProjectGroupNode::setRunnableGms(ProjectFileNode *gmsFileNode)
 {
-    QString gmsFilePath = gmsFileNode->location();
-    setLocation(QFileInfo(gmsFilePath).path());
+   setRunnableGms(gmsFileNode->location());
+   if (logNode()) logNode()->resetLst();
+}
 
-    mGmsFileName = gmsFilePath;
-    setLstFileName(QFileInfo(gmsFilePath).completeBaseName() + ".lst");
-    if (logNode()) logNode()->resetLst();
+void ProjectGroupNode::setRunnableGms(const QString &gmsFilePath)
+{
+#if defined(__unix__) || defined(__APPLE__)
+    mRunnableGms = QDir::toNativeSeparators(gmsFilePath);
+#else
+    mRunnableGms = "\""+QDir::toNativeSeparators(gmsFilePath)+"\"";
+#endif
 }
 
 void ProjectGroupNode::removeRunnableGms()
 {
-    mGmsFileName = "";
-    mLstFileName = "";
-}
-
-QString ProjectGroupNode::lstFileName()
-{
-    return mLstFileName;
+    setRunnableGms("");
 }
 
 ProjectLogNode*ProjectGroupNode::logNode() const

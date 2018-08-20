@@ -48,6 +48,7 @@
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
+#include "tabdialog.h"
 
 namespace gams {
 namespace studio {
@@ -68,9 +69,11 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     setAcceptDrops(true);
     mTimerID = startTimer(60000);
-    QList<QKeySequence> redoShortcuts;
-    redoShortcuts << ui->actionRedo->shortcut() << QKeySequence("Ctrl+Shift+Z");
-    ui->actionRedo->setShortcuts(redoShortcuts);
+    ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+#ifdef __APPLE__
+    ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
+    ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
+#endif
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
@@ -116,8 +119,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeFileConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
-    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::on_runGmsFile);
-    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::on_setMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -140,6 +143,16 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
+    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
+    connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
+    tabMenu->setMaximumWidth(40);
+    ui->mainTab->setCornerWidget(tabMenu);
+    tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->logTabs);
+    connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
+    tabMenu->setMaximumWidth(40);
+    ui->logTabs->setCornerWidget(tabMenu);
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), this, SLOT(showTabsMenu()));
+
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
@@ -381,15 +394,21 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, QString model)
+void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 {
-    QString gmsFileName = model.toLower() + ".gms";
+    QFileInfo file(model->files().first());
+    QString inputFile = file.completeBaseName() + ".gms";
 
+    openModelFromLib(glbFile, model->name(), inputFile);
+}
+
+void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
+{
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(model);
-    mLibProcess->setInputFile(gmsFileName);
+    mLibProcess->setModelName(modelName);
+    mLibProcess->setInputFile(inputFile);
     mLibProcess->setTargetDir(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
@@ -398,9 +417,9 @@ void MainWindow::openModelFromLib(QString glbFile, QString model)
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString model)
+void MainWindow::receiveModLibLoad(QString gmsFile)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", model);
+    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms");
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
@@ -411,7 +430,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
 
-    getHelpWidget()->on_urlOpened(result);
+    helpWidget()->on_urlOpened(result);
 
     on_actionHelp_View_triggered(true);
 }
@@ -537,6 +556,36 @@ void MainWindow::helpViewVisibilityChanged(bool visibility)
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
 }
 
+void MainWindow::showMainTabsMenu()
+{
+    TabDialog *tabDialog = new TabDialog(ui->mainTab, this);
+    tabDialog->exec();
+    tabDialog->deleteLater();
+}
+
+void MainWindow::showLogTabsMenu()
+{
+    TabDialog *tabDialog = new TabDialog(ui->logTabs, this);
+    tabDialog->exec();
+    tabDialog->deleteLater();
+}
+
+void MainWindow::showTabsMenu()
+{
+    QWidget * wid = focusWidget();
+    while (wid) {
+        if (wid == ui->mainTab) {
+            showMainTabsMenu();
+            break;
+        }
+        if (wid == ui->logTabs) {
+            showLogTabsMenu();
+            break;
+        }
+        wid = wid->parentWidget();
+    }
+}
+
 void MainWindow::updateEditorPos()
 {
     QPoint pos;
@@ -573,7 +622,7 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
-void MainWindow::on_currentDocumentChanged(int from, int charsRemoved, int charsAdded)
+void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
     searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
@@ -914,32 +963,34 @@ void MainWindow::appendSystemLog(const QString &text)
     mSyslog->appendLog(text, LogMsgType::Info);
 }
 
-void MainWindow::postGamsRun(AbstractProcess* process)
+void MainWindow::postGamsRun(FileId origin)
 {
-    ProjectGroupNode* groupNode = mProjectRepo.groupNode(process->groupId());
-    QFileInfo fileInfo(process->inputFile());
+    if (origin == -1) {
+        mSyslog->appendLog("No fileId set to process", LogMsgType::Error);
+        return;
+    }
+    ProjectGroupNode* groupNode = mProjectRepo.groupNode(origin);
+    QFileInfo fileInfo(groupNode->runnableGms());
     if(groupNode && fileInfo.exists()) {
-        QString lstFile = groupNode->lstFileName();
-//        appendErrData(fileInfo.path() + "/" + fileInfo.completeBaseName() + ".err");
+        QString lstFile = groupNode->lstFile();
         bool doFocus = groupNode == mRecent.group;
 
         if (mSettings->jumpToError())
             groupNode->jumpToFirstError(doFocus);
 
-        ProjectFileNode* lstCtx = nullptr;
-        mProjectRepo.findOrCreateFileNode(lstFile, lstCtx, groupNode);
+        ProjectFileNode* lstNode = nullptr;
+        mProjectRepo.findOrCreateFileNode(lstFile, lstNode, groupNode);
 
-        if (lstCtx) lstCtx->updateMarks();
+        if (lstNode) lstNode->updateMarks();
 
         if (mSettings->openLst())
-            openFileNode(lstCtx, true);
+            openFileNode(lstNode, true);
     }
 }
 
-void MainWindow::postGamsLibRun(AbstractProcess* process)
+void MainWindow::postGamsLibRun()
 {
     // TODO(AF) Are there models without a GMS file? How to handle them?"
-    Q_UNUSED(process);
     ProjectFileNode *fc = nullptr;
     mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile(), &fc);
     if (!fc)
@@ -966,16 +1017,18 @@ void MainWindow::on_actionHelp_triggered()
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-        QString word;
-        int istate = 0;
-        ce->wordInfo(ce->textCursor(), word, istate);
+        if (ce) {
+            QString word;
+            int istate = 0;
+            ce->wordInfo(ce->textCursor(), word, istate);
 
-        if (istate == static_cast<int>(SyntaxState::Title)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-        } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-            mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
-        } else {
-            mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            if (istate == static_cast<int>(SyntaxState::Title)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
+            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
+            } else {
+                mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+            }
         }
     }
     if (ui->dockHelpView->isHidden())
@@ -1175,7 +1228,7 @@ void MainWindow::renameToBackup(QFile *file)
 
 void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item->name());
+    openModelFromLib(item->library()->glbFile(), item);
 }
 
 void MainWindow::openFile(const QString &filePath)
@@ -1402,26 +1455,6 @@ void MainWindow::customEvent(QEvent *event)
         (static_cast<LineEditCompleteEvent*>(event))->complete();
 }
 
-QStringList MainWindow::parseFilesFromCommandLine(const QString &commandLineStr, ProjectGroupNode* fgc)
-{
-    QList<OptionItem> items = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
-    QStringList commandLineArgs;
-    // set default lst file name in case output option changed back to default
-    if (!fgc->runnableGms().isEmpty())
-        fgc->setLstFileName(QFileInfo(fgc->runnableGms()).completeBaseName() + ".lst");
-
-    foreach (OptionItem item, items) {
-        commandLineArgs << QString("%1=%2").arg(item.key).arg(item.value);
-        // output (o) found, case-insensitive
-        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-
-            fgc->setLstFileName(item.value);
-        }
-    }
-    return commandLineArgs;
-}
-
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
 {
     if (show) {
@@ -1432,7 +1465,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-OptionWidget *MainWindow::getGamsOptionWidget() const
+OptionWidget *MainWindow::gamsOptionWidget() const
 {
     return mGamsOptionWidget;
 }
@@ -1455,8 +1488,6 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.fileNode(mRecent.editor()));
     ProjectGroupNode *group = (fc ? fc->parentEntry() : nullptr);
     if (!group) return;
-
-    QStringList commandLineArgs = parseFilesFromCommandLine(commandLineStr, group);
 
     group->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     group->clearLstErrorTexts();
@@ -1499,20 +1530,29 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->logTabs->setCurrentWidget(logProc->editors().first());
 
     ui->dockLogView->setVisible(true);
+
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : group->runnableGms());
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+group->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger();
+        ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
         return;
     }
+    if (gmsFileNode)
+        logProc->setCodecMib(fc->codecMib());
+    else {
+        ProjectFileNode *runNode = group->findFile(gmsFilePath);
+        logProc->setCodecMib(runNode ? runNode->codecMib() : -1);
+    }
+
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
+    QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
+
     GamsProcess* process = group->gamsProcess();
+    process->setParameters(group->analyzeParameters(gmsFilePath, itemList));
     process->setGroupId(group->id());
     process->setWorkingDir(workDir);
-    process->setInputFile(gmsFilePath);
-    process->setArguments( commandLineArgs );
     process->execute();
 
     connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
@@ -1526,23 +1566,23 @@ void MainWindow::updateRunState()
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
 }
 
-HelpWidget *MainWindow::getHelpWidget() const
+HelpWidget *MainWindow::helpWidget() const
 {
     return mHelpWidget;
 }
 
-void MainWindow::on_runGmsFile(ProjectFileNode *fc)
+void MainWindow::runGmsFile(ProjectFileNode *fc)
 {
     execute("", fc);
 }
 
-void MainWindow::on_setMainGms(ProjectFileNode *fc)
+void MainWindow::setMainGms(ProjectFileNode *fc)
 {
     fc->parentEntry()->setRunnableGms(fc);
     updateRunState();
 }
 
-void MainWindow::on_commandLineHelpTriggered()
+void MainWindow::commandLineHelpTriggered()
 {
     mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
     if (ui->dockHelpView->isHidden())
@@ -1551,7 +1591,7 @@ void MainWindow::on_commandLineHelpTriggered()
         ui->dockHelpView->raise();
 }
 
-void MainWindow::on_optionRunChanged()
+void MainWindow::optionRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupInRunningState())
        on_actionRun_triggered();
@@ -1711,10 +1751,11 @@ void MainWindow::closeFile(ProjectFileNode* file)
 
     // close actual file and remove repo node
     closeFileEditors(file->id());
+    QString filePath = file->location();
     mProjectRepo.removeFile(file);
 
     // if this file is marked as runnable remove reference
-    if (parentGroup->runnableGms() == file->location()) {
+    if (parentGroup->runnableGms() == filePath) {
         parentGroup->removeRunnableGms();
         for (int i = 0; i < parentGroup->childCount(); i++) {
             // choose next as main gms file
@@ -1957,9 +1998,11 @@ void MainWindow::readTabs(const QJsonObject &json)
         if (QFileInfo(location).exists()) {
             openFilePath(location, nullptr, true);
             mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
         }
     }
-    QTimer::singleShot(0,this,SLOT(initAutoSave()));
+    QTimer::singleShot(0, this, SLOT(initAutoSave()));
 }
 
 void MainWindow::initAutoSave()
@@ -1982,8 +2025,12 @@ void MainWindow::writeTabs(QJsonObject &json) const
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
+
     ProjectFileNode *fc = mRecent.editor() ? mProjectRepo.fileNode(mRecent.editor()) : nullptr;
-    if (fc) json["mainTabRecent"] = fc->location();
+    if (fc)
+        json["mainTabRecent"] = fc->location();
+    else if (ui->mainTab->currentWidget() == mWp)
+        json["mainTabRecent"] = "WELCOME_PAGE";
 }
 
 void MainWindow::on_actionGo_To_triggered()
@@ -2079,9 +2126,9 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->resetZoom(); // reset help view
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->resetZoom(); // reset help view
     } else {
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
     }
@@ -2090,9 +2137,9 @@ void MainWindow::on_actionReset_Zoom_triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->zoomOut();
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->zoomOut();
     } else {
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2104,9 +2151,9 @@ void MainWindow::on_actionZoom_Out_triggered()
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    if (getHelpWidget()->isAncestorOf(QApplication::focusWidget()) ||
-        getHelpWidget()->isAncestorOf(QApplication::activeWindow())) {
-        getHelpWidget()->zoomIn();
+    if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
+        helpWidget()->isAncestorOf(QApplication::activeWindow())) {
+        helpWidget()->zoomIn();
     } else {
         AbstractEdit *ae = ProjectFileNode::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
@@ -2122,10 +2169,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce= ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toUpper());
-    }
+    if (ce) ce->convertToUpper();
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
@@ -2133,17 +2177,14 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly()) {
-        QTextCursor c = ce->textCursor();
-        c.insertText(c.selectedText().toLower());
-    }
+    if (ce) ce->convertToLower();
 }
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
 {
     CodeEdit* ce = ProjectFileNode::toCodeEdit(mRecent.editor());
+    mOverwriteMode = overwriteMode;
     if (ce && !ce->isReadOnly()) {
-        mOverwriteMode = overwriteMode;
         ce->setOverwriteMode(overwriteMode);
         updateEditorMode();
     }
@@ -2256,7 +2297,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
+        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
     mEditor = editor;
     edit = ProjectFileNode::toAbstractEdit(mEditor);
@@ -2264,7 +2305,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::on_currentDocumentChanged);
+        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();
@@ -2284,7 +2325,7 @@ void MainWindow::resetViews()
     mSettings->loadSettings(this);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
-    foreach (QDockWidget* dock, dockWidgets) {
+    for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
         dock->setVisible(true);
 
@@ -2311,5 +2352,72 @@ void MainWindow::resizeOptionEditor(const QSize &size)
 }
 
 
+void MainWindow::setForeground()
+{
+#if defined (WIN32)
+   HWND WinId= (HWND) winId();
+   if (this->windowState() == Qt::WindowMinimized) {
+       this->setWindowState(Qt::WindowActive);
+   }
+   DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
+   DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);
+   if (foregroundThreadPId != mwThreadPId) {
+       AttachThreadInput(foregroundThreadPId,mwThreadPId,true);
+       SetForegroundWindow(WinId);
+       AttachThreadInput(foregroundThreadPId, mwThreadPId, false);
+   } else {
+       SetForegroundWindow(WinId);
+   }
+#else
+    this->show();
+    this->raise();
+    this->activateWindow();
+#endif
+}
+
+void MainWindow::setForegroundOSCheck()
+{
+    if (mSettings->foregroundOnDemand())
+        setForeground();
+}
+  
+void MainWindow::on_actionNextTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
+}
+
+void MainWindow::on_actionPreviousTab_triggered()
+{
+    QWidget *wid = focusWidget();
+    QTabWidget *tabs = nullptr;
+    while (wid) {
+        if (wid == ui->mainTab) {
+           tabs = ui->mainTab;
+           break;
+        }
+        if (wid == ui->logTabs) {
+           tabs = ui->logTabs;
+           break;
+        }
+        wid = wid->parentWidget();
+    }
+    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+}
+
 }
 }
+
+
