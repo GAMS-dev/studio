@@ -116,6 +116,19 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     switch (role) {
+    case Qt::TextAlignmentRole: {
+        Qt::AlignmentFlag aFlag;
+        switch(index.column()) {
+            case 0: aFlag = Qt::AlignRight; break;
+            case 1: aFlag = Qt::AlignLeft; break;
+            case 2: aFlag = Qt::AlignLeft; break;
+            case 3: aFlag = Qt::AlignRight; break;
+            case 4: aFlag = Qt::AlignLeft; break;
+            case 5: aFlag = Qt::AlignLeft; break;
+            default: aFlag = Qt::AlignLeft; break;
+        }
+        return QVariant(aFlag | Qt::AlignVCenter);
+    }
     case Qt::DisplayRole: {
          QList<SymbolReferenceItem*> refList = mReference->findReference(mType);
          switch(mType) {

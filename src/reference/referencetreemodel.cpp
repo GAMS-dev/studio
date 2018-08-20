@@ -66,6 +66,18 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
             return QString("%1 : Line %2 : Column %3").arg(item->data(0).toString()).arg(item->data(1).toString()).arg(item->data(2).toString());
         }
     }
+    case Qt::TextAlignmentRole: {
+        Qt::AlignmentFlag aFlag;
+        switch(index.column()) {
+            case 0: aFlag = Qt::AlignLeft; break;
+            case 1: aFlag = Qt::AlignRight; break;
+            case 2: aFlag = Qt::AlignLeft; break;
+            default: aFlag = Qt::AlignLeft; break;
+        }
+        return QVariant(aFlag | Qt::AlignVCenter);
+    }
+    default:
+        break;
     }
 
     return QVariant();
