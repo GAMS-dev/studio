@@ -24,7 +24,7 @@
 #include <QProcess>
 #include <QMutex>
 
-#include "file/projectabstractnode.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {

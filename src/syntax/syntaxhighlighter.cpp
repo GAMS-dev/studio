@@ -26,18 +26,27 @@
 #include "logger.h"
 #include "exception.h"
 #include "file.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(ProjectFileNode* node)
-    : QSyntaxHighlighter(node->document()), mNode(node)
+ErrorHighlighter::ErrorHighlighter(QTextDocument *doc)
+    : QSyntaxHighlighter(doc)
 {
 }
 
-TextMarkList* ErrorHighlighter::marks()
+FileMarks ErrorHighlighter::marks() const
 {
-    return (mNode) ? mNode->marks() : nullptr;
+    return mMarks;
+}
+
+void ErrorHighlighter::setMarks(FileMarks marks)
+{
+    FileMarks prevMarks = mMarks;
+    mMarks = marks;
+    QList<int> lines = prevMarks.unite(marks).uniqueKeys();
+    // TODO(JM) repaint all lines that changed in marks
 }
 
 void ErrorHighlighter::syntaxState(int position, int &intState)
@@ -51,15 +60,15 @@ void ErrorHighlighter::syntaxState(int position, int &intState)
 
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
-    if (!marks()) {
+    if (marks().isEmpty()) {
         DEB() << "trying to highlight without marks!";
         return;
     }
-    QVector<TextMark*> markList = marks()->marksForBlock(currentBlock());
+    QList<TextMark*> markList = marks().values(FileId(currentBlock().blockNumber()));
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QVector<TextMark*> markList)
+void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QList<TextMark*> markList)
 {
     int end = start+len;
     int marksStart = end;
@@ -110,8 +119,8 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
 }
 
 
-SyntaxHighlighter::SyntaxHighlighter(ProjectFileNode* node)
-    : ErrorHighlighter(node)
+SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
+    : ErrorHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
@@ -172,7 +181,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
+    QList<TextMark*> markList = marks().values(currentBlock().blockNumber());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
@@ -252,7 +261,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!parPosList.isEmpty() && !blockData) {
             blockData = new BlockData();
         }
-        if (blockData) blockData->setparentheses(parPosList);
+        if (blockData) blockData->setParentheses(parPosList);
         if (blockData && blockData->isEmpty())
             textBlock.setUserData(nullptr);
         else

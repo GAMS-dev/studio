@@ -39,7 +39,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(ProjectAbstractNode* entry) const;
+    QModelIndex index(const ProjectAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
     ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);

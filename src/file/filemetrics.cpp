@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 
 FileMetrics::FileMetrics()
-    : mExists(false), mSize(0), mType(&FileType::from(FileType::None))
+    : mExists(false), mSize(0), mType(&FileType::from(FileKind::None))
 { }
 
 FileMetrics::FileMetrics(const FileMetrics& other)
@@ -65,6 +65,7 @@ FileMetrics::ChangeKind FileMetrics::check(QFileInfo fileInfo)
     if (fileInfo.lastModified() != mModified) return ckModified;
     return ckUnchanged;
 }
+
 
 } // namespace studio
 } // namespace gams

@@ -143,7 +143,7 @@ bool Application::event(QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFile(openEvent->url().path());
+        mMainWindow->openFilePath(openEvent->url().path());
     }
     return QApplication::event(event);
 }

@@ -20,168 +20,86 @@
 #ifndef PROJECTABSTRACTNODE_H
 #define PROJECTABSTRACTNODE_H
 
+#include <QObject>
+
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "editors/codeedit.h"
 #include "editors/processlogedit.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
-typedef int FileId;
-
+class ProjectRootNode;
 class ProjectGroupNode;
+class ProjectRunGroupNode;
+class ProjectFileNode;
+class ProjectLogNode;
+class ProjectRepo;
+class FileMetaRepo;
+class TextMarkRepo;
 
 class ProjectAbstractNode : public QObject
-{   // TODO(AF) Make this thing abstract and use is as a interface for all common functions?
-    // TODO(JM) Disagree: to many common members - this would lead to code doubling. If you want an interface,
-    //                    it could be set on top of this FileSystemContext (e.g. AbstractContext)
+{
     Q_OBJECT
 
 public:
-    enum ContextFlag { // TODO(AF) for global methods (e.g. save all) add changed state?
-                       // TODO(JM) I'd prefer having either a pointer-list of changed node in repo or a method here
-
-        // TODO(JM) check, which flags are better implemented as methods getting their info implicit
-        cfNone          = 0x00,
-        cfActive        = 0x01, // TODO(JM) implemented and in use: if this is the only real flag, we should have a method instead
-        cfFileMod       = 0x02, // TODO(JM) implemented but not in use (marks changes from outside)
-        cfEditMod       = 0x04, // TODO(JM) implemented but not in use (marks changes from inside - but here we have the doc.modified())
-        cfMissing       = 0x08, // TODO(JM) some implementation missing in ProjectFileNode?
-        cfExtendCaption = 0x10, // needed for doubled groups - could be moved to a boolean there
-        cfVirtual       = 0x20, // set - but not used
-    };
-
-    enum ContextType {
-        File,
-        FileGroup,
-        FileSystem,
-        Log
-    };
-
-    enum EditorType {
-        etUndefined = 0,
-        etPlainText = 1,
-        etSourceCode = 2,
-        etLog = 3,
-        etLastTextType = 4,
-
-        etLxiLst = 5,
-        etGdx = 6,
-        etLastKomplexType = 9,
-    };
-
-    typedef QFlags<ContextFlag> ContextFlags;
-
     virtual ~ProjectAbstractNode();
 
-    FileId id() const;
+    NodeId id() const;
 
-    /// \brief File node type.
-    /// \return Returns the file node type as <c>int</c>.
-    int type() const;
-
-    /// \brief Checks if the node can be represented in a tab.
-    /// \return True, if the node can be represented in a tab.
-    bool canShowAsTab() const;
-
-    /// The caption of this file, which is its extended display name.
-    /// \return The caption of this node.
-    virtual const QString caption();
+    const ProjectRootNode *root() const;
+    virtual ProjectRepo *projectRepo() const;
+    virtual FileMetaRepo *fileRepo() const;
+    virtual TextMarkRepo *textMarkRepo() const;
 
     /// The raw name of this node.
-    /// \return The raw name of this node.
-    virtual const QString name();
+    /// \param mod The kind of modification applied to the raw name
+    /// \return The requested name of this node.
+    virtual QString name(NameModifier mod = NameModifier::raw) const;
 
     /// Sets the raw name of this node.
-    /// \param name The raw name of this node.
+    /// \param name The raw name for this node.
     void setName(const QString& name);
-
-    /// The location of the node. This is a directory or file with full path.
-    /// \param location The new location
-    const QString& location() const;
-
-    /// Sets a new location (name and path) to the node. This sets the CRUD-state to "Create"
-    /// \param location The new location
-    virtual void setLocation(const QString& location);
 
     /// The icon for this file type.
     /// \return The icon for this file type.
     virtual QIcon icon() = 0;
 
-    const ContextFlags &flags() const;
-    virtual void setFlag(ContextFlag flag, bool value = true);
-    virtual void unsetFlag(ContextFlag flag);
-    virtual bool testFlag(ContextFlag flag);
+    ProjectGroupNode* parentNode() const;
+    virtual void setParentNode(ProjectGroupNode *parent);
+    ProjectRunGroupNode *runParentNode() const;
 
-    ProjectGroupNode* parentEntry() const;
-    virtual void setParentEntry(ProjectGroupNode *parent);
-    virtual ProjectAbstractNode* childEntry(int index) const;
-    virtual int childCount() const;
+    /// \brief File node type.
+    /// \return Returns the file node type as <c>int</c>.
+    NodeType type() const;
     virtual QString tooltip()=0;
 
-    ProjectAbstractNode *findFile(QString filePath);
+    const ProjectRootNode *toRoot() const;
+    const ProjectGroupNode* toGroup() const;
+    ProjectGroupNode* toGroup();
+    const ProjectRunGroupNode *toRunGroup() const;
+    ProjectRunGroupNode *toRunGroup();
+    const ProjectFileNode* toFile() const;
+    ProjectFileNode* toFile();
+    const ProjectLogNode* toLog() const;
 
-
-public: // static convenience methods
-    inline static void initEditorType(CodeEdit* w) {
-        if(w) w->setProperty("EditorType", etSourceCode);
-    }
-    inline static void initEditorType(AbstractEdit* w) { // obsolete?
-        if(w) w->setProperty("EditorType", etPlainText);
-    }
-    inline static void initEditorType(ProcessLogEdit* w) {
-        if(w) w->setProperty("EditorType", etLog);
-    }
-    inline static void initEditorType(gdxviewer::GdxViewer* w) {
-        if(w) w->setProperty("EditorType", etGdx);
-    }
-    inline static void initEditorType(lxiviewer::LxiViewer* w) {
-        if(w) w->setProperty("EditorType", etLxiLst);
-    }
-    inline static int editorType(QWidget* w) {
-        QVariant v = w ? w->property("EditorType") : QVariant();
-        return (v.isValid() ? v.toInt() : etUndefined);
-    }
-    inline static AbstractEdit* toAbstractEdit(QWidget* w) {
-        int t = editorType(w);
-        if (t == etLxiLst)
-            return toLxiViewer(w)->codeEdit();
-        return (t > etUndefined && t <= etLastTextType) ? static_cast<AbstractEdit*>(w) : nullptr;
-    }
-    inline static CodeEdit* toCodeEdit(QWidget* w) {
-        int t = editorType(w);
-        if (t == etLxiLst)
-            return toLxiViewer(w)->codeEdit();
-        return (t == etSourceCode) ? static_cast<CodeEdit*>(w) : nullptr;
-    }
-    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
-        return (editorType(w) == etLog) ? static_cast<ProcessLogEdit*>(w) : nullptr;
-    }
-    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
-        return (editorType(w) == etGdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
-    }
-    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
-        return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
-    }
+    bool isActive() const;
+    void setActive();
 
 signals:
-    void changed(FileId fileId);
+    void changed(NodeId nodeId);
 
 protected:
-    friend class ProjectLogNode;
-
-    ProjectAbstractNode(FileId fileId, QString name, QString location);
-    ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type);
-    virtual void checkFlags();
+    ProjectAbstractNode(QString name, NodeType type);
 
 private:
-    FileId mId;
+    static NodeId mNextNodeId;
+    NodeId mId;
     ProjectGroupNode* mParent;
     QString mName;
-    QString mLocation;
-    ContextFlags mFlags;
-    ContextType mType;
+    NodeType mType;
 };
 
 } // namespace studio

@@ -23,72 +23,81 @@
 #include <QTextDocument>
 #include <QVector>
 #include "file/filetype.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
-class TextMarkList;
+class TextMarkRepo;
+struct TextMarkData;
+class BlockData;
 
 class TextMark
 {
 public:
     enum Type {none, error, link, bookmark, match, all};
 
-    explicit TextMark(TextMarkList* marks, TextMark::Type tmType);
     virtual ~TextMark();
+    FileId fileId() const;
+    NodeId groupId() const;
     QTextDocument* document() const;
     void setPosition(int line, int column, int size = 0);
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
-    inline bool isErrorRef() {return mReference && mReference->type() == error;}
+    inline bool isErrorRef();
     QColor color();
-    FileType::Kind fileKind();
-    FileType::Kind refFileKind();
+    FileKind fileKind();
+    FileKind refFileKind();
     int value() const;
     void setValue(int value);
 
     void clearBackRefs();
+    void setBlockData(BlockData* blockData);
 
     QIcon icon();
     inline Type type() const {return mType;}
-    inline Type refType() const {return (!mReference) ? none : mReference->type();}
+    inline Type refType() const;
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
-    inline bool isValid() {return mMarks && (mLine>=0) && (mColumn>=0);}
+    inline bool isValid() {return mMarkRepo && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
     { return mReference && ((mType == error && inIconRegion) || mType == link); }
-    QTextBlock textBlock();
-    QTextCursor textCursor();
-    inline int in(int pos, int len) {
-        if (mPosition < 0) return -2;
-        return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
-    }
+//    QTextBlock textBlock();
+//    QTextCursor textCursor();
+//    inline int in(int pos, int len) {
+//        if (mPosition < 0) return -2;
+//        return (mPosition+mSize <= pos) ? -1 : (mPosition >= pos+len) ? 1 : 0;
+//    }
 
-    inline int line() const {return document() ? qMin(mLine,document()->blockCount()-1) : mLine;}
+    inline int line() const {return mLine;}
     inline int column() const {return mColumn;}
     inline int size() const {return mSize;}
     inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
-    inline int position() const {return document() ? qMin(mPosition,document()->characterCount()-1) : mPosition;}
     inline int blockStart() const {return mColumn;}
     inline int blockEnd() const {return mColumn+mSize;}
     inline void incSpread() {mSpread++;}
     inline int spread() const {return mSpread;}
     void rehighlight();
 
-    void move(int delta);
-    void updatePos();
-    void updateLineCol();
+//    void move(int delta);
+//    void updatePos();
+//    void updateLineCol();
     void flatten();
 
     QString dump();
 
+protected:
+    friend class TextMarkRepo;
+    TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = NodeId());
 
 private:
-    static int mNextId;
-    int mId;
-    TextMarkList* mMarks;
-    int mPosition = -1;
+    static TextMarkId mNextId;
+    TextMarkId mId;
+    FileId mFileId;
+    NodeId mGroupId;
+    TextMarkRepo* mMarkRepo = nullptr;
+//    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
@@ -96,7 +105,32 @@ private:
     int mValue = 0;
     int mSpread = 0;
     TextMark* mReference = nullptr;
+//    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
+
+    // TODO(JM) maybe later we want to link the mark to the QTextBlock
+    BlockData* mBlockData = nullptr;
+};
+
+struct TextMarkData
+{
+    TextMarkData(const QString& _location, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : location(_location), runLocation(QString()), type(_type), line(_line), column(_column), size(_size) {}
+    TextMarkData(const QString& _location, const QString &_runLocation, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : location(_location), runLocation(_runLocation), type(_type), line(_line), column(_column), size(_size) {}
+    TextMarkData(const FileId _fileId, const NodeId _groupId, TextMark::Type _type, int _line, int _column, int _size = 0)
+        : fileId(_fileId), groupId(_groupId), type(_type), line(_line), column(_column), size(_size) {}
+    QString location;
+    FileId fileId;
+    QString runLocation;
+    NodeId groupId;
+    TextMark::Type type;
+    int line;
+    int column;
+    int size;
+    FileKind fileKind() {
+        return FileType::from(location.right(4).toLower()).kind();
+    }
 };
 
 } // namespace studio

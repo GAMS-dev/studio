@@ -120,7 +120,7 @@ SOURCES += \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxidentifier.cpp \
     syntax/textmark.cpp \
-    syntax/textmarklist.cpp \
+    syntax/textmarkrepo.cpp \
     treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
@@ -131,6 +131,7 @@ SOURCES += \
     file/projectabstractnode.cpp \
     file/projecttreemodel.cpp \
     file/projectlognode.cpp \
+    file/fileevent.cpp \
     file/filemetarepo.cpp \
     file/filemeta.cpp \
     gotodialog.cpp \
@@ -149,6 +150,7 @@ HEADERS += \
     autosavehandler.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
+    common.h \
     commonpaths.h \
     distributionvalidator.h \
     exception.h \
@@ -208,7 +210,7 @@ HEADERS += \
     syntax/syntaxhighlighter.h \
     syntax/syntaxidentifier.h \
     syntax/textmark.h \
-    syntax/textmarklist.h \
+    syntax/textmarkrepo.h \
     treeitemdelegate.h \
     updatedialog.h \
     version.h \
@@ -218,6 +220,7 @@ HEADERS += \
     file/projectfilenode.h \
     file/projectlognode.h \
     file/projecttreemodel.h \
+    file/fileevent.h \
     file/filemetarepo.h \
     file/filemeta.h \
     file/projectrepo.h \

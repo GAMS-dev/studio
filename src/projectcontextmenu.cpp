@@ -56,12 +56,9 @@ ProjectContextMenu::ProjectContextMenu()
 void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 {
     mNode = node;
-    bool isGroup = mNode && mNode->type() == ProjectAbstractNode::FileGroup;
-    bool isGmsFile = false;
-    if (mNode->type() == ProjectAbstractNode::File) {
-        ProjectFileNode *fc = static_cast<ProjectFileNode*>(mNode);
-        isGmsFile = (fc->metrics().fileType() == FileType::Gms);
-    }
+    bool isGroup = mNode->toGroup();
+    ProjectFileNode *fileNode = node->toFile();
+    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
 
     mActions[1]->setVisible(isGroup);
 //    mActions[2]->setVisible(isGmsFile);
@@ -70,14 +67,12 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 //    mActions[5]->setVisible(isGmsFile);
 
     // all files
-    mActions[10]->setVisible(mNode->type() == ProjectAbstractNode::File);
+    mActions[10]->setVisible(fileNode);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    ProjectFileNode *file = (mNode->type() == ProjectAbstractNode::File)
-                        ? static_cast<ProjectFileNode*>(mNode) : nullptr;
-
+    ProjectFileNode *file = mNode->toFile();
     if (file) emit closeFile(file);
 }
 
@@ -96,10 +91,9 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    foreach (QString filePath, filePaths) {
-        ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup)
-                                  ? static_cast<ProjectGroupNode*>(mNode) : mNode->parentEntry();
-
+    for (QString filePath: filePaths) {
+        ProjectGroupNode *group = mNode->toGroup();
+        if (!group) group = mNode->parentNode();
         emit addExistingFile(group, filePath);
     }
 }
@@ -131,8 +125,8 @@ void ProjectContextMenu::onAddNewFile()
     } else { // replace old
         file.resize(0);
     }
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                              : mNode->parentEntry();
+    ProjectGroupNode *group = mNode->toGroup();
+    if (!group) group = mNode->parentNode();
     emit addExistingFile(group, filePath);
 }
 
@@ -143,8 +137,8 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    ProjectGroupNode *group = (mNode->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(mNode)
-                                                                              : mNode->parentEntry();
+    ProjectGroupNode *group = mNode->toGroup();
+    if (!group) group = mNode->parentNode();
     if (group) emit closeGroup(group);
 }
 
@@ -163,14 +157,13 @@ void ProjectContextMenu::onSetMainFile()
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    if (mNode->type() == ProjectAbstractNode::File) {
-        ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
-
+    ProjectFileNode *file = mNode->toFile();
+    if (file) {
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            ProjectGroupNode *parent = file->parentEntry();
+            ProjectGroupNode *parent = file->parentNode();
             if (parent) openLoc = parent->location();
             QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
         } else {
@@ -189,8 +182,8 @@ void ProjectContextMenu::onOpenFileLoc()
         if (parent) openLoc = parent->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
-    } else if (mNode->type() == ProjectAbstractNode::FileGroup) {
-        ProjectGroupNode *group = static_cast<ProjectGroupNode*>(mNode);
+    } else if (mNode->type() == NodeType::group) {
+        ProjectGroupNode *group = mNode->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }

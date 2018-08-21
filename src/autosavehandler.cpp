@@ -65,7 +65,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
             originalversion.replace(mAutosavedFileMarker, "");
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
-            mMainWindow->openFile(destFile.fileName());
+            mMainWindow->openFilePath(destFile.fileName());
             if (srcFile.open(QIODevice::ReadWrite))
             {
                 if (destFile.open(QIODevice::ReadWrite))
@@ -99,7 +99,7 @@ void AutosaveHandler::saveChangedFiles()
         QString filepath = QFileInfo(fc->location()).path();
         QString filename = filepath+fc->name();
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fc->name();
-        if (fc->isModified() && (fc->metrics().fileType() == FileType::Gms || fc->metrics().fileType() == FileType::Txt))
+        if (fc->isModified() && (fc->metrics().fileType() == FileKind::Gms || fc->metrics().fileType() == FileKind::Txt))
         {
             QFile file(autosaveFile);
             file.open(QIODevice::WriteOnly);

@@ -42,9 +42,9 @@ void TextMarkList::bind(ProjectFileNode* fc)
     if (mFileNode)
         EXCEPT() << "TextMarks are already bound to FileNode " << mFileNode->location();
     mFileNode = fc;
-    mGroupNode = fc->parentEntry();
+    mGroupNode = fc->parentNode();
     mFileName = fc->location();
-    if (fc->document() && fc->metrics().fileType().kind() == FileType::Gms) connectDoc();
+    if (fc->document() && fc->metrics().fileType().kind() == FileKind::Gms) connectDoc();
 }
 
 void TextMarkList::updateMarks()
@@ -66,7 +66,7 @@ void TextMarkList::shareMarkHash(QHash<int, TextMark*>* marks, TextMark::Type fi
 {
     for (TextMark* mark: mMarks) {
         if ((mark->type() == filter) || filter == TextMark::all)
-            marks->insertMulti(mark->line(), mark);
+            marks->insert(mark->line(), mark);
     }
 }
 
@@ -78,7 +78,7 @@ void TextMarkList::textMarkIconsEmpty(bool* noIcons)
 
 void TextMarkList::documentOpened()
 {
-    if (mFileNode && mFileNode->metrics().fileType().kind() == FileType::Gms)
+    if (mFileNode && mFileNode->metrics().fileType().kind() == FileKind::Gms)
         connectDoc();
 }
 
@@ -159,7 +159,6 @@ void TextMarkList::removeTextMarks(QSet<TextMark::Type> tmTypes, bool doRehighli
         if (tmTypes.isEmpty() || tmTypes.contains(tm->type()) || tmTypes.contains(TextMark::all)) {
             int pos = tm->position();
             TextMark* mark = mMarks.takeAt(i);
-            mark->clearBackRefs();
             delete mark;
             if (doRehighlight && fileNode() && fileNode()->document())
                 fileNode()->rehighlightAt(pos);
@@ -180,10 +179,8 @@ QVector<TextMark*> TextMarkList::findMarks(const QTextCursor& cursor)
         if (tc.isNull()) break;
         if (tc.blockNumber() > cursor.blockNumber()) break;
         if (tc.blockNumber() < cursor.blockNumber()) continue;
-        if (cursor.atBlockStart()) {
+        if (cursor.atBlockStart())
             res << mark;
-            continue;
-        }
 
         int a = tc.block().position() + mark->column();
         int b = a + (mark->size() ? mark->size() : tc.block().length());

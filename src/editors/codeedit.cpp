@@ -134,6 +134,12 @@ LineNumberArea* CodeEdit::lineNumberArea()
     return mLineNumberArea;
 }
 
+void CodeEdit::setGroupId(const NodeId &groupId)
+{
+    AbstractEdit::setGroupId(groupId);
+    // TODO (JM): reload TextMarks
+}
+
 void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
@@ -522,8 +528,12 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
         }
-    } else
+    } else {
         AbstractEdit::mouseMoveEvent(e);
+    }
+    Qt::CursorShape shape = Qt::ArrowCursor;
+    if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+    lineNumberArea()->setCursor(shape);
 }
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {
@@ -1649,11 +1659,22 @@ QVector<ParenthesesPos> BlockData::parentheses() const
     return mparentheses;
 }
 
-void BlockData::setparentheses(const QVector<ParenthesesPos> &parentheses)
+void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses)
 {
     mparentheses = parentheses;
 }
 
+void BlockData::addTextMark(TextMark *mark)
+{
+    if (mMarks.contains(mark)) return;
+    mMarks << mark;
+    mark->setBlockData(this);
+}
+
+void BlockData::removeTextMark(TextMark *mark)
+{
+    mMarks.removeAll(mark);
+}
 
 } // namespace studio
 } // namespace gams

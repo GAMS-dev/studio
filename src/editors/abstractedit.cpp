@@ -20,6 +20,7 @@
 #include <QMimeData>
 #include <QTextBlock>
 #include <QScrollBar>
+#include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
 
@@ -29,6 +30,8 @@ namespace studio {
 AbstractEdit::AbstractEdit(QWidget *parent)
     : QPlainTextEdit(parent)
 {
+    viewport()->installEventFilter(this);
+    installEventFilter(this);
 }
 
 AbstractEdit::~AbstractEdit()
@@ -51,9 +54,29 @@ QMimeData* AbstractEdit::createMimeDataFromSelection() const
     QMimeData* mimeData = new QMimeData();
     QTextCursor c = textCursor();
     QString plainTextStr = c.selection().toPlainText();
-    mimeData->setText( plainTextStr );
+    mimeData->setText(plainTextStr);
 
     return mimeData;
+}
+
+NodeId AbstractEdit::groupId() const
+{
+    return mGroupId;
+}
+
+void AbstractEdit::setGroupId(const NodeId &groupId)
+{
+    mGroupId = groupId;
+}
+
+FileId AbstractEdit::fileId() const
+{
+    return mFileId;
+}
+
+void AbstractEdit::setFileId(const FileId &fileId)
+{
+    mFileId = fileId;
 }
 
 void AbstractEdit::afterContentsChanged(int, int, int)
@@ -64,6 +87,19 @@ void AbstractEdit::afterContentsChanged(int, int, int)
     setTextCursor(tc);
 }
 
+void AbstractEdit::showToolTip(const QList<TextMark*> marks)
+{
+    if (marks.size() > 0) {
+        QTextCursor cursor(document()->findBlockByNumber(marks.first()->line()));
+                //(marks.first()->textCursor());
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, marks.first()->column());
+        QPoint pos = cursorRect(cursor).bottomLeft();
+        QStringList tips;
+        emit requestLstTexts(mGroupId, marks, tips);
+        QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
+    }
+}
+
 bool AbstractEdit::event(QEvent *e)
 {
     if (e->type() == QEvent::ShortcutOverride) {
@@ -72,27 +108,130 @@ bool AbstractEdit::event(QEvent *e)
     } else {
         return QPlainTextEdit::event(e);
     }
+
+    // TODO(JM) move to ProcessLogEdit
+    /*if (mMetrics.fileType() == FileType::Log
+        && (event->type() == QEvent::MouseButtonDblClick
+            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
+        QPoint pos = mouseEvent->pos();
+        QTextCursor cursor = edit->cursorForPosition(pos);
+        if (mMarks && (mMarks->marksForBlock(cursor.block(), TextMark::error).isEmpty()
+                       || mouseEvent->modifiers()==Qt::ControlModifier)) {
+            int line = cursor.blockNumber();
+            TextMark* linkMark = nullptr;
+            for (TextMark *mark: mMarks->marks()) {
+                if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
+                    if (mark->line() < line)
+                        linkMark = mark;
+                    else if (!linkMark)
+                        linkMark = mark;
+                    else if (line+1 < mark->line()+mark->spread())
+                        break;
+                    else if (qAbs(linkMark->line()-line) < qAbs(line-mark->line()))
+                        break;
+                    else {
+                        linkMark = mark;
+                        break;
+                    }
+                }
+            }
+            if (linkMark) {
+                linkMark->jumpToRefMark(true);
+                edit->setFocus();
+            }
+        }
+
+    } else*/
+
 }
 
-void AbstractEdit::jumpTo(const QTextCursor &cursor, int altLine, int altColumn)
+bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 {
-    QTextCursor tc;
-    if (cursor.isNull()) {
-        if (document()->blockCount()-1 < altLine) return;
-        tc = QTextCursor(document()->findBlockByNumber(altLine));
-    } else {
-        tc = cursor;
+    Q_UNUSED(o);
+    if (e->type() == QEvent::ToolTip) {
+        QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
+        if (!mMarksAtMouse.isEmpty())
+            showToolTip(mMarksAtMouse);
+        mTipPos = helpEvent->pos();
+        return !mMarksAtMouse.isEmpty();
     }
+}
 
-    if (cursor.isNull()) tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, altColumn);
+void AbstractEdit::keyPressEvent(QKeyEvent *e)
+{
+    QPlainTextEdit::keyPressEvent(e);
+    Qt::CursorShape shape = Qt::IBeamCursor;
+    if (e->modifiers() & Qt::ControlModifier) {
+        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+    }
+    viewport()->setCursor(shape);
+}
+
+void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
+{
+    QPlainTextEdit::keyPressEvent(e);
+    Qt::CursorShape shape = Qt::IBeamCursor;
+    if (e->modifiers() & Qt::ControlModifier) {
+        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+    }
+    viewport()->setCursor(shape);
+}
+
+void AbstractEdit::mousePressEvent(QMouseEvent *e)
+{
+    QPlainTextEdit::mousePressEvent(e);
+    if (!mMarksAtMouse.isEmpty()) {
+        mClickPos = e->pos();
+    }
+}
+
+void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
+{
+    QPlainTextEdit::mouseMoveEvent(e);
+    if (QToolTip::isVisible() && (mTipPos-e->pos()).manhattanLength() > 3) {
+        mTipPos = QPoint();
+        QToolTip::hideText();
+    }
+    QTextCursor cursor = cursorForPosition(e->pos());
+    QList<TextMark*> marks = mMarks->values(cursor.blockNumber());
+    mMarksAtMouse.clear();
+    int col = cursor.positionInBlock();
+    for (TextMark* mark: marks) {
+        if ((!mark->groupId().isValid() || mark->groupId() == groupId()) && mark->inColumn(col))
+            mMarksAtMouse << mark;
+    }
+}
+
+void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
+{
+    QPlainTextEdit::mouseReleaseEvent(e);
+    if (!mMarksAtMouse.isEmpty() && mMarksAtMouse.first()->isValidLink(true) && (mClickPos-e->pos()).manhattanLength() < 4) {
+        mMarksAtMouse.first()->jumpToRefMark();
+    }
+}
+
+
+void AbstractEdit::jumpTo(const QTextCursor &cursor)
+{
+    QTextCursor tc = cursor;
     tc.clearSelection();
     setTextCursor(tc);
     // center line vertically
     qreal lines = qreal(rect().height()) / cursorRect().height();
     qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
-    int mv = line - lines/2;
+    int mv = qRound(line - lines/2);
     if (qAbs(mv) > lines/3)
         verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
+}
+
+void AbstractEdit::jumpTo(int line, int column)
+{
+    QTextCursor cursor;
+    if (document()->blockCount()-1 < line) return;
+    cursor = QTextCursor(document()->findBlockByNumber(line));
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
+    cursor.clearSelection();
+    jumpTo(cursor);
 }
 
 }

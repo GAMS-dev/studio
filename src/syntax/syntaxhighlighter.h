@@ -22,7 +22,7 @@
 
 #include <QSyntaxHighlighter>
 #include "syntaxformats.h"
-#include "textmark.h"
+#include "textmarkrepo.h"
 
 namespace gams {
 namespace studio {
@@ -50,22 +50,23 @@ class ErrorHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    ErrorHighlighter(ProjectFileNode *node);
+    ErrorHighlighter(QTextDocument *doc);
     void highlightBlock(const QString &text);
-    TextMarkList* marks();
+    FileMarks marks() const;
+    void setMarks(FileMarks marks);
 
 public slots:
     void syntaxState(int position, int &intState);
 
 protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QVector<TextMark*> markList);
+    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QList<TextMark *> markList);
 
 protected:
     int mPositionForSyntaxState = -1;
     int mLastSyntaxState = 0;
 
 private:
-    ProjectFileNode* mNode = nullptr;
+    FileMarks mMarks;
     QTextBlock mTestBlock;
 
 };
@@ -74,7 +75,7 @@ class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(ProjectFileNode *node);
+    SyntaxHighlighter(QTextDocument *doc);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);

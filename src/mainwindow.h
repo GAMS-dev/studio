@@ -33,6 +33,7 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+#include "file/filemetarepo.h"
 
 namespace Ui {
 class MainWindow;
@@ -87,9 +88,7 @@ public:
     ~MainWindow();
     void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFile(const QString &filePath);
     void openFiles(QStringList pathList);
-
 
     bool outputViewVisibility();
     bool projectViewVisibility();
@@ -146,7 +145,7 @@ public slots:
     void optionRunChanged();
 
 private slots:
-    void openFileNode(ProjectFileNode *fileNode, bool focus = true, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, NodeId groupId = NodeId(), int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -161,7 +160,7 @@ private slots:
     void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void openFilePath(QString filePath, ProjectGroupNode *parent, bool focus, int codecMip = -1);
+    void openFilePath(QString filePath, ProjectGroupNode *parent = nullptr, bool focus = true, int codecMip = -1);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
 
     // View
@@ -276,6 +275,7 @@ private:
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
     int showSaveChangesMsgBox(const QString &text);
+    void linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus, int codecMip);
 
 private:
     Ui::MainWindow *ui;
