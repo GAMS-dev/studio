@@ -303,6 +303,7 @@ private:
     StatusWidgets* mStatusWidgets;
     int mTimerID;
     QStringList mOpenTabsList;
+    QVector<int> mClosedTabsIndexes;
 };
 
 }
