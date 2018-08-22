@@ -409,12 +409,9 @@ void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
 
 void ProjectLogNode::setCodecMib(int mib)
 {
-    if (mib == -1) {
-        mCodec = nullptr;
-        return;
-    }
-    QTextCodec *codec = QTextCodec::codecForMib(mib);
+    QTextCodec *codec = (mib == -1) ? QTextCodec::codecForLocale() : QTextCodec::codecForMib(mib);
     if (!codec) {
+        if (!mCodec) mCodec = QTextCodec::codecForLocale();
         DEB() << "TextCodec not found for MIB " << mib;
         return;
     }
