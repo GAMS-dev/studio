@@ -41,6 +41,8 @@ Reference::~Reference()
     mModelReference.clear();
     mFunctionReference.clear();
 
+    mFileUsed.clear();
+
     mSymbolNameMap.clear();
 
     qDeleteAll(mReference);
@@ -68,6 +70,8 @@ QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType
         return mFunctionReference;
     case SymbolDataType::Unused :
         return mUnusedReference;
+    case SymbolDataType::Unknown :
+        return mReference.values();
     default:
         return mReference.values();
     }
@@ -251,6 +255,9 @@ bool Reference::parseFile(QString referenceFile)
 
 void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
 {
+    if (!mFileUsed.contains(QDir::toNativeSeparators(location)))
+        mFileUsed << QDir::toNativeSeparators(location);
+
     ReferenceDataType::ReferenceType type = ReferenceDataType::typeFrom(referenceType);
     switch (type) {
     case ReferenceDataType::Declare :
@@ -277,6 +284,11 @@ void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &refere
     default:
         break;
     }
+}
+
+QStringList Reference::getFileUsed() const
+{
+    return mFileUsed;
 }
 
 void Reference::dumpAll()

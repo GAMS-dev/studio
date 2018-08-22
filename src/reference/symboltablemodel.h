@@ -44,6 +44,7 @@ private:
     QStringList mAllSymbolsHeader;
     QStringList mSymbolsHeader;
     QStringList mFileHeader;
+    QStringList mFileUsedHeader;
 
     Reference* mReference = nullptr;
 };

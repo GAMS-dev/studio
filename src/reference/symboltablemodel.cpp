@@ -27,7 +27,8 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
 {
     mAllSymbolsHeader << "Entry" << "Name" << "Type" << "Dim" << "Domain" << "Text";
     mSymbolsHeader    << "Entry" << "Name"           << "Dim" << "Domain" << "Text";
-    mFileHeader       << "Entry" << "Name" << "Type" << "Text";
+    mFileHeader       << "Entry" << "Name"           << "Text";
+    mFileUsedHeader   << "File Location";
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -48,11 +49,15 @@ QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, in
                if (index < mSymbolsHeader.size())
                   return mSymbolsHeader[index];
                break;
-           case SymbolDataType::File :
            case SymbolDataType::Model :
            case SymbolDataType::Funct :
+           case SymbolDataType::File :
                if (index < mFileHeader.size())
                   return mFileHeader[index];
+               break;
+           case SymbolDataType::FileUsed :
+               if (index < mFileUsedHeader.size())
+                  return mFileUsedHeader[index];
                break;
            default:
                break;
@@ -73,11 +78,13 @@ int SymbolTableModel::rowCount(const QModelIndex &parent) const
     case SymbolDataType::Parameter :
     case SymbolDataType::Variable :
     case SymbolDataType::Equation :
-    case SymbolDataType::File :
     case SymbolDataType::Funct :
     case SymbolDataType::Model :
+    case SymbolDataType::File :
     case SymbolDataType::Unused :
         return mReference->findReference(mType).size();
+    case SymbolDataType::FileUsed :
+        return mReference->getFileUsed().size();
     case SymbolDataType::Unknown :
     default:
         return mReference->size();
@@ -103,6 +110,8 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
     case SymbolDataType::Funct :
     case SymbolDataType::Model :
         return mFileHeader.size();
+    case SymbolDataType::FileUsed :
+        return mFileUsedHeader.size();
     default:
         break;
     }
@@ -117,14 +126,23 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::TextAlignmentRole: {
+        if (mType==SymbolDataType::FileUsed)
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         Qt::AlignmentFlag aFlag;
         switch(index.column()) {
             case 0: aFlag = Qt::AlignRight; break;
             case 1: aFlag = Qt::AlignLeft; break;
-            case 2: aFlag = Qt::AlignLeft; break;
-            case 3: aFlag = Qt::AlignRight; break;
-            case 4: aFlag = Qt::AlignLeft; break;
-            case 5: aFlag = Qt::AlignLeft; break;
+        case 2: if (mType == SymbolDataType::Unknown || mType == SymbolDataType::Unused ||
+                    mType == SymbolDataType::Model || mType == SymbolDataType::Funct || mType == SymbolDataType::File )
+                        aFlag = Qt::AlignLeft;
+                    else
+                        aFlag = Qt::AlignRight;
+                    break;
+            case 3: if (mType == SymbolDataType::Unknown || mType == SymbolDataType::Unused)
+                        aFlag = Qt::AlignRight;
+                    else
+                        aFlag = Qt::AlignLeft;
+                    break;
             default: aFlag = Qt::AlignLeft; break;
         }
         return QVariant(aFlag | Qt::AlignVCenter);
@@ -195,6 +213,8 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
              case 3: return refList.at(index.row())->explanatoryText();
              default: break;
              }
+         case SymbolDataType::FileUsed :
+             return mReference->getFileUsed().at(index.row());
          default:
              break;
          }

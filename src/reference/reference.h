@@ -70,6 +70,8 @@ public:
 
     void dumpAll();
 
+    QStringList getFileUsed() const;
+
 signals:
     void loadStarted();
     void loadFinished(bool status);
@@ -85,6 +87,8 @@ private:
     QString mReferenceFile;
     ReferenceState mState;
     bool mValid;
+
+    QStringList mFileUsed;
 
     QList<SymbolReferenceItem *> mSetReference;
     QList<SymbolReferenceItem *> mAcronymReference;

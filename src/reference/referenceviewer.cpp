@@ -74,13 +74,16 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     mTabWidget->addTab(modelRefWidget, QString("Model (%1)").arg(reference->findReference(SymbolDataType::Model).size()));
 
     SymbolReferenceWidget* fileRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::File, this);
-    mTabWidget->addTab(fileRefWidget, QString("File Used (%1)").arg(reference->findReference(SymbolDataType::File).size()));
+    mTabWidget->addTab(fileRefWidget, QString("File (%1)").arg(reference->findReference(SymbolDataType::File).size()));
 
     SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Funct, this);
-    mTabWidget->addTab(functRefWidget, QString("Function used (%1)").arg(reference->findReference(SymbolDataType::Funct).size()));
+    mTabWidget->addTab(functRefWidget, QString("Function (%1)").arg(reference->findReference(SymbolDataType::Funct).size()));
 
     SymbolReferenceWidget* unusedRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::Unused, this);
     mTabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg(reference->findReference(SymbolDataType::Unused).size()));
+
+    SymbolReferenceWidget* fileusedRefWidget = new SymbolReferenceWidget(reference, SymbolDataType::FileUsed, this);
+    mTabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg(reference->getFileUsed().size()));
 
     ui->referenceLayout->addWidget(mTabWidget);
     mTabWidget->setCurrentIndex(0);

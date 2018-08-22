@@ -39,6 +39,7 @@ public:
         Equation = 6,
         Model = 7,
         File = 8,
+        FileUsed = 99,
         Unused = 100
     };
 

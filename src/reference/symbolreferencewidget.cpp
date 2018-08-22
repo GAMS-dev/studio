@@ -39,7 +39,10 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mSymbolTableProxyModel= new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
-    mSymbolTableProxyModel->setFilterKeyColumn(1);
+    if (mType == SymbolDataType::File)
+        mSymbolTableProxyModel->setFilterKeyColumn(0);
+    else
+        mSymbolTableProxyModel->setFilterKeyColumn(1);
     mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     ui->symbolView->setModel( mSymbolTableProxyModel );
@@ -73,7 +76,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setAlternatingRowColors(true);
     ui->referenceView->setColumnHidden(3, true);
 
-
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
 }
 
@@ -84,16 +86,23 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
 
 void SymbolReferenceWidget::toggleSearchColumns(bool checked)
 {
-    if (checked)
+    if (checked) {
         mSymbolTableProxyModel->setFilterKeyColumn(-1);
-    else
-        mSymbolTableProxyModel->setFilterKeyColumn(1);
+    } else {
+        if (mType == SymbolDataType::File)
+            mSymbolTableProxyModel->setFilterKeyColumn(0);
+        else
+            mSymbolTableProxyModel->setFilterKeyColumn(1);
+    }
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     Q_UNUSED(deselected);
     if (selected.indexes().size() > 0) {
+        if (mType == SymbolDataType::FileUsed) // TODO
+            return;
+
         SymbolId id = selected.indexes().at(0).data().toInt();
         emit mReferenceTreeModel->updateSelectedSymbol(id);
     }
