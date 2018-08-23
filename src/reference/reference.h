@@ -83,6 +83,7 @@ public slots:
 private:
     bool parseFile(QString referenceFile);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
+    void clear();
 
     QString mReferenceFile;
     ReferenceState mState;

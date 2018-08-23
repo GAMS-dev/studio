@@ -32,21 +32,7 @@ Reference::Reference(QString referenceFile, QObject *parent) :
 
 Reference::~Reference()
 {
-    mSetReference.clear();
-    mAcronymReference.clear();
-    mParReference.clear();
-    mVarReference.clear();
-    mEquReference.clear();
-    mFileReference.clear();
-    mModelReference.clear();
-    mFunctionReference.clear();
-
-    mFileUsed.clear();
-
-    mSymbolNameMap.clear();
-
-    qDeleteAll(mReference);
-    mReference.clear();
+    clear();
 }
 
 QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType type)
@@ -286,6 +272,26 @@ void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &refere
     }
 }
 
+void Reference::clear()
+{
+    mSetReference.clear();
+    mAcronymReference.clear();
+    mParReference.clear();
+    mVarReference.clear();
+    mEquReference.clear();
+    mFileReference.clear();
+    mModelReference.clear();
+    mFunctionReference.clear();
+    mUnusedReference.clear();
+
+    mFileUsed.clear();
+
+    mSymbolNameMap.clear();
+
+    qDeleteAll(mReference);
+    mReference.clear();
+}
+
 QStringList Reference::getFileUsed() const
 {
     return mFileUsed;
@@ -305,6 +311,7 @@ void Reference::dumpAll()
 void Reference::loadReferenceFile()
 {
     emit loadStarted();
+    clear();
     mState = ReferenceState::Loading;
     mValid = parseFile(mReferenceFile);
     mState = ReferenceState::Loaded;
