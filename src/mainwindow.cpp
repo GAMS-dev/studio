@@ -197,13 +197,18 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             ProjectAbstractNode::initEditorType(gdxView);
             fc->addEditor(gdxView);
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
-            fc->addFileWatcherForGdx();
+            fc->addFileWatcher();
         } else if (fc->metrics().fileType() == FileType::Ref) {
             qDebug() << "open ref:" << fc->location();
             ReferenceViewer* refView = new ReferenceViewer(fc->location(), this);
             ProjectAbstractNode::initEditorType(refView);
             fc->addEditor(refView);
             tabIndex = tabWidget->addTab(refView, fc->caption());
+            // update ReferenceViewer only when (1) node's externally changed
+            // **and** (2) group process state changed
+            fc->addFileWatcher();
+            connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
+                    refView, &ReferenceViewer::loadReferenceFile);
         } else {
             CodeEdit *codeEdit = new CodeEdit(this);
             codeEdit->setSettings(mSettings.get());

@@ -115,5 +115,11 @@ void SymbolReferenceWidget::expandResetModel()
     ui->referenceView->resizeColumnToContents(1);
 }
 
+void SymbolReferenceWidget::resetModel()
+{
+    mSymbolTableModel->resetModel();
+    mReferenceTreeModel->resetModel();
+}
+
 } // namespace studio
 } // namespace gams

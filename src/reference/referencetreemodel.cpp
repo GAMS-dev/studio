@@ -166,6 +166,17 @@ bool ReferenceTreeModel::removeRows(int row, int count, const QModelIndex &paren
     return success;
 }
 
+void ReferenceTreeModel::resetModel()
+{
+    beginResetModel();
+
+    if (rowCount() > 0) {
+        removeRows(0, rowCount(), QModelIndex());
+    }
+
+    endResetModel();
+}
+
 void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
 {
     mCurrentSymbolID = symbolid;
@@ -186,7 +197,6 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicit Assigned");
     insertSymbolReference(parents, symbolRef->control(), "Controlled");
     insertSymbolReference(parents, symbolRef->reference(), "Referenced");
-//    insertSymbolReference(parents, symbolRef->index(), "Indexed");
 
     endResetModel();
 }

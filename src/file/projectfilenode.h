@@ -137,7 +137,7 @@ public:
 
     void removeTextMarks(TextMark::Type tmType, bool rehighlight = true);
     void removeTextMarks(QSet<TextMark::Type> tmTypes, bool rehighlight = true);
-    void addFileWatcherForGdx();
+    void addFileWatcher();
     void unwatch();
 
     TextMarkList* marks() const { return mMarks; }

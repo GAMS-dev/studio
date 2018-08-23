@@ -38,6 +38,8 @@ public:
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
+    void resetModel();
+
 private:
     SymbolDataType::SymbolType mType;
 

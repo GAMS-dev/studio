@@ -233,6 +233,15 @@ QModelIndex SymbolTableModel::index(int row, int column, const QModelIndex &pare
     return QModelIndex();
 }
 
+void SymbolTableModel::resetModel()
+{
+    beginResetModel();
+    if (rowCount() > 0) {
+        removeRows(0, rowCount(), QModelIndex());
+    }
+    endResetModel();
+}
+
 
 } // namespace studio
 } // namespace gams
