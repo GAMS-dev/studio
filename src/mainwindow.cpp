@@ -887,6 +887,18 @@ void MainWindow::activeTabChanged(int index)
             mStatusWidgets->setLineCount(-1);
             gdxViewer->reload();
         }
+    } else if (ProjectFileNode::toReferenceViewer(editWidget)) {
+        ui->menuEncoding->setEnabled(false);
+        ReferenceViewer* refViewer = ProjectFileNode::toReferenceViewer(editWidget);
+        mRecent.setEditor(refViewer, this);
+        ProjectFileNode* fc = mProjectRepo.fileNode(refViewer);
+        if (fc) {
+            mRecent.editFileId = fc->id();
+            mRecent.group = fc->parentEntry();
+            mStatusWidgets->setFileName(fc->location());
+            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setLineCount(-1);
+        }
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
