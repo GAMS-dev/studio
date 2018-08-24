@@ -58,11 +58,9 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     }
 
     if (kind() == FileKind::Gms || kind() == FileKind::Txt) {
-        mHighlighter = new SyntaxHighlighter(id, mFileRepo->textMarkRepo());
-        mHighlighter->setDocument(document());
+        mHighlighter = new SyntaxHighlighter(document());
     } else if (kind() != FileKind::Gdx) {
-        mHighlighter = new ErrorHighlighter(id, mFileRepo->textMarkRepo());
-        mHighlighter->setDocument(document());
+        mHighlighter = new ErrorHighlighter(document());
     }
 
 }
@@ -143,7 +141,6 @@ QString FileMeta::name(NameModifier mod)
     switch (mod) {
     case NameModifier::editState:
         return mName + (isModified() ? "*" : "");
-        break;
     default:
         break;
     }
@@ -164,44 +161,6 @@ void FileMeta::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState);
     emit changed(id());
-}
-
-void FileMeta::updateMarks()
-{
-    // This gathers additional error information from lst-content
-
-    // TODO(JM) Perform a large-file-test if this should have an own thread
-
-//    if (!mMarks) return;
-//    mMarks->updateMarks();
-//    if (mMarksEnhanced) return;
-//    QRegularExpression rex("\\*{4}((\\s+)\\$([0-9,]+)(.*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
-//    if (mMetrics.fileType() == FileType::Lst && document()) {
-//        for (TextMark* mark: mMarks->marks()) {
-//            QList<int> errNrs;
-//            int lineNr = mark->line();
-//            QTextBlock block = document()->findBlockByNumber(lineNr).next();
-//            QStringList errText;
-//            while (block.isValid()) {
-//                QRegularExpressionMatch match = rex.match(block.text());
-//                if (!match.hasMatch()) break;
-//                if (match.capturedLength(3)) { // first line with error numbers and indent
-//                    for (QString nrText: match.captured(3).split(",")) errNrs << nrText.toInt();
-//                    if (match.capturedLength(4)) errText << match.captured(4);
-//                } else if (match.capturedLength(5)) { // line with error number and description
-//                    errText << match.captured(5)+"\t"+match.captured(6);
-//                } else if (match.capturedLength(7)) { // indented follow-up line for error description
-//                    errText << "\t"+match.captured(7);
-//                } else if (match.capturedLength(8)) { // non-indented line for additional error description
-//                    errText << match.captured(8);
-//                }
-//                block = block.next();
-//            }
-//            parentEntry()->setLstErrorText(lineNr, errText.join("\n"));
-//        }
-//        mMarksEnhanced = true;
-//    }
-
 }
 
 void FileMeta::addEditor(QWidget *edit)
@@ -372,9 +331,38 @@ void FileMeta::saveAs(const QString &location)
     }
 }
 
-void FileMeta::jumpTo(FileId runId, bool focus, int line, int column)
+void FileMeta::renameToBackup()
 {
-    emit mFileRepo->openFile(this, runId, focus, codecMib());
+    const int MAX_BACKUPS = 3;
+    mFileRepo->unwatch(this);
+
+    QString filename = location();
+    QFile file(filename);
+
+    // find oldest backup file
+    int last = 1;
+    while (QFile(filename + "." + QString::number(last) + ".bak").exists()) {
+        if (last == MAX_BACKUPS) break; // dont exceed MAX_BACKUPS
+        last++;
+    }
+    if (last == MAX_BACKUPS) { // delete if maximum reached
+        QFile(filename + "." + QString::number(last) + ".bak").remove();
+        last--; // last is now one less
+    }
+
+    // move up all by 1, starting last
+    for (int i = last; i > 0; i--) {
+        QFile(filename + "." + QString::number(i) + ".bak") // from
+                .rename(filename + "." + QString::number(i + 1) + ".bak"); // to
+    }
+    //rename to 1
+    file.rename(filename + ".1.bak");
+
+}
+
+void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
+{
+    emit mFileRepo->openFile(this, groupId, focus, codecMib());
 
     AbstractEdit* edit = mEditors.size() ? toAbstractEdit(mEditors.first()) : nullptr;
     if (edit && edit->document()->blockCount()-1 < line) {
@@ -497,7 +485,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit->setTabStopDistance(8*metric.width(' '));
         res = codeEdit;
         if (kind() == FileKind::Lst) {
-            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, this, runGroup, tabWidget);
+            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, this->location(), tabWidget);
             initEditorType(lxiViewer);
             res = lxiViewer;
         }

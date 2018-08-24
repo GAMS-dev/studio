@@ -54,18 +54,11 @@ void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
     mTextMarkRepo = textMarkRepo;
 }
 
-const ProjectGroupNode* ProjectRepo::findGroup(const QString &filePath)
+ProjectRunGroupNode *ProjectRepo::findRunGroup(NodeId nodeId) const
 {
-    QFileInfo fi(filePath);
-    QFileInfo di(CommonPaths::absolutFilePath(fi.path()));
-    const ProjectAbstractNode* node = mTreeModel->rootNode()->findNode(di.filePath(), false);
-    return node ? node->toGroup() : nullptr;
-}
-
-ProjectRunGroupNode *ProjectRepo::findRunGroup(FileId runId, ProjectGroupNode *group) const
-{
-    if (!group) group = mTreeModel->rootNode();
-    return group->findRunGroup(runId);
+    ProjectAbstractNode *node = mNodes.value(nodeId);
+    if (!node) return nullptr;
+    return node->runParentNode();
 }
 
 ProjectRunGroupNode *ProjectRepo::findRunGroup(const AbstractProcess *process, ProjectGroupNode *group) const
@@ -76,24 +69,14 @@ ProjectRunGroupNode *ProjectRepo::findRunGroup(const AbstractProcess *process, P
 
 ProjectFileNode *ProjectRepo::findFile(QString filePath, ProjectGroupNode *fileGroup) const
 {
-    ProjectAbstractNode* node = findNode(filePath, fileGroup);
-    if (!node) return nullptr;
-    return node->toFile();
+    FileMeta* fm = mFileRepo->fileMeta(filePath);
+    return findFile(fm, fileGroup);
 }
 
 ProjectFileNode *ProjectRepo::findFile(FileMeta *fileMeta, ProjectGroupNode *fileGroup, bool recurse) const
 {
     ProjectGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootNode();
-    ProjectAbstractNode* node = group->findFile(fileMeta, recurse);
-    if (node) return node->toFile();
-    return nullptr;
-}
-
-ProjectAbstractNode* ProjectRepo::findNode(QString filePath, ProjectGroupNode* fileGroup) const
-{
-    ProjectGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootNode();
-    ProjectAbstractNode* node = group->findNode(filePath);
-    return node;
+    return group->findFile(fileMeta, recurse);
 }
 
 ProjectAbstractNode *ProjectRepo::node(NodeId id) const
@@ -141,11 +124,10 @@ ProjectFileNode*ProjectRepo::asFileNode(const QModelIndex& index) const
 
 ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
-    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
-    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
-
+    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
+    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
     NodeId groupId = edit ? edit->groupId() : (gdxViewer ? gdxViewer->groupId() : NodeId());
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
@@ -264,8 +246,10 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
         QJsonObject jsonObject;
         bool expand = true;
         if (node->toGroup()) {
-            if (node->toRunGroup())
-                jsonObject["file"] = node->toRunGroup()->runnableGms()->location();
+            if (ProjectRunGroupNode *runGroup = node->toRunGroup()) {
+                if (runGroup->runnableGms())
+                    jsonObject["file"] = node->toRunGroup()->runnableGms()->location();
+            }
             const ProjectGroupNode *subGroup = node->toGroup();
             jsonObject["path"] = subGroup->location();
             jsonObject["name"] = node->name();
@@ -294,7 +278,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
 ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent)
 {
     if (!_parent) _parent = mTreeModel->rootNode();
-    if (!_parent) FATAL() << "Can't get parent object";
+    if (!_parent) FATAL() << "Can't get tree-model root-node";
 
     bool hit;
     int offset = _parent->peekIndex(name, &hit);
@@ -351,13 +335,21 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     if (!runGroup)
         EXCEPT() << "Integrity error: this node has no ProjectRunGroupNode as parent";
 
+    if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
+        DEB() << "Close error: Node has open editors";
+        return;
+    }
+
     // if this is a lst file referenced in a log
     if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
         runGroup->logNode()->setLstNode(nullptr);
 
     // close actual file and remove repo node
+
     mTreeModel->removeChild(node);
     removeFromIndex(node);
+
+    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 
     // if this file is marked as runnable remove reference
     if (runGroup->runnableGms() == node->file()) {
@@ -393,7 +385,7 @@ ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGrou
     if (!knownType || knownType->kind() == FileKind::None)
         knownType = parseGdxHeader(location) ? &FileType::from(FileKind::Gdx) : nullptr;
 
-    FileMeta* fileMeta = mFileRepo->findOrCreateFileMeta(location);
+    FileMeta* fileMeta = mFileRepo->findOrCreateFileMeta(location, knownType);
     return findOrCreateFileNode(fileMeta, fileGroup, explicitName);
 }
 
@@ -404,8 +396,13 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         return nullptr;
     }
     if (!fileGroup) {
-        DEB() << "The group must not be null";
-        return nullptr;
+        QFileInfo fi(fileMeta->location());
+        QString groupName = explicitName.isNull() ? fi.completeBaseName() : explicitName;
+        fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+        if (!fileGroup) {
+            DEB() << "The group must not be null";
+            return nullptr;
+        }
     }
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
@@ -423,7 +420,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     return file;
 }
 
-QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const FileId &runId) const
+QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
 {
     QVector<ProjectFileNode*> res;
     QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
@@ -431,7 +428,7 @@ QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const Fil
         i.next();
         ProjectFileNode* fileNode = i.value()->toFile();
         if (fileNode && fileNode->file()->id() == fileId) {
-            if (!runId.isValid() || fileNode->runFileId() == runId) {
+            if (!groupId.isValid() || fileNode->runGroupId() == groupId) {
                 res << fileNode;
             }
         }
@@ -475,13 +472,6 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
     if (!nd) return;
     QModelIndex ndIndex = mTreeModel->index(nd);
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
-}
-
-void ProjectRepo::removeNode(ProjectAbstractNode* node)
-{
-    if (!node) return;
-    mTreeModel->removeChild(node);
-    removeFromIndex(node);
 }
 
 bool ProjectRepo::parseGdxHeader(QString location)

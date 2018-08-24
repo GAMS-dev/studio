@@ -50,7 +50,7 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(ProjectAbstractNode *fsc, bool skipFilters = false, QString searchRegex = "");
+    QList<Result> findInFile(ProjectAbstractNode *node, bool skipFilters = false, QString searchRegex = "");
 
     void findNext(SearchDialog::SearchDirection direction);
     void clearResults();

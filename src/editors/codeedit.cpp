@@ -1218,7 +1218,8 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         QList<TextMark*> lineMarks = marks.values(block.blockNumber());
         for (TextMark* mark: lineMarks) {
             QTextEdit::ExtraSelection selection;
-            selection.cursor = mark->textCursor();
+            selection.cursor = textCursor();
+            selection.cursor.setPosition(block.position() + mark->column());
             selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
             selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
             selections << selection;

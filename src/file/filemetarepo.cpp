@@ -42,12 +42,12 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
     if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
-        foreach (FileMeta* fm, mFiles.values()) {
+        for (FileMeta* fm: mFiles.values()) {
             if (fm->location() == location) return fm;
         }
     } else {
         QFileInfo fi(location);
-        foreach (FileMeta* fm, mFiles.values()) {
+        for (FileMeta* fm: mFiles.values()) {
             if (QFileInfo(fm->location()) == fi) return fm;
         }
     }
@@ -68,15 +68,8 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
-    QFileInfo fi(fileMeta->location());
-
     if (!fileMeta->location().startsWith('[')) {
-        if (fi.exists()) {
-            mWatcher.addPath(fi.absoluteFilePath());
-//            mWatcher.addPath(fi.absolutePath());
-        } else {
-            mMissList << fi.absoluteFilePath();
-        }
+        watch(fileMeta);
     }
 }
 
@@ -84,8 +77,7 @@ void FileMetaRepo::removedFile(FileMeta *fileMeta)
 {
     if (fileMeta && !fileMeta->location().startsWith('[')) {
         mFiles.remove(fileMeta->id());
-        mWatcher.removePath(fileMeta->location());
-        mMissList.removeAll(fileMeta->location());
+        unwatch(fileMeta);
     }
 }
 
@@ -123,16 +115,37 @@ QVector<FileMeta*> FileMetaRepo::modifiedFiles() const
     return res;
 }
 
-void FileMetaRepo::unwatch(const QString &path)
+QWidgetList FileMetaRepo::editors() const
 {
-    mWatcher.removePath(path);
-    if (fileMeta(path)) mMissList << path;
+    QWidgetList res;
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        res << i.value()->editors();
+    }
+    return res;
 }
 
-void FileMetaRepo::openFile(FileMeta *fm, FileId runId, bool focus, int codecMib)
+void FileMetaRepo::unwatch(const FileMeta *fileMeta)
+{
+    mWatcher.removePath(fileMeta->location());
+    mMissList.removeAll(fileMeta->location());
+}
+
+bool FileMetaRepo::watch(const FileMeta *fileMeta)
+{
+    if (fileMeta->exists()) {
+        mWatcher.addPath(fileMeta->location());
+        return true;
+    }
+    mMissList << fileMeta->location();
+    return false;
+}
+
+void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
-    ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(runId);
+    ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(groupId);
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
 }
 
@@ -163,16 +176,13 @@ void FileMetaRepo::reviewMissing()
     while (!mCheckExistance.isEmpty()) {
         FileMeta *file = fileMeta(mCheckExistance.takeFirst());
         if (!file) continue;
-        QFileInfo fi(file->location());
-        if (fi.exists()) {
+        if (watch(file)) {
             FileEvent e(file->id(), FileEvent::Kind::changedExtern);
             emit fileEvent(e);
         } else {
             // (JM) About RENAME: To evaluate if a file has been renamed the directory content before the
             // change must have been stored so it can be ensured that the possible file is no recent copy
             // of the file that was removed.
-
-            mMissList << file->location();
             FileEvent e(file->id(), FileEvent::Kind::removedExtern);
             emit fileEvent(e);
         }

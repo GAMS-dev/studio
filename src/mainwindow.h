@@ -33,7 +33,6 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
-#include "file/filemetarepo.h"
 
 namespace Ui {
 class MainWindow;
@@ -86,7 +85,7 @@ public:
     ///
     explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
     ~MainWindow();
-    void createEdit(QTabWidget* tabWidget, bool focus, int id = -1, int codecMip = -1);
+//    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
     void openFiles(QStringList pathList);
 
@@ -106,7 +105,10 @@ public:
     void setHelpViewVisibility(bool visibility);
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
+    FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
+    TextMarkRepo* textMarkRepo();
+
     QWidgetList openEditors();
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
@@ -127,16 +129,16 @@ public:
     HelpWidget *helpWidget() const;
     OptionWidget *gamsOptionWidget() const;
 
-
 public slots:
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
     void receiveAction(QString action);
     void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
-    void runGmsFile(ProjectFileNode *fc);
-    void setMainGms(ProjectFileNode *fc);
+    void runGmsFile(ProjectFileNode *node);
+    void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
@@ -145,28 +147,30 @@ public slots:
     void optionRunChanged();
 
 private slots:
-    void openFile(FileMeta *fileMeta, bool focus = true, NodeId groupId = NodeId(), int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void fileChanged(FileId fileId);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
-    void postGamsRun(FileId origin);
+    void fileClosed(FileId fileId);
+    void fileEvent(const FileEvent &e);
+    void processFileEvents();
+    void postGamsRun(NodeId origin);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
-    void closeFileConditionally(ProjectFileNode *file);
-    void closeFile(ProjectFileNode* file);
+    void closeNodeConditionally(ProjectFileNode *node);
     void closeFileEditors(FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void openFilePath(QString filePath, ProjectGroupNode *parent = nullptr, bool focus = true, int codecMip = -1);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
+    void storeTree();
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
+    void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
@@ -242,7 +246,6 @@ private slots:
     void initAutoSave();
 
     void on_actionNextTab_triggered();
-
     void on_actionPreviousTab_triggered();
 
 protected:
@@ -253,18 +256,21 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
+    bool event(QEvent *event);
 
 private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName);
     void openNode(const QModelIndex& index);
+    void fileChangedExtern(FileId fileId);
+    void fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
-    void renameToBackup(QFile *file);
+
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void showWelcomePage();
-    bool requestCloseChanged(QList<ProjectFileNode*> changedFiles);
+    bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
     bool isRecentGroupInRunningState();
     void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
@@ -275,14 +281,21 @@ private:
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
     int showSaveChangesMsgBox(const QString &text);
-    void linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus, int codecMip);
+    void linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus);
 
 private:
     Ui::MainWindow *ui;
-    SearchDialog *mSearchDialog = nullptr;
+    FileMetaRepo mFileMetaRepo;
+    ProjectRepo mProjectRepo;
+    TextMarkRepo mTextMarkRepo;
 
+    WelcomePage *mWp;
+    SearchDialog *mSearchDialog = nullptr;
     HelpWidget *mHelpWidget = nullptr;
     OptionWidget *mGamsOptionWidget = nullptr;
+    ResultsView *mResultsView = nullptr;
+    SystemLogEdit *mSyslog = nullptr;
+    StatusWidgets* mStatusWidgets;
 
     GAMSLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
@@ -291,16 +304,13 @@ private:
     HistoryData *mHistory;
     std::unique_ptr<StudioSettings> mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
-    WelcomePage *mWp;
-    ResultsView *mResultsView = nullptr;
-    SystemLogEdit *mSyslog = nullptr;
-    ProjectRepo mProjectRepo;
     ProjectContextMenu mProjectContextMenu;
+    QVector<QPair<FileId, FileEvent::Kind>> mFileEvents;
+    QTimer mFileTimer;
 
     bool mLogDebugLines = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
-    StatusWidgets* mStatusWidgets;
     int mTimerID;
     QStringList mOpenTabsList;
 };

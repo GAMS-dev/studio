@@ -90,6 +90,7 @@ int ProjectTreeModel::rowCount(const QModelIndex& parent) const
     ProjectAbstractNode* node = mProjectRepo->node(parent);
     if (!node) return 0;
     ProjectGroupNode* group = node->toGroup();
+    if (!group) return 0;
     return group->childCount();
 }
 

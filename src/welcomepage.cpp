@@ -88,6 +88,11 @@ void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
     emit relayDocOpen(doc, anchor);
 }
 
+void WelcomePage::linkActivated(const QString &link)
+{
+    emit openFilePath(link);
+}
+
 void WelcomePage::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);

@@ -65,8 +65,9 @@ public:
     FileMeta* file() const;
     QString location() const;
     QString tooltip() override;
-    FileId runFileId() const;
+    NodeId runGroupId() const;
 //    QTextCodec *codec() const;
+    void enhanceMarksFromLst();
 
 protected:
     friend class ProjectLogNode;

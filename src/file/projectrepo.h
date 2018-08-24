@@ -54,12 +54,10 @@ public:
     ~ProjectRepo();
     void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
-    const ProjectGroupNode *findGroup(const QString& filePath);
-    ProjectRunGroupNode *findRunGroup(FileId runId, ProjectGroupNode *group = nullptr) const;
+    ProjectRunGroupNode *findRunGroup(NodeId nodeId) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
     ProjectFileNode *findFile(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
     ProjectFileNode *findFile(FileMeta *fileMeta, ProjectGroupNode *fileGroup = nullptr, bool recurse = true) const;
-    ProjectAbstractNode *findNode(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectAbstractNode</c>.
@@ -120,10 +118,10 @@ public:
     void write(QJsonObject &json) const;
 
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
-    ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType = nullptr
+    ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
-    ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup, QString explicitName = QString());
-    QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const FileId &runId = -1) const;
+    ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup = nullptr, QString explicitName = QString());
+    QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
     void editorActivated(QWidget *edit);
 
@@ -163,20 +161,6 @@ private:
     QVector<ProjectAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
-
-
-
-
-    QList<ProjectFileNode*> modifiedFiles(ProjectGroupNode *fileGroup);
-
-private slots:
-    void processExternFileEvents();
-    void removeNode(ProjectAbstractNode *node);
-
-private:
-    QStringList mSuffixFilter;
-    QList<FileId> mChangedIds;
-    QList<FileId> mDeletedIds;
 };
 
 } // namespace studio

@@ -52,7 +52,7 @@ public:
     virtual QString location() const;
     QString tooltip() override;
     virtual QString lstErrorText(int line);
-    ProjectAbstractNode *findNode(const QString &location, bool recurse = true) const;
+    ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
     ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
     ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
@@ -140,7 +140,7 @@ class ProjectRootNode : public ProjectGroupNode
     Q_OBJECT
 public:
     ProjectRootNode(ProjectRepo *projectRepo);
-    ~ProjectRootNode() {}
+    ~ProjectRootNode() override {}
     ProjectRepo *projectRepo() const override;
     FileMetaRepo *fileRepo() const override;
     TextMarkRepo *textMarkRepo() const override;

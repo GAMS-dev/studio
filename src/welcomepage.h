@@ -44,7 +44,7 @@ public:
     ~WelcomePage();
 
 signals:
-    void linkActivated(const QString &link);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
     void relayActionWp(QString action);
     void relayModLibLoad(QString lib);
     void relayDocOpen(QString doc, QString anchor);
@@ -53,6 +53,9 @@ public slots:
     void on_relayAction(QString action);
     void on_relayModLibLoad(QString lib);
     void on_relayOpenDoc(QString doc, QString anchor);
+
+private slots:
+    void linkActivated(const QString &link);
 
 protected:
     void showEvent(QShowEvent *event);

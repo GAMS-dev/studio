@@ -118,18 +118,16 @@ QString ProjectGroupNode::lstErrorText(int line)
     return parentNode() ? parentNode()->lstErrorText(line) : QString();
 }
 
-ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool recurse) const
+ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurse) const
 {
+    QFileInfo fi(location);
     for (ProjectAbstractNode* node: mChildNodes) {
-        const ProjectFileNode* file = node->toFile();
-        if (file && file->location() == location) return node;
-        const ProjectGroupNode* group = node->toGroup();
-        if (group) {
-            if (group->location() == location) return node;
-            if (recurse) {
-                ProjectAbstractNode* sub = group->findNode(location, true);
-                if (sub) return sub;
-            }
+        ProjectFileNode* file = node->toFile();
+        if (file && QFileInfo(file->location()) == fi) return file;
+        if (recurse) {
+            const ProjectGroupNode* group = node->toGroup();
+            ProjectFileNode* sub = group ? group->findFile(location, true) : nullptr;
+            if (sub) return sub;
         }
     }
     return nullptr;
@@ -137,12 +135,13 @@ ProjectAbstractNode *ProjectGroupNode::findNode(const QString &location, bool re
 
 ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
 {
+    if (!fileMeta) return nullptr;
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
-        const ProjectGroupNode* group = node->toGroup();
-        if (group && recurse) {
-            ProjectFileNode* sub = group->findFile(fileMeta, true);
+        if (recurse) {
+            const ProjectGroupNode* group = node->toGroup();
+            ProjectFileNode* sub = group ? group->findFile(fileMeta, true) : nullptr;
             if (sub) return sub;
         }
     }
@@ -151,8 +150,8 @@ ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recur
 
 ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
 {
-    ProjectAbstractNode* fn = findNode(location, false);
-    if (fn) return fn->toFile();
+    ProjectFileNode* node = findFile(location, false);
+    if (node) return node;
     FileMeta* fm = projectRepo()->fileRepo()->findOrCreateFileMeta(location);
     return projectRepo()->findOrCreateFileNode(fm, this);
 }
@@ -412,7 +411,7 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 void ProjectRunGroupNode::jumpToFirstError(bool focus)
 {
     if (!mLogNode) return;
-    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), -1, runFileId(), TextMark::error, 1);
+    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
     if (textMark) {
         textMark->jumpToMark(focus);

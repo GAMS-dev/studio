@@ -101,7 +101,7 @@ FileType& FileType::from(FileKind kind)
 void FileType::clear()
 {
     while (!mFileTypes.isEmpty()) {
-        FileType* ft = mFileTypes.takeFirst();
+        FileType* ft = mFileTypes.takeLast();
         delete ft;
     }
     delete mNone;

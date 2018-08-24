@@ -45,11 +45,11 @@ public:
     virtual void execute() = 0;
     QProcess::ProcessState state() const;
 
-    FileId groupId() const;
-    void setGroupId(const FileId &groupId);
+    NodeId groupId() const;
+    void setGroupId(const NodeId &groupId);
 
 signals:
-    void finished(FileId origin, int exitCode);
+    void finished(NodeId origin, int exitCode);
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
 
@@ -63,7 +63,7 @@ protected:
     QString nativeAppPath();
 
 protected:
-    FileId mGroupId = -1;
+    NodeId mGroupId = NodeId();
     QProcess mProcess;
     QMutex mOutputMutex;
 

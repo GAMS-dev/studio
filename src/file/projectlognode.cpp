@@ -159,7 +159,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             cursor.insertText(newLine+"\n");
             int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
             for (LinkData mark: marks) {
-                TextMark* tm = textMarkRepo()->createMark(file()->id(), runFileId(), TextMark::link
+                TextMark* tm = textMarkRepo()->createMark(file()->id(), runGroupId(), TextMark::link
                                                           , mCurrentErrorHint.lstLine, lineNr, mark.col, size);
                 if (mark.textMark) {
                     tm->setRefMark(mark.textMark);
@@ -272,7 +272,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runFileId(), TextMark::error
+                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error
                                                            , mCurrentErrorHint.lstLine, lineNr, colStart, size);
             }
             errMark = mark.textMark;
@@ -305,15 +305,14 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
 
                 if (!mLstNode) {
-                    ProjectAbstractNode *node = mRunGroup->findNode(fName);
-                    mLstNode = node ? node->toFile() : nullptr;
+                    mLstNode = mRunGroup->findFile(fName);
+                    if (!mLstNode) {
+                        errFound = false;
+                        DEB() << "Could not find lst-file to generate TextMark for";
+                        continue;
+                    }
                 }
-                if (!mLstNode) {
-                    errFound = false;
-                    DEB() << "Could not find lst-file to generate TextMark for";
-                    continue;
-                }
-                mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runFileId(), tmType
+                mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runGroupId(), tmType
                                                            , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                 errFound = false;
                 if (errMark) {
@@ -334,7 +333,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = result.length() - mark.col - 1;
 
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runFileId(), tmType
+                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
                                                            , mCurrentErrorHint.lstLine, lineNr, 0, col);
                 if (mRunGroup->findFile(file))
                     errFound = false;

@@ -53,28 +53,21 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (QFileInfo(item.locFile()).exists())
         mMain->openFilePath(item.locFile());
 
-    ProjectAbstractNode *fsc = mMain->projectRepo()->findNode(item.locFile());
-    if (!fsc) EXCEPT() << "File not found: " << item.locFile();
-
-    ProjectFileNode *jmpFc = nullptr;
-    if (fsc->type() == ProjectAbstractNode::File)
-        jmpFc = static_cast<ProjectFileNode*>(fsc);
-
-    if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
+    ProjectFileNode *node = mMain->projectRepo()->findFile(item.locFile());
+    if (!node) EXCEPT() << "File not found: " << item.locFile();
 
     // highlight
-    mMain->searchDialog()->findInFile(jmpFc, true, mResultList.searchTerm());
+    mMain->searchDialog()->findInFile(node, true, mResultList.searchTerm());
 
     // jump to line
-    QTextCursor tc(jmpFc->document());
+    QTextCursor tc(node->document());
     if (item.locCol() <= 0)
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
+        tc.setPosition(node->document()->findBlockByNumber(item.locLineNr() - 1).position());
     else
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
+        tc.setPosition(node->document()->findBlockByNumber(item.locLineNr() - 1).position()
                        + item.locCol());
 
-    jmpFc->jumpTo(tc);
-    jmpFc->editors().first()->setFocus();
+    node->file()->jumpTo(node->runGroupId(), true, item.locLineNr()-1, item.locCol());
 }
 
 }

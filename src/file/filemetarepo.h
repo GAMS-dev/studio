@@ -47,13 +47,15 @@ public:
     ProjectRepo *projectRepo() const;
     QVector<FileMeta*> openFiles() const;
     QVector<FileMeta*> modifiedFiles() const;
-    void unwatch(const QString &path);
+    QWidgetList editors() const;
+    void unwatch(const FileMeta* fm);
+    bool watch(const FileMeta* fm);
 
 signals:
     void fileEvent(FileEvent &e);
 
 public slots:
-    void openFile(FileMeta* fm, FileId runId, bool focus = true, int codecMib = -1);
+    void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
     void removedFile(FileMeta* fileMeta);
 
 private slots:

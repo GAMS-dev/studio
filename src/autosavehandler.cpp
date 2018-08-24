@@ -73,7 +73,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();
-                    ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
+                    ProjectFileNode* fc = mMainWindow->projectRepo()->findFileNode(editor);
                     QTextCursor curs(fc->document());
                     curs.select(QTextCursor::Document);
                     curs.insertText(line);
@@ -95,16 +95,16 @@ void AutosaveHandler::saveChangedFiles()
 {
     for (auto editor : mMainWindow->openEditors())
     {
-        ProjectFileNode* fc = mMainWindow->projectRepo()->fileNode(editor);
-        QString filepath = QFileInfo(fc->location()).path();
-        QString filename = filepath+fc->name();
-        QString autosaveFile = filepath+"/"+mAutosavedFileMarker+fc->name();
-        if (fc->isModified() && (fc->metrics().fileType() == FileKind::Gms || fc->metrics().fileType() == FileKind::Txt))
+        ProjectFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
+        QString filepath = QFileInfo(node->location()).path();
+        QString filename = filepath+node->name();
+        QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
+        if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt))
         {
             QFile file(autosaveFile);
             file.open(QIODevice::WriteOnly);
             QTextStream out(&file);
-            out << fc->document()->toPlainText();
+            out << node->document()->toPlainText();
             out.flush();
             file.close();
         }

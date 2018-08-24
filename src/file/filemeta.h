@@ -39,7 +39,6 @@ class ProjectRunGroupNode;
 class FileMeta: public QObject
 {
     Q_OBJECT
-
 public:
     ~FileMeta() override;
     FileId id() const;
@@ -69,8 +68,9 @@ public:
     void load(QList<int> codecMibs = QList<int>());
     void save();
     void saveAs(const QString &location);
+    void renameToBackup();
 
-    void jumpTo(FileId runId, bool focus, int line = 0, int column = 0);
+    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
@@ -126,7 +126,6 @@ signals:
 
 private slots:
     void modificationChanged(bool modiState);
-    void updateMarks();
 
 private:
     struct Data {

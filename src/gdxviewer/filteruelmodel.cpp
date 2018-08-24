@@ -114,7 +114,7 @@ void FilterUelModel::filterLabels(QString filterString)
             checkedNew = false;
         if(checkedNew != checkedOld) {
             mChecked[idx] = checkedNew;
-            dataChanged(index(idx,0), index(idx,0));
+            dataChanged(index(int(idx),0), index(int(idx),0));
         }
     }
 }
