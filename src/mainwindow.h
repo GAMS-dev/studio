@@ -281,7 +281,7 @@ private:
     QString studioInfo();
     void ensureLogEditor(ProjectLogNode* logProc);
     int showSaveChangesMsgBox(const QString &text);
-    void linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus);
+    void addToTabs(QWidget *edit, QTabWidget *tabWidget, FileMeta *fileMeta, bool focus);
 
 private:
     Ui::MainWindow *ui;

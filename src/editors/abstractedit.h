@@ -69,7 +69,7 @@ protected:
 
     FileId mFileId;
     NodeId mGroupId;
-    FileMarks *mMarks;
+    FileMarks *mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;

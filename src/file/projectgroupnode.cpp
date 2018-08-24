@@ -36,7 +36,7 @@ namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type)
-    : ProjectAbstractNode("G-"+name, type), mLocation(location)
+    : ProjectAbstractNode(name, type), mLocation(location)
 {}
 
 ProjectGroupNode::~ProjectGroupNode()

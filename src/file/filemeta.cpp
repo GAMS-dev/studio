@@ -473,7 +473,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 {
     Q_UNUSED(codecMibs)
     QWidget* res = nullptr;
-    if (kind() != FileKind::Gdx) {
+    if (kind() == FileKind::Gdx) {
+        gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
+        initEditorType(gdxView);
+        res = gdxView;
+    } else {
         CodeEdit *codeEdit = new CodeEdit(tabWidget);
         codeEdit->setSettings(mFileRepo->settings());
         codeEdit->setFileId(id());
@@ -496,10 +500,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             codeEdit->setReadOnly(true);
             codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
-    } else {
-        gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
-        initEditorType(gdxView);
-        res = gdxView;
     }
     addEditor(res);
     return res;

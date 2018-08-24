@@ -71,9 +71,12 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     mFileTimer.setSingleShot(true);
-    connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
+
+    // (JM) FOR DEBUG: temporarily deactivated timers
+//    connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
+//    mTimerID = startTimer(60000);
+
     setAcceptDrops(true);
-    mTimerID = startTimer(60000);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
@@ -1672,8 +1675,9 @@ void MainWindow::storeTree()
     mSettings->saveSettings(this);
 }
 
-void MainWindow::linkToEdit(QTabWidget *tabWidget, FileMeta *fileMeta, bool focus)
+void MainWindow::addToTabs(QWidget *edit, QTabWidget *tabWidget, FileMeta *fileMeta, bool focus)
 {
+    tabWidget->insertTab(tabWidget->currentIndex()+1, edit, fileMeta->name(NameModifier::editState));
     connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     if (focus) {
         updateMenuToCodec(fileMeta->codecMib());
@@ -1694,8 +1698,12 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     if (edit) {
         if (focus) tabWidget->setCurrentWidget(edit);
     } else {
-        fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
-        linkToEdit(tabWidget, fileMeta, focus);
+        QWidget *edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
+        if (!edit) {
+            DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
+            return;
+        }
+        addToTabs(edit, tabWidget, fileMeta, focus);
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())

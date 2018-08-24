@@ -35,9 +35,7 @@ AbstractEdit::AbstractEdit(QWidget *parent)
 }
 
 AbstractEdit::~AbstractEdit()
-{
-
-}
+{}
 
 void AbstractEdit::setOverwriteMode(bool overwrite)
 {
@@ -105,9 +103,8 @@ bool AbstractEdit::event(QEvent *e)
     if (e->type() == QEvent::ShortcutOverride) {
         e->ignore();
         return true;
-    } else {
-        return QPlainTextEdit::event(e);
     }
+    return QPlainTextEdit::event(e);
 
     // TODO(JM) move to ProcessLogEdit
     /*if (mMetrics.fileType() == FileType::Log
@@ -155,6 +152,7 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
         mTipPos = helpEvent->pos();
         return !mMarksAtMouse.isEmpty();
     }
+    return QPlainTextEdit::eventFilter(o, e);
 }
 
 void AbstractEdit::keyPressEvent(QKeyEvent *e)
@@ -192,6 +190,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         mTipPos = QPoint();
         QToolTip::hideText();
     }
+    if (!mMarks) return;
     QTextCursor cursor = cursorForPosition(e->pos());
     QList<TextMark*> marks = mMarks->values(cursor.blockNumber());
     mMarksAtMouse.clear();
