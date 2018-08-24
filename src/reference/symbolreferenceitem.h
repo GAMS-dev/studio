@@ -20,6 +20,7 @@
 #ifndef SYMBOLREFERENCEITEM_H
 #define SYMBOLREFERENCEITEM_H
 
+#include <QtCore>
 #include "referencedatatype.h"
 #include "symboldatatype.h"
 
@@ -30,14 +31,15 @@ namespace reference {
 typedef int SymbolId;
 
 struct ReferenceItem {
+    ReferenceItem() { }
     ReferenceItem(SymbolId id, ReferenceDataType::ReferenceType type, QString loc, int line, int col) :
         symbolID(id), referenceType(type), location(loc), lineNumber(line), columnNumber(col) { }
 
-    SymbolId symbolID;
-    ReferenceDataType::ReferenceType referenceType;
+    SymbolId symbolID = -1;
+    ReferenceDataType::ReferenceType referenceType = ReferenceDataType::ReferenceType::Unknown;
     QString location;
-    int lineNumber;
-    int columnNumber;
+    int lineNumber = -1;
+    int columnNumber = -1;
 };
 
 class SymbolReferenceItem
@@ -113,5 +115,7 @@ private:
 } // namespace reference
 } // namespace studio
 } // namespace gams
+
+Q_DECLARE_METATYPE(gams::studio::reference::ReferenceItem)
 
 #endif // SYMBOLREFERENCEITEM_H

@@ -51,7 +51,7 @@ public:
     void resetModel();
 
 signals:
-    void symbolSelectionChanged(SymbolId symbolid);
+    void referenceSelectionChanged(ReferenceItem item);
 
 public slots:
     void updateSelectedSymbol(SymbolId symbolid);

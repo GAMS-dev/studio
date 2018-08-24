@@ -27,11 +27,12 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent) :
-    QWidget(parent),
+SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent) :
+//    QWidget(parent),
     ui(new Ui::SymbolReferenceWidget),
     mReference(ref),
-    mType(type)
+    mType(type),
+    mReferenceViewer(parent)
 {
     ui->setupUi(this);
 
@@ -70,6 +71,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceTreeProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     ui->referenceView->setModel( mReferenceTreeProxyModel );
+    ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);
     ui->referenceView->expandAll();
     ui->referenceView->resizeColumnToContents(0);
@@ -77,6 +80,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setAlternatingRowColors(true);
     ui->referenceView->setColumnHidden(3, true);
 
+    connect(ui->referenceView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToReferenceItem);
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
 }
 
@@ -105,7 +109,7 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
             return;
 
         SymbolId id = selected.indexes().at(0).data().toInt();
-        emit mReferenceTreeModel->updateSelectedSymbol(id);
+        mReferenceTreeModel->updateSelectedSymbol(id);
     }
 }
 
@@ -120,6 +124,21 @@ void SymbolReferenceWidget::resetModel()
 {
     mSymbolTableModel->resetModel();
     mReferenceTreeModel->resetModel();
+}
+
+void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
+{
+    QModelIndex  parentIndex =  ui->referenceView->model()->parent(index);
+    if (parentIndex.row() >= 0) {
+        QVariant location = ui->referenceView->model()->data(index.sibling(index.row(), 0), Qt::UserRole);
+        QVariant lineNumber = ui->referenceView->model()->data(index.sibling(index.row(), 1), Qt::UserRole);
+        QVariant colNumber = ui->referenceView->model()->data(index.sibling(index.row(), 2), Qt::UserRole);
+        QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
+        ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
+        emit mReferenceViewer->jumpTo( item );
+    } else {
+       qDebug() << " NO jump!";
+    }
 }
 
 } // namespace reference

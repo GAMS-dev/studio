@@ -31,8 +31,6 @@ ReferenceTreeModel::ReferenceTreeModel(Reference* ref, QObject *parent) :
     QList<QVariant> rootData;
     rootData << "Location" << "Line" << "Column" << "Type";
     mRootItem = new ReferenceItemModel(rootData);
-
-    connect(this, &ReferenceTreeModel::symbolSelectionChanged, this, &ReferenceTreeModel::updateSelectedSymbol);
 }
 
 ReferenceTreeModel::~ReferenceTreeModel()
@@ -76,6 +74,13 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
             default: aFlag = Qt::AlignLeft; break;
         }
         return QVariant(aFlag | Qt::AlignVCenter);
+    }
+    case Qt::UserRole: {
+        ReferenceItemModel* item = static_cast<ReferenceItemModel*>(index.internalPointer());
+        ReferenceItemModel* parentItem = item->parent();
+
+        if (parentItem != mRootItem)
+            return item->data(index.column());
     }
     default:
         break;
@@ -212,7 +217,7 @@ void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& paren
     parents << parents.last()->child(parents.last()->childCount()-1);
     foreach(const ReferenceItem* item, referenceItemList) {
         QList<QVariant> itemData;
-        itemData << item->location;
+        itemData << QString(item->location);
         itemData << QString::number(item->lineNumber);
         itemData << QString::number(item->columnNumber);
         itemData << ReferenceDataType::from(item->referenceType).name();

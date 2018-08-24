@@ -26,6 +26,7 @@
 
 #include "reference.h"
 #include "referencetreemodel.h"
+#include "referenceviewer.h"
 #include "symboldatatype.h"
 #include "symboltablemodel.h"
 
@@ -37,12 +38,14 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+class ReferenceViewer;
+
 class SymbolReferenceWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent = nullptr);
+    explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget();
 
 public slots:
@@ -50,6 +53,7 @@ public slots:
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
+    void jumpToReferenceItem(const QModelIndex &index);
 
 private:
     Ui::SymbolReferenceWidget *ui;
@@ -62,6 +66,8 @@ private:
 
     Reference* mReference;
     SymbolDataType::SymbolType mType;
+
+    ReferenceViewer* mReferenceViewer;
 };
 
 } // namespace reference

@@ -47,6 +47,9 @@ public:
     bool hasExternallyChanged() const;
     void setHasExternallyChanged(bool hasExternallyChanged);
 
+signals:
+    void jumpTo(ReferenceItem item);
+
 public slots:
     void loadReferenceFile();
 

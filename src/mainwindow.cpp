@@ -209,6 +209,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             fc->addFileWatcher();
             connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
                     refView, &reference::ReferenceViewer::loadReferenceFile);
+            connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
         } else {
             CodeEdit *codeEdit = new CodeEdit(this);
             codeEdit->setSettings(mSettings.get());
@@ -2438,6 +2439,12 @@ void MainWindow::on_actionPreviousTab_triggered()
         wid = wid->parentWidget();
     }
     if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+}
+
+void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
+{
+    qDebug() << QString("%1 of type %2: %3 [%4:%5]").arg(item.symbolID).arg(item.referenceType)
+                                                    .arg(item.location).arg(item.lineNumber).arg(item.columnNumber);
 }
 
 }
