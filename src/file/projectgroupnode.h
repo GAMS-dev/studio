@@ -26,13 +26,13 @@
 //#include <file.h>
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
 
 class ProjectLogNode;
 class ProjectFileNode;
-class GamsProcess;
 class TextMarkRepo;
 class FileMeta;
 class FileMetaRepo;
