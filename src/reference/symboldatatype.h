@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class SymbolDataType
 {
@@ -69,6 +70,7 @@ private:
     static SymbolDataType* mUnknown;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

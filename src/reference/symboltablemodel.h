@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class SymbolTableModel : public QAbstractTableModel
 {
@@ -51,6 +52,7 @@ private:
     Reference* mReference = nullptr;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

@@ -31,6 +31,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     QWidget(parent),
@@ -128,5 +129,6 @@ bool ReferenceViewer::hasExternallyChanged() const
     return mHasExternallyChanged;
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

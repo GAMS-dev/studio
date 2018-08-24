@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class ReferenceDataType
 {
@@ -67,7 +68,7 @@ private:
     static ReferenceDataType*  mUnknown;
 };
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

@@ -23,6 +23,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 Reference::Reference(QString referenceFile, QObject *parent) :
     QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile)), mState(Initializing)
@@ -318,5 +319,6 @@ void Reference::loadReferenceFile()
     emit loadFinished(mValid ? LoadStatus::SuccesffullyLoaded : LoadStatus::UnsuccesffullyLoaded);
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

@@ -141,7 +141,7 @@ public: // static convenience methods
     inline static void initEditorType(lxiviewer::LxiViewer* w) {
         if(w) w->setProperty("EditorType", etLxiLst);
     }
-    inline static void initEditorType(ReferenceViewer* w) {
+    inline static void initEditorType(reference::ReferenceViewer* w) {
         if(w) w->setProperty("EditorType", etRef);
     }
     inline static int editorType(QWidget* w) {
@@ -169,8 +169,8 @@ public: // static convenience methods
     inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
         return (editorType(w) == etLxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
     }
-    inline static ReferenceViewer* toReferenceViewer(QWidget* w) {
-        return (editorType(w) == etRef) ? static_cast<ReferenceViewer*>(w) : nullptr;
+    inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
+        return (editorType(w) == etRef) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
     }
 
 signals:

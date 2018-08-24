@@ -26,7 +26,6 @@
 #include <QTabWidget>
 
 #include "reference.h"
-//#include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
 
 namespace Ui {
@@ -35,6 +34,7 @@ class ReferenceViewer;
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class ReferenceViewer : public QWidget
 {
@@ -59,6 +59,7 @@ private:
     Reference* mReference;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

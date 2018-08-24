@@ -35,6 +35,7 @@ class SymbolReferenceWidget;
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class SymbolReferenceWidget : public QWidget
 {
@@ -63,6 +64,7 @@ private:
     SymbolDataType::SymbolType mType;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

@@ -200,7 +200,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             fc->addFileWatcher();
         } else if (fc->metrics().fileType() == FileType::Ref) {
             qDebug() << "open ref:" << fc->location();
-            ReferenceViewer* refView = new ReferenceViewer(fc->location(), this);
+            reference::ReferenceViewer* refView = new reference::ReferenceViewer(fc->location(), this);
             ProjectAbstractNode::initEditorType(refView);
             fc->addEditor(refView);
             tabIndex = tabWidget->addTab(refView, fc->caption());
@@ -208,7 +208,7 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             // **and** (2) group process state changed
             fc->addFileWatcher();
             connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
-                    refView, &ReferenceViewer::loadReferenceFile);
+                    refView, &reference::ReferenceViewer::loadReferenceFile);
         } else {
             CodeEdit *codeEdit = new CodeEdit(this);
             codeEdit->setSettings(mSettings.get());
@@ -889,7 +889,7 @@ void MainWindow::activeTabChanged(int index)
         }
     } else if (ProjectFileNode::toReferenceViewer(editWidget)) {
         ui->menuEncoding->setEnabled(false);
-        ReferenceViewer* refViewer = ProjectFileNode::toReferenceViewer(editWidget);
+        reference::ReferenceViewer* refViewer = ProjectFileNode::toReferenceViewer(editWidget);
         mRecent.setEditor(refViewer, this);
         ProjectFileNode* fc = mProjectRepo.fileNode(refViewer);
         if (fc) {

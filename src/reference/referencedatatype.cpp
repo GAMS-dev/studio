@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 QList<ReferenceDataType*> ReferenceDataType::mList;
 ReferenceDataType* ReferenceDataType::mUnknown = nullptr;
@@ -119,6 +120,6 @@ ReferenceDataType::ReferenceDataType(ReferenceDataType::ReferenceType type, QStr
 
 }
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams

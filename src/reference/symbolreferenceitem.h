@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 typedef int SymbolId;
 
@@ -109,6 +110,7 @@ private:
     QList<ReferenceItem *> mIndex;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

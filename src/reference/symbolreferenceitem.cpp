@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 SymbolReferenceItem::SymbolReferenceItem(SymbolId id, QString name, SymbolDataType::SymbolType type) :
     mID(id), mName(name), mType(type)
@@ -250,5 +251,6 @@ void SymbolReferenceItem::dumpAll()
     }
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

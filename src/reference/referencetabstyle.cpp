@@ -23,6 +23,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 QSize ReferenceTabStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
 {
@@ -45,5 +46,6 @@ void ReferenceTabStyle::drawControl(QStyle::ControlElement element, const QStyle
     QProxyStyle::drawControl(element, option, painter, widget);
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

@@ -29,6 +29,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class Reference : public QObject
 {
@@ -105,6 +106,7 @@ private:
     QMap<SymbolId, SymbolReferenceItem*> mReference;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

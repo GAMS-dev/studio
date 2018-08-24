@@ -671,7 +671,7 @@ void ProjectFileNode::onFileChangedExtern(QString filepath)
             gdxViewer->setHasChanged(true);
         }
     } else {
-        ReferenceViewer* refViewer = toReferenceViewer(mEditors.first());
+        reference::ReferenceViewer* refViewer = toReferenceViewer(mEditors.first());
         if (refViewer) {
             if (!fi.exists()) {
                 // file has been renamed or deleted

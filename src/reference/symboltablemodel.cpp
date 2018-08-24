@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
      QAbstractTableModel(parent), mType(type), mReference(ref)
@@ -242,6 +243,6 @@ void SymbolTableModel::resetModel()
     endResetModel();
 }
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams

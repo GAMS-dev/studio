@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 QList<SymbolDataType*> SymbolDataType::mList;
 SymbolDataType* SymbolDataType::mUnknown = nullptr;
@@ -119,5 +120,6 @@ SymbolDataType::SymbolDataType(SymbolType type, QString typeDescription) :
 {
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

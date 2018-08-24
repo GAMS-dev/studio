@@ -23,6 +23,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 ReferenceTreeModel::ReferenceTreeModel(Reference* ref, QObject *parent) :
     QAbstractItemModel(parent), mReference(ref), mCurrentSymbolID(-1)
@@ -220,6 +221,6 @@ void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& paren
     parents.pop_back();
 }
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams

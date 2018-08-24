@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class ReferenceTabStyle : public QProxyStyle
 {
@@ -33,6 +34,7 @@ public:
     virtual void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, QWidget *parent) :
     QWidget(parent),
@@ -121,5 +122,6 @@ void SymbolReferenceWidget::resetModel()
     mReferenceTreeModel->resetModel();
 }
 
+} // namespace reference
 } // namespace studio
 } // namespace gams

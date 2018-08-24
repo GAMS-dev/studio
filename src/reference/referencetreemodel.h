@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class ReferenceTreeModel : public QAbstractItemModel
 {
@@ -63,6 +64,7 @@ private:
     ReferenceItemModel* mRootItem;
 };
 
+} // namespace reference
 } // namespace studio
 } // namespace gams
 
