@@ -50,7 +50,7 @@ protected:
     friend class ProjectRunGroupNode;
 
     ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *runGroup);
-    void setParentNode(ProjectGroupNode *parent) override;
+//    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {
         TextMark* textMark = nullptr;

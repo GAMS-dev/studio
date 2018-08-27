@@ -126,7 +126,7 @@ protected:
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
-    FileMeta* mGmsFile = nullptr; // TODO(JM) store the node instead
+    FileMeta* mGmsFile = nullptr;
     QString mLstFile;
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;

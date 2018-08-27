@@ -33,7 +33,7 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
+    : ProjectFileNode(fileMeta, runGroup, NodeType::log)
 {
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
@@ -73,11 +73,11 @@ void ProjectLogNode::markOld()
     }
 }
 
-void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
-{
-    Q_UNUSED(parent);
-    EXCEPT() << "The ProjectLogNode is assigned only at construction time";
-}
+//void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
+//{
+//    Q_UNUSED(parent);
+//    EXCEPT() << "The ProjectLogNode is assigned only at construction time";
+//}
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
@@ -248,7 +248,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
-            fName = mRunGroup->location() + '/' + mLastSourceFile;
+            fName = parentNode()->location() + '/' + mLastSourceFile;
             lineNr = errNr-1;
             size = -1;
             colStart = -1;
@@ -305,7 +305,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
 
                 if (!mLstNode) {
-                    mLstNode = mRunGroup->findFile(fName);
+                    mLstNode = parentNode()->findFile(fName);
                     if (!mLstNode) {
                         errFound = false;
                         DEB() << "Could not find lst-file to generate TextMark for";
@@ -335,7 +335,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
                                                            , mCurrentErrorHint.lstLine, lineNr, 0, col);
-                if (mRunGroup->findFile(file))
+                if (parentNode()->findFile(file))
                     errFound = false;
                 else
                     state = Outside;

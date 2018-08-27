@@ -243,8 +243,9 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
 ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
 {
     if (!mLogNode) {
-        QString logName = "[LOG]" + QString::number(id());
-        FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName);
+        QFileInfo fi = mGmsFile ? QFileInfo(mGmsFile->location()) : QFileInfo(location()+"/"+name()+".log");
+        QString logName = fi.path()+"/"+fi.completeBaseName()+".log";
+        FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
     }
     return mLogNode;

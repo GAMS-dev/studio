@@ -45,10 +45,8 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
-    bool symbolic = mLocation.startsWith('[');
-    int braceEnd = mLocation.indexOf(']');
-    if (braceEnd <= 0) braceEnd = mLocation.size();
-    mName = symbolic ? mLocation.left(braceEnd) : QFileInfo(mLocation).fileName();
+    mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
+                                                : QFileInfo(mLocation).fileName();
 
     if (kind() != FileKind::Gdx) {
         mDocument = new QTextDocument(this);
@@ -73,7 +71,7 @@ FileMeta::~FileMeta()
 QVector<QPoint> FileMeta::getEditPositions()
 {
     QVector<QPoint> res;
-    foreach (QWidget* widget, mEditors) {
+    for (QWidget* widget: mEditors) {
         AbstractEdit* edit = toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
@@ -86,7 +84,7 @@ QVector<QPoint> FileMeta::getEditPositions()
 void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
-    foreach (QWidget* widget, mEditors) {
+    for (QWidget* widget: mEditors) {
         AbstractEdit* edit = toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
@@ -471,13 +469,14 @@ bool FileMeta::isOpen() const
 
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs)
 {
-    Q_UNUSED(codecMibs)
     QWidget* res = nullptr;
     if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         res = gdxView;
     } else {
+        if (codecMibs.size() == 1 && codecMibs.first() == -1)
+            codecMibs = QList<int>();
         CodeEdit *codeEdit = new CodeEdit(tabWidget);
         codeEdit->setSettings(mFileRepo->settings());
         codeEdit->setFileId(id());
@@ -500,6 +499,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             codeEdit->setReadOnly(true);
             codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
+        if (mEditors.isEmpty())
+            load(codecMibs);
     }
     addEditor(res);
     return res;

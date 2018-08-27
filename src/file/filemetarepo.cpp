@@ -41,16 +41,16 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
-        for (FileMeta* fm: mFiles.values()) {
-            if (fm->location() == location) return fm;
-        }
-    } else {
-        QFileInfo fi(location);
-        for (FileMeta* fm: mFiles.values()) {
-            if (QFileInfo(fm->location()) == fi) return fm;
-        }
+    QFileInfo fi(location);
+    for (FileMeta* fm: mFiles.values()) {
+        if (QFileInfo(fm->location()) == fi) return fm;
     }
+//    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
+//        for (FileMeta* fm: mFiles.values()) {
+//            if (fm->location() == location) return fm;
+//        }
+//    } else {
+//    }
     return nullptr;
 }
 

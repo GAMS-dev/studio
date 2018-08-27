@@ -1680,6 +1680,7 @@ void MainWindow::addToTabs(QWidget *edit, QTabWidget *tabWidget, FileMeta *fileM
     tabWidget->insertTab(tabWidget->currentIndex()+1, edit, fileMeta->name(NameModifier::editState));
     connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     if (focus) {
+        tabWidget->setCurrentWidget(edit);
         updateMenuToCodec(fileMeta->codecMib());
         mRecent.setEditor(tabWidget->currentWidget(), this);
         mRecent.editFileId = fileMeta->id();
