@@ -67,8 +67,8 @@ public:
     /// \return The icon for this file type.
     virtual QIcon icon() = 0;
 
-    ProjectGroupNode* parentNode() const;
     virtual void setParentNode(ProjectGroupNode *parent);
+    ProjectGroupNode* parentNode() const;
     ProjectRunGroupNode *runParentNode() const;
 
     /// \brief File node type.

@@ -21,12 +21,15 @@
 #define PROJECTTREEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 #include "projectgroupnode.h"
 
 namespace gams {
 namespace studio {
 
 class ProjectRepo;
+
+// TODO(JM) Inherit QSortFilterProxyModel to hide log-node and allow different sort-orders
 
 class ProjectTreeModel : public QAbstractItemModel
 {

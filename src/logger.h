@@ -104,7 +104,7 @@ public:
             qDebug().noquote() << indent() << "OUT " << timeString() << " " << mFunctionName;
     }
     QString timeString() {
-        int elapsed = QDateTime::currentMSecsSinceEpoch() - mSec;
+        qint64 elapsed = QDateTime::currentMSecsSinceEpoch() - mSec;
         return QString::number(elapsed); //  tim.toString("m:ss:zzz");
     }
 private:

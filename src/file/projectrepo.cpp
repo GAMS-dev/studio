@@ -308,7 +308,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
 void ProjectRepo::closeGroup(ProjectGroupNode* group)
 {
     // remove normal cildren
-    for (int i = 0; i < group->childCount(); ++i) {
+    for (int i = group->childCount()-1; i >= 0; --i) {
         ProjectAbstractNode *node = group->childNode(i);
         ProjectGroupNode* subGroup = node->toGroup();
         if (subGroup) closeGroup(subGroup);
@@ -318,12 +318,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
             closeNode(node->toFile());
         }
     }
-    // remove log-node if present
-    if (group->toRunGroup()) {
-        // TODO(JM) Take the log-node into normal child-list to prevent the need for this extra-saussage
-        if (group->toRunGroup()->logNode())
-            closeNode(group->toRunGroup()->logNode());
-    }
+
     mTreeModel->removeChild(group);
     removeFromIndex(group);
     emit changed();
@@ -340,7 +335,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         return;
     }
 
-    // if this is a lst file referenced in a log
+    // Remove reference (if this is a lst file referenced in a log)
     if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
         runGroup->logNode()->setLstNode(nullptr);
 
@@ -374,10 +369,9 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-    // TODO(JM) instead of [LOG]-Keyword pass explicit knownType for FileKind::Log
-    if (location.startsWith("[LOG]")) {
-        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
-    }
+//    if (location.startsWith("[LOG]")) {
+//        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
+//    }
     if (location.isEmpty()) {
         // TODO(JM) should we allow FileMeta to be created for a non-existant file?
         EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
@@ -406,9 +400,14 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     }
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
-        if (fileMeta->kind() == FileKind::Log)
-            EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
-        file = new ProjectFileNode(fileMeta, fileGroup);
+        if (fileMeta->kind() == FileKind::Log) {
+            ProjectRunGroupNode *runGroup = fileGroup->toRunGroup();
+            if (!runGroup) runGroup = fileGroup->runParentNode();
+            file = new ProjectLogNode(fileMeta, runGroup);
+//                    EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
+        } else {
+            file = new ProjectFileNode(fileMeta, fileGroup);
+        }
         if (!explicitName.isNull())
             file->setName(explicitName);
         int offset = fileGroup->peekIndex(file->name());
