@@ -324,6 +324,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    updateLineNumberAreaWidth(0);
     updateExtraSelections();
 }
 
