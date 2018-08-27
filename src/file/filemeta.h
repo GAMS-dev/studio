@@ -154,8 +154,6 @@ private:
     QTextDocument* mDocument = nullptr;
     ErrorHighlighter* mHighlighter = nullptr;
 
-    static const QList<int> mDefaulsCodecs;
-
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events
     // TODO(JM): FileChanged events

@@ -37,9 +37,6 @@
 namespace gams {
 namespace studio {
 
-const QList<int> FileMeta::mDefaulsCodecs {0, 1, 108};
-        // << "Utf-8" << "GB2312" << "Shift-JIS" << "System" << "Windows-1250" << "Latin-1";
-
 FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType *knownType)
     : mId(id), mFileRepo(fileRepo), mLocation(location), mData(Data(location, knownType))
 {
@@ -244,7 +241,9 @@ void FileMeta::load(QList<int> codecMibs)
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (!document() && kind() != FileKind::Gdx)
         EXCEPT() << "There is no document assigned to the file " << location();
-    QList<int> mibs = codecMibs.isEmpty() ? mDefaulsCodecs : codecMibs;
+
+    QList<int> mibs = codecMibs;
+    mibs << QTextCodec::codecForLocale()->mibEnum();
 
     QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
