@@ -2443,8 +2443,16 @@ void MainWindow::on_actionPreviousTab_triggered()
 
 void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 {
-    qDebug() << QString("%1 of type %2: %3 [%4:%5]").arg(item.symbolID).arg(item.referenceType)
-                                                    .arg(item.location).arg(item.lineNumber).arg(item.columnNumber);
+    QFileInfo fi(item.location);
+    if (fi.isFile()) {
+        openFilePath(CommonPaths::absolutFilePath(item.location), nullptr, true);
+        CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
+        if (codeEdit) {
+            int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);
+            int column = (item.columnNumber > 0 ? item.columnNumber-1 : 0);
+            codeEdit->jumpTo(QTextCursor(), line, column);
+        }
+    }
 }
 
 }

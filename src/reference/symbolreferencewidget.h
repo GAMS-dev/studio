@@ -53,6 +53,7 @@ public slots:
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
+    void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
 
 private:

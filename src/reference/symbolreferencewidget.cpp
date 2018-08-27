@@ -58,6 +58,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
 //    ui->symbolView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
 
+    connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
     connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
@@ -105,8 +106,9 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
 {
     Q_UNUSED(deselected);
     if (selected.indexes().size() > 0) {
-        if (mType == SymbolDataType::FileUsed) // TODO
+        if (mType == SymbolDataType::FileUsed) {
             return;
+        }
 
         SymbolId id = selected.indexes().at(0).data().toInt();
         mReferenceTreeModel->updateSelectedSymbol(id);
@@ -126,6 +128,15 @@ void SymbolReferenceWidget::resetModel()
     mReferenceTreeModel->resetModel();
 }
 
+void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
+{
+    if (mType == SymbolDataType::FileUsed) {
+        qDebug() << ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString();
+        ReferenceItem item(-1, ReferenceDataType::Unknown, ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString(), 0, 0);
+        emit mReferenceViewer->jumpTo( item );
+    }
+}
+
 void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 {
     QModelIndex  parentIndex =  ui->referenceView->model()->parent(index);
@@ -136,8 +147,6 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
         QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
         ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
         emit mReferenceViewer->jumpTo( item );
-    } else {
-       qDebug() << " NO jump!";
     }
 }
 
