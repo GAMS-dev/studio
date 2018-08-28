@@ -38,7 +38,6 @@ TextMark::~TextMark()
 {
     if (mMarkRepo) mMarkRepo->removeMark(this);
     clearBackRefs();
-    rehighlight();
 }
 
 QTextDocument*TextMark::document() const

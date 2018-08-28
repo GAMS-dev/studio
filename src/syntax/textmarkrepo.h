@@ -31,11 +31,12 @@ public:
     QTextDocument* document(FileId fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
+    void clear();
     void jumpTo(TextMark *mark, bool focus = false);
     void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
     QList<TextMark *> marks(FileId nodeId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
-    const FileMarks marks(FileId nodeId) const;
+    const FileMarks *marks(FileId nodeId);
 
 
 private:

@@ -57,11 +57,13 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     } else if (kind() != FileKind::Gdx) {
         mHighlighter = new ErrorHighlighter(document());
     }
-
+    if (mHighlighter)
+        mHighlighter->setMarks(fileRepo->textMarkRepo()->marks(id));
 }
 
 FileMeta::~FileMeta()
 {
+    mFileRepo->textMarkRepo()->removeMarks(id());
     mFileRepo->removedFile(this);
 }
 

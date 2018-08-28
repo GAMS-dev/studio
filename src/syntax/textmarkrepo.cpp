@@ -2,6 +2,7 @@
 #include "file/filemetarepo.h"
 #include "file/filemeta.h"
 #include "file/projectrepo.h"
+#include "logger.h"
 #include <QMultiHash>
 
 namespace gams {
@@ -14,10 +15,6 @@ TextMarkRepo::TextMarkRepo(FileMetaRepo *fileRepo, ProjectRepo *projectRepo, QOb
 
 TextMarkRepo::~TextMarkRepo()
 {
-    while (!mMarks.isEmpty()) {
-        int fileId = mMarks.begin().key();
-        removeMarks(fileId);
-    }
 }
 
 inline void TextMarkRepo::deleteMark(TextMark *tm)
@@ -28,38 +25,31 @@ inline void TextMarkRepo::deleteMark(TextMark *tm)
 void TextMarkRepo::removeMark(TextMark *tm)
 {
     FileMarks *marks = mMarks.value(tm->fileId());
-    marks->remove(tm->mId, tm);
-    if (marks->isEmpty()) {
-        mMarks.remove(tm->fileId());
-        delete marks;
-    }
+    marks->remove(tm->line(), tm);
 }
 
 void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
 {
-    FileMarks *marks = mMarks.value(fileId);
-    if (!marks || marks->isEmpty()) return;
-    FileMarks::iterator it = marks->begin();
+    QHash<FileId, FileMarks*>::iterator marksIter = mMarks.find(fileId);
+    if (marksIter == mMarks.end()) return;
+    FileMarks::iterator it = (*marksIter)->begin();
+    FileMarks::iterator itEnd = (*marksIter)->end();
     if (types.isEmpty() || types.contains(TextMark::all)) {
         // delete all
-        while (it != marks->end()) {
-            delete *it;
-            it = marks->erase(it);
+        while (it != itEnd) {
+            TextMark* mark = (*it);
+            ++it;
+            delete mark;
         }
     } else {
         // delete conditionally
-        while (it != marks->end()) {
-            if (types.contains(it.value()->type())) {
-                delete *it;
-                it = marks->erase(it);
-            } else {
-                ++it;
+        while (it != itEnd) {
+            TextMark* mark = (*it);
+            ++it;
+            if (types.contains(mark->type())) {
+                delete mark;
             }
         }
-    }
-    if (marks->isEmpty()) {
-        mMarks.remove(fileId);
-        delete marks;
     }
 }
 
@@ -72,10 +62,16 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
                                    , int line, int column, int size)
 {
     Q_UNUSED(value)
-    if (!fileId.isValid()) return nullptr;
+    if (!fileId.isValid()) {
+        DEB() << "No valid fileId to create a TextMark";
+        return nullptr;
+    }
+    if (!mMarks.contains(fileId)) {
+        DEB() << "No container for fileId " << QString::number(fileId);
+        return nullptr;
+    }
     TextMark* mark = new TextMark(this, fileId, type, groupId);
     mark->setPosition(line, column, size);
-    if (!mMarks.contains(fileId)) mMarks.insert(fileId, new FileMarks());
     FileMarks *marks = mMarks.value(fileId);
     marks->insert(mark->line(), mark);
     return mark;
@@ -85,6 +81,18 @@ QTextDocument *TextMarkRepo::document(FileId fileId) const
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
     return fm ? fm->document() : nullptr;
+}
+
+void TextMarkRepo::clear()
+{
+    while (!mMarks.isEmpty()) {
+        QHash<FileId, FileMarks*>::iterator it = mMarks.begin();
+        FileMarks *marks = *it;
+        FileId fileId = it.key();
+        removeMarks(fileId);
+        mMarks.remove(fileId);
+        delete marks;
+    }
 }
 
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
@@ -123,10 +131,11 @@ QList<TextMark*> TextMarkRepo::marks(FileId nodeId, int lineNr, NodeId groupId, 
     return res;
 }
 
-const FileMarks TextMarkRepo::marks(FileId nodeId) const
+const FileMarks *TextMarkRepo::marks(FileId nodeId)
 {
-    if (mMarks.contains(nodeId)) return *mMarks.value(nodeId);
-    return FileMarks();
+    if (!mMarks.contains(nodeId))
+        mMarks.insert(nodeId, new FileMarks());
+    return mMarks.value(nodeId, nullptr);
 }
 
 FileId TextMarkRepo::ensureFileId(QString location)
@@ -136,6 +145,7 @@ FileId TextMarkRepo::ensureFileId(QString location)
     if (fm) return fm->id();
     return -1;
 }
+
 
 } // namespace studio
 } // namespace gams

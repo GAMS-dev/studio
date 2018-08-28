@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "syntax/textmark.h"
-#include "syntax/textmarklist.h"
 #include "syntax/syntaxhighlighter.h"
 //#include "syntax/syntaxformats.h"
 //#include "syntax/syntaxdeclaration.h"

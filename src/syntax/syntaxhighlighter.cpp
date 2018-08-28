@@ -22,7 +22,6 @@
 #include "syntaxdeclaration.h"
 #include "syntaxidentifier.h"
 #include "textmark.h"
-#include "textmarklist.h"
 #include "logger.h"
 #include "exception.h"
 #include "file.h"
@@ -36,16 +35,14 @@ ErrorHighlighter::ErrorHighlighter(QTextDocument *doc)
 {
 }
 
-FileMarks ErrorHighlighter::marks() const
+const FileMarks *ErrorHighlighter::marks() const
 {
     return mMarks;
 }
 
-void ErrorHighlighter::setMarks(FileMarks marks)
+void ErrorHighlighter::setMarks(const FileMarks* marks)
 {
-    FileMarks prevMarks = mMarks;
     mMarks = marks;
-    QList<int> lines = prevMarks.unite(marks).uniqueKeys();
     // TODO(JM) repaint all lines that changed in marks
 }
 
@@ -60,11 +57,11 @@ void ErrorHighlighter::syntaxState(int position, int &intState)
 
 void ErrorHighlighter::highlightBlock(const QString& text)
 {
-    if (marks().isEmpty()) {
+    if (!marks()) {
         DEB() << "trying to highlight without marks!";
         return;
     }
-    QList<TextMark*> markList = marks().values(FileId(currentBlock().blockNumber()));
+    QList<TextMark*> markList = marks()->values(FileId(currentBlock().blockNumber()));
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
 }
 
@@ -181,7 +178,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QList<TextMark*> markList = marks().values(currentBlock().blockNumber());
+    QList<TextMark*> markList = marks()->values(currentBlock().blockNumber());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;

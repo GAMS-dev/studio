@@ -1353,6 +1353,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (requestCloseChanged(oFiles)) {
         on_actionClose_All_triggered();
         closeHelpView();
+        mTextMarkRepo.clear();
     } else {
         event->setAccepted(false);
     }
