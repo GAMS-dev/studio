@@ -298,17 +298,6 @@ QStringList Reference::getFileUsed() const
     return mFileUsed;
 }
 
-void Reference::dumpAll()
-{
-    QMap<SymbolId, SymbolReferenceItem*>::const_iterator i = mReference.constBegin();
-    while (i != mReference.constEnd()) {
-        qDebug() << "--- id=" << i.key() << "---";
-        SymbolReferenceItem* ref = i.value();
-        ref->dumpAll();
-        ++i;
-    }
-}
-
 void Reference::loadReferenceFile()
 {
     emit loadStarted();

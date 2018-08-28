@@ -216,41 +216,6 @@ bool SymbolReferenceItem::isUnused() const
     return (mAssign.size()+mImplicitAssign.size()+mReference.size()+mControl.size()+mIndex.size() == 0);
 }
 
-void SymbolReferenceItem::dumpAll()
-{
-    qDebug() << "id:" << mID << "type:" << SymbolDataType::from(mType).description().join(',') << ", name=[" << mName << "], noElements="<< mNumberOfElements << ", explanatory text=["<< mExplanatoryText << "]";
-    QStringList dim;
-    for(int i=0; i<mDomain.size(); i++) {
-        dim << QString::number(mDomain.at(i));
-    }
-    qDebug() << QString("  dim=%1:[%2]").arg(mDimension).arg(dim.join(','));
-
-    qDebug() << QString("  declare :: %1").arg(mDeclare.size());
-    for(auto declare : mDeclare) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(declare->location).arg(declare->lineNumber).arg(declare->columnNumber);
-    }
-    qDebug() << QString("  define :: %1").arg(mDefine.size());
-    for(auto define : mDefine) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(define->location).arg(define->lineNumber).arg(define->columnNumber);
-    }
-    qDebug() << QString("  Assign :: %1").arg(mAssign.size());
-    for(auto assign : mAssign) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(assign->location).arg(assign->lineNumber).arg(assign->columnNumber);
-    }
-    qDebug() << QString("  Implicit Assign :: %1").arg(mImplicitAssign.size());
-    for(auto assign : mImplicitAssign) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(assign->location).arg(assign->lineNumber).arg(assign->columnNumber);
-    }
-    qDebug() << QString("  Reference :: %1").arg(mReference.size());
-    for(auto ref : mReference) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(ref->location).arg(ref->lineNumber).arg(ref->columnNumber);
-    }
-    qDebug() << QString("  Control :: %1").arg(mControl.size());
-    for(auto ctrl : mControl) {
-        qDebug() << QString("    #[%1:%2:%3]").arg(ctrl->location).arg(ctrl->lineNumber).arg(ctrl->columnNumber);
-    }
-}
-
 } // namespace reference
 } // namespace studio
 } // namespace gams

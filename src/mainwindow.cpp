@@ -199,7 +199,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcher();
         } else if (fc->metrics().fileType() == FileType::Ref) {
-            qDebug() << "open ref:" << fc->location();
             reference::ReferenceViewer* refView = new reference::ReferenceViewer(fc->location(), this);
             ProjectAbstractNode::initEditorType(refView);
             fc->addEditor(refView);
@@ -2445,7 +2444,7 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 {
     QFileInfo fi(item.location);
     if (fi.isFile()) {
-        openFilePath(CommonPaths::absolutFilePath(item.location), nullptr, true);
+        openFilePath(fi.absoluteFilePath(), nullptr, true);
         CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
         if (codeEdit) {
             int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);

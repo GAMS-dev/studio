@@ -93,8 +93,6 @@ public:
     bool isIndexed() const;
     bool isUnused() const;
 
-    void dumpAll();
-
 private:
     SymbolId mID;
     QString mName;

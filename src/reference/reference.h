@@ -69,14 +69,11 @@ public:
 
     Reference::ReferenceState state() const;
 
-    void dumpAll();
-
     QStringList getFileUsed() const;
 
 signals:
     void loadStarted();
     void loadFinished(bool status);
-//    void stateChanged(Reference::ReferenceState newState);
 
 public slots:
     void loadReferenceFile();
