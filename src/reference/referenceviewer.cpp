@@ -93,6 +93,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
 ReferenceViewer::~ReferenceViewer()
 {
     delete ui;
+    delete mReference;
 }
 
 void ReferenceViewer::loadReferenceFile()
