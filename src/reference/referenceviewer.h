@@ -44,22 +44,20 @@ public:
     explicit ReferenceViewer(QString referenceFile, QWidget *parent = nullptr);
     ~ReferenceViewer();
 
-    bool hasExternallyChanged() const;
-    void setHasExternallyChanged(bool hasExternallyChanged);
-
 signals:
     void jumpTo(ReferenceItem item);
 
 public slots:
-    void loadReferenceFile();
+    // TODO: on_referenceFileChagned to be removed when
+    //       a ReferenceViewer does not create own Reference Object
+    void on_referenceFileChanged();
+    void updateView(bool status);
 
 private:
     Ui::ReferenceViewer *ui;
 
-    bool mHasExternallyChanged = false;
-
-    QTabWidget* mTabWidget;
     Reference* mReference;
+    QTabWidget* mTabWidget;
 };
 
 } // namespace reference

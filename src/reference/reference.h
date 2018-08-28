@@ -37,8 +37,8 @@ class Reference : public QObject
 public:
     enum ReferenceState {
         Initializing,
-        Loaded,
-        Loading
+        Loading,
+        Loaded
     };
     Q_ENUM(ReferenceState)
 
@@ -84,8 +84,8 @@ private:
     void clear();
 
     QString mReferenceFile;
-    ReferenceState mState;
-    bool mValid;
+    ReferenceState mState = Initializing;
+    bool mValid = false;
 
     QStringList mFileUsed;
 

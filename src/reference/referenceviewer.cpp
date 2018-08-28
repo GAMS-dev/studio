@@ -35,11 +35,10 @@ namespace reference {
 
 ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::ReferenceViewer)
+    ui(new Ui::ReferenceViewer),
+    mReference(new Reference(referenceFile))
 {
     ui->setupUi(this);
-
-    mReference = new Reference(referenceFile);
 
     mTabWidget =  new QTabWidget(this);
     mTabWidget->setObjectName(QStringLiteral("tabWidget"));
@@ -88,6 +87,8 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
 
     ui->referenceLayout->addWidget(mTabWidget);
     mTabWidget->setCurrentIndex(0);
+
+    connect(mReference, &Reference::loadFinished, this, &ReferenceViewer::updateView);
 }
 
 ReferenceViewer::~ReferenceViewer()
@@ -96,12 +97,16 @@ ReferenceViewer::~ReferenceViewer()
     delete mReference;
 }
 
-void ReferenceViewer::loadReferenceFile()
+void ReferenceViewer::on_referenceFileChanged()
 {
-    if (!hasExternallyChanged())
+    mReference->loadReferenceFile();
+}
+
+void ReferenceViewer::updateView(bool status)
+{
+    if (status == Reference::LoadStatus::UnsuccesffullyLoaded)
         return;
 
-    mReference->loadReferenceFile();
     mTabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
     mTabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReference(SymbolDataType::Set).size()));
     mTabWidget->setTabText(2, QString("Acronym (%1)").arg(mReference->findReference(SymbolDataType::Acronym).size()));
@@ -117,17 +122,6 @@ void ReferenceViewer::loadReferenceFile()
         SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(mTabWidget->widget(i));
         refWidget->resetModel();
     }
-    setHasExternallyChanged(false);
-}
-
-void ReferenceViewer::setHasExternallyChanged(bool hasExternallyChanged)
-{
-    mHasExternallyChanged = hasExternallyChanged;
-}
-
-bool ReferenceViewer::hasExternallyChanged() const
-{
-    return mHasExternallyChanged;
 }
 
 } // namespace reference

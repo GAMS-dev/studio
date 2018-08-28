@@ -199,15 +199,14 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             tabIndex = tabWidget->addTab(gdxView, fc->caption());
             fc->addFileWatcher();
         } else if (fc->metrics().fileType() == FileType::Ref) {
+            // TODO: multiple ReferenceViewers share one Reference Object of the same file
+            //       instead of holding individual Reference Object
             reference::ReferenceViewer* refView = new reference::ReferenceViewer(fc->location(), this);
             ProjectAbstractNode::initEditorType(refView);
             fc->addEditor(refView);
             tabIndex = tabWidget->addTab(refView, fc->caption());
-            // update ReferenceViewer only when (1) node's externally changed
-            // **and** (2) group process state changed
+            // update ReferenceViewer when node's externally changed
             fc->addFileWatcher();
-            connect(fc->parentEntry(), &ProjectGroupNode::gamsProcessStateChanged,
-                    refView, &reference::ReferenceViewer::loadReferenceFile);
             connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
         } else {
             CodeEdit *codeEdit = new CodeEdit(this);

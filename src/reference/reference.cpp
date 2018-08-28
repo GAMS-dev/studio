@@ -26,7 +26,7 @@ namespace studio {
 namespace reference {
 
 Reference::Reference(QString referenceFile, QObject *parent) :
-    QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile)), mState(Initializing)
+    QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
     loadReferenceFile();
 }
@@ -301,8 +301,8 @@ QStringList Reference::getFileUsed() const
 void Reference::loadReferenceFile()
 {
     emit loadStarted();
-    clear();
     mState = ReferenceState::Loading;
+    clear();
     mValid = parseFile(mReferenceFile);
     mState = ReferenceState::Loaded;
     emit loadFinished(mValid ? LoadStatus::SuccesffullyLoaded : LoadStatus::UnsuccesffullyLoaded);

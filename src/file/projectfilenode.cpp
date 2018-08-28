@@ -679,7 +679,7 @@ void ProjectFileNode::onFileChangedExtern(QString filepath)
                 this->removeEditor(refViewer);
             } else {
                 // file changed externally
-                refViewer->setHasExternallyChanged(true);
+                refViewer->on_referenceFileChanged();
             }
         } // we have a normal document
         else {
