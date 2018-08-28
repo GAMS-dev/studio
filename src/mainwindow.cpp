@@ -72,9 +72,8 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     mFileTimer.setSingleShot(true);
 
-    // (JM) FOR DEBUG: temporarily deactivated timers
-//    connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
-//    mTimerID = startTimer(60000);
+    connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
+    mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
@@ -1004,6 +1003,9 @@ void MainWindow::postGamsRun(NodeId origin)
 
         if (mSettings->openLst())
             openFileNode(lstNode);
+    }
+    if (groupNode && groupNode->logNode()) {
+        groupNode->logNode()->logDone();
     }
 }
 

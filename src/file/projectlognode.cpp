@@ -73,6 +73,14 @@ void ProjectLogNode::markOld()
     }
 }
 
+void ProjectLogNode::logDone()
+{
+    if (mLogFile) {
+        delete mLogFile;
+        mLogFile = nullptr;
+    }
+}
+
 //void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
 //{
 //    Q_UNUSED(parent);
@@ -81,6 +89,7 @@ void ProjectLogNode::markOld()
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
+    if (!mLogFile) mLogFile = new DynamicFile(location(), 3, this);
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!document())
@@ -157,6 +166,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         if (!newLine.isNull())  {
             int lineNr = document()->blockCount()-1;
             cursor.insertText(newLine+"\n");
+            if (mLogFile) mLogFile->appendLine(newLine);
             int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
             for (LinkData mark: marks) {
                 TextMark* tm = textMarkRepo()->createMark(file()->id(), runGroupId(), TextMark::link

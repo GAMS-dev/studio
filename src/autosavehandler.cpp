@@ -1,6 +1,7 @@
 #include "autosavehandler.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
+#include "logger.h"
 
 #include <QMessageBox>
 #include <QDir>
@@ -21,8 +22,7 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
     QStringList filters { "*.gms", "*.txt" };
     QStringList autsaveFiles;
 
-    for (auto file : list)
-    {
+    for (auto file : list) {
         QFileInfo fi(file);
         QString path = fi.absolutePath();
         if (!path.isEmpty()) {
@@ -50,26 +50,24 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
 void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 {
     if (autosaveFiles.isEmpty()) return;
+    QString fileText = (autosaveFiles.size() == 1) ? "\""+autosaveFiles.first()+"\" was"
+                                                   : QString::number(autosaveFiles.size())+" files were";
+    fileText.replace(mAutosavedFileMarker,"");
     int decision = QMessageBox::question(mMainWindow,
                                          "Recover autosave files",
-                                         "Studio has shut down unexpectedly. Some"
-                                         "files were not saved correctly. Do you "
+                                         "Studio has shut down unexpectedly.\n"
+                                         +fileText+" not saved correctly.\nDo you "
                                          "want to recover your last modifications?",
-                                         QMessageBox::Yes | QMessageBox::No,
-                                         QMessageBox::Yes);
-
-    if (QMessageBox::Yes == decision) {
-        for (const auto& autosaveFile : autosaveFiles)
-        {
+                                         "Recover", "Discard", QString());
+    if (decision == 0) {
+        for (const auto& autosaveFile : autosaveFiles) {
             QString originalversion = autosaveFile;
             originalversion.replace(mAutosavedFileMarker, "");
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
             mMainWindow->openFilePath(destFile.fileName());
-            if (srcFile.open(QIODevice::ReadWrite))
-            {
-                if (destFile.open(QIODevice::ReadWrite))
-                {
+            if (srcFile.open(QIODevice::ReadWrite)) {
+                if (destFile.open(QIODevice::ReadWrite)) {
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();
@@ -93,22 +91,20 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 
 void AutosaveHandler::saveChangedFiles()
 {
-    for (auto editor : mMainWindow->openEditors())
-    {
+    for (auto editor : mMainWindow->openEditors()) {
         ProjectFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
+        if (!node) continue; // skips unassigned widgets like the welcome-page
         QString filepath = QFileInfo(node->location()).path();
         QString filename = filepath+node->name();
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
-        if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt))
-        {
+        if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt)) {
             QFile file(autosaveFile);
             file.open(QIODevice::WriteOnly);
             QTextStream out(&file);
             out << node->document()->toPlainText();
             out.flush();
             file.close();
-        }
-        else if (QFileInfo::exists(autosaveFile)) {
+        } else if (QFileInfo::exists(autosaveFile)) {
                 QFile::remove(autosaveFile);
         }
     }

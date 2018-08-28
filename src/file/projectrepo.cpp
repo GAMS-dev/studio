@@ -58,6 +58,7 @@ ProjectRunGroupNode *ProjectRepo::findRunGroup(NodeId nodeId) const
 {
     ProjectAbstractNode *node = mNodes.value(nodeId);
     if (!node) return nullptr;
+    if (node->toRunGroup()) return node->toRunGroup();
     return node->parentRunNode();
 }
 
@@ -403,8 +404,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->toRunGroup();
             if (!runGroup) runGroup = fileGroup->parentRunNode();
-            file = new ProjectLogNode(fileMeta, runGroup);
-//                    EXCEPT() << "A ProjectLogNode is added with ProjectRunGroup::getOrCreateLogNode";
+            file = runGroup->getOrCreateLogNode(mFileRepo);
         } else {
             file = new ProjectFileNode(fileMeta, fileGroup);
         }

@@ -21,6 +21,7 @@
 #define PROJECTLOGNODE_H
 
 #include "projectfilenode.h"
+#include "dynamicfile.h"
 
 namespace gams {
 namespace studio {
@@ -33,6 +34,7 @@ public:
     void resetLst();
     void clearLog();
     void markOld();
+    void logDone();
 
 //public:
 //    void fileClosed(ProjectFileNode* fc);
@@ -59,6 +61,7 @@ protected:
     };
     QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
+
 private:
     ProjectRunGroupNode *mRunGroup = nullptr;
     ProjectFileNode *mLstNode = nullptr;
@@ -76,6 +79,7 @@ private:
     bool mConceal = false;
     bool mDebugLog = false;
     QString mLastSourceFile;
+    DynamicFile *mLogFile = nullptr;
 };
 
 } // namespace studio
