@@ -182,7 +182,7 @@ void ProjectContextMenu::onOpenFileLoc()
         if (parent) openLoc = parent->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
 #endif
-    } else if (mNode->type() == NodeType::group) {
+    } else if ((mNode->type() == NodeType::group) || (mNode->type() == NodeType::runGroup)){
         ProjectGroupNode *group = mNode->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
