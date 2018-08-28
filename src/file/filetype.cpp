@@ -31,7 +31,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Lxi, {"lxi"}, "GAMS List File Index", true),
     new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
-    new FileType(FileKind::Log, {"log"}, "GAMS Log File", false)
+    new FileType(FileKind::Log, {"log"}, "GAMS Log File", true)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);

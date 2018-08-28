@@ -877,7 +877,6 @@ void MainWindow::fileChangedExtern(FileId fileId)
 
     int choice;
 
-    // TODO(JM) Handle other file-types
     if (file->isAutoReload()) {
         choice = QMessageBox::Yes;
     } else {
