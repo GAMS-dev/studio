@@ -362,7 +362,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
     emit mFileRepo->openFile(this, groupId, focus, codecMib());
 
     AbstractEdit* edit = mEditors.size() ? toAbstractEdit(mEditors.first()) : nullptr;
-    if (edit && edit->document()->blockCount()-1 < line) {
+    if (edit && line < edit->document()->blockCount()-1) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
         tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
