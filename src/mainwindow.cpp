@@ -679,7 +679,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
