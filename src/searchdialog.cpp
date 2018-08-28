@@ -138,7 +138,7 @@ QList<Result> SearchDialog::findInAllFiles()
     ProjectAbstractNode *node;
     for (int i = 0; i < root->childCount(); i++) {
         node = root->childNode(i);
-        if (node->type() == NodeType::group)
+        if (node->type() == NodeType::group || node->type() == NodeType::runGroup)
             matches.append(findInGroup(node));
     }
     return matches;

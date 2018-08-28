@@ -1291,7 +1291,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* node = mProjectRepo.node(index);
-    if (node->type() == NodeType::group) {
+    if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
         ProjectLogNode* logProc = mProjectRepo.logNode(node);
         if (logProc->file()->editors().isEmpty()) {
             logProc->setDebugLog(mLogDebugLines);
