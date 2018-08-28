@@ -116,10 +116,10 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         }
         if (state >= ProjectFileNode::Exiting) {
 
-            QString lstErr = runParentNode()->lstErrorText(mCurrentErrorHint.lstLine);
+            QString lstErr = parentRunNode()->lstErrorText(mCurrentErrorHint.lstLine);
             if (!lstErr.isEmpty()) lstErr += "\n";
             lstErr += mCurrentErrorHint.text;
-            runParentNode()->setLstErrorText(mCurrentErrorHint.lstLine, lstErr);
+            parentRunNode()->setLstErrorText(mCurrentErrorHint.lstLine, lstErr);
         }
         if (state == ProjectFileNode::FollowupError) {
             newLine = extractLinks(line, state, marks);

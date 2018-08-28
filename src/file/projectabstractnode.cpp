@@ -108,7 +108,7 @@ void ProjectAbstractNode::setParentNode(ProjectGroupNode* parent)
     }
 }
 
-ProjectRunGroupNode *ProjectAbstractNode::runParentNode() const
+ProjectRunGroupNode *ProjectAbstractNode::parentRunNode() const
 {
     ProjectAbstractNode* node = this->parentNode();
     while (node && !node->toRunGroup()) {

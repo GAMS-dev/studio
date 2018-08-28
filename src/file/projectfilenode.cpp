@@ -168,7 +168,7 @@ void ProjectFileNode::enhanceMarksFromLst()
                 if (errTextNr.at(errLn) == errNrs.at(nr)) orderedErrText << errText.at(errLn);
             }
         }
-        runParentNode()->setLstErrorText(lineNr, orderedErrText.join("\n"));
+        parentRunNode()->setLstErrorText(lineNr, orderedErrText.join("\n"));
     }
 }
 
