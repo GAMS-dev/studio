@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testgamsoption.h"
-#include "option/option.h"
+//#include "option/option.h"
 #include "commonpaths.h"
 
 #include <QStandardPaths>
@@ -261,10 +261,9 @@ void TestGamsOption::testOptionSynonym()
 
     if (optionSynonym.isEmpty()) {
         QVERIFY( gamsOption->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
-        QVERIFY( !gamsOption->isThereASynonym(optionName) );
-        QCOMPARE( gamsOption->getSynonymFromName(optionName).toUpper(), optionSynonym.toUpper() );
+        QVERIFY( !gamsOption->isASynonym(optionName) );
     } else {
-       QVERIFY( gamsOption->isThereASynonym(optionSynonym) );
+       QVERIFY( gamsOption->isASynonym(optionSynonym) );
        QCOMPARE( gamsOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
     }
 }
