@@ -35,6 +35,7 @@ public:
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList() override;
     QList<Result> resultList();
+    QMultiHash<QString, Result> resultHash() const;
     void addResult(int lineNr, int colNr, QString fileLoc, QString context = "");
     void addResultList(QList<Result> resList);
     QList<Result> filteredResultList(QString fileLocation);
@@ -54,7 +55,8 @@ public:
 private:
     QString mSearchTerm;
     bool mIsRegex;
-    QList<Result> mResultList;
+
+    QMultiHash<QString, Result> mResultHash;
 };
 
 }

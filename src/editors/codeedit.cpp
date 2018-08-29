@@ -1213,7 +1213,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     SearchResultList *matches = SearchLocator::searchResults();
 
-    // TODO: continue
+    // TODO(rogo): continue
 //    QTextBlock block = firstVisibleBlock();
 //    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
 

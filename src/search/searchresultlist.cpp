@@ -29,7 +29,7 @@ SearchResultList::SearchResultList()
 SearchResultList::SearchResultList(SearchResultList &searchResultList)
     : QAbstractTableModel(searchResultList.parent()),
       mSearchTerm(searchResultList.searchTerm()),
-      mResultList(searchResultList.resultList())
+      mResultHash(searchResultList.resultHash())
 {
 }
 
@@ -45,23 +45,25 @@ SearchResultList::~SearchResultList()
 
 QList<Result> SearchResultList::resultList()
 {
-    return mResultList;
+    return mResultHash.values();
 }
 
 void SearchResultList::addResult(int lineNr, int colNr, QString fileLoc, QString context)
 {
-    mResultList.append(Result(lineNr, colNr, fileLoc, context));
+    Result r = Result(lineNr, colNr, fileLoc, context);
+
+    mResultHash.insert(fileLoc, r);
 }
 
 void SearchResultList::addResultList(QList<Result> resList)
 {
-    mResultList.append(resList);
+    for (Result r : resList)
+        mResultHash.insert(r.filepath(), r);
 }
 
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
 {
-    // TODO(rogo): put something here
-    return QList<Result>();
+    return mResultHash.values(fileLocation);
 }
 
 QString SearchResultList::searchTerm() const
@@ -76,19 +78,19 @@ void SearchResultList::useRegex(bool regex)
 
 int SearchResultList::size()
 {
-    return mResultList.size();
+    return mResultHash.size();
 }
 
 void SearchResultList::clear()
 {
-    mResultList.clear();
+    mResultHash.clear();
 }
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mResultList.size();
+    return mResultHash.size();
 }
 
 int SearchResultList::columnCount(const QModelIndex &parent) const
@@ -106,7 +108,7 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         int row = index.row();
 
-        Result item = mResultList.at(row);
+        Result item = mResultHash.values().at(row);
 
         switch(index.column())
         {
@@ -135,6 +137,11 @@ QVariant SearchResultList::headerData(int section, Qt::Orientation orientation, 
         }
     }
     return QVariant();
+}
+
+QMultiHash<QString, Result> SearchResultList::resultHash() const
+{
+    return mResultHash;
 }
 
 void SearchResultList::setSearchTerm(const QString &searchTerm)

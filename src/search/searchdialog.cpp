@@ -568,8 +568,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     // set match and counter
     int count = 0;
     foreach (Result match, mCachedResults.resultList()) {
-        if (match.locLineNr() == matchSelection.blockNumber()+1
-                && match.locCol() == matchSelection.columnNumber() - searchLength) {
+        if (match.lineNr() == matchSelection.blockNumber()+1
+                && match.colNr() == matchSelection.columnNumber() - searchLength) {
             updateMatchAmount(mCachedResults.size(), count+1);
             break;
         } else {
