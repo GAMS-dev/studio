@@ -112,7 +112,7 @@ SOURCES += \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
-    searchresultlist.cpp \
+    search/searchresultlist.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
@@ -142,7 +142,7 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    searchdialog.cpp \
+    search/searchdialog.cpp \
     tabdialog.cpp
 
 HEADERS += \
@@ -200,7 +200,7 @@ HEADERS += \
     option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \
-    searchresultlist.h \
+    search/searchresultlist.h \
     settingsdialog.h \
     statuswidgets.h \
     studiosettings.h \
@@ -233,7 +233,7 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    searchdialog.h \
+    search/searchdialog.h \
     tabdialog.h
 
 FORMS += \
@@ -252,7 +252,7 @@ FORMS += \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    searchdialog.ui \
+    search/searchdialog.ui \
     tabdialog.ui
 
 RESOURCES += \

@@ -19,10 +19,10 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "studiosettings.h"
-#include "syntax.h"
-#include "file.h"
-#include "exception.h"
+#include "../studiosettings.h"
+#include "../syntax.h"
+#include "../file.h"
+#include "../exception.h"
 #include "searchresultlist.h"
 
 #include <QCompleter>

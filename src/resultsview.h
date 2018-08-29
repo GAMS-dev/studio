@@ -22,7 +22,7 @@
 
 #include <QTableWidget>
 #include <QWidget>
-#include "searchresultlist.h"
+#include "search/searchresultlist.h"
 
 namespace Ui {
 class ResultsView;

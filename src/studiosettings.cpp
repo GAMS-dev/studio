@@ -27,7 +27,7 @@
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
-#include "searchdialog.h"
+#include "search/searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
 #include "logger.h"

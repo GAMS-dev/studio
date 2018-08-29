@@ -17,10 +17,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "resultsview.h"
-#include "searchdialog.h"
+#include "search/searchdialog.h"
 #include "ui_resultsview.h"
 #include "exception.h"
-#include "searchresultlist.h"
+#include "search/searchresultlist.h"
 
 namespace gams {
 namespace studio {
