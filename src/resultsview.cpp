@@ -21,6 +21,7 @@
 #include "ui_resultsview.h"
 #include "exception.h"
 #include "search/searchresultlist.h"
+#include "search/result.h"
 
 namespace gams {
 namespace studio {

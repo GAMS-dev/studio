@@ -143,7 +143,8 @@ SOURCES += \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
     search/searchdialog.cpp \
-    tabdialog.cpp
+    tabdialog.cpp \
+    search/result.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -234,7 +235,8 @@ HEADERS += \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
     search/searchdialog.h \
-    tabdialog.h
+    tabdialog.h \
+    search/result.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
