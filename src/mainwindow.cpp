@@ -191,8 +191,24 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
     ProjectFileNode *fc = mProjectRepo.fileNode(id);
     if (fc) {
         int tabIndex;
-        if (fc->metrics().fileType() != FileType::Gdx) {
+        if (fc->metrics().fileType() == FileType::Gdx) {
 
+            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
+            ProjectAbstractNode::initEditorType(gdxView);
+            fc->addEditor(gdxView);
+            tabIndex = tabWidget->addTab(gdxView, fc->caption());
+            fc->addFileWatcher();
+        } else if (fc->metrics().fileType() == FileType::Ref) {
+            // TODO: multiple ReferenceViewers share one Reference Object of the same file
+            //       instead of holding individual Reference Object
+            reference::ReferenceViewer* refView = new reference::ReferenceViewer(fc->location(), this);
+            ProjectAbstractNode::initEditorType(refView);
+            fc->addEditor(refView);
+            tabIndex = tabWidget->addTab(refView, fc->caption());
+            // update ReferenceViewer when node's externally changed
+            fc->addFileWatcher();
+            connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
+        } else {
             CodeEdit *codeEdit = new CodeEdit(this);
             codeEdit->setSettings(mSettings.get());
             codeEdit->setLineWrapMode(mSettings->lineWrapEditor() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
@@ -238,12 +254,6 @@ void MainWindow::createEdit(QTabWidget *tabWidget, bool focus, int id, int codec
             }
             if (focus) updateMenuToCodec(fc->codecMib());
 
-        } else {
-            gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(fc->location(), CommonPaths::systemDir(), this);
-            ProjectAbstractNode::initEditorType(gdxView);
-            fc->addEditor(gdxView);
-            tabIndex = tabWidget->addTab(gdxView, fc->caption());
-            fc->addFileWatcherForGdx();
         }
         tabWidget->setTabToolTip(tabIndex, fc->location());
         if (focus) {
@@ -668,7 +678,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -875,6 +885,18 @@ void MainWindow::activeTabChanged(int index)
             mStatusWidgets->setEncoding(fc->codecMib());
             mStatusWidgets->setLineCount(-1);
             gdxViewer->reload();
+        }
+    } else if (ProjectFileNode::toReferenceViewer(editWidget)) {
+        ui->menuEncoding->setEnabled(false);
+        reference::ReferenceViewer* refViewer = ProjectFileNode::toReferenceViewer(editWidget);
+        mRecent.setEditor(refViewer, this);
+        ProjectFileNode* fc = mProjectRepo.fileNode(refViewer);
+        if (fc) {
+            mRecent.editFileId = fc->id();
+            mRecent.group = fc->parentEntry();
+            mStatusWidgets->setFileName(fc->location());
+            mStatusWidgets->setEncoding(fc->codecMib());
+            mStatusWidgets->setLineCount(-1);
         }
     } else {
         ui->menuEncoding->setEnabled(false);
@@ -2415,6 +2437,20 @@ void MainWindow::on_actionPreviousTab_triggered()
         wid = wid->parentWidget();
     }
     if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+}
+
+void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
+{
+    QFileInfo fi(item.location);
+    if (fi.isFile()) {
+        openFilePath(fi.absoluteFilePath(), nullptr, true);
+        CodeEdit *codeEdit = ProjectFileNode::toCodeEdit(mRecent.editor());
+        if (codeEdit) {
+            int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);
+            int column = (item.columnNumber > 0 ? item.columnNumber-1 : 0);
+            codeEdit->jumpTo(QTextCursor(), line, column);
+        }
+    }
 }
 
 }
