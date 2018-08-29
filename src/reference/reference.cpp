@@ -17,8 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
-
 #include "reference.h"
 
 namespace gams {
@@ -110,6 +108,11 @@ int Reference::size() const
     return mReference.size();
 }
 
+QStringList Reference::getFileUsed() const
+{
+    return mFileUsed;
+}
+
 QList<SymbolId> Reference::symbolIDList() const
 {
     return mReference.keys();
@@ -130,11 +133,20 @@ Reference::ReferenceState Reference::state() const
     return mState;
 }
 
+void Reference::loadReferenceFile()
+{
+    emit loadStarted();
+    mState = ReferenceState::Loading;
+    clear();
+    mValid = parseFile(mReferenceFile);
+    mState = ReferenceState::Loaded;
+    emit loadFinished(mValid ? LoadedState::SuccesffullyLoaded : LoadedState::UnsuccesffullyLoaded);
+}
+
 bool Reference::parseFile(QString referenceFile)
 {
     QFile file(referenceFile);
     if(!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "cannot open file [" << referenceFile << "]";
         return false;
     }
     QTextStream in(&file);
@@ -291,21 +303,6 @@ void Reference::clear()
 
     qDeleteAll(mReference);
     mReference.clear();
-}
-
-QStringList Reference::getFileUsed() const
-{
-    return mFileUsed;
-}
-
-void Reference::loadReferenceFile()
-{
-    emit loadStarted();
-    mState = ReferenceState::Loading;
-    clear();
-    mValid = parseFile(mReferenceFile);
-    mState = ReferenceState::Loaded;
-    emit loadFinished(mValid ? LoadStatus::SuccesffullyLoaded : LoadStatus::UnsuccesffullyLoaded);
 }
 
 } // namespace reference

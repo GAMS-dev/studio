@@ -27,6 +27,11 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+///
+/// \brief The SymbolDataType class defines all symbol data types
+///  used by the Reference obejct. The instances are accessed via
+/// static functions. On the first usage, the list is initialized.
+///
 class SymbolDataType
 {
 public:

@@ -27,6 +27,11 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+///
+/// \brief The ReferenceDataType class defines all reference types
+///  used by the Reference obejct. The instances are accessed via
+/// static functions. On the first usage, the list is initialized.
+///
 class ReferenceDataType
 {
 public:

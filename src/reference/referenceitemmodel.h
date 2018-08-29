@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 class ReferenceItemModel
 {
@@ -49,7 +50,7 @@ private:
     ReferenceItemModel* mParentItem = nullptr;
 };
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams
 

@@ -104,7 +104,7 @@ void ReferenceViewer::on_referenceFileChanged()
 
 void ReferenceViewer::updateView(bool status)
 {
-    if (status == Reference::LoadStatus::UnsuccesffullyLoaded)
+    if (status == Reference::LoadedState::UnsuccesffullyLoaded)
         return;
 
     mTabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));

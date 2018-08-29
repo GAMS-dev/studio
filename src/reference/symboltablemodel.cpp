@@ -192,7 +192,6 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
                      domainStr.append(  mReference->findReference( dom.at(0) )->name() );
                      for(int i=1; i<dom.size(); i++) {
                          domainStr.append( "," );
-//                         domainStr.append( QString::number( dom.at(i) ) );
                          domainStr.append( mReference->findReference( dom.at(i) )->name() );
                      }
                      domainStr.append( ")" );

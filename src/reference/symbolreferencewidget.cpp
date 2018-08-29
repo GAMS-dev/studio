@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <QDebug>
-
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
@@ -28,7 +25,6 @@ namespace studio {
 namespace reference {
 
 SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent) :
-//    QWidget(parent),
     ui(new Ui::SymbolReferenceWidget),
     mReference(ref),
     mType(type),
@@ -56,7 +52,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
-//    ui->symbolView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
 
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
@@ -131,7 +126,6 @@ void SymbolReferenceWidget::resetModel()
 void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
 {
     if (mType == SymbolDataType::FileUsed) {
-        qDebug() << ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString();
         ReferenceItem item(-1, ReferenceDataType::Unknown, ui->symbolView->model()->data(index.sibling(index.row(), 0)).toString(), 0, 0);
         emit mReferenceViewer->jumpTo( item );
     }

@@ -31,51 +31,146 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+/// \brief The Reference class is used to parse the GAMS reference file and
+///        store reference file information.
 class Reference : public QObject
 {
     Q_OBJECT
 public:
+    /// \brief This enum describes the different states of Reference object.
     enum ReferenceState {
-        Initializing,
-        Loading,
-        Loaded
+        Initializing, ///< The Reference object is initializing.
+        Loading,      ///< The Reference object is loading from the reference file.
+        Loaded        ///< The Reference object has been loaded from the reference file.
     };
     Q_ENUM(ReferenceState)
 
-    enum LoadStatus {
-        SuccesffullyLoaded,
-        UnsuccesffullyLoaded
+    /// \brief This enum describes the different states of loading Reference object
+    ///        from the reference file.
+    enum LoadedState {
+        SuccesffullyLoaded,    ///< The Reference object has been successfully loaded.
+        UnsuccesffullyLoaded   ///< The Reference object  has been successfully loaded.
     };
-    Q_ENUM(LoadStatus)
+    Q_ENUM(LoadedState)
 
-    explicit Reference(QString referenceFile, QObject* parent = Q_NULLPTR);
+    ///
+    /// \brief Constructs a Reference object with the given reference file and parent.
+    /// \param referenceFile the absolute file path of the reference file.
+    /// \param parent the parent object.
+    ///
+    Reference(QString referenceFile, QObject* parent = Q_NULLPTR);
+
+    ///
+    /// \brief Destructs the Reference object, i.e., cleaning up internal memory.
+    ///
     ~Reference();
 
+    ///
+    /// \brief Find the SymbolReferenceItem of the symbol by type.
+    /// \param type Symbol type.
+    /// \return <c>List of SymbolReferenceItem of the symbols of the given type</c> if found;
+    ///         otherwise <c>List of SymbolReferenceItem of all symbols</c>.
+    ///
     QList<SymbolReferenceItem *> findReference(SymbolDataType::SymbolType type);
 
+    ///
+    /// \brief Find the SymbolReferenceItem of the symbol by id.
+    ///        Found if there is no problem parsing the reference file and
+    ///        symbol of the given id exists in the reference object.
+    /// \param id Symbol id.
+    /// \return <c>SymbolReferenceItem of the symbol</c> if found; otherwise <c>nullptr</c>.
+    ///
     SymbolReferenceItem* findReference(SymbolId symbolid);
+
+    ///
+    /// \brief Find the SymbolReferenceItem of the symbol by name.
+    ///        Found if there is no problem parsing the reference file and
+    ///        symbol of the given name exists in the reference object.
+    /// \param symbolName Symbol name.
+    /// \return <c>SymbolReferenceItem of the symbol</c> if found; otherwise <c>nullptr</c>.
+    ///
     SymbolReferenceItem* findReference(const QString &symbolName);
 
+    ///
+    /// \brief Checks if symbol of the given id exists in the reference object.
+    /// \param id Symbol id.
+    /// \return <c>true</c> if the the reference object contains a symbol of the given id; otherwise <c>false</c>.
+    ///
     bool contains(SymbolId id) const;
+
+    ///
+    /// \brief Checks if symbol of the given name exists in the reference object.
+    /// \param symbolName Symbol name.
+    /// \return <c>true</c> if the the reference object contains a symbol of the given name; otherwise <c>false</c>.
+    ///
     bool contains(const QString &symbolName) const;
+
+    ///
+    /// \brief Checks if there is no symbol in the reference object.
+    /// \return <c>true</c> if there is no symbol in the reference object; otherwise <c>false</c>.
+    ///
     bool isEmpty() const;
+
+    ///
+    /// \brief Checks if there is a problem parsing the reference file.
+    /// \return <c>true</c> if there is no problem parsing the reference file; otherwise <c>false</c>.
+    ///
     bool isValid() const;
+
+    ///
+    /// \brief Get the number of symbols in the reference object.
+    /// \return Returns the number of symbols.
+    ///
     int size() const;
 
-    QList<SymbolId> symbolIDList() const;
-    QList<QString> symbolNameList() const;
-
-    QString getFileLocation() const;
-
-    Reference::ReferenceState state() const;
-
+    ///
+    /// \brief Get the list of all files used in the reference object.
+    /// \return Returns the list of all files used in the reference object.
+    ///
     QStringList getFileUsed() const;
 
+    ///
+    /// \brief Get the list of all symbol ids.
+    /// \return Returns the list of all symbol ids.
+    ///
+    QList<SymbolId> symbolIDList() const;
+
+    ///
+    /// \brief Get the list of all symbol names.
+    /// \return Returns the list of all symbol names.
+    ///
+    QList<QString> symbolNameList() const;
+
+    ///
+    /// \brief Get location of the reference file.
+    /// \return Returns location of the reference file.
+    ///
+    QString getFileLocation() const;
+
+    ///
+    /// \brief Get state of the reference object.
+    /// \return Returns state of the reference object.
+    /// \see ::ReferenceState
+    ///
+    Reference::ReferenceState state() const;
+
 signals:
+    ///
+    /// \brief Signal emitted when loading the reference file has just been started.
+    ///
     void loadStarted();
+
+    ///
+    /// \brief Signal emitted when loading the reference file has just been finished.
+    /// \param status Finish load status.
+    /// \see ::LoadStatus
+    ///
     void loadFinished(bool status);
 
 public slots:
+    ///
+    /// \brief Load the reference object from the reference file.
+    ///
     void loadReferenceFile();
 
 private:

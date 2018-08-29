@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace reference {
 
 ReferenceItemModel::ReferenceItemModel(const QList<QVariant> &data, ReferenceItemModel *parent) :
     mItemData(data), mParentItem(parent)
@@ -85,6 +86,6 @@ bool ReferenceItemModel::removeChildren(int position, int count)
     return true;
 }
 
-
+} // namespace reference
 } // namespace studio
 } // namespace gams
