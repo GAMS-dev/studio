@@ -313,6 +313,7 @@ void FileMeta::saveAs(const QString &location)
 
     // write the content
     mLocation = location;
+    mName = QFileInfo(location).fileName();
     mData = Data(location);
     emit changed(mId);
     internalSave(mLocation);
@@ -357,6 +358,16 @@ void FileMeta::renameToBackup()
     //rename to 1
     file.rename(filename + ".1.bak");
 
+}
+
+FileDifferences FileMeta::compare(QString fileName)
+{
+    FileDifferences res;
+    Data other(fileName.isEmpty() ? location() : fileName);
+    res = mData.compare(other);
+    if (!fileName.isEmpty() && QFileInfo(fileName) != QFileInfo(location()))
+        res.setFlag(FdName);
+    return res;
 }
 
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
@@ -521,6 +532,19 @@ FileMeta::Data::Data(QString location, FileType *knownType)
         modified = fi.lastModified();
         type = (knownType ? knownType : &FileType::from(fi.suffix()));
     }
+}
+
+FileDifferences FileMeta::Data::compare(FileMeta::Data other)
+{
+    FileDifferences res;
+    if (!other.exist) res.setFlag(FdMissing);
+    else {
+        if (modified != other.modified) res.setFlag(FdTime);
+        if (created != other.created) res.setFlag(FdTime);
+        if (size != other.size) res.setFlag(FdSize);
+        if (type != other.type) res.setFlag(FdType);
+    }
+    return res;
 }
 
 } // namespace studio

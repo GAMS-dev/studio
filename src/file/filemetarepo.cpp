@@ -23,6 +23,7 @@
 #include "syntax/textmarkrepo.h"
 #include "studiosettings.h"
 #include "exception.h"
+#include "logger.h"
 #include <QFileInfo>
 
 namespace gams {
@@ -165,10 +166,11 @@ void FileMetaRepo::fileChanged(const QString &path)
         QTimer::singleShot(100, this, &FileMetaRepo::reviewMissing);
     } else {
         // changedExternally
-        FileEvent e(file->id(), FileEvent::Kind::changedExtern);
-        emit fileEvent(e);
+        if (file->compare(path)) {
+            FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+            emit fileEvent(e);
+        }
     }
-    // TODO(JM) stack file-name to check after timeout if it's deleted or contents has changed
 }
 
 void FileMetaRepo::reviewMissing()
@@ -177,8 +179,14 @@ void FileMetaRepo::reviewMissing()
         FileMeta *file = fileMeta(mCheckExistance.takeFirst());
         if (!file) continue;
         if (watch(file)) {
-            FileEvent e(file->id(), FileEvent::Kind::changedExtern);
-            emit fileEvent(e);
+            FileDifferences diff = file->compare();
+            if (diff.testFlag(FdMissing)) {
+                FileEvent e(file->id(), FileEvent::Kind::removedExtern);
+                emit fileEvent(e);
+            } else if (diff) {
+                FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+                emit fileEvent(e);
+            }
         } else {
             // (JM) About RENAME: To evaluate if a file has been renamed the directory content before the
             // change must have been stored so it can be ensured that the possible file is no recent copy

@@ -62,7 +62,7 @@ QIcon ProjectFileNode::icon()
 
 QString ProjectFileNode::name(NameModifier mod) const
 {
-    QString res = ProjectAbstractNode::name();
+    QString res = mFileMeta->name();
     switch (mod) {
     case NameModifier::editState:
         res += (isModified() ? "*" : "");
@@ -168,7 +168,7 @@ void ProjectFileNode::enhanceMarksFromLst()
                 if (errTextNr.at(errLn) == errNrs.at(nr)) orderedErrText << errText.at(errLn);
             }
         }
-        parentRunNode()->setLstErrorText(lineNr, orderedErrText.join("\n"));
+        assignedRunGroup()->setLstErrorText(lineNr, orderedErrText.join("\n"));
     }
 }
 

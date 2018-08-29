@@ -36,6 +36,16 @@ namespace studio {
 
 class ProjectRunGroupNode;
 
+enum FileDifference {
+    FdEqual = 0x00,
+    FdMissing = 0x01,
+    FdTime = 0x02,
+    FdSize = 0x04,
+    FdName = 0x08,
+    FdType = 0x10,
+};
+typedef QFlags<FileDifference> FileDifferences;
+
 class FileMeta: public QObject
 {
     Q_OBJECT
@@ -69,6 +79,7 @@ public:
     void save();
     void saveAs(const QString &location);
     void renameToBackup();
+    FileDifferences compare(QString fileName = QString());
 
     void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
     void rehighlight(int line);
@@ -78,16 +89,16 @@ public:
 
 public: // static convenience methods
     inline static void initEditorType(CodeEdit* w) {
-        if(w) w->setProperty("EditorType", (int)EditorType::source);
+        if(w) w->setProperty("EditorType", int(EditorType::source));
     }
     inline static void initEditorType(ProcessLogEdit* w) {
-        if(w) w->setProperty("EditorType", (int)EditorType::log);
+        if(w) w->setProperty("EditorType", int(EditorType::log));
     }
     inline static void initEditorType(gdxviewer::GdxViewer* w) {
-        if(w) w->setProperty("EditorType", (int)EditorType::gdx);
+        if(w) w->setProperty("EditorType", int(EditorType::gdx));
     }
     inline static void initEditorType(lxiviewer::LxiViewer* w) {
-        if(w) w->setProperty("EditorType", (int)EditorType::lxiLst);
+        if(w) w->setProperty("EditorType", int(EditorType::lxiLst));
     }
 
     inline static EditorType editorType(QWidget* w) {
@@ -130,6 +141,7 @@ private slots:
 private:
     struct Data {
         Data(QString location, FileType *knownType = nullptr);
+        FileDifferences compare(Data other);
         bool exist = false;
         qint64 size = 0;
         QDateTime created;

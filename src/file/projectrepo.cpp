@@ -58,8 +58,7 @@ ProjectRunGroupNode *ProjectRepo::findRunGroup(NodeId nodeId) const
 {
     ProjectAbstractNode *node = mNodes.value(nodeId);
     if (!node) return nullptr;
-    if (node->toRunGroup()) return node->toRunGroup();
-    return node->parentRunNode();
+    return node->assignedRunGroup();
 }
 
 ProjectRunGroupNode *ProjectRepo::findRunGroup(const AbstractProcess *process, ProjectGroupNode *group) const
@@ -327,7 +326,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
-    ProjectRunGroupNode *runGroup = node->parentRunNode();
+    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
     if (!runGroup)
         EXCEPT() << "Integrity error: this node has no ProjectRunGroupNode as parent";
 
@@ -402,8 +401,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
         if (fileMeta->kind() == FileKind::Log) {
-            ProjectRunGroupNode *runGroup = fileGroup->toRunGroup();
-            if (!runGroup) runGroup = fileGroup->parentRunNode();
+            ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
             file = runGroup->getOrCreateLogNode(mFileRepo);
         } else {
             file = new ProjectFileNode(fileMeta, fileGroup);
@@ -443,7 +441,7 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
         i.next();
         ProjectFileNode* fileNode = i.value()->toFile();
         if (fileNode && fileNode->file()->id() == fileId) {
-            ProjectRunGroupNode *runGroup = fileNode->parentRunNode();
+            ProjectRunGroupNode *runGroup = fileNode->assignedRunGroup();
             if (runGroup && !res.contains(runGroup)) {
                 res << runGroup;
             }
@@ -495,8 +493,7 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
     // Find the runGroup
-    ProjectRunGroupNode* runGroup = node->toRunGroup();
-    if (!runGroup) runGroup = node->parentRunNode();
+    ProjectRunGroupNode* runGroup = node->assignedRunGroup();
     if (!runGroup) return nullptr;
 
     ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);

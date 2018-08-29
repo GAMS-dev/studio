@@ -51,7 +51,7 @@ protected:
     friend class ProjectRepo;
     friend class ProjectRunGroupNode;
 
-    ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *runGroup);
+    ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *assignedRunGroup);
 //    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {

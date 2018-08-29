@@ -71,7 +71,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     ui->setupUi(this);
 
     mFileTimer.setSingleShot(true);
-
+    mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
 
@@ -666,8 +666,9 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSave_As_triggered()
 {
-    FileMeta *fileMeta = mFileMetaRepo.fileMeta(mRecent.editFileId);
-    if (!fileMeta) return;
+    ProjectFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
+    if (!node) return;
+    FileMeta *fileMeta = node->file();
     QString path = QFileInfo(fileMeta->location()).path();
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
@@ -693,10 +694,11 @@ void MainWindow::on_actionSave_As_triggered()
                 QFile::remove(filePath);
             QFile::copy(fileMeta->location(), filePath);
         } else {
+            ProjectRunGroupNode* runGroup = node->assignedRunGroup();
             fileMeta->saveAs(filePath);
-            ProjectRunGroupNode* runGroup = mRecent.group ? mRecent.group->parentRunNode() : nullptr;
             openFile(fileMeta, true, runGroup);
             mStatusWidgets->setFileName(fileMeta->location());
+            mSettings->saveSettings(this);
         }
     }
 }
@@ -769,7 +771,7 @@ void MainWindow::codecReload(QAction *action)
 void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
     if (oldfn) { // switch from a non-welcome page
-        ProjectRunGroupNode* oldgroup = oldfn->parentRunNode();
+        ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
         if (!oldgroup) return;
         oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
 
@@ -779,7 +781,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
             return;
         }
 
-        ProjectRunGroupNode* group = fn->parentRunNode();
+        ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
         if (group == oldgroup) return;
 
@@ -792,7 +794,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
             return;
         }
 
-        ProjectRunGroupNode* group = fn->parentRunNode();
+        ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
 
         mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
@@ -937,14 +939,17 @@ void MainWindow::fileEvent(const FileEvent &e)
         QPair<FileId, FileEvent::Kind> pair = QPair<FileId, FileEvent::Kind>(e.fileId(), e.kind());
         if (!mFileEvents.contains(pair))
             mFileEvents << pair;
-        mFileTimer.start(100);
+        mFileTimer.start();
     }
 }
 
 void MainWindow::processFileEvents()
 {
     while (!mFileEvents.isEmpty()) {
-        if (!isActiveWindow()) break;
+        if (!isActiveWindow()) {
+            mFileTimer.start();
+            break;
+        }
         QPair<FileId, FileEvent::Kind> fileEvent = mFileEvents.takeFirst();
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.first);
         if (!fm) continue;
@@ -1196,8 +1201,7 @@ bool MainWindow::isActiveTabRunnable()
 bool MainWindow::isRecentGroupInRunningState()
 {
     if (!mRecent.group) return false;
-    ProjectRunGroupNode *runGroup = mRecent.group->toRunGroup();
-    if (!runGroup) runGroup = mRecent.group->parentRunNode();
+    ProjectRunGroupNode *runGroup = mRecent.group->assignedRunGroup();
     if (!runGroup) return false;
     return (runGroup->gamsProcessState() == QProcess::Running);
 }
@@ -1475,7 +1479,7 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    ProjectRunGroupNode *runGroup = (fc ? fc->parentRunNode() : nullptr);
+    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) return;
 
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
@@ -1581,7 +1585,7 @@ void MainWindow::runGmsFile(ProjectFileNode *node)
 
 void MainWindow::setMainGms(ProjectFileNode *node)
 {
-    ProjectRunGroupNode *runGroup = node->parentRunNode();
+    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
     if (runGroup) {
         runGroup->setRunnableGms(node->file());
         updateRunState();
@@ -1626,7 +1630,7 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::on_actionInterrupt_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->parentRunNode() : nullptr);
+    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
     mGamsOptionWidget->on_interruptAction();
@@ -1637,7 +1641,7 @@ void MainWindow::on_actionInterrupt_triggered()
 void MainWindow::on_actionStop_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->parentRunNode() : nullptr);
+    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
     mGamsOptionWidget->on_stopAction();
@@ -1734,14 +1738,13 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
 void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->parentRunNode(), codecMib);
+    openFile(node->file(), focus, node->assignedRunGroup(), codecMib);
 }
 
 void MainWindow::closeGroup(ProjectGroupNode* group)
 {
     if (!group) return;
-    ProjectRunGroupNode *runGroup = group->toRunGroup();
-    if (runGroup) runGroup = group->parentRunNode();
+    ProjectRunGroupNode *runGroup = group->assignedRunGroup();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (ProjectFileNode *node: group->listFiles(true)) {
