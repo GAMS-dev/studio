@@ -51,24 +51,24 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     Result item = mResultList.resultList().at(selectedRow);
 
     // open so we have a document of the file
-    if (QFileInfo(item.locFile()).exists())
-        mMain->openFilePath(item.locFile());
+    if (QFileInfo(item.filepath()).exists())
+        mMain->openFilePath(item.filepath());
 
-    ProjectFileNode *node = mMain->projectRepo()->findFile(item.locFile());
-    if (!node) EXCEPT() << "File not found: " << item.locFile();
+    ProjectFileNode *node = mMain->projectRepo()->findFile(item.filepath());
+    if (!node) EXCEPT() << "File not found: " << item.filepath();
 
     // highlight
     mMain->searchDialog()->findInFile(node, true, mResultList.searchTerm());
 
     // jump to line
     QTextCursor tc(node->document());
-    if (item.locCol() <= 0)
-        tc.setPosition(node->document()->findBlockByNumber(item.locLineNr() - 1).position());
+    if (item.colNr() <= 0)
+        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position());
     else
-        tc.setPosition(node->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                       + item.locCol());
+        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position()
+                       + item.colNr());
 
-    node->file()->jumpTo(node->runGroupId(), true, item.locLineNr()-1, item.locCol());
+    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, item.colNr());
 }
 
 }

@@ -35,8 +35,9 @@ public:
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList() override;
     QList<Result> resultList();
-    void addResult(int locLineNr, int locCol, QString locFile, QString node = "");
+    void addResult(int lineNr, int colNr, QString fileLoc, QString context = "");
     void addResultList(QList<Result> resList);
+    QList<Result> filteredResultList(QString fileLocation);
     QString searchTerm() const;
     void setSearchTerm(const QString &searchTerm);
     bool isRegex() const;

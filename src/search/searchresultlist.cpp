@@ -48,14 +48,20 @@ QList<Result> SearchResultList::resultList()
     return mResultList;
 }
 
-void SearchResultList::addResult(int locLineNr, int locCol, QString locFile, QString node)
+void SearchResultList::addResult(int lineNr, int colNr, QString fileLoc, QString context)
 {
-    mResultList.append(Result(locLineNr, locCol, locFile, node));
+    mResultList.append(Result(lineNr, colNr, fileLoc, context));
 }
 
 void SearchResultList::addResultList(QList<Result> resList)
 {
     mResultList.append(resList);
+}
+
+QList<Result> SearchResultList::filteredResultList(QString fileLocation)
+{
+    // TODO(rogo): put something here
+    return QList<Result>();
 }
 
 QString SearchResultList::searchTerm() const
@@ -104,9 +110,9 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
 
         switch(index.column())
         {
-        case 0: return item.locFile();
-        case 1: return item.locLineNr();
-        case 2: return item.node();
+        case 0: return item.filepath();
+        case 1: return item.lineNr();
+        case 2: return item.context();
         }
     }
     return QVariant();

@@ -10,17 +10,17 @@ class Result
 {
     friend class SearchResultList;
 public:
-    int locLineNr() const;
-    int locCol() const;
-    QString locFile() const;
-    QString node() const;
+    int lineNr() const;
+    int colNr() const;
+    QString filepath() const;
+    QString context() const;
 
 private:
-    int mLocLineNr;
-    int mLocCol;
-    QString mLocFile;
-    QString mNode;
-    explicit Result(int locLineNr, int locCol, QString locFile, QString node = "");
+    int mLineNr;
+    int mColNr;
+    QString mFilepath;
+    QString mContext;
+    explicit Result(int lineNr, int colNr, QString filepath, QString context = "");
 };
 
 }

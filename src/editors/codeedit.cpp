@@ -1213,11 +1213,12 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     SearchResultList *matches = SearchLocator::searchResults();
 
-    //    QHash<int, TextMark*> marks;
-//    emit requestMarkHash(&marks, TextMark::match);
+    // TODO: continue
 //    QTextBlock block = firstVisibleBlock();
 //    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+
 //    while (block.isValid() && top < viewport()->height()) {
+
 //        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
 //        for (TextMark* mark: lineMarks) {
 //            QTextEdit::ExtraSelection selection;
