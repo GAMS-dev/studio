@@ -30,6 +30,7 @@ class SearchResultList : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    SearchResultList();
     SearchResultList(SearchResultList &searchResultList);
     SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList() override;
@@ -37,9 +38,12 @@ public:
     void addResult(int locLineNr, int locCol, QString locFile, QString node = "");
     void addResultList(QList<Result> resList);
     QString searchTerm() const;
+    void setSearchTerm(const QString &searchTerm);
     bool isRegex() const;
     void useRegex(bool regex);
     int size();
+
+    void clear();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;

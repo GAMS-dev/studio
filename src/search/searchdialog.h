@@ -61,6 +61,8 @@ public:
     void clearSearch();
     void invalidateCache();
 
+    SearchResultList* getCachedResults();
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
@@ -96,7 +98,7 @@ private:
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);
-    void selectNextMatch(SearchDirection direction, QList<Result> matches);
+    void selectNextMatch(SearchDirection direction);
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
@@ -123,7 +125,7 @@ private:
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     bool mHasChanged = false;
-    QList<Result> mCachedResults;
+    SearchResultList mCachedResults;
     bool mFirstReturn = false;
 };
 

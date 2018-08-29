@@ -22,6 +22,10 @@
 namespace gams {
 namespace studio {
 
+SearchResultList::SearchResultList()
+{
+}
+
 SearchResultList::SearchResultList(SearchResultList &searchResultList)
     : QAbstractTableModel(searchResultList.parent()),
       mSearchTerm(searchResultList.searchTerm()),
@@ -67,6 +71,11 @@ void SearchResultList::useRegex(bool regex)
 int SearchResultList::size()
 {
     return mResultList.size();
+}
+
+void SearchResultList::clear()
+{
+    mResultList.clear();
 }
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
@@ -120,6 +129,11 @@ QVariant SearchResultList::headerData(int section, Qt::Orientation orientation, 
         }
     }
     return QVariant();
+}
+
+void SearchResultList::setSearchTerm(const QString &searchTerm)
+{
+    mSearchTerm = searchTerm;
 }
 
 bool SearchResultList::isRegex() const

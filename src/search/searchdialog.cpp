@@ -105,7 +105,11 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     clearResults();
-    SearchResultList matches(searchTerm());
+
+    mCachedResults.clear();
+    mCachedResults.setSearchTerm(searchTerm());
+    mCachedResults.useRegex(regex());
+
     insertHistory();
 
     setSearchStatus(SearchStatus::Searching);
@@ -113,22 +117,22 @@ void SearchDialog::on_btn_FindAll_clicked()
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
-            matches.addResultList(findInFile(mMain->projectRepo()->findFileNode(mMain->recent()->editor())));
+            mCachedResults.addResultList(findInFile(mMain->projectRepo()->findFileNode(mMain->recent()->editor())));
         break;
     case SearchScope::ThisGroup:
-        matches.addResultList(findInGroup());
+        mCachedResults.addResultList(findInGroup());
         break;
     case SearchScope::OpenTabs:
-        matches.addResultList(findInOpenFiles());
+        mCachedResults.addResultList(findInOpenFiles());
         break;
     case SearchScope::AllFiles:
-        matches.addResultList(findInAllFiles());
+        mCachedResults.addResultList(findInAllFiles());
         break;
     default:
         break;
     }
-    updateMatchAmount(matches.size());
-    mMain->showResults(matches);
+    updateMatchAmount(mCachedResults.size());
+    mMain->showResults(mCachedResults);
 }
 
 QList<Result> SearchDialog::findInAllFiles()
@@ -359,6 +363,11 @@ void SearchDialog::setSearchStatus(SearchStatus status)
     }
 }
 
+SearchResultList* SearchDialog::getCachedResults()
+{
+    return &mCachedResults;
+}
+
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
@@ -371,11 +380,12 @@ void SearchDialog::findNext(SearchDirection direction)
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
         QApplication::processEvents();
-        mCachedResults = findInFile(fc, true);
+        mCachedResults.clear();
+        mCachedResults.addResultList(findInFile(fc, true));
         mHasChanged = false;
     }
 
-    selectNextMatch(direction, mCachedResults);
+    selectNextMatch(direction);
 }
 
 
@@ -518,7 +528,7 @@ void SearchDialog::on_btn_forward_clicked()
     findNext(SearchDialog::Forward);
 }
 
-void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matches)
+void SearchDialog::selectNextMatch(SearchDirection direction)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex;
@@ -539,7 +549,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
     else
         matchSelection = fc->document()->find(searchTerm, edit->textCursor(), flags);
 
-    if (matches.size() > 0) { // has any matches at all
+    if (mCachedResults.size() > 0) { // has any matches at all
 
         if (matchSelection.isNull()) { // empty selection == reached end of document
             if (direction == SearchDirection::Forward) {
@@ -549,7 +559,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
                 tc.movePosition(QTextCursor::End); // start from bottom
                 edit->setTextCursor(tc);
             }
-            selectNextMatch(direction, matches);
+            selectNextMatch(direction);
 
         } else { // found next match
             edit->jumpTo(matchSelection);
@@ -565,10 +575,10 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     // set match and counter
     int count = 0;
-    foreach (Result match, matches) {
+    foreach (Result match, mCachedResults.resultList()) {
         if (match.locLineNr() == matchSelection.blockNumber()+1
                 && match.locCol() == matchSelection.columnNumber() - searchLength) {
-            updateMatchAmount(matches.size(), count+1);
+            updateMatchAmount(mCachedResults.size(), count+1);
             break;
         } else {
             count++;
