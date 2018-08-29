@@ -1212,7 +1212,6 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     SearchResultList *matches = SearchLocator::searchResults();
-    qDebug() << "matches.size" << matches->size(); // rogo: delete
 
     //    QHash<int, TextMark*> marks;
 //    emit requestMarkHash(&marks, TextMark::match);

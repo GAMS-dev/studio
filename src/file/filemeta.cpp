@@ -187,7 +187,6 @@ void FileMeta::addEditor(QWidget *edit)
 
 //    if (scEdit && mMarks) {
 //        // TODO(JM) Should be bound directly to a sublist in TextMarkRepo
-//        connect(scEdit, &CodeEditor::requestMarkHash, this, &ProjectFileNode::shareMarkHash);
 //        connect(scEdit, &CodeEditor::requestMarksEmpty, this, &ProjectFileNode::textMarkIconsEmpty);
 //        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
 //    }

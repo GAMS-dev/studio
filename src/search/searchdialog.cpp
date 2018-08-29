@@ -180,7 +180,7 @@ QList<Result> SearchDialog::findInGroup(ProjectAbstractNode *node)
     return matches;
 }
 
-void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+void SearchDialog::findOnDisk(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList* matches)
 {
     int lineCounter = 0;
     QFile file(fc->location());
@@ -196,16 +196,13 @@ void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, P
                 match = i.next();
                 matches->addResult(lineCounter, match.capturedStart(),
                                    file.fileName(), line.trimmed());
-                if (isOpenFile)
-                    mMain->textMarkRepo()->createMark(fc->file()->id(), TextMark::match
-                                                      , lineCounter-1, match.capturedStart(), match.capturedLength());
             }
         }
         file.close();
     }
 }
 
-void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+void SearchDialog::findInDoc(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList* matches)
 {
     QTextCursor lastItem = QTextCursor(fc->document());
     QTextCursor item;
@@ -217,11 +214,6 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, Pr
         if (!item.isNull()) {
             matches->addResult(item.blockNumber()+1, item.columnNumber() - searchTerm().length(),
                               fc->location(), item.block().text().trimmed());
-            if (isOpenFile) {
-                int length = item.selectionEnd() - item.selectionStart();
-                mMain->textMarkRepo()->createMark(fc->file()->id(), TextMark::match, item.blockNumber()
-                                                  , item.columnNumber() - length, length);
-            }
         }
     } while (!item.isNull());
 }
@@ -269,9 +261,9 @@ QList<Result> SearchDialog::findInFile(ProjectAbstractNode *node, bool skipFilte
 
         // when a file has unsaved changes a different search strategy is used.
         if (fileNode->isModified())
-            findInDoc(searchRegex, isOpenFile, fileNode, &matches);
+            findInDoc(searchRegex, fileNode, &matches);
         else
-            findOnDisk(searchRegex, isOpenFile, fileNode, &matches);
+            findOnDisk(searchRegex, fileNode, &matches);
 
 // TODO: check this:
 //        if (isOpenFile && fc->highlighter())
@@ -602,10 +594,9 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::clearResults()
 {
-    // TODO: maybe this should remove matches in all files
+    // TODO: remove highlighting in editor
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-    mMain->textMarkRepo()->removeMarks(fc->file()->id(), QSet<TextMark::Type>() << TextMark::match);
     setSearchStatus(SearchStatus::Clear);
 
     AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());

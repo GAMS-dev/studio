@@ -101,8 +101,8 @@ private:
     void selectNextMatch(SearchDirection direction);
     void insertHistory();
     void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
-    void findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList *matches);
+    void findOnDisk(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList *matches);
 
     enum SearchScope {
         ThisFile = 0,
