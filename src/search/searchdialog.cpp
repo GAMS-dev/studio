@@ -257,8 +257,6 @@ QList<Result> SearchDialog::findInFile(ProjectAbstractNode *node, bool skipFilte
         if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
         if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
-        bool isOpenFile = (fileNode == mMain->projectRepo()->findFileNode(mMain->recent()->editor()));
-
         // when a file has unsaved changes a different search strategy is used.
         if (fileNode->isModified())
             findInDoc(searchRegex, fileNode, &matches);

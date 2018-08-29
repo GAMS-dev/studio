@@ -1213,24 +1213,29 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     SearchResultList *matches = SearchLocator::searchResults();
 
-    // TODO(rogo): continue
-//    QTextBlock block = firstVisibleBlock();
-//    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
 
-//    while (block.isValid() && top < viewport()->height()) {
+    // TODO(rogo): fix this
+    QList<Result> fileResults = matches->filteredResultList("/home/rogo/Documents/GAMSStudio/workspace/trnsport.gms");
+    while (block.isValid() && top < viewport()->height()) {
+        QList<Result> rowResults;
+        for (Result r : fileResults) {
+            if (r.lineNr() == block.blockNumber()+1)
+                rowResults << r;
+        }
 
-//        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
-//        for (TextMark* mark: lineMarks) {
-//            QTextEdit::ExtraSelection selection;
-//            selection.cursor = textCursor();
-//            selection.cursor.setPosition(block.position() + mark->column());
-//            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
-//            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
-//            selections << selection;
-//        }
-//        top += qRound(blockBoundingRect(block).height());
-//        block = block.next();
-//    }
+        for (Result r: rowResults) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = textCursor();
+            selection.cursor.setPosition(block.position() + r.colNr());
+            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1 /* TODO(rogo): set to result match length */);
+            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
+            selections << selection;
+        }
+        top += qRound(blockBoundingRect(block).height());
+        block = block.next();
+    }
 }
 
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
