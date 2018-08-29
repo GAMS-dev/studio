@@ -87,6 +87,7 @@ SOURCES += \
     help/helpview.cpp \
     help/helpwidget.cpp \
     keys.cpp \
+    locators/searchlocator.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreeitem.cpp \
@@ -112,6 +113,8 @@ SOURCES += \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
+    search/searchdialog.cpp \
+    search/result.cpp \
     search/searchresultlist.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
@@ -142,9 +145,7 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    search/searchdialog.cpp \
-    tabdialog.cpp \
-    search/result.cpp
+    tabdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -177,6 +178,7 @@ HEADERS += \
     help/helpview.h \
     help/helpwidget.h \
     keys.h \
+    locators/searchlocator.h \
     logger.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreeitem.h \
@@ -201,6 +203,8 @@ HEADERS += \
     option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \
+    search/searchdialog.h \
+    search/result.h \
     search/searchresultlist.h \
     settingsdialog.h \
     statuswidgets.h \
@@ -234,9 +238,7 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    search/searchdialog.h \
-    tabdialog.h \
-    search/result.h
+    tabdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -249,12 +251,12 @@ FORMS += \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     resultsview.ui \
+    search/searchdialog.ui \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    search/searchdialog.ui \
     tabdialog.ui
 
 RESOURCES += \

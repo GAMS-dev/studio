@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
+#include "locators/searchlocator.h"
 
 namespace gams {
 namespace studio {
@@ -1210,24 +1211,26 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    // TODO(JM) if we get our matches from SearchWidget directly no TextMarks need to be created anymore
-    QHash<int, TextMark*> marks;
-    emit requestMarkHash(&marks, TextMark::match);
-    QTextBlock block = firstVisibleBlock();
-    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-    while (block.isValid() && top < viewport()->height()) {
-        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
-        for (TextMark* mark: lineMarks) {
-            QTextEdit::ExtraSelection selection;
-            selection.cursor = textCursor();
-            selection.cursor.setPosition(block.position() + mark->column());
-            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
-            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
-            selections << selection;
-        }
-        top += qRound(blockBoundingRect(block).height());
-        block = block.next();
-    }
+    SearchResultList *matches = SearchLocator::searchResults();
+    qDebug() << "matches.size" << matches->size(); // rogo: delete
+
+    //    QHash<int, TextMark*> marks;
+//    emit requestMarkHash(&marks, TextMark::match);
+//    QTextBlock block = firstVisibleBlock();
+//    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+//    while (block.isValid() && top < viewport()->height()) {
+//        QList<TextMark*> lineMarks = marks.values(block.blockNumber());
+//        for (TextMark* mark: lineMarks) {
+//            QTextEdit::ExtraSelection selection;
+//            selection.cursor = textCursor();
+//            selection.cursor.setPosition(block.position() + mark->column());
+//            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, mark->size());
+//            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
+//            selections << selection;
+//        }
+//        top += qRound(blockBoundingRect(block).height());
+//        block = block.next();
+//    }
 }
 
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)

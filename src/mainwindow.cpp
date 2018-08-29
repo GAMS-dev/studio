@@ -49,6 +49,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
+#include "locators/searchlocator.h"
 
 namespace gams {
 namespace studio {
@@ -169,6 +170,9 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 //    updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleLogDebug()));
+
+    // set up services
+    SearchLocator::provide(mSearchDialog);
 }
 
 void MainWindow::delayedFileRestoration()
