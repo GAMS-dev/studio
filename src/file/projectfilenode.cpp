@@ -35,6 +35,7 @@ const QList<int> ProjectFileNode::mDefaulsCodecs {0, 1, 108};
 ProjectFileNode::ProjectFileNode(FileId fileId, QString name, QString location, FileType *knownType, ContextType type)
     : ProjectAbstractNode(fileId, name, location, type)
 {
+    mCodec = QTextCodec::codecForLocale();
     mMetrics = FileMetrics(QFileInfo(location), knownType);
     if (mMetrics.fileType() == FileType::Gms || mMetrics.fileType() == FileType::Txt)
         mSyntaxHighlighter = new SyntaxHighlighter(this);
@@ -75,8 +76,9 @@ int ProjectFileNode::codecMib() const
 
 void ProjectFileNode::setCodecMib(int mib)
 {
-    QTextCodec *codec = QTextCodec::codecForMib(mib);
+    QTextCodec *codec = (mib == -1) ? QTextCodec::codecForLocale() : QTextCodec::codecForMib(mib);
     if (!codec) {
+        if (!mCodec) mCodec = QTextCodec::codecForLocale();
         DEB() << "TextCodec not found for MIB " << mib;
         return;
     }
@@ -638,6 +640,10 @@ void ProjectFileNode::setEditPositions(QVector<QPoint> edPositions)
 
 void ProjectFileNode::setCodec(QTextCodec *codec)
 {
+    if (!codec) {
+        DEB() << "Codec must nor be null";
+        return;
+    }
     mCodec = codec;
 }
 
