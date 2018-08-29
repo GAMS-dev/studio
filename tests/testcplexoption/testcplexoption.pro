@@ -17,9 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+TEMPLATE = app
 
-TEMPLATE = subdirs
+include(../../src/gamsdependency.pri)
+include(../uitests.pri)
 
-SUBDIRS += testcommonpaths
-#SUBDIRS += testgamsoption
-#SUBDIRS += testcplexoption
+INCLUDEPATH += $$TESTSROOT/../src
+SRCPATH = $$TESTSROOT/../src
+
+HEADERS += \
+    testcplexoption.h
+
+SOURCES += \
+    testcplexoption.cpp \
+    $$SRCPATH/option/option.cpp \
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp
