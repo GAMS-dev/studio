@@ -1920,7 +1920,7 @@ void MainWindow::showResults(SearchResultList &results)
     int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
 
     mResultsView = new ResultsView(results, this);
-    QString title("Results: " + mSearchDialog->searchTerm());
+    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
 
     ui->dockLogView->show();
     mResultsView->resizeColumnsToContent();

@@ -29,6 +29,7 @@ SearchResultList::SearchResultList()
 SearchResultList::SearchResultList(SearchResultList &searchResultList)
     : QAbstractTableModel(searchResultList.parent()),
       mSearchTerm(searchResultList.searchTerm()),
+      mSize(searchResultList.size()),
       mResultHash(searchResultList.resultHash())
 {
 }
@@ -43,27 +44,33 @@ SearchResultList::~SearchResultList()
 {
 }
 
-QList<Result> SearchResultList::resultList()
+QList<Result> SearchResultList::resultList() const
 {
-    return mResultHash.values();
+    QList<Result> result;
+    for (QList<Result> rl : mResultHash.values())
+        result << rl;
+
+    return result;
 }
 
 void SearchResultList::addResult(int lineNr, int colNr, QString fileLoc, QString context)
 {
     Result r = Result(lineNr, colNr, fileLoc, context);
-
-    mResultHash.insert(fileLoc, r);
+    mSize++;
+    mResultHash[fileLoc].append(r);
 }
 
 void SearchResultList::addResultList(QList<Result> resList)
 {
-    for (Result r : resList)
-        mResultHash.insert(r.filepath(), r);
+    for (Result r : resList) {
+        mResultHash[r.filepath()].append(r);
+        mSize++;
+    }
 }
 
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
 {
-    return mResultHash.values(fileLocation);
+    return mResultHash[fileLocation];
 }
 
 QString SearchResultList::searchTerm() const
@@ -78,19 +85,20 @@ void SearchResultList::useRegex(bool regex)
 
 int SearchResultList::size()
 {
-    return mResultHash.size();
+    return mSize;
 }
 
 void SearchResultList::clear()
 {
     mResultHash.clear();
+    mSize = 0;
 }
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mResultHash.size();
+    return mSize;
 }
 
 int SearchResultList::columnCount(const QModelIndex &parent) const
@@ -104,11 +112,10 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-
     if (role == Qt::DisplayRole) {
         int row = index.row();
 
-        Result item = mResultHash.values().at(row);
+        Result item = at(row);
 
         switch(index.column())
         {
@@ -139,7 +146,24 @@ QVariant SearchResultList::headerData(int section, Qt::Orientation orientation, 
     return QVariant();
 }
 
-QMultiHash<QString, Result> SearchResultList::resultHash() const
+Result SearchResultList::at(int index) const
+{
+    int start = 0;
+    QList<QString> keys = mResultHash.keys();
+    QString key;
+
+    for (int i = 0; i < keys.size(); i++) {
+        if (index < (start + mResultHash.value(keys.at(i)).size())) {
+            return mResultHash.value(keys.at(i)).at(index - start);
+        } else {
+            // continue with next list
+            start += mResultHash.value(keys.at(i)).size();
+        }
+    }
+    return Result(0, 0, "", ""); // this should never happen
+}
+
+QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
 {
     return mResultHash;
 }

@@ -57,9 +57,6 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     ProjectFileNode *node = mMain->projectRepo()->findFile(item.filepath());
     if (!node) EXCEPT() << "File not found: " << item.filepath();
 
-    // highlight
-    mMain->searchDialog()->findInFile(node, true, mResultList.searchTerm());
-
     // jump to line
     QTextCursor tc(node->document());
     if (item.colNr() <= 0)
