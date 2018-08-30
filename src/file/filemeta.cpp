@@ -497,9 +497,10 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());
         codeEdit->setTabStopDistance(8*metric.width(' '));
+
         res = codeEdit;
         if (kind() == FileKind::Lst) {
-            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, this->location(), tabWidget);
+            lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, location(), tabWidget);
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
@@ -512,6 +513,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         }
         if (mEditors.isEmpty())
             load(codecMibs);
+        mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
     }
     addEditor(res);
     return res;

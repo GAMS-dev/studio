@@ -1216,8 +1216,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
 
-    // TODO(rogo): fix this
-    QList<Result> fileResults = matches->filteredResultList("/home/rogo/Documents/GAMSStudio/workspace/trnsport.gms");
+    QList<Result> fileResults = matches->filteredResultList(document()->metaInformation(QTextDocument::DocumentUrl));
     while (block.isValid() && top < viewport()->height()) {
         QList<Result> rowResults;
         for (Result r : fileResults) {
