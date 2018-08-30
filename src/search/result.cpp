@@ -3,8 +3,8 @@
 namespace gams {
 namespace studio {
 
-Result::Result(int locLineNr, int locCol, QString locFile, QString node) :
-    mLineNr(locLineNr), mColNr(locCol), mFilepath(locFile), mContext(node)
+Result::Result(int lineNr, int colNr, int length, QString fileLoc, QString context) :
+    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context)
 { }
 
 int Result::lineNr() const
@@ -25,6 +25,11 @@ QString Result::filepath() const
 QString Result::context() const
 {
     return mContext;
+}
+
+int Result::length() const
+{
+    return mLength;
 }
 
 }

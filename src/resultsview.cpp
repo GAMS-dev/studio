@@ -48,7 +48,7 @@ void ResultsView::resizeColumnsToContent()
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result item = mResultList.resultList().at(selectedRow);
+    Result item = mResultList.at(selectedRow);
 
     // open so we have a document of the file
     if (QFileInfo(item.filepath()).exists())

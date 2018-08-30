@@ -194,7 +194,7 @@ void SearchDialog::findOnDisk(QRegularExpression searchRegex, ProjectFileNode *f
             QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
             while (i.hasNext()) {
                 match = i.next();
-                matches->addResult(lineCounter, match.capturedStart(),
+                matches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
                                    file.fileName(), line.trimmed());
             }
         }
@@ -212,8 +212,8 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, ProjectFileNode *fc
         else break;
 
         if (!item.isNull()) {
-            matches->addResult(item.blockNumber()+1, item.columnNumber() - searchTerm().length(),
-                              fc->location(), item.block().text().trimmed());
+            matches->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
+                              item.selectedText().length(), fc->location(), item.block().text().trimmed());
         }
     } while (!item.isNull());
 }

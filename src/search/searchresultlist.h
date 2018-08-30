@@ -36,7 +36,7 @@ public:
     virtual ~SearchResultList() override;
     QList<Result> resultList() const;
     QMultiHash<QString, QList<Result> > resultHash() const;
-    void addResult(int lineNr, int colNr, QString fileLoc, QString context = "");
+    void addResult(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
     void addResultList(QList<Result> resList);
     QList<Result> filteredResultList(QString fileLocation);
     QString searchTerm() const;
@@ -45,6 +45,7 @@ public:
     void useRegex(bool regex);
     int size();
     void clear();
+    Result at(int index) const;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -57,7 +58,6 @@ private:
     int mSize = 0;
     QHash<QString, QList<Result>> mResultHash;
 
-    Result at(int index) const;
 };
 
 }

@@ -1228,7 +1228,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextEdit::ExtraSelection selection;
             selection.cursor = textCursor();
             selection.cursor.setPosition(block.position() + r.colNr());
-            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1 /* TODO(rogo): set to result match length */);
+            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, r.length());
             selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
             selections << selection;
         }

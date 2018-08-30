@@ -14,13 +14,15 @@ public:
     int colNr() const;
     QString filepath() const;
     QString context() const;
+    int length() const;
 
 private:
     int mLineNr;
     int mColNr;
+    int mLength;
     QString mFilepath;
     QString mContext;
-    explicit Result(int lineNr, int colNr, QString filepath, QString context = "");
+    explicit Result(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
 };
 
 }

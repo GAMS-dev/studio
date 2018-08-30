@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchresultlist.h"
+#include <QtDebug>
 
 namespace gams {
 namespace studio {
@@ -53,9 +54,9 @@ QList<Result> SearchResultList::resultList() const
     return result;
 }
 
-void SearchResultList::addResult(int lineNr, int colNr, QString fileLoc, QString context)
+void SearchResultList::addResult(int lineNr, int colNr, int length, QString fileLoc, QString context)
 {
-    Result r = Result(lineNr, colNr, fileLoc, context);
+    Result r = Result(lineNr, colNr, length, fileLoc, context);
     mSize++;
     mResultHash[fileLoc].append(r);
 }
@@ -153,14 +154,15 @@ Result SearchResultList::at(int index) const
     QString key;
 
     for (int i = 0; i < keys.size(); i++) {
-        if (index < (start + mResultHash.value(keys.at(i)).size())) {
-            return mResultHash.value(keys.at(i)).at(index - start);
-        } else {
-            // continue with next list
-            start += mResultHash.value(keys.at(i)).size();
-        }
+
+        // is in this list
+        if (index < (start + mResultHash.value(keys.at(i)).size()))
+            return mResultHash.value(keys.at(i)).at(index - start); // calc index
+        else
+            start += mResultHash.value(keys.at(i)).size(); // go to next list
     }
-    return Result(0, 0, "", ""); // this should never happen
+    qDebug() << "ERROR: SearchResultList::at out of bounds" << index;
+    return Result(0, 0, 0, "", ""); // this should never happen
 }
 
 QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
