@@ -42,8 +42,17 @@ private slots:
     void testOptionEnumIntValue_data();
     void testOptionEnumIntValue();
 
+    void testOptionDoubleType_data();
+    void testOptionDoubleType();
+
+    void testOptionSynonym_data();
+    void testOptionSynonym();
+
     void testDeprecatedOption_data();
     void testDeprecatedOption();
+
+    void testOptionGroup_data();
+    void testOptionGroup();
 
     void cleanupTestCase();
 

@@ -159,6 +159,101 @@ void TestCPLEXOption::testOptionEnumIntValue()
 
 }
 
+void TestCPLEXOption::testOptionDoubleType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<double>("lowerBound");
+    QTest::addColumn<double>("upperBound");
+    QTest::addColumn<double>("defaultValue");
+
+    QTest::newRow("barepcomp")   << "barepcomp"     << true  << 1e-012 << 1e+075 << 1e-008;
+    QTest::newRow("bttol")       << "bttol"         << true  << 0.0  << 1.0    << 0.9999;
+    QTest::newRow("cutsfactor")  << "cutsfactor"    << true  << -1.0 << 1e+075 << -1.0;
+    QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE;
+    QTest::newRow("epgap")       << "epgap"         << true  << 0.0  << 1.0    << 0.0001;
+    QTest::newRow(".feaspref")   << ".feaspref"     << true  << 0.0  << 1e+020 << 1.0;
+    QTest::newRow("miptracetime") << "miptracetime" << true  << 0.0  << gams::studio::OPTION_VALUE_MAXDOUBLE  << 1.0;
+    QTest::newRow("neteprhs")    << "neteprhs"    << true  << 1e-011 << 0.1 <<  1e-006;
+    QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE << -1e+075;
+    QTest::newRow("polishafterepgap")  << "polishafterepgap" << true << 0.0 << 1.0    << 0.0;
+    QTest::newRow("rampuptimelimit")   << "rampuptimelimit"  << true << 0.0 << 1e+075 << 1e+075;
+    QTest::newRow("solnpoolgap")       << "solnpoolgap"      << true << 0.0 << 1e+075 << 1e+075;
+    QTest::newRow("tuningdettilim")    << "tuningdettilim"   << true << 1.0 << 1e+075 << 1e+007;
+    QTest::newRow("workmem")           << "workmem"          << true << 0.0 << 1e+075 << 128.0;
+}
+
+void TestCPLEXOption::testOptionDoubleType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(double, lowerBound);
+    QFETCH(double, upperBound);
+    QFETCH(double, defaultValue);
+
+    QCOMPARE( cplexOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( cplexOption->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( cplexOption->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( cplexOption->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( cplexOption->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestCPLEXOption::testOptionSynonym_data()
+{
+    QTest::addColumn<QString>("optionSynonym");
+    QTest::addColumn<QString>("optionName");
+
+    QTest::newRow("advbasis")     << "advbasis"     << "advind";
+    QTest::newRow("backtracking") << "backtracking" << "bttol";
+    QTest::newRow("clonelogs")    << "clonelogs"    << "clonelog";
+    QTest::newRow("intsolutionlim") <<  "intsolutionlim" << "intsollim";
+    QTest::newRow("mipdisplayint")  << "mipdisplayint"   << "mipinterval";
+    QTest::newRow("setobjllim")     << "setobjllim" << "objllim";
+    QTest::newRow("presolve")       << "presolve"   << "preind";
+    QTest::newRow("variableselect") << "variableselect" << "varsel";
+    QTest::newRow("writepremps")    << "writepremps"    << "writepre";
+
+    QTest::newRow("auxrootthreads ") <<  "" << "auxrootthreads";
+    QTest::newRow("polishafternode") <<  "" << "polishafternode";
+    QTest::newRow("barorder")        <<  "" << "barorder";
+    QTest::newRow("bendersstrategy") <<  "" << "bendersstrategy";
+    QTest::newRow("cpumask")         <<  "" << "cpumask";
+    QTest::newRow("disjcuts")        <<  "" << "disjcuts";
+    QTest::newRow("epint")           <<  "" << "epint";
+    QTest::newRow("feasoptmode")     <<  "" << "feasoptmode";
+    QTest::newRow("heurfreq")        <<  "" << "heurfreq";
+    QTest::newRow("lbheur")          <<  "" << "lbheur";
+    QTest::newRow("lpmethod")        <<  "" << "lpmethod";
+    QTest::newRow("mipdisplay")      <<  "" << "mipdisplay";
+    QTest::newRow("netepopt")        <<  "" << "netepopt";
+    QTest::newRow("objllim")         <<  "" << "objllim";
+    QTest::newRow("polishafterdettime") <<  "" << "polishafterdettime";
+    QTest::newRow("qtolin")             <<  "" << "qtolin";
+    QTest::newRow("rampuptimelimit") <<  "" << "rampuptimelimit";
+    QTest::newRow("siftitlim")       <<  "" << "siftitlim";
+    QTest::newRow("tuningdettilim")  <<  "" << "tuningdettilim";
+    QTest::newRow("usercutmult")     <<  "" << "usercutmult";
+    QTest::newRow("varsel")          <<  "" << "varsel";
+    QTest::newRow("workeralgorithm") <<  "" << "workeralgorithm";
+    QTest::newRow("zerohalfcut")     <<  "" << "zerohalfcut";
+}
+
+
+
+void TestCPLEXOption::testOptionSynonym()
+{
+    QFETCH(QString, optionSynonym);
+    QFETCH(QString, optionName);
+
+    if (optionSynonym.isEmpty()) {
+        QVERIFY( cplexOption->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
+        QVERIFY( !cplexOption->isASynonym(optionName) );
+    } else {
+       QVERIFY( cplexOption->isASynonym(optionSynonym) );
+       QCOMPARE( cplexOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
+    }
+}
+
 void TestCPLEXOption::testDeprecatedOption_data()
 {
     QTest::addColumn<QString>("deprecatedOption");
@@ -181,6 +276,38 @@ void TestCPLEXOption::testDeprecatedOption()
     QVERIFY( cplexOption->isValid(deprecatedOption) );
     QVERIFY( cplexOption->isDeprecated(deprecatedOption) );
     QCOMPARE( cplexOption->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+
+}
+
+void TestCPLEXOption::testOptionGroup_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<int>("groupNumber");
+    QTest::addColumn<QString>("optionTypeDescription");
+    QTest::addColumn<int>("optionType");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("advind_1_true")         << "advind"         << 1 << "Preprocessing and General Options" << 0 << true;
+    QTest::newRow("clocktype_1_true")      << "clocktype"      << 1 << "Preprocessing and General Options" << 0 << true;
+    QTest::newRow("dettilim_1_true")       << "dettilim"       << 1 << "Preprocessing and General Options" << 3 << true;
+    QTest::newRow("freegamsmodel_1_true")  << "freegamsmodel"  << 1 << "Preprocessing and General Options" << 0 << true;
+    QTest::newRow("interactive_1_true")    << "interactive"    << 1 << "Preprocessing and General Options" << 3 << true;
+    QTest::newRow("lpmethod_1_true")       << "lpmethod"       << 1 << "Preprocessing and General Options" << 0 << true;
+    QTest::newRow("memoryemphasis_1_true") << "memoryemphasis" << 1 << "Preprocessing and General Options" << 3 << true;
+}
+
+void TestCPLEXOption::testOptionGroup()
+{
+    QFETCH(QString, optionName);
+    QFETCH(int, groupNumber);
+    QFETCH(int, optionType);
+    QFETCH(QString, optionTypeDescription);
+    QFETCH(bool, result);
+
+
+    QCOMPARE( cplexOption->getOptionDefinition(optionName).groupNumber, groupNumber);
+//    cplexOption->getOptionGroupList()
+//    QCOMPARE( cplexOption->getOptionDefinition(optionName).dataType, optionType);
 
 }
 
