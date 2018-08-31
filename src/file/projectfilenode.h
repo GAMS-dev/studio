@@ -22,7 +22,6 @@
 
 #include <QFileSystemWatcher>
 #include "projectabstractnode.h"
-#include "filemetrics.h"
 #include "syntax.h"
 
 namespace gams {

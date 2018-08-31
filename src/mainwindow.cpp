@@ -694,9 +694,8 @@ void MainWindow::on_actionSave_As_triggered()
                 QFile::remove(filePath);
             QFile::copy(fileMeta->location(), filePath);
         } else {
-            ProjectRunGroupNode* runGroup = node->assignedRunGroup();
             fileMeta->saveAs(filePath);
-            openFile(fileMeta, true, runGroup);
+            openFileNode(node, true);
             mStatusWidgets->setFileName(fileMeta->location());
             mSettings->saveSettings(this);
         }
@@ -1060,7 +1059,6 @@ void MainWindow::postGamsLibRun()
         if (node->file()->kind() != FileKind::Log)
             node->file()->load(node->file()->codecMib());
     }
-    // TODO(JM) get ProjectRunGroupNode
     openFileNode(node); // this
     if (mLibProcess) {
         mLibProcess->deleteLater();
@@ -1740,10 +1738,19 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     // open edit if existing or create one
     if (edit) {
         if (runGroup) {
-            if (AbstractEdit *ae = FileMeta::toAbstractEdit(edit)) ae->setGroupId(runGroup->id());
-            if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) gv->setGroupId(runGroup->id());
+            if (AbstractEdit *ae = FileMeta::toAbstractEdit(edit)) {
+                ae->setGroupId(runGroup->id());
+            }
+            if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) {
+                gv->setGroupId(runGroup->id());
+            }
         }
-        if (focus) tabWidget->setCurrentWidget(edit);
+        if (focus) {
+            tabWidget->setCurrentWidget(edit);
+            if (tabWidget == ui->mainTab) {
+                on_mainTab_currentChanged(tabWidget->indexOf(edit));
+            }
+        }
     } else {
         QWidget *edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {
@@ -1872,9 +1879,6 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
             // TODO(JM) Read project and create all nodes for associated files
         } else {
             node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath());
-
-            // TODO(JM) this should not be done implicitly
-//            openFileNode(node); // open all sorts of files
         }
     }
     return node;
