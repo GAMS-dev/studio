@@ -18,33 +18,65 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "fileevent.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
 QEvent::Type FileEvent::mType = QEvent::None;
 
-FileEvent::FileEvent(FileId fileId, Kind kind): QEvent(type()), mFileId(fileId), mKind(kind)
-{
+FileEvent::FileEvent(FileId _fileId, FileEventKind _kind)
+    : QEvent(type()), mData(FileEventData(_fileId, _kind))
+{}
 
-}
+FileEvent::~FileEvent()
+{}
 
 QEvent::Type FileEvent::type()
 {
     if (mType == QEvent::None)
         mType = static_cast<QEvent::Type>(QEvent::registerEventType());
     return mType;
+}
 
+FileEventData FileEvent::data() const
+{
+    return mData;
 }
 
 FileId FileEvent::fileId() const
 {
-    return mFileId;
+    return mData.fileId;
 }
 
-FileEvent::Kind FileEvent::kind() const
+FileEventKind FileEvent::kind() const
 {
-    return mKind;
+    return mData.kind;
+}
+
+FileEventData::FileEventData()
+    : fileId(FileId()), kind(FileEventKind::invalid)
+{}
+
+FileEventData::FileEventData(FileId _fileId, FileEventKind _kind)
+    : fileId(_fileId), kind(_kind)
+{}
+
+FileEventData::FileEventData(const FileEventData &other)
+{
+    *this = other;
+}
+
+FileEventData &FileEventData::operator=(const FileEventData &other)
+{
+    fileId = other.fileId;
+    kind = other.kind;
+    return *this;
+}
+
+bool FileEventData::operator==(const FileEventData &other) const
+{
+    return (fileId == other.fileId) && (kind == other.kind);
 }
 
 } // namespace studio

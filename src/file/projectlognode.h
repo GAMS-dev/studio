@@ -39,9 +39,9 @@ public:
 //public:
 //    void fileClosed(ProjectFileNode* fc);
 //    TextMark* firstErrorMark();
-    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
     ProjectFileNode *lstNode() const;
     void setLstNode(ProjectFileNode *lstNode);
+
 
 public slots:
     void addProcessData(const QByteArray &data);
@@ -77,7 +77,6 @@ private:
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
-    bool mDebugLog = false;
     QString mLastSourceFile;
     DynamicFile *mLogFile = nullptr;
 };

@@ -88,6 +88,8 @@ public:
     bool isActive() const;
     void setActive();
 
+    bool debugMode() const;
+
 signals:
     void changed(NodeId nodeId);
 
@@ -100,6 +102,7 @@ private:
     ProjectGroupNode* mParent;
     QString mName;
     NodeType mType;
+    bool mDebugMode = false;
 };
 
 } // namespace studio

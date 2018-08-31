@@ -167,7 +167,7 @@ void FileMetaRepo::fileChanged(const QString &path)
     } else {
         // changedExternally
         if (file->compare(path)) {
-            FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+            FileEvent e(file->id(), FileEventKind::changedExtern);
             emit fileEvent(e);
         }
     }
@@ -181,17 +181,17 @@ void FileMetaRepo::reviewMissing()
         if (watch(file)) {
             FileDifferences diff = file->compare();
             if (diff.testFlag(FdMissing)) {
-                FileEvent e(file->id(), FileEvent::Kind::removedExtern);
+                FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
-                FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+                FileEvent e(file->id(), FileEventKind::changedExtern);
                 emit fileEvent(e);
             }
         } else {
             // (JM) About RENAME: To evaluate if a file has been renamed the directory content before the
             // change must have been stored so it can be ensured that the possible file is no recent copy
             // of the file that was removed.
-            FileEvent e(file->id(), FileEvent::Kind::removedExtern);
+            FileEvent e(file->id(), FileEventKind::removedExtern);
             emit fileEvent(e);
         }
     }

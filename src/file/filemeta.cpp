@@ -511,7 +511,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             codeEdit->setReadOnly(true);
             codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
-        if (mEditors.isEmpty())
+        if (mEditors.isEmpty() && kind() != FileKind::Log)
             load(codecMibs);
     }
     addEditor(res);

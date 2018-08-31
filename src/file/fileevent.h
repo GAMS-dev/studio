@@ -21,33 +21,47 @@
 #define FILEEVENT_H
 
 #include <QEvent>
+#include <QString>
 #include "common.h"
 
 namespace gams {
 namespace studio {
 
+class FileEvent;
+enum class FileEventKind {
+    invalid,
+    changed,
+    closed,
+    created,
+    changedExtern,
+    removedExtern,  // removed-event is delayed a bit to improve recognition of moved- or changed-events
+};
+
+
+struct FileEventData
+{
+    FileEventData();
+    FileEventData(FileId _fileId, FileEventKind _kind);
+    FileEventData(const FileEventData &other);
+    FileEventData &operator= (const FileEventData &other);
+    bool operator==(const FileEventData &other) const;
+    FileId fileId;
+    FileEventKind kind;
+};
 
 class FileEvent : public QEvent
 {
 public:
 
-    enum class Kind {
-        changed,
-        closed,
-        created,
-        changedExtern,
-        renamedExtern,
-        removedExtern,  // removed-event is delayed a bit to improve recognition of moved- or changed-events
-    };
-
-    FileEvent(FileId fileId, FileEvent::Kind kind);
+    FileEvent(FileId fileId, FileEventKind kind);
+    ~FileEvent();
     FileId fileId() const;
-    FileEvent::Kind kind() const;
+    FileEventKind kind() const;
+    FileEventData data() const;
     static QEvent::Type type();
 
 private:
-    FileId mFileId;
-    FileEvent::Kind mKind;
+    FileEventData mData;
     static QEvent::Type mType;
 
 };

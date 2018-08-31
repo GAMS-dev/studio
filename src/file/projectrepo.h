@@ -128,6 +128,9 @@ public:
     ProjectLogNode *logNode(QWidget *edit);
     ProjectLogNode *logNode(ProjectAbstractNode *node);
 
+    void setDebugMode(bool debug);
+    bool debugMode() const;
+
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
@@ -161,6 +164,7 @@ private:
     QVector<ProjectAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
+    bool mDebugMode = false;
 };
 
 } // namespace studio

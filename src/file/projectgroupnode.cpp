@@ -110,7 +110,12 @@ void ProjectGroupNode::setLocation(const QString& location)
 
 QString ProjectGroupNode::tooltip()
 {
-    return QString(location());
+    QString res = location();
+    if (debugMode()) {
+        res.append("\nNodeId: "+QString::number(id()));
+        res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
+    }
+    return QString(res);
 }
 
 QString ProjectGroupNode::lstErrorText(int line)
@@ -439,6 +444,10 @@ QString ProjectRunGroupNode::tooltip()
     QString res(location());
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
     if (!lstFile().isEmpty()) res.append("\nLast output file: ").append(QFileInfo(lstFile()).fileName());
+    if (debugMode()) {
+        res.append("\nNodeId: "+QString::number(id()));
+        res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
+    }
     return res;
 }
 

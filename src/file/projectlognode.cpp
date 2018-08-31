@@ -152,7 +152,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
             cursor.removeSelectedText();
         }
-        if (mDebugLog) {
+        if (debugMode()) {
             if (mConceal) {
                 cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();

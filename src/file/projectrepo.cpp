@@ -319,9 +319,11 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
         }
     }
 
-    mTreeModel->removeChild(group);
-    removeFromIndex(group);
-    emit changed();
+    if (mNodes.contains(group->id())) {
+        mTreeModel->removeChild(group);
+        removeFromIndex(group);
+        emit changed();
+    }
 }
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
@@ -341,8 +343,10 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
 
     // close actual file and remove repo node
 
-    mTreeModel->removeChild(node);
-    removeFromIndex(node);
+    if (mNodes.contains(node->id())) {
+        mTreeModel->removeChild(node);
+        removeFromIndex(node);
+    }
 
     // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 
@@ -482,6 +486,11 @@ bool ProjectRepo::parseGdxHeader(QString location)
     return false;
 }
 
+bool ProjectRepo::debugMode() const
+{
+    return mDebugMode;
+}
+
 ProjectLogNode* ProjectRepo::logNode(QWidget* edit)
 {
     ProjectFileNode* node = findFileNode(edit);
@@ -503,6 +512,12 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     }
     addToIndex(log);
     return log;
+}
+
+void ProjectRepo::setDebugMode(bool debug)
+{
+    mDebugMode = debug;
+    mTreeModel->setDebugMode(debug);
 }
 
 
