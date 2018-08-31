@@ -127,6 +127,7 @@ public:
 
     ProjectLogNode *logNode(QWidget *edit);
     ProjectLogNode *logNode(ProjectAbstractNode *node);
+    void update(ProjectAbstractNode *node);
 
     void setDebugMode(bool debug);
     bool debugMode() const;

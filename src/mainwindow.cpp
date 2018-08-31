@@ -980,6 +980,8 @@ void MainWindow::fileEvent(const FileEvent &e)
         FileEventData data = e.data();
         if (!mFileEvents.contains(data))
             mFileEvents << data;
+//        for (ProjectFileNode* node : mProjectRepo.fileNodes(data.fileId))
+//            mProjectRepo.update(node);
         mFileTimer.start();
     }
 }

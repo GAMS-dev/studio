@@ -61,7 +61,8 @@ public slots:
 private slots:
 //    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
-    void reviewMissing();
+    void reviewRemoved();
+    void checkMissing();
 
 private:
     void addFileMeta(FileMeta* fileMeta);
@@ -73,8 +74,9 @@ private:
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
     QFileSystemWatcher mWatcher;
-    QStringList mCheckExistance; // List to be checked once
+    QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically
+    QTimer mMissCheckTimer;
 
 };
 

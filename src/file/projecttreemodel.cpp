@@ -120,9 +120,9 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         break;
 
     case Qt::ForegroundRole: {
-//        ProjectAbstractNode::ContextFlags flags = mProjectRepo->node(ind)->flags();
-//        if (flags.testFlag(ProjectAbstractNode::cfMissing))
-//            return QColor(Qt::red);
+        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        if (node && !node->file()->exists(true))
+            return QColor(Qt::red).darker();
         if (mProjectRepo->node(ind)->isActive()) {
             return (isCurrent(ind)) ? QColor(Qt::blue)
                                       : QColor(Qt::black);
@@ -275,6 +275,11 @@ void ProjectTreeModel::setSelected(const QModelIndex& ind)
         if (mi.isValid()) dataChanged(mi, mi);                      // invalidate old
         if (mSelected.isValid()) dataChanged(mSelected, mSelected); // invalidate new
     }
+}
+
+void ProjectTreeModel::update(const QModelIndex &ind)
+{
+    if (ind.isValid()) dataChanged(ind, ind);
 }
 
 } // namespace studio

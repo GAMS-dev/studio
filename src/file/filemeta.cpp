@@ -469,8 +469,9 @@ void FileMeta::setCodec(QTextCodec *codec)
     }
 }
 
-bool FileMeta::exists() const
+bool FileMeta::exists(bool ckeckNow) const
 {
+    if (ckeckNow) return QFileInfo(location()).exists();
     return mData.exist;
 }
 

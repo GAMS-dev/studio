@@ -61,6 +61,7 @@ protected:
     bool isSelected(const QModelIndex& ind) const;
     void setSelected(const QModelIndex& ind);
 
+    void update(const QModelIndex& ind = QModelIndex());
 private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;

@@ -61,7 +61,7 @@ public:
     void setCodecMib(int mib);
     QTextCodec *codec() const;
     void setCodec(QTextCodec *codec);
-    bool exists() const;
+    bool exists(bool ckeckNow = false) const;
     bool isOpen() const;
     bool isModified() const;
     bool isReadOnly() const;

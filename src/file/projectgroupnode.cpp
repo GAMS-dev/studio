@@ -254,7 +254,6 @@ ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRe
         mLogNode = new ProjectLogNode(fm, this);
     }
     return mLogNode;
-
 }
 
 FileMeta* ProjectRunGroupNode::runnableGms() const

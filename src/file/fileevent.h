@@ -34,7 +34,7 @@ enum class FileEventKind {
     closed,
     created,
     changedExtern,
-    removedExtern,  // removed-event is delayed a bit to improve recognition of moved- or changed-events
+    removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
 };
 
 

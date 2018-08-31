@@ -514,6 +514,12 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     return log;
 }
 
+void ProjectRepo::update(ProjectAbstractNode *node)
+{
+    QModelIndex mi = mTreeModel->index(node);
+    mTreeModel->setCurrent(mi);
+}
+
 void ProjectRepo::setDebugMode(bool debug)
 {
     mDebugMode = debug;
