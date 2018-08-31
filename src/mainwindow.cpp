@@ -1899,17 +1899,9 @@ void MainWindow::on_actionSearch_triggered()
            QPoint p(0,0);
            QPoint newP(this->mapToGlobal(p));
 
-           if (ui->mainTab->currentWidget()) {
-               int sbs;
-               if (mRecent.editor() && FileMeta::toAbstractEdit(mRecent.editor())
-                       && FileMeta::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
-                   sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
-               else
-                   sbs = 2;
+           if (ui->mainTab->currentWidget())
+               mSearchDialog->move(newP.x(), newP.y());
 
-               int offset = (this->width() - mSearchDialog->width() - sbs);
-               mSearchDialog->move(newP.x() + offset, newP.y());
-           }
            mSearchDialog->show();
        }
     }
