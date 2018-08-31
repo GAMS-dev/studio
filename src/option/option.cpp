@@ -38,7 +38,7 @@ Option::~Option()
     mOption.clear();
     mSynonymMap.clear();
     mOptionTypeNameMap.clear();
-    mOptionGroupList.clear();
+    mOptionGroup.clear();
 }
 
 void Option::dumpAll()
@@ -48,9 +48,8 @@ void Option::dumpAll()
     for (ssit = mSynonymMap.begin(); ssit != mSynonymMap.end(); ++ssit)
         qDebug()  << QString("  [%1] = %2").arg(ssit.key()).arg(ssit.value());
 
-    qDebug() << QString("mOptionGroupList.size() = %1").arg(mOptionGroupList.size());
-    for (int i=0; i< mOptionGroupList.size(); ++i) {
-        OptionGroup group = mOptionGroupList.at(i);
+    for( QMap<int, OptionGroup>::const_iterator it=mOptionGroup.cbegin(); it!=mOptionGroup.cend(); ++it) {
+        OptionGroup group = it.value();
         qDebug() << QString("%1: %2 %3 help_%4 %5").arg(group.number).arg(group.name).arg(group.helpContext).arg(group.description);
     }
 
@@ -295,9 +294,24 @@ QStringList Option::getNonHiddenValuesList(const QString &optionName) const
 
 }
 
+int Option::getGroupNumber(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].groupNumber;
+}
+
+QString Option::getGroupName(const QString &optionName) const
+{
+    return mOptionGroup[getGroupNumber(optionName)].name;
+}
+
+QString Option::getGroupDescription(const QString &optionName) const
+{
+    return mOptionGroup[getGroupNumber(optionName)].description;
+}
+
 QList<OptionGroup> Option::getOptionGroupList() const
 {
-    return mOptionGroupList;
+    return mOptionGroup.values();
 }
 
 QString Option::getOptionTypeName(int type) const
@@ -360,14 +374,14 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
              int helpContextNr;
              int group;
              optGetGroupNr(mOPTHandle, i, name, &group, &helpContextNr, help);
-             mOptionGroupList.append( OptionGroup(name, i, QString::fromLatin1(help), helpContextNr));
+             mOptionGroup.insert(i, OptionGroup(name, i, QString::fromLatin1(help), helpContextNr));
          }
 
          for (int i = 1; i <= optCount(mOPTHandle); ++i) {
 
                      char name[GMS_SSSIZE];
                      char descript[GMS_SSSIZE];
-                     int group;
+                     int group = 0;
 
                      int idefined;
                      int iopttype;

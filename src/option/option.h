@@ -126,6 +126,10 @@ public:
     QStringList getValuesList(const QString &optionName) const;
     QStringList getNonHiddenValuesList(const QString &optionName) const;
 
+    int getGroupNumber(const QString &optionName) const;
+    QString getGroupName(const QString &optionName) const;
+    QString getGroupDescription(const QString &optionName) const;
+
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
@@ -139,7 +143,7 @@ private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
-    QList<OptionGroup> mOptionGroupList;
+    QMap<int, OptionGroup> mOptionGroup;
 
     bool mAvailable;
     bool readDefinition(const QString &systemPath, const QString &optionFileName);
