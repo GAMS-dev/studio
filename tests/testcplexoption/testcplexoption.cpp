@@ -170,12 +170,12 @@ void TestCPLEXOption::testOptionDoubleType_data()
     QTest::newRow("barepcomp")   << "barepcomp"     << true  << 1e-012 << 1e+075 << 1e-008;
     QTest::newRow("bttol")       << "bttol"         << true  << 0.0  << 1.0    << 0.9999;
     QTest::newRow("cutsfactor")  << "cutsfactor"    << true  << -1.0 << 1e+075 << -1.0;
-    QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE;
+    QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MAXDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE;
     QTest::newRow("epgap")       << "epgap"         << true  << 0.0  << 1.0    << 0.0001;
     QTest::newRow(".feaspref")   << ".feaspref"     << true  << 0.0  << 1e+020 << 1.0;
     QTest::newRow("miptracetime") << "miptracetime" << true  << 0.0  << gams::studio::OPTION_VALUE_MAXDOUBLE  << 1.0;
     QTest::newRow("neteprhs")    << "neteprhs"    << true  << 1e-011 << 0.1 <<  1e-006;
-    QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE << -1e+075;
+    QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MAXDOUBLE << -1e+075;
     QTest::newRow("polishafterepgap")  << "polishafterepgap" << true << 0.0 << 1.0    << 0.0;
     QTest::newRow("rampuptimelimit")   << "rampuptimelimit"  << true << 0.0 << 1e+075 << 1e+075;
     QTest::newRow("solnpoolgap")       << "solnpoolgap"      << true << 0.0 << 1e+075 << 1e+075;
@@ -283,31 +283,109 @@ void TestCPLEXOption::testOptionGroup_data()
 {
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<int>("groupNumber");
-    QTest::addColumn<QString>("optionTypeDescription");
-    QTest::addColumn<int>("optionType");
-    QTest::addColumn<bool>("result");
+    QTest::addColumn<QString>("optionGroupName");
+    QTest::addColumn<QString>("optionGroupDescription");
+    QTest::addColumn<QString>("optionType");
 
-    QTest::newRow("advind_1_true")         << "advind"         << 1 << "Preprocessing and General Options" << 0 << true;
-    QTest::newRow("clocktype_1_true")      << "clocktype"      << 1 << "Preprocessing and General Options" << 0 << true;
-    QTest::newRow("dettilim_1_true")       << "dettilim"       << 1 << "Preprocessing and General Options" << 3 << true;
-    QTest::newRow("freegamsmodel_1_true")  << "freegamsmodel"  << 1 << "Preprocessing and General Options" << 0 << true;
-    QTest::newRow("interactive_1_true")    << "interactive"    << 1 << "Preprocessing and General Options" << 3 << true;
-    QTest::newRow("lpmethod_1_true")       << "lpmethod"       << 1 << "Preprocessing and General Options" << 0 << true;
-    QTest::newRow("memoryemphasis_1_true") << "memoryemphasis" << 1 << "Preprocessing and General Options" << 3 << true;
+    QTest::newRow("advind_1")         << "advind"         << 1 << "general" << "Preprocessing and General Options" << "enumint";
+    QTest::newRow("clocktype_1")      << "clocktype"      << 1 << "general" << "Preprocessing and General Options" << "enumint";
+    QTest::newRow("dettilim_1")       << "dettilim"       << 1 << "general" << "Preprocessing and General Options" << "double" ;
+    QTest::newRow("freegamsmodel_1")  << "freegamsmodel"  << 1 << "general" << "Preprocessing and General Options" << "boolean";
+    QTest::newRow("interactive_1")    << "interactive"    << 1 << "general" << "Preprocessing and General Options" << "boolean";
+    QTest::newRow("lpmethod_1")       << "lpmethod"       << 1 << "general" << "Preprocessing and General Options" << "enumint";
+    QTest::newRow("memoryemphasis_1") << "memoryemphasis" << 1 << "general" << "Preprocessing and General Options" << "boolean";
+    QTest::newRow("names_1")          << "names"          << 1 << "general" << "Preprocessing and General Options" << "boolean";
+    QTest::newRow("tuningrepeat_1")   << "tuningrepeat"   << 1 << "general" << "Preprocessing and General Options" << "integer";
+
+    QTest::newRow("dynamicrows_2")    << "dynamicrows"  << 2 << "simplexalg" << "Simplex Algorithmic Options"  << "enumint";
+    QTest::newRow("epper_2")          << "epper"        << 2 << "simplexalg" << "Simplex Algorithmic Options"  << "double" ;
+    QTest::newRow("pricelim_2")       << "pricelim"     << 2 << "simplexalg" << "Simplex Algorithmic Options"  << "integer";
+    QTest::newRow("sifting_2")        << "sifting"      << 2 << "simplexalg" << "Simplex Algorithmic Options"   << "boolean";
+
+    QTest::newRow("itlim_3")          << "itlim"        << 3 << "simplexlim" << "Simplex Limit Options" << "integer";
+    QTest::newRow("netitlim_3")       << "netitlim"     << 3 << "simplexlim" << "Simplex Limit Options" << "integer";
+    QTest::newRow("objllim_3")        << "objllim"      << 3 << "simplexlim" << "Simplex Limit Options" << "double";
+    QTest::newRow("objulim_3")        << "objulim"      << 3 << "simplexlim" << "Simplex Limit Options" << "double";
+    QTest::newRow("singlim_3")        << "singlim"      << 3 << "simplexlim" << "Simplex Limit Options" << "integer";
+
+    QTest::newRow("epmrk_4")          << "epmrk"        << 4 << "simplextol" << "Simplex Tolerance Options" << "double";
+    QTest::newRow("epopt_4")          << "epopt"        << 4 << "simplextol" << "Simplex Tolerance Options" << "double";
+    QTest::newRow("eprhs_4")          << "eprhs"        << 4 << "simplextol" << "Simplex Tolerance Options" << "double";
+    QTest::newRow("netepopt_4")       << "netepopt"     << 4 << "simplextol" << "Simplex Tolerance Options" << "double";
+    QTest::newRow("neteprhs_4")       << "neteprhs"     << 4 << "simplextol" << "Simplex Tolerance Options" << "double";
+
+    QTest::newRow("baralg _5")        << "baralg"       << 5 << "barrier" << "Barrier Specific Options" << "enumint";
+    QTest::newRow("barcrossalg_5")    << "barcrossalg"  << 5 << "barrier" << "Barrier Specific Options" << "enumint";
+    QTest::newRow("barstartalg_5")    << "barstartalg"  << 5 << "barrier" << "Barrier Specific Options" << "enumint";
+
+    QTest::newRow("siftalg _6")       << "siftalg"      << 6 << "siftopt" << "Sifting Specific Options" << "enumint";
+    QTest::newRow("siftitlim _6")     << "siftitlim"    << 6 << "siftopt" << "Sifting Specific Options" << "integer";
+
+    QTest::newRow(".benderspartition_7")  << ".benderspartition"    << 7 << "mipalg" << "MIP Algorithmic Options" << "integer";
+    QTest::newRow("cliques_7")            << "cliques"              << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("disjcuts_7")           << "disjcuts"             << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("fpheur_7")             << "fpheur"               << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("gubcovers_7")          << "gubcovers"            << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("heurfreq_7")           << "heurfreq"             << 7 << "mipalg" << "MIP Algorithmic Options" << "integer";
+    QTest::newRow("implbd_7")             << "implbd"               << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("nodefileind_7")        << "nodefileind"          << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("probe_7")              << "probe"                << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("qpmakepsdind_7")       << "qpmakepsdind"         << 7 << "mipalg" << "MIP Algorithmic Options" << "boolean";
+    QTest::newRow("repeatpresolve_7")     << "repeatpresolve"       << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("submipnodelim_7")      << "submipnodelim"        << 7 << "mipalg" << "MIP Algorithmic Options" << "integer";
+    QTest::newRow("varse_7")              << "varsel"               << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("workeralgorithm_7")    << "workeralgorithm"      << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+    QTest::newRow("zerohalfcuts_7")       << "zerohalfcuts"         << 7 << "mipalg" << "MIP Algorithmic Options" << "enumint";
+
+    QTest::newRow("auxrootthreads_8") << "auxrootthreads" << 8 << "miplim" << "MIP Limit Options"    << "integer";
+    QTest::newRow("cutpass_8")        << "cutpass"        << 8 << "miplim" << "MIP Limit Options"    << "integer";
+    QTest::newRow("fraccand _8")      << "fraccand"       << 8 << "miplim" << "MIP Limit Options"    << "integer";
+    QTest::newRow("intsollim _8")     << "intsollim"      << 8 << "miplim" << "MIP Limit Options"    << "integer";
+    QTest::newRow("nodelim_8")        << "nodelim"        << 8 << "miplim" << "MIP Limit Options"    << "integer";
+    QTest::newRow("probetime_8")      << "probetime"      << 8 << "miplim" << "MIP Limit Options"    << "double";
+    QTest::newRow("rampupduration_8") << "rampupduration" << 8 << "miplim" << "MIP Limit Options"    << "enumint";
+    QTest::newRow("trelim_8")         << "trelim"         << 8 << "miplim" << "MIP Limit Options"    << "double";
+
+    QTest::newRow(".divflt_9")        << ".divflt"        << 9 << "solpool" << "MIP Solution Pool Options"    << "double";
+    QTest::newRow("divfltup_9")       << "divfltup"       << 9 << "solpool" << "MIP Solution Pool Options"    << "double";
+    QTest::newRow("populatelim_9")    << "populatelim"    << 9 << "solpool" << "MIP Solution Pool Options"    << "integer";
+    QTest::newRow("readflt_9")        << "readflt"        << 9 << "solpool" << "MIP Solution Pool Options"    << "string";
+    QTest::newRow("solnpoolmerge_9")  << "solnpoolmerge"  << 9 << "solpool" << "MIP Solution Pool Options"    << "string";
+    QTest::newRow("solnpoolpopdel_9") << "solnpoolpopdel" << 9 << "solpool" << "MIP Solution Pool Options"    << "string";
+
+    QTest::newRow("bendersfeascuttol_10")  << "bendersfeascuttol" << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("bendersoptcuttol_10")   << "bendersoptcuttol"  << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epagap_10")             << "epagap"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epgap_10")              << "epgap"             << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epint_10")              << "epint"             << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("objdif_10")             << "objdif"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("relobjdif_10")          << "objdif"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+
+    QTest::newRow("bardisplay_11")   << "bardisplay"         << 11 << "output" << "Output Options"    << "enumint";
+    QTest::newRow("clonelog_11")     << "clonelog"           << 11 << "output" << "Output Options"    << "enumint";
+    QTest::newRow("miptracenode_11") << "miptracenode"       << 11 << "output" << "Output Options"    << "integer";
+    QTest::newRow("netdisplay_11")   << "netdisplay"         << 11 << "output" << "Output Options"    << "enumint";
+    QTest::newRow("quality_11")      << "quality"            << 11 << "output" << "Output Options"    << "boolean";
+    QTest::newRow("simdisplay_11")   << "simdisplay"         << 11 << "output" << "Output Options"    << "enumint";
+    QTest::newRow("writeparam_11")   << "writeparam"         << 11 << "output" << "Output Options"    << "string";
+
+    QTest::newRow("usercutcall_12")  << "usercutcall"        << 12 << "bch" << "BCH Facility Options" << "string";
+    QTest::newRow("usergdxin_12")    << "usergdxin"          << 12 << "bch" << "BCH Facility Options" << "string";
+    QTest::newRow("userkeep_12")     << "userkeep"           << 12 << "bch" << "BCH Facility Options" << "boolean";
+
 }
 
 void TestCPLEXOption::testOptionGroup()
 {
     QFETCH(QString, optionName);
     QFETCH(int, groupNumber);
-    QFETCH(int, optionType);
-    QFETCH(QString, optionTypeDescription);
-    QFETCH(bool, result);
+    QFETCH(QString, optionGroupName);
+    QFETCH(QString, optionGroupDescription);
+    QFETCH(QString, optionType);
 
-
-    QCOMPARE( cplexOption->getOptionDefinition(optionName).groupNumber, groupNumber);
-//    cplexOption->getOptionGroupList()
-//    QCOMPARE( cplexOption->getOptionDefinition(optionName).dataType, optionType);
+    QCOMPARE( cplexOption->getGroupNumber(optionName), groupNumber );
+    QCOMPARE( cplexOption->getGroupDescription(optionName), optionGroupDescription );
+    QCOMPARE( cplexOption->getOptionTypeName(cplexOption->getOptionType(optionName)), optionType );
 
 }
 
