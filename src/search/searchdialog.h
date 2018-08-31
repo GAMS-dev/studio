@@ -80,6 +80,7 @@ public:
     void invalidateCache();
 
     SearchResultList* getCachedResults();
+    void setActiveEditWidget(AbstractEdit *edit);
 
 public slots:
     void on_searchNext();
@@ -145,6 +146,7 @@ private:
     bool mHasChanged = false;
     SearchResultList mCachedResults;
     bool mFirstReturn = false;
+    AbstractEdit *mActiveEdit = nullptr;
 };
 
 }

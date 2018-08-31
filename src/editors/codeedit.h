@@ -98,6 +98,7 @@ class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
+
 public:
     CodeEdit(QWidget *parent = nullptr);
     ~CodeEdit() override;
@@ -155,11 +156,11 @@ public slots:
     void cutSelection();
     void copySelection();
     void pasteClipboard();
+    void updateExtraSelections();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void recalcExtraSelections();
-    void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();

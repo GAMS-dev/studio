@@ -113,6 +113,7 @@ void SearchDialog::on_btn_FindAll_clicked()
     insertHistory();
 
     setSearchStatus(SearchStatus::Searching);
+    QApplication::processEvents();
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -133,6 +134,9 @@ void SearchDialog::on_btn_FindAll_clicked()
     }
     updateMatchAmount(mCachedResults.size());
     mMain->showResults(mCachedResults);
+
+    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    if (ce) ce->updateExtraSelections();
 }
 
 QList<Result> SearchDialog::findInAllFiles()
@@ -358,6 +362,11 @@ SearchResultList* SearchDialog::getCachedResults()
     return &mCachedResults;
 }
 
+void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
+{
+    mActiveEdit = edit;
+}
+
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
@@ -377,7 +386,6 @@ void SearchDialog::findNext(SearchDirection direction)
 
     selectNextMatch(direction);
 }
-
 
 // this is a workaround for the QLineEdit field swallowing the first enter after a show event
 // leading to a search using the last search term instead of the current.
@@ -592,7 +600,6 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::clearResults()
 {
-    // TODO: remove highlighting in editor
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
     setSearchStatus(SearchStatus::Clear);
@@ -601,6 +608,10 @@ void SearchDialog::clearResults()
     QTextCursor tc = edit->textCursor();
     tc.clearSelection();
     edit->setTextCursor(tc);
+    mCachedResults.clear();
+
+    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    if (ce) ce->updateExtraSelections();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)

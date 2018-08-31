@@ -1862,6 +1862,9 @@ void MainWindow::on_mainTab_currentChanged(int index)
         updateRunState();
     }
     changeToLog(fc);
+
+    CodeEdit* ce = FileMeta::toCodeEdit(edit);
+    if (ce) ce->updateExtraSelections();
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -2296,6 +2299,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
+    window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
     edit = FileMeta::toAbstractEdit(mEditor);
     if (edit) {
@@ -2303,11 +2307,11 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
+        window->searchDialog()->setActiveEditWidget(edit);
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
-
 }
 
 void MainWindow::on_actionReset_Views_triggered()
