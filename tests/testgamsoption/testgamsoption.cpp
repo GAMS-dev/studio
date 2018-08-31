@@ -341,6 +341,79 @@ void TestGamsOption::testDoubleDashedOption()
               isValidDoubleDashedOptionName );
 }
 
+void TestGamsOption::testOptionGroup_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<int>("groupNumber");
+    QTest::addColumn<QString>("optionGroupName");
+    QTest::addColumn<QString>("optionGroupDescription");
+    QTest::addColumn<QString>("optionType");
+
+    QTest::newRow("action_1")      << "action"     << 1 << "general" << "General options" << "enumstr";
+    QTest::newRow("charSet_1")     << "charSet"    << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("dFormat_1")     << "dFormat"    << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("eolOnly_1")     << "eolOnly"    << 1 << "general" << "General options" << "immediate";
+    QTest::newRow("fdDelta_1")     << "fdDelta"    << 1 << "general" << "General options" << "double";
+    QTest::newRow("GDX_1")         << "GDX"        << 1 << "general" << "General options" << "string";
+    QTest::newRow("HeapLimit_1")   << "HeapLimit"  << 1 << "general" << "General options" << "double";
+    QTest::newRow("input_1")       << "input"      << 1 << "general" << "General options" << "string";
+    QTest::newRow("jobtrace_1")    << "jobtrace"   << 1 << "general" << "General options" << "string";
+    QTest::newRow("keep_1")        << "keep"       << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("LogOption_1")   << "LogOption"  << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("lstTitleLeftAligned_1")  << "lstTitleLeftAligned"  << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("multipass_1")   << "multipass"  << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("noNewVarEqu_1") << "noNewVarEqu"  << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("output_1")      << "output"       << 1 << "general" << "General options" << "string";
+    QTest::newRow("ParmFile_1")    << "ParmFile"     << 1 << "general" << "General options" << "immediate";
+    QTest::newRow("ParmFile_1")    << "ParmFile"     << 1 << "general" << "General options" << "immediate";
+    QTest::newRow("reference_1")   << "reference"    << 1 << "general" << "General options" << "string";
+    QTest::newRow("suppress_1")    << "suppress"     << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("TraceOpt_1")    << "TraceOpt"     << 1 << "general" << "General options" << "enumint";
+    QTest::newRow("user3_1")       << "user3"        << 1 << "general" << "General options" << "string";
+    QTest::newRow("workDir_1")     << "workDir"      << 1 << "general" << "General options" << "string";
+    QTest::newRow("zeroRes_1")     << "zeroRes"      << 1 << "general" << "General options" << "double";
+
+    QTest::newRow("fSave_2")     << "fSave"      << 2 << "saverestar" << "Save and Restart related options" << "enumint";
+    QTest::newRow("restart_2")   << "restart"    << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("restartNamed_2")   << "restartNamed"    << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("save_2")           << "restart"         << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("saveObfuscate_2")  << "saveObfuscate"   << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("symPrefix_2")      << "symPrefix"       << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("xSave_2")          << "xSave"           << 2 << "saverestar" << "Save and Restart related options" << "string";
+    QTest::newRow("xSaveObfuscate_2") << "xSaveObfuscate"  << 2 << "saverestar" << "Save and Restart related options" << "string";
+
+    QTest::newRow("Bratio_3")       << "Bratio"       << 3 << "solvers" << "Solver related options" << "double";
+    QTest::newRow("CNS_3")          << "CNS"          << 3 << "solvers" << "Solver related options" << "string";
+    QTest::newRow("DNLP_3")         << "DNLP"         << 3 << "solvers" << "Solver related options" << "string";
+    QTest::newRow("EMP_3")          << "EMP"          << 3 << "solvers" << "Solver related options" << "string";
+    QTest::newRow("forceOptFile_3") << "forceOptFile" << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("holdfixed_3")    << "holdfixed"    << 3 << "solvers" << "Solver related options" << "enumint";
+    QTest::newRow("IterLim_3")      << "IterLim"      << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("LimRow_3")       << "LimRow"       << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("MIP_3")          << "MIP"          << 3 << "solvers" << "Solver related options" << "string";
+    QTest::newRow("nodLim_3")       << "nodLim"       << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("optFile_3")      << "optFile"      << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("QCP_3")          << "QCP"          << 3 << "solvers" << "Solver related options" << "string";
+    QTest::newRow("ResLim_3")       << "ResLim"       << 3 << "solvers" << "Solver related options" << "double";
+    QTest::newRow("SolveLink_3")    << "SolveLink"    << 3 << "solvers" << "Solver related options" << "enumint";
+    QTest::newRow("threads_3")      << "threads"      << 3 << "solvers" << "Solver related options" << "integer";
+    QTest::newRow("WorkSpace_3")    << "WorkSpace"    << 3 << "solvers" << "Solver related options" << "double";
+
+}
+
+void TestGamsOption::testOptionGroup()
+{
+    QFETCH(QString, optionName);
+    QFETCH(int, groupNumber);
+    QFETCH(QString, optionGroupName);
+    QFETCH(QString, optionGroupDescription);
+    QFETCH(QString, optionType);
+
+    QCOMPARE( gamsOption->getGroupNumber(optionName), groupNumber );
+    QCOMPARE( gamsOption->getGroupDescription(optionName), optionGroupDescription );
+    QCOMPARE( gamsOption->getOptionTypeName(gamsOption->getOptionType(optionName)), optionType );
+}
+
 void TestGamsOption::cleanupTestCase()
 {
     if (gamsOption)

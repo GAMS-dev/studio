@@ -51,6 +51,9 @@ private slots:
     void testDoubleDashedOption_data();
     void testDoubleDashedOption();
 
+    void testOptionGroup_data();
+    void testOptionGroup();
+
     void cleanupTestCase();
 
 private:
