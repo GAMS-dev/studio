@@ -240,7 +240,7 @@ private slots:
     void on_actionRemove_Line_triggered();
     void on_actionComment_triggered();
     void on_actionSelect_encodings_triggered();
-    void toggleLogDebug();
+    void toggleDebugMode();
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();
     void initAutoSave();
@@ -264,6 +264,7 @@ private:
     void openNode(const QModelIndex& index);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
+    bool processIfRenamed(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
 
@@ -305,10 +306,10 @@ private:
     std::unique_ptr<StudioSettings> mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
-    QVector<QPair<FileId, FileEvent::Kind>> mFileEvents;
+    QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
 
-    bool mLogDebugLines = false;
+    bool mDebugMode = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;

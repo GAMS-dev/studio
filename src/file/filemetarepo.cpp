@@ -33,6 +33,9 @@ FileMetaRepo::FileMetaRepo(QObject *parent, StudioSettings *settings) : QObject(
 {
 //    connect(&mWatcher, &QFileSystemWatcher::directoryChanged, this, &FileMetaRepo::dirChanged);
     connect(&mWatcher, &QFileSystemWatcher::fileChanged, this, &FileMetaRepo::fileChanged);
+    mMissCheckTimer.setInterval(5000);
+    mMissCheckTimer.setSingleShot(true);
+    connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
@@ -44,7 +47,8 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
     QFileInfo fi(location);
     for (FileMeta* fm: mFiles.values()) {
-        if (QFileInfo(fm->location()) == fi) return fm;
+        if (fi.exists() && (QFileInfo(fm->location()) == fi || location == fm->location()))
+            return fm;
     }
 //    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
 //        for (FileMeta* fm: mFiles.values()) {
@@ -131,15 +135,17 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
+    if (mMissList.isEmpty()) mMissCheckTimer.stop();
 }
 
 bool FileMetaRepo::watch(const FileMeta *fileMeta)
 {
-    if (fileMeta->exists()) {
+    if (fileMeta->exists(true)) {
         mWatcher.addPath(fileMeta->location());
         return true;
     }
     mMissList << fileMeta->location();
+    if (!mMissCheckTimer.isActive()) mMissCheckTimer.start();
     return false;
 }
 
@@ -162,38 +168,59 @@ void FileMetaRepo::fileChanged(const QString &path)
     QFileInfo fi(path);
     if (!fi.exists()) {
         // deleted: delayed check to ensure it's not just rewritten (or renamed)
-        mCheckExistance << path;
-        QTimer::singleShot(100, this, &FileMetaRepo::reviewMissing);
+        mRemoved << path;
+        QTimer::singleShot(100, this, &FileMetaRepo::reviewRemoved);
     } else {
         // changedExternally
         if (file->compare(path)) {
-            FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+            FileEvent e(file->id(), FileEventKind::changedExtern);
             emit fileEvent(e);
         }
     }
 }
 
-void FileMetaRepo::reviewMissing()
+void FileMetaRepo::reviewRemoved()
 {
-    while (!mCheckExistance.isEmpty()) {
-        FileMeta *file = fileMeta(mCheckExistance.takeFirst());
+    while (!mRemoved.isEmpty()) {
+        FileMeta *file = fileMeta(mRemoved.takeFirst());
         if (!file) continue;
         if (watch(file)) {
             FileDifferences diff = file->compare();
             if (diff.testFlag(FdMissing)) {
-                FileEvent e(file->id(), FileEvent::Kind::removedExtern);
+                FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
-                FileEvent e(file->id(), FileEvent::Kind::changedExtern);
+                FileEvent e(file->id(), FileEventKind::changedExtern);
                 emit fileEvent(e);
             }
         } else {
             // (JM) About RENAME: To evaluate if a file has been renamed the directory content before the
             // change must have been stored so it can be ensured that the possible file is no recent copy
             // of the file that was removed.
-            FileEvent e(file->id(), FileEvent::Kind::removedExtern);
+            FileEvent e(file->id(), FileEventKind::removedExtern);
             emit fileEvent(e);
         }
+    }
+}
+
+void FileMetaRepo::checkMissing()
+{
+    QStringList remainMissList;
+    while (!mMissList.isEmpty()) {
+        QString fileName = mMissList.takeFirst();
+        if (QFileInfo(fileName).exists()) {
+            FileMeta *file = fileMeta(fileName);
+            if (file) {
+                FileEvent e(file->id(), FileEventKind::changed);
+                emit fileEvent(e);
+            }
+        } else {
+            remainMissList << fileName;
+        }
+    }
+    if (!remainMissList.isEmpty()) {
+        mMissList = remainMissList;
+        mMissCheckTimer.start();
     }
 }
 

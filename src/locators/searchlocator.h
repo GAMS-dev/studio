@@ -17,39 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DYNAMICFILE_H
-#define DYNAMICFILE_H
-
-#include <QObject>
-#include <QFile>
-#include <QTimer>
-#include <QMutex>
+#ifndef SEARCHLOCATOR_H
+#define SEARCHLOCATOR_H
 
 namespace gams {
 namespace studio {
 
-class DynamicFile : public QObject
-{
-    Q_OBJECT
+class SearchResultList;
+class SearchDialog;
+class SearchLocator
+{    
+
 public:
-    DynamicFile(QString fileName, int backups = 0, QObject *parent = nullptr);
-    virtual ~DynamicFile();
-    void appendLine(QString line);
-
-private slots:
-    void closeFile();
+    static SearchResultList* searchResults();
+    static SearchDialog* searchDialog();
+    static void provide(SearchDialog* sd);
 
 private:
-    void openFile();
-    void handleExisting(int backups);
-
-private:
-    QMutex mMutex;
-    QFile mFile;
-    QTimer mCloseTimer;
+    static SearchDialog* mSd;
 };
 
-} // namespace studio
-} // namespace gams
-
-#endif // DYNAMICFILE_H
+}
+}
+#endif // SEARCHLOCATOR_H

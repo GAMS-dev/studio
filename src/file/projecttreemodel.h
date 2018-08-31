@@ -46,6 +46,7 @@ public:
     QModelIndex rootModelIndex() const;
     ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
+    void setDebugMode(bool debug);
 
 protected:
     friend class ProjectRepo;
@@ -60,9 +61,11 @@ protected:
     bool isSelected(const QModelIndex& ind) const;
     void setSelected(const QModelIndex& ind);
 
+    void update(const QModelIndex& ind = QModelIndex());
 private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;
+    bool mDebug = false;
     QModelIndex mCurrent;
     QModelIndex mSelected;
 

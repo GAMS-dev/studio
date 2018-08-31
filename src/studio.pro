@@ -69,7 +69,6 @@ SOURCES += \
     distributionvalidator.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
-    file/filemetrics.cpp \
     file/filetype.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
@@ -159,7 +158,6 @@ HEADERS += \
     exception.h \
     file.h \
     file/dynamicfile.h \
-    file/filemetrics.h \
     file/filetype.h \
     file/projectabstractnode.h \
     gamslibprocess.h \

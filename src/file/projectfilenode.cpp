@@ -103,7 +103,13 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    return location();
+    if (!debugMode())
+        return location();
+    QString tip = location();
+    tip += "\nNodeId: "+QString::number(id());
+    tip += "\nFileId: " + (file() ? QString::number(file()->id()) : "?");
+    tip += "\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?");
+    return tip;
 }
 
 NodeId ProjectFileNode::runGroupId() const

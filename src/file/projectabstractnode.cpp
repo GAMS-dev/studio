@@ -182,6 +182,11 @@ void ProjectAbstractNode::setActive()
     projectRepo()->setActive(this);
 }
 
+bool ProjectAbstractNode::debugMode() const
+{
+    return projectRepo()->debugMode();
+}
+
 
 } // namespace studio
 } // namespace gams

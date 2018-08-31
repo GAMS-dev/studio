@@ -17,42 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEMETRICS_H
-#define FILEMETRICS_H
-
-#include <QDateTime>
-#include <QFileInfo>
-#include "filetype.h"
+#include "searchlocator.h"
+#include "search/searchdialog.h"
+#include "search/result.h"
+#include <QList>
 
 namespace gams {
 namespace studio {
 
-///
-/// The FileMetrics class stores current metrics of a file
-///
-class FileMetrics
+SearchDialog* SearchLocator::mSd = nullptr;
+
+void SearchLocator::provide(SearchDialog *sd)
 {
-    bool mExists;
-    qint64 mSize;
-    QDateTime mCreated;
-    QDateTime mModified;
-    const FileType *mType;
+    mSd = sd;
+}
+SearchResultList* SearchLocator::searchResults()
+{
+    if (mSd)
+        return mSd->getCachedResults();
+    else
+        return nullptr;
+}
 
-public:
-    enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
+SearchDialog* SearchLocator::searchDialog()
+{
+    return mSd;
+}
 
-    FileMetrics();
-    explicit FileMetrics(QFileInfo fileInfo, const FileType *knownType = nullptr);
-    FileMetrics(const FileMetrics &other);
-    FileMetrics &operator=(const FileMetrics& other);
-
-    const FileType& fileType() const;
-
-    ChangeKind check(QFileInfo fileInfo);
-
-};
-
-} // namespace studio
-} // namespace gams
-
-#endif // FILEMETRICS_H
+}
+}

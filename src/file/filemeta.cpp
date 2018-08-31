@@ -468,8 +468,9 @@ void FileMeta::setCodec(QTextCodec *codec)
     }
 }
 
-bool FileMeta::exists() const
+bool FileMeta::exists(bool ckeckNow) const
 {
+    if (ckeckNow) return QFileInfo(location()).exists();
     return mData.exist;
 }
 
@@ -511,7 +512,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             codeEdit->setReadOnly(true);
             codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
-        if (mEditors.isEmpty())
+        if (mEditors.isEmpty() && kind() != FileKind::Log)
             load(codecMibs);
         mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
     }
