@@ -81,6 +81,7 @@ enum struct EditorType {
     log = 2,
     lxiLst = 5,
     gdx = 6,
+    ref = 7,
 };
 
 

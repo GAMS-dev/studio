@@ -240,7 +240,21 @@ void FileMeta::load(int codecMib)
 void FileMeta::load(QList<int> codecMibs)
 {
     // TODO(JM) Later, this method should be moved to the new DataWidget
-    if (!document() && kind() != FileKind::Gdx)
+    if (kind() == FileKind::Gdx) {
+        for (QWidget *wid: mEditors) {
+            gdxviewer::GdxViewer *gdxViewer = toGdxViewer(wid);
+            if (gdxViewer) gdxViewer->reload();
+        }
+        return;
+    }
+    if (kind() == FileKind::Ref) {
+        for (QWidget *wid: mEditors) {
+            reference::ReferenceViewer *refViewer = toReferenceViewer(wid);
+            if (refViewer) refViewer->on_referenceFileChanged();
+        }
+        return;
+    }
+    if (!document())
         EXCEPT() << "There is no document assigned to the file " << location();
 
     QList<int> mibs = codecMibs;
@@ -486,6 +500,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         res = gdxView;
+    } else if (kind() == FileKind::Ref) {
+        // TODO: multiple ReferenceViewers share one Reference Object of the same file
+        //       instead of holding individual Reference Object
+        reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
+        initEditorType(refView);
+        res = refView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
             codecMibs = QList<int>();

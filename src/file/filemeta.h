@@ -26,6 +26,7 @@
 #include "syntax.h"
 #include "editors/codeedit.h"
 #include "editors/processlogedit.h"
+#include "reference/referenceviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 
@@ -100,6 +101,9 @@ public: // static convenience methods
     inline static void initEditorType(lxiviewer::LxiViewer* w) {
         if(w) w->setProperty("EditorType", int(EditorType::lxiLst));
     }
+    inline static void initEditorType(reference::ReferenceViewer* w) {
+        if(w) w->setProperty("EditorType", int(EditorType::ref));
+    }
 
     inline static EditorType editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
@@ -127,6 +131,9 @@ public: // static convenience methods
     }
     inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
         return (editorType(w) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
+    }
+    inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
+        return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
     }
 
 signals:

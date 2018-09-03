@@ -643,7 +643,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt);;"
+                                                       tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -840,6 +840,17 @@ void MainWindow::activeTabChanged(int index)
             mRecent.group = mProjectRepo.asGroup(gdxViewer->groupId());
             mStatusWidgets->setLineCount(-1);
             gdxViewer->reload();
+        } else if (reference::ReferenceViewer* refViewer = FileMeta::toReferenceViewer(editWidget)) {
+            ui->menuEncoding->setEnabled(false);
+            mRecent.setEditor(refViewer, this);
+            ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
+            if (fc) {
+                mRecent.editFileId = fc->file()->id();
+                mRecent.group = fc->parentNode();
+                mStatusWidgets->setFileName(fc->location());
+                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setLineCount(-1);
+            }
         }
     } else {
         ui->menuEncoding->setEnabled(false);
@@ -880,10 +891,9 @@ void MainWindow::fileChangedExtern(FileId fileId)
     if (!file->isOpen()) return;
     if (file->kind() == FileKind::Log) return;
 
-
     int choice;
 
-    if (file->isAutoReload()) {
+    if (file->isAutoReload() || file->isReadOnly()) {
         choice = QMessageBox::Yes;
     } else {
         QMessageBox msgBox;
@@ -916,14 +926,16 @@ void MainWindow::fileDeletedExtern(FileId fileId)
     }
 
     // file is loaded: ASK, if it should be closed
+    int ret = QMessageBox::No;
+//    if (!file->isReadOnly()) {
+//    }
     QMessageBox msgBox;
     msgBox.setWindowTitle("File vanished");
     msgBox.setText(file->location()+" doesn't exist any more.");
     msgBox.setInformativeText("Keep file in editor?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-
+    ret = msgBox.exec();
     if (ret == QMessageBox::No)
         closeFileEditors(fileId);
     else
@@ -1763,6 +1775,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             return;
         }
         addToTabs(edit, tabWidget, fileMeta, focus);
+        if (fileMeta->kind() == FileKind::Ref) {
+            reference::ReferenceViewer *refView = FileMeta::toReferenceViewer(edit);
+            connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
+        }
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
@@ -1893,6 +1909,20 @@ void MainWindow::openNode(const QModelIndex& index)
 {
     ProjectFileNode *file = mProjectRepo.asFileNode(index);
     if (file) openFileNode(file);
+}
+
+void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
+{
+    QFileInfo fi(item.location);
+    if (fi.isFile()) {
+        openFilePath(fi.absoluteFilePath(), true);
+        CodeEdit *codeEdit = FileMeta::toCodeEdit(mRecent.editor());
+        if (codeEdit) {
+            int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);
+            int column = (item.columnNumber > 0 ? item.columnNumber-1 : 0);
+            codeEdit->jumpTo(line, column);
+        }
+    }
 }
 
 void MainWindow::on_mainTab_currentChanged(int index)
