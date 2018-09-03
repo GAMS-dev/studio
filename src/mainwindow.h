@@ -314,6 +314,7 @@ private:
     bool mOverwriteMode = false;
     int mTimerID;
     QStringList mOpenTabsList;
+    QVector<int> mClosedTabsIndexes;
 };
 
 }

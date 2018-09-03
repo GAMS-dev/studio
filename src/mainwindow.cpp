@@ -1172,6 +1172,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         // assuming we are closing a welcome page here
         ui->mainTab->removeTab(index);
         mClosedTabs << "Wp Closed";
+        mClosedTabsIndexes << index;
         return;
     }
 
@@ -1189,6 +1190,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
     }
+    mClosedTabsIndexes << index;
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -2301,14 +2303,24 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 
     if (mClosedTabs.last()=="Wp Closed") {
         mClosedTabs.removeLast();
+        mClosedTabsIndexes.removeLast();
         showWelcomePage();
         return;
     }
     QFile file(mClosedTabs.last());
     mClosedTabs.removeLast();
-    if (file.exists())
+    if (file.exists()) {
         openFilePath(file.fileName());
-    else
+
+        // TODO(JM) the .tabBar() has a method to move a tab to another index
+//        QWidget* pPreviouslyClosedwidget = ui->mainTab->widget(ui->mainTab->count()-1);
+//        QString Tabtext = ui->mainTab->tabText(ui->mainTab->count()-1);
+//        ui->mainTab->insertTab(mClosedTabsIndexes.last(),pPreviouslyClosedwidget,Tabtext);
+//        ui->mainTab->setCurrentIndex(mClosedTabsIndexes.last());
+//        mClosedTabsIndexes.removeLast();
+
+        ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), mClosedTabsIndexes.takeLast());
+    } else
         on_actionRestore_Recently_Closed_Tab_triggered();
 }
 
