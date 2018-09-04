@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testgamsoption.h"
-//#include "option/option.h"
 #include "commonpaths.h"
 
 #include <QStandardPaths>

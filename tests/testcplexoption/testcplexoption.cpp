@@ -33,7 +33,7 @@ void TestCPLEXOption::initTestCase()
     // when
     cplexOption = new Option(CommonPaths::systemDir(), "optcplex.def");
     if  ( !cplexOption->available() ) {
-       QFAIL("expected successful read of optgams.def, but failed");
+       QFAIL("expected successful read of optcplex.def, but failed");
     }
 }
 
@@ -353,13 +353,13 @@ void TestCPLEXOption::testOptionGroup_data()
     QTest::newRow("solnpoolmerge_9")  << "solnpoolmerge"  << 9 << "solpool" << "MIP Solution Pool Options"    << "string";
     QTest::newRow("solnpoolpopdel_9") << "solnpoolpopdel" << 9 << "solpool" << "MIP Solution Pool Options"    << "string";
 
-    QTest::newRow("bendersfeascuttol_10")  << "bendersfeascuttol" << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("bendersoptcuttol_10")   << "bendersoptcuttol"  << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("epagap_10")             << "epagap"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("epgap_10")              << "epgap"             << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("epint_10")              << "epint"             << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("objdif_10")             << "objdif"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
-    QTest::newRow("relobjdif_10")          << "objdif"            << 10 << "solpool" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("bendersfeascuttol_10")  << "bendersfeascuttol" << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("bendersoptcuttol_10")   << "bendersoptcuttol"  << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epagap_10")             << "epagap"            << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epgap_10")              << "epgap"             << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("epint_10")              << "epint"             << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("objdif_10")             << "objdif"            << 10 << "miptol" << "MIP Tolerance Options"    << "double";
+    QTest::newRow("relobjdif_10")          << "objdif"            << 10 << "miptol" << "MIP Tolerance Options"    << "double";
 
     QTest::newRow("bardisplay_11")   << "bardisplay"         << 11 << "output" << "Output Options"    << "enumint";
     QTest::newRow("clonelog_11")     << "clonelog"           << 11 << "output" << "Output Options"    << "enumint";
@@ -384,6 +384,7 @@ void TestCPLEXOption::testOptionGroup()
     QFETCH(QString, optionType);
 
     QCOMPARE( cplexOption->getGroupNumber(optionName), groupNumber );
+    QCOMPARE( cplexOption->getGroupName(optionName), optionGroupName );
     QCOMPARE( cplexOption->getGroupDescription(optionName), optionGroupDescription );
     QCOMPARE( cplexOption->getOptionTypeName(cplexOption->getOptionType(optionName)), optionType );
 
