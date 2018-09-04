@@ -28,6 +28,8 @@
 #include "logger.h"
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
+#include "locators/settingslocator.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
@@ -89,7 +91,8 @@ void ProjectLogNode::logDone()
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
-    if (!mLogFile) mLogFile = new DynamicFile(location(), 3, this);
+    StudioSettings* settings = SettingsLocator::settings();
+    if (!mLogFile && settings->writeLog()) mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
     //          PS (PageSize), PC (PageContr), PW (PageWidth)
     if (!document())

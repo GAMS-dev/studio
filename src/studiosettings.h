@@ -136,6 +136,12 @@ public:
     void restoreTabsAndProjects(MainWindow *main);
     void restoreLastFilesUsed(MainWindow *main);
 
+    bool writeLog() const;
+    void setWriteLog(bool writeLog);
+
+    int nrLogBackups() const;
+    void setNrLogBackups(int nrLogBackups);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -164,6 +170,8 @@ private:
     bool mWordUnderCursor;
     bool mHighlightCurrentLine;
     bool mAutoIndent;
+    bool mWriteLog;
+    int mNrLogBackups;
 
     // misc settings page
     int mHistorySize;

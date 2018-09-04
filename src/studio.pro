@@ -154,7 +154,8 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
-    tabdialog.cpp
+    tabdialog.cpp \
+    locators/settingslocator.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -256,7 +257,8 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
-    tabdialog.h
+    tabdialog.h \
+    locators/settingslocator.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
