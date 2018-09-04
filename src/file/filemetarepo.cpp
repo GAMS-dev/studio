@@ -70,6 +70,17 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
     return nullptr;
 }
 
+QList<FileMeta*> FileMetaRepo::fileMetas() const
+{
+    QList<FileMeta*> res;
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        res << i.value();
+    }
+    return res;
+}
+
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
