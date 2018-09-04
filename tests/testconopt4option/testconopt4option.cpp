@@ -190,6 +190,34 @@ void TestConopt4Option::testOptionGroup()
     QCOMPARE( mOption->getOptionTypeName(mOption->getOptionType(optionName)), optionType );
 }
 
+void TestConopt4Option::testInvalidOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("nameValid");
+    QTest::addColumn<bool>("synonymValid");
+
+    QTest::newRow("DF_Method_valid")   << "DF_Method"   << true     << false;
+    QTest::newRow("FLG_CONVEX_valid")  << "FLG_CONVEX"  << true     << false;
+    QTest::newRow("Flg_Interv_valid")  << "Flg_Interv"  << true     << false;
+    QTest::newRow("domlim_valid")      << "domlim"      << false    << true;
+    QTest::newRow("iterlim_valid")     << "iterlim"     << false    << true;
+    QTest::newRow("reslim_valid")      << "reslim"      << false    << true;
+
+    QTest::newRow("LimNewSuper_invalid")    << "LimNewSuper"     << false    << false;
+    QTest::newRow("Mtd_RedHessian_invalid") << "Mtd_RedHessian"  << false    << false;
+    QTest::newRow("Tol_IFix_invalid")       << "Tol_IFix"        << false    << false;
+}
+
+void TestConopt4Option::testInvalidOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, nameValid);
+    QFETCH(bool, synonymValid);
+
+    QCOMPARE( mOption->isValid(optionName), nameValid);
+    QCOMPARE( mOption->isASynonym(optionName), synonymValid);
+}
+
 void TestConopt4Option::cleanupTestCase()
 {
     if (mOption)

@@ -413,6 +413,39 @@ void TestGamsOption::testOptionGroup()
     QCOMPARE( gamsOption->getOptionTypeName(gamsOption->getOptionType(optionName)), optionType );
 }
 
+void TestGamsOption::testInvalidOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("nameValid");
+    QTest::addColumn<bool>("synonymValid");
+
+    QTest::newRow("action_valid")      << "action"     << true     << false;
+    QTest::newRow("a_valid")           << "a"          << false    << true;
+    QTest::newRow("lo_valid")          << "lo"         << false    << true;
+    QTest::newRow("reference_valid")   << "reference"  << true     << false;
+    QTest::newRow("s_valid")           << "s"          << false    << true;
+    QTest::newRow("WDir_valid")        << "WDir"       << false    << true;
+
+    QTest::newRow("CtrlZ_valid")       << "CtrlZ"       << true    << false;
+    QTest::newRow("PoolUse_valid")     << "PoolUse"     << true    << false;
+
+    QTest::newRow("HoldFix_invalid")    << "HoldFix"    << false    << false;
+    QTest::newRow("InputDir04_invalid") << "InputDir04" << false    << false;
+    QTest::newRow("ref_invalid")        << "ref"        << false    << false;
+    QTest::newRow("saction_invalid")    << "saction"    << false    << false;
+    QTest::newRow("UserDLL_invalid")    << "UserDLL"    << false    << false;
+}
+
+void TestGamsOption::testInvalidOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, nameValid);
+    QFETCH(bool, synonymValid);
+
+    QCOMPARE( gamsOption->isValid(optionName), nameValid);
+    QCOMPARE( gamsOption->isASynonym(optionName), synonymValid);
+}
+
 void TestGamsOption::cleanupTestCase()
 {
     if (gamsOption)

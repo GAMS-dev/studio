@@ -390,6 +390,35 @@ void TestCPLEXOption::testOptionGroup()
 
 }
 
+void TestCPLEXOption::testInvalidOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("nameValid");
+    QTest::addColumn<bool>("synonymValid");
+
+    QTest::newRow("feasopt_valid")   << "feasopt"   << true     << false;
+    QTest::newRow("itlim_valid")     << "itlim"     << true     << false;
+    QTest::newRow("advbasis_valid")  << "advbasis"  << false    << true;
+    QTest::newRow("opttol_valid")    << "opttol"    << false    << true;
+    QTest::newRow("feasibtol_valid") << "feasibtol" << false    << true;
+    QTest::newRow("reslim_valid")    << "reslim"   << false    << true;
+
+    QTest::newRow("iiis_invalid")    << "iiis"     << false    << false;
+    QTest::newRow("mipstar_invalid") << "mipstar"  << false    << false;
+    QTest::newRow("nitlim_invalid")  << "nitlim"   << false    << false;
+
+}
+
+void TestCPLEXOption::testInvalidOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, nameValid);
+    QFETCH(bool, synonymValid);
+
+    QCOMPARE( cplexOption->isValid(optionName), nameValid);
+    QCOMPARE( cplexOption->isASynonym(optionName), synonymValid);
+}
+
 void TestCPLEXOption::cleanupTestCase()
 {
     if (cplexOption)
