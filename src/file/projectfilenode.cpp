@@ -57,6 +57,8 @@ QIcon ProjectFileNode::icon()
         return QIcon(":/img/gams-w"+runMark);
     if (file()->kind() == FileKind::Gdx)
         return QIcon(":/img/database");
+    if (file()->kind() == FileKind::Ref)
+        return QIcon(":/img/ref-file");
     return QIcon(":/img/file-alt"+runMark);
 }
 
