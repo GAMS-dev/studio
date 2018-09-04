@@ -28,6 +28,7 @@
 #include "ui_referenceviewer.h"
 #include "referencetabstyle.h"
 #include "symbolreferenceitem.h"
+#include "symbolreferencewidget.h"
 
 namespace gams {
 namespace studio {

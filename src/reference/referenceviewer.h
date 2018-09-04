@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef REFERENCEWIDGET_H
-#define REFERENCEWIDGET_H
+
+#ifndef REFERENCEVIEWER_H
+#define REFERENCEVIEWER_H
 
 #include <QWidget>
 #include <QList>
 #include <QMap>
 #include <QTabWidget>
-
+#include "common.h"
 #include "reference.h"
-#include "symbolreferencewidget.h"
 
 namespace Ui {
 class ReferenceViewer;
@@ -43,6 +43,10 @@ class ReferenceViewer : public QWidget
 public:
     explicit ReferenceViewer(QString referenceFile, QWidget *parent = nullptr);
     ~ReferenceViewer();
+    FileId fileId() const;
+    void setFileId(const FileId &fileId);
+    NodeId groupId() const;
+    void setGroupId(const NodeId &groupId = NodeId());
 
 signals:
     void jumpTo(ReferenceItem item);
@@ -64,4 +68,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // REFERENCEWIDGET_H
+#endif // REFERENCEVIEWER_H
