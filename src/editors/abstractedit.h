@@ -72,13 +72,15 @@ protected:
     virtual void marksChanged();
     QList<TextMark *> cachedLineMarks(int lineNr);
 
-
     FileId mFileId;
     NodeId mGroupId;
     const FileMarks *mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;
+    QList<TextMark*> mCacheMarks;
+    int mCacheLine = -1;
+    NodeId mCacheGroup;
 };
 
 }

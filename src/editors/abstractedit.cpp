@@ -193,23 +193,20 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
 
 QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
 {
-    static QList<TextMark*> marks;
-    static int line = -1;
-    static NodeId group;
     if (lineNr < 0) {
-        marks.clear();
-        line = -1;
-        return marks;
+        mCacheMarks.clear();
+        mCacheLine = -1;
+        return mCacheMarks;
     }
-    if (line != lineNr || group != mGroupId) {
-        marks.clear();
-        line = lineNr;
-        group = mGroupId;
-        for (TextMark* mark: mMarks->values(line)) {
-            if (mark->groupId() == group) marks << mark;
+    if (mCacheLine != lineNr || mCacheGroup != mGroupId) {
+        mCacheMarks.clear();
+        mCacheLine = lineNr;
+        mCacheGroup = mGroupId;
+        for (TextMark* mark: mMarks->values(mCacheLine)) {
+            if (mark->groupId() == mCacheGroup) mCacheMarks << mark;
         }
     }
-    return marks;
+    return mCacheMarks;
 }
 
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
@@ -219,7 +216,11 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         mTipPos = QPoint();
         QToolTip::hideText();
     }
-    if (!mMarks || mMarks->isEmpty()) return;
+    Qt::CursorShape shape = Qt::IBeamCursor;
+    if (!mMarks || mMarks->isEmpty()) {
+        viewport()->setCursor(shape);
+        return;
+    }
     QTextCursor cursor = cursorForPosition(e->pos());
     QList<TextMark*> marks = cachedLineMarks(cursor.blockNumber());
     mMarksAtMouse.clear();
@@ -228,6 +229,9 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         if ((!mark->groupId().isValid() || mark->groupId() == groupId()) && mark->inColumn(col))
             mMarksAtMouse << mark;
     }
+    if (!mMarksAtMouse.isEmpty())
+        shape = mMarksAtMouse.first()->cursorShape(&shape, true);
+    viewport()->setCursor(shape);
 }
 
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
