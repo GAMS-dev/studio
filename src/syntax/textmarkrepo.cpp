@@ -131,11 +131,31 @@ QList<TextMark*> TextMarkRepo::marks(FileId nodeId, int lineNr, NodeId groupId, 
     return res;
 }
 
-const FileMarks *TextMarkRepo::marks(FileId nodeId)
+const FileMarks *TextMarkRepo::marks(FileId fileId)
 {
-    if (!mMarks.contains(nodeId))
-        mMarks.insert(nodeId, new FileMarks());
-    return mMarks.value(nodeId, nullptr);
+    if (!mMarks.contains(fileId))
+        mMarks.insert(fileId, new FileMarks());
+    return mMarks.value(fileId, nullptr);
+}
+
+void TextMarkRepo::setDebugMode(bool debug)
+{
+    mDebug = debug;
+    if (!debug) return;
+    DEB() << "\n--------------- TextMarks ---------------";
+    QList<int> keys;
+    for (FileId id: mMarks.keys()) {
+        keys << int(id);
+    }
+    std::sort(keys.begin(), keys.end());
+    for (int key: keys) {
+        DEB() << key << ": " << mMarks.value(FileId(key))->size();
+    }
+}
+
+bool TextMarkRepo::debugMode() const
+{
+    return mDebug;
 }
 
 FileId TextMarkRepo::ensureFileId(QString location)

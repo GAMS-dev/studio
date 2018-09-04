@@ -144,6 +144,7 @@ public slots:
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
     void setSelected(const QModelIndex& ind);
+    void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 private:
     friend class ProjectRunGroupNode;

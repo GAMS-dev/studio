@@ -423,11 +423,12 @@ void ProjectRunGroupNode::jumpToFirstError(bool focus)
     }
 }
 
-void ProjectRunGroupNode::requestLstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
+void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)
 {
-    if (groupId != id()) return;
     for (TextMark* mark: marks) {
-        QString newTip = lstErrorText(mark->value());
+        int lstLine = mark->value();
+        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
+        QString newTip = lstErrorText(lstLine);
         if (!result.contains(newTip))
             result << newTip;
     }

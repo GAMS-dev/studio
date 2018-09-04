@@ -51,6 +51,9 @@ public:
     void unwatch(const FileMeta* fm);
     bool watch(const FileMeta* fm);
 
+    void setDebugMode(bool debug);
+    bool debugMode() const;
+
 signals:
     void fileEvent(FileEvent &e);
 
@@ -77,6 +80,7 @@ private:
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically
     QTimer mMissCheckTimer;
+    bool mDebug = false;
 
 };
 

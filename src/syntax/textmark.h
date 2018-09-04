@@ -46,6 +46,8 @@ public:
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
+    TextMark *refMark() const;
+
     inline bool isErrorRef();
     QColor color();
     FileKind fileKind();
@@ -87,6 +89,7 @@ public:
 
     QString dump();
 
+
 protected:
     friend class TextMarkRepo;
     TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = NodeId());
@@ -102,7 +105,7 @@ private:
     int mLine = -1;
     int mColumn = 0;
     int mSize = 0;
-    int mValue = 0;
+    int mValue = -1;
     int mSpread = 0;
     TextMark* mReference = nullptr;
 //    TextMarkData* mRefData = nullptr;

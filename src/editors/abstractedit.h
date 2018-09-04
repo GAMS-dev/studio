@@ -49,6 +49,9 @@ public:
     NodeId groupId() const;
     virtual void setGroupId(const NodeId &groupId);
 
+    void setMarks(const FileMarks *marks);
+    int markCount() { return mMarks ? mMarks->size() : 0; }
+
 signals:
     void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
@@ -66,10 +69,13 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
+    virtual void marksChanged();
+    QList<TextMark *> cachedLineMarks(int lineNr);
+
 
     FileId mFileId;
     NodeId mGroupId;
-    FileMarks *mMarks = nullptr;
+    const FileMarks *mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;

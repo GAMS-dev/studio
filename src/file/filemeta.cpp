@@ -175,7 +175,11 @@ void FileMeta::addEditor(QWidget *edit)
     CodeEdit* scEdit = toCodeEdit(edit);
 
     if (ptEdit) {
+        if (!ptEdit->fileId().isValid()) {
+            DEB() << "invalid FileId";
+        }
         ptEdit->setDocument(mDocument);
+        connect(ptEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
@@ -184,7 +188,8 @@ void FileMeta::addEditor(QWidget *edit)
         }
     }
     if (mEditors.size() == 1) emit documentOpened();
-
+    if (ptEdit)
+        ptEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 //    if (scEdit && mMarks) {
 //        // TODO(JM) Should be bound directly to a sublist in TextMarkRepo
 //        connect(scEdit, &CodeEditor::requestMarksEmpty, this, &ProjectFileNode::textMarkIconsEmpty);
@@ -499,12 +504,14 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
+        gdxView->setFileId(id());
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
+//        refView->setFileId(id());
         res = refView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)

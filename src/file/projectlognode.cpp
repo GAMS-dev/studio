@@ -109,6 +109,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
     QRegularExpression rEx("(\\r\\n?|\\n)");
     int from = 0;
     mLineBuffer.append(data);
+    int lstLine = -1;
     while (true) {
         if (mLineBuffer.indexOf(rEx, from, &match) < 0) {
             mLineBuffer.remove(0, from);
@@ -170,7 +171,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
             for (LinkData mark: marks) {
                 TextMark* tm = textMarkRepo()->createMark(file()->id(), runGroupId(), TextMark::link
-                                                          , mCurrentErrorHint.lstLine, lineNr, mark.col, size);
+                                                          , lstLine, lineNr, mark.col, size);
                 if (mark.textMark) {
                     tm->setRefMark(mark.textMark);
                     if (mark.textMark->fileKind() == FileKind::Lst)
@@ -207,7 +208,8 @@ inline QStringRef capture(const QString &line, int &a, int &b, const int offset,
 }
 
 
-QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::ExtractionState &state, QList<ProjectLogNode::LinkData> &marks)
+QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::ExtractionState &state
+                                     , QList<ProjectLogNode::LinkData> &marks)
 {
     if (mInErrorDescription) {
         if (line.startsWith("***") || line.startsWith("---")) {
@@ -245,7 +247,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
         int errNr = line.midRef(posA, posB-posA).toInt(&ok);
         bool isValidError = line.midRef(posB, 4) == " in ";
-        mCurrentErrorHint.lstLine = 0;
+        mCurrentErrorHint.lstLine = -1;
         mCurrentErrorHint.text = "";
 
         QString fName;

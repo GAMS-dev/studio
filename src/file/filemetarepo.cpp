@@ -149,6 +149,30 @@ bool FileMetaRepo::watch(const FileMeta *fileMeta)
     return false;
 }
 
+void FileMetaRepo::setDebugMode(bool debug)
+{
+    mDebug = debug;
+    if (!debug) return;
+    DEB() << "\n--------------- FileMetas (Editors) ---------------";
+    QMap<int, AbstractEdit*> edits;
+    for (QWidget* wid: editors()) {
+        AbstractEdit*ed = FileMeta::toAbstractEdit(wid);
+        if (ed) edits.insert(int(ed->fileId()), ed);
+    }
+
+    for (int key: edits.keys()) {
+        FileMeta* fm = fileMeta(FileId(key));
+        QString nam = (fm ? fm->name() : "???");
+        DEB() << key << ": " << edits.value(key)->markCount() << "    " << nam;
+    }
+
+}
+
+bool FileMetaRepo::debugMode() const
+{
+    return mDebug;
+}
+
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";

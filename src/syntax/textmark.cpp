@@ -34,6 +34,11 @@ TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId group
     if (!mMarkRepo) FATAL() << "The TextMarkRepo must be a valid instance.";
 }
 
+TextMark *TextMark::refMark() const
+{
+    return mReference;
+}
+
 TextMark::~TextMark()
 {
     if (mMarkRepo) mMarkRepo->removeMark(this);

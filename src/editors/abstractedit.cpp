@@ -65,6 +65,13 @@ NodeId AbstractEdit::groupId() const
 void AbstractEdit::setGroupId(const NodeId &groupId)
 {
     mGroupId = groupId;
+    marksChanged();
+}
+
+void AbstractEdit::setMarks(const FileMarks *marks)
+{
+    mMarks = marks;
+    marksChanged();
 }
 
 FileId AbstractEdit::fileId() const
@@ -79,6 +86,7 @@ void AbstractEdit::setFileId(const FileId &fileId)
 
 void AbstractEdit::afterContentsChanged(int, int, int)
 {
+    // TODO(JM) This isn't connected anymore. What kind of workaround is this?
     QTextCursor tc = textCursor();
     int pos = tc.position();
     tc.setPosition(pos);
@@ -183,6 +191,27 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
     }
 }
 
+QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
+{
+    static QList<TextMark*> marks;
+    static int line = -1;
+    static NodeId group;
+    if (lineNr < 0) {
+        marks.clear();
+        line = -1;
+        return marks;
+    }
+    if (line != lineNr || group != mGroupId) {
+        marks.clear();
+        line = lineNr;
+        group = mGroupId;
+        for (TextMark* mark: mMarks->values(line)) {
+            if (mark->groupId() == group) marks << mark;
+        }
+    }
+    return marks;
+}
+
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
@@ -190,9 +219,9 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         mTipPos = QPoint();
         QToolTip::hideText();
     }
-    if (!mMarks) return;
+    if (!mMarks || mMarks->isEmpty()) return;
     QTextCursor cursor = cursorForPosition(e->pos());
-    QList<TextMark*> marks = mMarks->values(cursor.blockNumber());
+    QList<TextMark*> marks = cachedLineMarks(cursor.blockNumber());
     mMarksAtMouse.clear();
     int col = cursor.positionInBlock();
     for (TextMark* mark: marks) {
@@ -207,6 +236,11 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
     if (!mMarksAtMouse.isEmpty() && mMarksAtMouse.first()->isValidLink(true) && (mClickPos-e->pos()).manhattanLength() < 4) {
         mMarksAtMouse.first()->jumpToRefMark();
     }
+}
+
+void AbstractEdit::marksChanged()
+{
+    cachedLineMarks(-1);
 }
 
 

@@ -110,7 +110,6 @@ signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
 
 public slots:
-    void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -123,6 +122,7 @@ protected:
 
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void updateRunState(const QProcess::ProcessState &state);
+    void lstTexts(const QList<TextMark*> &marks, QStringList &result);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;

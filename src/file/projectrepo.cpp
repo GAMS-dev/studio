@@ -459,6 +459,13 @@ void ProjectRepo::setSelected(const QModelIndex& ind)
     mTreeModel->setSelected(ind);
 }
 
+void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
+{
+    ProjectRunGroupNode *runGroup = asRunGroup(groupId);
+    if (runGroup)
+        runGroup->lstTexts(marks, result);
+}
+
 void ProjectRepo::editorActivated(QWidget* edit)
 {
     ProjectFileNode *node = findFileNode(edit);
@@ -524,6 +531,8 @@ void ProjectRepo::setDebugMode(bool debug)
 {
     mDebugMode = debug;
     mTreeModel->setDebugMode(debug);
+    mFileRepo->setDebugMode(debug);
+    mTextMarkRepo->setDebugMode(debug);
 }
 
 

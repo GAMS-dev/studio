@@ -716,6 +716,10 @@ void MainWindow::on_actionClose_triggered()
 
 void MainWindow::on_actionClose_All_triggered()
 {
+    // move current tab to the end to avoid tab-change-signal
+    if (ui->mainTab->count() > 1)
+        ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), ui->mainTab->count()-1);
+
     for(int i = ui->mainTab->count(); i > 0; i--) {
         on_mainTab_tabCloseRequested(0);
     }
@@ -810,7 +814,9 @@ void MainWindow::activeTabChanged(int index)
 //    if (oldTab)
 //        oldTab->removeTextMarks(TextMark::match, true);
 
+    // TODO(JM) eventually crashes on close
     mRecent.setEditor(nullptr, this);
+
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     AbstractEdit* edit = FileMeta::toAbstractEdit(editWidget);
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
@@ -1521,6 +1527,8 @@ void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
     ProcessLogEdit* logEdit = new ProcessLogEdit(this);
     logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     FileMeta::initEditorType(logEdit);
+    logEdit->setFileId(logProc->file()->id());
+    logEdit->setGroupId(logProc->assignedRunGroup()->id());
 
     ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
     logProc->file()->addEditor(logEdit);

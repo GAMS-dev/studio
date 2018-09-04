@@ -36,13 +36,16 @@ public:
     void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
     QList<TextMark *> marks(FileId nodeId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
-    const FileMarks *marks(FileId nodeId);
+    const FileMarks *marks(FileId fileId);
 
+    void setDebugMode(bool debug);
+    bool debugMode() const;
 
 private:
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMarks*> mMarks;
+    bool mDebug = false;
 
 private:
     FileId ensureFileId(QString location);
