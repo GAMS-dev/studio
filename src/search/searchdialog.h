@@ -68,8 +68,6 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    QList<Result> findInFile(ProjectAbstractNode *node, bool skipFilters = false, QString searchRegex = "");
-
     void findNext(SearchDialog::SearchDirection direction);
     void clearResults();
     void updateReplaceActionAvailability();
@@ -100,9 +98,7 @@ private slots:
     void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString &arg1);
     void on_cb_caseSens_stateChanged(int state);
-
     void on_cb_wholeWords_stateChanged(int arg1);
-
     void on_cb_regex_stateChanged(int arg1);
 
 protected:
@@ -113,15 +109,17 @@ protected:
 private:
     QFlags<QTextDocument::FindFlag> getFlags();
     void simpleReplaceAll();
-    QList<Result> findInGroup(ProjectAbstractNode *fsc = nullptr);
+    QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
+    QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
+    QList<Result> findInGroup();
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction);
     void insertHistory();
     void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList *matches);
-    void findInDoc(QRegularExpression searchRegex, ProjectFileNode *fc, SearchResultList *matches);
+    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
 
     enum SearchScope {
         ThisFile = 0,
