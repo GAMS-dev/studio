@@ -40,6 +40,7 @@ public:
     FileMeta* fileMeta(const FileId &fileId) const;
     FileMeta* fileMeta(const QString &location) const;
     FileMeta* fileMeta(QWidget * const &editor) const;
+    QList<FileMeta*> fileMetas() const;
     FileMeta* findOrCreateFileMeta(QString location, FileType *knownType = nullptr);
     StudioSettings *settings() const;
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);

@@ -141,24 +141,15 @@ void SearchDialog::on_btn_FindAll_clicked()
 
 QList<Result> SearchDialog::findInAllFiles()
 {
-    QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+    QList<FileMeta*> files = mMain->fileRepo()->fileMetas();
     QList<Result> matches = findInFiles(files);
     return matches;
 }
 
 QList<Result> SearchDialog::findInOpenFiles()
 {
-    QList<FileMeta*> files;
-
-    QWidgetList editList = mMain->fileRepo()->editors();
-    for (QWidget* w : editList) {
-        FileMeta* fm = mMain->fileRepo()->fileMeta(w);
-
-        if (!files.contains(fm))
-            files.append(fm);
-    }
+    QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
     QList<Result> matches = findInFiles(files);
-
     return matches;
 }
 
@@ -233,7 +224,7 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
 
     if (!skipFilters) {
         if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fm->location()) == -1))
-                || fm->kind() == FileKind::Gdx) {
+                || (fm->kind() == FileKind::Gdx) || (fm->kind() == FileKind::Log)) {
             return QList<Result>(); // dont search here, return empty
         }
     }
