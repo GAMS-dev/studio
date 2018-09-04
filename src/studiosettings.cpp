@@ -222,6 +222,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
     mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
     mUserSettings->setValue("autoIndent", autoIndent());
+    mUserSettings->setValue("writeLog", writeLog());
+    mUserSettings->setValue("nrLogBackups", nrLogBackups());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -322,6 +324,8 @@ void StudioSettings::loadUserSettings()
     setWordUnderCursor(mUserSettings->value("wordUnderCursor", false).toBool());
     setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", false).toBool());
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
+    setWriteLog(mUserSettings->value("writeLog", true).toBool());
+    setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -352,6 +356,26 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
+}
+
+bool StudioSettings::writeLog() const
+{
+    return mWriteLog;
+}
+
+void StudioSettings::setWriteLog(bool writeLog)
+{
+    mWriteLog = writeLog;
+}
+
+int StudioSettings::nrLogBackups() const
+{
+    return mNrLogBackups;
+}
+
+void StudioSettings::setNrLogBackups(int nrLogBackups)
+{
+    mNrLogBackups = nrLogBackups;
 }
 
 void StudioSettings::restoreTabsAndProjects(MainWindow *main)

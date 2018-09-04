@@ -60,6 +60,8 @@ private slots:
     void on_btn_export_clicked();
     void on_btn_import_clicked();
     void on_btn_resetView_clicked();
+    void on_cb_writeLog_toggled(bool checked);
+    void on_sb_nrLogBackups_valueChanged(int arg1);
 
 private:
     Ui::SettingsDialog *ui;
