@@ -23,3 +23,4 @@ TEMPLATE = subdirs
 SUBDIRS += testcommonpaths
 #SUBDIRS += testgamsoption
 #SUBDIRS += testcplexoption
+#SUBDIRS += testconopt4option

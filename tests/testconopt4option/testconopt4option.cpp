@@ -38,6 +38,61 @@ void TestConopt4Option::initTestCase()
     }
 }
 
+void TestConopt4Option::testOptionEnumIntType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("numberOfEnumint");
+    QTest::addColumn<int>("defaultValue");
+
+    QTest::newRow("DF_Method")  << "DF_Method"   << true  << 2  << 0;
+}
+
+void TestConopt4Option::testOptionEnumIntType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, numberOfEnumint);
+    QFETCH(int, defaultValue);
+
+    QCOMPARE( mOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( mOption->getOptionType(optionName),  optTypeEnumInt);
+    QCOMPARE( mOption->getValueList(optionName).size() , numberOfEnumint);
+    QCOMPARE( mOption->getDefaultValue(optionName).toInt(), defaultValue );
+}
+
+void TestConopt4Option::testOptionDoubleType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<double>("lowerBound");
+    QTest::addColumn<double>("upperBound");
+    QTest::addColumn<double>("defaultValue");
+
+    QTest::newRow("Rat_NoPen")     <<  "Rat_NoPen"     << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.1;
+    QTest::newRow("Lim_Variable")  <<  "Lim_Variable"  << true  << 1e+5   << 1e+30                                << 1e+15;
+    QTest::newRow("Tol_Bound")     <<  "Tol_Bound"     << true  << 3e-13  << 1e-5                                 << 1e-7;
+    QTest::newRow("HEAPLIMIT")     <<  "HEAPLIMIT"     << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 1e+20;
+    QTest::newRow("HessianMemFac") <<  "HessianMemFac" << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("Lim_Hess_Est")  <<  "Lim_Hess_Est"  << true  << 1.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 1e+4;
+    QTest::newRow("Lim_Time")      <<  "Lim_Time"      << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 10000.0;
+}
+
+void TestConopt4Option::testOptionDoubleType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(double, lowerBound);
+    QFETCH(double, upperBound);
+    QFETCH(double, defaultValue);
+
+    QCOMPARE( mOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( mOption->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( mOption->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( mOption->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( mOption->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
 void TestConopt4Option::testOptionSynonym_data()
 {
     QTest::addColumn<QString>("optionSynonym");
@@ -51,7 +106,6 @@ void TestConopt4Option::testOptionSynonym_data()
     QTest::newRow("Flg_Crash")        << ""  << "Flg_Crash";
     QTest::newRow("LSSQRS")           << ""  << "LSSQRS";
     QTest::newRow("Lim_Variable")     << ""  << "Lim_Variable";
-
 }
 
 

@@ -33,14 +33,11 @@ class TestConopt4Option : public QObject
 private slots:
     void initTestCase();
 
-//    void testOptionEnumStrType_data();
-//    void testOptionEnumStrType();
+    void testOptionEnumIntType_data();
+    void testOptionEnumIntType();
 
-//    void testOptionEnumIntType_data();
-//    void testOptionEnumIntType();
-
-//    void testOptionDoubleType_data();
-//    void testOptionDoubleType();
+    void testOptionDoubleType_data();
+    void testOptionDoubleType();
 
     void testOptionSynonym_data();
     void testOptionSynonym();
