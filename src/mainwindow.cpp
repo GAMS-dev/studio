@@ -2021,7 +2021,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
-        if (!FileMeta::toGdxViewer(edit))
+        if (!FileMeta::toGdxViewer(edit) && edit != mWp)
             FileMeta::toAbstractEdit(edit)->setFont(font);
     }
     for (QWidget* log: openLogs())
