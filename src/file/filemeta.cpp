@@ -24,6 +24,7 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
+#include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
 
@@ -517,12 +518,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
             codecMibs = QList<int>();
         CodeEdit *codeEdit = new CodeEdit(tabWidget);
-        codeEdit->setSettings(mFileRepo->settings());
         codeEdit->setFileId(id());
         codeEdit->setTabChangesFocus(false);
         codeEdit->setGroupId(runGroup ? runGroup->id() : NodeId());
         initEditorType(codeEdit);
-        codeEdit->setFont(QFont(mFileRepo->settings()->fontFamily(), mFileRepo->settings()->fontSize()));
+        codeEdit->setFont(QFont(SettingsLocator::settings()->fontFamily(), SettingsLocator::settings()->fontSize()));
         QFontMetrics metric(codeEdit->font());
         codeEdit->setTabStopDistance(8*metric.width(' '));
 

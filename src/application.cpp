@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
+#include "locators/settingslocator.h"
 
 #include <iostream>
 #include <QMessageBox>
@@ -51,7 +52,8 @@ void Application::init()
     auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
                                         mCmdParser.resetSettings(),
                                         mCmdParser.resetView());
-    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow(settings));
+    SettingsLocator::provide(settings);
+    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
 
     connect(&mDistribValidator, &DistributionValidator::messageReceived,
             mMainWindow.get(), &MainWindow::appendSystemLog);

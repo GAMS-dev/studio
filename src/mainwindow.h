@@ -83,7 +83,7 @@ public:
     /// \param parent The parent widget.
     /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
-    explicit MainWindow(StudioSettings *settings, QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
@@ -115,7 +115,6 @@ public:
     void showResults(SearchResultList &results);
     void closeResults();
     RecentData *recent();
-    StudioSettings *settings() const;
     void openModelFromLib(QString glbFile, LibraryItem *model);
     void readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
@@ -304,7 +303,7 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData *mHistory;
-    std::unique_ptr<StudioSettings> mSettings;
+    StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     QVector<FileEventData> mFileEvents;

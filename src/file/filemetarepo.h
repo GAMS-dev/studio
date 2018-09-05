@@ -36,13 +36,12 @@ class FileMetaRepo : public QObject
 {
     Q_OBJECT
 public:
-    FileMetaRepo(QObject* parent, StudioSettings* settings);
+    FileMetaRepo(QObject* parent);
     FileMeta* fileMeta(const FileId &fileId) const;
     FileMeta* fileMeta(const QString &location) const;
     FileMeta* fileMeta(QWidget * const &editor) const;
     QList<FileMeta*> fileMetas() const;
     FileMeta* findOrCreateFileMeta(QString location, FileType *knownType = nullptr);
-    StudioSettings *settings() const;
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
     ProjectRepo *projectRepo() const;

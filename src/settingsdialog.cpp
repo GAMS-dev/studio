@@ -23,17 +23,19 @@
 #include "mainwindow.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
+#include "locators/settingslocator.h"
 #include "ui_settingsdialog.h"
 
 namespace gams {
 namespace studio {
 
 
-SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SettingsDialog), mSettings(settings), mMain(parent)
+SettingsDialog::SettingsDialog(MainWindow *parent) :
+    QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
 {
     ui->setupUi(this);
 
+    mSettings = SettingsLocator::settings();
     // load from settings to UI
     loadSettings();
     setModifiedStatus(false);

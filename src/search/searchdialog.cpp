@@ -24,6 +24,7 @@
 #include "../file.h"
 #include "../exception.h"
 #include "searchresultlist.h"
+#include "locators/settingslocator.h"
 
 #include <QCompleter>
 #include <QMessageBox>
@@ -36,7 +37,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    StudioSettings *mSettings = mMain->settings();
+    StudioSettings *mSettings = SettingsLocator::settings();
 
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());
