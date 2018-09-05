@@ -30,7 +30,7 @@ namespace studio {
 
 Option::Option(const QString &systemPath, const QString &optionFileName)
 {
-    mAvailable = readDefinition(systemPath, optionFileName);
+    mAvailable = readDefinitionFile(systemPath, optionFileName);
 }
 
 Option::~Option()
@@ -344,7 +344,7 @@ OptionDefinition Option::getOptionDefinition(const QString &optionName) const
     return mOption[optionName.toUpper()];
 }
 
-bool Option::readDefinition(const QString &systemPath, const QString &optionFileName)
+bool Option::readDefinitionFile(const QString &systemPath, const QString &optionFileName)
 {
     if (!CommonPaths::isSystemDirValid())
         return false;
@@ -394,7 +394,7 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
                      optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
 
                      QString nameStr = QString::fromLatin1(name).toUpper();
-                     OptionDefinition opt(QString::fromLatin1(name), static_cast<optOptionType>(iopttype), static_cast<optDataType>(itype), QString::fromLatin1(descript));
+                     OptionDefinition opt(i, QString::fromLatin1(name), static_cast<optOptionType>(iopttype), static_cast<optDataType>(itype), QString::fromLatin1(descript));
 
                      int helpContextNr;
                      optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);

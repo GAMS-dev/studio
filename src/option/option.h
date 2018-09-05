@@ -76,9 +76,10 @@ struct OptionValue {
 
 struct OptionDefinition {
     OptionDefinition() { }
-    OptionDefinition(QString n, optOptionType ot, optDataType dt, QString desc):
-         name(n), type(ot), dataType(dt), description(desc) { }
+    OptionDefinition(int num, QString n, optOptionType ot, optDataType dt, QString desc):
+         number(num), name(n), type(ot), dataType(dt), description(desc) { }
 
+    int number;
     QString name;
     QString synonym;
     optOptionType type;
@@ -146,7 +147,7 @@ private:
     QMap<int, OptionGroup> mOptionGroup;
 
     bool mAvailable;
-    bool readDefinition(const QString &systemPath, const QString &optionFileName);
+    bool readDefinitionFile(const QString &systemPath, const QString &optionFileName);
 };
 
 const double OPTION_VALUE_MAXDOUBLE = 1e+299;
