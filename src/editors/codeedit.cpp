@@ -1119,12 +1119,24 @@ void CodeEdit::updateExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
-        // has selection OR did not find parentheses
-        if ((textCursor().hasSelection() || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
-              // AND sender is not paren delay OR automatic WUC highlighting is activated
+        QString selectedText = textCursor().selectedText();
+        QString searchTerm = SearchLocator::searchDialog()->searchTerm();
+        bool regex = SearchLocator::searchDialog()->regex();
+
+        QRegularExpression regexp;
+        if (regex) regexp.setPattern(searchTerm);                      // treat as regex
+        else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
+        regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
+
+        QRegularExpressionMatch match = regexp.match(selectedText);
+        bool matching = match.isValid() && searchTerm.length() == match.lastCapturedIndex();
+
+        // this is needed for parenthesis matching
+        if ((matching || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+              // this is needed to wait for the timer
               && (sender() != &mParenthesesDelay || !mSettings->wordUnderCursor())
-                // AND setting HWUC without seleciton is checked OR tc has selection
-                && (mSettings->wordUnderCursor() || textCursor().hasSelection()) )
+                // this is needed for HWUC setting
+                && (mSettings->wordUnderCursor() || matching))
             extraSelCurrentWord(selections);
     }
     extraSelMatches(selections);
