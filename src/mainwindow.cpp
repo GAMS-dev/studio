@@ -1579,7 +1579,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ProjectLogNode* logProc = mProjectRepo.logNode(runGroup);
     if (!logProc->file()->isOpen()) {
         QWidget *wid = logProc->file()->createEdit(ui->logTabs, logProc->assignedRunGroup(), QList<int>() << logProc->file()->codecMib());
-        wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        if (FileMeta::toCodeEdit(wid) || FileMeta::toLogEdit(wid))
+            FileMeta::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
         if (FileMeta::toAbstractEdit(wid))
             FileMeta::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                         : AbstractEdit::NoWrap);
@@ -1773,7 +1774,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
-        edit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
+            FileMeta::toAbstractEdit(edit)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
 
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         if (focus) {
@@ -2014,7 +2016,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
-        if (!FileMeta::toGdxViewer(edit) && edit != mWp)
+        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
             FileMeta::toAbstractEdit(edit)->setFont(font);
     }
     for (QWidget* log: openLogs())
