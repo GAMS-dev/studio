@@ -21,6 +21,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QHashFunctions>
+
 namespace gams {
 namespace studio {
 
@@ -75,6 +77,12 @@ enum struct FileKind {
     Gdx,
     Ref,
 };
+
+inline unsigned int qHash(FileKind key, unsigned int seed)
+{
+    return ::qHash(static_cast<unsigned int>(key), seed);
+}
+
 enum struct EditorType {
     undefined = 0,
     source = 1,

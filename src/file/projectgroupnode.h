@@ -88,9 +88,7 @@ public:
     ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
-    FileId runFileId() const;
     QString lstFile() const;
-    void setLstFile(const QString &lstFile);
     QString tooltip() override;
     QString lstErrorText(int line) override;
     void setLstErrorText(int line, QString text);
@@ -99,6 +97,8 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+    QString specialFile(const FileKind& fk) const;
+    void setSpecialFile(const FileKind& fk, const QString& path);
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
@@ -107,8 +107,6 @@ public:
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
-
-public slots:
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -126,10 +124,10 @@ protected:
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
     FileMeta* mGmsFile = nullptr;
-    QString mLstFile;
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;
     QStringList mRunParametersHistory;
+    QHash<FileKind, QString> mSpecialFiles;
 
 };
 
