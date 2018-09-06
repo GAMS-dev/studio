@@ -430,17 +430,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
-    if (isReadOnly()) {
-        AbstractEdit::keyReleaseEvent(e);
-        return;
-    }
     // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
         return;
-    } else {
-        AbstractEdit::keyReleaseEvent(e);
     }
+        AbstractEdit::keyReleaseEvent(e);
 }
 
 void CodeEdit::adjustIndent(QTextCursor cursor)

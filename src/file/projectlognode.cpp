@@ -242,7 +242,9 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
+    bool isGamsLine = false;
     if (line.startsWith("*** Error ")) {
+        isGamsLine = true;
         bool ok = false;
         posA = 9;
         while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
@@ -297,6 +299,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         }
     }
     if (line.startsWith("--- ")) {
+        isGamsLine = true;
         int fEnd = line.indexOf('(');
         if (fEnd >= 0) {
             int nrEnd = line.indexOf(')', fEnd);
@@ -305,12 +308,14 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             if (ok) mLastSourceFile = line.mid(4, fEnd-4);
         }
     }
+
+    // Now we should have a system output
     while (posA < line.length()) {
         result += capture(line, posA, posB, 0, '[');
 
         if (posB+5 < line.length()) {
             TextMark::Type tmType = errFound ? TextMark::link : TextMark::none;
-            if (line.midRef(posB+1,4) == "LST:") {
+            if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
                 QString fName = mRunGroup->lstFile();
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
@@ -337,7 +342,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 }
                 marks << mark;
 
-            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
+            } else if (isGamsLine && (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:")) {
                 LinkData mark;
                 QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
                 int lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
@@ -356,10 +361,11 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                     state = Outside;
                 marks << mark;
 
-            } else if (line.midRef(posB+1,4) == "TIT:") {
+            } else if (isGamsLine && line.midRef(posB+1,4) == "TIT:") {
                 return QString();
             } else {
-                result += capture(line, posA, posB, 1, ']');
+                // no GAMS line: restore missing braces
+                result += '['+capture(line, posA, posB, 1, ']')+']';
                 posB++;
             }
         } else {

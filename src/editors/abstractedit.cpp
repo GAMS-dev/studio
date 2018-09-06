@@ -112,6 +112,10 @@ bool AbstractEdit::event(QEvent *e)
         e->ignore();
         return true;
     }
+    if (e->type() == QEvent::FontChange) {
+        QFontMetrics metric(font());
+        setTabStopDistance(8*metric.width(' '));
+    }
     return QPlainTextEdit::event(e);
 
     // TODO(JM) move to ProcessLogEdit
@@ -175,7 +179,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
 {
-    QPlainTextEdit::keyPressEvent(e);
+    QPlainTextEdit::keyReleaseEvent(e);
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);

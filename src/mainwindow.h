@@ -262,7 +262,6 @@ protected:
 private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName);
-    void openNode(const QModelIndex& index);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     bool processIfRenamed(FileId fileId);
@@ -281,9 +280,7 @@ private:
     void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
-    void ensureLogEditor(ProjectLogNode* logProc);
     int showSaveChangesMsgBox(const QString &text);
-    void addToTabs(QWidget *edit, QTabWidget *tabWidget, FileMeta *fileMeta, bool focus);
 
 private:
     Ui::MainWindow *ui;
