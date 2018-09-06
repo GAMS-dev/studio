@@ -20,9 +20,11 @@
 #include <QStandardPaths>
 
 #include "testconopt4option.h"
+//#include "option/option.h"
 #include "commonpaths.h"
 
 using gams::studio::Option;
+using gams::studio::OptionItem;
 using gams::studio::CommonPaths;
 
 
@@ -216,6 +218,51 @@ void TestConopt4Option::testInvalidOption()
 
     QCOMPARE( mOption->isValid(optionName), nameValid);
     QCOMPARE( mOption->isASynonym(optionName), synonymValid);
+}
+
+void TestConopt4Option::testWriteOptionFile()
+{
+    QList<OptionItem> items;
+    items.append(OptionItem("DF_Method", "1", -1, -1));
+    items.append(OptionItem("Lim_Iteration", "100", -1, -1));
+    items.append(OptionItem("cooptfile", "C:/Users/Dude/coopt.file", -1, -1));
+    items.append(OptionItem("Tol_Bound", "5.e-9", -1, -1));
+//    items.append(OptionItem("readfile", "this is read file", -1, -1));
+    QVERIFY( mOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
+
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt"));
+    int i = 0;
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+          QStringList strList = in.readLine().split( "=" );
+          OptionItem item = items.at(i);
+          switch(i) {
+          case 0:
+              QCOMPARE("DF_Method", item.key);
+              QCOMPARE("1", item.value);
+              break;
+          case 1:
+              QCOMPARE("Lim_Iteration", item.key);
+              QCOMPARE("100", item.value);
+              break;
+          case 2:
+              QCOMPARE("cooptfile", item.key);
+              QCOMPARE("C:/Users/Dude/coopt.file", item.value);
+              break;
+          case 3:
+              QCOMPARE("Tol_Bound", item.key);
+              QCOMPARE("5.E-9", item.value.toUpper());
+              break;
+          default:
+              break;
+          }
+          i++;
+       }
+       inputFile.close();
+    }
+    QCOMPARE(i, items.size());
+
 }
 
 void TestConopt4Option::cleanupTestCase()

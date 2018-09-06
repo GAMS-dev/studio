@@ -26,7 +26,8 @@ INCLUDEPATH += $$TESTSROOT/../src
 SRCPATH = $$TESTSROOT/../src
 
 HEADERS += \
-    testcplexoption.h
+    testcplexoption.h \
+    $$SRCPATH/option/option.h
 
 SOURCES += \
     testcplexoption.cpp \

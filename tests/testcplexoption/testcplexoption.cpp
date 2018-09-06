@@ -20,9 +20,11 @@
 #include <QStandardPaths>
 
 #include "commonpaths.h"
+#include "option/option.h"
 #include "testcplexoption.h"
 
 using gams::studio::Option;
+using gams::studio::OptionItem;
 using gams::studio::CommonPaths;
 
 void TestCPLEXOption::initTestCase()
@@ -417,6 +419,59 @@ void TestCPLEXOption::testInvalidOption()
 
     QCOMPARE( cplexOption->isValid(optionName), nameValid);
     QCOMPARE( cplexOption->isASynonym(optionName), synonymValid);
+}
+
+void TestCPLEXOption::testWriteOptionFile()
+{
+    QList<OptionItem> items;
+    items.append(OptionItem("advind", "1", -1, -1));
+    items.append(OptionItem("barepcomp", "1e-008", -1, -1));
+    items.append(OptionItem("computeserver", "https://somewhere.org/", -1, -1));
+    items.append(OptionItem("covers", "2", -1, -1));
+    items.append(OptionItem("feasopt", "0", -1, -1));
+    items.append(OptionItem("tuning", "str1 str2", -1, -1));
+    QVERIFY( cplexOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
+
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));
+    int i = 0;
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+          QStringList strList = in.readLine().split( "=" );
+          OptionItem item = items.at(i);
+          switch(i) {
+          case 0:
+              QCOMPARE("advind", item.key);
+              QCOMPARE("1", item.value);
+              break;
+          case 1:
+              QCOMPARE("barepcomp", item.key);
+              QCOMPARE("1E-008", item.value.toUpper());
+              break;
+          case 2:
+              QCOMPARE("computeserver", item.key);
+              QCOMPARE("https://somewhere.org/", item.value);
+              break;
+          case 3:
+              QCOMPARE("covers", item.key);
+              QCOMPARE("2", item.value);
+              break;
+          case 4:
+              QCOMPARE("feasopt", item.key);
+              QCOMPARE("0", item.value);
+              break;
+          case 5:
+              QCOMPARE("tuning", item.key);
+              QCOMPARE("str1 str2", item.value);
+              break;
+          default:
+              break;
+          }
+          i++;
+       }
+       inputFile.close();
+    }
+    QCOMPARE(i, items.size());
 }
 
 void TestCPLEXOption::cleanupTestCase()
