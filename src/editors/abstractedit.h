@@ -49,7 +49,7 @@ public:
     NodeId groupId() const;
     virtual void setGroupId(const NodeId &groupId);
 
-    void setMarks(const FileMarks *marks);
+    void setMarks(const LineMarks *marks);
     int markCount() { return mMarks ? mMarks->size() : 0; }
 
 signals:
@@ -59,6 +59,8 @@ public slots:
     void afterContentsChanged(int, int, int);
 
 protected:
+    friend class TextMarkRepo;
+
     AbstractEdit(QWidget *parent);
     void showToolTip(const QList<TextMark *> marks);
     QMimeData* createMimeDataFromSelection() const override;
@@ -71,10 +73,13 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e) override;
     virtual void marksChanged();
     QList<TextMark *> cachedLineMarks(int lineNr);
+    const LineMarks &marks() const;
+    const QList<TextMark*> &marksAtMouse() const;
 
+private:
     FileId mFileId;
     NodeId mGroupId;
-    const FileMarks *mMarks = nullptr;
+    const LineMarks *mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;

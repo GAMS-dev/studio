@@ -120,9 +120,7 @@ int CodeEdit::lineNumberAreaWidth()
     if(mSettings->showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    bool marksEmpty = true;
-    emit requestMarksEmpty(&marksEmpty);
-    space += (marksEmpty ? 0 : iconSize());
+    space += markCount() ? iconSize() : 0;
 
     return space;
 }
@@ -432,17 +430,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
-    if (isReadOnly()) {
-        AbstractEdit::keyReleaseEvent(e);
-        return;
-    }
     // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
         return;
-    } else {
-        AbstractEdit::keyReleaseEvent(e);
     }
+        AbstractEdit::keyReleaseEvent(e);
 }
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
@@ -536,7 +529,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
         AbstractEdit::mouseMoveEvent(e);
     }
     Qt::CursorShape shape = Qt::ArrowCursor;
-    if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+    if (!marksAtMouse().isEmpty()) marksAtMouse().first()->cursorShape(&shape, true);
     lineNumberArea()->setCursor(shape);
 }
 
@@ -611,6 +604,12 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     submenu->addActions(ret);
     menu->exec(e->globalPos());
     delete menu;
+}
+
+void CodeEdit::marksChanged()
+{
+    AbstractEdit::marksChanged();
+    updateLineNumberAreaWidth(0);
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -948,11 +947,6 @@ void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
     AbstractEdit::keyPressEvent(e);
 }
 
-CodeEdit::BlockEdit *CodeEdit::blockEdit() const
-{
-    return mBlockEdit;
-}
-
 AbstractEdit::EditorType CodeEdit::type()
 {
     return EditorType::CodeEdit;
@@ -1249,9 +1243,6 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    QHash<int, TextMark*> textMarks;
-    emit requestMarkHash(&textMarks, TextMark::all);
-
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1283,9 +1274,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if(mSettings->showLineNr())
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
 
-            if (textMarks.contains(blockNumber)) {
+            if (markCount() && marks().contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, textMarks.value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks().value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 

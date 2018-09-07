@@ -317,7 +317,10 @@ QString ProjectRunGroupNode::lstErrorText(int line)
 
 void ProjectRunGroupNode::setLstErrorText(int line, QString text)
 {
-    mLstErrorTexts.insert(line, text);
+    if (text.isEmpty())
+        DEB() << "Empty LST-text ignored for line " << line;
+    else
+        mLstErrorTexts.insert(line, text);
 }
 
 void ProjectRunGroupNode::clearLstErrorTexts()

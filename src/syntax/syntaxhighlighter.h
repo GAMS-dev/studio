@@ -52,8 +52,8 @@ class ErrorHighlighter : public QSyntaxHighlighter
 public:
     ErrorHighlighter(QTextDocument *doc);
     void highlightBlock(const QString &text);
-    const FileMarks *marks() const;
-    void setMarks(const FileMarks *marks);
+    const LineMarks *marks() const;
+    void setMarks(const LineMarks *marks);
 
 public slots:
     void syntaxState(int position, int &intState);
@@ -66,7 +66,7 @@ protected:
     int mLastSyntaxState = 0;
 
 private:
-    const FileMarks* mMarks = nullptr;
+    const LineMarks* mMarks = nullptr;
     QTextBlock mTestBlock;
 
 };

@@ -506,38 +506,53 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         gdxView->setFileId(id());
+        tabWidget->insertTab(tabWidget->currentIndex()+1, gdxView, name(NameModifier::editState));
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
+        tabWidget->insertTab(tabWidget->currentIndex()+1, refView, name(NameModifier::editState));
 //        refView->setFileId(id());
         res = refView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
             codecMibs = QList<int>();
-        CodeEdit *codeEdit = new CodeEdit(tabWidget);
-        codeEdit->setFileId(id());
-        codeEdit->setTabChangesFocus(false);
-        codeEdit->setGroupId(runGroup ? runGroup->id() : NodeId());
-        initEditorType(codeEdit);
-        codeEdit->setFont(QFont(SettingsLocator::settings()->fontFamily(), SettingsLocator::settings()->fontSize()));
-        QFontMetrics metric(codeEdit->font());
-        codeEdit->setTabStopDistance(8*metric.width(' '));
 
-        res = codeEdit;
+        AbstractEdit *edit = nullptr;
+        CodeEdit *codeEdit = nullptr;
+        ProcessLogEdit *logEdit = nullptr;
+        if (kind() == FileKind::Log) {
+            logEdit = new ProcessLogEdit(tabWidget);
+            initEditorType(logEdit);
+            edit = logEdit;
+            edit->setLineWrapMode(SettingsLocator::settings()->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
+                                                                                 : QPlainTextEdit::NoWrap);
+        } else {
+            codeEdit  = new CodeEdit(tabWidget);
+            initEditorType(codeEdit);
+            edit = codeEdit;
+            edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
+                                                                                : QPlainTextEdit::NoWrap);
+        }
+
+        edit->setFileId(id());
+        edit->setTabChangesFocus(false);
+        edit->setGroupId(runGroup ? runGroup->id() : NodeId());
+
+        res = edit;
         if (kind() == FileKind::Lst) {
             lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, location(), tabWidget);
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
+        tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
 
         if (kind() == FileKind::Log ||
-                kind() == FileKind::Lst ||
-                kind() == FileKind::Ref) {
-            codeEdit->setReadOnly(true);
-            codeEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+                kind() == FileKind::Lst) {
+            edit->setReadOnly(true);
+            edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
         if (mEditors.isEmpty() && kind() != FileKind::Log)
             load(codecMibs);

@@ -720,13 +720,14 @@ void MainWindow::on_actionClose_triggered()
 
 void MainWindow::on_actionClose_All_triggered()
 {
-    // move current tab to the end to avoid tab-change-signal
+    disconnect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     if (ui->mainTab->count() > 1)
         ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), ui->mainTab->count()-1);
 
     for(int i = ui->mainTab->count(); i > 0; i--) {
         on_mainTab_tabCloseRequested(0);
     }
+    connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 }
 
 void MainWindow::on_actionClose_All_Except_triggered()
@@ -1053,9 +1054,7 @@ void MainWindow::postGamsRun(NodeId origin)
         mSyslog->appendLog("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
-    QFileInfo fileInfo(runMeta->location());
-
-    if(groupNode && fileInfo.exists()) {
+    if(groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->lstFile();
         bool doFocus = groupNode == mRecent.group;
 
@@ -1359,16 +1358,18 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     ProjectAbstractNode* node = mProjectRepo.node(index);
     if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
         ProjectLogNode* logProc = mProjectRepo.logNode(node);
-        if (logProc->file()->editors().isEmpty()) {
-            ProcessLogEdit* logEdit = new ProcessLogEdit(this);
-            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
-            FileMeta::initEditorType(logEdit);
-            int ind = ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
-            logProc->file()->addEditor(logEdit);
-            ui->logTabs->setCurrentIndex(ind);
-        }
+        openFileNode(logProc, true, logProc->file()->codecMib());
+//        if (logProc->file()->editors().isEmpty()) {
+//            ProcessLogEdit* logEdit = new ProcessLogEdit(this);
+//            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
+//            FileMeta::initEditorType(logEdit);
+//            int ind = ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
+//            logProc->file()->addEditor(logEdit);
+//            ui->logTabs->setCurrentIndex(ind);
+//        }
     } else {
-        openNode(index);
+        ProjectFileNode *file = mProjectRepo.asFileNode(index);
+        if (file) openFileNode(file);
     }
 }
 
@@ -1520,25 +1521,14 @@ OptionWidget *MainWindow::gamsOptionWidget() const
     return mGamsOptionWidget;
 }
 
-void MainWindow::ensureLogEditor(ProjectLogNode* logProc)
-{
-    if (!logProc->file()->editors().isEmpty()) return;
-    ProcessLogEdit* logEdit = new ProcessLogEdit(this);
-    logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
-    FileMeta::initEditorType(logEdit);
-    logEdit->setFileId(logProc->file()->id());
-    logEdit->setGroupId(logProc->assignedRunGroup()->id());
-
-    ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
-    logProc->file()->addEditor(logEdit);
-    logEdit->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-}
-
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    if (!runGroup) {
+        DEB() << "Nothing to be executed.";
+        return;
+    }
 
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     runGroup->clearLstErrorTexts();
@@ -1581,11 +1571,18 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QSet<TextMark::Type> markTypes;
     markTypes << TextMark::error << TextMark::link;
     for (ProjectFileNode *node: runGroup->listFiles(true))
-        mTextMarkRepo.removeMarks(node->file()->id(), markTypes);
+        mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
     ProjectLogNode* logProc = mProjectRepo.logNode(runGroup);
-    ensureLogEditor(logProc);
+    if (!logProc->file()->isOpen()) {
+        QWidget *wid = logProc->file()->createEdit(ui->logTabs, logProc->assignedRunGroup(), QList<int>() << logProc->file()->codecMib());
+        if (FileMeta::toCodeEdit(wid) || FileMeta::toLogEdit(wid))
+            FileMeta::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        if (FileMeta::toAbstractEdit(wid))
+            FileMeta::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                        : AbstractEdit::NoWrap);
+    }
     if (!mSettings->clearLog()) {
         logProc->markOld();
     } else {
@@ -1715,10 +1712,16 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (!logNode) return;
     if (createMissing) {
         moveToEnd = true;
-        ensureLogEditor(logNode);
+        if (logNode->file()->isOpen()) {
+            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
+            wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            if (FileMeta::toAbstractEdit(wid))
+                FileMeta::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                            : AbstractEdit::NoWrap);
+        }
     }
-    if (!logNode->file()->editors().isEmpty()) {
-        AbstractEdit* logEdit = FileMeta::toAbstractEdit(logNode->file()->editors().first());
+    if (logNode->file()->isOpen()) {
+        ProcessLogEdit* logEdit = FileMeta::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != mResultsView)
@@ -1737,18 +1740,6 @@ void MainWindow::storeTree()
 {
     // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
-}
-
-void MainWindow::addToTabs(QWidget *edit, QTabWidget *tabWidget, FileMeta *fileMeta, bool focus)
-{
-    tabWidget->insertTab(tabWidget->currentIndex()+1, edit, fileMeta->name(NameModifier::editState));
-    connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    if (focus) {
-        tabWidget->setCurrentWidget(edit);
-        updateMenuToCodec(fileMeta->codecMib());
-        mRecent.setEditor(tabWidget->currentWidget(), this);
-        mRecent.editFileId = fileMeta->id();
-    }
 }
 
 void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
@@ -1781,7 +1772,18 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
-        addToTabs(edit, tabWidget, fileMeta, focus);
+        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
+            FileMeta::toAbstractEdit(edit)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+
+        connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        if (focus) {
+            tabWidget->setCurrentWidget(edit);
+            updateMenuToCodec(fileMeta->codecMib());
+            if (tabWidget == ui->mainTab) {
+                mRecent.setEditor(tabWidget->currentWidget(), this);
+                mRecent.editFileId = fileMeta->id();
+            }
+        }
         if (fileMeta->kind() == FileKind::Ref) {
             reference::ReferenceViewer *refView = FileMeta::toReferenceViewer(edit);
             connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
@@ -1912,12 +1914,6 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
     return node;
 }
 
-void MainWindow::openNode(const QModelIndex& index)
-{
-    ProjectFileNode *file = mProjectRepo.asFileNode(index);
-    if (file) openFileNode(file);
-}
-
 void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 {
     QFileInfo fi(item.location);
@@ -2018,7 +2014,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
-        if (!FileMeta::toGdxViewer(edit) && edit != mWp)
+        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
             FileMeta::toAbstractEdit(edit)->setFont(font);
     }
     for (QWidget* log: openLogs())
@@ -2029,33 +2025,19 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 
 void MainWindow::updateEditorLineWrapping()
 {// TODO(AF) split logs and editors
-    QPlainTextEdit::LineWrapMode wrapModeEditor;
-    if(mSettings->lineWrapEditor())
-        wrapModeEditor = QPlainTextEdit::WidgetWidth;
-    else
-        wrapModeEditor = QPlainTextEdit::NoWrap;
-
+    QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
+                                                                              : QPlainTextEdit::NoWrap;
+    QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
+                                                                                  : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
-
     for (int i = 0; i < editList.size(); i++) {
         AbstractEdit* ed = FileMeta::toAbstractEdit(editList.at(i));
         if (ed) {
             ed->blockCountChanged(0); // force redraw for line number area
-            ed->setLineWrapMode(wrapModeEditor);
+            ed->setLineWrapMode(FileMeta::toLogEdit(ed) ? wrapModeProcess : wrapModeEditor);
         }
     }
 
-    QPlainTextEdit::LineWrapMode wrapModeProcess;
-    if(mSettings->lineWrapProcess())
-        wrapModeProcess = QPlainTextEdit::WidgetWidth;
-    else
-        wrapModeProcess = QPlainTextEdit::NoWrap;
-
-    QList<AbstractEdit*> logList = openLogs();
-    for (int i = 0; i < logList.size(); i++) {
-        if (logList.at(i))
-            logList.at(i)->setLineWrapMode(wrapModeProcess);
-    }
 }
 
 void MainWindow::readTabs(const QJsonObject &json)
@@ -2167,8 +2149,8 @@ void MainWindow::on_actionCopy_triggered()
         AbstractEdit *ae = FileMeta::toAbstractEdit(focusWidget());
         if (!ae) return;
         CodeEdit *ce = FileMeta::toCodeEdit(ae);
-        if (ce && ce->blockEdit()) {
-            ce->blockEdit()->selectionToClipboard();
+        if (ce) {
+            ce->copySelection();
         } else {
             ae->copy();
         }
@@ -2196,14 +2178,7 @@ void MainWindow::on_actionCut_triggered()
 {
     CodeEdit* ce= FileMeta::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        ce->blockEdit()->selectionToClipboard();
-        ce->blockEdit()->replaceBlockText("");
-        return;
-    } else {
-        ce->cut();
-    }
+    ce->cutSelection();
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()
@@ -2348,14 +2323,6 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     mClosedTabs.removeLast();
     if (file.exists()) {
         openFilePath(file.fileName());
-
-        // TODO(JM) the .tabBar() has a method to move a tab to another index
-//        QWidget* pPreviouslyClosedwidget = ui->mainTab->widget(ui->mainTab->count()-1);
-//        QString Tabtext = ui->mainTab->tabText(ui->mainTab->count()-1);
-//        ui->mainTab->insertTab(mClosedTabsIndexes.last(),pPreviouslyClosedwidget,Tabtext);
-//        ui->mainTab->setCurrentIndex(mClosedTabsIndexes.last());
-//        mClosedTabsIndexes.removeLast();
-
         ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), mClosedTabsIndexes.takeLast());
     } else
         on_actionRestore_Recently_Closed_Tab_triggered();

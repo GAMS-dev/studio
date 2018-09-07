@@ -20,6 +20,7 @@
 
 #ifndef COMMON_H
 #define COMMON_H
+#include <qhashfunctions.h>
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,10 @@ public:
         return PhantomInt(prev);
     }
 };
+template <typename PHANTOM_TYPE>
+unsigned int qHash(PhantomInt<PHANTOM_TYPE> key, unsigned int seed) {
+    return ::qHash(static_cast<unsigned int>(key), seed);
+}
 
 struct PiFileId {};
 struct PiNodeId {};
@@ -52,11 +57,11 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
-
 enum struct NameModifier {
     raw,
     editState
 };
+
 enum struct NodeType {
     root,
     group,
@@ -64,6 +69,7 @@ enum struct NodeType {
     file,
     log
 };
+
 enum struct FileKind {
     None,
     Gsp,
@@ -75,6 +81,7 @@ enum struct FileKind {
     Gdx,
     Ref,
 };
+
 enum struct EditorType {
     undefined = 0,
     source = 1,
@@ -83,8 +90,6 @@ enum struct EditorType {
     gdx = 6,
     ref = 7,
 };
-
-
 
 }
 }

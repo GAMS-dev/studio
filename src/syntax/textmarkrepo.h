@@ -13,7 +13,7 @@ namespace studio {
 class FileMetaRepo;
 class ProjectRepo;
 
-typedef QMultiMap<int, TextMark*> FileMarks;
+typedef QMultiMap<int, TextMark*> LineMarks;
 
 class TextMarkRepo: public QObject
 {
@@ -25,6 +25,7 @@ public:
 
     inline void deleteMark(TextMark *tm);
     void removeMark(TextMark *tm);
+    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
     TextMark* createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value, int line, int column, int size = 0);
@@ -36,7 +37,7 @@ public:
     void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
     QList<TextMark *> marks(FileId nodeId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
-    const FileMarks *marks(FileId fileId);
+    const LineMarks *marks(FileId fileId);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -44,11 +45,12 @@ public:
 private:
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
-    QHash<FileId, FileMarks*> mMarks;
+    QHash<FileId, LineMarks*> mMarks;
     bool mDebug = false;
 
 private:
     FileId ensureFileId(QString location);
+    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types);
 
 };
 

@@ -130,6 +130,7 @@ public:
     void extendedUndo();
     void convertToLower();
     void convertToUpper();
+    EditorType type() override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -141,6 +142,7 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void marksChanged() override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -248,12 +250,6 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
 
-public:
-    BlockEdit *blockEdit() const;
-
-    // AbstractEditor interface
-public:
-    EditorType type() override;
 };
 
 class LineNumberArea : public QWidget

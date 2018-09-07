@@ -35,12 +35,12 @@ ErrorHighlighter::ErrorHighlighter(QTextDocument *doc)
 {
 }
 
-const FileMarks *ErrorHighlighter::marks() const
+const LineMarks *ErrorHighlighter::marks() const
 {
     return mMarks;
 }
 
-void ErrorHighlighter::setMarks(const FileMarks* marks)
+void ErrorHighlighter::setMarks(const LineMarks* marks)
 {
     mMarks = marks;
     // TODO(JM) repaint all lines that changed in marks
