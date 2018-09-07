@@ -57,6 +57,7 @@ private slots:
     void testInvalidOption_data();
     void testInvalidOption();
 
+    void testReadOptionFile();
     void testWriteOptionFile();
 
     void cleanupTestCase();

@@ -39,12 +39,15 @@ enum OptionErrorType {
 
 struct OptionItem {
     OptionItem() { }
+    OptionItem(QString k, QString v) :
+        key(k), value(v) { }
     OptionItem(QString k, QString v, optOptionType t) :
         key(k), value(v), type(t) { }
 
     QString key;
     QString value;
     optOptionType type;
+    OptionErrorType error = No_Error;
 };
 
 struct GamsOptionItem {
@@ -152,7 +155,8 @@ public:
 
     QMap<QString, OptionDefinition> getOption() const;
 
-    bool writeOptionParameterFile(QList<GamsOptionItem> items, const QString &path, const QString &fileName);
+    QList<OptionItem> readOptionParameterFile( const QString &path, const QString &fileName);
+    bool writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName);
 private:
     QString mOptionDefinitionPath;
     QString mOptionDefinitionFile;
