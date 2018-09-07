@@ -242,9 +242,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    bool isGamsLine = false;
+    bool isGamsLine = line.startsWith("*** ");
     if (line.startsWith("*** Error ")) {
-        isGamsLine = true;
         bool ok = false;
         posA = 9;
         while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
