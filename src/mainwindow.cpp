@@ -1601,7 +1601,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->dockLogView->setVisible(true);
 
     // select gms-file  and working dir to run
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->file()->location() : runGroup->runnableGms()->location());
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
+    qDebug() << "gmsFilePath" << gmsFilePath; // rogo: delete
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append

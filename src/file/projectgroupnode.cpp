@@ -242,7 +242,9 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
 ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
 {
     if (!mLogNode) {
-        QFileInfo fi = mGmsFile ? QFileInfo(mGmsFile->location()) : QFileInfo(location()+"/"+name()+".log");
+        QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
+                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+".log");;
+        qDebug() << "fi" << fi; // rogo: delete
         QString logName = fi.path()+"/"+fi.completeBaseName()+".log";
         FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
@@ -252,8 +254,7 @@ ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRe
 
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
-    // TODO(JM) distinct between Unix/Apple and Windows (for Windows add "" around path before execution)
-    return mGmsFile;
+    return fileRepo()->fileMeta(specialFile(FileKind::Gms));
 }
 
 void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
@@ -277,15 +278,16 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
         return;
     }
     if (!gmsFile) {
-        mGmsFile = nullptr;
-        setSpecialFile(FileKind::Lst, "a");
+        setSpecialFile(FileKind::Gms, "");
+        setSpecialFile(FileKind::Lst, "");
         return;
     }
-    mGmsFile = gmsFile;
-    setLocation(QFileInfo(mGmsFile->location()).absoluteDir().path());
-    QString location = gmsFile->location();
-    QString lstName = QFileInfo(location).completeBaseName() + ".lst";
-    setSpecialFile(FileKind::Lst, lstName);
+    qDebug() << "setting gms" << gmsFile->location(); // rogo: delete
+    setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
+    QString gmsPath = gmsFile->location();
+    QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
+    setSpecialFile(FileKind::Gms, gmsPath);
+    setSpecialFile(FileKind::Lst, lstPath);
     if (logNode()) logNode()->resetLst();
 }
 
@@ -428,14 +430,9 @@ QString ProjectRunGroupNode::specialFile(const FileKind &fk) const
 
 void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path)
 {
-    QFileInfo fi(path);
-    QString fullPath;
     // TODO(JM) store FileMeta or FileNode instead?
-
-    qDebug() << "gmsBasePath" << QFileInfo(mGmsFile->location()).absolutePath(); // rogo: delete
-    qDebug() << "grpLocation" << location(); // rogo: delete
-
-    if (fi.isRelative()) fullPath = QFileInfo(mGmsFile->location()).absolutePath() + "/" + path;
+    QString fullPath = path;
+    if (QFileInfo(path).isRelative()) fullPath = QFileInfo(location()).absolutePath() + "/" + path;
 
     mSpecialFiles.insert(fk, fullPath);
 }

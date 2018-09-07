@@ -123,7 +123,6 @@ protected:
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
-    FileMeta* mGmsFile = nullptr;
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;
     QStringList mRunParametersHistory;
