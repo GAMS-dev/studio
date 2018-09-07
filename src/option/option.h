@@ -37,6 +37,16 @@ enum OptionErrorType {
     Unknown_Error
 };
 
+struct OptionItem {
+    OptionItem() { }
+    OptionItem(QString k, QString v, optOptionType t) :
+        key(k), value(v), type(t) { }
+
+    QString key;
+    QString value;
+    optOptionType type;
+};
+
 struct GamsOptionItem {
     GamsOptionItem() { }
     GamsOptionItem(QString k, QString v, int kpos, int vpos) :
