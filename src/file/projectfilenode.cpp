@@ -133,7 +133,7 @@ void ProjectFileNode::enhanceMarksFromLst()
         file()->load(file()->codecMib());
     }
     // TODO(JM) Perform a large-file-test if this should have an own thread
-    const FileMarks* marks = textMarkRepo()->marks(file()->id());
+    const LineMarks* marks = textMarkRepo()->marks(file()->id());
     //                     0     1 2       3 4                    5               6           7       8
     //                            (    $nr               |        nr+description      |  descr.   |  any  )
     QRegularExpression rex("\\*{4}((\\s+)\\$(([0-9,]+).*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");

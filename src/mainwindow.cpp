@@ -1052,9 +1052,7 @@ void MainWindow::postGamsRun(NodeId origin)
         mSyslog->appendLog("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
-    QFileInfo fileInfo(runMeta->location());
-
-    if(groupNode && fileInfo.exists()) {
+    if(groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->lstFile();
         bool doFocus = groupNode == mRecent.group;
 
@@ -1530,7 +1528,10 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    if (!runGroup) {
+        DEB() << "Nothing to be executed.";
+        return;
+    }
 
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     runGroup->clearLstErrorTexts();
@@ -1573,7 +1574,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QSet<TextMark::Type> markTypes;
     markTypes << TextMark::error << TextMark::link;
     for (ProjectFileNode *node: runGroup->listFiles(true))
-        mTextMarkRepo.removeMarks(node->file()->id(), markTypes);
+        mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
     ProjectLogNode* logProc = mProjectRepo.logNode(runGroup);
@@ -2151,8 +2152,8 @@ void MainWindow::on_actionCopy_triggered()
         AbstractEdit *ae = FileMeta::toAbstractEdit(focusWidget());
         if (!ae) return;
         CodeEdit *ce = FileMeta::toCodeEdit(ae);
-        if (ce && ce->blockEdit()) {
-            ce->blockEdit()->selectionToClipboard();
+        if (ce) {
+            ce->copySelection();
         } else {
             ae->copy();
         }
@@ -2180,14 +2181,7 @@ void MainWindow::on_actionCut_triggered()
 {
     CodeEdit* ce= FileMeta::toCodeEdit(focusWidget());
     if (!ce || ce->isReadOnly()) return;
-
-    if (ce->blockEdit()) {
-        ce->blockEdit()->selectionToClipboard();
-        ce->blockEdit()->replaceBlockText("");
-        return;
-    } else {
-        ce->cut();
-    }
+    ce->cutSelection();
 }
 
 void MainWindow::on_actionReset_Zoom_triggered()

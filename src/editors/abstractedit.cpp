@@ -68,7 +68,7 @@ void AbstractEdit::setGroupId(const NodeId &groupId)
     marksChanged();
 }
 
-void AbstractEdit::setMarks(const FileMarks *marks)
+void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;
     marksChanged();
@@ -213,6 +213,16 @@ QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
     return mCacheMarks;
 }
 
+const LineMarks &AbstractEdit::marks() const
+{
+    return *mMarks;
+}
+
+const QList<TextMark *> &AbstractEdit::marksAtMouse() const
+{
+    return mMarksAtMouse;
+}
+
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
@@ -221,7 +231,8 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         QToolTip::hideText();
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
-    if (!mMarks || mMarks->isEmpty()) {
+    if (!mMarks || mMarks->isEmpty() || !isReadOnly()) {
+        // No marks or the text is editable
         viewport()->setCursor(shape);
         return;
     }
@@ -241,9 +252,11 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
-    if (!mMarksAtMouse.isEmpty() && mMarksAtMouse.first()->isValidLink(true) && (mClickPos-e->pos()).manhattanLength() < 4) {
-        mMarksAtMouse.first()->jumpToRefMark();
-    }
+    if (!isReadOnly()) return;
+    if (mMarksAtMouse.isEmpty() || !mMarksAtMouse.first()->isValidLink(true)) return;
+    if ((mClickPos-e->pos()).manhattanLength() >= 4) return;
+
+    mMarksAtMouse.first()->jumpToRefMark();
 }
 
 void AbstractEdit::marksChanged()
