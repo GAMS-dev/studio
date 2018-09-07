@@ -117,41 +117,6 @@ bool AbstractEdit::event(QEvent *e)
         setTabStopDistance(8*metric.width(' '));
     }
     return QPlainTextEdit::event(e);
-
-    // TODO(JM) move to ProcessLogEdit
-    /*if (mMetrics.fileType() == FileType::Log
-        && (event->type() == QEvent::MouseButtonDblClick
-            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
-        QPoint pos = mouseEvent->pos();
-        QTextCursor cursor = edit->cursorForPosition(pos);
-        if (mMarks && (mMarks->marksForBlock(cursor.block(), TextMark::error).isEmpty()
-                       || mouseEvent->modifiers()==Qt::ControlModifier)) {
-            int line = cursor.blockNumber();
-            TextMark* linkMark = nullptr;
-            for (TextMark *mark: mMarks->marks()) {
-                if (mark->type() == TextMark::link && mark->refFileKind() == FileType::Lst) {
-                    if (mark->line() < line)
-                        linkMark = mark;
-                    else if (!linkMark)
-                        linkMark = mark;
-                    else if (line+1 < mark->line()+mark->spread())
-                        break;
-                    else if (qAbs(linkMark->line()-line) < qAbs(line-mark->line()))
-                        break;
-                    else {
-                        linkMark = mark;
-                        break;
-                    }
-                }
-            }
-            if (linkMark) {
-                linkMark->jumpToRefMark(true);
-                edit->setFocus();
-            }
-        }
-
-    } else*/
-
 }
 
 bool AbstractEdit::eventFilter(QObject *o, QEvent *e)

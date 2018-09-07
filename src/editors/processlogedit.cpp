@@ -28,6 +28,57 @@ ProcessLogEdit::ProcessLogEdit(QWidget *parent)
     setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 
+void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    jumpToLst(event->pos(), false);
+    /*if (mMetrics.fileType() == FileType::Log
+        && (event->type() == QEvent::MouseButtonDblClick
+            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
+
+    } else*/
+
+}
+
+
+void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
+{
+    AbstractEdit::mouseReleaseEvent(event);
+    if (event->modifiers()==Qt::ControlModifier)
+        jumpToLst(event->pos(), true);
+}
+
+void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
+{
+    QTextCursor cursor = cursorForPosition(pos);
+    if (marks().values(cursor.blockNumber()).isEmpty() || fuzzy) {
+
+        // TODO(JM) only check for TextMark::error
+
+        int line = cursor.blockNumber();
+        TextMark* linkMark = nullptr;
+        for (TextMark *mark: marks()) {
+            if (mark->type() == TextMark::link && mark->refFileKind() == FileKind::Lst) {
+                if (mark->line() < line)
+                    linkMark = mark;
+                else if (!linkMark)
+                    linkMark = mark;
+                else if (line+1 < mark->line()+mark->spread())
+                    break;
+                else if (qAbs(linkMark->line()-line) < qAbs(line-mark->line()))
+                    break;
+                else {
+                    linkMark = mark;
+                    break;
+                }
+            }
+        }
+        if (linkMark) {
+            linkMark->jumpToRefMark(true);
+//            setFocus();
+        }
+    }
+}
+
 AbstractEdit::EditorType ProcessLogEdit::type()
 {
     return EditorType::ProcessLog;
