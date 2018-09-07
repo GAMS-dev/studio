@@ -384,7 +384,7 @@ void ProjectGroupNode::saveGroup()
     }
 }
 
-QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
+QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QList<GamsOptionItem> itemList)
 {
     // set studio default parameters
     QMap<QString, QString> defaultGamsArgs;
@@ -402,7 +402,7 @@ QStringList ProjectGroupNode::analyzeParameters(const QString &gmsLocation, QLis
     setLstFile(fi.absolutePath() + "/" + fi.baseName() + ".lst");
 
     // iterate options
-    for (OptionItem item : itemList) {
+    for (GamsOptionItem item : itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {

@@ -24,7 +24,7 @@
 #include "testcplexoption.h"
 
 using gams::studio::Option;
-using gams::studio::OptionItem;
+using gams::studio::GamsOptionItem;
 using gams::studio::CommonPaths;
 
 void TestCPLEXOption::initTestCase()
@@ -423,13 +423,13 @@ void TestCPLEXOption::testInvalidOption()
 
 void TestCPLEXOption::testWriteOptionFile()
 {
-    QList<OptionItem> items;
-    items.append(OptionItem("advind", "1", -1, -1));
-    items.append(OptionItem("barepcomp", "1e-008", -1, -1));
-    items.append(OptionItem("computeserver", "https://somewhere.org/", -1, -1));
-    items.append(OptionItem("covers", "2", -1, -1));
-    items.append(OptionItem("feasopt", "0", -1, -1));
-    items.append(OptionItem("tuning", "str1 str2", -1, -1));
+    QList<GamsOptionItem> items;
+    items.append(GamsOptionItem("advind", "1", -1, -1));
+    items.append(GamsOptionItem("barepcomp", "1e-008", -1, -1));
+    items.append(GamsOptionItem("computeserver", "https://somewhere.org/", -1, -1));
+    items.append(GamsOptionItem("covers", "2", -1, -1));
+    items.append(GamsOptionItem("feasopt", "0", -1, -1));
+    items.append(GamsOptionItem("tuning", "str1 str2", -1, -1));
     QVERIFY( cplexOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
 
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));
@@ -438,7 +438,7 @@ void TestCPLEXOption::testWriteOptionFile()
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
           QStringList strList = in.readLine().split( "=" );
-          OptionItem item = items.at(i);
+          GamsOptionItem item = items.at(i);
           switch(i) {
           case 0:
               QCOMPARE("advind", item.key);

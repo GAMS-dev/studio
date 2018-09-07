@@ -45,11 +45,11 @@ public:
     CommandLineTokenizer(const QString &optionFileName);
     ~CommandLineTokenizer();
 
-    QList<OptionItem> tokenize(const QString &commandLineStr);
-    QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
-    QList<OptionError> format(const QList<OptionItem> &items);
+    QList<GamsOptionItem> tokenize(const QString &commandLineStr);
+    QList<GamsOptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
+    QList<OptionError> format(const QList<GamsOptionItem> &items);
     QString normalize(const QString &commandLineStr);
-    QString normalize(const QList<OptionItem> &items);
+    QString normalize(const QList<GamsOptionItem> &items);
 
     QTextCharFormat invalidKeyFormat() const;
     QTextCharFormat invalidValueFormat() const;
@@ -64,7 +64,7 @@ public:
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
-    void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
+    void formatItemLineEdit(QLineEdit* lineEdit, const QList<GamsOptionItem> &optionItems);
 
 private:
     QTextCharFormat mInvalidKeyFormat;

@@ -37,11 +37,11 @@ enum OptionErrorType {
     Unknown_Error
 };
 
-struct OptionItem {
-    OptionItem() { }
-    OptionItem(QString k, QString v, int kpos, int vpos) :
+struct GamsOptionItem {
+    GamsOptionItem() { }
+    GamsOptionItem(QString k, QString v, int kpos, int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
-    OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
+    GamsOptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     QString key;
@@ -142,7 +142,7 @@ public:
 
     QMap<QString, OptionDefinition> getOption() const;
 
-    bool writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName);
+    bool writeOptionParameterFile(QList<GamsOptionItem> items, const QString &path, const QString &fileName);
 private:
     QString mOptionDefinitionPath;
     QString mOptionDefinitionFile;

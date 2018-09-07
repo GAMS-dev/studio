@@ -33,7 +33,7 @@ class ProjectLogNode;
 class ProjectFileNode;
 class GamsProcess;
 class TextMarkList;
-struct OptionItem;
+struct GamsOptionItem;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
@@ -82,7 +82,7 @@ public:
     QString lstFile() const;
     void setLstFile(const QString &lstFile);
 
-    QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+    QStringList analyzeParameters(const QString &gmsLocation, QList<GamsOptionItem> itemList);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

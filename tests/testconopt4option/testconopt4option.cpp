@@ -24,7 +24,7 @@
 #include "commonpaths.h"
 
 using gams::studio::Option;
-using gams::studio::OptionItem;
+using gams::studio::GamsOptionItem;
 using gams::studio::CommonPaths;
 
 
@@ -222,11 +222,11 @@ void TestConopt4Option::testInvalidOption()
 
 void TestConopt4Option::testWriteOptionFile()
 {
-    QList<OptionItem> items;
-    items.append(OptionItem("DF_Method", "1", -1, -1));
-    items.append(OptionItem("Lim_Iteration", "100", -1, -1));
-    items.append(OptionItem("cooptfile", "C:/Users/Dude/coopt.file", -1, -1));
-    items.append(OptionItem("Tol_Bound", "5.e-9", -1, -1));
+    QList<GamsOptionItem> items;
+    items.append(GamsOptionItem("DF_Method", "1", -1, -1));
+    items.append(GamsOptionItem("Lim_Iteration", "100", -1, -1));
+    items.append(GamsOptionItem("cooptfile", "C:/Users/Dude/coopt.file", -1, -1));
+    items.append(GamsOptionItem("Tol_Bound", "5.e-9", -1, -1));
 //    items.append(OptionItem("readfile", "this is read file", -1, -1));
     QVERIFY( mOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
 
@@ -236,7 +236,7 @@ void TestConopt4Option::testWriteOptionFile()
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
           QStringList strList = in.readLine().split( "=" );
-          OptionItem item = items.at(i);
+          GamsOptionItem item = items.at(i);
           switch(i) {
           case 0:
               QCOMPARE("DF_Method", item.key);

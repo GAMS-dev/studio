@@ -232,9 +232,9 @@ bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent 
 
      beginInsertRows(QModelIndex(), row, row + count - 1);
      if (mOptionItem.size() == row)
-         mOptionItem.append(OptionItem("[KEY]", "[VALUE]", -1, -1));
+         mOptionItem.append(GamsOptionItem("[KEY]", "[VALUE]", -1, -1));
      else
-         mOptionItem.insert(row, OptionItem(OptionItem("[KEY]", "[VALUE]", -1, -1)));
+         mOptionItem.insert(row, GamsOptionItem(GamsOptionItem("[KEY]", "[VALUE]", -1, -1)));
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);
@@ -269,7 +269,7 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     return true;
 }
 
-QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
+QList<GamsOptionItem> OptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
 }
@@ -340,7 +340,7 @@ void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 
 void OptionTableModel::validateOption()
 {
-   for(OptionItem& item : mOptionItem) {
+   for(GamsOptionItem& item : mOptionItem) {
        if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            if ( gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(item.key)) )
                item.error = OptionErrorType::No_Error;

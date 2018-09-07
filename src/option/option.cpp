@@ -345,7 +345,7 @@ QMap<QString, OptionDefinition> Option::getOption() const
     return mOption;
 }
 
-bool Option::writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName)
+bool Option::writeOptionParameterFile(QList<GamsOptionItem> items, const QString &path, const QString &fileName)
 {
     optHandle_t mOPTHandle;
 
@@ -362,7 +362,7 @@ bool Option::writeOptionParameterFile(QList<OptionItem> items, const QString &pa
         return false;
     }
 
-    for (OptionItem item : items) {
+    for (GamsOptionItem item : items) {
         QString key = item.key;
         QVariant value = item.value;
         if (!isValid(item.key))

@@ -58,13 +58,13 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
 
-    QList<OptionItem> optionItem = mGamsOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
+    QList<GamsOptionItem> optionItem = mGamsOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mGamsOptionTokenizer->normalize(optionItem);
     OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mGamsOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( optionTableModel );
     connect(optionTableModel, &OptionTableModel::optionModelChanged,
-            this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
+            this, static_cast<void(OptionWidget::*)(const QList<GamsOptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<GamsOptionItem> &)>(&OptionWidget::commandLineOptionChanged),
             mGamsOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
 
     ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mGamsOptionTokenizer, ui->gamsOptionTableView));
@@ -175,7 +175,7 @@ void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
     emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), commandLineStr);
 }
 
-void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
+void OptionWidget::updateCommandLineStr(const QList<GamsOptionItem> &optionItems)
 {
     if (ui->gamsOptionWidget->isHidden())
        return;
