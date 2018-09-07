@@ -21,7 +21,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QMessageBox>
 #include <QDir>
 #include <QSettings>
 #include "studiosettings.h"
@@ -410,21 +409,13 @@ void StudioSettings::loadSettings(MainWindow *main)
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)
 {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("You are about to overwrite your local settings. Are you sure?");
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    int answer = msgBox.exec();
+    QFile backupFile(path);
+    QFile settingsFile(mUserSettings->fileName());
 
-    if (answer == QMessageBox::Ok) {
-        QFile backupFile(path);
-        QFile settingsFile(mUserSettings->fileName());
-
-        settingsFile.remove(); // remove old file
-        backupFile.copy(settingsFile.fileName()); // import new file
-        resetSettings();
-        loadSettings(main);
-    }
+    settingsFile.remove(); // remove old file
+    backupFile.copy(settingsFile.fileName()); // import new file
+    resetSettings();
+    loadSettings(main);
 }
 
 QString StudioSettings::defaultWorkspace() const

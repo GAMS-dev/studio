@@ -223,7 +223,17 @@ void SettingsDialog::on_btn_import_clicked()
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
     if (filePath == "") return;
-    mSettings->importSettings(filePath, mMain);
+
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("You are about to overwrite your local settings. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+        mSettings->importSettings(filePath, mMain);
+    }
+
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
     close();
