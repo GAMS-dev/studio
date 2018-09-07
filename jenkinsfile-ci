@@ -1,0 +1,220 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20', daysToKeepStr: '5'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh '''
+                            qmake gams-studio.pro CONFIG+=release && make -j3
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            @echo off
+                            echo Setting up environment for VS 2015 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+                            call vcvars32.bat
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
+                            nmake
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            @echo off
+                            echo Setting up environment for VS2017 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            call vcvars64.bat
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
+                            nmake
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat '''
+                            echo off
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat '''
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                }
+            }
+        }
+        stage('Pack') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+                        '''
+                        sh '''
+                            # create folder structure
+                            mkdir -p appdir/usr/bin
+                            mkdir -p appdir/usr/share/pixmaps
+
+                            # collect files
+                            cp src/bin/studio appdir/usr/bin/
+                            cp gamsstudio.desktop appdir/usr/share/studio.desktop
+                            cp icons/* appdir/usr/share/pixmaps
+
+                            # TODO (AF) take a look at linuxdeployqt
+                            # workaround for linuxdeployqt and svg
+                            mkdir -p appdir/usr/plugins/imageformats
+                            cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
+
+                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
+                            ./linuxdeployqt-continuous-x86_64.AppImage --version
+                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+                        '''
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio.AppImage"
+                            } else {
+                                sh "mv GAMS_Studio-x86_64.AppImage studio.AppImage"
+                            }
+                        }
+                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
+                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
+                            withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
+                            bat '''
+                                echo Setting up environment for VS 2015 usage...
+                                cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+                                call vcvars32.bat
+                                cd %WORKSPACE%\\tmp\\studio
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
+                            '''
+                        }
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'tmp'
+                            } else {
+                                zip zipFile: 'studio-x86.zip', archive: true, dir: 'tmp'
+                            }
+                        }
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
+                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
+                        withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
+                            bat '''
+                                echo Setting up environment for VS2017 usage...
+                                cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                                call vcvars64.bat
+                                cd %WORKSPACE%\\tmp\\studio
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
+                            '''
+                        }
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'tmp'
+                            } else {
+                                zip zipFile: 'studio-x64.zip', archive: true, dir: 'tmp'
+                            }
+                        }
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
+                        withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
+                            sh '''
+                                security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
+                                macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+                                security lock-keychain
+                            '''
+                            sh '''
+                                codesign --verify --verbose "src/bin/GAMS Studio.app"
+                            '''
+                        }
+                        sh '''
+                            mv "src/bin/GAMS Studio.dmg" studio.dmg
+                        '''
+                        script {
+                            if (env.BRANCH_NAME != 'master') {
+                                sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                            }
+                        }
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
+                    }
+                }
+            }
+        }
+    }
+}
