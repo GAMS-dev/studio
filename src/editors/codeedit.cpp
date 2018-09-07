@@ -26,6 +26,7 @@
 #include "syntax.h"
 #include "keys.h"
 #include "locators/searchlocator.h"
+#include "locators/settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -83,6 +84,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     mBlinkBlockEdit.setInterval(500);
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
+    mSettings = SettingsLocator::settings();
 
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
@@ -1062,11 +1064,6 @@ bool CodeEdit::overwriteMode() const
 {
     if (mBlockEdit) return mBlockEdit->overwriteMode();
     return AbstractEdit::overwriteMode();
-}
-
-void CodeEdit::setSettings(StudioSettings *settings)
-{
-    mSettings = settings;
 }
 
 inline int CodeEdit::assignmentKind(int p)

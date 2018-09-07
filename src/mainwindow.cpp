@@ -51,19 +51,21 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
+#include "locators/settingslocator.h"
 
 namespace gams {
 namespace studio {
 
-MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mFileMetaRepo(this, settings),
+      mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
-      mSettings(settings),
+
       mAutosaveHandler(new AutosaveHandler(this))
 {
+    mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
 //    QFile css(":/data/style.css");
 //    if (css.open(QFile::ReadOnly | QFile::Text)) {
@@ -148,7 +150,7 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
     mRecent.path = mSettings->defaultWorkspace();
     mSearchDialog = new SearchDialog(this);
 
-    if (mSettings.get()->resetSettingsSwitch()) mSettings.get()->resetSettings();
+    if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
 
     // stack help under output
     tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
@@ -171,13 +173,13 @@ MainWindow::MainWindow(StudioSettings *settings, QWidget *parent)
 
     // set up services
     SearchLocator::provide(mSearchDialog);
-    SettingsLocator::provide(mSettings.get());
+    SettingsLocator::provide(mSettings);
 }
 
 void MainWindow::delayedFileRestoration()
 {
     mSettings->restoreTabsAndProjects(this);
-    mSettings.get()->restoreLastFilesUsed(this);
+    mSettings->restoreLastFilesUsed(this);
 }
 
 MainWindow::~MainWindow()
@@ -1401,11 +1403,6 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
     return true;
 }
 
-StudioSettings *MainWindow::settings() const
-{
-    return mSettings.get();
-}
-
 RecentData *MainWindow::recent()
 {
     return &mRecent;
@@ -1950,7 +1947,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog sd(mSettings.get(), this);
+    SettingsDialog sd(this);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();

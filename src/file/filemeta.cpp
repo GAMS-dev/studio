@@ -24,6 +24,7 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
+#include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
 
@@ -526,15 +527,14 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             logEdit = new ProcessLogEdit(tabWidget);
             initEditorType(logEdit);
             edit = logEdit;
-            edit->setLineWrapMode(mFileRepo->settings()->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
-                                                                           : QPlainTextEdit::NoWrap);
+            edit->setLineWrapMode(SettingsLocator::settings()->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
+                                                                                 : QPlainTextEdit::NoWrap);
         } else {
             codeEdit  = new CodeEdit(tabWidget);
             initEditorType(codeEdit);
-            codeEdit->setSettings(mFileRepo->settings());
             edit = codeEdit;
-            edit->setLineWrapMode(mFileRepo->settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
-                                                                          : QPlainTextEdit::NoWrap);
+            edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
+                                                                                : QPlainTextEdit::NoWrap);
         }
 
         edit->setFileId(id());

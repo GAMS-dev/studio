@@ -23,17 +23,19 @@
 #include "mainwindow.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
+#include "locators/settingslocator.h"
 #include "ui_settingsdialog.h"
 
 namespace gams {
 namespace studio {
 
 
-SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SettingsDialog), mSettings(settings), mMain(parent)
+SettingsDialog::SettingsDialog(MainWindow *parent) :
+    QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
 {
     ui->setupUi(this);
 
+    mSettings = SettingsLocator::settings();
     // load from settings to UI
     loadSettings();
     setModifiedStatus(false);
@@ -221,7 +223,17 @@ void SettingsDialog::on_btn_import_clicked()
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
     if (filePath == "") return;
-    mSettings->importSettings(filePath, mMain);
+
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("You are about to overwrite your local settings. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+        mSettings->importSettings(filePath, mMain);
+    }
+
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
     close();

@@ -126,7 +126,6 @@ public:
     ParenthesesMatch matchParentheses();
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
-    void setSettings(StudioSettings *settings);
     void extendedRedo();
     void extendedUndo();
     void convertToLower();

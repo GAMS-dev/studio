@@ -24,18 +24,20 @@
 #include "studiosettings.h"
 #include "exception.h"
 #include "logger.h"
+#include "locators/settingslocator.h"
 #include <QFileInfo>
 
 namespace gams {
 namespace studio {
 
-FileMetaRepo::FileMetaRepo(QObject *parent, StudioSettings *settings) : QObject(parent), mSettings(settings)
+FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
 {
 //    connect(&mWatcher, &QFileSystemWatcher::directoryChanged, this, &FileMetaRepo::dirChanged);
     connect(&mWatcher, &QFileSystemWatcher::fileChanged, this, &FileMetaRepo::fileChanged);
     mMissCheckTimer.setInterval(5000);
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
+    mSettings = SettingsLocator::settings();
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
@@ -257,11 +259,6 @@ void FileMetaRepo::checkMissing()
         mMissList = remainMissList;
         mMissCheckTimer.start();
     }
-}
-
-StudioSettings *FileMetaRepo::settings() const
-{
-    return mSettings;
 }
 
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
