@@ -354,6 +354,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     QFileInfo fi(gmsLocation);
     // set default lst name to revert deleted o parameter values
+    clearSpecialFiles();
     setSpecialFile(FileKind::Lst, fi.baseName() + ".lst");
 
     // iterate options
@@ -366,7 +367,13 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                    || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
             // TODO: save workingdir somewhere, wait for the file handling update
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
-
+            QString name = item.value;
+            if (name == "default") name = fi.baseName() + ".gdx";
+            setSpecialFile(FileKind::Gdx, name);
+        } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
+            QString name = item.value;
+            if (name == "default") name = fi.baseName() + ".ref";
+            setSpecialFile(FileKind::Ref, name);
         }
 
         if (defaultGamsArgs.contains(item.key)) {
@@ -422,8 +429,12 @@ void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &
 
 QString ProjectRunGroupNode::specialFile(const FileKind &fk) const
 {
-    QString s = mSpecialFiles[fk];
-    return s;
+    return mSpecialFiles[fk];
+}
+
+QHash<FileKind, QString> ProjectRunGroupNode::specialFiles() const
+{
+    return mSpecialFiles;
 }
 
 void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path)
@@ -434,6 +445,13 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
 
     mSpecialFiles.insert(fk, fullPath);
+}
+
+void ProjectRunGroupNode::clearSpecialFiles()
+{
+    QString gms = mSpecialFiles.value(FileKind::Gms);
+    mSpecialFiles.clear();
+    mSpecialFiles.insert(FileKind::Gms, gms);
 }
 
 QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const

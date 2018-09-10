@@ -1067,9 +1067,12 @@ void MainWindow::postGamsRun(NodeId origin)
         if (mSettings->openLst())
             openFileNode(lstNode);
     }
-    if (groupNode && groupNode->logNode()) {
+    if (groupNode && groupNode->logNode())
         groupNode->logNode()->logDone();
-    }
+
+    // add all created files to project explorer
+    for (QString loc : groupNode->specialFiles().values())
+        groupNode->findOrCreateFileNode(loc);
 }
 
 void MainWindow::postGamsLibRun()

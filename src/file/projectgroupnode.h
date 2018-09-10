@@ -97,8 +97,11 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+
     QString specialFile(const FileKind& fk) const;
+    QHash<FileKind, QString> specialFiles() const;
     void setSpecialFile(const FileKind& fk, const QString& path);
+    void clearSpecialFiles();
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
