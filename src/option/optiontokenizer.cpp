@@ -18,6 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QCoreApplication>
+#include <QDir>
+#include <QTextStream>
+
 #include "optiontokenizer.h"
 #include "commonpaths.h"
 
@@ -473,6 +476,43 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
 Option *OptionTokenizer::getOption() const
 {
     return mOption;
+}
+
+QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &path, const QString &fileName)
+{
+    QList<OptionItem> items;
+
+    QFile inputFile(QDir(path).absoluteFilePath(fileName));
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+           items.append(tokenize(in.readLine()));
+       }
+       inputFile.close();
+    }
+    return items;
+}
+
+void OptionTokenizer::validateOption(QList<OptionItem> &items)
+{
+   for(OptionItem& item : items) {
+       if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
+           if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
+               item.error = OptionErrorType::No_Error;
+           else
+              item.error = OptionErrorType::Invalid_Key;
+           continue;
+       }
+       if (mOption->isValid(item.key) || mOption->isASynonym(item.key)) { // valid option
+           if (mOption->isDeprecated(item.key)) { // deprecated option
+               item.error = OptionErrorType::Deprecated_Option;
+           } else { // valid and not deprected Option
+               item.error = mOption->getValueErrorType(item.key, item.value);
+           }
+       } else { // invalid option
+           item.error = OptionErrorType::Invalid_Key;
+       }
+   }
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {

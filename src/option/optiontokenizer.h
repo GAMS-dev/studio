@@ -62,17 +62,20 @@ public:
 
     Option *getOption() const;
 
+    QList<OptionItem> readOptionParameterFile(const QString &path, const QString &fileName);
+    void validateOption(QList<OptionItem> &items);
+
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 private:
+    Option* mOption;
+
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
-
-    Option* mOption;
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

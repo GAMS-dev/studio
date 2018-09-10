@@ -67,7 +67,6 @@ private:
 
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString text);
-    void validateOption();
 };
 
 } // namespace studio

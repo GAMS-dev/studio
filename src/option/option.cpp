@@ -345,46 +345,6 @@ QMap<QString, OptionDefinition> Option::getOption() const
     return mOption;
 }
 
-QList<OptionItem> Option::readOptionParameterFile(const QString &path, const QString &fileName)
-{
-    QList<OptionItem> items;
-    optHandle_t mOPTHandle;
-
-    char msg[GMS_SSSIZE];
-    optCreate(&mOPTHandle, msg, sizeof(msg));
-    if (msg[0] != '\0') {
-        qDebug() << QString("ERROR: ").arg(msg);
-        optFree(&mOPTHandle);
-        return items;
-    }
-
-    if (optReadDefinition(mOPTHandle, QDir(mOptionDefinitionPath).filePath(mOptionDefinitionFile).toLatin1())) {
-        qDebug() << QString("ERROR read definition file: %1").arg(QDir(mOptionDefinitionPath).filePath(mOptionDefinitionFile));
-        return items;
-    }
-
-    optReadParameterFile(mOPTHandle, QDir(path).filePath(fileName).toLatin1());
-    for (int i = 1; i <= optMessageCount(mOPTHandle); i++ ) {
-        char sval[GMS_SSSIZE];
-        int itype;
-        optGetMessage ( mOPTHandle, i, sval, &itype );
-        if ( itype <= optMsgFileLeave || itype == optMsgUserError )  {
-            qDebug() << QString("Error message: %1").arg(sval);
-        }
-    }
-    char key[GMS_SSSIZE];
-    char value[GMS_SSSIZE];
-    int idash = 0;   // : 0 = do not look for dashed names
-    while (optGetFromAnyStrList(mOPTHandle, idash, key, value) != 0)  {
-        qDebug() << "read::" << QString::fromLatin1(key) <<  ", " << QString::fromLatin1(value);
-        items.append(OptionItem(QString::fromLatin1(key), QString::fromLatin1(value)));
-    }
-
-    optFree(&mOPTHandle);
-
-    return items;
-}
-
 bool Option::writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName)
 {
     optHandle_t mOPTHandle;

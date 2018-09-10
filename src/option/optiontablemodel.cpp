@@ -291,7 +291,7 @@ void OptionTableModel::on_optionTableModelChanged(const QString &text)
 {
     beginResetModel();
     itemizeOptionFromCommandLineStr(text);
-    validateOption();
+    mOptionTokenizer->validateOption(mOptionItem);
 
     setRowCount(mOptionItem.size());
 
@@ -336,28 +336,6 @@ void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
     for(int idx = 0; idx<mOptionItem.size(); ++idx) {
        mCheckState[idx] = QVariant();
     }
-}
-
-void OptionTableModel::validateOption()
-{
-   for(OptionItem& item : mOptionItem) {
-       if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
-           if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
-               item.error = OptionErrorType::No_Error;
-           else
-              item.error = OptionErrorType::Invalid_Key;
-           continue;
-       }
-       if (mOption->isValid(item.key) || mOption->isASynonym(item.key)) { // valid option
-           if (mOption->isDeprecated(item.key)) { // deprecated option
-               item.error = OptionErrorType::Deprecated_Option;
-           } else { // valid and not deprected Option
-               item.error = mOption->getValueErrorType(item.key, item.value);
-           }
-       } else { // invalid option
-           item.error = OptionErrorType::Invalid_Key;
-       }
-   }
 }
 
 } // namespace studio

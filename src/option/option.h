@@ -144,7 +144,6 @@ public:
 
     QMap<QString, OptionDefinition> getOption() const;
 
-    QList<OptionItem> readOptionParameterFile( const QString &path, const QString &fileName);
     bool writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName);
 private:
     QString mOptionDefinitionPath;
