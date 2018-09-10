@@ -430,7 +430,8 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
 {
     // TODO(JM) store FileMeta or FileNode instead?
     QString fullPath = path;
-    if (QFileInfo(path).isRelative()) fullPath = QFileInfo(location()).absolutePath() + "/" + path;
+    if (QFileInfo(path).isRelative())
+        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
 
     mSpecialFiles.insert(fk, fullPath);
 }
