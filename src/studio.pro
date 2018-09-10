@@ -155,7 +155,8 @@ SOURCES += \
     editors/codeedit.cpp \
     syntax/systemloghighlighter.cpp \
     tabdialog.cpp \
-    locators/settingslocator.cpp
+    locators/settingslocator.cpp \
+    locators/sysloglocator.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -258,7 +259,8 @@ HEADERS += \
     editors/codeedit.h \
     syntax/systemloghighlighter.h \
     tabdialog.h \
-    locators/settingslocator.h
+    locators/settingslocator.h \
+    locators/sysloglocator.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

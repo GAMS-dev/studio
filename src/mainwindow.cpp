@@ -39,6 +39,7 @@
 #include "gdxviewer/gdxviewer.h"
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
+#include "locators/sysloglocator.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
@@ -51,7 +52,6 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
-#include "locators/settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -174,6 +174,7 @@ MainWindow::MainWindow(QWidget *parent)
     // set up services
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
+    SysLogLocator::provide(mSyslog);
 }
 
 void MainWindow::delayedFileRestoration()

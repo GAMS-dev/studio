@@ -21,6 +21,7 @@
 #include "syntax/systemloghighlighter.h"
 
 #include <QDesktopServices>
+#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -39,7 +40,8 @@ void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
     QString logLevel = level(type);
-    appendPlainText(logLevel + " " + msg);
+    QString time = QTime::currentTime().toString("hh:mm:ss");
+    appendPlainText(logLevel + " [" + time + "]: " + msg);
 }
 
 void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
