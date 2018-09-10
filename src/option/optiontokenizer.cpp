@@ -473,11 +473,6 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     this->formatLineEdit(lineEdit, errList);
 }
 
-Option *OptionTokenizer::getOption() const
-{
-    return mOption;
-}
-
 QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &path, const QString &fileName)
 {
     QList<OptionItem> items;
@@ -491,6 +486,27 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &path, 
        inputFile.close();
     }
     return items;
+}
+
+bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const QString &path, const QString &fileName)
+{
+    QFile outputFile(QDir(path).absoluteFilePath(fileName));
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out(&outputFile);
+    for(OptionItem& item: items) {
+        QString value = item.value;
+        if (value.contains(" ")) {
+            if (!value.startsWith("\""))
+                value.prepend("\"");
+            if (!value.endsWith("\""))
+                value.append("\"");
+        }
+        out << QString("%1=%2").arg(item.key).arg(value) << endl;
+    }
+    outputFile.close();
+    return true;
 }
 
 void OptionTokenizer::validateOption(QList<OptionItem> &items)
@@ -513,6 +529,11 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
            item.error = OptionErrorType::Invalid_Key;
        }
    }
+}
+
+Option *OptionTokenizer::getOption() const
+{
+    return mOption;
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {

@@ -345,62 +345,6 @@ QMap<QString, OptionDefinition> Option::getOption() const
     return mOption;
 }
 
-bool Option::writeOptionParameterFile(QList<OptionItem> items, const QString &path, const QString &fileName)
-{
-    optHandle_t mOPTHandle;
-
-    char msg[GMS_SSSIZE];
-    optCreate(&mOPTHandle, msg, sizeof(msg));
-    if (msg[0] != '\0') {
-        qDebug() << QString("ERROR: ").arg(msg);
-        optFree(&mOPTHandle);
-        return false;
-    }
-
-    if (optReadDefinition(mOPTHandle, QDir(mOptionDefinitionPath).filePath(mOptionDefinitionFile).toLatin1())) {
-        qDebug() << QString("ERROR read definition file: %1").arg(QDir(mOptionDefinitionPath).filePath(mOptionDefinitionFile));
-        return false;
-    }
-
-    for (OptionItem item : items) {
-        QString key = item.key;
-        QVariant value = item.value;
-        if (!isValid(item.key))
-            key = getNameFromSynonym(item.key);
-
-        // TODO
-        if (key.isEmpty())
-            continue;
-
-        int i = getOrdinalNumber(key);
-        switch(getOptionType(key)) {
-        case optTypeEnumInt:
-        case optTypeInteger:
-        case optTypeBoolean: {
-            optSetIntNr(mOPTHandle, i, value.toInt());
-            break;
-        }
-        case optTypeDouble: {
-            optSetDblNr(mOPTHandle, i, value.toDouble());
-            break;
-        }
-        case optTypeString:
-        case optTypeEnumStr:
-        case optTypeStrList:
-        case optTypeImmediate: {
-            optSetStrNr(mOPTHandle, i, value.toString().toStdString().c_str());
-            break;
-        }
-        default:
-            continue;
-        }
-        optWriteParameterFile(mOPTHandle, QDir(path).filePath(fileName).toLatin1());
-     }
-
-     optFree(&mOPTHandle);
-     return true;
-}
-
 OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 {
     return mOption[optionName.toUpper()];

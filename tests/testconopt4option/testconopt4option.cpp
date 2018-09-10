@@ -258,8 +258,9 @@ void TestConopt4Option::testWriteOptionFile()
     items.append(OptionItem("Lim_Iteration", "100"));
     items.append(OptionItem("cooptfile", "C:/Users/Dude/coopt.file"));
     items.append(OptionItem("Tol_Bound", "5.e-9"));
+    items.append(OptionItem("workdir", "C:/Users/Programs Files/Dude/coopt.file"));
 //    items.append(OptionItem("readfile", "this is read file"));
-    QVERIFY( optionTokenizer->getOption()->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
 
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt"));
     int i = 0;
@@ -267,25 +268,12 @@ void TestConopt4Option::testWriteOptionFile()
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
           QStringList strList = in.readLine().split( "=" );
-          OptionItem item = items.at(i);
           switch(i) {
-          case 0:
-              QCOMPARE("DF_Method", item.key);
-              QCOMPARE("1", item.value);
-              break;
-          case 1:
-              QCOMPARE("Lim_Iteration", item.key);
-              QCOMPARE("100", item.value);
-              break;
-          case 2:
-              QCOMPARE("cooptfile", item.key);
-              QCOMPARE("C:/Users/Dude/coopt.file", item.value);
-              break;
-          case 3:
-              QCOMPARE("Tol_Bound", item.key);
-              QCOMPARE("5.E-9", item.value.toUpper());
+          case 4:
+              QCOMPARE(strList.at(1), QString("\"%1\"").arg(items.at(i).value));
               break;
           default:
+              QCOMPARE(strList.at(1), items.at(i).value);
               break;
           }
           i++;

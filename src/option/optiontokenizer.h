@@ -60,10 +60,12 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    Option *getOption() const;
-
     QList<OptionItem> readOptionParameterFile(const QString &path, const QString &fileName);
+    bool writeOptionParameterFile(QList<OptionItem> &items, const QString &path, const QString &fileName);
+
     void validateOption(QList<OptionItem> &items);
+
+    Option *getOption() const;
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
