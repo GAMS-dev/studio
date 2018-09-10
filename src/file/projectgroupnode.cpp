@@ -244,7 +244,6 @@ ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRe
     if (!mLogNode) {
         QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
                        ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+".log");;
-        qDebug() << "fi" << fi; // rogo: delete
         QString logName = fi.path()+"/"+fi.completeBaseName()+".log";
         FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
@@ -282,7 +281,6 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
         setSpecialFile(FileKind::Lst, "");
         return;
     }
-    qDebug() << "setting gms" << gmsFile->location(); // rogo: delete
     setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
     QString gmsPath = gmsFile->location();
     QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
