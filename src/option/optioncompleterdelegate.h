@@ -21,7 +21,7 @@
 #define OPTIONCOMPLETERDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 #include "option.h"
 
 namespace gams {
@@ -31,7 +31,7 @@ class OptionCompleterDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    OptionCompleterDelegate(CommandLineTokenizer* tokenizer, QObject* parent = 0);
+    OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent = 0);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
@@ -46,8 +46,8 @@ private slots:
     void commitAndCloseEditor();
 
 private:
-    CommandLineTokenizer* commandLineTokenizer;
-    Option* gamsOption;
+    OptionTokenizer* mOptionTokenizer;
+    Option* mOption;
 };
 
 } // namespace studio

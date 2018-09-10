@@ -36,20 +36,20 @@ struct OptionError {
     QString message;
 };
 
-class CommandLineTokenizer : public QObject
+class OptionTokenizer : public QObject
 {
     Q_OBJECT
 
 public:
 
-    CommandLineTokenizer(const QString &optionFileName);
-    ~CommandLineTokenizer();
+    OptionTokenizer(const QString &optionFileName);
+    ~OptionTokenizer();
 
-    QList<GamsOptionItem> tokenize(const QString &commandLineStr);
-    QList<GamsOptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
-    QList<OptionError> format(const QList<GamsOptionItem> &items);
+    QList<OptionItem> tokenize(const QString &commandLineStr);
+    QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
+    QList<OptionError> format(const QList<OptionItem> &items);
     QString normalize(const QString &commandLineStr);
-    QString normalize(const QList<GamsOptionItem> &items);
+    QString normalize(const QList<OptionItem> &items);
 
     QTextCharFormat invalidKeyFormat() const;
     QTextCharFormat invalidValueFormat() const;
@@ -60,11 +60,11 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    Option *getGamsOption() const;
+    Option *getOption() const;
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
-    void formatItemLineEdit(QLineEdit* lineEdit, const QList<GamsOptionItem> &optionItems);
+    void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 private:
     QTextCharFormat mInvalidKeyFormat;
@@ -72,7 +72,7 @@ private:
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
 
-    Option* mGamsOption;
+    Option* mOption;
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

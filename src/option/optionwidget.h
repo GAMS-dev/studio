@@ -24,7 +24,7 @@
 
 #include "option.h"
 #include "commandlineoption.h"
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 
 namespace Ui {
 class OptionWidget;
@@ -59,7 +59,7 @@ public:
     void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
 
-    CommandLineTokenizer *getGamsOptionTokenizer() const;
+    OptionTokenizer *getOptionTokenizer() const;
     bool isAnOptionWidgetFocused(QWidget* focusWidget);
     QString getSelectedOptionName(QWidget* widget) const;
 
@@ -70,12 +70,12 @@ signals:
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
-    void commandLineOptionChanged(QLineEdit* lineEdit, const QList<GamsOptionItem> &optionItems);
+    void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 public slots:
     void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
     void updateCommandLineStr(const QString &commandLineStr);
-    void updateCommandLineStr(const QList<GamsOptionItem> &optionItems);
+    void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
@@ -105,7 +105,7 @@ private:
     MainWindow* main;
 
 //    CommandLineHistory* mCommandLineHistory;
-    CommandLineTokenizer* mGamsOptionTokenizer;
+    OptionTokenizer* mOptionTokenizer;
 };
 
 }

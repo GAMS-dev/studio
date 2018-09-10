@@ -1547,7 +1547,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : group->location();
     logProc->setJumpToLogEnd(true);
 
-    QList<GamsOptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
+    QList<OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
 
     GamsProcess* process = group->gamsProcess();
     process->setParameters(group->analyzeParameters(gmsFilePath, itemList));

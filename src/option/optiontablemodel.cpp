@@ -24,14 +24,14 @@
 namespace gams {
 namespace studio {
 
-OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
-    QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
+OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
+    QAbstractTableModel(parent), mOptionTokenizer(tokenizer)
 {
     Q_UNUSED(normalizedCommandLineStr);
     mHeader.append("Key");
     mHeader.append("Value");
 
-    gamsOption = commandLineTokenizer->getGamsOption();
+    mOption = mOptionTokenizer->getOption();
 }
 
 QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -104,21 +104,21 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 //        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
 //            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
         if (col==0) {
-            if ( gamsOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
-                if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key))) {
-                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(gamsOption->getOptionKey(mOptionItem.at(row).key));
+            if ( mOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
+                if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key))) {
+                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(mOption->getOptionKey(mOptionItem.at(row).key));
                 } else {
                     break;
                 }
-            } else if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
-                        !gamsOption->isASynonym(mOptionItem.at(row).key)
+            } else if ( !mOption->isValid(mOptionItem.at(row).key) &&
+                        !mOption->isASynonym(mOptionItem.at(row).key)
                       )  {
                          return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
-            } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
+            } else if (mOption->isDeprecated(mOptionItem.at(row).key)) {
                       return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key);
             }
         } else if (col==1) {
-            switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
               case Incorrect_Value_Type:
                    return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
               case Value_Out_Of_Range:
@@ -133,21 +133,21 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 
-        if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
-            if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key)) )
+        if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
+            if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
                 return QVariant::fromValue(QColor(Qt::red));
             else
                  return QVariant::fromValue(QColor(Qt::black));
         }
-        if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isASynonym(mOptionItem.at(row).key)) { // valid option
+        if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
             if (col==0) { // key
-                if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
+                if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 } else {
                     return  QVariant::fromValue(QColor(Qt::black));
                 }
             } else { // value
-                  switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                  switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
                       case Incorrect_Value_Type:
                             return QVariant::fromValue(QColor(Qt::red));
                       case Value_Out_Of_Range:
@@ -232,9 +232,9 @@ bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent 
 
      beginInsertRows(QModelIndex(), row, row + count - 1);
      if (mOptionItem.size() == row)
-         mOptionItem.append(GamsOptionItem("[KEY]", "[VALUE]", -1, -1));
+         mOptionItem.append(OptionItem("[KEY]", "[VALUE]", -1, -1));
      else
-         mOptionItem.insert(row, GamsOptionItem(GamsOptionItem("[KEY]", "[VALUE]", -1, -1)));
+         mOptionItem.insert(row, OptionItem(OptionItem("[KEY]", "[VALUE]", -1, -1)));
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);
@@ -269,7 +269,7 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     return true;
 }
 
-QList<GamsOptionItem> OptionTableModel::getCurrentListOfOptionItems()
+QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
 }
@@ -332,7 +332,7 @@ void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 {
     QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();
-    mOptionItem = commandLineTokenizer->tokenize(text);
+    mOptionItem = mOptionTokenizer->tokenize(text);
     for(int idx = 0; idx<mOptionItem.size(); ++idx) {
        mCheckState[idx] = QVariant();
     }
@@ -340,19 +340,19 @@ void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 
 void OptionTableModel::validateOption()
 {
-   for(GamsOptionItem& item : mOptionItem) {
-       if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
-           if ( gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(item.key)) )
+   for(OptionItem& item : mOptionItem) {
+       if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
+           if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
                item.error = OptionErrorType::No_Error;
            else
               item.error = OptionErrorType::Invalid_Key;
            continue;
        }
-       if (gamsOption->isValid(item.key) || gamsOption->isASynonym(item.key)) { // valid option
-           if (gamsOption->isDeprecated(item.key)) { // deprecated option
+       if (mOption->isValid(item.key) || mOption->isASynonym(item.key)) { // valid option
+           if (mOption->isDeprecated(item.key)) { // deprecated option
                item.error = OptionErrorType::Deprecated_Option;
            } else { // valid and not deprected Option
-               item.error = gamsOption->getValueErrorType(item.key, item.value);
+               item.error = mOption->getValueErrorType(item.key, item.value);
            }
        } else { // invalid option
            item.error = OptionErrorType::Invalid_Key;

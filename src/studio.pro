@@ -100,7 +100,6 @@ SOURCES += \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
     option/commandlineoption.cpp \
-    option/commandlinetokenizer.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
     option/optioncompleterdelegate.cpp \
@@ -108,6 +107,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontablemodel.cpp \
+    option/optiontokenizer.cpp \
     option/optionwidget.cpp \
     projectcontextmenu.cpp \
     resultsview.cpp \
@@ -185,7 +185,6 @@ HEADERS += \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
     option/commandlineoption.h \
-    option/commandlinetokenizer.h \
     option/lineeditcompleteevent.h \
     option/option.h \
     option/optioncompleterdelegate.h \
@@ -193,6 +192,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontablemodel.h \
+    option/optiontokenizer.h \
     option/optionwidget.h \
     projectcontextmenu.h \
     resultsview.h \

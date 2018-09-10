@@ -22,7 +22,7 @@
 
 #include <QAbstractItemModel>
 
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 #include "option.h"
 
 namespace gams {
@@ -32,7 +32,7 @@ class OptionTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject *parent = 0);
+    OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = 0);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -48,22 +48,22 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
-    QList<GamsOptionItem> getCurrentListOfOptionItems();
+    QList<OptionItem> getCurrentListOfOptionItems();
 
 signals:
-    void optionModelChanged(const QList<GamsOptionItem> &optionItem);
+    void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:
     void toggleActiveOptionItem(int index);
     void on_optionTableModelChanged(const QString &text);
 
 private:
-    QList<GamsOptionItem> mOptionItem;
+    QList<OptionItem> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
-    CommandLineTokenizer* commandLineTokenizer;
-    Option* gamsOption;
+    OptionTokenizer* mOptionTokenizer;
+    Option* mOption;
 
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString text);

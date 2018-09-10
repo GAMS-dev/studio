@@ -39,7 +39,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 {
     ui->setupUi(this);
 
-    mGamsOptionTokenizer = new CommandLineTokenizer(QString("optgams.def"));
+    mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
 //    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
@@ -54,20 +54,20 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
             ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            mGamsOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+            mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
 
-    QList<GamsOptionItem> optionItem = mGamsOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
-    QString normalizedText = mGamsOptionTokenizer->normalize(optionItem);
-    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mGamsOptionTokenizer,  this);
+    QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
+    QString normalizedText = mOptionTokenizer->normalize(optionItem);
+    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( optionTableModel );
     connect(optionTableModel, &OptionTableModel::optionModelChanged,
-            this, static_cast<void(OptionWidget::*)(const QList<GamsOptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<GamsOptionItem> &)>(&OptionWidget::commandLineOptionChanged),
-            mGamsOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+            this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
+            mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
-    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mGamsOptionTokenizer, ui->gamsOptionTableView));
+    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView));
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
@@ -84,7 +84,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
-    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mGamsOptionTokenizer->getGamsOption(), this);
+    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getOption(), this);
     proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -110,7 +110,7 @@ OptionWidget::~OptionWidget()
 {
     delete ui;
 //    delete mCommandLineHistory;
-    delete mGamsOptionTokenizer;
+    delete mOptionTokenizer;
 }
 
 QString OptionWidget::on_runAction(RunActionState state)
@@ -175,7 +175,7 @@ void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
     emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), commandLineStr);
 }
 
-void OptionWidget::updateCommandLineStr(const QList<GamsOptionItem> &optionItems)
+void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
     if (ui->gamsOptionWidget->isHidden())
        return;
@@ -389,9 +389,9 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
 }
 
-CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const
+OptionTokenizer *OptionWidget::getOptionTokenizer() const
 {
-    return mGamsOptionTokenizer;
+    return mOptionTokenizer;
 }
 
 bool OptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)
@@ -411,10 +411,10 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
                 return "";
             }
             QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
-            if (mGamsOptionTokenizer->getGamsOption()->isDoubleDashedOption(data.toString())) {
+            if (mOptionTokenizer->getOption()->isDoubleDashedOption(data.toString())) {
                return "";
-            } else if (mGamsOptionTokenizer->getGamsOption()->isASynonym(data.toString())) {
-                return mGamsOptionTokenizer->getGamsOption()->getNameFromSynonym(data.toString());
+            } else if (mOptionTokenizer->getOption()->isASynonym(data.toString())) {
+                return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
             }
             return data.toString();
         }

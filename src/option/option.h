@@ -40,27 +40,16 @@ enum OptionErrorType {
 struct OptionItem {
     OptionItem() { }
     OptionItem(QString k, QString v) :
-        key(k), value(v) { }
-    OptionItem(QString k, QString v, optOptionType t) :
-        key(k), value(v), type(t) { }
-
-    QString key;
-    QString value;
-    optOptionType type;
-    OptionErrorType error = No_Error;
-};
-
-struct GamsOptionItem {
-    GamsOptionItem() { }
-    GamsOptionItem(QString k, QString v, int kpos, int vpos) :
+          key(k), value(v) { }
+    OptionItem(QString k, QString v, int kpos, int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
-    GamsOptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
+    OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     QString key;
     QString value;
-    int keyPosition;
-    int valuePosition;
+    int keyPosition = -1;
+    int valuePosition = -1;
     bool disabled = false;
     OptionErrorType error = No_Error;
 };

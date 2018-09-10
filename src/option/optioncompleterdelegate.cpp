@@ -28,8 +28,8 @@
 namespace gams {
 namespace studio {
 
-OptionCompleterDelegate::OptionCompleterDelegate(CommandLineTokenizer* tokenizer, QObject* parent) :
-    QStyledItemDelegate(parent), commandLineTokenizer(tokenizer), gamsOption(tokenizer->getGamsOption())
+OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent) :
+    QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption())
 {
 }
 
@@ -39,14 +39,14 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
     if (index.column()==0) {
-        completer->setModel(new QStringListModel(gamsOption->getValidNonDeprecatedKeyList()));
+        completer->setModel(new QStringListModel(mOption->getValidNonDeprecatedKeyList()));
     } else {
         QVariant key = index.model()->data( index.model()->index(index.row(), 0) );
-        if (gamsOption->isValid(key.toString())) {
-            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(key.toString())) );
+        if (mOption->isValid(key.toString())) {
+            completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(key.toString())) );
         } else {
-            QString keyStr = gamsOption->getNameFromSynonym(key.toString());
-            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(keyStr)) );
+            QString keyStr = mOption->getNameFromSynonym(key.toString());
+            completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(keyStr)) );
         }
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);

@@ -18,15 +18,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QCoreApplication>
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 #include "commonpaths.h"
 
 namespace gams {
 namespace studio {
 
-CommandLineTokenizer::CommandLineTokenizer(const QString &optionFileName)
+OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 {
-    mGamsOption = new Option(CommonPaths::systemDir(), optionFileName);
+    mOption = new Option(CommonPaths::systemDir(), optionFileName);
 
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
@@ -44,14 +44,14 @@ CommandLineTokenizer::CommandLineTokenizer(const QString &optionFileName)
     mDeactivatedOptionFormat.setForeground(Qt::lightGray);
 }
 
-CommandLineTokenizer::~CommandLineTokenizer()
+OptionTokenizer::~OptionTokenizer()
 {
-    delete mGamsOption;
+    delete mOption;
 }
 
-QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr)
+QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
 {
-    QList<GamsOptionItem> commandLineList;
+    QList<OptionItem> commandLineList;
     if (!commandLineStr.isEmpty()) {
 
         int offset = 0;
@@ -66,19 +66,19 @@ QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineS
 
             offsetKey(str, key, keyPosition, offset, length);
             if (offset >= commandLineStr.length()) {
-                commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition));
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
                 break;
             }
 
             offsetAssignment(str, offset, length);
             if (offset >= commandLineStr.length()) {
-                commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition));
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
                 break;
             }
 
             offsetValue(str, value, valuePosition, offset, length);
 
-            commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition));
+            commandLineList.append(OptionItem(key, value, keyPosition, valuePosition));
 
             offsetWhiteSpaces(str, offset, length);
             if (offset >= commandLineStr.length()) {
@@ -90,9 +90,9 @@ QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineS
     return commandLineList;
 }
 
-QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineStr, const QList<QString> &disabledOption)
+QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr, const QList<QString> &disabledOption)
 {
-    QList<GamsOptionItem> commandLineList;
+    QList<OptionItem> commandLineList;
     if (!commandLineStr.isEmpty()) {
         int offset = 0;
         int length = commandLineStr.length();
@@ -107,19 +107,19 @@ QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineS
             offsetKey(str, key, keyPosition, offset, length);
             bool disabled = (disabledOption.contains(key));
             if (offset >= commandLineStr.length()) {
-                commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition, disabled));
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
                 break;
             }
 
             offsetAssignment(str, offset, length);
             if (offset >= commandLineStr.length()) {
-                commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition, disabled));
+                commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
                 break;
             }
 
             offsetValue(str, value, valuePosition, offset, length);
 
-            commandLineList.append(GamsOptionItem(key, value, keyPosition, valuePosition, disabled));
+            commandLineList.append(OptionItem(key, value, keyPosition, valuePosition, disabled));
 
             offsetWhiteSpaces(str, offset, length);
             if (offset >= commandLineStr.length()) {
@@ -130,13 +130,13 @@ QList<GamsOptionItem> CommandLineTokenizer::tokenize(const QString &commandLineS
     return commandLineList;
 }
 
-QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &items)
+QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
 {
     QList<OptionError> optionErrorList;
-    if (!mGamsOption->available())
+    if (!mOption->available())
         return optionErrorList;
 
-    for (GamsOptionItem item : items) {
+    for (OptionItem item : items) {
         if (item.disabled) {
             QTextLayout::FormatRange fr;
             fr.start = item.keyPosition;
@@ -148,9 +148,9 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
             optionErrorList.append(OptionError(fr, "")); //item.key + QString(" (Option will be disabled in the next run)")) );
             continue;
         }
-        if (mGamsOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
-            QString optionKey = mGamsOption->getOptionKey(item.key);
-            if (!mGamsOption->isDoubleDashedOptionNameValid( optionKey ))   {
+        if (mOption->isDoubleDashedOption(item.key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+            QString optionKey = mOption->getOptionKey(item.key);
+            if (!mOption->isDoubleDashedOptionNameValid( optionKey ))   {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
                 fr.length = item.key.length();
@@ -174,14 +174,14 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
            optionErrorList.append(OptionError(fr, item.value + QString(" (Option keyword expected for value \"%1\")").arg(item.value)) );
         } else {
 
-            if (!mGamsOption->isValid(key) && (!mGamsOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
+            if (!mOption->isValid(key) && (!mOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
                ) {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
                 fr.length = item.key.length();
                 fr.format = mInvalidKeyFormat;
                 optionErrorList.append(OptionError(fr, key + " (Unknown option)"));
-            } else if (mGamsOption->isDeprecated(key)) {
+            } else if (mOption->isDeprecated(key)) {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
                 if (item.value.isEmpty())
@@ -190,7 +190,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                    fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
                 fr.format = mDeprecateOptionFormat;
 
-                switch (mGamsOption->getValueErrorType(key, item.value)) {
+                switch (mOption->getValueErrorType(key, item.value)) {
                 case Incorrect_Value_Type:
                 case Value_Out_Of_Range:
                     optionErrorList.append(OptionError(fr, item.value + QString(" (Invalid value for deprecated option \"%1\", option will be eventually ignored)").arg(key)) );
@@ -203,8 +203,8 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
             } else { // neither invalid nor deprecated key
 
                 QString keyStr = key;
-                if (!mGamsOption->isValid(key))
-                    key = mGamsOption->getNameFromSynonym(key);
+                if (!mOption->isValid(key))
+                    key = mOption->getNameFromSynonym(key);
 
                 QString value = item.value;
 
@@ -220,16 +220,16 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                     continue;
                 }
 
-                if (mGamsOption->getValueList(key).size() > 0) { // enum type
+                if (mOption->getValueList(key).size() > 0) { // enum type
 
                     bool foundError = true;
                     int n = -1;
                     bool isCorrectDataType = false;
-                    switch (mGamsOption->getOptionType(key)) {
+                    switch (mOption->getOptionType(key)) {
                     case optTypeEnumInt :
                        n = value.toInt(&isCorrectDataType);
                        if (isCorrectDataType) {
-                         for (OptionValue optValue: mGamsOption->getValueList(key)) {
+                         for (OptionValue optValue: mOption->getValueList(key)) {
                             if (optValue.value.toInt() == n) { // && !optValue.hidden) {
                                 foundError = false;
                                 break;
@@ -238,7 +238,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                        }
                        break;
                     case optTypeEnumStr :
-                       for (OptionValue optValue: mGamsOption->getValueList(key)) {
+                       for (OptionValue optValue: mOption->getValueList(key)) {
                            if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
                                foundError = false;
                                break;
@@ -255,9 +255,9 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                        fr.length = item.value.length();
                        fr.format = mInvalidValueFormat;
                        QString errorMessage = value + " (unknown value for option \""+keyStr+"\")";
-                       if (mGamsOption->getValueList(key).size() > 0) {
+                       if (mOption->getValueList(key).size() > 0) {
                           errorMessage += ", Possible values are ";
-                          for (OptionValue optValue: mGamsOption->getValueList(key)) {
+                          for (OptionValue optValue: mOption->getValueList(key)) {
                              if (optValue.hidden)
                                 continue;
                              errorMessage += optValue.value.toString();
@@ -267,10 +267,10 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                        optionErrorList.append(OptionError(fr, errorMessage));
                    }
                 } else { // not enum
-                    switch(mGamsOption->getValueErrorType(key, item.value)) {
+                    switch(mOption->getValueErrorType(key, item.value)) {
                     case Value_Out_Of_Range: {
                         QString errorMessage = value + " (value error for option ";
-                        errorMessage.append( QString("\"%1\"), not in range [%2,%3]").arg(keyStr).arg(mGamsOption->getLowerBound(key).toDouble()).arg(mGamsOption->getUpperBound(key).toDouble()) );
+                        errorMessage.append( QString("\"%1\"), not in range [%2,%3]").arg(keyStr).arg(mOption->getLowerBound(key).toDouble()).arg(mOption->getUpperBound(key).toDouble()) );
                         QTextLayout::FormatRange fr;
                         fr.start = item.valuePosition;
                         fr.length = item.value.length();
@@ -282,7 +282,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
                         bool foundError = false;
                         bool isCorrectDataType = false;
                         QString errorMessage = value + " (value error for option ";
-                        if (mGamsOption->getOptionType(key) == optTypeInteger) {
+                        if (mOption->getOptionType(key) == optTypeInteger) {
                             value.toInt(&isCorrectDataType);
                             if (!isCorrectDataType) {
                                 errorMessage.append( QString("\"%1\"), Integer expected").arg(keyStr) );
@@ -315,15 +315,15 @@ QList<OptionError> CommandLineTokenizer::format(const QList<GamsOptionItem> &ite
     return optionErrorList;
 }
 
-QString CommandLineTokenizer::normalize(const QString &commandLineStr)
+QString OptionTokenizer::normalize(const QString &commandLineStr)
 {
     return normalize( tokenize(commandLineStr) );
 }
 
-QString CommandLineTokenizer::normalize(const QList<GamsOptionItem> &items)
+QString OptionTokenizer::normalize(const QList<OptionItem> &items)
 {
     QStringList strList;
-    for (GamsOptionItem item : items) {
+    for (OptionItem item : items) {
 
         if ( item.key.isEmpty() )
             item.key = "[KEY]";
@@ -343,14 +343,14 @@ QString CommandLineTokenizer::normalize(const QList<GamsOptionItem> &items)
     return strList.join(" ");
 }
 
-void CommandLineTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const int length)
+void OptionTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const int length)
 {
     while( str.mid(offset).startsWith(" ") && (offset < length) ) {
            ++offset;
     }
 }
 
-void CommandLineTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, int &offset, const int length)
+void OptionTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, int &offset, const int length)
 {
     if (keyPosition == -1)
        keyPosition = offset;
@@ -362,7 +362,7 @@ void CommandLineTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosit
     }
 }
 
-void CommandLineTokenizer::offsetAssignment(QStringRef str, int &offset, const int length)
+void OptionTokenizer::offsetAssignment(QStringRef str, int &offset, const int length)
 {
     bool seenAssignmentOperator = false;
     while( (offset < length) &&
@@ -379,7 +379,7 @@ void CommandLineTokenizer::offsetAssignment(QStringRef str, int &offset, const i
     }
 }
 
-void CommandLineTokenizer::offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length)
+void OptionTokenizer::offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length)
 {
     bool startedWithDoubleQuote = false;
     bool seenCompleteDoubleQuotation = false;
@@ -412,42 +412,42 @@ void CommandLineTokenizer::offsetValue(QStringRef str, QString &value, int &valu
     }
 }
 
-QTextCharFormat CommandLineTokenizer::invalidKeyFormat() const
+QTextCharFormat OptionTokenizer::invalidKeyFormat() const
 {
     return mInvalidKeyFormat;
 }
 
-QTextCharFormat CommandLineTokenizer::invalidValueFormat() const
+QTextCharFormat OptionTokenizer::invalidValueFormat() const
 {
     return mInvalidValueFormat;
 }
 
-QTextCharFormat CommandLineTokenizer::deprecateOptionFormat() const
+QTextCharFormat OptionTokenizer::deprecateOptionFormat() const
 {
     return mDeprecateOptionFormat;
 }
 
-void CommandLineTokenizer::setInvalidKeyFormat(const QTextCharFormat &invalidKeyFormat)
+void OptionTokenizer::setInvalidKeyFormat(const QTextCharFormat &invalidKeyFormat)
 {
     mInvalidKeyFormat = invalidKeyFormat;
 }
 
-void CommandLineTokenizer::setInvalidValueFormat(const QTextCharFormat &invalidValueFormat)
+void OptionTokenizer::setInvalidValueFormat(const QTextCharFormat &invalidValueFormat)
 {
     mInvalidValueFormat = invalidValueFormat;
 }
 
-void CommandLineTokenizer::setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat)
+void OptionTokenizer::setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat)
 {
     mDeprecateOptionFormat = deprecateOptionFormat;
 }
 
-void CommandLineTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat)
+void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat)
 {
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
-void CommandLineTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr)
+void OptionTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr)
 {
 //    this->setLineEditTextFormat(lineEdit, "");
     QList<OptionError> errList;
@@ -457,12 +457,12 @@ void CommandLineTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString
     this->formatLineEdit(lineEdit, errList);
 }
 
-void CommandLineTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<GamsOptionItem> &optionItems)
+void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems)
 {
     QString commandLineStr = this->normalize(optionItems);
     lineEdit->setText(commandLineStr );
 
-    QList<GamsOptionItem> tokenizedItems = this->tokenize(commandLineStr);
+    QList<OptionItem> tokenizedItems = this->tokenize(commandLineStr);
     for(int i=0; i<optionItems.size(); ++i) {
          tokenizedItems[i].disabled = optionItems[i].disabled;
     }
@@ -470,12 +470,12 @@ void CommandLineTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<G
     this->formatLineEdit(lineEdit, errList);
 }
 
-Option *CommandLineTokenizer::getGamsOption() const
+Option *OptionTokenizer::getOption() const
 {
-    return mGamsOption;
+    return mOption;
 }
 
-void CommandLineTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
+void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
     QString errorMessage = "";
     QList<QInputMethodEvent::Attribute> attributes;
     foreach(const OptionError err, errorList)   {
