@@ -22,9 +22,9 @@
 
 #include <QtTest/QTest>
 
-#include "option/option.h"
+#include "option/optiontokenizer.h"
 
-using gams::studio::Option;
+using gams::studio::OptionTokenizer;
 
 class TestCPLEXOption : public QObject
 {
@@ -63,7 +63,7 @@ private slots:
     void cleanupTestCase();
 
 private:
-    Option* cplexOption;
+    OptionTokenizer* optionTokenizer;
 };
 
 #endif // TESTCPLEXOPTION_H

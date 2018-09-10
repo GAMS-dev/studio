@@ -20,11 +20,11 @@
 #include <QStandardPaths>
 
 #include "commonpaths.h"
-#include "option/option.h"
 #include "testcplexoption.h"
 
 using gams::studio::Option;
 using gams::studio::OptionItem;
+using gams::studio::OptionTokenizer;
 using gams::studio::CommonPaths;
 
 void TestCPLEXOption::initTestCase()
@@ -33,8 +33,8 @@ void TestCPLEXOption::initTestCase()
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
-    cplexOption = new Option(CommonPaths::systemDir(), "optcplex.def");
-    if  ( !cplexOption->available() ) {
+    optionTokenizer = new OptionTokenizer(QString("optcplex.def"));
+    if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optcplex.def, but failed");
     }
 }
@@ -79,11 +79,11 @@ void TestCPLEXOption::testOptionEnumStrValue()
     QFETCH(QString, value);
     QFETCH(QString, description);
 
-    QCOMPARE( cplexOption-> getOptionDefinition(optionName).valid, valid );
-    QCOMPARE( cplexOption->getOptionType(optionName),  optTypeEnumStr );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).hidden, hidden );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).value.toString().toLower(), value.toLower() );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
+    QCOMPARE( optionTokenizer->getOption()-> getOptionDefinition(optionName).valid, valid );
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeEnumStr );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).hidden, hidden );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).value.toString().toLower(), value.toLower() );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
 }
 
 void TestCPLEXOption::testOptionEnumIntType_data()
@@ -108,10 +108,10 @@ void TestCPLEXOption::testOptionEnumIntType()
     QFETCH(int, numberOfEnumint);
     QFETCH(int, defaultValue);
 
-    QCOMPARE( cplexOption->getOptionDefinition(optionName).valid, valid);
-    QCOMPARE( cplexOption->getOptionType(optionName),  optTypeEnumInt);
-    QCOMPARE( cplexOption->getValueList(optionName).size() , numberOfEnumint);
-    QCOMPARE( cplexOption->getDefaultValue(optionName).toInt(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeEnumInt);
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).size() , numberOfEnumint);
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toInt(), defaultValue );
 }
 
 void TestCPLEXOption::testOptionEnumIntValue_data()
@@ -153,11 +153,11 @@ void TestCPLEXOption::testOptionEnumIntValue()
     QFETCH(int, value);
     QFETCH(QString, description);
 
-    QCOMPARE( cplexOption-> getOptionDefinition(optionName).valid, valid );
-    QCOMPARE( cplexOption->getOptionType(optionName),  optTypeEnumInt );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).hidden, hidden );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).value.toInt(), value );
-    QCOMPARE( cplexOption->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
+    QCOMPARE( optionTokenizer->getOption()-> getOptionDefinition(optionName).valid, valid );
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeEnumInt );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).hidden, hidden );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).value.toInt(), value );
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
 
 }
 
@@ -193,11 +193,11 @@ void TestCPLEXOption::testOptionDoubleType()
     QFETCH(double, upperBound);
     QFETCH(double, defaultValue);
 
-    QCOMPARE( cplexOption->getOptionDefinition(optionName).valid, valid);
-    QCOMPARE( cplexOption->getOptionType(optionName),  optTypeDouble);
-    QCOMPARE( cplexOption->getLowerBound(optionName).toDouble(), lowerBound );
-    QCOMPARE( cplexOption->getUpperBound(optionName).toDouble(), upperBound );
-    QCOMPARE( cplexOption->getDefaultValue(optionName).toDouble(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
 void TestCPLEXOption::testOptionSynonym_data()
@@ -248,11 +248,11 @@ void TestCPLEXOption::testOptionSynonym()
     QFETCH(QString, optionName);
 
     if (optionSynonym.isEmpty()) {
-        QVERIFY( cplexOption->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
-        QVERIFY( !cplexOption->isASynonym(optionName) );
+        QVERIFY( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
+        QVERIFY( !optionTokenizer->getOption()->isASynonym(optionName) );
     } else {
-       QVERIFY( cplexOption->isASynonym(optionSynonym) );
-       QCOMPARE( cplexOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
+       QVERIFY( optionTokenizer->getOption()->isASynonym(optionSynonym) );
+       QCOMPARE( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
     }
 }
 
@@ -275,9 +275,9 @@ void TestCPLEXOption::testDeprecatedOption()
     QFETCH(QString, deprecatedOption);
     QFETCH(QString, optionDescription);
 
-    QVERIFY( cplexOption->isValid(deprecatedOption) );
-    QVERIFY( cplexOption->isDeprecated(deprecatedOption) );
-    QCOMPARE( cplexOption->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+    QVERIFY( optionTokenizer->getOption()->isValid(deprecatedOption) );
+    QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+    QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
 
 }
 
@@ -385,10 +385,10 @@ void TestCPLEXOption::testOptionGroup()
     QFETCH(QString, optionGroupDescription);
     QFETCH(QString, optionType);
 
-    QCOMPARE( cplexOption->getGroupNumber(optionName), groupNumber );
-    QCOMPARE( cplexOption->getGroupName(optionName), optionGroupName );
-    QCOMPARE( cplexOption->getGroupDescription(optionName), optionGroupDescription );
-    QCOMPARE( cplexOption->getOptionTypeName(cplexOption->getOptionType(optionName)), optionType );
+    QCOMPARE( optionTokenizer->getOption()->getGroupNumber(optionName), groupNumber );
+    QCOMPARE( optionTokenizer->getOption()->getGroupName(optionName), optionGroupName );
+    QCOMPARE( optionTokenizer->getOption()->getGroupDescription(optionName), optionGroupDescription );
+    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 
 }
 
@@ -417,15 +417,16 @@ void TestCPLEXOption::testInvalidOption()
     QFETCH(bool, nameValid);
     QFETCH(bool, synonymValid);
 
-    QCOMPARE( cplexOption->isValid(optionName), nameValid);
-    QCOMPARE( cplexOption->isASynonym(optionName), synonymValid);
+    QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid);
+    QCOMPARE( optionTokenizer->getOption()->isASynonym(optionName), synonymValid);
 }
 
 void TestCPLEXOption::testReadOptionFile()
 {
+    // given
     QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2"));
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        QFAIL("expected to open cplex.opt to write, but failed");
+        QFAIL("expected to open cplex.op2 to write, but failed");
 
     QTextStream out(&outputFile);
     out << "advind 0" << endl;
@@ -436,8 +437,23 @@ void TestCPLEXOption::testReadOptionFile()
     out << "tuning \"str1 str2\"";
     outputFile.close();
 
-    QList<OptionItem> items = cplexOption->readOptionParameterFile(CommonPaths::defaultWorkingDir(), "cplex.op2");
-    QCOMPARE(items.size(), 6);
+    // when
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(CommonPaths::defaultWorkingDir(), "cplex.op2");
+
+    // then
+    QCOMPARE( items.at(0).key, "advind" );
+    QCOMPARE( items.at(0).value, "0" );
+    QCOMPARE( items.at(1).key, "dettilim" );
+    QCOMPARE( items.at(1).value, "1e+075" );
+    QCOMPARE( items.at(2).key, "computeserver" );
+    QCOMPARE( items.at(2).value, "https://somewhere.org/" );
+    QCOMPARE( items.at(3).key, "solnpoolcapacity" );
+    QCOMPARE( items.at(3).value, "1100000000" );
+    QCOMPARE( items.at(4).key, "solnpoolintensity" );
+    QCOMPARE( items.at(4).value, "3" );
+    QCOMPARE( items.at(5).key, "tuning" );
+    QCOMPARE( items.at(5).value, "\"str1 str2\"" );
+    QCOMPARE( items.size(), 6 );
 }
 
 void TestCPLEXOption::testWriteOptionFile()
@@ -449,7 +465,7 @@ void TestCPLEXOption::testWriteOptionFile()
     items.append(OptionItem("covers", "2"));
     items.append(OptionItem("feasopt", "0"));
     items.append(OptionItem("tuning", "str1 str2"));
-    QVERIFY( cplexOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
+    QVERIFY( optionTokenizer->getOption()->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
 
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));
     int i = 0;
@@ -495,8 +511,8 @@ void TestCPLEXOption::testWriteOptionFile()
 
 void TestCPLEXOption::cleanupTestCase()
 {
-    if (cplexOption)
-       delete cplexOption;
+    if (optionTokenizer)
+       delete optionTokenizer;
 }
 
 QTEST_MAIN(TestCPLEXOption)

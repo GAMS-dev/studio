@@ -27,10 +27,13 @@ INCLUDEPATH += $$TESTSROOT/../src
 SRCPATH = $$TESTSROOT/../src
 
 HEADERS += \
-    testconopt4option.h
+    testconopt4option.h \
+    $$SRCPATH/option/option.h \
+    $$SRCPATH/option/optiontokenizer.h
 
 SOURCES += \
     testconopt4option.cpp \
     $$SRCPATH/option/option.cpp \
+    $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp

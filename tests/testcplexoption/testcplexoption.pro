@@ -27,10 +27,12 @@ SRCPATH = $$TESTSROOT/../src
 
 HEADERS += \
     testcplexoption.h \
-    $$SRCPATH/option/option.h
+    $$SRCPATH/option/option.h \
+    $$SRCPATH/option/optiontokenizer.h
 
 SOURCES += \
     testcplexoption.cpp \
     $$SRCPATH/option/option.cpp \
+    $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp

@@ -20,13 +20,12 @@
 #include <QStandardPaths>
 
 #include "testconopt4option.h"
-#include "option/option.h"
 #include "commonpaths.h"
 
 using gams::studio::Option;
 using gams::studio::OptionItem;
+using gams::studio::OptionTokenizer;
 using gams::studio::CommonPaths;
-
 
 void TestConopt4Option::initTestCase()
 {
@@ -34,8 +33,8 @@ void TestConopt4Option::initTestCase()
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
-    mOption = new Option(CommonPaths::systemDir(), "optconopt4.def");
-    if  ( !mOption->available() ) {
+    optionTokenizer = new OptionTokenizer(QString("optconopt4.def"));
+    if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optconopt4.def, but failed");
     }
 }
@@ -57,10 +56,10 @@ void TestConopt4Option::testOptionEnumIntType()
     QFETCH(int, numberOfEnumint);
     QFETCH(int, defaultValue);
 
-    QCOMPARE( mOption->getOptionDefinition(optionName).valid, valid);
-    QCOMPARE( mOption->getOptionType(optionName),  optTypeEnumInt);
-    QCOMPARE( mOption->getValueList(optionName).size() , numberOfEnumint);
-    QCOMPARE( mOption->getDefaultValue(optionName).toInt(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeEnumInt);
+    QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).size() , numberOfEnumint);
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toInt(), defaultValue );
 }
 
 void TestConopt4Option::testOptionDoubleType_data()
@@ -88,11 +87,11 @@ void TestConopt4Option::testOptionDoubleType()
     QFETCH(double, upperBound);
     QFETCH(double, defaultValue);
 
-    QCOMPARE( mOption->getOptionDefinition(optionName).valid, valid);
-    QCOMPARE( mOption->getOptionType(optionName),  optTypeDouble);
-    QCOMPARE( mOption->getLowerBound(optionName).toDouble(), lowerBound );
-    QCOMPARE( mOption->getUpperBound(optionName).toDouble(), upperBound );
-    QCOMPARE( mOption->getDefaultValue(optionName).toDouble(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
 void TestConopt4Option::testOptionSynonym_data()
@@ -117,11 +116,11 @@ void TestConopt4Option::testOptionSynonym()
     QFETCH(QString, optionName);
 
     if (optionSynonym.isEmpty()) {
-        QVERIFY( mOption->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
-        QVERIFY( !mOption->isASynonym(optionName) );
+        QVERIFY( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper().isEmpty() );
+        QVERIFY( !optionTokenizer->getOption()->isASynonym(optionName) );
     } else {
-       QVERIFY( mOption->isASynonym(optionSynonym) );
-       QCOMPARE( mOption->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
+       QVERIFY( optionTokenizer->getOption()->isASynonym(optionSynonym) );
+       QCOMPARE( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
     }
 }
 
@@ -186,10 +185,10 @@ void TestConopt4Option::testOptionGroup()
     QFETCH(QString, optionGroupDescription);
     QFETCH(QString, optionType);
 
-    QCOMPARE( mOption->getGroupNumber(optionName), groupNumber );
-    QCOMPARE( mOption->getGroupName(optionName), optionGroupName );
-    QCOMPARE( mOption->getGroupDescription(optionName), optionGroupDescription );
-    QCOMPARE( mOption->getOptionTypeName(mOption->getOptionType(optionName)), optionType );
+    QCOMPARE( optionTokenizer->getOption()->getGroupNumber(optionName), groupNumber );
+    QCOMPARE( optionTokenizer->getOption()->getGroupName(optionName), optionGroupName );
+    QCOMPARE( optionTokenizer->getOption()->getGroupDescription(optionName), optionGroupDescription );
+    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
 void TestConopt4Option::testInvalidOption_data()
@@ -216,8 +215,40 @@ void TestConopt4Option::testInvalidOption()
     QFETCH(bool, nameValid);
     QFETCH(bool, synonymValid);
 
-    QCOMPARE( mOption->isValid(optionName), nameValid);
-    QCOMPARE( mOption->isASynonym(optionName), synonymValid);
+    QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid);
+    QCOMPARE( optionTokenizer->getOption()->isASynonym(optionName), synonymValid);
+}
+
+void TestConopt4Option::testReadOptionFile()
+{
+    // given
+    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2"));
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        QFAIL("expected to open conopt4.op2 to write, but failed");
+
+    QTextStream out(&outputFile);
+    out << "DF_Method 1" << endl;
+    out << "Lim_Iteration=100" << endl;
+    out << "cooptfile \"C:/Users/Dude/coopt.file\"" << endl;
+    out << "Tol_Bound=5.E-9" << endl;
+    out << "Flg_Hessian auto" << endl;
+    outputFile.close();
+
+    // when
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(CommonPaths::defaultWorkingDir(), "conopt4.op2");
+
+    // then
+    QCOMPARE( items.at(0).key, "DF_Method" );
+    QCOMPARE( items.at(0).value, "1" );
+    QCOMPARE( items.at(1).key, "Lim_Iteration" );
+    QCOMPARE( items.at(1).value, "100" );
+    QCOMPARE( items.at(2).key, "cooptfile" );
+    QCOMPARE( items.at(2).value, "\"C:/Users/Dude/coopt.file\"" );
+    QCOMPARE( items.at(3).key, "Tol_Bound" );
+    QCOMPARE( items.at(3).value, "5.E-9" );
+    QCOMPARE( items.at(4).key, "Flg_Hessian" );
+    QCOMPARE( items.at(4).value, "auto" );
+    QCOMPARE( items.size(), 5 );
 }
 
 void TestConopt4Option::testWriteOptionFile()
@@ -228,7 +259,7 @@ void TestConopt4Option::testWriteOptionFile()
     items.append(OptionItem("cooptfile", "C:/Users/Dude/coopt.file"));
     items.append(OptionItem("Tol_Bound", "5.e-9"));
 //    items.append(OptionItem("readfile", "this is read file"));
-    QVERIFY( mOption->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
+    QVERIFY( optionTokenizer->getOption()->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
 
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt"));
     int i = 0;
@@ -267,8 +298,8 @@ void TestConopt4Option::testWriteOptionFile()
 
 void TestConopt4Option::cleanupTestCase()
 {
-    if (mOption)
-       delete mOption;
+    if (optionTokenizer)
+       delete optionTokenizer;
 }
 
 QTEST_MAIN(TestConopt4Option)

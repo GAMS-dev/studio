@@ -22,9 +22,9 @@
 
 #include <QtTest/QTest>
 
-#include "option/option.h"
+#include "option/optiontokenizer.h"
 
-using gams::studio::Option;
+using gams::studio::OptionTokenizer;
 
 class TestConopt4Option : public QObject
 {
@@ -51,12 +51,13 @@ private slots:
     void testInvalidOption_data();
     void testInvalidOption();
 
+    void testReadOptionFile();
     void testWriteOptionFile();
 
     void cleanupTestCase();
 
 private:
-    Option* mOption;
+    OptionTokenizer* optionTokenizer;
 };
 
 #endif // TESTCONOPT4OPTION_H
