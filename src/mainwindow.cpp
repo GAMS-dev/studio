@@ -1068,9 +1068,12 @@ void MainWindow::postGamsRun(NodeId origin)
         if (mSettings->openLst())
             openFileNode(lstNode);
     }
-    if (groupNode && groupNode->logNode()) {
+    if (groupNode && groupNode->logNode())
         groupNode->logNode()->logDone();
-    }
+
+    // add all created files to project explorer
+    for (QString loc : groupNode->specialFiles().values())
+        groupNode->findOrCreateFileNode(loc);
 }
 
 void MainWindow::postGamsLibRun()
@@ -1595,7 +1598,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->dockLogView->setVisible(true);
 
     // select gms-file  and working dir to run
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->file()->location() : runGroup->runnableGms()->location());
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append

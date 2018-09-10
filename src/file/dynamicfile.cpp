@@ -28,10 +28,9 @@ namespace studio {
 DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent)
 {
     mFile.setFileName(QDir::toNativeSeparators(fileName));
-    if (mFile.exists()) {
-        DEB() << "handle existing destination file " << fileName;
+    if (mFile.exists())
         handleExisting(backups);
-    }
+
     mCloseTimer.setSingleShot(true);
     mCloseTimer.setInterval(1000);
     connect(&mCloseTimer, &QTimer::timeout, this, &DynamicFile::closeFile);
