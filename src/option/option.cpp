@@ -385,43 +385,44 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
          for (int i = 1; i <= optCount(mOPTHandle); ++i) {
 
-                     char name[GMS_SSSIZE];
-                     char descript[GMS_SSSIZE];
-                     int group = 0;
+             char name[GMS_SSSIZE];
+             char descript[GMS_SSSIZE];
+             int group = 0;
 
-                     int idefined;
-                     int iopttype;
-                     int ioptsubtype;
-                     int idummy;
-                     int irefnr;
-                     int itype;
+             int idefined;
+             int iopttype;
+             int ioptsubtype;
+             int idummy;
+             int irefnr;
+             int itype;
 
-                     optGetHelpNr(mOPTHandle, i, name, descript);
-                     optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
+             optGetHelpNr(mOPTHandle, i, name, descript);
+             optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
 
-                     QString nameStr = QString::fromLatin1(name).toUpper();
-                     OptionDefinition opt(i, QString::fromLatin1(name), static_cast<optOptionType>(iopttype), static_cast<optDataType>(itype), QString::fromLatin1(descript));
+             QString nameStr = QString::fromLatin1(name).toUpper();
+             OptionDefinition opt(i, QString::fromLatin1(name), static_cast<optOptionType>(iopttype), static_cast<optDataType>(itype), QString::fromLatin1(descript));
 
-                     int helpContextNr;
-                     optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
-                     opt.groupNumber = group;
-                     opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
-                     opt.valid = (helpContextNr == 1);
-                     if (synonym.contains(nameStr)) {
-                         QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
-                         while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
-                             opt.synonym = it.value();
-                             mSynonymMap.insertMulti(it.value(), it.key());
-                             ++it;
-                         }
-                     }
+             int helpContextNr;
+             optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
+             opt.groupNumber = group;
+             opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
+             opt.valid = (helpContextNr == 1);
+             if (synonym.contains(nameStr)) {
+                 QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
+                 while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
+                       opt.synonym = it.value();
+                       mSynonymMap.insertMulti(it.value(), it.key());
+                       ++it;
+                 }
+             }
 
-                     char optTypeName[GMS_SSSIZE];
-                     optGetTypeName(mOPTHandle, opt.type, optTypeName);
-                     mOptionTypeNameMap[opt.type] = optTypeName;
+             char optTypeName[GMS_SSSIZE];
+             optGetTypeName(mOPTHandle, opt.type, optTypeName);
+             mOptionTypeNameMap[opt.type] = optTypeName;
 
-                     int enumCount = 0;
-                     if (iopttype == optTypeInteger) {
+             int enumCount = 0;
+             switch(iopttype) {
+             case optTypeInteger: {
                          int iupper;
                          int ilower;
                          int idefval;
@@ -429,7 +430,9 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                          opt.upperBound = QVariant(iupper);
                          opt.lowerBound = QVariant(ilower);
                          opt.defaultValue = QVariant(idefval);
-                     } else if (iopttype == optTypeDouble) {
+                         break;
+                     }
+             case optTypeDouble: {
                          double dupper;
                          double dlower;
                          double ddefval;
@@ -437,24 +440,27 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                          opt.upperBound = QVariant(dupper);
                          opt.lowerBound = QVariant(dlower);
                          opt.defaultValue = QVariant(ddefval);
-                     }
-                     switch(iopttype) {
-                     case optTypeEnumStr: {
-                         int iv;
-                         double dv;
-                         char sn[GMS_SSSIZE];
-                         char sv[GMS_SSSIZE];
-                         optGetValuesNr(mOPTHandle, i, sn, &iv, &dv, sv);
-                         opt.defaultValue = QVariant(sv);
                          break;
                      }
-                     case optTypeEnumInt: {
+             case optTypeEnumInt:
+             case optTypeBoolean: {
                          int iv;
                          double dv;
                          char sn[GMS_SSSIZE];
                          char sv[GMS_SSSIZE];
                          optGetValuesNr(mOPTHandle, i, sn, &iv, &dv, sv);
                          opt.defaultValue = QVariant(iv);
+                         break;
+                     }
+             case optTypeString:
+             case optTypeStrList :
+             case optTypeEnumStr: {
+                         int iv;
+                         double dv;
+                         char sn[GMS_SSSIZE];
+                         char sv[GMS_SSSIZE];
+                         optGetValuesNr(mOPTHandle, i, sn, &iv, &dv, sv);
+                         opt.defaultValue = QVariant(sv);
                          break;
                      }
 //                     case optTypeImmediate: {
@@ -464,16 +470,16 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 //                         qDebug() << QString("%1, %2").arg(opt.name).arg(sdefval);
 //                         break;
 //                     }
-                     default: break;
-                     }
+             default: break;
+             }
 
-                     optGetEnumCount(mOPTHandle, i, &enumCount);
-                     for (int j = 1; j <= enumCount; j++) {
-                          int ihelpContext;
-                          char shelpText[GMS_SSSIZE];
-                          optGetEnumHelp(mOPTHandle, i, j, &ihelpContext, shelpText);
-                          switch( itype ) {
-                          case optDataString:
+             optGetEnumCount(mOPTHandle, i, &enumCount);
+             for (int j = 1; j <= enumCount; j++) {
+                  int ihelpContext;
+                  char shelpText[GMS_SSSIZE];
+                  optGetEnumHelp(mOPTHandle, i, j, &ihelpContext, shelpText);
+                  switch( itype ) {
+                  case optDataString:
                               int ipos;
                               int idummy;
                               char sdefval[GMS_SSSIZE];
@@ -483,18 +489,18 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                               opt.defaultValue = QVariant(QString::fromLatin1(sdefval));
                               opt.valueList.append( OptionValue(QVariant(QString::fromLatin1(soptvalue)), QString::fromLatin1(shelpText), (ihelpContext==0), (iopttype==optTypeEnumInt || iopttype==optTypeEnumStr)) );
                               break;
-                          case optDataInteger:
+                  case optDataInteger:
                               int ioptvalue;
                               char sdummy[GMS_SSSIZE];
                               optGetEnumValue(mOPTHandle, i, j, &ioptvalue, sdummy);
                               opt.valueList.append( OptionValue(QVariant(ioptvalue), QString::fromLatin1(shelpText), (ihelpContext==0), (iopttype==optTypeEnumInt || iopttype==optTypeEnumStr)) );
                               break;
-                          case optDataDouble:
-                          default:
-                              break;
-                          }
-                     }
-                     mOption[nameStr] = opt;
+                  case optDataDouble:
+                  default:
+                          break;
+                  }
+             }
+             mOption[nameStr] = opt;
          }
          optFree(&mOPTHandle);
          return true;
