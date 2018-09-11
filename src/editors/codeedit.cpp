@@ -424,9 +424,43 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     else if (e->key() == Qt::Key_F3)
         emit searchFindNextPressed();
 
+    // smart typing section:
+    QSet<int> moveKeys;
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+             << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+    if (moveKeys.contains(e->key())) mSmartType = false;
+
+    QString opening = "<([{/'\"";
+    QString closing = ">)]}/'\"";
+    int index = opening.indexOf(e->key());
+    if (index != -1) {
+        mSmartType = true;
+        QTextCursor tc = textCursor();
+        tc.insertText(e->text());
+        tc.insertText(closing.at(index));
+        tc.movePosition(QTextCursor::PreviousCharacter);
+        setTextCursor(tc);
+        e->accept();
+        return;
+    }
+
+    if (mSmartType && e->key() == Qt::Key_Backspace) {
+        int pos = textCursor().position();
+
+        QChar a = document()->characterAt(pos-1);
+        QChar b = document()->characterAt(pos);
+
+        if ((opening.indexOf(a) ==  closing.indexOf(b)) && opening.indexOf(a) != -1) {
+            textCursor().deleteChar();
+            textCursor().deletePreviousChar();
+            e->accept();
+            mSmartType = false;
+            return;
+        }
+    }
+
     AbstractEdit::keyPressEvent(e);
 }
-
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {

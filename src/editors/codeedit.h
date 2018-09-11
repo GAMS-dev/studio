@@ -251,6 +251,7 @@ private:
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
+    bool mSmartType = false;
 
 };
 
