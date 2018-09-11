@@ -39,7 +39,5 @@ void SysLogLocator::provide(SystemLogEdit *syslogEdit)
     mSysLog = syslogEdit;
 }
 
-
-
 }
 }

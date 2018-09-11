@@ -24,6 +24,7 @@
 #include "gclgms.h"
 #include "option.h"
 #include "commonpaths.h"
+#include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -329,6 +330,7 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
+        SysLogLocator::write(msg, LogMsgType::Error);
         qDebug() << QString("ERROR: ").arg(msg);
         optFree(&mOPTHandle);
         return false;
