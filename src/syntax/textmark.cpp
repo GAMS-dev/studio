@@ -78,12 +78,6 @@ void TextMark::unsetRefMark(TextMark* refMark)
     mBackRefs.removeAll(refMark);
 }
 
-inline bool TextMark::isErrorRef()
-{
-    return (mReference && mReference->type() == error);
-//            || (mRefData && mRefData->type == error);
-}
-
 void TextMark::clearBackRefs()
 {
     if (mReference) mReference->unsetRefMark(this);

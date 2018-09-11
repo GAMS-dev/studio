@@ -124,7 +124,6 @@ NodeId ProjectFileNode::runGroupId() const
     return NodeId();
 }
 
-// TODO(JM) enhance mark texts with lst-data
 void ProjectFileNode::enhanceMarksFromLst()
 {
     if (file()->kind() != FileKind::Lst) return;
@@ -141,17 +140,19 @@ void ProjectFileNode::enhanceMarksFromLst()
     for (int lineNr: lines) {
         QTextBlock block = document()->findBlockByNumber(lineNr).next();
         QList<TextMark*> currentMarks = marks->values(lineNr);
+        bool hasErr = false;
         for (TextMark *mark: currentMarks) {
             if (mark->groupId() != runGroupId()) continue;
+            if (mark->isErrorRef()) hasErr = true;
             int size = mark->size();
             if (size <= 0) {
                 int col = mark->column();
-                size = block.next().text().indexOf('$');
-                if (size <= 0) size = block.length()-col-1;
-                DEB() << "     finalsize=" << size;
-                mark->setPosition(lineNr, col, size);
+                size = block.text().indexOf('$');
+                if (size > 0)
+                    mark->setPosition(lineNr, col, size+1);
             }
         }
+        if (!hasErr) continue;
         QList<int> errNrs;
         QList<int> errTextNr;
         QStringList errNrsDeb;

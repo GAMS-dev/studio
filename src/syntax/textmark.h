@@ -47,7 +47,7 @@ public:
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
 
-    inline bool isErrorRef();
+    inline bool isErrorRef() { return (mReference && mReference->type() == error); }
     QColor color();
     FileKind fileKind();
     FileKind refFileKind();
