@@ -433,7 +433,16 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     QString opening = "<([{/'\"";
     QString closing = ">)]}/'\"";
     int index = opening.indexOf(e->key());
-    if (index != -1) {
+
+    if ((index != -1) && (textCursor().hasSelection())) {
+        QTextCursor tc(textCursor());
+        QString selection(tc.selectedText());
+        selection = opening.at(index) + selection + closing.at(index);
+        tc.insertText(selection);
+        setTextCursor(tc);
+        return;
+
+    } else if (index != -1) {
         mSmartType = true;
         QTextCursor tc = textCursor();
         tc.insertText(e->text());
