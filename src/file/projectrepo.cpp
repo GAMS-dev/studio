@@ -498,6 +498,23 @@ bool ProjectRepo::debugMode() const
     return mDebugMode;
 }
 
+void ProjectRepo::fileChanged(FileId fileId)
+{
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectFileNode *node: fileNodes(fileId)) {
+        ProjectGroupNode *group = node->parentNode();
+        while (group && group != mTreeModel->rootNode()) {
+            if (groups.contains(group)) break;
+            groups << group;
+            group = group->parentNode();
+        }
+        nodeChanged(node->id());
+    }
+    for (ProjectGroupNode *group: groups) {
+        nodeChanged(group->id());
+    }
+}
+
 ProjectLogNode* ProjectRepo::logNode(QWidget* edit)
 {
     ProjectFileNode* node = findFileNode(edit);

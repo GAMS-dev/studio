@@ -885,6 +885,7 @@ void MainWindow::fileChanged(FileId fileId)
         if (index >= 0) {
             FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
             if (fm) ui->mainTab->setTabText(index, fm->name(NameModifier::editState));
+            mProjectRepo.fileChanged(fileId);
         }
     }
 }

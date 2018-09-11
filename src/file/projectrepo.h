@@ -140,6 +140,7 @@ signals:
     void changed();
 
 public slots:
+    void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
