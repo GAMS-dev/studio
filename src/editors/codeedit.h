@@ -169,6 +169,8 @@ private slots:
 
 private:
     friend class BlockEdit;
+    friend class LineNumberArea;
+
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
@@ -270,11 +272,13 @@ protected:
     void paintEvent(QPaintEvent *event) override {
         mCodeEditor->lineNumberAreaPaintEvent(event);
     }
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
-
 };
 
 

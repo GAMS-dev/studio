@@ -416,7 +416,7 @@ SearchDialog* MainWindow::searchDialog() const
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;
-    foreach (QAction *act, ui->menuconvert_to->actions()) {
+    for (QAction *act: ui->menuconvert_to->actions()) {
         if (!act->data().isNull()) res << act->data().toString();
     }
     return res.join(",");
@@ -425,7 +425,7 @@ QString MainWindow::encodingMIBsString()
 QList<int> MainWindow::encodingMIBs()
 {
     QList<int> res;
-    foreach (QAction *act, mCodecGroupReload->actions())
+    for (QAction *act: mCodecGroupReload->actions())
         if (!act->data().isNull()) res << act->data().toInt();
     return res;
 }
@@ -434,7 +434,7 @@ void MainWindow::setEncodingMIBs(QString mibList, int active)
 {
     QList<int> mibs;
     QStringList strMibs = mibList.split(",");
-    foreach (QString mib, strMibs) {
+    for (QString mib: strMibs) {
         if (mib.length()) mibs << mib.toInt();
     }
     setEncodingMIBs(mibs, active);
@@ -454,7 +454,7 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
             ui->menureload_with->removeAction(act);
         mCodecGroupReload->removeAction(act);
     }
-    foreach (int mib, mibs) {
+    for (int mib: mibs) {
         if (!QTextCodec::availableMibs().contains(mib)) continue;
         QAction *act;
         act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);

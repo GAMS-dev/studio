@@ -1685,5 +1685,29 @@ void BlockData::removeTextMark(TextMark *mark)
     mMarks.removeAll(mark);
 }
 
+void LineNumberArea::mousePressEvent(QMouseEvent *event)
+{
+    QPoint pos = event->pos();
+    pos.setX(pos.x()-width());
+    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    mCodeEditor->mousePressEvent(&e);
+}
+
+void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint pos = event->pos();
+    pos.setX(pos.x()-width());
+    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    mCodeEditor->mouseMoveEvent(&e);
+}
+
+void LineNumberArea::mouseReleaseEvent(QMouseEvent *event)
+{
+    QPoint pos = event->pos();
+    pos.setX(pos.x()-width());
+    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    mCodeEditor->mouseReleaseEvent(&e);
+}
+
 } // namespace studio
 } // namespace gams

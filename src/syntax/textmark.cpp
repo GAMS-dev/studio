@@ -45,25 +45,15 @@ TextMark::~TextMark()
     clearBackRefs();
 }
 
-QTextDocument*TextMark::document() const
-{
-    // TODO(JM) maybe this method can be removed
-    return mMarkRepo->document(mFileId);
-}
-
-
 void TextMark::setPosition(int line, int column, int size)
 {
     mLine = line;
     mSize = (size<0) ? -size : size;
     mColumn = (size<0) ? column-mSize : column;
-//    updatePos();
 }
 
 void TextMark::jumpToRefMark(bool focus)
 {
-//    if (!mReference && mRefData)
-//        setRefMark(mMarks->createMark(mRefData));
     if (mReference)
         mReference->jumpToMark(focus);
     else
@@ -80,10 +70,6 @@ void TextMark::setRefMark(TextMark* refMark)
     mReference = refMark;
     if (mReference)
         mReference->mBackRefs << this;
-//    if (mRefData) {
-//        delete mRefData;
-//        mRefData = nullptr;
-//    }
 }
 
 void TextMark::unsetRefMark(TextMark* refMark)
@@ -101,7 +87,7 @@ inline bool TextMark::isErrorRef()
 void TextMark::clearBackRefs()
 {
     if (mReference) mReference->unsetRefMark(this);
-    foreach (TextMark* backRef, mBackRefs) {
+    for (TextMark* backRef: mBackRefs) {
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();

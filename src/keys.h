@@ -65,13 +65,13 @@ public:
     KeySeqList& operator <<(const KeySeqList &other);
     KeySeqList& operator <<(const QKeySequence& other);
     inline bool matches(QKeyEvent *e) const {
-        uint searchkey = (e->modifiers() | e->key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
+        int searchkey = (e->modifiers() | e->key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
         return mSequence.contains(QKeySequence(searchkey));
     }
     inline bool contains(int keycode) const {
         for (QKeySequence seq: mSequence) {
             for (int i = 0; i < seq.count(); ++i) {
-                int mask = seq[i] & ~Qt::KeyboardModifierMask;
+                int mask = seq[uint(i)] & ~Qt::KeyboardModifierMask;
                 if (mask == keycode) return true;
             }
         }

@@ -128,10 +128,12 @@ SOURCES += \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
+    syntax/errorhighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxidentifier.cpp \
+    syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
     treeitemdelegate.cpp \
@@ -153,7 +155,6 @@ SOURCES += \
     editors/systemlogedit.cpp \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
-    syntax/systemloghighlighter.cpp \
     tabdialog.cpp \
     locators/settingslocator.cpp
 
@@ -229,12 +230,14 @@ HEADERS += \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
+    syntax/errorhighlighter.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \
     syntax/syntaxidentifier.h \
+    syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
     treeitemdelegate.h \
@@ -256,7 +259,6 @@ HEADERS += \
     editors/systemlogedit.h \
     encodingsdialog.h \
     editors/codeedit.h \
-    syntax/systemloghighlighter.h \
     tabdialog.h \
     locators/settingslocator.h
 

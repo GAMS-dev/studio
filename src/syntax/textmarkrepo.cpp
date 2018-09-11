@@ -123,7 +123,7 @@ void TextMarkRepo::clear()
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
-    if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->column());
+    if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->blockEnd());
 }
 
 void TextMarkRepo::rehighlight(FileId fileId, int line)

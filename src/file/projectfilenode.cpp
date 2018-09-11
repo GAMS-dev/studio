@@ -139,10 +139,22 @@ void ProjectFileNode::enhanceMarksFromLst()
     QRegularExpression rex("\\*{4}((\\s+)\\$(([0-9,]+).*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
     QList<int> lines = marks->uniqueKeys();
     for (int lineNr: lines) {
+        QTextBlock block = document()->findBlockByNumber(lineNr).next();
+        QList<TextMark*> currentMarks = marks->values(lineNr);
+        for (TextMark *mark: currentMarks) {
+            if (mark->groupId() != runGroupId()) continue;
+            int size = mark->size();
+            if (size <= 0) {
+                int col = mark->column();
+                size = block.next().text().indexOf('$');
+                if (size <= 0) size = block.length()-col-1;
+                DEB() << "     finalsize=" << size;
+                mark->setPosition(lineNr, col, size);
+            }
+        }
         QList<int> errNrs;
         QList<int> errTextNr;
         QStringList errNrsDeb;
-        QTextBlock block = document()->findBlockByNumber(lineNr).next();
         QStringList errText;
         while (block.isValid()) {
             QRegularExpressionMatch match = rex.match(block.text());

@@ -23,6 +23,7 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -196,7 +197,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         QToolTip::hideText();
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
-    if (!mMarks || mMarks->isEmpty() || !isReadOnly()) {
+    if (!mMarks || mMarks->isEmpty()) {
         // No marks or the text is editable
         viewport()->setCursor(shape);
         return;
@@ -209,7 +210,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         if ((!mark->groupId().isValid() || mark->groupId() == groupId()) && mark->inColumn(col))
             mMarksAtMouse << mark;
     }
-    if (!mMarksAtMouse.isEmpty())
+    if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))
         shape = mMarksAtMouse.first()->cursorShape(&shape, true);
     viewport()->setCursor(shape);
 }
@@ -217,7 +218,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
-    if (!isReadOnly()) return;
+    if (!isReadOnly() && e->pos().x() >= 0) return;
     if (mMarksAtMouse.isEmpty() || !mMarksAtMouse.first()->isValidLink(true)) return;
     if ((mClickPos-e->pos()).manhattanLength() >= 4) return;
 
@@ -248,8 +249,8 @@ void AbstractEdit::jumpTo(int line, int column)
     QTextCursor cursor;
     if (document()->blockCount()-1 < line) return;
     cursor = QTextCursor(document()->findBlockByNumber(line));
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
     cursor.clearSelection();
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
     jumpTo(cursor);
 }
 
