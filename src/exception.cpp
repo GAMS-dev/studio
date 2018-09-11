@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exception.h"
-#include "locators/sysloglocator.h"
 #include <QDebug>
 
 namespace gams {
@@ -38,7 +37,6 @@ Exception::Exception(const Exception &other)
 Exception::~Exception()
 {
     qDebug() << mBuffer;
-    SysLogLocator::write(mBuffer, LogMsgType::Error);
     delete mStream;
 }
 

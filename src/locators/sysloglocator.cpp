@@ -25,13 +25,13 @@ namespace studio {
 
 SystemLogEdit* SysLogLocator::mSysLog = nullptr;
 
-void SysLogLocator::write(const QString &msg, LogMsgType type)
+SystemLogEdit* SysLogLocator::systemLog()
 {
     if (!mSysLog) {
         qDebug() << "Warning: No systemLogEdit set in SysLogLocator";
-        return;
+        return nullptr;
     }
-    mSysLog->appendLog(msg, type);
+    return mSysLog;
 }
 
 void SysLogLocator::provide(SystemLogEdit *syslogEdit)

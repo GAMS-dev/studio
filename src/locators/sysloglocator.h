@@ -20,17 +20,15 @@
 #ifndef SYSLOGLOCATOR_H
 #define SYSLOGLOCATOR_H
 
-#include <QString>
-#include "editors/systemlogedit.h"
-
 namespace gams {
 namespace studio {
 
+class SystemLogLocator;
 class SystemLogEdit;
 class SysLogLocator
 {
 public:
-    static void write(const QString &msg, LogMsgType type = LogMsgType::Warning);
+    static SystemLogEdit* systemLog();
     static void provide(SystemLogEdit* syslogEdit);
 
 private:
