@@ -92,8 +92,7 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
         return nullptr;
     }
     if (!mMarks.contains(fileId)) {
-        DEB() << "No container for fileId " << QString::number(fileId);
-        return nullptr;
+        mMarks.insert(fileId, new LineMarks());
     }
     TextMark* mark = new TextMark(this, fileId, type, groupId);
     mark->setPosition(line, column, size);
