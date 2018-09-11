@@ -33,14 +33,26 @@ class TestGamsOption : public QObject
 private slots:
     void initTestCase();
 
+    void testOptionStringType_data();
+    void testOptionStringType();
+
     void testOptionEnumStrType_data();
     void testOptionEnumStrType();
+
+    void testOptionEnumStrValue_data();
+    void testOptionEnumStrValue();
 
     void testOptionEnumIntType_data();
     void testOptionEnumIntType();
 
+    void testOptionEnumIntValue_data();
+    void testOptionEnumIntValue();
+
     void testOptionDoubleType_data();
     void testOptionDoubleType();
+
+    void testOptionIntegerType_data();
+    void testOptionIntegerType();
 
     void testOptionSynonym_data();
     void testOptionSynonym();

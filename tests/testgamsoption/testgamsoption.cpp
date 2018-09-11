@@ -37,6 +37,30 @@ void TestGamsOption::initTestCase()
     }
 }
 
+void TestGamsOption::testOptionStringType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("SubSys")        << "SubSys"    << true  << "Name of subsystem configuration file";
+    QTest::newRow("ErrNam")        << "ErrNam"     << true  << "Name of error message file";
+    QTest::newRow("CurDir")        << "CurDir"     << true  << "Current directory";
+    QTest::newRow("WorkDir")       << "WorkDir"    << true  << "Working directory";
+}
+
+void TestGamsOption::testOptionStringType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, description);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeString);
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).description, description);
+
+}
+
 void TestGamsOption::testOptionEnumStrType_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -61,6 +85,42 @@ void TestGamsOption::testOptionEnumStrType()
     QCOMPARE( gamsOption->getOptionType(optionName),  optTypeEnumStr);
     QCOMPARE( gamsOption->getValueList(optionName).size() , numberOfEnumstr);
     QVERIFY( QString::compare(gamsOption->getDefaultValue(optionName).toString(), defaultValue, Qt::CaseInsensitive) == 0 );
+}
+
+void TestGamsOption::testOptionEnumStrValue_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("valueIndex");
+    QTest::addColumn<bool>("hidden");
+    QTest::addColumn<QString>("value");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("Action_R")   << "Action"  << true  << 0 << false << "R"  << "Restart After Solve";
+    QTest::newRow("Action_C")   << "Action"  << true  << 1 << false << "C"  << "CompileOnly";
+    QTest::newRow("Action_E")   << "Action"  << true  << 2 << false << "E"  << "ExecuteOnly";
+    QTest::newRow("Action_CE")  << "Action"  << true  << 3 << false << "CE" << "Compile and Execute";
+    QTest::newRow("Action_G")   << "Action"  << true  << 4 << true  << "G"  << "Glue Code Generation";
+    QTest::newRow("Action_GT")  << "Action"  << true  << 5 << false << "GT" << "Trace Report";
+
+    QTest::newRow("gdxUels_Squeezed")  << "gdxUels"  << true  << 0 << false << "Squeezed"  << "Write only the UELs to Universe, that are used by the exported symbols";
+    QTest::newRow("gdxUels_Full")      << "gdxUels"  << true  << 1 << false << "Full"      << "Write all UELs to Universe";
+}
+
+void TestGamsOption::testOptionEnumStrValue()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, valueIndex);
+    QFETCH(bool, hidden);
+    QFETCH(QString, value);
+    QFETCH(QString, description);
+
+    QCOMPARE( gamsOption-> getOptionDefinition(optionName).valid, valid );
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeEnumStr );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).hidden, hidden );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).value.toString().toLower(), value.toLower() );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
 }
 
 void TestGamsOption::testOptionEnumIntType_data()
@@ -90,6 +150,59 @@ void TestGamsOption::testOptionEnumIntType()
     QCOMPARE( gamsOption->getDefaultValue(optionName).toInt(), defaultValue );
 }
 
+void TestGamsOption::testOptionEnumIntValue_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("valueIndex");
+    QTest::addColumn<bool>("hidden");
+    QTest::addColumn<int>("value");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("LogLine_0")  << "LogLine"  << true  << 0 << false << 0  << "No line tracing";
+    QTest::newRow("LogLine_1")  << "LogLine"  << true  << 1 << false << 1  << "Minimum line tracing";
+    QTest::newRow("LogLine_2")  << "LogLine"  << true  << 2 << false << 2  << "Automatic and visually pleasing";
+
+    QTest::newRow("MultiPass_0")  << "MultiPass"  << true  << 0 << false << 0  << "Standard compilation";
+    QTest::newRow("MultiPass_1")  << "MultiPass"  << true  << 1 << false << 1  << "Check-out compilation";
+    QTest::newRow("MultiPass_2")  << "MultiPass"  << true  << 2 << false << 2  << "As 1, and skip $call and ignore missing file errors with $include and $gdxin";
+
+    QTest::newRow("DumpOpt_0")  << "DumpOpt"  << true  << 0  << false << 0  << "No dumpfile";
+    QTest::newRow("DumpOpt_1")  << "DumpOpt"  << true  << 1  << false << 1  << "Extract referenced data from the restart file using original set element names";
+    QTest::newRow("DumpOpt_2")  << "DumpOpt"  << true  << 2  << false << 2  << "Extract referenced data from the restart file using new set element names";
+    QTest::newRow("DumpOpt_3")  << "DumpOpt"  << true  << 3  << false << 3  << "Extract referenced data from the restart file using new set element names and drop symbol text";
+    QTest::newRow("DumpOpt_4")  << "DumpOpt"  << true  << 4  << false << 4  << "Extract referenced symbol declarations from the restart file";
+    QTest::newRow("DumpOpt_10")  << "DumpOpt" << true  << 5  << true  << 10  << "(Same as 11 and therefore hidden)";
+    QTest::newRow("DumpOpt_11")  << "DumpOpt" << true  << 6  << false << 11  << "Write processed input file without comments";
+    QTest::newRow("DumpOpt_12")  << "DumpOpt" << true  << 7  << true  << 12  << "(Same as 11 and therefore hidden)";
+    QTest::newRow("DumpOpt_19")  << "DumpOpt" << true  << 8  << true  << 19  << "(Same as 21 and therefore hidden)";
+    QTest::newRow("DumpOpt_20")  << "DumpOpt" << true  << 9  << true  << 20  << "(Same as 21 and therefore hidden)";
+    QTest::newRow("DumpOpt_21")  << "DumpOpt" << true  << 10 << false << 21  << "Write processed input file with all comments";
+
+    QTest::newRow("TraceOpt_0")  << "TraceOpt"  << true  << 0 << false << 0  << "Solver and GAMS step trace without headers";
+    QTest::newRow("TraceOpt_1")  << "TraceOpt"  << true  << 1 << false << 1  << "Solver and GAMS step trace";
+    QTest::newRow("TraceOpt_2")  << "TraceOpt"  << true  << 2 << false << 2  << "Solver step trace only";
+    QTest::newRow("TraceOpt_3")  << "TraceOpt"  << true  << 3 << false << 3  << "Trace file format used for GAMS performance world";
+    QTest::newRow("TraceOpt_4")  << "TraceOpt"  << true  << 4 << true  << 4  << "Trace file format supporting NLPEC";
+    QTest::newRow("TraceOpt_5")  << "TraceOpt"  << true  << 5 << false << 5  << "Trace file with all available trace fields";
+}
+
+void TestGamsOption::testOptionEnumIntValue()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, valueIndex);
+    QFETCH(bool, hidden);
+    QFETCH(int, value);
+    QFETCH(QString, description);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid );
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeEnumInt );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).hidden, hidden );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).value.toInt(), value );
+    QCOMPARE( gamsOption->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
+}
+
 void TestGamsOption::testOptionDoubleType_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -115,6 +228,37 @@ void TestGamsOption::testOptionDoubleType()
 
     QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
     QCOMPARE( gamsOption->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( gamsOption->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( gamsOption->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( gamsOption->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestGamsOption::testOptionIntegerType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("lowerBound");
+    QTest::addColumn<int>("upperBound");
+    QTest::addColumn<int>("defaultValue");
+
+    QTest::newRow("PageWidth")   << "PageWidth"   << true   << 72  << 32767                              << 255;
+    QTest::newRow("PoolUse")     << "PoolUse"     << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("CErr")        << "CErr"        << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("Opt")         << "Opt"         << false  << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("IterLim")     << "IterLim"     << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 2000000000;
+    QTest::newRow("Seed")        << "Seed"        << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 3141;
+}
+
+void TestGamsOption::testOptionIntegerType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, lowerBound);
+    QFETCH(int, upperBound);
+    QFETCH(int, defaultValue);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeInteger);
     QCOMPARE( gamsOption->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( gamsOption->getUpperBound(optionName).toDouble(), upperBound );
     QCOMPARE( gamsOption->getDefaultValue(optionName).toDouble(), defaultValue );

@@ -39,6 +39,81 @@ void TestCPLEXOption::initTestCase()
     }
 }
 
+void TestCPLEXOption::testOptionBooleanType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("defaultValue");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("record")           << "record"            << false << 0  << "Records invocations of Callable Library routines";
+    QTest::newRow("relaxfixedinfeas") << "relaxfixedinfeas"  << true  << 0  << "accept small infeasibilties in the solve of the fixed problem";
+    QTest::newRow("sifting")          << "sifting"           << true  << 1  << "switch for sifting from simplex optimization";
+    QTest::newRow("solvefinal")       << "solvefinal"        << true  << 1  << "switch to solve the problem with fixed discrete variables";
+    QTest::newRow("usercutnewint")    << "usercutnewint"     << true  << 1  << "calls the cut generator if the solver found a new integer feasible solution";
+}
+
+void TestCPLEXOption::testOptionBooleanType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, defaultValue);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeBoolean);
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toInt(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
+}
+
+void TestCPLEXOption::testOptionStringType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("iatriggerfile") << "iatriggerfile" << false << "file that triggers the reading of a secondary option file";
+    QTest::newRow("miptrace")      << "miptrace"      << true  << "filename of MIP trace file";
+    QTest::newRow("probread")      << "probread"      << false << "reads a problem from a Cplex file";
+    QTest::newRow("readflt")       << "readflt"       << true  << "reads Cplex solution pool filter file";
+    QTest::newRow("readparams")    << "readparams"    << false << "read Cplex parameter file";
+}
+
+void TestCPLEXOption::testOptionStringType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeString);
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
+}
+
+void TestCPLEXOption::testOptionStrListType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("computeserver") << "computeserver" << true  << "address and port of Cplex remote object server";
+    QTest::newRow("objrng")        << "objrng"        << true  << "do objective ranging";
+    QTest::newRow("rhsrng")        << "rhsrng"        << true  << "do right-hand-side ranging";
+    QTest::newRow("secret")        << "secret"        << false << "pass on secret CPLEX options";
+}
+
+void TestCPLEXOption::testOptionStrListType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeStrList);
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
+
+}
+
 void TestCPLEXOption::testOptionEnumStrValue_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -68,6 +143,11 @@ void TestCPLEXOption::testOptionEnumStrValue_data()
     QTest::newRow("lpalg_primal")   << "lpalg"  << false  << 2 << false << "primal"  << "Primal Simplex";
     QTest::newRow("lpalg_dual")     << "lpalg"  << false  << 3 << false << "dual"    << "Dual Simplex" ;
     QTest::newRow("lpalg_network")  << "lpalg"  << false  << 4 << false << "network" << "Network Simplex" ;
+
+    QTest::newRow("rerun_auto")  << "rerun"   << true  << 0 << false << "auto"   << "Automatic" ;
+    QTest::newRow("rerun_yes")   << "rerun"   << true  << 1 << false << "yes"    << "Rerun infeasible models with presolve turned off" ;
+    QTest::newRow("rerun_no")    << "rerun"   << true  << 2 << false << "no"     << "Do not rerun infeasible models" ;
+    QTest::newRow("rerun_nono")  << "rerun"   << true  << 3 << false << "nono"   << "Do not rerun infeasible fixed MIP models";
 }
 
 void TestCPLEXOption::testOptionEnumStrValue()
@@ -134,14 +214,17 @@ void TestCPLEXOption::testOptionEnumIntValue_data()
     QTest::newRow("bendersstrategy_2")  << "bendersstrategy"  << true  << 3 << false << 2  << "Apply user annotations with automatic support for subproblems";
     QTest::newRow("bendersstrategy_3")  << "bendersstrategy"  << true  << 4 << false << 3  << "Apply automatic decomposition" ;
 
-// mipstart of optTypeInteger
-//    QTest::newRow("mipstart_0")  << "mipstart"  << true  << 0 << false << 0  << "do not use the values";
-//    QTest::newRow("mipstart_1")  << "mipstart"  << true  << 1 << false << 1  << "set discrete variable values and use auto mipstart level";
-//    QTest::newRow("mipstart_2")  << "mipstart"  << true  << 2 << false << 2  << "set all variable values and use check feasibility mipstart level";
-//    QTest::newRow("mipstart_3")  << "mipstart"  << true  << 3 << false << 3  << "set discrete variable values and use solve fixed mipstart level" ;
-//    QTest::newRow("mipstart_4")  << "mipstart"  << true  << 4 << false << 4  << "set discrete variable values and use solve sub-MIP mipstart level" ;
-//    QTest::newRow("mipstart_5")  << "mipstart"  << true  << 5 << false << 5  << "set discrete variable values and use solve repair-MIP mipstart level" ;
-//    QTest::newRow("mipstart_6")  << "mipstart"  << true  << 6 << false << 6  << "set discrete variable values and use no checks at all" ;
+    QTest::newRow("qpmethod_0")  << "qpmethod"  << true  << 0 << false << 0  << "Automatic";
+    QTest::newRow("qpmethod_1")  << "qpmethod"  << true  << 1 << false << 1  << "Primal Simplex";
+    QTest::newRow("qpmethod_2")  << "qpmethod"  << true  << 2 << false << 2  << "Dual Simplex";
+    QTest::newRow("qpmethod_3")  << "qpmethod"  << true  << 3 << false << 3  << "Network Simplex";
+    QTest::newRow("qpmethod_4")  << "qpmethod"  << true  << 4 << false << 4  << "Barrier";
+    QTest::newRow("qpmethod_5")  << "qpmethod"  << true  << 5 << false << 5  << "Sifting";
+    QTest::newRow("qpmethod_6")  << "qpmethod"  << true  << 6 << false << 6  << "Concurrent dual, barrier, and primal";
+
+    QTest::newRow("rampupduration_-1")  << "rampupduration"  << true  << 0 << false << -1  << "Turns off ramp up";
+    QTest::newRow("rampupduration_0")   << "rampupduration"  << true  << 1 << false << 0   << "Automatic";
+    QTest::newRow("rampupduration_1")   << "rampupduration"  << true  << 2 << false << 1   << "Dynamically switch to distributed tree search";
 }
 
 void TestCPLEXOption::testOptionEnumIntValue()
@@ -158,7 +241,6 @@ void TestCPLEXOption::testOptionEnumIntValue()
     QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).hidden, hidden );
     QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).value.toInt(), value );
     QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
-
 }
 
 void TestCPLEXOption::testOptionDoubleType_data()
@@ -198,6 +280,58 @@ void TestCPLEXOption::testOptionDoubleType()
     QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
     QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestCPLEXOption::testOptionIntegerType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("lowerBound");
+    QTest::addColumn<int>("upperBound");
+    QTest::addColumn<int>("defaultValue");
+
+    QTest::newRow("mipstart")          << "mipstart"          << true  << 0  << 6                                 << 0;
+    QTest::newRow("miptracenode")      << "miptracenode"      << true  << 0  << gams::studio::OPTION_VALUE_MAXINT << 100;
+    QTest::newRow("perlim")            << "perlim"            << true  << 0  << 2100000000                        << 0;
+    QTest::newRow("polishafterintsol") << "polishafterintsol" << true  << 0  << 2100000000                        << 2100000000;
+    QTest::newRow("populatelim")       << "populatelim"       << true  << 1  << 2100000000                        << 20;
+    QTest::newRow("prepass")           << "prepass"           << true  << -1 << 2100000000                        << -1;
+}
+
+void TestCPLEXOption::testOptionIntegerType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, lowerBound);
+    QFETCH(int, upperBound);
+    QFETCH(int, defaultValue);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeInteger);
+    QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestCPLEXOption::testOptionImmeidateType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("readfile")          << "readfile"          << false << "read secondary option file";
+    QTest::newRow("nobounds")          << "nobounds"          << false << "ignores bounds on options";
+}
+
+void TestCPLEXOption::testOptionImmeidateType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeImmediate);
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
 }
 
 void TestCPLEXOption::testOptionSynonym_data()
@@ -471,6 +605,7 @@ void TestCPLEXOption::testWriteOptionFile()
     // when
     QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
 
+    // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));
     int i = 0;
     if (inputFile.open(QIODevice::ReadOnly)) {

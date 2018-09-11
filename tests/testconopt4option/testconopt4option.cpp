@@ -39,6 +39,34 @@ void TestConopt4Option::initTestCase()
     }
 }
 
+void TestConopt4Option::testOptionBooleanType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("defaultValue");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("FByCol")          << "FByCol"          << false << 1  << "";
+    QTest::newRow("Flg_Dbg_Intv")    << "Flg_Dbg_Intv"    << true  << 0  << "Flag for debugging interval evaluations.";
+    QTest::newRow("Flg_DC_Unique")   << "Flg_DC_Unique"   << true  << 1  << "Flag for requiring definitional constraints to be unique";
+    QTest::newRow("Scale_Infeas")    << "Scale_Infeas"    << false << 1  << "";
+    QTest::newRow("Flg_Crash_Basis") << "Flg_Crash_Basis" << true  << 1  << "Flag for crashing an initial basis without fixed slacks";
+    QTest::newRow("LSLACK")          << "LSLACK"          << false << 0  << "";
+}
+
+void TestConopt4Option::testOptionBooleanType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, defaultValue);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeBoolean);
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toInt(), defaultValue );
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
+}
+
 void TestConopt4Option::testOptionEnumIntType_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -89,6 +117,36 @@ void TestConopt4Option::testOptionDoubleType()
 
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestConopt4Option::testOptionIntegerType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("lowerBound");
+    QTest::addColumn<int>("upperBound");
+    QTest::addColumn<int>("defaultValue");
+
+    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1  << gams::studio::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::OPTION_VALUE_MAXINT  << 100;
+    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("Mtd_RedHess")   << "Mtd_RedHess"   << true   << 0  << 1                                  << 0;
+}
+
+void TestConopt4Option::testOptionIntegerType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(int, lowerBound);
+    QFETCH(int, upperBound);
+    QFETCH(int, defaultValue);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeInteger);
     QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
     QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );

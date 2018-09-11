@@ -33,6 +33,15 @@ class TestCPLEXOption : public QObject
 private slots:
     void initTestCase();
 
+    void testOptionBooleanType_data();
+    void testOptionBooleanType();
+
+    void testOptionStringType_data();
+    void testOptionStringType();
+
+    void testOptionStrListType_data();
+    void testOptionStrListType();
+
     void testOptionEnumStrValue_data();
     void testOptionEnumStrValue();
 
@@ -44,6 +53,12 @@ private slots:
 
     void testOptionDoubleType_data();
     void testOptionDoubleType();
+
+    void testOptionIntegerType_data();
+    void testOptionIntegerType();
+
+    void testOptionImmeidateType_data();
+    void testOptionImmeidateType();
 
     void testOptionSynonym_data();
     void testOptionSynonym();
