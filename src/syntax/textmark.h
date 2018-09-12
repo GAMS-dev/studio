@@ -37,10 +37,8 @@ class TextMark
 public:
     enum Type {none, error, link, bookmark, match, all};
 
-    virtual ~TextMark();
     FileId fileId() const;
     NodeId groupId() const;
-    void setPosition(int line, int column, int size = 0);
     void jumpToRefMark(bool focus = true);
     void jumpToMark(bool focus = true);
     void setRefMark(TextMark* refMark);
@@ -67,6 +65,7 @@ public:
 
     inline int line() const {return mLine;}
     inline int column() const {return mColumn;}
+    inline void setSize(int size) {mSize = size;}
     inline int size() const {return mSize;}
     inline bool inColumn(int col) const {return !mSize || (col >= mColumn && col < (mColumn+mSize));}
     inline int blockStart() const {return mColumn;}
@@ -86,6 +85,9 @@ public:
 protected:
     friend class TextMarkRepo;
     TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = NodeId());
+    virtual ~TextMark();
+    void setPosition(int line, int column, int size = 0);
+    void setLine(int lineNr);
 
 private:
     static TextMarkId mNextId;

@@ -59,7 +59,7 @@ public slots:
     void afterContentsChanged(int, int, int);
 
 protected:
-    friend class TextMarkRepo;
+    friend class FileMeta;
 
     AbstractEdit(QWidget *parent);
     void showToolTip(const QList<TextMark *> marks);

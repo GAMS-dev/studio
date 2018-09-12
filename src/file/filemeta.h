@@ -86,6 +86,7 @@ public:
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
+    void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
 
 
 public: // static convenience methods
@@ -144,6 +145,8 @@ signals:
 
 private slots:
     void modificationChanged(bool modiState);
+    void contentsChange(int from, int charsRemoved, int charsAdded);
+    void blockCountChanged(int newBlockCount);
 
 private:
     struct Data {
@@ -172,6 +175,8 @@ private:
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
     ErrorHighlighter* mHighlighter = nullptr;
+    int mLineCount = 0;
+    int mChangedLine = 0;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events

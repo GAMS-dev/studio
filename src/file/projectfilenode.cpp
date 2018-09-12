@@ -146,10 +146,8 @@ void ProjectFileNode::enhanceMarksFromLst()
             if (mark->isErrorRef()) hasErr = true;
             int size = mark->size();
             if (size <= 0) {
-                int col = mark->column();
                 size = block.text().indexOf('$');
-                if (size > 0)
-                    mark->setPosition(lineNr, col, size+1);
+                if (size > 0) mark->setSize(size+1);
             }
         }
         if (!hasErr) continue;

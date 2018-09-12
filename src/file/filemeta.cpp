@@ -55,6 +55,8 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
 
     if (kind() == FileKind::Gms || kind() == FileKind::Txt) {
         mHighlighter = new SyntaxHighlighter(document());
+        connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
+        connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     } else if (kind() != FileKind::Gdx) {
         mHighlighter = new ErrorHighlighter(document());
     }
@@ -161,6 +163,40 @@ void FileMeta::modificationChanged(bool modiState)
     emit changed(id());
 }
 
+void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
+{
+    Q_UNUSED(charsRemoved);
+    if (!isOpen()) return;
+    AbstractEdit *edit = toAbstractEdit(topEditor());
+    if (!edit) return;
+    QTextCursor cursor(mDocument);
+    cursor.setPosition(from);
+    int column = cursor.positionInBlock();
+    int fromLine = cursor.blockNumber();
+    cursor.setPosition(from+charsAdded, QTextCursor::KeepAnchor);
+    int toLine = cursor.blockNumber();
+    mChangedLine = toLine;
+    if (charsAdded) {
+        --mChangedLine;
+        if (!column) --mChangedLine;
+    }
+    for (int i = fromLine; i <= toLine; ++i) {
+        QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
+        for (TextMark *mark: marks) {
+            if (mark->blockEnd() >= column)
+                mark->flatten();
+        }
+    }
+}
+
+void FileMeta::blockCountChanged(int newBlockCount)
+{
+    if (mLineCount != newBlockCount) {
+        mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine+1, newBlockCount-mLineCount);
+        mLineCount = newBlockCount;
+    }
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;
@@ -191,11 +227,6 @@ void FileMeta::addEditor(QWidget *edit)
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
         ptEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
-//    if (scEdit && mMarks) {
-//        // TODO(JM) Should be bound directly to a sublist in TextMarkRepo
-//        connect(scEdit, &CodeEditor::requestMarksEmpty, this, &ProjectFileNode::textMarkIconsEmpty);
-//        connect(scEdit->document(), &QTextDocument::contentsChange, scEdit, &CodeEditor::afterContentsChanged);
-//    }
 }
 
 void FileMeta::editToTop(QWidget *edit)
@@ -427,6 +458,18 @@ void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
 ErrorHighlighter *FileMeta::highlighter() const
 {
     return mHighlighter;
+}
+
+void FileMeta::marksChanged(QSet<NodeId> groups)
+{
+    // update changed editors
+    for (QWidget *w: mEditors) {
+        AbstractEdit * ed = FileMeta::toAbstractEdit(w);
+        if (ed && (groups.isEmpty() || groups.contains(ed->groupId()))) {
+            ed->marksChanged();
+        }
+    }
+    if (mHighlighter) mHighlighter->rehighlight();
 }
 
 bool FileMeta::isModified() const

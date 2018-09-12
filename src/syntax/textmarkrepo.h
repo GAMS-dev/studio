@@ -24,7 +24,6 @@ public:
     ~TextMarkRepo() override;
 
     inline void deleteMark(TextMark *tm);
-    void removeMark(TextMark *tm);
     void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
@@ -38,6 +37,7 @@ public:
     FileKind fileKind(FileId fileId);
     QList<TextMark *> marks(FileId nodeId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
     const LineMarks *marks(FileId fileId);
+    void shiftMarks(FileId fileId, int firstLine, int lineShift);
 
     void setDebugMode(bool debug);
     bool debugMode() const;

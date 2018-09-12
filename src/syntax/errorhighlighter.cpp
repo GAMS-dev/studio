@@ -43,7 +43,7 @@ const LineMarks *ErrorHighlighter::marks() const
 void ErrorHighlighter::setMarks(const LineMarks* marks)
 {
     mMarks = marks;
-    // TODO(JM) repaint all lines that changed in marks
+    rehighlight();
 }
 
 void ErrorHighlighter::syntaxState(int position, int &intState)

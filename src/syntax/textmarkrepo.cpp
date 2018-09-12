@@ -4,6 +4,7 @@
 #include "file/projectrepo.h"
 #include "logger.h"
 #include <QMultiHash>
+#include <QMutableMapIterator>
 
 namespace gams {
 namespace studio {
@@ -19,13 +20,11 @@ TextMarkRepo::~TextMarkRepo()
 
 inline void TextMarkRepo::deleteMark(TextMark *tm)
 {
-    delete tm; //  ~TextMark() triggers removeMark()
-}
-
-void TextMarkRepo::removeMark(TextMark *tm)
-{
     LineMarks *marks = mMarks.value(tm->fileId());
-    marks->remove(tm->line(), tm);
+    int count = marks->remove(tm->line(), tm);
+    if (count != 1)
+        DEB() << "Expected one TextMark to be removed but found " << count;
+    delete tm;
 }
 
 void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
@@ -40,42 +39,32 @@ void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
 
 void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types)
 {
-    QHash<FileId, LineMarks*>::iterator marksIter = mMarks.find(fileId);
-    if (marksIter == mMarks.end()) return;
+    LineMarks* marks = mMarks.value(fileId);
+    if (!marks) return;
     QSet<NodeId> groups;
-    LineMarks::iterator it = (*marksIter)->begin();
-    LineMarks::iterator itEnd = (*marksIter)->end();
+    LineMarks::iterator it = marks->begin();
     if ((types.isEmpty() || types.contains(TextMark::all)) && allGroups) {
         // delete all
-        while (it != itEnd) {
-            TextMark* mark = (*it);
-            groups << mark->groupId();
+        while (it != marks->end()) {
+            delete *it;
             ++it;
-            delete mark;
         }
+        marks->clear();
     } else {
         // delete conditionally
-        while (it != itEnd) {
+        while (it != marks->end()) {
             TextMark* mark = (*it);
             ++it;
             if (types.contains(mark->type()) && (allGroups || mark->groupId() == groupId)) {
                 groups << mark->groupId();
+                marks->remove(mark->line(), mark);
                 delete mark;
             }
         }
     }
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
-    if (!fm) return;
-
-    // update changed editors
-    for (NodeId groupId: groups) {
-        for (QWidget *w: fm->editors()) {
-            AbstractEdit * ed = FileMeta::toAbstractEdit(w);
-            if (ed && ed->groupId() == groupId)
-                ed->marksChanged();
-        }
-    }
+    if (fm) fm->marksChanged();
 }
 
 TextMark *TextMarkRepo::createMark(const FileId fileId, TextMark::Type type, int line, int column, int size)
@@ -160,6 +149,36 @@ const LineMarks *TextMarkRepo::marks(FileId fileId)
     if (!mMarks.contains(fileId))
         mMarks.insert(fileId, new LineMarks());
     return mMarks.value(fileId, nullptr);
+}
+
+void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
+{
+    LineMarks *marks = mMarks.value(fileId);
+    if (!marks->size() || !lineShift) return;
+    QMutableMapIterator<int, TextMark*> it(*marks);
+    QVector<TextMark*> parked;
+    if (lineShift < 0) {
+        while (it.hasNext()) {
+            it.next();
+            if (it.key() < firstLine) continue;
+            parked << it.value();
+            it.remove();
+        }
+    } else {
+        it.toBack();
+        while (it.hasPrevious()) {
+            it.previous();
+            if (it.key() < firstLine) break;
+            parked << it.value();
+            it.remove();
+        }
+    }
+    for (TextMark *mark: parked) {
+        mark->setLine(mark->line()+lineShift);
+        marks->insert(mark->line(), mark);
+    }
+    FileMeta *fm = mFileRepo->fileMeta(fileId);
+    if (fm) fm->marksChanged();
 }
 
 void TextMarkRepo::setDebugMode(bool debug)
