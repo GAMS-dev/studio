@@ -18,14 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core testlib gui widgets
+TEMPLATE = app
 
-CONFIG += c++14
-CONFIG -= app_bundle
+include(../tests.pri)
 
-DESTDIR = ../bin
+INCLUDEPATH += $$SRCPATH
+#INCLUDEPATH += $$SRCPATH/editors
 
-include (../version)
+HEADERS += \
+    testsysloglocator.h
 
-TESTSROOT = $$_PRO_FILE_PWD_/..
-SRCPATH = $$TESTSROOT/../src
+SOURCES += \
+    testsysloglocator.cpp \
+#    $$SRCPATH/editors/abstractedit.cpp \
+#    $$SRCPATH/editors/systemlogedit.cpp \
+    $$SRCPATH/locators/sysloglocator.cpp \
+    $$SRCPATH/locators/defaultsystemlogger.cpp

@@ -17,37 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SYSTEMLOGEDIT_H
-#define SYSTEMLOGEDIT_H
-
-#include "abstractedit.h"
-#include "locators/abstractsystemlogger.h"
+#include "defaultsystemlogger.h"
+#include <QDebug>
 
 namespace gams {
 namespace studio {
 
-class SystemLogHighlighter;
-
-class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
+void DefaultSystemLogger::appendLog(const QString &msg, LogMsgType type)
 {
-public:
-    SystemLogEdit(QWidget *parent = nullptr);
-    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
-
-    EditorType type() override;
-
-protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-
-private:
-    QString level(LogMsgType type);
-
-private:
-    SystemLogHighlighter *mHighlighter;
-};
+    qDebug() << "NO SYSTEM LOGGER SET, USING DUMMY";
+}
 
 }
 }
-
-#endif // SYSTEMLOGEDIT_H

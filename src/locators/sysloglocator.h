@@ -17,37 +17,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SYSTEMLOGEDIT_H
-#define SYSTEMLOGEDIT_H
-
-#include "abstractedit.h"
-#include "locators/abstractsystemlogger.h"
+#ifndef SYSLOGLOCATOR_H
+#define SYSLOGLOCATOR_H
 
 namespace gams {
 namespace studio {
 
-class SystemLogHighlighter;
-
-class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
+class SystemLogLocator;
+class AbstractSystemLogger;
+class SystemLogEdit;
+class SysLogLocator
 {
 public:
-    SystemLogEdit(QWidget *parent = nullptr);
-    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
-
-    EditorType type() override;
-
-protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
+    static AbstractSystemLogger* systemLog();
+    static void provide(AbstractSystemLogger* syslogEdit);
 
 private:
-    QString level(LogMsgType type);
-
-private:
-    SystemLogHighlighter *mHighlighter;
+    static AbstractSystemLogger* mSysLog;
+    static AbstractSystemLogger* mNullLog;
 };
 
 }
 }
-
-#endif // SYSTEMLOGEDIT_H
+#endif // SYSLOGLOCATOR_H

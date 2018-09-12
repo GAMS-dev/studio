@@ -24,11 +24,13 @@
 #include "filemeta.h"
 #include "filemetarepo.h"
 #include "exception.h"
+#include "editors/systemlogedit.h"
 #include "gamsprocess.h"
 #include "commonpaths.h"
 #include "logger.h"
 #include "syntax.h"
 #include "option/option.h"
+#include "locators/sysloglocator.h"
 #include <QFileInfo>
 #include <QDir>
 
@@ -380,10 +382,9 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         }
 
         if (defaultGamsArgs.contains(item.key)) {
-            // TODO(AF) real log message
-            qDebug() << "Warning: You are about to overwrite GAMS Studio default arguments. "
-                        "Some of these are necessary to ensure a smooth experience. "
-                        "Use at your own risk!";
+            SysLogLocator::systemLog()->appendLog("You are overwriting at least one GAMS Studio default argument. "
+                                 "Some of these are necessary to ensure a smooth experience. "
+                                 "Use at your own risk!", LogMsgType::Warning);
         }
         gamsArgs[item.key] = item.value;
     }
@@ -398,8 +399,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
+    QString msg = "Running GAMS:";
+    msg.append(output.join(" "));
 
-    qDebug() << "Running GAMS:" << output; // TODO(AF) real log message
+    SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Info);
     return output;
 }
 

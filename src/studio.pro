@@ -29,7 +29,7 @@ DESTDIR = bin
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
-include($$PWD/gamsdependency.pri)
+include(../gamsdependency.pri)
 
 include (../version)
 
@@ -156,7 +156,9 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     tabdialog.cpp \
-    locators/settingslocator.cpp
+    locators/settingslocator.cpp \
+    locators/sysloglocator.cpp \
+    locators/defaultsystemlogger.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -260,7 +262,10 @@ HEADERS += \
     encodingsdialog.h \
     editors/codeedit.h \
     tabdialog.h \
-    locators/settingslocator.h
+    locators/settingslocator.h \
+    locators/sysloglocator.h \
+    locators/abstractsystemlogger.h \
+    locators/defaultsystemlogger.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

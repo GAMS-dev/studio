@@ -99,7 +99,6 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
         }
         i++;
     }
-
 }
 
 void FileMeta::internalSave(const QString &location)

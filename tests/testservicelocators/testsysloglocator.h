@@ -17,37 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SYSTEMLOGEDIT_H
-#define SYSTEMLOGEDIT_H
+#ifndef TESTCOMMONPATHS_H
+#define TESTCOMMONPATHS_H
 
-#include "abstractedit.h"
-#include "locators/abstractsystemlogger.h"
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
-
-class SystemLogHighlighter;
-
-class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
+class TestSysLogLocator : public QObject
 {
-public:
-    SystemLogEdit(QWidget *parent = nullptr);
-    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
+    Q_OBJECT
 
-    EditorType type() override;
-
-protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-
-private:
-    QString level(LogMsgType type);
-
-private:
-    SystemLogHighlighter *mHighlighter;
+private slots:
+    void testSystemLogNull();
+    void testSystemLogSetDefault();
+    void testSystemLogSetNull();
 };
 
-}
-}
-
-#endif // SYSTEMLOGEDIT_H
+#endif // TESTCOMMONPATHS_H

@@ -22,7 +22,6 @@
 #include "gdxsymboltable.h"
 
 #include <QTime>
-#include <QDebug>
 
 namespace gams {
 namespace studio {

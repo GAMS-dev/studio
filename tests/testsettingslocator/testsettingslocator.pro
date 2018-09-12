@@ -18,14 +18,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core testlib gui widgets
+TEMPLATE = app
 
-CONFIG += c++14
-CONFIG -= app_bundle
+include(../tests.pri)
 
-DESTDIR = ../bin
-
-include (../version)
-
-TESTSROOT = $$_PRO_FILE_PWD_/..
+INCLUDEPATH += $$TESTSROOT/../src
 SRCPATH = $$TESTSROOT/../src
+
+SOURCES += \
+    testsettingslocator.cpp \
+    $$SRCPATH/studiosettings.cpp \
+    $$SRCPATH/locators/settingslocator.cpp
+

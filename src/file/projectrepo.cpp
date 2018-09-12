@@ -552,13 +552,6 @@ void ProjectRepo::setDebugMode(bool debug)
     mTextMarkRepo->setDebugMode(debug);
 }
 
-
-
-
-
-
-
-
 //void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
 //{
 //    if (!fc) return;
