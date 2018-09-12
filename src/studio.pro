@@ -29,7 +29,7 @@ DESTDIR = bin
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
-include($$PWD/gamsdependency.pri)
+include(../gamsdependency.pri)
 
 include (../version)
 
