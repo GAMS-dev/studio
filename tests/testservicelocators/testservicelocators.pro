@@ -18,7 +18,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testservicelocators
+include(../tests.pri)
+
+INCLUDEPATH += $$TESTSROOT/../src
+SRCPATH = $$TESTSROOT/../src
+
+HEADERS += \
+    testsysloglocator.h
+
+SOURCES += \
+    testsysloglocator.cpp
