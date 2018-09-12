@@ -17,19 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTCOMMONPATHS_H
-#define TESTCOMMONPATHS_H
+#ifndef DEFAULTSYSTEMLOGGER_H
+#define DEFAULTSYSTEMLOGGER_H
 
-#include <QtTest/QTest>
+#include "abstractsystemlogger.h"
 
-class TestSysLogLocator : public QObject
+namespace gams {
+namespace studio {
+
+class DefaultSystemLogger : public AbstractSystemLogger
 {
-    Q_OBJECT
+public:
+    DefaultSystemLogger() {}
 
-private slots:
-    void testSystemLogNull();
-    void testSystemLogSetDefault();
-    void testSystemLogSetNull();
+public:
+    void appendLog(const QString &msg, LogMsgType type) override;
 };
 
-#endif // TESTCOMMONPATHS_H
+}
+}
+
+#endif // DEFAULTSYSTEMLOGGER_H

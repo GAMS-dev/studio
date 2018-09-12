@@ -156,7 +156,8 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     tabdialog.cpp \
     locators/settingslocator.cpp \
-    locators/sysloglocator.cpp
+    locators/sysloglocator.cpp \
+    locators/defaultsystemlogger.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -261,7 +262,8 @@ HEADERS += \
     tabdialog.h \
     locators/settingslocator.h \
     locators/sysloglocator.h \
-    locators/abstractsystemlogger.h
+    locators/abstractsystemlogger.h \
+    locators/defaultsystemlogger.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

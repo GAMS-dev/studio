@@ -34,6 +34,7 @@ public:
 
 private:
     static AbstractSystemLogger* mSysLog;
+    static AbstractSystemLogger* mNullLog;
 };
 
 }

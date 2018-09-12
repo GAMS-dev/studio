@@ -32,4 +32,5 @@ SOURCES += \
     testsysloglocator.cpp \
 #    $$SRCPATH/editors/abstractedit.cpp \
 #    $$SRCPATH/editors/systemlogedit.cpp \
-    $$SRCPATH/locators/sysloglocator.cpp
+    $$SRCPATH/locators/sysloglocator.cpp \
+    $$SRCPATH/locators/defaultsystemlogger.cpp

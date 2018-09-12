@@ -18,19 +18,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "sysloglocator.h"
+#include "defaultsystemlogger.h"
 #include <QDebug>
 
 namespace gams {
 namespace studio {
 
 AbstractSystemLogger* SysLogLocator::mSysLog = nullptr;
+AbstractSystemLogger* SysLogLocator::mNullLog = new DefaultSystemLogger;
 
 AbstractSystemLogger* SysLogLocator::systemLog()
 {
-    if (!mSysLog) {
-        qDebug() << "Warning: No systemLogEdit set in SysLogLocator";
-        return nullptr;
-    }
+    if (!mSysLog) return mNullLog;
     return mSysLog;
 }
 

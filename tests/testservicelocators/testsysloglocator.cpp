@@ -20,28 +20,29 @@
 #include "testsysloglocator.h"
 //#include "editors/systemlogedit.h"
 #include "locators/sysloglocator.h"
+#include "locators/defaultsystemlogger.h"
 
 using namespace gams::studio;
 
 void TestSysLogLocator::testSystemLogNull()
 {
     auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
+    QVERIFY(syslog);
 }
 
-void TestSysLogLocator::testSystemLogValid()
+void TestSysLogLocator::testSystemLogSetDefault()
 {
-//    SystemLogEdit* se = new SystemLogEdit();
-//    SysLogLocator::provide(se);
-//    auto syslog = SysLogLocator::systemLog();
-//    QVERIFY(!syslog);
+    DefaultSystemLogger df;
+    SysLogLocator::provide(&df);
+    auto syslog = SysLogLocator::systemLog();
+    QCOMPARE(syslog, &df);
 }
 
 void TestSysLogLocator::testSystemLogSetNull()
 {
     SysLogLocator::provide(nullptr);
     auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
+    QVERIFY(syslog);
 }
 
 QTEST_MAIN(TestSysLogLocator)
