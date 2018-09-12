@@ -22,11 +22,11 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$TESTSROOT/../src
-SRCPATH = $$TESTSROOT/../src
+INCLUDEPATH += $$SRCPATH
 
 HEADERS += \
     testsysloglocator.h
 
 SOURCES += \
-    testsysloglocator.cpp
+    testsysloglocator.cpp \
+    $$SRCPATH/locators/sysloglocator.cpp

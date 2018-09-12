@@ -18,10 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testsysloglocator.h"
+#include "locators/sysloglocator.h"
+
+using namespace gams::studio;
 
 void TestSysLogLocator::testSystemLogNull()
 {
-
+    auto syslog = SysLogLocator::systemLog();
+    QVERIFY(!syslog);
 }
 
 QTEST_MAIN(TestSysLogLocator)

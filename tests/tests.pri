@@ -28,3 +28,4 @@ DESTDIR = ../bin
 include (../version)
 
 TESTSROOT = $$_PRO_FILE_PWD_/..
+SRCPATH = $$TESTSROOT/../src
