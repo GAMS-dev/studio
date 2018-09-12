@@ -260,7 +260,8 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     tabdialog.h \
     locators/settingslocator.h \
-    locators/sysloglocator.h
+    locators/sysloglocator.h \
+    locators/abstractsystemlogger.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

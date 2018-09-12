@@ -17,31 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "testsysloglocator.h"
-//#include "editors/systemlogedit.h"
-#include "locators/sysloglocator.h"
+#ifndef ABSTRACTSYSTEMLOGGER_H
+#define ABSTRACTSYSTEMLOGGER_H
 
-using namespace gams::studio;
+#include <QString>
 
-void TestSysLogLocator::testSystemLogNull()
+namespace gams {
+namespace studio {
+
+enum class LogMsgType { Error, Warning, Info };
+
+class AbstractSystemLogger
 {
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
+
+public:
+    virtual void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
+
+protected:
+    AbstractSystemLogger() {}
+};
+
+}
 }
 
-void TestSysLogLocator::testSystemLogValid()
-{
-//    SystemLogEdit* se = new SystemLogEdit();
-//    SysLogLocator::provide(se);
-//    auto syslog = SysLogLocator::systemLog();
-//    QVERIFY(!syslog);
-}
-
-void TestSysLogLocator::testSystemLogSetNull()
-{
-    SysLogLocator::provide(nullptr);
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
-}
-
-QTEST_MAIN(TestSysLogLocator)
+#endif // ABSTRACTSYSTEMLOGGER_H

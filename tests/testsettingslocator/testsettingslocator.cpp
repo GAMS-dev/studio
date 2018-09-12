@@ -17,31 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "testsysloglocator.h"
-//#include "editors/systemlogedit.h"
-#include "locators/sysloglocator.h"
+#include <QtTest>
+#include "locators/settingslocator.h"
 
-using namespace gams::studio;
+// add necessary includes here
 
-void TestSysLogLocator::testSystemLogNull()
+class TestSettingsLocator : public QObject
 {
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
+    Q_OBJECT
+
+public:
+//    testsettingslocator();
+//    ~testsettingslocator();
+
+private slots:
+    void initTestCase();
+    void cleanupTestCase();
+    void test_settings();
+
+};
+
+void TestSettingsLocator::initTestCase()
+{
+
 }
 
-void TestSysLogLocator::testSystemLogValid()
+void TestSettingsLocator::cleanupTestCase()
 {
-//    SystemLogEdit* se = new SystemLogEdit();
-//    SysLogLocator::provide(se);
-//    auto syslog = SysLogLocator::systemLog();
-//    QVERIFY(!syslog);
+
 }
 
-void TestSysLogLocator::testSystemLogSetNull()
+void TestSettingsLocator::test_settings()
 {
-    SysLogLocator::provide(nullptr);
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(!syslog);
+
 }
 
-QTEST_MAIN(TestSysLogLocator)
+QTEST_MAIN(TestSettingsLocator)
+
+//#include "testsettingslocator.moc"

@@ -24,15 +24,16 @@ namespace gams {
 namespace studio {
 
 class SystemLogLocator;
+class AbstractSystemLogger;
 class SystemLogEdit;
 class SysLogLocator
 {
 public:
-    static SystemLogEdit* systemLog();
-    static void provide(SystemLogEdit* syslogEdit);
+    static AbstractSystemLogger* systemLog();
+    static void provide(AbstractSystemLogger* syslogEdit);
 
 private:
-    static SystemLogEdit* mSysLog;
+    static AbstractSystemLogger* mSysLog;
 };
 
 }

@@ -28,6 +28,8 @@ class TestSysLogLocator : public QObject
 
 private slots:
     void testSystemLogNull();
+    void testSystemLogValid();
+    void testSystemLogSetNull();
 };
 
 #endif // TESTCOMMONPATHS_H

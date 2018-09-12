@@ -21,19 +21,18 @@
 #define SYSTEMLOGEDIT_H
 
 #include "abstractedit.h"
+#include "locators/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
 
 class SystemLogHighlighter;
 
-enum class LogMsgType { Error, Warning, Info };
-
-class SystemLogEdit : public AbstractEdit
+class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
 {
 public:
-    SystemLogEdit(QWidget *parent);
-    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning);
+    SystemLogEdit(QWidget *parent = nullptr);
+    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
 
     EditorType type() override;
 

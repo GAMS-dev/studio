@@ -23,9 +23,9 @@
 namespace gams {
 namespace studio {
 
-SystemLogEdit* SysLogLocator::mSysLog = nullptr;
+AbstractSystemLogger* SysLogLocator::mSysLog = nullptr;
 
-SystemLogEdit* SysLogLocator::systemLog()
+AbstractSystemLogger* SysLogLocator::systemLog()
 {
     if (!mSysLog) {
         qDebug() << "Warning: No systemLogEdit set in SysLogLocator";
@@ -34,7 +34,7 @@ SystemLogEdit* SysLogLocator::systemLog()
     return mSysLog;
 }
 
-void SysLogLocator::provide(SystemLogEdit *syslogEdit)
+void SysLogLocator::provide(AbstractSystemLogger *syslogEdit)
 {
     mSysLog = syslogEdit;
 }
