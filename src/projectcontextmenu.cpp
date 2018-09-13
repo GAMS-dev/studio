@@ -30,8 +30,8 @@ namespace studio {
 ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(0, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
-
     mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
+//    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
 //    mActions.insert(1, addSeparator());
 
 //    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
@@ -48,7 +48,6 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(9, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(10, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
 
-//    mActions.insert(1, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
 //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
@@ -61,7 +60,7 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
 
     mActions[1]->setVisible(isGroup);
-//    mActions[2]->setVisible(isGmsFile);
+//    mActions[2]->setVisible(isGroup);
 //    mActions[3]->setVisible(isGmsFile);
     mActions[4]->setVisible(isGmsFile);
 //    mActions[5]->setVisible(isGmsFile);
@@ -144,14 +143,20 @@ void ProjectContextMenu::onCloseGroup()
 
 void ProjectContextMenu::onRunFile()
 {
-    ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
-    emit runFile(file);
+    ProjectFileNode *file = mNode->toFile();
+    if (file) emit runFile(file);
 }
 
 void ProjectContextMenu::onSetMainFile()
 {
-    ProjectFileNode *file = static_cast<ProjectFileNode*>(mNode);
-    emit setMainFile(file);
+    ProjectFileNode *file = mNode->toFile();
+    if (file) emit setMainFile(file);
+}
+
+void ProjectContextMenu::onRenameGroup()
+{
+    ProjectGroupNode *group = mNode->toGroup();
+    if (group) emit renameGroup(group);
 }
 
 void ProjectContextMenu::onOpenFileLoc()

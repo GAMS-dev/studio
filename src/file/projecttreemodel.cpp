@@ -104,12 +104,15 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
 {
     if (!ind.isValid()) return QVariant();
     switch (role) {
-    case Qt::BackgroundColorRole:
+    case Qt::BackgroundRole:
         if (isSelected(ind)) return QColor("#4466BBFF");
         break;
 
     case Qt::DisplayRole:
         return mProjectRepo->node(ind)->name(NameModifier::editState);
+
+    case Qt::EditRole:
+        return mProjectRepo->node(ind)->name(NameModifier::raw);
 
     case Qt::FontRole:
         if (isCurrent(ind) || isCurrentGroup(ind)) {
@@ -200,6 +203,30 @@ void ProjectTreeModel::setDebugMode(bool debug)
             DEB() << str;
         }
     }
+}
+
+bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    Q_UNUSED(role);
+    if (!index.isValid()) return false;
+    ProjectAbstractNode *node = mProjectRepo->node(index);
+    if (!node) return false;
+    ProjectGroupNode *group = node->toGroup();
+    if (!group) return false;
+    group->setName(value.toString());
+    emit dataChanged(index, index);
+    return true;
+}
+
+Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+    if (!index.isValid()) return flags;
+    ProjectAbstractNode *node = mProjectRepo->node(index);
+    if (!node) return flags;
+    ProjectGroupNode *group = node->toGroup();
+    if (group) flags.setFlag(Qt::ItemIsEditable);
+    return flags;
 }
 
 bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child)

@@ -288,6 +288,9 @@
          <height>0</height>
         </size>
        </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditKeyPressed</set>
+       </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
        </property>

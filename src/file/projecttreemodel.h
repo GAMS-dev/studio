@@ -47,6 +47,8 @@ public:
     ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
     void setDebugMode(bool debug);
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
 
 protected:
     friend class ProjectRepo;
@@ -68,7 +70,6 @@ private:
     bool mDebug = false;
     QModelIndex mCurrent;
     QModelIndex mSelected;
-
 };
 
 } // namespace studio

@@ -105,9 +105,10 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    if (!debugMode())
-        return location();
     QString tip = location();
+    if (!file()->exists(true)) tip += "\n--missing--";
+    if (!debugMode())
+        return tip;
     tip += "\nNodeId: "+QString::number(id());
     tip += "\nFileId: " + (file() ? QString::number(file()->id()) : "?");
     tip += "\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?");
