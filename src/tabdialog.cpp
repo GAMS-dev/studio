@@ -20,6 +20,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
         layout()->addWidget(ui->lineEdit);
     }
     mFilterModel->setSourceModel(mTabModel);
+    mFilterModel->sort(0);
     ui->listView->setModel(mFilterModel);
     ui->listView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->listView->setMinimumHeight(1);
@@ -77,7 +78,7 @@ void TabDialog::resizeToContent()
 
 void TabDialog::setFilter(const QString &filter)
 {
-    mFilterModel->setFilterFixedString(filter);
+    mFilterModel->setFilterWildcard(filter);
     resizeToContent();
 }
 
