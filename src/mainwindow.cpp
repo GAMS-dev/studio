@@ -2221,7 +2221,18 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce= FileMeta::toCodeEdit(mRecent.editor());
-    if (ce) ce->convertToUpper();
+    if (ce)
+    {
+        if (ce->textCursor().hasSelection())
+            ce->convertToUpper();
+        else
+        {
+            QTextCursor textCursor = ce->textCursor();
+            textCursor.select(QTextCursor::WordUnderCursor);
+            ce->setTextCursor(textCursor);
+            ce->convertToUpper();
+        }
+    }
 }
 
 void MainWindow::on_actionSet_to_Lowercase_triggered()
