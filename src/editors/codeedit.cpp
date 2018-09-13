@@ -424,7 +424,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     else if (e->key() == Qt::Key_F3)
         emit searchFindNextPressed();
 
-    // smart typing section:
+    // smart typing:
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
@@ -433,7 +433,9 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     QString opening = "<([{/'\"";
     QString closing = ">)]}/'\"";
     int index = opening.indexOf(e->key());
+    int indexClosing = closing.indexOf(e->key());
 
+    // surround text with characters
     if ((index != -1) && (textCursor().hasSelection())) {
         QTextCursor tc(textCursor());
         QString selection(tc.selectedText());
@@ -442,6 +444,17 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         setTextCursor(tc);
         return;
 
+    // jump over closing character thats already in place
+    } else if (indexClosing != -1 &&
+               closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
+        QTextCursor tc = textCursor();
+        tc.movePosition(QTextCursor::NextCharacter);
+        setTextCursor(tc);
+        mSmartType = false; // we're done
+        e->accept();
+        return;
+
+    // insert closing characters
     } else if (index != -1) {
         mSmartType = true;
         QTextCursor tc = textCursor();
@@ -459,7 +472,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         QChar a = document()->characterAt(pos-1);
         QChar b = document()->characterAt(pos);
 
-        if ((opening.indexOf(a) ==  closing.indexOf(b)) && opening.indexOf(a) != -1) {
+        if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
             textCursor().deleteChar();
             textCursor().deletePreviousChar();
             e->accept();
