@@ -432,8 +432,14 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
     QString opening = "<([{/'\"";
     QString closing = ">)]}/'\"";
-    int index = opening.indexOf(e->key());
-    int indexClosing = closing.indexOf(e->key());
+    int index = opening.indexOf(e->text());
+    int indexClosing = closing.indexOf(e->text());
+
+    // exclude modifier combinations
+    if (e->text().isEmpty()) {
+        index = -1;
+        indexClosing = -1;
+    }
 
     // surround text with characters
     if ((index != -1) && (textCursor().hasSelection())) {
