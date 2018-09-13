@@ -455,21 +455,12 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              case optTypeString:
              case optTypeStrList :
              case optTypeEnumStr: {
-                         int iv;
-                         double dv;
-                         char sn[GMS_SSSIZE];
-                         char sv[GMS_SSSIZE];
-                         optGetValuesNr(mOPTHandle, i, sn, &iv, &dv, sv);
-                         opt.defaultValue = QVariant(sv);
-                         break;
-                     }
 //                     case optTypeImmediate: {
-//                         char sdefval[GMS_SSSIZE];
-//                         optGetDefaultStr(mOPTHandle, i, sdefval);
-//                         opt.defaultValue = QVariant(sdefval);
-//                         qDebug() << QString("%1, %2").arg(opt.name).arg(sdefval);
-//                         break;
-//                     }
+                 char sdefval[GMS_SSSIZE];
+                 optGetDefaultStr(mOPTHandle, i, sdefval);
+                 opt.defaultValue = QVariant(sdefval);
+                 break;
+            }
              default: break;
              }
 
