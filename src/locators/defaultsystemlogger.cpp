@@ -25,6 +25,8 @@ namespace studio {
 
 void DefaultSystemLogger::appendLog(const QString &msg, LogMsgType type)
 {
+    Q_UNUSED(msg);
+    Q_UNUSED(type);
     qDebug() << "NO SYSTEM LOGGER SET, USING DUMMY";
 }
 
