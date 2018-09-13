@@ -56,7 +56,7 @@ public:
 private:
     SyntaxAbstract *getSyntax(SyntaxState state) const;
     int getStateIdx(SyntaxState state) const;
-    void scanparentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
+    void scanParentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
 
 private:
     typedef int StateIndex;
@@ -78,6 +78,8 @@ private:
 
     States mStates;
     Codes mCodes;
+    // TODO(JM) process events after a couple of ms
+    // http://enki-editor.org/2014/08/22/Syntax_highlighting.html
 };
 
 } // namespace studio
