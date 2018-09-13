@@ -180,7 +180,7 @@ private:
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
-    void endBlockEdit();
+    void endBlockEdit(bool adjustCursor = true);
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();

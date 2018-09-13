@@ -570,7 +570,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         }
     } else {
         if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
-            endBlockEdit();
+            endBlockEdit(false);
         AbstractEdit::mousePressEvent(e);
     }
 }
@@ -901,10 +901,10 @@ void CodeEdit::startBlockEdit(int blockNr, int colNr)
     updateLineNumberAreaWidth(0);
 }
 
-void CodeEdit::endBlockEdit()
+void CodeEdit::endBlockEdit(bool adjustCursor)
 {
     mBlockEdit->stopCursorTimer();
-    mBlockEdit->adjustCursor();
+    if (adjustCursor) mBlockEdit->adjustCursor();
     bool overwrite = mBlockEdit->overwriteMode();
     delete mBlockEdit;
     mBlockEdit = nullptr;
