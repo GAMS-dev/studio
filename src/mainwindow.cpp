@@ -2221,16 +2221,17 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce= FileMeta::toCodeEdit(mRecent.editor());
-    if (ce)
-    {
-        if (ce->textCursor().hasSelection())
+    if (ce) {
+        if (ce->textCursor().hasSelection()) {
             ce->convertToUpper();
-        else
-        {
-            QTextCursor textCursor = ce->textCursor();
+        } else {
+            QTextCursor textCursor(ce->textCursor());
+            int textCursorPosition(ce->textCursor().position());
             textCursor.select(QTextCursor::WordUnderCursor);
             ce->setTextCursor(textCursor);
             ce->convertToUpper();
+            textCursor.setPosition(textCursorPosition,QTextCursor::MoveAnchor);
+            ce->setTextCursor(textCursor);
         }
     }
 }
@@ -2240,16 +2241,17 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
-    if (ce)
-    {
-        if (ce->textCursor().hasSelection())
+    if (ce) {
+        if (ce->textCursor().hasSelection()) {
             ce->convertToLower();
-        else
-        {
-            QTextCursor textCursor = ce->textCursor();
+        } else {
+            QTextCursor textCursor(ce->textCursor());
+            int textCursorPosition(ce->textCursor().position());
             textCursor.select(QTextCursor::WordUnderCursor);
             ce->setTextCursor(textCursor);
             ce->convertToLower();
+            textCursor.setPosition(textCursorPosition,QTextCursor::MoveAnchor);
+            ce->setTextCursor(textCursor);
         }
     }
 }
