@@ -2240,7 +2240,18 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
     if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
         return;
     CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
-    if (ce) ce->convertToLower();
+    if (ce)
+    {
+        if (ce->textCursor().hasSelection())
+            ce->convertToLower();
+        else
+        {
+            QTextCursor textCursor = ce->textCursor();
+            textCursor.select(QTextCursor::WordUnderCursor);
+            ce->setTextCursor(textCursor);
+            ce->convertToLower();
+        }
+    }
 }
 
 void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
