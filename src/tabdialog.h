@@ -37,6 +37,7 @@ protected:
     void resizeToContent();
 private slots:
     void setFilter(const QString &filter);
+    void selectFirst();
     void selectTab(const QModelIndex &index);
 private:
     Ui::TabDialog *ui;

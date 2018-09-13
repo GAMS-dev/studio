@@ -28,6 +28,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     connect(ui->listView, &QListView::clicked, this, &TabDialog::selectTab);
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &TabDialog::setFilter);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::selectFirst);
 
 //    mFilterModel->setFilterFixedString("");
 }
@@ -80,6 +81,13 @@ void TabDialog::setFilter(const QString &filter)
 {
     mFilterModel->setFilterWildcard(filter);
     resizeToContent();
+}
+
+void TabDialog::selectFirst()
+{
+    QModelIndex mi = mFilterModel->index(0,0);
+    mTabModel->tabs()->setCurrentIndex(mFilterModel->mapToSource(mi).row());
+    close();
 }
 
 void TabDialog::selectTab(const QModelIndex &index)
