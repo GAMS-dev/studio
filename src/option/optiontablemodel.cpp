@@ -174,9 +174,11 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
 {
+   Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
-        return Qt::NoItemFlags;
-    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+        return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
+    else
+        return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
 bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
@@ -266,6 +268,61 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     mOptionItem.removeAt(removeIndex);
     endMoveRows();
     emit optionModelChanged(mOptionItem);
+    return true;
+}
+
+QStringList OptionTableModel::mimeTypes() const
+{
+    QStringList types;
+    types << "application/vnd.gams-pf.text";
+    return types;
+}
+
+Qt::DropActions OptionTableModel::supportedDropActions() const
+{
+    return Qt::CopyAction;
+}
+
+bool OptionTableModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    if (!data->hasFormat("application/vnd.gams-pf.text"))
+        return false;
+
+    int beginRow;
+
+    if (row != -1)
+        beginRow = row;
+    else if (parent.isValid())
+        beginRow = parent.row();
+    else
+        beginRow = rowCount(QModelIndex());
+
+    QByteArray encodedData = data->data("application/vnd.gams-pf.text");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QStringList newItems;
+    int rows = 0;
+
+    while (!stream.atEnd()) {
+       QString text;
+       stream >> text;
+       newItems << text;
+       ++rows;
+    }
+
+    insertRows(beginRow, rows, QModelIndex());
+    foreach (const QString &text, newItems) {
+        QStringList textList = text.split("=");
+        QModelIndex idx = index(beginRow, 0, QModelIndex());
+        setData(idx, textList.at(0));
+        idx = index(beginRow, 1, QModelIndex());
+        setData(idx, textList.at(1));
+
+        beginRow++;
+    }
+
     return true;
 }
 

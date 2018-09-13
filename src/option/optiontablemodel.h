@@ -21,6 +21,7 @@
 #define OPTIONTABLEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QMimeData>
 
 #include "optiontokenizer.h"
 #include "option.h"
@@ -47,6 +48,10 @@ public:
     virtual bool insertRows(int row, int count, const QModelIndex &parent) override;
     virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+
+    QStringList mimeTypes() const override;
+    Qt::DropActions supportedDropActions() const override;
+    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<OptionItem> getCurrentListOfOptionItems();
 

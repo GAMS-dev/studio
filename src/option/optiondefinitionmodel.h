@@ -21,6 +21,8 @@
 #define OPTIONDEFINITIONMODEL_H
 
 #include <QAbstractItemModel>
+#include <QMimeData>
+
 #include "option/option.h"
 #include "option/optiondefinitionitem.h"
 
@@ -43,6 +45,9 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
     static const int COLUMN_OPTION_NAME = 0;
     static const int COLUMN_SYNONYM = 1;

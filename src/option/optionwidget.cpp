@@ -76,6 +76,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setAutoScroll(true);
     ui->gamsOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    ui->gamsOptionTableView->setDragEnabled(true);
+    ui->gamsOptionTableView->viewport()->setAcceptDrops(true);
+    ui->gamsOptionTableView->setDropIndicatorShown(true);
+    ui->gamsOptionTableView->setDragDropMode(QAbstractItemView::DropOnly);
+
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
@@ -93,6 +98,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
     ui->gamsOptionTreeView->setModel( proxymodel );
+    ui->gamsOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->gamsOptionTreeView->setDragEnabled(true);
+    ui->gamsOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
+
     ui->gamsOptionTreeView->setItemsExpandable(true);
     ui->gamsOptionTreeView->setSortingEnabled(true);
     ui->gamsOptionTreeView->sortByColumn(0, Qt::AscendingOrder);
