@@ -54,6 +54,9 @@ private slots:
     void testOptionIntegerType_data();
     void testOptionIntegerType();
 
+    void testOptionImmeidateType_data();
+    void testOptionImmeidateType();
+
     void testOptionSynonym_data();
     void testOptionSynonym();
 

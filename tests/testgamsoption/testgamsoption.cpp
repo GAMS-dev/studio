@@ -214,8 +214,9 @@ void TestGamsOption::testOptionDoubleType_data()
     QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 1000.0;
     QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.10;
     QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
-    QTest::newRow("Bratio")  << "Bratio"   << true  << 0.0 << 1.0 << 0.25;
-    QTest::newRow("FDDelta") << "FDDelta"  << true << 1.000000000000000E-9 << 1.0 << 1.000000000000000E-5;
+    QTest::newRow("Bratio")  << "Bratio"   << true  << 0.0 << 1.0                                  << 0.25;
+    QTest::newRow("FDDelta") << "FDDelta"  << true  << 1.000000000000000E-9 << 1.0                 << 1.000000000000000E-5;
+    QTest::newRow("ZeroRes") << "ZeroRes"  << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
 }
 
 void TestGamsOption::testOptionDoubleType()
@@ -262,6 +263,29 @@ void TestGamsOption::testOptionIntegerType()
     QCOMPARE( gamsOption->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( gamsOption->getUpperBound(optionName).toDouble(), upperBound );
     QCOMPARE( gamsOption->getDefaultValue(optionName).toDouble(), defaultValue );
+}
+
+void TestGamsOption::testOptionImmeidateType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("EolOnly")      << "EolOnly"        << true << "Single key-value pairs (immediate switch)";
+    QTest::newRow("Error")        << "Error"          << true << "Force a compilation error with message";
+    QTest::newRow("ParmFile")     << "ParmFile"       << true << "Command Line Parameter include file";
+
+}
+
+void TestGamsOption::testOptionImmeidateType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, description);
+
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).valid, valid );
+    QCOMPARE( gamsOption->getOptionType(optionName),  optTypeImmediate );
+    QCOMPARE( gamsOption->getOptionDefinition(optionName).description, description );
 }
 
 void TestGamsOption::testOptionSynonym_data()
