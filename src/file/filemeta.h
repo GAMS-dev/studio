@@ -164,6 +164,7 @@ private:
     QVector<QPoint> getEditPositions();
     void setEditPositions(QVector<QPoint> edPositions);
     void internalSave(const QString &location);
+    bool checkActivelySavedAndReset();
 
 private:
     FileId mId;
@@ -171,6 +172,7 @@ private:
     QString mLocation;
     QString mName;
     Data mData;
+    bool mActivelySaved = false;
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;

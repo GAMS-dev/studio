@@ -880,13 +880,13 @@ void MainWindow::activeTabChanged(int index)
 
 void MainWindow::fileChanged(FileId fileId)
 {
-    QWidgetList editors = mFileMetaRepo.fileMeta(fileId)->editors();
-    for (QWidget *edit: editors) {
+    mProjectRepo.fileChanged(fileId);
+    FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
+    if (!fm) return;
+    for (QWidget *edit: fm->editors()) {
         int index = ui->mainTab->indexOf(edit);
         if (index >= 0) {
-            FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
             if (fm) ui->mainTab->setTabText(index, fm->name(NameModifier::editState));
-            mProjectRepo.fileChanged(fileId);
         }
     }
 }
@@ -907,21 +907,19 @@ void MainWindow::fileChangedExtern(FileId fileId)
     int choice;
 
     if (file->isAutoReload() || file->isReadOnly()) {
-        choice = QMessageBox::Yes;
+        choice = 0;
     } else {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("File modified");
         if (!file->isModified()) {
-            // file is loaded but unchanged: ASK, if it should be reloaded
-            msgBox.setText(file->location()+" has been modified externally.");
-            msgBox.setInformativeText("Reload?");
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            choice = QMessageBox::question(this, "File modified", file->location()+" has been modified externally.\n"
+                                           + "Do you want to reload the file?",
+                                           "Reload", "Cancel", QString(), 1, 1);
+        } else {
+            choice = QMessageBox::question(this, "File modified", file->location()+" has been modified externally.\n"
+                                           + "Do you want to reload the file or keep your changes?",
+                                           "Reload", "Keep changes", QString(), 1, 1);
         }
-        msgBox.setDefaultButton(QMessageBox::NoButton);
-        choice = msgBox.exec();
     }
-
-    if (choice == QMessageBox::Yes || choice == QMessageBox::Discard) {
+    if (choice == 0) {
         file->load(file->codecMib());
     } else {
         file->document()->setModified();
@@ -931,32 +929,23 @@ void MainWindow::fileChangedExtern(FileId fileId)
 void MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-//    if (processIfRenamed(fileId)) return;
+    if (!file || !file->isOpen()) return;
 
-    if (!file->isOpen()) {
-        // TODO(JM) update state in tree (red)
-        return;
+    int ret = 0;
+    if (!file->isReadOnly()) {
+        // file is loaded: ASK, if it should be closed
+        ret = QMessageBox::question(this, "File vanished", file->location()+" doesn't exist any more.\n"
+                                    +"Keep file in editor?", "Keep", "Close", QString(), 1, 0);
     }
-
-    // file is loaded: ASK, if it should be closed
-    int ret = QMessageBox::No;
-//    if (!file->isReadOnly()) {
-//    }
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File vanished");
-    msgBox.setText(file->location()+" doesn't exist any more.");
-    msgBox.setInformativeText("Keep file in editor?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    ret = msgBox.exec();
-    if (ret == QMessageBox::No)
+    if (ret == 1)
         closeFileEditors(fileId);
-    else
+    else if (!file->isReadOnly())
         file->document()->setModified();
 }
 
 bool MainWindow::processIfRenamed(FileId fileId)
 {
+    // TODO(JM) Decide if we want this feature
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (file->kind() == FileKind::Gdx) return false;
     QString newFileName;
@@ -1464,10 +1453,10 @@ void MainWindow::dropEvent(QDropEvent* e)
             msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
                            " files at once. Depending on the file sizes this may take a long time.");
             msgBox.setInformativeText("Do you want to continue?");
-            msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
             answer = msgBox.exec();
 
-            if(answer != QMessageBox::Ok) return;
+            if(answer != QMessageBox::Open) return;
         }
         openFiles(pathList);
     }

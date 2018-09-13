@@ -49,7 +49,7 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
     QFileInfo fi(location);
     for (FileMeta* fm: mFiles.values()) {
-        if (fi.exists() && (QFileInfo(fm->location()) == fi || location == fm->location()))
+        if (QFileInfo(fm->location()) == fi || location == fm->location())
             return fm;
     }
 //    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
@@ -86,14 +86,12 @@ QList<FileMeta*> FileMetaRepo::fileMetas() const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
-    if (!fileMeta->location().startsWith('[')) {
-        watch(fileMeta);
-    }
+    watch(fileMeta);
 }
 
 void FileMetaRepo::removedFile(FileMeta *fileMeta)
 {
-    if (fileMeta && !fileMeta->location().startsWith('[')) {
+    if (fileMeta) {
         mFiles.remove(fileMeta->id());
         unwatch(fileMeta);
     }
@@ -202,6 +200,7 @@ void FileMetaRepo::fileChanged(const QString &path)
 {
     FileMeta *file = fileMeta(path);
     if (!file) return;
+    mProjectRepo->fileChanged(file->id());
     QFileInfo fi(path);
     if (!fi.exists()) {
         // deleted: delayed check to ensure it's not just rewritten (or renamed)
@@ -210,7 +209,9 @@ void FileMetaRepo::fileChanged(const QString &path)
     } else {
         // changedExternally
         if (file->compare(path)) {
-            FileEvent e(file->id(), FileEventKind::changedExtern);
+            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
+                                                                      : FileEventKind::changedExtern;
+            FileEvent e(file->id(), feKind);
             emit fileEvent(e);
         }
     }
@@ -221,13 +222,16 @@ void FileMetaRepo::reviewRemoved()
     while (!mRemoved.isEmpty()) {
         FileMeta *file = fileMeta(mRemoved.takeFirst());
         if (!file) continue;
+        mProjectRepo->fileChanged(file->id());
         if (watch(file)) {
             FileDifferences diff = file->compare();
             if (diff.testFlag(FdMissing)) {
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
-                FileEvent e(file->id(), FileEventKind::changedExtern);
+                FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
+                                                                          : FileEventKind::changedExtern;
+                FileEvent e(file->id(), feKind);
                 emit fileEvent(e);
             }
         } else {
@@ -245,12 +249,15 @@ void FileMetaRepo::checkMissing()
     QStringList remainMissList;
     while (!mMissList.isEmpty()) {
         QString fileName = mMissList.takeFirst();
+        FileMeta *file = fileMeta(fileName);
+        if (!file) continue;
+        mProjectRepo->fileChanged(file->id());
         if (QFileInfo(fileName).exists()) {
-            FileMeta *file = fileMeta(fileName);
-            if (file) {
-                FileEvent e(file->id(), FileEventKind::changed);
-                emit fileEvent(e);
-            }
+            watch(file);
+            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
+                                                                      : FileEventKind::changedExtern;
+            FileEvent e(file->id(), feKind);
+            emit fileEvent(e);
         } else {
             remainMissList << fileName;
         }

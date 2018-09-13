@@ -108,11 +108,19 @@ void FileMeta::internalSave(const QString &location)
         EXCEPT() << "Can't open the file";
     QTextStream out(&file);
     if (mCodec) out.setCodec(mCodec);
+    mActivelySaved = true;
     out << document()->toPlainText();
     out.flush();
     file.close();
     mData = Data(location);
     document()->setModified(false);
+}
+
+bool FileMeta::checkActivelySavedAndReset()
+{
+    bool res = mActivelySaved;
+    mActivelySaved = false;
+    return res;
 }
 
 FileId FileMeta::id() const
