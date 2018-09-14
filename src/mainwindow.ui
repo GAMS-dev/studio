@@ -288,6 +288,9 @@
          <height>0</height>
         </size>
        </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::EditKeyPressed</set>
        </property>

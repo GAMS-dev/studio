@@ -69,7 +69,18 @@ SOURCES += \
     distributionvalidator.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
+    file/fileevent.cpp \
+    file/filemeta.cpp \
+    file/filemetarepo.cpp \
     file/filetype.cpp \
+    file/projectabstractnode.cpp \
+    file/projectcontextmenu.cpp \
+    file/projectfilenode.cpp \
+    file/projectgroupnode.cpp \
+    file/projectlognode.cpp \
+    file/projectrepo.cpp \
+    file/projecttreemodel.cpp \
+    file/treeitemdelegate.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxviewer/columnfilter.cpp \
@@ -110,7 +121,6 @@ SOURCES += \
     option/optionsortfilterproxymodel.cpp \
     option/optiontablemodel.cpp \
     option/optionwidget.cpp \
-    projectcontextmenu.cpp \
     reference/reference.cpp \
     reference/referencetabstyle.cpp \
     reference/referencedatatype.cpp \
@@ -136,19 +146,9 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
-    treeitemdelegate.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
     wplabel.cpp \
-    file/projectfilenode.cpp \
-    file/projectgroupnode.cpp \
-    file/projectrepo.cpp \
-    file/projectabstractnode.cpp \
-    file/projecttreemodel.cpp \
-    file/projectlognode.cpp \
-    file/fileevent.cpp \
-    file/filemetarepo.cpp \
-    file/filemeta.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
     editors/processlogedit.cpp \
@@ -172,8 +172,18 @@ HEADERS += \
     exception.h \
     file.h \
     file/dynamicfile.h \
+    file/fileevent.h \
+    file/filemeta.h \
+    file/filemetarepo.h \
     file/filetype.h \
     file/projectabstractnode.h \
+    file/projectcontextmenu.h \
+    file/projectfilenode.h \
+    file/projectgroupnode.h \
+    file/projectlognode.h \
+    file/projectrepo.h \
+    file/projecttreemodel.h \
+    file/treeitemdelegate.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxviewer/columnfilter.h \
@@ -213,7 +223,6 @@ HEADERS += \
     option/optionsortfilterproxymodel.h \
     option/optiontablemodel.h \
     option/optionwidget.h \
-    projectcontextmenu.h \
     reference/reference.h \
     reference/referencetabstyle.h \
     reference/referencedatatype.h \
@@ -242,19 +251,10 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
-    treeitemdelegate.h \
     updatedialog.h \
     version.h \
     welcomepage.h \
     wplabel.h \
-    file/projectgroupnode.h \
-    file/projectfilenode.h \
-    file/projectlognode.h \
-    file/projecttreemodel.h \
-    file/fileevent.h \
-    file/filemetarepo.h \
-    file/filemeta.h \
-    file/projectrepo.h \
     gotodialog.h \
     editors/abstractedit.h \
     editors/processlogedit.h \

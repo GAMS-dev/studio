@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "treeitemdelegate.h"
+#include <QPainter>
+#include <QLineEdit>
 
 namespace gams {
 namespace studio {
@@ -32,6 +34,31 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     opt.textElideMode = Qt::ElideMiddle;
     opt.palette.setColor(QPalette::Highlight, Qt::transparent);
     QStyledItemDelegate::paint(painter, opt, index);
+}
+
+QWidget *TreeItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(index);
+    return new QLineEdit(option.text, parent);
+}
+
+void TreeItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    static_cast<QLineEdit*>(editor)->setText(index.data(Qt::EditRole).toString());
+}
+
+void TreeItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    model->setData(index, static_cast<QLineEdit*>(editor)->text());
+}
+
+void TreeItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(index)
+    QRect rect(option.rect);
+    rect.setLeft(rect.left() + option.decorationSize.width() + 6);
+    rect.setWidth(option.rect.width() - option.decorationSize.width() - 8);
+    editor->setGeometry(rect);
 }
 
 } // namespace studio

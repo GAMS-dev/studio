@@ -28,7 +28,6 @@
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
-#include "projectcontextmenu.h"
 #include "help/helpwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"

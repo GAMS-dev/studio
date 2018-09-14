@@ -1,6 +1,8 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include "file/projectcontextmenu.h"
+#include "file/treeitemdelegate.h"
 #include "file/projectrepo.h"
 #include "file/projectabstractnode.h"
 #include "file/projectlognode.h"
