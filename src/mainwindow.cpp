@@ -169,7 +169,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), this, SLOT(showTabsMenu()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
 
     // set up services

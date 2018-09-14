@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <QTimer>
 #include <QScrollBar>
+#include <QKeyEvent>
 
 namespace gams {
 namespace studio {
@@ -28,7 +29,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     connect(ui->listView, &QListView::clicked, this, &TabDialog::selectTab);
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &TabDialog::setFilter);
-    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::selectFirst);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::returnPressed);
 
 //    mFilterModel->setFilterFixedString("");
 }
@@ -43,6 +44,7 @@ void TabDialog::showEvent(QShowEvent *e)
 {
     QDialog::showEvent(e);
     resizeToContent();
+    ui->listView->setCurrentIndex(mFilterModel->index(0, 0));
     ui->lineEdit->setFocus();
 }
 
@@ -77,16 +79,25 @@ void TabDialog::resizeToContent()
         ui->listView->scrollTo(idx);
 }
 
+void TabDialog::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Down)
+        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()+1, 0));
+    else if (e->key() == Qt::Key_Up)
+        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()-1, 0));
+    else
+        QDialog::keyPressEvent(e);
+}
+
 void TabDialog::setFilter(const QString &filter)
 {
     mFilterModel->setFilterWildcard(filter);
     resizeToContent();
 }
 
-void TabDialog::selectFirst()
+void TabDialog::returnPressed()
 {
-    QModelIndex mi = mFilterModel->index(0,0);
-    mTabModel->tabs()->setCurrentIndex(mFilterModel->mapToSource(mi).row());
+    mTabModel->tabs()->setCurrentIndex(mFilterModel->mapToSource(ui->listView->currentIndex()).row());
     close();
 }
 
