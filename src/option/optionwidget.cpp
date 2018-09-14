@@ -268,21 +268,38 @@ void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
-    QVariant data = ui->gamsOptionTreeView->model()->data(index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME));
-    QModelIndex defValueIndex = ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-    QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
-    // TODO insert before selected  or at the end when no selection
+    QModelIndex parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
+    QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
+                                                          ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+    QModelIndex synonymIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_SYNONYM) :
+                                                       ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
+    QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
+                                                        ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex : index ;
+
+    QString optionNameData = ui->gamsOptionTreeView->model()->data(optionNameIndex).toString();
+    QString synonymData = ui->gamsOptionTreeView->model()->data(synonymIndex).toString();
+    QString selectedValueData = ui->gamsOptionTreeView->model()->data(selectedValueIndex).toString();
+
+    int i;
+    for(i=0; i < ui->gamsOptionTableView->model()->rowCount(); ++i) {
+        QModelIndex idx = ui->gamsOptionTableView->model()->index(i, 0, QModelIndex());
+        QString optionName = ui->gamsOptionTableView->model()->data(idx, Qt::DisplayRole).toString();
+        if ((QString::compare(optionNameData, optionName, Qt::CaseInsensitive)==0) ||
+            (QString::compare(synonymData, optionName, Qt::CaseInsensitive)==0))
+            break;
+    }
+    if (i < ui->gamsOptionTableView->model()->rowCount()) {
+        ui->gamsOptionTableView->model()->setData( ui->gamsOptionTableView->model()->index(i, 1), selectedValueData, Qt::EditRole);
+        ui->gamsOptionTableView->selectRow(i);
+        return;
+    }
+
     ui->gamsOptionTableView->model()->insertRows(ui->gamsOptionTableView->model()->rowCount(), 1, QModelIndex());
     QModelIndex insertKeyIndex = ui->gamsOptionTableView->model()->index(ui->gamsOptionTableView->model()->rowCount()-1, 0);
     QModelIndex insertValueIndex = ui->gamsOptionTableView->model()->index(ui->gamsOptionTableView->model()->rowCount()-1, 1);
-    if (parentIndex.row() < 0) {
-        ui->gamsOptionTableView->model()->setData( insertKeyIndex, data.toString(), Qt::EditRole);
-        ui->gamsOptionTableView->model()->setData( insertValueIndex, ui->gamsOptionTreeView->model()->data(defValueIndex).toString(), Qt::EditRole);
-    } else {
-        QVariant parentData = ui->gamsOptionTreeView->model()->data( parentIndex );
-        ui->gamsOptionTableView->model()->setData( insertKeyIndex, parentData.toString(), Qt::EditRole);
-        ui->gamsOptionTableView->model()->setData( insertValueIndex, data.toString(), Qt::EditRole);
-    }
+    ui->gamsOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
+    ui->gamsOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
 
