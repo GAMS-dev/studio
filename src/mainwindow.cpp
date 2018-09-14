@@ -193,9 +193,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::initTabs()
 {
-//    QPalette pal = ui->projectView->palette();
-//    pal.setColor(QPalette::Highlight, Qt::transparent);
-//    ui->projectView->setPalette(pal);
+    QPalette pal = ui->projectView->palette();
+    pal.setColor(QPalette::Highlight, Qt::transparent);
+    ui->projectView->setPalette(pal);
 
     mWp = new WelcomePage(history(), this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);

@@ -39,7 +39,11 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 QWidget *TreeItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(index);
-    return new QLineEdit(option.text, parent);
+    QLineEdit *ed = new QLineEdit(option.text, parent);
+    QPalette pal = ed->palette();
+    pal.setColor(QPalette::Highlight, parent->topLevelWidget()->palette().color(QPalette::Highlight));
+    ed->setPalette(pal);
+    return ed;
 }
 
 void TreeItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
