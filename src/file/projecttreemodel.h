@@ -49,6 +49,7 @@ public:
     void setDebugMode(bool debug);
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;
+    QModelIndex current() {return mCurrent;}
 
 protected:
     friend class ProjectRepo;

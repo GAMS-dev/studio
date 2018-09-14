@@ -2,6 +2,7 @@
 #define FILE_H
 
 #include "file/projectcontextmenu.h"
+#include "file/projecttreeview.h"
 #include "file/treeitemdelegate.h"
 #include "file/projectrepo.h"
 #include "file/projectabstractnode.h"

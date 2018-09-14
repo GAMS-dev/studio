@@ -80,6 +80,7 @@ SOURCES += \
     file/projectlognode.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
+    file/projecttreeview.cpp \
     file/treeitemdelegate.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
@@ -183,6 +184,7 @@ HEADERS += \
     file/projectlognode.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
+    file/projecttreeview.h \
     file/treeitemdelegate.h \
     gamslibprocess.h \
     gamsprocess.h \
