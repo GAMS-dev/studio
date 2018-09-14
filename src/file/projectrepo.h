@@ -31,6 +31,7 @@
 #include "filetype.h"
 #include "filemetarepo.h"
 #include "gamsprocess.h"
+#include "projecttreeview.h"
 
 namespace gams {
 namespace studio {
@@ -52,7 +53,7 @@ class ProjectRepo : public QObject
 public:
     explicit ProjectRepo(QObject *parent = nullptr);
     ~ProjectRepo();
-    void init(FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
+    void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
     ProjectRunGroupNode *findRunGroup(NodeId nodeId) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
@@ -127,7 +128,6 @@ public:
 
     ProjectLogNode *logNode(QWidget *edit);
     ProjectLogNode *logNode(ProjectAbstractNode *node);
-    void update(ProjectAbstractNode *node);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -162,6 +162,7 @@ private:
 
 private:
     FileId mNextId;
+    ProjectTreeView* mTreeView = nullptr;
     ProjectTreeModel* mTreeModel = nullptr;
     QHash<NodeId, ProjectAbstractNode*> mNodes;
     QVector<ProjectAbstractNode*> mActiveStack;

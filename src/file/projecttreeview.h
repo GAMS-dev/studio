@@ -11,13 +11,9 @@ class ProjectTreeView : public QTreeView
     Q_OBJECT
 public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
-
-signals:
-
-public slots:
-
 protected:
     void focusOutEvent(QFocusEvent *event) override;
+    void fixFocus();
 };
 
 } // namespace studio

@@ -29,6 +29,7 @@
 #include "commonpaths.h"
 #include "filemetarepo.h"
 #include "abstractprocess.h"
+#include "projecttreeview.h"
 
 namespace gams {
 namespace studio {
@@ -45,11 +46,13 @@ ProjectRepo::~ProjectRepo()
     delete mTreeModel;
 }
 
-void ProjectRepo::init(FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
+void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
 {
     if (mFileRepo || mTextMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
+    if (!treeView) FATAL() << "The ProjectTreeView must not be null";
     if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
     if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
+    mTreeView = treeView;
     mFileRepo = fileRepo;
     mTextMarkRepo = textMarkRepo;
 }
@@ -472,6 +475,7 @@ void ProjectRepo::editorActivated(QWidget* edit)
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
+    mTreeView->setCurrentIndex(mi);
 }
 
 void ProjectRepo::nodeChanged(NodeId nodeId)
@@ -536,12 +540,6 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     }
     addToIndex(log);
     return log;
-}
-
-void ProjectRepo::update(ProjectAbstractNode *node)
-{
-    QModelIndex mi = mTreeModel->index(node);
-    mTreeModel->setCurrent(mi);
 }
 
 void ProjectRepo::setDebugMode(bool debug)

@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
 //    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
-    mProjectRepo.init(&mFileMetaRepo, &mTextMarkRepo);
+    mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
