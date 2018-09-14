@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
+
 #include "option.h"
 #include "optiontablemodel.h"
 
@@ -178,7 +179,7 @@ Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
     else
-        return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | defaultFlags;
+        return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
 bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
@@ -278,29 +279,48 @@ QStringList OptionTableModel::mimeTypes() const
     return types;
 }
 
-Qt::DropActions OptionTableModel::supportedDropActions() const
+QMimeData *OptionTableModel::mimeData(const QModelIndexList &indexes) const
 {
-    return Qt::CopyAction;
+    QMimeData* mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &index, indexes) {
+        if (index.isValid()) {
+            if (index.column()>0) {
+                continue;
+            }
+
+            QModelIndex valueIndex = index.sibling(index.row(), 1);
+            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(valueIndex, Qt::DisplayRole).toString());
+            stream << text;
+        }
+    }
+
+    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+    return mimeData;
 }
 
-bool OptionTableModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+Qt::DropActions OptionTableModel::supportedDragActions() const
+{
+    return Qt::MoveAction ;
+}
+
+Qt::DropActions OptionTableModel::supportedDropActions() const
+{
+    return Qt::MoveAction | Qt::CopyAction ;
+}
+
+bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     if (action == Qt::IgnoreAction)
         return true;
 
-    if (!data->hasFormat("application/vnd.gams-pf.text"))
+    if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
         return false;
 
-    int beginRow;
-
-    if (row != -1)
-        beginRow = row;
-    else if (parent.isValid())
-        beginRow = parent.row();
-    else
-        beginRow = rowCount(QModelIndex());
-
-    QByteArray encodedData = data->data("application/vnd.gams-pf.text");
+    QByteArray encodedData = mimedata->data("application/vnd.gams-pf.text");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;
@@ -312,17 +332,44 @@ bool OptionTableModel::dropMimeData(const QMimeData* data, Qt::DropAction action
        ++rows;
     }
 
-    insertRows(beginRow, rows, QModelIndex());
-    foreach (const QString &text, newItems) {
-        QStringList textList = text.split("=");
-        QModelIndex idx = index(beginRow, 0, QModelIndex());
-        setData(idx, textList.at(0));
-        idx = index(beginRow, 1, QModelIndex());
-        setData(idx, textList.at(1));
+    int beginRow;
 
-        beginRow++;
+    if (row != -1)
+        beginRow = row;
+    else if (parent.isValid())
+        beginRow = parent.row();
+    else
+        beginRow = rowCount(QModelIndex());
+
+    if (action ==  Qt::CopyAction) {
+
+        insertRows(beginRow, rows, QModelIndex());
+        foreach (const QString &text, newItems) {
+            QStringList textList = text.split("=");
+            QModelIndex idx = index(beginRow, 0, QModelIndex());
+            setData(idx, textList.at(0));
+            idx = index(beginRow, 1, QModelIndex());
+            setData(idx, textList.at(1));
+
+            beginRow++;
+        }
+    }  else if (action == Qt::MoveAction ) {
+
+        foreach (const QString &text, newItems) {
+            QStringList textList = text.split("=");
+            QModelIndex idx;
+            for(int i=0; i<rowCount(QModelIndex()); ++i) {
+                idx = index(i, 0, QModelIndex());
+                QString key = data(idx, Qt::DisplayRole).toString();
+                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
+                    break;
+            }
+            if (idx.row() < beginRow)
+                moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow+1 );
+            else
+                moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow );
+        }
     }
-
     return true;
 }
 

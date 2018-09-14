@@ -79,7 +79,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setDragEnabled(true);
     ui->gamsOptionTableView->viewport()->setAcceptDrops(true);
     ui->gamsOptionTableView->setDropIndicatorShown(true);
-    ui->gamsOptionTableView->setDragDropMode(QAbstractItemView::DropOnly);
+    ui->gamsOptionTableView->setDragDropMode(QAbstractItemView::DragDrop);
+    ui->gamsOptionTableView->setDragDropOverwriteMode(true);
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
