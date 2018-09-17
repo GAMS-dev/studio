@@ -1324,7 +1324,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
             QMessageBox msgBox;
             msgBox.setWindowTitle("File already existing");
 
-            msgBox.setText("The file you are trying to load already exists in your temporary working directory.");
+            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
             msgBox.setInformativeText("What do you want to do with the existing file?");
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Open", QMessageBox::ActionRole);
