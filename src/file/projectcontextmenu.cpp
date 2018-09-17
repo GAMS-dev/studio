@@ -31,13 +31,10 @@ ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(0, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
     mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
-//    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
-//    mActions.insert(1, addSeparator());
+    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
+    mActions.insert(3, addSeparator());
 
-//    mActions.insert(2, addAction("&Run this file", this, &ProjectContextMenu::onRunFile));
-//    mActions.insert(3, addAction("&Run this file with options", this, &ProjectContextMenu::onRunFile));
     mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
-
     mActions.insert(5, addSeparator());
 
     mActions.insert(6, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
@@ -57,13 +54,19 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
     mNode = node;
     bool isGroup = mNode->toGroup();
     ProjectFileNode *fileNode = node->toFile();
-    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
+    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms; // unused
+    bool isRunnable = false;
+
+    QString file;
+    if (fileNode && fileNode->assignedRunGroup()) {
+        file = fileNode->assignedRunGroup()->specialFile(FileKind::Gms);
+        isRunnable = fileNode->location() == file;
+    }
 
     mActions[1]->setVisible(isGroup);
-//    mActions[2]->setVisible(isGroup);
-//    mActions[3]->setVisible(isGmsFile);
-    mActions[4]->setVisible(isGmsFile);
-//    mActions[5]->setVisible(isGmsFile);
+    mActions[2]->setVisible(isGroup);
+    mActions[3]->setVisible(isGroup);
+    mActions[4]->setVisible(isGmsFile && !isRunnable);
 
     // all files
     mActions[10]->setVisible(fileNode);
