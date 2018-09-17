@@ -22,6 +22,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     }
     mFilterModel->setSourceModel(mTabModel);
     mFilterModel->sort(0);
+    mFilterModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     ui->listView->setModel(mFilterModel);
     ui->listView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->listView->setMinimumHeight(1);
