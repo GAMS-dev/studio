@@ -80,7 +80,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
 
