@@ -280,6 +280,7 @@ private:
     void dockWidgetShow(QDockWidget* dw, bool show);
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
+    void raiseEdit(QWidget *widget);
 
 private:
     Ui::MainWindow *ui;

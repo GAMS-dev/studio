@@ -49,7 +49,7 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
     QFileInfo fi(location);
     for (FileMeta* fm: mFiles.values()) {
-        if (QFileInfo(fm->location()) == fi || location == fm->location())
+        if (FileMetaRepo::equals(QFileInfo(fm->location()), fi))
             return fm;
     }
 //    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
@@ -182,6 +182,11 @@ void FileMetaRepo::setDebugMode(bool debug)
 bool FileMetaRepo::debugMode() const
 {
     return mDebug;
+}
+
+bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
+{
+    return (fi1.exists() || fi2.exists()) ? fi1 == fi2 : fi1.absoluteFilePath() == fi2.absoluteFilePath();
 }
 
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)

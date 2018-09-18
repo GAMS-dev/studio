@@ -656,7 +656,8 @@ void MainWindow::on_actionOpen_triggered()
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     for (QString item: fNames) {
-        openFileNode( addNode("", item) );
+        ProjectFileNode *node = addNode("", item);
+        openFileNode(node);
     }
 }
 
@@ -1737,6 +1738,14 @@ void MainWindow::storeTree()
     mSettings->saveSettings(this);
 }
 
+void MainWindow::raiseEdit(QWidget *widget)
+{
+    while (widget && widget != this) {
+        widget->raise();
+        widget = widget->parentWidget();
+    }
+}
+
 void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
 {
     if (!fileMeta) return;
@@ -1755,24 +1764,29 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 gv->setGroupId(runGroup->id());
             }
         }
+        // TODO(JM)  check what happens to the group here
         if (focus) {
             tabWidget->setCurrentWidget(edit);
+            raiseEdit(edit);
             if (tabWidget == ui->mainTab) {
                 on_mainTab_currentChanged(tabWidget->indexOf(edit));
             }
         }
     } else {
-        QWidget *edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
+        edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
-        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
-            FileMeta::toAbstractEdit(edit)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-
-        connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
+            AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
+            ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            if (!ae->isReadOnly())
+                connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
+            raiseEdit(edit);
             updateMenuToCodec(fileMeta->codecMib());
             if (tabWidget == ui->mainTab) {
                 mRecent.setEditor(tabWidget->currentWidget(), this);
@@ -1885,10 +1899,10 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
 
     if (!fileNode) {
         fileNode = mProjectRepo.findOrCreateFileNode(filePath);
-        if (!fileNode) {
+        if (!fileNode)
             EXCEPT() << "Could not create node for file: " << filePath;
-        }
     }
+
     openFileNode(fileNode, focus, codecMib);
 }
 

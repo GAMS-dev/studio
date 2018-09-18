@@ -422,7 +422,7 @@ FileDifferences FileMeta::compare(QString fileName)
     FileDifferences res;
     Data other(fileName.isEmpty() ? location() : fileName);
     res = mData.compare(other);
-    if (!fileName.isEmpty() && QFileInfo(fileName) != QFileInfo(location()))
+    if (!fileName.isEmpty() && !FileMetaRepo::equals(QFileInfo(fileName), QFileInfo(location())))
         res.setFlag(FdName);
     return res;
 }
@@ -572,9 +572,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        ProcessLogEdit *logEdit = nullptr;
         if (kind() == FileKind::Log) {
-            logEdit = new ProcessLogEdit(tabWidget);
+            ProcessLogEdit *logEdit = new ProcessLogEdit(tabWidget);
             initEditorType(logEdit);
             edit = logEdit;
             edit->setLineWrapMode(SettingsLocator::settings()->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
@@ -597,13 +596,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
-        tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
-
         if (kind() == FileKind::Log ||
                 kind() == FileKind::Lst) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
+        tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
         if (mEditors.isEmpty() && kind() != FileKind::Log)
             load(codecMibs);
         mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());

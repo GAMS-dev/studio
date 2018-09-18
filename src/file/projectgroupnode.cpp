@@ -130,7 +130,7 @@ ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurs
     QFileInfo fi(location);
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* file = node->toFile();
-        if (file && QFileInfo(file->location()) == fi) return file;
+        if (file && FileMetaRepo::equals(QFileInfo(file->location()), fi)) return file;
         if (recurse) {
             const ProjectGroupNode* group = node->toGroup();
             ProjectFileNode* sub = group ? group->findFile(location, true) : nullptr;

@@ -310,7 +310,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
 
 void ProjectRepo::closeGroup(ProjectGroupNode* group)
 {
-    // remove normal cildren
+    // remove normal children
     for (int i = group->childCount()-1; i >= 0; --i) {
         ProjectAbstractNode *node = group->childNode(i);
         ProjectGroupNode* subGroup = node->toGroup();
@@ -424,6 +424,25 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     return file;
 }
 
+ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
+{
+    if (!node) return nullptr;
+    // Find the runGroup
+    ProjectRunGroupNode* runGroup = node->assignedRunGroup();
+    if (!runGroup) return nullptr;
+    if (runGroup->logNode()) return runGroup->logNode();
+    ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);
+    if (!log) {
+        DEB() << "Error while creating LOG node.";
+        return nullptr;
+    }
+    int offset = runGroup->peekIndex(log->name());
+    addToIndex(log);
+    mTreeModel->insertChild(offset, runGroup, log);
+    emit changed();
+    return log;
+}
+
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
 {
     QVector<ProjectFileNode*> res;
@@ -517,29 +536,6 @@ void ProjectRepo::fileChanged(FileId fileId)
     for (ProjectGroupNode *group: groups) {
         nodeChanged(group->id());
     }
-}
-
-ProjectLogNode* ProjectRepo::logNode(QWidget* edit)
-{
-    ProjectFileNode* node = findFileNode(edit);
-    if (!node) return nullptr;
-    return logNode(node);
-}
-
-ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
-{
-    if (!node) return nullptr;
-    // Find the runGroup
-    ProjectRunGroupNode* runGroup = node->assignedRunGroup();
-    if (!runGroup) return nullptr;
-
-    ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);
-    if (!log) {
-        DEB() << "Error while creating LOG node.";
-        return nullptr;
-    }
-    addToIndex(log);
-    return log;
 }
 
 void ProjectRepo::setDebugMode(bool debug)

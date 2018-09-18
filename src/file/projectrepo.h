@@ -126,7 +126,6 @@ public:
     QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
     void editorActivated(QWidget *edit);
 
-    ProjectLogNode *logNode(QWidget *edit);
     ProjectLogNode *logNode(ProjectAbstractNode *node);
 
     void setDebugMode(bool debug);

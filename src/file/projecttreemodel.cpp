@@ -235,6 +235,8 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     if (!parMi.isValid()) return false;
     beginInsertRows(parMi, row, row);
     child->setParentNode(parent);
+    mCurrent = updateIndex(mCurrent, parMi, row, 1);
+    mSelected = updateIndex(mSelected, parMi, row, 1);
     endInsertRows();
     return true;
 }
@@ -247,13 +249,21 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
         return false;
     } else {
         if (mDebug) DEB() << "removing NodeId " << child->id();
-
     }
     QModelIndex parMi = index(child->parentNode());
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
+    mCurrent = updateIndex(mCurrent, parMi, mi.row(), -1);
+    mSelected = updateIndex(mSelected, parMi, mi.row(), -1);
     endRemoveRows();
     return true;
+}
+
+const QModelIndex ProjectTreeModel::updateIndex(const QModelIndex &idx, const QModelIndex &parent, int row, int change)
+{
+    if (!idx.isValid() || idx.parent() != parent || idx.row() < row) return idx;
+    if (change < 0 && idx.row() < row-change) return QModelIndex();
+    return index(idx.row()+change, idx.column(), idx.parent());
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const

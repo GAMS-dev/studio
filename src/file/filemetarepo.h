@@ -53,6 +53,7 @@ public:
 
     void setDebugMode(bool debug);
     bool debugMode() const;
+    static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
 
 signals:
     void fileEvent(FileEvent &e);

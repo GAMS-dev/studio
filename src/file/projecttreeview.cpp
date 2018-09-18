@@ -23,7 +23,7 @@ void ProjectTreeView::focusOutEvent(QFocusEvent *event)
 void ProjectTreeView::fixFocus()
 {
     QModelIndex mi = static_cast<ProjectTreeModel*>(model())->current();
-    if (currentIndex() != mi)
+    if (mi.isValid() && currentIndex() != mi)
         setCurrentIndex(mi);
 }
 
