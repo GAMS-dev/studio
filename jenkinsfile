@@ -69,7 +69,7 @@ pipeline {
                             mkdir reports
                             cd tests/bin
                             for f in *; do
-                                xvfb-run ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                                xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
                         junit allowEmptyResults: true, testResults: 'reports/*.xml'
