@@ -2216,9 +2216,9 @@ void MainWindow::on_actionZoom_In_triggered()
     }
 }
 
-void MainWindow::uppercase_Lowercase(bool toUpper)
+void MainWindow::convertLowerUpper(bool toUpper)
 {
-    CodeEdit* ce= FileMeta::toCodeEdit(mRecent.editor());
+    CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
     QTextCursor textCursor(ce->textCursor());
     int textCursorPosition(ce->textCursor().position());
     textCursor.select(QTextCursor::WordUnderCursor);
@@ -2240,7 +2240,7 @@ void MainWindow::on_actionSet_to_Uppercase_triggered()
         if (ce->textCursor().hasSelection())
             ce->convertToUpper();
         else
-            uppercase_Lowercase(true);
+            convertLowerUpper(true);
     }
 }
 
@@ -2253,7 +2253,7 @@ void MainWindow::on_actionSet_to_Lowercase_triggered()
         if (ce->textCursor().hasSelection())
             ce->convertToLower();
         else
-            uppercase_Lowercase(false);
+            convertLowerUpper(false);
     }
 }
 

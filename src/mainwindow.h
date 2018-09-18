@@ -123,7 +123,7 @@ public:
     void updateRunState();
     void setForeground();
     void setForegroundOSCheck();
-    void uppercase_Lowercase(bool toUpper);
+    void convertLowerUpper(bool toUpper);
 
     HelpWidget *helpWidget() const;
     OptionWidget *gamsOptionWidget() const;
