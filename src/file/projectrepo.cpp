@@ -131,7 +131,10 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     if (!fileMeta) return nullptr;
     AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
-    NodeId groupId = edit ? edit->groupId() : (gdxViewer ? gdxViewer->groupId() : NodeId());
+    reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
+    NodeId groupId = edit ? edit->groupId()
+                          : gdxViewer ? gdxViewer->groupId()
+                                      : refViewer ? refViewer->groupId() : NodeId();
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
@@ -491,6 +494,11 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 void ProjectRepo::editorActivated(QWidget* edit)
 {
     ProjectFileNode *node = findFileNode(edit);
+//    FileId fId = FileMeta::toAbstractEdit(edit)
+//            ? FileMeta::toAbstractEdit(edit)->fileId() : FileMeta::toGdxViewer(edit)
+//              ? FileMeta::toGdxViewer(edit)->fileId() : FileMeta::toReferenceViewer(edit)
+//                ? FileMeta::toReferenceViewer(edit)->fileId() : FileId();
+//    DEB() << "Searched for Node(" << int(fId);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);

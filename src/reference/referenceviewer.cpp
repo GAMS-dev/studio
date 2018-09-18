@@ -98,6 +98,26 @@ ReferenceViewer::~ReferenceViewer()
     delete mReference;
 }
 
+FileId ReferenceViewer::fileId() const
+{
+    return  mFileId;
+}
+
+void ReferenceViewer::setFileId(const FileId &fileId)
+{
+    mFileId = fileId;
+}
+
+NodeId ReferenceViewer::groupId() const
+{
+    return mGroupId;
+}
+
+void ReferenceViewer::setGroupId(const NodeId &groupId)
+{
+    mGroupId = groupId;
+}
+
 void ReferenceViewer::on_referenceFileChanged()
 {
     mReference->loadReferenceFile();

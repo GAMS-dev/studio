@@ -556,6 +556,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         gdxView->setFileId(id());
+        gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
         tabWidget->insertTab(tabWidget->currentIndex()+1, gdxView, name(NameModifier::editState));
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
@@ -563,8 +564,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
+        refView->setFileId(id());
+        refView->setGroupId(runGroup ? runGroup->id() : NodeId());
         tabWidget->insertTab(tabWidget->currentIndex()+1, refView, name(NameModifier::editState));
-//        refView->setFileId(id());
         res = refView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
