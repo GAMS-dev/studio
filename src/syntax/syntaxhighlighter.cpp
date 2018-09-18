@@ -22,96 +22,16 @@
 #include "syntaxdeclaration.h"
 #include "syntaxidentifier.h"
 #include "textmark.h"
-#include "textmarklist.h"
 #include "logger.h"
 #include "exception.h"
 #include "file.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
-ErrorHighlighter::ErrorHighlighter(ProjectFileNode* node)
-    : QSyntaxHighlighter(node->document()), mNode(node)
-{
-}
-
-TextMarkList* ErrorHighlighter::marks()
-{
-    return (mNode) ? mNode->marks() : nullptr;
-}
-
-void ErrorHighlighter::syntaxState(int position, int &intState)
-{
-    mPositionForSyntaxState = position;
-    mLastSyntaxState = 0;
-    rehighlightBlock(document()->findBlock(position));
-    intState = mLastSyntaxState;
-    mLastSyntaxState = 0;
-}
-
-void ErrorHighlighter::highlightBlock(const QString& text)
-{
-    if (!marks()) {
-        DEB() << "trying to highlight without marks!";
-        return;
-    }
-    QVector<TextMark*> markList = marks()->marksForBlock(currentBlock());
-    setCombiFormat(0, text.length(), QTextCharFormat(), markList);
-}
-
-void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat &charFormat, QVector<TextMark*> markList)
-{
-    int end = start+len;
-    int marksStart = end;
-    int marksEnd = start;
-    for (TextMark* mark: markList) {
-        if (mark->blockStart() < marksStart) marksStart = qMax(start, mark->blockStart());
-        if (mark->blockEnd() > marksEnd) marksEnd = qMin(end, mark->blockEnd());
-    }
-    if (marksStart == end) {
-        setFormat(start, len, charFormat);
-        return;
-    }
-    setFormat(start, len, charFormat);
-    start = marksStart;
-    end = marksEnd;
-
-    for (TextMark* mark: markList) {
-        if (mark->blockStart() >= end || mark->blockEnd() < start)
-            continue;
-        QTextCharFormat combinedFormat(charFormat);
-        marksStart = qMax(mark->blockStart(), start);
-        marksEnd = qMin(mark->blockEnd(), end);
-        if (mark->type() == TextMark::error) {
-            combinedFormat.setUnderlineColor(Qt::red);
-            combinedFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-            combinedFormat.setAnchorName(QString::number(mark->line()));
-            setFormat(marksStart, marksEnd-marksStart, combinedFormat);
-            if (marksEnd == mark->blockEnd()) {
-                combinedFormat.setBackground(QColor(225,200,255));
-                combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-                setFormat(marksEnd, 1, combinedFormat);
-            }
-        }
-        if (mark->type() == TextMark::link) {
-            combinedFormat.setForeground(mark->color());
-            combinedFormat.setUnderlineColor(mark->color());
-            combinedFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-            combinedFormat.setAnchor(true);
-            combinedFormat.setAnchorName(QString::number(mark->line()));
-            setFormat(marksStart, marksEnd-marksStart, combinedFormat);
-        }
-        // JM: Now matches are displayed via extraSelections in CodeEdit
-//        if (mark->type() == TextMark::match) {
-//            combinedFormat.setBackground(mark->color());
-//            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
-//        }
-    }
-}
-
-
-SyntaxHighlighter::SyntaxHighlighter(ProjectFileNode* node)
-    : ErrorHighlighter(node)
+SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
+    : ErrorHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
@@ -172,7 +92,7 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QVector<TextMark*> markList = marks() ? marks()->marksForBlock(currentBlock()) : QVector<TextMark*>();
+    QList<TextMark*> markList = marks()->values(currentBlock().blockNumber());
     setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
@@ -222,7 +142,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->state() != SyntaxState::Standard) {
                         setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
-                        scanparentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
+                        scanParentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
                     }
                     code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
                 }
@@ -235,7 +155,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
             if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
-        scanparentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
+        scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
@@ -252,7 +172,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!parPosList.isEmpty() && !blockData) {
             blockData = new BlockData();
         }
-        if (blockData) blockData->setparentheses(parPosList);
+        if (blockData) blockData->setParentheses(parPosList);
         if (blockData && blockData->isEmpty())
             textBlock.setUserData(nullptr);
         else
@@ -300,7 +220,7 @@ const QVector<SyntaxState> validparenthesesSyntax = {
 
 const QString validparentheses("{[(}])/");
 
-void SyntaxHighlighter::scanparentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
 {
     if (!validparenthesesSyntax.contains(state)) return;
     for (int i = start; i < start+len; ++i) {

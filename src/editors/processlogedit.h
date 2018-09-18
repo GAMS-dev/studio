@@ -31,9 +31,13 @@ class ProcessLogEdit : public AbstractEdit
 
 public:
     ProcessLogEdit(QWidget *parent = nullptr);
-
-public:
     EditorType type() override;
+
+protected:
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+    void jumpToLst(QPoint pos, bool fuzzy);
 };
 
 }

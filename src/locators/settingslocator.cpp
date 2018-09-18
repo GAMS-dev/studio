@@ -17,42 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEMETRICS_H
-#define FILEMETRICS_H
-
-#include <QDateTime>
-#include <QFileInfo>
-#include "filetype.h"
+#include "settingslocator.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
 
-///
-/// The FileMetrics class stores current metrics of a file
-///
-class FileMetrics
+StudioSettings* SettingsLocator::mSettings = nullptr;
+
+StudioSettings *SettingsLocator::settings()
 {
-    bool mExists;
-    qint64 mSize;
-    QDateTime mCreated;
-    QDateTime mModified;
-    const FileType *mType;
+    return mSettings;
+}
 
-public:
-    enum ChangeKind {ckSkip, ckUnchanged, /* ckRenamed, */ ckNotFound, ckModified};
+void SettingsLocator::provide(StudioSettings *s)
+{
+    mSettings = s;
+}
 
-    FileMetrics();
-    explicit FileMetrics(QFileInfo fileInfo, const FileType *knownType = nullptr);
-    FileMetrics(const FileMetrics &other);
-    FileMetrics &operator=(const FileMetrics& other);
-
-    const FileType& fileType() const;
-
-    ChangeKind check(QFileInfo fileInfo);
-
-};
-
-} // namespace studio
-} // namespace gams
-
-#endif // FILEMETRICS_H
+}
+}

@@ -3,9 +3,9 @@
 namespace gams {
 namespace studio {
 
-const QString HighlightingData::ErrorKeyword = "Error:";
-const QString HighlightingData::InfoKeyword = "Info:";
-const QString HighlightingData::WarningKeyword = "Warning:";
+const QString HighlightingData::ErrorKeyword = "Error";
+const QString HighlightingData::InfoKeyword = "Info";
+const QString HighlightingData::WarningKeyword = "Warning";
 
 SystemLogHighlighter::SystemLogHighlighter(QObject *parent)
     : QSyntaxHighlighter(parent)

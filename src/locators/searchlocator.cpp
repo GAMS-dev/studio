@@ -17,24 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TREEITEMDELEGATE_H
-#define TREEITEMDELEGATE_H
-
-#include <QStyledItemDelegate>
+#include "searchlocator.h"
+#include "search/searchdialog.h"
+#include "search/result.h"
+#include <QList>
 
 namespace gams {
 namespace studio {
 
-class TreeItemDelegate : public QStyledItemDelegate
+SearchDialog* SearchLocator::mSd = nullptr;
+
+void SearchLocator::provide(SearchDialog *sd)
 {
-    Q_OBJECT
+    mSd = sd;
+}
+SearchResultList* SearchLocator::searchResults()
+{
+    if (mSd)
+        return mSd->getCachedResults();
+    else
+        return nullptr;
+}
 
-public:
-    TreeItemDelegate(QObject* parent = nullptr);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-};
+SearchDialog* SearchLocator::searchDialog()
+{
+    return mSd;
+}
 
-} // namespace studio
-} // namespace gams
-
-#endif // TREEITEMDELEGATE_H
+}
+}

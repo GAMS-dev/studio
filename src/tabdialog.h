@@ -35,8 +35,10 @@ public:
 protected:
     void showEvent(QShowEvent *e) override;
     void resizeToContent();
+    void keyPressEvent(QKeyEvent *e) override;
 private slots:
     void setFilter(const QString &filter);
+    void returnPressed();
     void selectTab(const QModelIndex &index);
 private:
     Ui::TabDialog *ui;

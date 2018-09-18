@@ -21,9 +21,11 @@
 #include <QDoubleValidator>
 #include <QDir>
 #include "exception.h"
+#include "editors/systemlogedit.h"
 #include "gclgms.h"
 #include "option.h"
 #include "commonpaths.h"
+#include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -359,6 +361,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
+        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
         qDebug() << QString("ERROR: ").arg(msg);
         optFree(&mOPTHandle);
         return false;

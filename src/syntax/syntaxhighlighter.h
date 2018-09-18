@@ -20,9 +20,7 @@
 #ifndef SYNTAXHIGHLIGHTER_H
 #define SYNTAXHIGHLIGHTER_H
 
-#include <QSyntaxHighlighter>
-#include "syntaxformats.h"
-#include "textmark.h"
+#include "errorhighlighter.h"
 
 namespace gams {
 namespace studio {
@@ -46,35 +44,11 @@ enum ColorEnum {
     SyntaxEmbed,
 };
 
-class ErrorHighlighter : public QSyntaxHighlighter
-{
-    Q_OBJECT
-public:
-    ErrorHighlighter(ProjectFileNode *node);
-    void highlightBlock(const QString &text);
-    TextMarkList* marks();
-
-public slots:
-    void syntaxState(int position, int &intState);
-
-protected:
-    void setCombiFormat(int start, int len, const QTextCharFormat& charFormat, QVector<TextMark*> markList);
-
-protected:
-    int mPositionForSyntaxState = -1;
-    int mLastSyntaxState = 0;
-
-private:
-    ProjectFileNode* mNode = nullptr;
-    QTextBlock mTestBlock;
-
-};
-
 class SyntaxHighlighter : public ErrorHighlighter
 {
     Q_OBJECT
 public:
-    SyntaxHighlighter(ProjectFileNode *node);
+    SyntaxHighlighter(QTextDocument *doc);
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);
@@ -82,7 +56,7 @@ public:
 private:
     SyntaxAbstract *getSyntax(SyntaxState state) const;
     int getStateIdx(SyntaxState state) const;
-    void scanparentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
+    void scanParentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
 
 private:
     typedef int StateIndex;
@@ -104,6 +78,8 @@ private:
 
     States mStates;
     Codes mCodes;
+    // TODO(JM) process events after a couple of ms
+    // http://enki-editor.org/2014/08/22/Syntax_highlighting.html
 };
 
 } // namespace studio

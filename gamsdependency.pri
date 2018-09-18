@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-include (../version)
+include (version)
 # GAMS_CORE_PATH is Jenkins build switch
 GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {

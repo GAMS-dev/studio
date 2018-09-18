@@ -91,12 +91,12 @@ QString AbstractProcess::nativeAppPath()
     return QDir::toNativeSeparators(appPath);
 }
 
-FileId AbstractProcess::groupId() const
+NodeId AbstractProcess::groupId() const
 {
     return mGroupId;
 }
 
-void AbstractProcess::setGroupId(const FileId &groupId)
+void AbstractProcess::setGroupId(const NodeId &groupId)
 {
     mGroupId = groupId;
 }

@@ -17,10 +17,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "resultsview.h"
-#include "searchdialog.h"
+#include "search/searchdialog.h"
 #include "ui_resultsview.h"
 #include "exception.h"
-#include "searchresultlist.h"
+#include "search/searchresultlist.h"
+#include "search/result.h"
 
 namespace gams {
 namespace studio {
@@ -47,34 +48,24 @@ void ResultsView::resizeColumnsToContent()
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result item = mResultList.resultList().at(selectedRow);
+    Result item = mResultList.at(selectedRow);
 
     // open so we have a document of the file
-    if (QFileInfo(item.locFile()).exists())
-        mMain->openFile(item.locFile());
+    if (QFileInfo(item.filepath()).exists())
+        mMain->openFilePath(item.filepath());
 
-    ProjectAbstractNode *fsc = mMain->projectRepo()->findNode(item.locFile());
-    if (!fsc) EXCEPT() << "File not found: " << item.locFile();
-
-    ProjectFileNode *jmpFc = nullptr;
-    if (fsc->type() == ProjectAbstractNode::File)
-        jmpFc = static_cast<ProjectFileNode*>(fsc);
-
-    if (!jmpFc) EXCEPT() << "Not a file:" << item.locFile();
-
-    // highlight
-    mMain->searchDialog()->findInFile(jmpFc, true, mResultList.searchTerm());
+    ProjectFileNode *node = mMain->projectRepo()->findFile(item.filepath());
+    if (!node) EXCEPT() << "File not found: " << item.filepath();
 
     // jump to line
-    QTextCursor tc(jmpFc->document());
-    if (item.locCol() <= 0)
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position());
+    QTextCursor tc(node->document());
+    if (item.colNr() <= 0)
+        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position());
     else
-        tc.setPosition(jmpFc->document()->findBlockByNumber(item.locLineNr() - 1).position()
-                       + item.locCol());
+        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position()
+                       + item.colNr());
 
-    jmpFc->jumpTo(tc);
-    jmpFc->editors().first()->setFocus();
+    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, item.colNr());
 }
 
 }

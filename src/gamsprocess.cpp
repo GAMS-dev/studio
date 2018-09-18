@@ -21,6 +21,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
+#include "logger.h"
 
 #ifdef _WIN32
 #include "windows.h"

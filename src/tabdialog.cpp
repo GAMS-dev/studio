@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <QTimer>
 #include <QScrollBar>
+#include <QKeyEvent>
 
 namespace gams {
 namespace studio {
@@ -20,6 +21,8 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
         layout()->addWidget(ui->lineEdit);
     }
     mFilterModel->setSourceModel(mTabModel);
+    mFilterModel->sort(0);
+    mFilterModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     ui->listView->setModel(mFilterModel);
     ui->listView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->listView->setMinimumHeight(1);
@@ -27,6 +30,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     connect(ui->listView, &QListView::clicked, this, &TabDialog::selectTab);
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &TabDialog::setFilter);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::returnPressed);
 
 //    mFilterModel->setFilterFixedString("");
 }
@@ -41,6 +45,7 @@ void TabDialog::showEvent(QShowEvent *e)
 {
     QDialog::showEvent(e);
     resizeToContent();
+    ui->listView->setCurrentIndex(mFilterModel->index(0, 0));
     ui->lineEdit->setFocus();
 }
 
@@ -75,10 +80,26 @@ void TabDialog::resizeToContent()
         ui->listView->scrollTo(idx);
 }
 
+void TabDialog::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Down)
+        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()+1, 0));
+    else if (e->key() == Qt::Key_Up)
+        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()-1, 0));
+    else
+        QDialog::keyPressEvent(e);
+}
+
 void TabDialog::setFilter(const QString &filter)
 {
-    mFilterModel->setFilterFixedString(filter);
+    mFilterModel->setFilterWildcard(filter);
     resizeToContent();
+}
+
+void TabDialog::returnPressed()
+{
+    mTabModel->tabs()->setCurrentIndex(mFilterModel->mapToSource(ui->listView->currentIndex()).row());
+    close();
 }
 
 void TabDialog::selectTab(const QModelIndex &index)

@@ -206,9 +206,9 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
     mSubStates << SyntaxState::Semicolon << SyntaxState::Embedded << SyntaxState::Reserved
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline
                << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
-               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody
-               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody;
 }
 
 SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)
@@ -225,10 +225,10 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
 
 SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
 {
-    mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon << SyntaxState::Directive
-               << SyntaxState::Declaration << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-               << SyntaxState::DeclarationTable
-               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline
+               << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable;
 }
 
 SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)

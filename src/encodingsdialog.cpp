@@ -38,7 +38,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
-    foreach (int mib, mibs) {
+    for (int mib: mibs) {
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);

@@ -21,6 +21,8 @@
 #define ABSTRACTEDIT_H
 
 #include <QPlainTextEdit>
+#include "common.h"
+#include "syntax/textmarkrepo.h"
 
 namespace gams {
 namespace studio {
@@ -38,15 +40,52 @@ public:
     virtual void setOverwriteMode(bool overwrite);
     virtual bool overwriteMode() const;
 
-    bool event(QEvent *event) override;
-    void jumpTo(const QTextCursor &cursor, int altLine = 0, int altColumn = 0);
+    void jumpTo(const QTextCursor &cursor);
+    void jumpTo(int line, int column = 0);
+
+    FileId fileId() const;
+    void setFileId(const FileId &fileId);
+
+    NodeId groupId() const;
+    virtual void setGroupId(const NodeId &groupId);
+
+    void setMarks(const LineMarks *marks);
+    int markCount() { return mMarks ? mMarks->size() : 0; }
+
+signals:
+    void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 public slots:
     void afterContentsChanged(int, int, int);
 
 protected:
+    friend class FileMeta;
+
     AbstractEdit(QWidget *parent);
+    void showToolTip(const QList<TextMark *> marks);
     QMimeData* createMimeDataFromSelection() const override;
+    bool event(QEvent *event) override;
+    bool eventFilter(QObject *o, QEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    virtual void marksChanged();
+    QList<TextMark *> cachedLineMarks(int lineNr);
+    const LineMarks &marks() const;
+    const QList<TextMark*> &marksAtMouse() const;
+
+private:
+    FileId mFileId;
+    NodeId mGroupId;
+    const LineMarks *mMarks = nullptr;
+    QList<TextMark*> mMarksAtMouse;
+    QPoint mClickPos;
+    QPoint mTipPos;
+    QList<TextMark*> mCacheMarks;
+    int mCacheLine = -1;
+    NodeId mCacheGroup;
 };
 
 }

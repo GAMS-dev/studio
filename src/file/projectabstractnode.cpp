@@ -19,22 +19,19 @@
  */
 #include "projectabstractnode.h"
 #include "projectgroupnode.h"
+#include "projectlognode.h"
+#include "projectrepo.h"
 #include "logger.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location)
-    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(FileSystem)
-{}
+NodeId ProjectAbstractNode::mNextNodeId = 0;
 
-ProjectAbstractNode::ProjectAbstractNode(FileId fileId, QString name, QString location, ContextType type)
-    : QObject(), mId(fileId), mParent(nullptr), mName(name), mLocation(location), mFlags(cfNone), mType(type)
+ProjectAbstractNode::ProjectAbstractNode(QString name, NodeType type)
+    : QObject(), mId(mNextNodeId++), mParent(nullptr), mName(name), mType(type)
 {}
-
-void ProjectAbstractNode::checkFlags()
-{
-}
 
 ProjectAbstractNode::~ProjectAbstractNode()
 {
@@ -45,54 +42,19 @@ ProjectAbstractNode::~ProjectAbstractNode()
     }
 }
 
-FileId ProjectAbstractNode::id() const
+NodeId ProjectAbstractNode::id() const
 {
     return mId;
 }
 
-int ProjectAbstractNode::type() const
+NodeType ProjectAbstractNode::type() const
 {
     return mType;
 }
 
-bool ProjectAbstractNode::canShowAsTab() const
+QString ProjectAbstractNode::name(NameModifier mod) const
 {
-    static QList<int> showableTypes = {ContextType::File};
-    return showableTypes.contains(mType);
-}
-
-ProjectGroupNode* ProjectAbstractNode::parentEntry() const
-{
-    return mParent;
-}
-
-void ProjectAbstractNode::setParentEntry(ProjectGroupNode* parent)
-{
-    if (parent != mParent) {
-        if (mParent) mParent->removeChild(this);
-        mParent = parent;
-        if (mParent) mParent->insertChild(this);
-    }
-}
-
-ProjectAbstractNode* ProjectAbstractNode::childEntry(int index) const
-{
-    Q_UNUSED(index);
-    return nullptr;
-}
-
-int ProjectAbstractNode::childCount() const
-{
-    return 0;
-}
-
-const QString ProjectAbstractNode::caption()
-{
-    return mName;
-}
-
-const QString ProjectAbstractNode::name()
-{
+    Q_UNUSED(mod);
     return mName;
 }
 
@@ -104,51 +66,127 @@ void ProjectAbstractNode::setName(const QString& name)
     }
 }
 
-const QString& ProjectAbstractNode::location() const
+const ProjectRootNode *ProjectAbstractNode::root() const
 {
-    return mLocation;
+    const ProjectAbstractNode* par = this;
+    while (par->parentNode()) par = par->parentNode();
+    return par->toRoot();
 }
 
-void ProjectAbstractNode::setLocation(const QString& location)
+ProjectRepo *ProjectAbstractNode::projectRepo() const
 {
-    if (!location.isEmpty()) {
-        QFileInfo fi(location);
-        mLocation = fi.absoluteFilePath();
+    const ProjectRootNode* rootNode = root();
+    if (rootNode) return rootNode->projectRepo();
+    return nullptr;
+}
+
+FileMetaRepo *ProjectAbstractNode::fileRepo() const
+{
+    const ProjectRootNode* rootNode = root();
+    if (rootNode) return rootNode->fileRepo();
+    return nullptr;
+}
+
+TextMarkRepo *ProjectAbstractNode::textMarkRepo() const
+{
+    const ProjectRootNode* rootNode = root();
+    if (rootNode) return rootNode->textMarkRepo();
+    return nullptr;
+}
+
+ProjectGroupNode* ProjectAbstractNode::parentNode() const
+{
+    return mParent;
+}
+
+void ProjectAbstractNode::setParentNode(ProjectGroupNode* parent)
+{
+    if (parent != mParent) {
+        if (mParent) mParent->removeChild(this);
+        mParent = parent;
+        if (mParent) mParent->insertChild(this);
     }
 }
 
-const ProjectAbstractNode::ContextFlags& ProjectAbstractNode::flags() const
+ProjectRunGroupNode *ProjectAbstractNode::assignedRunGroup()
 {
-    return mFlags;
+    ProjectAbstractNode* node = this;
+    while (node && !node->toRunGroup()) {
+        node = node->parentNode();
+    }
+    if (node) return node->toRunGroup();
+    return nullptr;
 }
 
-void ProjectAbstractNode::setFlag(ContextFlag flag, bool value)
+const ProjectRootNode *ProjectAbstractNode::toRoot() const
 {
-    bool current = testFlag(flag);
-    if (current == value) return;
-    mFlags.setFlag(flag, value);
-    if (mParent)
-        mParent->checkFlags();
-    emit changed(mId);
+    if (mType == NodeType::root) return static_cast<const ProjectRootNode*>(this);
+    return nullptr;
 }
 
-void ProjectAbstractNode::unsetFlag(ContextFlag flag)
+const ProjectGroupNode *ProjectAbstractNode::toGroup() const
 {
-    setFlag(flag, false);
+    if (mType == NodeType::group) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::runGroup) return static_cast<const ProjectGroupNode*>(this);
+    if (mType == NodeType::root) return static_cast<const ProjectGroupNode*>(this);
+    return nullptr;
 }
 
-bool ProjectAbstractNode::testFlag(ProjectAbstractNode::ContextFlag flag)
+ProjectGroupNode *ProjectAbstractNode::toGroup()
 {
-    return mFlags.testFlag(flag);
+    if (mType == NodeType::group) return static_cast<ProjectGroupNode*>(this);
+    if (mType == NodeType::runGroup) return static_cast<ProjectGroupNode*>(this);
+    if (mType == NodeType::root) return static_cast<ProjectGroupNode*>(this);
+    return nullptr;
 }
 
-ProjectAbstractNode* ProjectAbstractNode::findFile(QString filePath)
+const ProjectRunGroupNode *ProjectAbstractNode::toRunGroup() const
 {
-    if(location() == filePath)
-        return this;
-    else
-        return nullptr;
+    if (mType == NodeType::runGroup) return static_cast<const ProjectRunGroupNode*>(this);
+    return nullptr;
 }
+
+ProjectRunGroupNode *ProjectAbstractNode::toRunGroup()
+{
+    if (mType == NodeType::runGroup) return static_cast<ProjectRunGroupNode*>(this);
+    return nullptr;
+}
+
+const ProjectFileNode *ProjectAbstractNode::toFile() const
+{
+    if (mType == NodeType::file) return static_cast<const ProjectFileNode*>(this);
+    if (mType == NodeType::log) return static_cast<const ProjectFileNode*>(this);
+    return nullptr;
+}
+
+ProjectFileNode *ProjectAbstractNode::toFile()
+{
+    if (mType == NodeType::file) return static_cast<ProjectFileNode*>(this);
+    if (mType == NodeType::log) return static_cast<ProjectFileNode*>(this);
+    return nullptr;
+}
+
+const ProjectLogNode *ProjectAbstractNode::toLog() const
+{
+    if (mType == NodeType::log) return static_cast<const ProjectLogNode*>(this);
+    return nullptr;
+}
+
+bool ProjectAbstractNode::isActive() const
+{
+    return projectRepo()->isActive(this);
+}
+
+void ProjectAbstractNode::setActive()
+{
+    projectRepo()->setActive(this);
+}
+
+bool ProjectAbstractNode::debugMode() const
+{
+    return projectRepo()->debugMode();
+}
+
 
 } // namespace studio
 } // namespace gams

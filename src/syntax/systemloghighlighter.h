@@ -34,6 +34,7 @@ public:
 protected:
     QRegularExpression mPattern;
     QTextCharFormat mFormat;
+    const QString timestampRegex = " \\[\\d\\d:\\d\\d:\\d\\d\\]:";
 };
 
 class LinkHighlightingRule
@@ -55,7 +56,7 @@ class ErrorHighlightingRule
 public:
     ErrorHighlightingRule()
     {
-        mPattern = QRegularExpression(HighlightingData::ErrorKeyword);
+        mPattern = QRegularExpression(HighlightingData::ErrorKeyword + timestampRegex);
         mFormat.setForeground(Qt::red);
         mFormat.setFontWeight(QFont::Bold);
     }
@@ -67,7 +68,7 @@ class InfoHighlightingRule
 public:
     InfoHighlightingRule()
     {
-        mPattern = QRegularExpression(HighlightingData::InfoKeyword);
+        mPattern = QRegularExpression(HighlightingData::InfoKeyword + timestampRegex);
         mFormat.setForeground(Qt::darkBlue);
         mFormat.setFontWeight(QFont::Bold);
     }
@@ -79,7 +80,7 @@ class WarningHighlightingRule
 public:
     WarningHighlightingRule()
     {
-        mPattern = QRegularExpression(HighlightingData::WarningKeyword);
+        mPattern = QRegularExpression(HighlightingData::WarningKeyword + timestampRegex);
         mFormat.setForeground(Qt::darkYellow);
         mFormat.setFontWeight(QFont::Bold);
     }

@@ -23,17 +23,19 @@
 #include "mainwindow.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
+#include "locators/settingslocator.h"
 #include "ui_settingsdialog.h"
 
 namespace gams {
 namespace studio {
 
 
-SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SettingsDialog), mSettings(settings), mMain(parent)
+SettingsDialog::SettingsDialog(MainWindow *parent) :
+    QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
 {
     ui->setupUi(this);
 
+    mSettings = SettingsLocator::settings();
     // load from settings to UI
     loadSettings();
     setModifiedStatus(false);
@@ -57,6 +59,8 @@ SettingsDialog::SettingsDialog(StudioSettings *settings, MainWindow *parent) :
     connect(ui->cb_highlightUnderCursor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_highlightcurrent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     adjustSize();
 }
@@ -83,6 +87,10 @@ void SettingsDialog::loadSettings()
     ui->cb_highlightUnderCursor->setChecked(mSettings->wordUnderCursor());
     ui->cb_highlightcurrent->setChecked(mSettings->highlightCurrentLine());
     ui->cb_autoindent->setChecked(mSettings->autoIndent());
+    ui->cb_writeLog->setChecked(mSettings->writeLog());
+    ui->sb_nrLogBackups->setValue(mSettings->nrLogBackups());
+
+
 
     // misc tab page
     ui->sb_historySize->setValue(mSettings->historySize());
@@ -123,6 +131,8 @@ void SettingsDialog::saveSettings()
     mSettings->setWordUnderCursor(ui->cb_highlightUnderCursor->isChecked());
     mSettings->setHighlightCurrentLine(ui->cb_highlightcurrent->isChecked());
     mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
+    mSettings->setWriteLog(ui->cb_writeLog->isChecked());
+    mSettings->setNrLogBackups(ui->sb_nrLogBackups->value());
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
@@ -213,7 +223,17 @@ void SettingsDialog::on_btn_import_clicked()
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
     if (filePath == "") return;
-    mSettings->importSettings(filePath, mMain);
+
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("You are about to overwrite your local settings. Are you sure?");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int answer = msgBox.exec();
+
+    if (answer == QMessageBox::Ok) {
+        mSettings->importSettings(filePath, mMain);
+    }
+
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
     close();
@@ -222,6 +242,18 @@ void SettingsDialog::on_btn_import_clicked()
 void SettingsDialog::on_btn_resetView_clicked()
 {
     mMain->resetViews();
+}
+
+void SettingsDialog::on_cb_writeLog_toggled(bool checked)
+{
+    ui->lbl_nrBackups->setEnabled(checked);
+    ui->sb_nrLogBackups->setEnabled(checked);
+    mSettings->setWriteLog(checked);
+}
+
+void SettingsDialog::on_sb_nrLogBackups_valueChanged(int arg1)
+{
+    mSettings->setNrLogBackups(arg1);
 }
 
 }
