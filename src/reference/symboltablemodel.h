@@ -17,57 +17,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHRESULTLIST_H
-#define SEARCHRESULTLIST_H
+#ifndef SYMBOLTABLEMODEL_H
+#define SYMBOLTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include "reference.h"
 
 namespace gams {
 namespace studio {
+namespace reference {
 
-class Result
+class SymbolTableModel : public QAbstractTableModel
 {
-    friend class SearchResultList;
 public:
-    int locLineNr() const;
-    int locCol() const;
-    QString locFile() const;
-    QString node() const;
+    SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
-private:
-    int mLocLineNr;
-    int mLocCol;
-    QString mLocFile;
-    QString mNode;
-    explicit Result(int locLineNr, int locCol, QString locFile, QString node = "");
-};
-
-class SearchResultList : public QAbstractTableModel
-{
-    Q_OBJECT
-public:
-    SearchResultList(SearchResultList &searchResultList);
-    SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
-    virtual ~SearchResultList() override;
-    QList<Result> resultList();
-    void addResult(int locLineNr, int locCol, QString locFile, QString node = "");
-    void addResultList(QList<Result> resList);
-    QString searchTerm() const;
-    bool isRegex() const;
-    void useRegex(bool regex);
-    int size();
-
+    QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+
+    void resetModel();
 
 private:
-    QString mSearchTerm;
-    bool mIsRegex;
-    QList<Result> mResultList;
+    SymbolDataType::SymbolType mType;
+
+    QStringList mAllSymbolsHeader;
+    QStringList mSymbolsHeader;
+    QStringList mFileHeader;
+    QStringList mFileUsedHeader;
+
+    Reference* mReference = nullptr;
 };
 
-}
-}
-#endif // SEARCHRESULTLIST_H
+} // namespace reference
+} // namespace studio
+} // namespace gams
+
+#endif // SYMBOLTABLEMODEL_H

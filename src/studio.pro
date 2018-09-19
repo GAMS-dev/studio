@@ -29,7 +29,7 @@ DESTDIR = bin
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
-include($$PWD/gamsdependency.pri)
+include(../gamsdependency.pri)
 
 include (../version)
 
@@ -68,8 +68,20 @@ SOURCES += \
     commonpaths.cpp \
     distributionvalidator.cpp \
     exception.cpp \
-    file/filemetrics.cpp \
+    file/dynamicfile.cpp \
+    file/fileevent.cpp \
+    file/filemeta.cpp \
+    file/filemetarepo.cpp \
     file/filetype.cpp \
+    file/projectabstractnode.cpp \
+    file/projectcontextmenu.cpp \
+    file/projectfilenode.cpp \
+    file/projectgroupnode.cpp \
+    file/projectlognode.cpp \
+    file/projectrepo.cpp \
+    file/projecttreemodel.cpp \
+    file/projecttreeview.cpp \
+    file/treeitemdelegate.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxviewer/columnfilter.cpp \
@@ -86,6 +98,7 @@ SOURCES += \
     help/helpview.cpp \
     help/helpwidget.cpp \
     keys.cpp \
+    locators/searchlocator.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreeitem.cpp \
@@ -109,38 +122,44 @@ SOURCES += \
     option/optionsortfilterproxymodel.cpp \
     option/optiontablemodel.cpp \
     option/optionwidget.cpp \
-    projectcontextmenu.cpp \
+    reference/reference.cpp \
+    reference/referencetabstyle.cpp \
+    reference/referencedatatype.cpp \
+    reference/referenceitemmodel.cpp \
+    reference/referencetreemodel.cpp \
+    reference/referenceviewer.cpp \
+    reference/symboldatatype.cpp \
+    reference/symbolreferenceitem.cpp \
+    reference/symbolreferencewidget.cpp \
+    reference/symboltablemodel.cpp \
     resultsview.cpp \
-    searchresultlist.cpp \
+    search/searchdialog.cpp \
+    search/result.cpp \
+    search/searchresultlist.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
+    syntax/errorhighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
     syntax/syntaxidentifier.cpp \
+    syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
-    syntax/textmarklist.cpp \
-    treeitemdelegate.cpp \
+    syntax/textmarkrepo.cpp \
     updatedialog.cpp \
     welcomepage.cpp \
     wplabel.cpp \
-    file/projectfilenode.cpp \
-    file/projectgroupnode.cpp \
-    file/projectrepo.cpp \
-    file/projectabstractnode.cpp \
-    file/projecttreemodel.cpp \
-    file/projectlognode.cpp \
-    file/filemetarepo.cpp \
-    file/filemeta.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
-    syntax/systemloghighlighter.cpp \
-    searchdialog.cpp
+    tabdialog.cpp \
+    locators/settingslocator.cpp \
+    locators/sysloglocator.cpp \
+    locators/defaultsystemlogger.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -148,13 +167,25 @@ HEADERS += \
     autosavehandler.h \
     checkforupdatewrapper.h \
     commandlineparser.h \
+    common.h \
     commonpaths.h \
     distributionvalidator.h \
     exception.h \
     file.h \
-    file/filemetrics.h \
+    file/dynamicfile.h \
+    file/fileevent.h \
+    file/filemeta.h \
+    file/filemetarepo.h \
     file/filetype.h \
     file/projectabstractnode.h \
+    file/projectcontextmenu.h \
+    file/projectfilenode.h \
+    file/projectgroupnode.h \
+    file/projectlognode.h \
+    file/projectrepo.h \
+    file/projecttreemodel.h \
+    file/projecttreeview.h \
+    file/treeitemdelegate.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxviewer/columnfilter.h \
@@ -171,6 +202,7 @@ HEADERS += \
     help/helpview.h \
     help/helpwidget.h \
     keys.h \
+    locators/searchlocator.h \
     logger.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreeitem.h \
@@ -193,41 +225,49 @@ HEADERS += \
     option/optionsortfilterproxymodel.h \
     option/optiontablemodel.h \
     option/optionwidget.h \
-    projectcontextmenu.h \
+    reference/reference.h \
+    reference/referencetabstyle.h \
+    reference/referencedatatype.h \
+    reference/referenceitemmodel.h \
+    reference/referencetreemodel.h \
+    reference/referenceviewer.h \
+    reference/symboldatatype.h \
+    reference/symbolreferenceitem.h \
+    reference/symbolreferencewidget.h \
+    reference/symboltablemodel.h \
     resultsview.h \
-    searchresultlist.h \
+    search/searchdialog.h \
+    search/result.h \
+    search/searchresultlist.h \
     settingsdialog.h \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
+    syntax/errorhighlighter.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \
     syntax/syntaxidentifier.h \
+    syntax/systemloghighlighter.h \
     syntax/textmark.h \
-    syntax/textmarklist.h \
-    treeitemdelegate.h \
+    syntax/textmarkrepo.h \
     updatedialog.h \
     version.h \
     welcomepage.h \
     wplabel.h \
-    file/projectgroupnode.h \
-    file/projectfilenode.h \
-    file/projectlognode.h \
-    file/projecttreemodel.h \
-    file/filemetarepo.h \
-    file/filemeta.h \
-    file/projectrepo.h \
     gotodialog.h \
     editors/abstractedit.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
     encodingsdialog.h \
     editors/codeedit.h \
-    syntax/systemloghighlighter.h \
-    searchdialog.h
+    tabdialog.h \
+    locators/settingslocator.h \
+    locators/sysloglocator.h \
+    locators/abstractsystemlogger.h \
+    locators/defaultsystemlogger.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -239,13 +279,16 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
+    reference/referenceviewer.ui \
+    reference/symbolreferencewidget.ui \
     resultsview.ui \
+    search/searchdialog.ui \
     settingsdialog.ui \
     updatedialog.ui \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    searchdialog.ui
+    tabdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

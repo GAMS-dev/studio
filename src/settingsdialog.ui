@@ -65,6 +65,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="cb_bringontop">
+            <property name="text">
+             <string>Raise GAMS Studio when opening a file</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -355,7 +362,7 @@
              <bool>true</bool>
             </property>
             <property name="checked">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -377,7 +384,7 @@
              <bool>true</bool>
             </property>
             <property name="checked">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -389,8 +396,8 @@
          <property name="title">
           <string>Log Settings</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="1">
            <widget class="QCheckBox" name="cb_linewrap_process">
             <property name="enabled">
              <bool>true</bool>
@@ -412,7 +419,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="1">
            <widget class="QCheckBox" name="cb_clearlog">
             <property name="enabled">
              <bool>true</bool>
@@ -431,6 +438,30 @@
             </property>
             <property name="checked">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="cb_writeLog">
+            <property name="text">
+             <string>Always write log to disk</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="lbl_nrBackups">
+            <property name="text">
+             <string>Number of log backup files</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="sb_nrLogBackups">
+            <property name="value">
+             <number>3</number>
             </property>
            </widget>
           </item>
@@ -574,8 +605,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>227</x>
-     <y>497</y>
+     <x>236</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -590,8 +621,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>295</x>
-     <y>503</y>
+     <x>304</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

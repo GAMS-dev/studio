@@ -48,6 +48,7 @@ signals:
     void addExistingFile(ProjectGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(ProjectAbstractNode* node, bool createMissing);
+    void renameGroup(ProjectGroupNode* group);
 
 private slots:
     void onCloseGroup();
@@ -56,6 +57,7 @@ private slots:
     void onAddExisitingFile();
     void onAddNewFile();
     void onSetMainFile();
+    void onRenameGroup();
 
 private:
     void onOpenFileLoc();

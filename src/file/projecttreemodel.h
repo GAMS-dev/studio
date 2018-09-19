@@ -21,12 +21,15 @@
 #define PROJECTTREEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 #include "projectgroupnode.h"
 
 namespace gams {
 namespace studio {
 
 class ProjectRepo;
+
+// TODO(JM) Inherit QSortFilterProxyModel to hide log-node and allow different sort-orders
 
 class ProjectTreeModel : public QAbstractItemModel
 {
@@ -39,10 +42,14 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(ProjectAbstractNode* entry) const;
+    QModelIndex index(const ProjectAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
     ProjectGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent);
+    void setDebugMode(bool debug);
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QModelIndex current() {return mCurrent;}
 
 protected:
     friend class ProjectRepo;
@@ -57,12 +64,15 @@ protected:
     bool isSelected(const QModelIndex& ind) const;
     void setSelected(const QModelIndex& ind);
 
+    const QModelIndex updateIndex(const QModelIndex &idx, const QModelIndex &parent, int row, int change);
+    void update(const QModelIndex& ind = QModelIndex());
+
 private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;
+    bool mDebug = false;
     QModelIndex mCurrent;
     QModelIndex mSelected;
-
 };
 
 } // namespace studio

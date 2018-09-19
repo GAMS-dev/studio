@@ -193,6 +193,9 @@
     <addaction name="actionZoom_Out"/>
     <addaction name="actionReset_Zoom"/>
     <addaction name="separator"/>
+    <addaction name="actionNextTab"/>
+    <addaction name="actionPreviousTab"/>
+    <addaction name="separator"/>
     <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -272,7 +275,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeView" name="projectView">
+      <widget class="gams::studio::ProjectTreeView" name="projectView">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>1</horstretch>
@@ -284,6 +287,12 @@
          <width>100</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditKeyPressed</set>
        </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
@@ -863,8 +872,37 @@
     <string>Shift+F12</string>
    </property>
   </action>
+  <action name="actionNextTab">
+   <property name="text">
+    <string>Next Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>switches to the next tab of the current tab view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="actionPreviousTab">
+   <property name="text">
+    <string>Previous Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>switches to the previous tab of the current tab view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>gams::studio::ProjectTreeView</class>
+   <extends>QTreeView</extends>
+   <header>file/projecttreeview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../icons/icons.qrc"/>
  </resources>

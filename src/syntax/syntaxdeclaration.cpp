@@ -33,10 +33,12 @@ bool cmpStr(const QPair<QString, QString>& lhs,const QPair<QString, QString>& rh
 DictList::DictList(QList<QPair<QString, QString> > list) : mEntries(QVector<DictEntry*>(list.size())), mEqualStart(QVector<int>(list.size()))
 {
     std::sort(list.begin(), list.end(), cmpStr);
+    QString prevS;
     for (int i = 0; i < list.size(); ++i) {
         const QString &s(list.at(i).first);
         mEntries[i] = new DictEntry(s);
-        mEqualStart[i] = equalStart(s, s);
+        mEqualStart[i] = equalStart(s, prevS);
+        prevS = s;
     }
 }
 
@@ -72,11 +74,11 @@ int SyntaxKeywordBase::findEnd(SyntaxState state, const QString& line, int index
     int iKey = 0;
     int iChar = 0;
     while (true) {
+        const DictEntry *dEntry = &mKeywords.value(state)->at(iKey);
         if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
-            if (mKeywords.value(state)->at(iKey).length() > iChar) return -1;
+            if (dEntry->length() > iChar) return -1;
             return iChar+index; // reached an valid end
-        } else if (iChar < mKeywords.value(state)->at(iKey).length()
-                   &&  mKeywords.value(state)->at(iKey).is(line.at(iChar+index), iChar) ) {
+        } else if (iChar < dEntry->length() &&  dEntry->is(line.at(iChar+index), iChar) ) {
             // character equals
             iChar++;
         } else {
@@ -204,9 +206,9 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxState::Reserved)
     list = SyntaxData::reserved();
     mKeywords.insert(state(), new DictList(list));
     mSubStates << SyntaxState::Semicolon << SyntaxState::Embedded << SyntaxState::Reserved
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline
                << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
-               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody
-               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable << SyntaxState::ReservedBody;
 }
 
 SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, int index)
@@ -223,10 +225,10 @@ SyntaxBlock SyntaxReserved::find(SyntaxState entryState, const QString &line, in
 
 SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxState::ReservedBody)
 {
-    mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon << SyntaxState::Directive
-               << SyntaxState::Declaration << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-               << SyntaxState::DeclarationTable
-               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubStates << SyntaxState::Embedded << SyntaxState::Reserved << SyntaxState::Semicolon
+               << SyntaxState::CommentLine << SyntaxState::CommentEndline << SyntaxState::CommentInline
+               << SyntaxState::Directive << SyntaxState::Declaration << SyntaxState::DeclarationSetType
+               << SyntaxState::DeclarationVariableType << SyntaxState::DeclarationTable;
 }
 
 SyntaxBlock SyntaxReservedBody::find(SyntaxState entryState, const QString &line, int index)

@@ -18,14 +18,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchresultlist.h"
+#include <QtDebug>
 
 namespace gams {
 namespace studio {
 
+SearchResultList::SearchResultList()
+{
+}
+
 SearchResultList::SearchResultList(SearchResultList &searchResultList)
     : QAbstractTableModel(searchResultList.parent()),
       mSearchTerm(searchResultList.searchTerm()),
-      mResultList(searchResultList.resultList())
+      mSize(searchResultList.size()),
+      mResultHash(searchResultList.resultHash())
 {
 }
 
@@ -39,19 +45,33 @@ SearchResultList::~SearchResultList()
 {
 }
 
-QList<Result> SearchResultList::resultList()
+QList<Result> SearchResultList::resultList() const
 {
-    return mResultList;
+    QList<Result> result;
+    for (QList<Result> rl : mResultHash.values())
+        result << rl;
+
+    return result;
 }
 
-void SearchResultList::addResult(int locLineNr, int locCol, QString locFile, QString node)
+void SearchResultList::addResult(int lineNr, int colNr, int length, QString fileLoc, QString context)
 {
-    mResultList.append(Result(locLineNr, locCol, locFile, node));
+    Result r = Result(lineNr, colNr, length, fileLoc, context);
+    mSize++;
+    mResultHash[fileLoc].append(r);
 }
 
 void SearchResultList::addResultList(QList<Result> resList)
 {
-    mResultList.append(resList);
+    for (Result r : resList) {
+        mResultHash[r.filepath()].append(r);
+        mSize++;
+    }
+}
+
+QList<Result> SearchResultList::filteredResultList(QString fileLocation)
+{
+    return mResultHash[fileLocation];
 }
 
 QString SearchResultList::searchTerm() const
@@ -66,14 +86,20 @@ void SearchResultList::useRegex(bool regex)
 
 int SearchResultList::size()
 {
-    return mResultList.size();
+    return mSize;
+}
+
+void SearchResultList::clear()
+{
+    mResultHash.clear();
+    mSize = 0;
 }
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mResultList.size();
+    return mSize;
 }
 
 int SearchResultList::columnCount(const QModelIndex &parent) const
@@ -87,17 +113,16 @@ QVariant SearchResultList::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-
     if (role == Qt::DisplayRole) {
         int row = index.row();
 
-        Result item = mResultList.at(row);
+        Result item = at(row);
 
         switch(index.column())
         {
-        case 0: return item.locFile();
-        case 1: return item.locLineNr();
-        case 2: return item.node();
+        case 0: return item.filepath();
+        case 1: return item.lineNr();
+        case 2: return item.context();
         }
     }
     return QVariant();
@@ -120,6 +145,34 @@ QVariant SearchResultList::headerData(int section, Qt::Orientation orientation, 
         }
     }
     return QVariant();
+}
+
+Result SearchResultList::at(int index) const
+{
+    int start = 0;
+    QList<QString> keys = mResultHash.keys();
+    QString key;
+
+    for (int i = 0; i < keys.size(); i++) {
+
+        // is in this list
+        if (index < (start + mResultHash.value(keys.at(i)).size()))
+            return mResultHash.value(keys.at(i)).at(index - start); // calc index
+        else
+            start += mResultHash.value(keys.at(i)).size(); // go to next list
+    }
+    qDebug() << "ERROR: SearchResultList::at out of bounds" << index;
+    return Result(0, 0, 0, "", ""); // this should never happen
+}
+
+QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
+{
+    return mResultHash;
+}
+
+void SearchResultList::setSearchTerm(const QString &searchTerm)
+{
+    mSearchTerm = searchTerm;
 }
 
 bool SearchResultList::isRegex() const

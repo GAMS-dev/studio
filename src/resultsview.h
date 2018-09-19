@@ -22,7 +22,7 @@
 
 #include <QTableWidget>
 #include <QWidget>
-#include "searchresultlist.h"
+#include "search/searchresultlist.h"
 
 namespace Ui {
 class ResultsView;
@@ -49,7 +49,7 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList mResultList;
+    SearchResultList &mResultList;
     int searchTermLength = 0;
 };
 

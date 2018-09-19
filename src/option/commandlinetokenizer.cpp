@@ -174,7 +174,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
            optionErrorList.append(OptionError(fr, item.value + QString(" (Option keyword expected for value \"%1\")").arg(item.value)) );
         } else {
 
-            if (!mGamsOption->isValid(key) && (!mGamsOption->isThereASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
+            if (!mGamsOption->isValid(key) && (!mGamsOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
                ) {
                 QTextLayout::FormatRange fr;
                 fr.start = item.keyPosition;
@@ -204,7 +204,7 @@ QList<OptionError> CommandLineTokenizer::format(const QList<OptionItem> &items)
 
                 QString keyStr = key;
                 if (!mGamsOption->isValid(key))
-                    key = mGamsOption->getSynonym(key);
+                    key = mGamsOption->getNameFromSynonym(key);
 
                 QString value = item.value;
 

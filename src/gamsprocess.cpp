@@ -21,6 +21,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
+#include "logger.h"
 
 #ifdef _WIN32
 #include "windows.h"
@@ -34,6 +35,18 @@ GamsProcess::GamsProcess(QObject *parent)
 {
 }
 
+void GamsProcess::execute()
+{
+    mProcess.setWorkingDirectory(mWorkingDir);
+#if defined(__unix__) || defined(__APPLE__)
+    mProcess.start(nativeAppPath(), mParameters);
+#else
+    mProcess.setNativeArguments(mParameters.join(" "));
+    mProcess.setProgram(nativeAppPath());
+    mProcess.start();
+#endif
+}
+
 void GamsProcess::setWorkingDir(const QString &workingDir)
 {
     mWorkingDir = workingDir;
@@ -42,38 +55,6 @@ void GamsProcess::setWorkingDir(const QString &workingDir)
 QString GamsProcess::workingDir() const
 {
     return mWorkingDir;
-}
-
-QStringList GamsProcess::arguments() const
-{
-    return mArguments;
-}
-
-void GamsProcess::setArguments(const QStringList &arguments)
-{
-    mArguments = arguments;
-}
-
-void GamsProcess::execute()
-{
-#if defined(__unix__) || defined(__APPLE__)
-    QStringList args {
-        QDir::toNativeSeparators(mInputFile), "lo=3",
-        "ide=1", "er=99", "errmsg=1", "pagesize=0",
-        "LstTitleLeftAligned=1"
-    };
-    mProcess.setArguments(args << mArguments);
-#else
-    QStringList args {
-        "\""+QDir::toNativeSeparators(mInputFile)+"\"",
-        "lo=3", "ide=1", "er=99", "errmsg=1", "pagesize=0",
-        "LstTitleLeftAligned=1"
-    };
-    mProcess.setNativeArguments((args << mArguments).join(" "));
-#endif
-    mProcess.setProgram(nativeAppPath());
-    mProcess.setWorkingDirectory(mWorkingDir);
-    mProcess.start();
 }
 
 QString GamsProcess::aboutGAMS()
@@ -126,6 +107,11 @@ void GamsProcess::interrupt()
 void GamsProcess::stop()
 {
     mProcess.kill();
+}
+
+void GamsProcess::setParameters(const QStringList &parameters)
+{
+    mParameters = parameters;
 }
 
 } // namespace studio

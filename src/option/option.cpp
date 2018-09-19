@@ -21,9 +21,11 @@
 #include <QDoubleValidator>
 #include <QDir>
 #include "exception.h"
+#include "editors/systemlogedit.h"
 #include "gclgms.h"
 #include "option.h"
 #include "commonpaths.h"
+#include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -91,7 +93,7 @@ bool Option::isValid(const QString &optionName) const
     return mOption.contains(optionName.toUpper());
 }
 
-bool Option::isThereASynonym(const QString &optionName) const
+bool Option::isASynonym(const QString &optionName) const
 {
     return mSynonymMap.contains( optionName.toUpper() );
 }
@@ -118,7 +120,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
 {
     QString key = optionName;
     if (!isValid(key))
-        key = getSynonym(optionName);
+        key = getNameFromSynonym(optionName);
 
     switch(getOptionType(key)) {
      case optTypeEnumInt : {
@@ -206,9 +208,9 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
     return No_Error;  //Unknown_Error;
 }
 
-QString Option::getSynonym(const QString &optionName) const
+QString Option::getNameFromSynonym(const QString &synonym) const
 {
-    return mSynonymMap[optionName.toUpper()];
+    return mSynonymMap[synonym.toUpper()];
 }
 
 optOptionType Option::getOptionType(const QString &optionName) const
@@ -329,6 +331,7 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
+        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
         qDebug() << QString("ERROR: ").arg(msg);
         optFree(&mOPTHandle);
         return false;

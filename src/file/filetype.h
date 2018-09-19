@@ -21,6 +21,7 @@
 #define FILETYPE_H
 
 #include <QStringList>
+#include"common.h"
 
 namespace gams {
 namespace studio {
@@ -32,48 +33,30 @@ namespace studio {
 class FileType
 {
 public:
-    enum Kind {
-        None,
-        Gsp,
-        Gms,
-        Txt,
-        Lst,
-        Lxi,
-        Log,
-        Gdx,
-        Ref,
-    };
-
-public:
-    Kind kind() const;
+    FileKind kind() const;
     QStringList suffix() const;
     QString description() const;
     bool autoReload() const;
-    Kind dependant() const;
 
     bool operator ==(const FileType& fileType) const;
     bool operator !=(const FileType& fileType) const;
-    bool operator ==(const FileType::Kind& kind) const;
-    bool operator !=(const FileType::Kind& kind) const;
+    bool operator ==(const FileKind& kind) const;
+    bool operator !=(const FileKind& kind) const;
 
-    static const QList<FileType*> list();
+    static void clear();
     static FileType& from(QString suffix);
-    static FileType& from(Kind kind);
+    static FileType& from(FileKind kind);
 
 
 private:
-    friend class ProjectRepo;
+    FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
 
-    static void clear();
-    FileType(Kind kind, QString suffix, QString description, bool autoReload, const Kind dependant = None);
-
-    const Kind mKind;
+    const FileKind mKind;
     const QStringList mSuffix;
     const QString mDescription;
     const bool mAutoReload;
-    const Kind mDependant;
 
-    static QList<FileType*> mList;
+    static QList<FileType*> mFileTypes;
     static FileType* mNone;
 };
 

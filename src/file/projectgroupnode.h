@@ -25,65 +25,91 @@
 #include <memory>
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
+#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
 
 class ProjectLogNode;
 class ProjectFileNode;
-class GamsProcess;
-class TextMarkList;
+class TextMarkRepo;
+class FileMeta;
+class FileMetaRepo;
+class AbstractProcess;
+struct OptionItem;
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
     Q_OBJECT
-
 public:
     virtual ~ProjectGroupNode() override;
-    void setFlag(ContextFlag flag, bool value = true) override;
-    void unsetFlag(ContextFlag flag) override;
 
-    void setLocation(const QString &location) override;
-
-    int childCount() const override;
-    int indexOf(ProjectAbstractNode *child);
-    ProjectAbstractNode* childEntry(int index) const override;
-    ProjectAbstractNode* findNode(QString filePath);
-    ProjectFileNode* findFile(QString filePath);
     QIcon icon() override;
+    int childCount() const;
+    ProjectAbstractNode* childNode(int index) const;
+    int indexOf(ProjectAbstractNode *child);
+    virtual QString location() const;
+    QString tooltip() override;
+    virtual QString lstErrorText(int line);
+    ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
+    ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
+    ProjectFileNode *findOrCreateFileNode(const QString &location);
+    ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
+    ProjectRunGroupNode *findRunGroup(FileId runId) const;
+    QVector<ProjectFileNode*> listFiles(bool recurse = false) const;
 
-    QString runnableGms();
-    void setRunnableGms(ProjectFileNode *gmsFileNode);
-    void removeRunnableGms();
-    QString lstFileName();
-    void setLstFileName(const QString &lstFileName);
+protected:
+    friend class ProjectRepo;
+    friend class ProjectAbstractNode;
+    friend class ProjectLogNode;
+    friend class ProjectFileNode;
+
+    ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
+    void insertChild(ProjectAbstractNode *child);
+    void removeChild(ProjectAbstractNode *child);
+    void setLocation(const QString &location);
+    int peekIndex(const QString &name, bool* hit = nullptr);
+    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildNodes; }
+
+private:
+    QList<ProjectAbstractNode*> mChildNodes;
+    QString mLocation;
+
+};
+
+
+
+class ProjectRunGroupNode : public ProjectGroupNode
+{
+    Q_OBJECT
+public:
     ProjectLogNode* logNode() const;
-
-    GamsProcess* gamsProcess();
-    QProcess::ProcessState gamsProcessState() const;
-
-    void attachFile(const QString &filepath);
-    void detachFile(const QString &filepath);
-    void updateChildNodes();
-    void jumpToFirstError(bool focus);
-
-    QString lstErrorText(int line);
+    void setLogNode(ProjectLogNode* logNode);
+    ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
+    FileMeta *runnableGms() const;
+    void setRunnableGms(FileMeta *gmsFile = nullptr);
+    QString lstFile() const;
+    QString tooltip() override;
+    QString lstErrorText(int line) override;
     void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
-    void saveGroup();
-
-    void dumpMarks();
-    QString tooltip() override;
-
     void addRunParametersHistory(QString option);
-    QStringList getRunParametersHistory();
+    QStringList getRunParametersHistory() const;
+    QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+
+    QString specialFile(const FileKind& fk) const;
+    QHash<FileKind, QString> specialFiles() const;
+    void setSpecialFile(const FileKind& fk, const QString& path);
+    void clearSpecialFiles();
+
+    bool isProcess(const AbstractProcess *process) const;
+    QProcess::ProcessState gamsProcessState() const;
+    GamsProcess *gamsProcess() const;
+    void jumpToFirstError(bool focus);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
-    void removeNode(ProjectAbstractNode *node);
-    void requestNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -91,33 +117,40 @@ protected slots:
 protected:
     friend class ProjectRepo;
     friend class ProjectAbstractNode;
-    friend class ProjectFileNode;
     friend class ProjectLogNode;
+    friend class ProjectFileNode;
 
-    ProjectGroupNode(FileId id, QString name, QString location, QString fileName);
-    int peekIndex(const QString &location, bool* hit = nullptr);
-    void insertChild(ProjectAbstractNode *child);
-    void removeChild(ProjectAbstractNode *child);
-    void checkFlags() override;
-    void setLogNode(ProjectLogNode* logNode);
+    ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void updateRunState(const QProcess::ProcessState &state);
-    void addMark(const QString &filePath, TextMark* mark);
-    TextMarkList* marks(const QString &fileName);
-    void removeMarks(QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
-    void removeMarks(QString fileName, QSet<TextMark::Type> tmTypes = QSet<TextMark::Type>());
+    void lstTexts(const QList<TextMark*> &marks, QStringList &result);
 
 private:
-    QStringList mRunParametersHistory;
-    QList<ProjectAbstractNode*> mChildList;
-    ProjectLogNode* mLogNode = nullptr;
     std::unique_ptr<GamsProcess> mGamsProcess;
-    QString mLstFileName;
-    QString mGmsFileName;
-    QFileInfoList mAttachedFiles;
-
+    ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;
-    QHash<QString, TextMarkList*> mMarksForFilenames;
+    QStringList mRunParametersHistory;
+    QHash<FileKind, QString> mSpecialFiles;
 
+};
+
+
+class ProjectRootNode : public ProjectGroupNode
+{
+    Q_OBJECT
+public:
+    ProjectRootNode(ProjectRepo *projectRepo);
+    ~ProjectRootNode() override {}
+    ProjectRepo *projectRepo() const override;
+    FileMetaRepo *fileRepo() const override;
+    TextMarkRepo *textMarkRepo() const override;
+
+private:
+    friend class ProjectRepo;
+    void setParentNode(ProjectGroupNode *parent) override;
+    void init(ProjectRepo* projectRepo);
+
+private:
+    ProjectRepo* mRepo = nullptr;
 };
 
 } // namespace studio

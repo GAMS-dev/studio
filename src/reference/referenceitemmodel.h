@@ -17,22 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "treeitemdelegate.h"
+#ifndef REFERENCEITEMMODEL_H
+#define REFERENCEITEMMODEL_H
+
+#include <QList>
+#include "reference.h"
 
 namespace gams {
 namespace studio {
+namespace reference {
 
-TreeItemDelegate::TreeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
-{}
-
-void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+class ReferenceItemModel
 {
-    QStyleOptionViewItem opt(option);
-    opt.state.setFlag(QStyle::State_Selected, false);
-    opt.textElideMode = Qt::ElideMiddle;
-    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
-    QStyledItemDelegate::paint(painter, opt, index);
-}
+public:
+    ReferenceItemModel(const QList<QVariant>& data, ReferenceItemModel* parentItem = nullptr);
+    ~ReferenceItemModel();
 
+    void appendChild(ReferenceItemModel* child);
+
+    ReferenceItemModel* child(int row);
+    ReferenceItemModel *parent();
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+
+    bool removeChildren(int position, int count);
+
+private:
+    QList<ReferenceItemModel*> mChildItems;
+    QList<QVariant> mItemData;
+    ReferenceItemModel* mParentItem = nullptr;
+};
+
+} // namespace reference
 } // namespace studio
 } // namespace gams
+
+#endif // REFERENCEITEMMODEL_H

@@ -19,10 +19,12 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "studiosettings.h"
-#include "syntax.h"
-#include "exception.h"
+#include "../studiosettings.h"
+#include "../syntax.h"
+#include "../file.h"
+#include "../exception.h"
 #include "searchresultlist.h"
+#include "locators/settingslocator.h"
 
 #include <QCompleter>
 #include <QMessageBox>
@@ -35,7 +37,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    StudioSettings *mSettings = mMain->settings();
+    StudioSettings *mSettings = SettingsLocator::settings();
 
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());
@@ -85,7 +87,7 @@ void SearchDialog::setSelectedScope(int index)
 
 void SearchDialog::on_btn_Replace_clicked()
 {
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -104,85 +106,73 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     clearResults();
-    SearchResultList matches(searchTerm());
+
+    mCachedResults.clear();
+    mCachedResults.setSearchTerm(searchTerm());
+    mCachedResults.useRegex(regex());
+
     insertHistory();
 
     setSearchStatus(SearchStatus::Searching);
+    QApplication::processEvents();
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
-            matches.addResultList(findInFile(mMain->projectRepo()->fileNode(mMain->recent()->editor())));
+            mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
         break;
     case SearchScope::ThisGroup:
-        matches.addResultList(findInGroup());
+        mCachedResults.addResultList(findInGroup());
         break;
     case SearchScope::OpenTabs:
-        matches.addResultList(findInOpenFiles());
+        mCachedResults.addResultList(findInOpenFiles());
         break;
     case SearchScope::AllFiles:
-        matches.addResultList(findInAllFiles());
+        mCachedResults.addResultList(findInAllFiles());
         break;
     default:
         break;
     }
-    updateMatchAmount(matches.size());
-    mMain->showResults(matches);
+    updateMatchAmount(mCachedResults.size());
+    mMain->showResults(mCachedResults);
+
+    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    if (ce) ce->updateExtraSelections();
 }
 
 QList<Result> SearchDialog::findInAllFiles()
 {
-    QList<Result> matches;
-    ProjectGroupNode *root = mMain->projectRepo()->treeModel()->rootNode();
-    ProjectAbstractNode *fsc;
-    for (int i = 0; i < root->childCount(); i++) {
-        fsc = root->childEntry(i);
-        if (fsc->type() == ProjectAbstractNode::ContextType::FileGroup)
-            matches.append(findInGroup(fsc));
-    }
+    QList<FileMeta*> files = mMain->fileRepo()->fileMetas();
+    QList<Result> matches = findInFiles(files);
     return matches;
 }
 
 QList<Result> SearchDialog::findInOpenFiles()
 {
-    QList<Result> matches;
-    QWidgetList editList = mMain->projectRepo()->editors();
-    ProjectFileNode *fc;
-    for (int i = 0; i < editList.size(); i++) {
-        fc = mMain->projectRepo()->fileNode(editList.at(i));
-        if (fc == nullptr) break;
-        matches.append(findInFile(fc));
-    }
+    QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+    QList<Result> matches = findInFiles(files);
     return matches;
 }
 
-QList<Result> SearchDialog::findInGroup(ProjectAbstractNode *fsc)
+QList<Result> SearchDialog::findInGroup()
 {
-    QList<Result> matches;
+    ProjectFileNode* fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+    ProjectGroupNode* group = (fc ? fc->parentNode() : nullptr);
 
-    ProjectGroupNode *fgc = nullptr;
-    if (!fsc) {
-        ProjectFileNode* fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-        fgc = (fc ? fc->parentEntry() : nullptr);
-        if (!fgc) return QList<Result>();
-
-    } else {
-        if (fsc->type() == ProjectGroupNode::FileGroup)
-            fgc = static_cast<ProjectGroupNode*>(fsc);
+    QList<FileMeta*> files;
+    for (ProjectFileNode* fn : group->listFiles(true)) {
+        if (!files.contains(fn->file()))
+            files.append(fn->file());
     }
+    QList<Result> matches = findInFiles(files);
 
-    if (!fgc) return matches;
-
-    for (int i = 0; i < fgc->childCount(); i++) {
-        matches.append(findInFile(fgc->childEntry(i)));
-    }
     return matches;
 }
 
-void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+void SearchDialog::findOnDisk(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* matches)
 {
     int lineCounter = 0;
-    QFile file(fc->location());
+    QFile file(fm->location());
     if (file.open(QIODevice::ReadOnly)) {
         QTextStream in(&file);
         while (!in.atEnd()) { // read file
@@ -193,88 +183,72 @@ void SearchDialog::findOnDisk(QRegularExpression searchRegex, bool isOpenFile, P
             QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
             while (i.hasNext()) {
                 match = i.next();
-                matches->addResult(lineCounter, match.capturedStart(),
+                matches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
                                    file.fileName(), line.trimmed());
-                if (isOpenFile)
-                    fc->generateTextMark(TextMark::match, 0, lineCounter-1, match.capturedStart(), match.capturedLength());
             }
         }
         file.close();
     }
 }
 
-void SearchDialog::findInDoc(QRegularExpression searchRegex, bool isOpenFile, ProjectFileNode *fc, SearchResultList* matches)
+void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* matches)
 {
-    QTextCursor lastItem = QTextCursor(fc->document());
+    QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
     do {
-        item = fc->document()->find(searchRegex, lastItem, getFlags());
+        item = fm->document()->find(searchRegex, lastItem, getFlags());
         if (item != lastItem) lastItem = item;
         else break;
 
         if (!item.isNull()) {
-            matches->addResult(item.blockNumber()+1, item.columnNumber() - searchTerm().length(),
-                              fc->location(), item.block().text().trimmed());
-            if (isOpenFile) {
-                int length = item.selectionEnd() - item.selectionStart();
-                fc->generateTextMark(TextMark::match, 0, item.blockNumber(),
-                                     item.columnNumber() - length, length);
-            }
+            matches->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
+                              item.selectedText().length(), fm->location(), item.block().text().trimmed());
         }
     } while (!item.isNull());
 }
 
-QList<Result> SearchDialog::findInFile(ProjectAbstractNode *fsc, bool skipFilters, QString searchRegex)
+QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 {
-    if (!fsc) return QList<Result>();
+    QList<Result> res;
+    for (FileMeta* fm : fml)
+        res << findInFile(fm, skipFilters);
+
+    return res;
+}
+
+QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
+{
+    if (!fm) return QList<Result>();
 
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     if (!skipFilters) {
-        if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fsc->location()) == -1))
-                || fsc->location().endsWith("gdx")) {
+        if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fm->location()) == -1))
+                || (fm->kind() == FileKind::Gdx) || (fm->kind() == FileKind::Log)) {
             return QList<Result>(); // dont search here, return empty
         }
     }
 
-    QString searchTerm;
-    if (searchRegex.isEmpty())
-        searchTerm = ui->combo_search->currentText();
-    else
-        searchTerm = searchRegex;
-
+    QString searchTerm = ui->combo_search->currentText();
     if (searchTerm.isEmpty()) return QList<Result>();
 
     SearchResultList matches(searchTerm);
     if (regex()) matches.useRegex(true);
 
-    if (fsc->type() == ProjectAbstractNode::FileGroup) { // or is it a group?
-        matches.addResultList(findInGroup(fsc)); // TESTME studio does not support this case as of yet
-    } else { // it's a file
-        ProjectFileNode *fc(static_cast<ProjectFileNode*>(fsc));
-        if (fc == nullptr) FATAL() << "FileNode not found";
+    QRegularExpression regexp;
+    if (!regex()) regexp.setPattern(QRegularExpression::escape(searchTerm));
+    else regexp.setPattern(searchTerm);
 
-        QRegularExpression searchRegex;
+    if (wholeWords()) regexp.setPattern("\\b" + regexp.pattern() + "\\b");
+    if (!caseSens()) regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
-        if (!regex()) searchRegex.setPattern(QRegularExpression::escape(searchTerm));
-        else searchRegex.setPattern(searchTerm);
+    // when a file has unsaved changes a different search strategy is used.
+    if (fm->isModified())
+        findInDoc(regexp, fm, &matches);
+    else
+        findOnDisk(regexp, fm, &matches);
 
-        if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
-        if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-
-        bool isOpenFile = (fc == mMain->projectRepo()->fileNode(mMain->recent()->editor()));
-
-        // when a file has unsaved changes a different search strategy is used.
-        if (fc->isModified())
-            findInDoc(searchRegex, isOpenFile, fc, &matches);
-        else
-            findOnDisk(searchRegex, isOpenFile, fc, &matches);
-
-// TODO: check this:
-//        if (isOpenFile && fc->highlighter())
-//            fc->highlighter()->rehighlight();
-    }
     return matches.resultList();
 }
 
@@ -294,7 +268,7 @@ void SearchDialog::updateMatchAmount(int hits, int current)
 
 void SearchDialog::simpleReplaceAll()
 {
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -322,12 +296,12 @@ void SearchDialog::simpleReplaceAll()
     QMessageBox msgBox;
     if (hits.length() == 1) {
         msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->fileNode(mMain->recent()->editor())->location()
+                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     } else {
         msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->fileNode(mMain->recent()->editor())->location()
+                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
                        + ". Are you sure?");
     }
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -361,25 +335,35 @@ void SearchDialog::setSearchStatus(SearchStatus status)
     }
 }
 
+SearchResultList* SearchDialog::getCachedResults()
+{
+    return &mCachedResults;
+}
+
+void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
+{
+    mActiveEdit = edit;
+}
+
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
         QApplication::processEvents();
-        mCachedResults = findInFile(fc, true);
+        mCachedResults.clear();
+        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(edit), true));
         mHasChanged = false;
     }
 
-    selectNextMatch(direction, mCachedResults);
+    selectNextMatch(direction);
 }
-
 
 // this is a workaround for the QLineEdit field swallowing the first enter after a show event
 // leading to a search using the last search term instead of the current.
@@ -393,8 +377,8 @@ void SearchDialog::returnPressed() {
 void SearchDialog::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(widget);
-    ProjectAbstractNode *fsc = mMain->projectRepo()->fileNode(widget);
+    AbstractEdit *edit = FileMeta::toAbstractEdit(widget);
+    ProjectAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
     if (!fsc || !edit) return;
 
     if (edit->textCursor().hasSelection()) {
@@ -419,10 +403,10 @@ void SearchDialog::showEvent(QShowEvent *event)
 
 void SearchDialog::updateReplaceActionAvailability()
 {
-    AbstractEdit *edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
-    bool isSourceCode = ProjectFileNode::editorType(mMain->recent()->editor()) == ProjectAbstractNode::etSourceCode;
+    AbstractEdit *edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    bool isSourceCode = FileMeta::editorType(mMain->recent()->editor()) == EditorType::source;
 
-    bool activateSearch = isSourceCode || ProjectFileNode::editorType(mMain->recent()->editor()) == ProjectAbstractNode::etLxiLst;
+    bool activateSearch = isSourceCode || FileMeta::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
     bool activateReplace = (isSourceCode && !edit->isReadOnly());
 
     // replace actions (!readonly):
@@ -473,7 +457,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
     if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
         e->accept();
         hide();
-        if (mMain->projectRepo()->fileNode(mMain->recent()->editor()))
+        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();
 
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
@@ -500,31 +484,6 @@ QFlags<QTextDocument::FindFlag> SearchDialog::getFlags()
     return searchFlags;
 }
 
-int Result::locLineNr() const
-{
-    return mLocLineNr;
-}
-
-int Result::locCol() const
-{
-    return mLocCol;
-}
-
-QString Result::locFile() const
-{
-    return mLocFile;
-}
-
-QString Result::node() const
-{
-    return mNode;
-}
-
-Result::Result(int locLineNr, int locCol, QString locFile, QString node) :
-    mLocLineNr(locLineNr), mLocCol(locCol), mLocFile(locFile), mNode(node)
-{
-}
-
 void SearchDialog::on_combo_scope_currentIndexChanged(int index)
 {
     ui->combo_filePattern->setEnabled(index != SearchScope::ThisFile);
@@ -545,7 +504,7 @@ void SearchDialog::on_btn_forward_clicked()
     findNext(SearchDialog::Forward);
 }
 
-void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matches)
+void SearchDialog::selectNextMatch(SearchDirection direction)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex;
@@ -558,15 +517,15 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     if (regex()) searchRegex.setPattern(searchTerm);
 
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())
         matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
     else
         matchSelection = fc->document()->find(searchTerm, edit->textCursor(), flags);
 
-    if (matches.size() > 0) { // has any matches at all
+    if (mCachedResults.size() > 0) { // has any matches at all
 
         if (matchSelection.isNull()) { // empty selection == reached end of document
             if (direction == SearchDirection::Forward) {
@@ -576,7 +535,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
                 tc.movePosition(QTextCursor::End); // start from bottom
                 edit->setTextCursor(tc);
             }
-            selectNextMatch(direction, matches);
+            selectNextMatch(direction);
 
         } else { // found next match
             edit->jumpTo(matchSelection);
@@ -592,10 +551,10 @@ void SearchDialog::selectNextMatch(SearchDirection direction, QList<Result> matc
 
     // set match and counter
     int count = 0;
-    foreach (Result match, matches) {
-        if (match.locLineNr() == matchSelection.blockNumber()+1
-                && match.locCol() == matchSelection.columnNumber() - searchLength) {
-            updateMatchAmount(matches.size(), count+1);
+    foreach (Result match, mCachedResults.resultList()) {
+        if (match.lineNr() == matchSelection.blockNumber()+1
+                && match.colNr() == matchSelection.columnNumber() - searchLength) {
+            updateMatchAmount(mCachedResults.size(), count+1);
             break;
         } else {
             count++;
@@ -619,16 +578,18 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::clearResults()
 {
-    // TODO: maybe this should remove matches in all files
-    ProjectFileNode *fc = mMain->projectRepo()->fileNode(mMain->recent()->editor());
+    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-    fc->removeTextMarks(TextMark::match, true);
     setSearchStatus(SearchStatus::Clear);
 
-    AbstractEdit* edit = ProjectFileNode::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
     QTextCursor tc = edit->textCursor();
     tc.clearSelection();
     edit->setTextCursor(tc);
+    mCachedResults.clear();
+
+    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    if (ce) ce->updateExtraSelections();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)

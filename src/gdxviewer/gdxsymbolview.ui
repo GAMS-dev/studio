@@ -37,6 +37,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="tabKeyNavigation">
+      <bool>false</bool>
+     </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>

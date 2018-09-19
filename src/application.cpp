@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
+#include "locators/settingslocator.h"
 
 #include <iostream>
 #include <QMessageBox>
@@ -51,7 +52,8 @@ void Application::init()
     auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
                                         mCmdParser.resetSettings(),
                                         mCmdParser.resetView());
-    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow(settings));
+    SettingsLocator::provide(settings);
+    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
 
     connect(&mDistribValidator, &DistributionValidator::messageReceived,
             mMainWindow.get(), &MainWindow::appendSystemLog);
@@ -136,13 +138,14 @@ void Application::receiveFileArguments()
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
     socket->deleteLater();
+    mMainWindow->setForegroundOSCheck();
 }
 
 bool Application::event(QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFile(openEvent->url().path());
+        mMainWindow->openFilePath(openEvent->url().path());
     }
     return QApplication::event(event);
 }

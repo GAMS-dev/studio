@@ -31,7 +31,6 @@ namespace studio {
 
 class MainWindow;
 
-// TODO(AF) switch to struct for the actual settings?
 // TODO(AF) new class SettingsReaderWriter?
 class StudioSettings
 {
@@ -58,8 +57,14 @@ public:
     bool openLst() const;
     void setOpenLst(bool value);
 
+
     bool jumpToError() const;
     void setJumpToError(bool value);
+
+
+    bool foregroundOnDemand() const;
+    void setForegroundOnDemand(bool value);
+
 
     int fontSize() const;
     void setFontSize(int value);
@@ -130,6 +135,12 @@ public:
     void restoreTabsAndProjects(MainWindow *main);
     void restoreLastFilesUsed(MainWindow *main);
 
+    bool writeLog() const;
+    void setWriteLog(bool writeLog);
+
+    int nrLogBackups() const;
+    void setNrLogBackups(int nrLogBackups);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -142,6 +153,7 @@ private:
     bool mRestoreTabs;
     bool mAutosaveOnRun;
     bool mOpenLst;
+    bool mForegroundOnDemand;
     bool mJumpToError;
     QList<QHash<QString, QColor>> mColorSchemes;
     int mColorSchemeIndex = 0;
@@ -157,6 +169,8 @@ private:
     bool mWordUnderCursor;
     bool mHighlightCurrentLine;
     bool mAutoIndent;
+    bool mWriteLog;
+    int mNrLogBackups;
 
     // misc settings page
     int mHistorySize;

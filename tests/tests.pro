@@ -21,3 +21,4 @@
 TEMPLATE = subdirs
 
 SUBDIRS += testcommonpaths
+SUBDIRS += testservicelocators

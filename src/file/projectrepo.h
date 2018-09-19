@@ -29,6 +29,9 @@
 #include "projectfilenode.h"
 #include "projectgroupnode.h"
 #include "filetype.h"
+#include "filemetarepo.h"
+#include "gamsprocess.h"
+#include "projecttreeview.h"
 
 namespace gams {
 namespace studio {
@@ -41,9 +44,8 @@ namespace studio {
 // - review function argument, i.e. const strings
 
 ///
-/// The FileRepository handles all open and assigned files of projects or simple gms-runables. It is based on an
-/// QAbstractItemModel to provide a model for a QTreeView. The model has two default nodes: the **root** as base node
-/// and the **tree root** as the first child of root. The normal tree view should use the tree root as base node.
+/// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
+/// QAbstractItemModel to provide a model for a QTreeView.
 ///
 class ProjectRepo : public QObject
 {
@@ -51,122 +53,121 @@ class ProjectRepo : public QObject
 public:
     explicit ProjectRepo(QObject *parent = nullptr);
     ~ProjectRepo();
+    void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
-    /// \brief Get the <c>ProjectAbstractNode</c> related to a <c>QModelIndex</c>.
-    /// \param index The QModelIndex pointing to the <c>ProjectAbstractNode</c>.
-    /// \return The associated <c>ProjectAbstractNode</c>.
+    ProjectRunGroupNode *findRunGroup(NodeId nodeId) const;
+    ProjectRunGroupNode *findRunGroup(const AbstractProcess* process, ProjectGroupNode *group = nullptr) const;
+    ProjectFileNode *findFile(QString filePath, ProjectGroupNode *fileGroup = nullptr) const;
+    ProjectFileNode *findFile(FileMeta *fileMeta, ProjectGroupNode *fileGroup = nullptr, bool recurse = true) const;
+
+    /// Get the <c>ProjectAbstractNode</c> related to a <c>NodeId</c>.
+    /// \param id The NodeId pointing to the <c>ProjectAbstractNode</c>.
+    /// \return The associated <c>ProjectAbstractNode</c> or a <c>nullptr</c>.
+    ProjectAbstractNode* node(NodeId id) const;
     ProjectAbstractNode* node(const QModelIndex& index) const;
 
-    /// \brief Get the <c>ProjectFileNode</c> related to a <c>QModelIndex</c>.
-    /// \param index The QModelIndex pointing to the <c>ProjectFileNode</c>.
-    /// \return The associated <c>ProjectFileNode</c>, otherwise <c>nullptr</c>.
-    ProjectFileNode* fileNode(const QModelIndex& index) const;
-
-    /// \brief Get the <c>ProjectFileNode</c> related to a <c>QWidget</c>.
-    /// \param edit The <c>QWidget</c> assigned to the <c>ProjectFileNode</c>.
-    /// \return The associated <c>ProjectFileNode</c>, otherwise <c>nullptr</c>.
-    ProjectFileNode* fileNode(QWidget* edit) const;
+    /// Get the <c>ProjectGroupNode</c> related to a <c>NodeId</c>.
+    /// \param id The NodeId pointing to the <c>ProjectGroupNode</c>.
+    /// \return The associated <c>ProjectGroupNode</c> or a <c>nullptr</c>.
+    ProjectGroupNode* asGroup(NodeId id) const;
 
     /// \brief Get the <c>ProjectGroupNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectGroupNode</c>.
-    /// \return The associated <c>ProjectGroupNode</c>, otherwise <c>nullptr</c>.
-    ProjectGroupNode* groupNode(const QModelIndex& index) const;
+    /// \return The associated <c>ProjectGroupNode</c> or a <c>nullptr</c>.
+    inline ProjectGroupNode* asGroup(const QModelIndex& index) const;
 
-    QWidgetList editors(FileId fileId = -1);
+    /// Get the <c>ProjectRunGroupNode</c> related to a <c>NodeId</c>.
+    /// \param id The NodeId pointing to the <c>ProjectGroupNode</c>.
+    /// \return The associated <c>ProjectRunGroupNode</c> or a <c>nullptr</c>.
+    inline ProjectRunGroupNode* asRunGroup(NodeId id) const;
 
-    /// Adds a group node to the file repository. This will watch the location for changes.
-    /// \param name The name of the project (or gist).
-    /// \param location The location of the directory.
-    /// \param projectFile The file name w/o path of the project OR gms-start-file
-    /// \param parentIndex The parent of this node (default: rootTreeModelIndex)
-    /// \return Model index to the new <c>ProjectGroupNode</c>.
-    ProjectGroupNode* addGroup(QString name, QString location, QString runInfo, QModelIndex parentIndex = QModelIndex());
+    /// \brief Get the <c>ProjectRunGroupNode</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>ProjectGroupNode</c>.
+    /// \return The associated <c>ProjectRunGroupNode</c> or a <c>nullptr</c>.
+    inline ProjectRunGroupNode* asRunGroup(const QModelIndex& index) const;
 
-    /// Adds a file node to the project repository.
-    /// \param name The filename without path.
-    /// \param location The filename with full path.
-    /// \param parentIndex The parent index to assign the file. If invalid the root model index is taken.
-    /// \return a <c>QModelIndex</c> to the new node.
-    ProjectFileNode* addFile(QString name, QString location, ProjectGroupNode* parent = nullptr);
+    /// Get the <c>ProjectFileNode</c> related to a <c>NodeId</c>.
+    /// \param id The NodeId pointing to the <c>ProjectFileNode</c>.
+    /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
+    inline ProjectFileNode* asFileNode(NodeId id) const;
 
-    ProjectGroupNode* ensureGroup(const QString& filePath, const QString& groupName = "");
-    void close(FileId fileId);
-    void setSuffixFilter(QStringList filter);
-    void dump(ProjectAbstractNode* fc, int lv = 0);
-    QModelIndex findEntry(QString name, QString location, QModelIndex parentIndex);
-    ProjectAbstractNode* findNode(QString filePath, ProjectGroupNode* fileGroup = nullptr);
-    ProjectGroupNode* findGroup(const QString &fileName);
-    QList<ProjectFileNode*> modifiedFiles(ProjectGroupNode* fileGroup = nullptr);
-    int saveAll();
-    void editorActivated(QWidget* edit);
+    /// \brief Get the <c>ProjectFileNode</c> related to a <c>QModelIndex</c>.
+    /// \param index The QModelIndex pointing to the <c>ProjectFileNode</c>.
+    /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
+    ProjectFileNode* asFileNode(const QModelIndex& index) const;
+
+    ProjectFileNode* findFileNode(QWidget *editWidget) const;
+
+    /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
+    /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
+    /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
+    inline ProjectLogNode* asLogNode(NodeId id) const;
+
+    /// \brief Get the <c>ProjectLogNode</c> related to a parent or sibling <c>ProjectAbstractNode</c>.
+    /// \param node The <c>ProjectAbstractNode</c> to find the associated <c>ProjectLogNode</c> for.
+    /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
+    ProjectLogNode* asLogNode(ProjectAbstractNode* node);
+
+    bool isActive(const ProjectAbstractNode *node) const;
+    void setActive(ProjectAbstractNode* node);
+
     ProjectTreeModel* treeModel() const;
-    ProjectLogNode* logNode(QWidget* edit);
-    ProjectLogNode* logNode(ProjectAbstractNode* node);
-    void removeMarks(ProjectGroupNode* group);
+    FileMetaRepo* fileRepo() const;
+    TextMarkRepo* textMarkRepo() const;
 
-    void updateLinkDisplay(AbstractEdit* editUnderCursor);
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 
-    inline ProjectAbstractNode* node(FileId id) const {
-        return mNode.value(id, nullptr);
-    }
-    inline ProjectGroupNode* groupNode(FileId id) const {
-        ProjectAbstractNode* res = mNode.value(id, nullptr);
-        return (res && res->type() == ProjectAbstractNode::FileGroup) ? static_cast<ProjectGroupNode*>(res) : nullptr;
-    }
-    inline ProjectFileNode* fileNode(FileId id) const {
-        ProjectAbstractNode* res = mNode.value(id, nullptr);
-        return (res && res->type() == ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(res) : nullptr;
-    }
-    inline ProjectLogNode* logNode(FileId id) const {
-        ProjectAbstractNode* res = mNode.value(id, nullptr);
-        return (res && res->type() == ProjectAbstractNode::Log) ? static_cast<ProjectLogNode*>(res) : nullptr;
-    }
+    ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
+    ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup = nullptr, FileType *knownType = nullptr
+            , QString explicitName = QString());
+    ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup = nullptr, QString explicitName = QString());
+    QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
+    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
+    void editorActivated(QWidget *edit);
+
+    ProjectLogNode *logNode(ProjectAbstractNode *node);
+
+    void setDebugMode(bool debug);
+    bool debugMode() const;
 
 signals:
-    void fileClosed(FileId fileId, QPrivateSignal);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
-    void openFile(ProjectFileNode* fileNode, bool focus = true, int codecMib = -1);
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
-    void getNodeExpanded(const QModelIndex &mi, bool *expanded);
+    void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
+    void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
+    void changed();
 
 public slots:
-    void nodeChanged(FileId fileId);
-    void findFile(QString filePath, ProjectFileNode** resultFile, ProjectGroupNode* fileGroup = nullptr);
-    void findOrCreateFileNode(QString filePath, ProjectFileNode *&resultFile, ProjectGroupNode* fileGroup = nullptr);
+    void fileChanged(FileId fileId);
+    void nodeChanged(NodeId nodeId);
+    void closeGroup(ProjectGroupNode* group);
+    void closeNode(ProjectFileNode* node);
     void setSelected(const QModelIndex& ind);
-    void removeGroup(ProjectGroupNode* fileGroup);
-    void removeFile(ProjectFileNode* file);
-
-private slots:
-    void onFileChangedExtern(FileId fileId);
-    void onFileDeletedExtern(FileId fileId);
-    void processExternFileEvents();
-    void addNode(QString name, QString location, ProjectGroupNode* parent = nullptr);
-    void removeNode(ProjectAbstractNode *node);
+    void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 private:
+    friend class ProjectRunGroupNode;
+
     void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
     void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
-    inline void storeNode(ProjectAbstractNode* node) {
-        mNode.insert(node->id(), node);
+    inline void addToIndex(ProjectAbstractNode* node) {
+        mNodes.insert(node->id(), node);
     }
-    inline void deleteNode(ProjectAbstractNode* node) {
-        node->setParentEntry(nullptr);
-        mNode.remove(node->id());
-        delete node;
+    inline void removeFromIndex(ProjectAbstractNode* node) {
+        mNodes.remove(node->id());
     }
+    bool parseGdxHeader(QString location);
 
 private:
     FileId mNextId;
+    ProjectTreeView* mTreeView = nullptr;
     ProjectTreeModel* mTreeModel = nullptr;
-    QStringList mSuffixFilter;
-    QList<FileId> mChangedIds;
-    QList<FileId> mDeletedIds;
-    QHash<FileId, ProjectAbstractNode*> mNode;
+    QHash<NodeId, ProjectAbstractNode*> mNodes;
+    QVector<ProjectAbstractNode*> mActiveStack;
+    FileMetaRepo* mFileRepo = nullptr;
+    TextMarkRepo* mTextMarkRepo = nullptr;
+    bool mDebugMode = false;
 };
 
 } // namespace studio

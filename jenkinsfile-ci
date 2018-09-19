@@ -1,0 +1,114 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20', daysToKeepStr: '5'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh '''
+                            qmake gams-studio.pro CONFIG+=release && make -j3
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            @echo off
+                            echo Setting up environment for VS 2015 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin"
+                            call vcvars32.bat
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
+                            nmake
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        bat '''
+                            @echo off
+                            echo Setting up environment for VS2017 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            call vcvars64.bat
+                            cd %WORKSPACE%
+                            qmake gams-studio.pro "CONFIG+=release"
+                            nmake
+                        '''
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        step([$class: 'WsCleanup'])
+                        checkout scm
+                        sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
+                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'Clang (LLVM based)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                parallel linux: {
+                    node('master') {
+                        sh '''
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                windowsX86: {
+                    node('windowsX86') {
+                        bat '''
+                            echo off
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                windowsX64: {
+                    node('windowsX64') {
+                        bat '''
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                },
+                macos: {
+                    node('macos') {
+                        sh '''
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
+                        '''
+                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                }
+            }
+        }
+    }
+}

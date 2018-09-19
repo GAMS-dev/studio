@@ -74,13 +74,15 @@ public:
     BlockData() { mparentheses.reserve(10);}
     ~BlockData() {}
     QChar charForPos(int relPos);
-    bool isEmpty() {return mparentheses.isEmpty();}
+    bool isEmpty() {return mparentheses.isEmpty() && mMarks.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
-    void setparentheses(const QVector<ParenthesesPos> &parentheses);
-
+    void setParentheses(const QVector<ParenthesesPos> &parentheses);
+    void addTextMark(TextMark* mark);
+    void removeTextMark(TextMark* mark);
 private:
     // if extending the data remember to enhance isEmpty()
     QVector<ParenthesesPos> mparentheses;
+    QVector<TextMark*> mMarks;
 };
 
 struct BlockEditPos
@@ -96,14 +98,16 @@ class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
+
 public:
     CodeEdit(QWidget *parent = nullptr);
-    ~CodeEdit();
+    ~CodeEdit() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
+    void setGroupId(const NodeId &groupId) override;
 
     /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
     /// outdentation is performed at the cursor position.
@@ -122,9 +126,11 @@ public:
     ParenthesesMatch matchParentheses();
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
-    void setSettings(StudioSettings *settings);
     void extendedRedo();
     void extendedUndo();
+    void convertToLower();
+    void convertToUpper();
+    EditorType type() override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -136,6 +142,7 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void marksChanged() override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -150,11 +157,11 @@ public slots:
     void cutSelection();
     void copySelection();
     void pasteClipboard();
+    void updateExtraSelections();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void recalcExtraSelections();
-    void updateExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
@@ -162,6 +169,8 @@ private slots:
 
 private:
     friend class BlockEdit;
+    friend class LineNumberArea;
+
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
@@ -171,7 +180,7 @@ private:
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
-    void endBlockEdit();
+    void endBlockEdit(bool adjustCursor = true);
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
     void updateTabSize();
@@ -242,13 +251,8 @@ private:
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
+    bool mSmartType = false;
 
-public:
-    BlockEdit *blockEdit() const;
-
-    // AbstractEditor interface
-public:
-    EditorType type() override;
 };
 
 class LineNumberArea : public QWidget
@@ -269,11 +273,13 @@ protected:
     void paintEvent(QPaintEvent *event) override {
         mCodeEditor->lineNumberAreaPaintEvent(event);
     }
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
-
 };
 
 

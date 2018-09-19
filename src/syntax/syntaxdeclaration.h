@@ -28,19 +28,20 @@ namespace studio {
 class DictEntry
 {
 public:
-    DictEntry(QString entry): mEntry(entry), mUpCase(entry.toUpper()), mLoCase(entry.toLower()) {}
+    DictEntry(QString entry): mEntry(entry)
+    {
+        for (int i = 0; i < entry.length(); ++i) {
+            mInvertCase += entry.at(i).isLower() ? entry.at(i).toUpper() : entry.at(i).toLower();
+        }
+    }
     virtual ~DictEntry() {}
     inline bool is(const QChar &c, int i) const {
-        return c.isUpper() ? mUpCase.at(i) == c : mLoCase.at(i) == c;
-    }
-    inline bool after(const QChar &c, int i) const {
-        return c.isUpper() ? mUpCase.at(i) > c  : mLoCase.at(i) > c;
+        return mEntry.at(i) == c || mInvertCase.at(i) == c;
     }
     inline int length() const { return mEntry.length(); }
 private:
     QString mEntry;
-    QString mUpCase;
-    QString mLoCase;
+    QString mInvertCase;
 };
 
 class DictList
@@ -66,7 +67,7 @@ private:
 class SyntaxKeywordBase: public SyntaxAbstract
 {
 public:
-    ~SyntaxKeywordBase();
+    ~SyntaxKeywordBase() override;
     SyntaxKeywordBase(SyntaxState state) : SyntaxAbstract(state) {}
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 

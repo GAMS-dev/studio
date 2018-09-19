@@ -21,32 +21,38 @@
 #define PROJECTLOGNODE_H
 
 #include "projectfilenode.h"
+#include "dynamicfile.h"
 
 namespace gams {
 namespace studio {
 
+// TODO(JM) integrate Log node as normal node, set a valid location, set a valid name - no "[LOG]" encoding in name
 class ProjectLogNode final: public ProjectFileNode
 {
 public:
-    void markOld();
-    QTextDocument* document() const override;
-    void addEditor(QWidget* edit) override;
-    void removeEditor(QWidget* edit) override;
-    void setParentEntry(ProjectGroupNode *parent) override;
+    ~ProjectLogNode() override;
     void resetLst();
-    TextMark* firstErrorMark();
     void clearLog();
-    void setDebugLog(bool debugLog = true) {mDebugLog = debugLog;}
+    void markOld();
+    void logDone();
+
+//public:
+//    void fileClosed(ProjectFileNode* fc);
+//    TextMark* firstErrorMark();
     ProjectFileNode *lstNode() const;
     void setLstNode(ProjectFileNode *lstNode);
 
+
 public slots:
-    void addProcessData(QString text);
+    void addProcessData(const QByteArray &data);
     void setJumpToLogEnd(bool state);
 
 protected:
     friend class ProjectRepo;
-    ProjectLogNode(FileId fileId, QString name);
+    friend class ProjectRunGroupNode;
+
+    ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *assignedRunGroup);
+//    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {
         TextMark* textMark = nullptr;
@@ -55,7 +61,10 @@ protected:
     };
     QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
 
+
 private:
+    ProjectRunGroupNode *mRunGroup = nullptr;
+    ProjectFileNode *mLstNode = nullptr;
     struct ErrorData {
         int lstLine = 0;
         int errNr = 0;
@@ -63,15 +72,13 @@ private:
     };
     bool mJumpToLogEnd = true;
     bool mInErrorDescription = false;
-    QTextDocument *mDocument = nullptr;
     ErrorData mCurrentErrorHint;
-//    QSet<FileNode*> mMarkedNodeList;
+// //    QSet<FileNode*> mMarkedNodeList;
     QString mLineBuffer;
     TextMark* mLastLstLink = nullptr;
     bool mConceal = false;
-    bool mDebugLog = false;
     QString mLastSourceFile;
-    ProjectFileNode *mLstNode = nullptr;
+    DynamicFile *mLogFile = nullptr;
 };
 
 } // namespace studio

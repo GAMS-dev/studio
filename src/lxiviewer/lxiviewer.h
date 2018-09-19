@@ -27,7 +27,7 @@ namespace gams {
 namespace studio {
 
 class CodeEdit;
-class ProjectGroupNode;
+class ProjectRunGroupNode;
 
 namespace lxiviewer {
 
@@ -46,8 +46,8 @@ public:
     CodeEdit *codeEdit() const;
 
 public slots:
-    void loadLxiFile(ProjectGroupNode* group);
-    void loadLstFile(ProjectGroupNode* group);
+    void loadLxiFile(ProjectRunGroupNode *group);
+    void loadLstFile(ProjectRunGroupNode *group);
 
 private slots:
     void jumpToTreeItem();
