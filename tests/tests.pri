@@ -27,5 +27,8 @@ DESTDIR = ../bin
 
 include (../version)
 
+unix : LIBS += -ldl -L../../bin
+win32: LIBS += -L../../bin/
+
 TESTSROOT = $$_PRO_FILE_PWD_/..
 SRCPATH = $$TESTSROOT/../src

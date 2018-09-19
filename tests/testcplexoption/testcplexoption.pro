@@ -19,11 +19,10 @@
 #
 TEMPLATE = app
 
-include(../../src/gamsdependency.pri)
-include(../uitests.pri)
+include(../../gamsdependency.pri)
+include(../tests.pri)
 
-INCLUDEPATH += $$TESTSROOT/../src
-SRCPATH = $$TESTSROOT/../src
+INCLUDEPATH += $$SRCPATH
 
 HEADERS += \
     testcplexoption.h \
@@ -34,5 +33,7 @@ SOURCES += \
     testcplexoption.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
+    $$SRCPATH/locators/sysloglocator.cpp \
+    $$SRCPATH/locators/defaultsystemlogger.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp
