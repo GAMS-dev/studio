@@ -343,16 +343,37 @@ bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction ac
 
     if (action ==  Qt::CopyAction) {
 
+        QList<int> insertRowList;
         insertRows(beginRow, rows, QModelIndex());
+
         foreach (const QString &text, newItems) {
+            insertRowList.append( beginRow );
+
             QStringList textList = text.split("=");
             QModelIndex idx = index(beginRow, 0, QModelIndex());
             setData(idx, textList.at(0));
             idx = index(beginRow, 1, QModelIndex());
             setData(idx, textList.at(1));
-
             beginRow++;
         }
+
+        foreach (const QString &text, newItems) {
+            QStringList textList = text.split("=");
+            QModelIndex idx;
+            for(int i=0; i<rowCount(); ++i) {
+                if (insertRowList.contains(i))
+                    continue;
+
+                idx = index(i, 0, QModelIndex());
+                QString key = data(idx, Qt::DisplayRole).toString();
+                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
+                    break;
+            }
+            if (idx.row() < rowCount())
+               removeRows(idx.row(), 1, QModelIndex());
+        }
+
+
     }  else if (action == Qt::MoveAction ) {
 
         foreach (const QString &text, newItems) {
