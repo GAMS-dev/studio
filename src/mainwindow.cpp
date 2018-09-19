@@ -1778,6 +1778,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
+        if (FileMeta::toCodeEdit(edit))
+                connect(FileMeta::toCodeEdit(edit), &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
             AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
