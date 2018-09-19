@@ -232,7 +232,8 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
                 FileType *ft = &FileType::from(jsonObject["type"].toString(""));
-                findOrCreateFileNode(file, group, ft, name);
+                if (QFileInfo(file).exists())
+                    findOrCreateFileNode(file, group, ft, name);
             }
         }
     }
