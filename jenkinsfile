@@ -141,8 +141,8 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage --version
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
                         '''
-                        av = artifactVersion
                         script {
+                            def av = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-${av}-studio.AppImage"
                             } else {
