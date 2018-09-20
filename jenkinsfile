@@ -6,11 +6,6 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    def artifactVersion() {
-        def matcher = readFile('version') =~ '^STUDIO_MAJOR_VERSION'
-        (matcher ? matcher[0] : null).split('=').last().trim()
-    }
-
     stages {
         stage('Build') {
             steps {
@@ -219,6 +214,11 @@ pipeline {
                         }
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
+                }
+
+                def artifactVersion() {
+                    def matcher = readFile('version') =~ '^STUDIO_MAJOR_VERSION'
+                    (matcher ? matcher[0] : null).split('=').last().trim()
                 }
             }
         }
