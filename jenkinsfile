@@ -218,9 +218,9 @@ pipeline {
             }
         }
     }
+}
     
-    def artifactVersion() {
-        def matcher = readFile('version') =~ '^STUDIO_MAJOR_VERSION'
-        (matcher ? matcher[0] : null).split('=').last().trim()
-    }
+def artifactVersion() {
+    def matcher = readFile('version') =~ '^STUDIO_MAJOR_VERSION'
+    (matcher ? matcher[0] : null).split('=').last().trim()
 }
