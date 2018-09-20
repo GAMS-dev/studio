@@ -46,6 +46,7 @@ public:
 
     QIcon icon() override;
     int childCount() const;
+    bool isPurgeable();
     ProjectAbstractNode* childNode(int index) const;
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;

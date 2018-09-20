@@ -1832,6 +1832,8 @@ void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib)
 void MainWindow::closeGroup(ProjectGroupNode* group)
 {
     if (!group) return;
+    ProjectGroupNode *parentGroup = group->parentNode();
+    if (parentGroup && parentGroup->type() == NodeType::root) parentGroup = nullptr;
     ProjectRunGroupNode *runGroup = group->assignedRunGroup();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
@@ -1856,6 +1858,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
         mProjectRepo.closeGroup(group);
     }
+    purgeGroup(parentGroup);
 }
 
 /// Asks user for confirmation if a file is modified before calling closeFile
@@ -1863,12 +1866,24 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
 ///
 void MainWindow::closeNodeConditionally(ProjectFileNode* node)
 {
-    QVector<ProjectFileNode*> fiNodes = mProjectRepo.fileNodes(node->file()->id());
-    fiNodes.removeAll(node);
+    // count nodes to the same file
+    int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
+    ProjectGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
-    if (!fiNodes.isEmpty() || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
+    if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
         closeFileEditors(node->file()->id());
         mProjectRepo.closeNode(node);
+    }
+    purgeGroup(group);
+}
+
+void MainWindow::purgeGroup(ProjectGroupNode *&group)
+{
+    if (!group) return;
+    // close group if it's empty or only contains a log-node
+    if (group->isPurgeable()) {
+        closeGroup(group);
+        group = nullptr;
     }
 }
 

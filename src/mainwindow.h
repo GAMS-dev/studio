@@ -281,6 +281,7 @@ private:
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
+    void purgeGroup(ProjectGroupNode *&group);
 
 private:
     Ui::MainWindow *ui;

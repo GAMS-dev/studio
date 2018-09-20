@@ -220,11 +220,11 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, gprArray);
-                    if (subGroup->childCount()) {
+                    if (subGroup->isPurgeable()) {
+                        closeGroup(subGroup);
+                    } else {
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
-                    } else {
-                        closeGroup(subGroup); // dont open empty groups
                     }
                 }
             }
@@ -369,11 +369,6 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
-
-    // close group if empty now
-    if (runGroup->childCount() == 0)
-        closeGroup(runGroup);
-
     emit changed();
 }
 

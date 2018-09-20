@@ -57,6 +57,12 @@ int ProjectGroupNode::childCount() const
     return mChildNodes.count();
 }
 
+bool ProjectGroupNode::isPurgeable()
+{
+    ProjectRunGroupNode *runGroup = assignedRunGroup();
+    return ( mChildNodes.count() == 0 || (mChildNodes.count() == 1 && childNode(0) == runGroup->logNode()) );
+}
+
 ProjectAbstractNode*ProjectGroupNode::childNode(int index) const
 {
     return mChildNodes.at(index);
