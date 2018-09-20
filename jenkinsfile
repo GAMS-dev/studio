@@ -1,5 +1,5 @@
 def artifactVersion() {
-    def matcher = readFile('version') =~ '^STUDIO_MAJOR_VERSION'
+    def matcher = readFile(env.WORKSPACE+'/version') =~ '^STUDIO_MAJOR_VERSION'
     (matcher ? matcher[0] : null).split('=').last().trim()
 }
 
