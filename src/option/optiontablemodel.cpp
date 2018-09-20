@@ -314,6 +314,7 @@ Qt::DropActions OptionTableModel::supportedDropActions() const
 
 bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
+    Q_UNUSED(column);
     if (action == Qt::IgnoreAction)
         return true;
 
@@ -372,7 +373,7 @@ bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction ac
             if (idx.row() < rowCount())
                removeRows(idx.row(), 1, QModelIndex());
         }
-
+        return true;
 
     }  else if (action == Qt::MoveAction ) {
 
@@ -390,8 +391,10 @@ bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction ac
             else
                 moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow );
         }
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()

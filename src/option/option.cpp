@@ -72,14 +72,15 @@ void Option::dumpAll()
                             .arg( opt.groupNumber ).arg( opt.valid ? "SHOWN": "HIDDEN");
         switch(opt.dataType) {
              case optDataInteger:
-                      qDebug() << QString("  default_%1").arg( opt.defaultValue.toInt() );
-                       break;
+                   qDebug() << QString("  default_%1").arg( opt.defaultValue.toInt() );
+                   break;
              case optDataDouble:
-                       qDebug() << QString("  default_%1").arg( opt.defaultValue.toDouble() );
+                   qDebug() << QString("  default_%1").arg( opt.defaultValue.toDouble() );
+                   break;
              case optDataString:
              default:
-                      qDebug() << QString("  default_") << opt.defaultValue.toString();
-                      break;
+                   qDebug() << QString("  default_") << opt.defaultValue.toString();
+                   break;
         }
         for(int j =0; j< opt.valueList.size(); j++) {
             OptionValue enumValue = opt.valueList.at(j);
@@ -167,10 +168,11 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
 
                  bool isCorrectDataType = false;
                  double d = value.toDouble(&isCorrectDataType);
-                 if (d != (int)d)
-                    return Incorrect_Value_Type;
+                 int ivalue = static_cast<int>(d);
+                 if (std::abs(d-ivalue) < 0.01)
+                     n = ivalue;
                  else
-                     n = (int)d;
+                    return Incorrect_Value_Type;
              }
           }
         }
@@ -500,6 +502,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
          return true;
      } else {
 
+        SysLogLocator::systemLog()->appendLog( QString("Problem reading definition file: %1").arg(QDir(systemPath).filePath(optionFileName)), LogMsgType::Error);
         qDebug() << "Problem reading definition file " << QDir(systemPath).filePath(optionFileName).toLatin1();
         optFree(&mOPTHandle);
         return false;
