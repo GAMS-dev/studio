@@ -1,3 +1,11 @@
+def artifactVersion() {
+    def data = readFile('version')
+    def major = data.findAll($/(?m)^STUDIO_MAJOR_VERSION=(\d+)/$).first().split('=').last()
+    def minor = data.findAll($/(?m)^STUDIO_MINOR_VERSION=(\d+)/$).first().split('=').last()
+    def patch = data.findAll($/(?m)^STUDIO_PATCH_LEVEL=(\d+)/$).first().split('=').last()
+    return major + "." + minor + "." + patch
+}
+
 pipeline {
     agent any
 
@@ -137,13 +145,14 @@ pipeline {
                             ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
                         '''
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}.AppImage"
                             } else {
-                                sh "mv GAMS_Studio-x86_64.AppImage studio.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '**/*studio*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: '*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -160,10 +169,11 @@ pipeline {
                             '''
                         }
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-x86.zip", archive: true, dir: 'tmp'
+                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'studio-x86.zip', archive: true, dir: 'tmp'
+                                zip zipFile: 'GAMS_Studio-${versionData}-x86_32.zip', archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -182,10 +192,11 @@ pipeline {
                             '''
                         }
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-x64.zip", archive: true, dir: 'tmp'
+                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'studio-x64.zip', archive: true, dir: 'tmp'
+                                zip zipFile: 'GAMS_Studio-${versionData}-x86_64.zip', archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -207,8 +218,11 @@ pipeline {
                             mv "src/bin/GAMS Studio.dmg" studio.dmg
                         '''
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv studio.dmg ${env.BRANCH_NAME}-studio.dmg"
+                                sh "mv studio.dmg ${env.BRANCH_NAME}-studio-${versionData}-x86_64.dmg"
+                            } else {
+                                sh "mv studio.dmg GAMS_Studio-${versionData}-x86_64.dmg"
                             }
                         }
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
