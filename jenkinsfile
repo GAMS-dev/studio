@@ -3,8 +3,7 @@ def artifactVersion() {
     def major = data.findAll($/(?m)^STUDIO_MAJOR_VERSION=(\d+)/$).first().split('=').last()
     def minor = data.findAll($/(?m)^STUDIO_MINOR_VERSION=(\d+)/$).first().split('=').last()
     def patch = data.findAll($/(?m)^STUDIO_PATCH_LEVEL=(\d+)/$).first().split('=').last()
-    def version = major + "." + minor + "." + patch
-    return version
+    return major + "." + minor + "." + patch
 }
 
 pipeline {
@@ -193,6 +192,7 @@ pipeline {
                             '''
                         }
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
@@ -218,6 +218,7 @@ pipeline {
                             mv "src/bin/GAMS Studio.dmg" studio.dmg
                         '''
                         script {
+                            def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio-${versionData}-x86_64.dmg"
                             } else {
