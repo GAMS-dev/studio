@@ -78,6 +78,7 @@ void ProjectLogNode::markOld()
 void ProjectLogNode::logDone()
 {
     if (mLogFile) {
+        // TODO(JM) rename .log~ to .log
         delete mLogFile;
         mLogFile = nullptr;
     }

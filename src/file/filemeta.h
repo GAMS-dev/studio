@@ -90,6 +90,9 @@ public:
 
 
 public: // static convenience methods
+    inline static void initEditorType(AbstractEdit* w, EditorType type) {
+        if(w) w->setProperty("EditorType", int(type));
+    }
     inline static void initEditorType(CodeEdit* w) {
         if(w) w->setProperty("EditorType", int(EditorType::source));
     }
@@ -115,7 +118,7 @@ public: // static convenience methods
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
             return toLxiViewer(w)->codeEdit();
-        return (t == EditorType::log || t == EditorType::source)
+        return (t == EditorType::log || t == EditorType::source || t == EditorType::txt)
                 ? static_cast<AbstractEdit*>(w) : nullptr;
     }
     inline static CodeEdit* toCodeEdit(QWidget* w) {

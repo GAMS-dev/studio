@@ -35,6 +35,7 @@ class FileType
 public:
     FileKind kind() const;
     QStringList suffix() const;
+    QString defaultSuffix() const;
     QString description() const;
     bool autoReload() const;
 

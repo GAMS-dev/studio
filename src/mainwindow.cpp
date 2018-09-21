@@ -1708,7 +1708,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (!logNode) return;
     if (createMissing) {
         moveToEnd = true;
-        if (logNode->file()->isOpen()) {
+        if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
             wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (FileMeta::toAbstractEdit(wid))

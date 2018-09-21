@@ -53,7 +53,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
         connect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
     }
 
-    if (kind() == FileKind::Gms || kind() == FileKind::Txt) {
+    if (kind() == FileKind::Gms) {
         mHighlighter = new SyntaxHighlighter(document());
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
@@ -582,8 +582,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
                                                                                  : QPlainTextEdit::NoWrap);
         } else {
             codeEdit  = new CodeEdit(tabWidget);
-            initEditorType(codeEdit);
             edit = codeEdit;
+            if (kind() == FileKind::TxtRO || kind() == FileKind::Txt)
+                initEditorType(codeEdit, EditorType::txt);
+            else
+                initEditorType(codeEdit);
             edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                                 : QPlainTextEdit::NoWrap);
         }
@@ -598,8 +601,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             initEditorType(lxiViewer);
             res = lxiViewer;
         }
-        if (kind() == FileKind::Log ||
-                kind() == FileKind::Lst) {
+        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
