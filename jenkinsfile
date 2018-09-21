@@ -221,7 +221,7 @@ pipeline {
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio-${versionData}-x86_64.dmg"
                             } else {
-                                sh "mv studio.dmg GAMS_Studio-${versionData}-x86_64.dmg""
+                                sh "mv studio.dmg GAMS_Studio-${versionData}-x86_64.dmg"
                             }
                         }
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
