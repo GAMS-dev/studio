@@ -142,6 +142,8 @@ public slots:
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
 
+    void createSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile);
+
     void commandLineHelpTriggered();
     void optionRunChanged();
 

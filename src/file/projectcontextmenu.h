@@ -21,6 +21,7 @@
 #define PROJECTCONTEXTMENU_H
 
 #include <QMenu>
+#include <QSignalMapper>
 
 namespace gams {
 namespace studio {
@@ -49,6 +50,8 @@ signals:
     void getSourcePath(QString& source);
     void openLogFor(ProjectAbstractNode* node, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
+    void createSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
+    void newSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile);
 
 private slots:
     void onCloseGroup();
@@ -59,6 +62,8 @@ private slots:
     void onSetMainFile();
     void onRenameGroup();
 
+    void onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
+
 private:
     void onOpenFileLoc();
     void onOpenLog();
@@ -66,6 +71,7 @@ private:
 private:
     ProjectAbstractNode* mNode;
     QHash<int, QAction*> mActions;
+    QHash<int, QAction*> mSolverOptionActions;
     QWidget *mParent = nullptr;
 };
 

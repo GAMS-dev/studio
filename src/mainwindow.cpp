@@ -140,6 +140,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newSolverOptionFile, this, &MainWindow::createSolverOptionFile);
+
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
@@ -1029,6 +1031,15 @@ void MainWindow::appendSystemLog(const QString &text)
 {
     mSyslog->appendLog(text, LogMsgType::Info);
 }
+
+void MainWindow::createSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile)
+{
+    qDebug() << solverOptionDefinitionFile << ", create : " << optionFile;
+
+    // TODO
+     mProjectRepo.findOrCreateFileNode(optionFile, group);
+}
+
 
 void MainWindow::postGamsRun(NodeId origin)
 {

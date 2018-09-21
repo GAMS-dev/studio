@@ -279,6 +279,7 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
+    option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     resultsview.ui \

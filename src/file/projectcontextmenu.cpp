@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDir>
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDesktopServices>
@@ -45,8 +46,32 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(9, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(10, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
 
-//    mActions.insert(2, addSeparator());
+    mActions.insert(11, addSeparator());
+
+    //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
+
+    QMenu* newSolverOptionMenu = addMenu( "Create Solver Option File" );
+
+    int solverOptActionBaseIndex = 100;
+    mActions.insert(solverOptActionBaseIndex, newSolverOptionMenu->menuAction());
+
+    QDir sysdir(CommonPaths::systemDir());
+    QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
+    foreach(QString filename, optFiles) {
+        QString solvername = filename.mid(QString("opt").length());
+        solvername.replace(QRegExp(".def"), "");
+        if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
+            continue;
+
+        QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
+        connect(createSolverOption, &QAction::triggered, [=] { createSolverOptionFile(solvername, filename); });
+
+
+        mSolverOptionActions.insert(++solverOptActionBaseIndex, createSolverOption);
+    }
+    connect(this, &ProjectContextMenu::createSolverOptionFile, this, &ProjectContextMenu::onCreateSolverOptionFile );
+
 }
 
 void ProjectContextMenu::setNode(ProjectAbstractNode* node)
@@ -70,6 +95,12 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 
     // all files
     mActions[10]->setVisible(fileNode);
+
+    // create solver option files
+    mActions[100]->setVisible(isGroup);
+    foreach (QAction* action, mSolverOptionActions)
+        action->setVisible(isGroup);
+
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -160,6 +191,35 @@ void ProjectContextMenu::onRenameGroup()
 {
     ProjectGroupNode *group = mNode->toGroup();
     if (group) emit renameGroup(group);
+}
+
+void ProjectContextMenu::onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile)
+{
+    qDebug() << solverOptionDefinitionFile;
+
+    QString filePath = QFileDialog::getSaveFileName(mParent,
+                                                    QString("Create %1 option file...").arg(solverName),
+                                                    QString("%1.opt").arg(solverName),
+                                                    tr(QString("%1 option file (%1.opt %1.op*);;All files (*.*)").arg(solverName).toLatin1()),
+                                                    nullptr,
+                                                    DONT_RESOLVE_SYMLINKS_ON_MACOS);
+
+    if (filePath == "") return;
+
+    QFileInfo fi(filePath);
+//    if (fi.suffix().isEmpty())
+//        filePath += ".gms";
+
+    QFile file(filePath);
+    if (!file.exists()) { // create
+        file.open(QIODevice::WriteOnly);
+        file.close();
+    } else { // replace old
+        file.resize(0);
+    }
+    ProjectGroupNode *group = mNode->toGroup();
+    if (!group) group = mNode->parentNode();
+    emit newSolverOptionFile(group, solverOptionDefinitionFile, filePath);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
