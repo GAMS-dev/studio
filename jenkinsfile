@@ -147,7 +147,7 @@ pipeline {
                         script {
                             def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}.AppImage"
+                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
                             }
