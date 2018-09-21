@@ -457,6 +457,22 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
 
+    if (QFileInfo(fullPath).suffix().isEmpty()) {
+        switch (fk) {
+        case FileKind::Gdx:
+            fullPath += ".gdx";
+            break;
+        case FileKind::Lst:
+            // no! gams does not add lst extension. unlike .ref or .gdx
+            break;
+        case FileKind::Ref:
+            fullPath += ".ref";
+            break;
+        default:
+            qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
+        }
+    }
+
     mSpecialFiles.insert(fk, fullPath);
 }
 

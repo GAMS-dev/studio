@@ -169,8 +169,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
+
+    // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
+
 
     // set up services
     SearchLocator::provide(mSearchDialog);
@@ -553,17 +558,21 @@ void MainWindow::showLogTabsMenu()
 void MainWindow::showTabsMenu()
 {
     QWidget * wid = focusWidget();
-    while (wid) {
-        if (wid == ui->mainTab) {
-            showMainTabsMenu();
-            break;
-        }
-        if (wid == ui->logTabs) {
-            showLogTabsMenu();
-            break;
-        }
-        wid = wid->parentWidget();
-    }
+
+    if (wid->parent()->parent() == ui->logTabs)
+        showLogTabsMenu();
+    else
+        showMainTabsMenu();
+}
+
+void MainWindow::focusCmdLine()
+{
+    mGamsOptionWidget->focus();
+}
+
+void MainWindow::focusProjectExplorer()
+{
+    ui->projectView->setFocus(Qt::ShortcutFocusReason);
 }
 
 void MainWindow::updateEditorPos()
@@ -1778,8 +1787,12 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
-        if (FileMeta::toCodeEdit(edit))
-                connect(FileMeta::toCodeEdit(edit), &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+        if (FileMeta::toCodeEdit(edit)) {
+            CodeEdit* ce = FileMeta::toCodeEdit(edit);
+            connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+        }
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
             AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
