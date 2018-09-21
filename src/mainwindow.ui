@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -206,6 +206,7 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="actionLicense_Information"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
@@ -892,6 +893,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
+  <action name="actionLicense_Information">
+   <property name="text">
+    <string>License Information</string>
    </property>
   </action>
  </widget>

@@ -1146,23 +1146,39 @@ void MainWindow::on_actionAbout_triggered()
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>.<br/><br/>";
     about += "The source code of the program can be accessed at ";
     about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a>.";
-    about += "<br/><br/><b><big>GAMS Distribution ";
-    about += CheckForUpdateWrapper::distribVersionString();
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Information);
+    box.setWindowTitle("About");
+    box.setText(about);
+    box.setIconPixmap(QPixmap(":/img/gams-w24"));
+    box.addButton("Close", QMessageBox::RejectRole);
+    QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    QGridLayout* layout = (QGridLayout*)box.layout();
+    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+    box.exec();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+    QString about = "<br/><br/><b><big>GAMS Distribution ";
     about += "</big></b><br/><br/>";
     GamsProcess gproc;
     about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
-    box.setWindowTitle("About GAMS Studio");
+    box.setWindowTitle("License Information");
     box.setText(about);
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     box.addButton("Copy product info", QMessageBox::AcceptRole);
-    int answer = box.exec();
+    box.addButton("Show more", QMessageBox::AcceptRole);
 
+    QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    QGridLayout* layout = (QGridLayout*)box.layout();
+    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+    int answer = box.exec();
     if (answer) {
         QClipboard *clip = QGuiApplication::clipboard();
         clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
@@ -2505,5 +2521,7 @@ void MainWindow::on_actionPreviousTab_triggered()
 
 }
 }
+
+
 
 

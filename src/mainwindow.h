@@ -248,6 +248,8 @@ private slots:
     void on_actionPreviousTab_triggered();
     void on_referenceJumpTo(reference::ReferenceItem item);
 
+    void on_actionLicense_Information_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
