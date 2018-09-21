@@ -222,10 +222,9 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
 
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
-
     if (!skipFilters) {
         if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fm->location()) == -1))
-                || (fm->kind() == FileKind::Gdx) || (fm->kind() == FileKind::Log)) {
+                || (fm->kind() == FileKind::Gdx) || (fm->kind() == FileKind::Log)|| (fm->kind() == FileKind::Ref)) {
             return QList<Result>(); // dont search here, return empty
         }
     }
@@ -349,16 +348,11 @@ void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-    if (!fc) return;
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
-    if (!edit) return;
-
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
         QApplication::processEvents();
         mCachedResults.clear();
-        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(edit), true));
+        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
         mHasChanged = false;
     }
 
@@ -518,6 +512,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     if (regex()) searchRegex.setPattern(searchTerm);
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+    if (!fc) return;
+
     AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
 
     if (regex())

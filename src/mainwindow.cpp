@@ -1787,8 +1787,12 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
-        if (FileMeta::toCodeEdit(edit))
-                connect(FileMeta::toCodeEdit(edit), &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+        if (FileMeta::toCodeEdit(edit)) {
+            CodeEdit* ce = FileMeta::toCodeEdit(edit);
+            connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+        }
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
             AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
