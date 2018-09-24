@@ -122,6 +122,7 @@ SOURCES += \
     option/optiontablemodel.cpp \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
+    option/solveroptionwidget.cpp \
     reference/reference.cpp \
     reference/referencetabstyle.cpp \
     reference/referencedatatype.cpp \
@@ -225,6 +226,7 @@ HEADERS += \
     option/optiontablemodel.h \
     option/optiontokenizer.h \
     option/optionwidget.h \
+    option/solveroptionwidget.h \
     reference/reference.h \
     reference/referencetabstyle.h \
     reference/referencedatatype.h \
