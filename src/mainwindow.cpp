@@ -171,8 +171,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
+
+    // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
+
 
     // set up services
     SearchLocator::provide(mSearchDialog);
@@ -555,17 +560,21 @@ void MainWindow::showLogTabsMenu()
 void MainWindow::showTabsMenu()
 {
     QWidget * wid = focusWidget();
-    while (wid) {
-        if (wid == ui->mainTab) {
-            showMainTabsMenu();
-            break;
-        }
-        if (wid == ui->logTabs) {
-            showLogTabsMenu();
-            break;
-        }
-        wid = wid->parentWidget();
-    }
+
+    if (wid->parent()->parent() == ui->logTabs)
+        showLogTabsMenu();
+    else
+        showMainTabsMenu();
+}
+
+void MainWindow::focusCmdLine()
+{
+    mGamsOptionWidget->focus();
+}
+
+void MainWindow::focusProjectExplorer()
+{
+    ui->projectView->setFocus(Qt::ShortcutFocusReason);
 }
 
 void MainWindow::updateEditorPos()
@@ -1719,7 +1728,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (!logNode) return;
     if (createMissing) {
         moveToEnd = true;
-        if (logNode->file()->isOpen()) {
+        if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
             wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (FileMeta::toAbstractEdit(wid))
@@ -1789,6 +1798,12 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
         }
+        if (FileMeta::toCodeEdit(edit)) {
+            CodeEdit* ce = FileMeta::toCodeEdit(edit);
+            connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+        }
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
             AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
@@ -1841,6 +1856,8 @@ void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib)
 void MainWindow::closeGroup(ProjectGroupNode* group)
 {
     if (!group) return;
+    ProjectGroupNode *parentGroup = group->parentNode();
+    if (parentGroup && parentGroup->type() == NodeType::root) parentGroup = nullptr;
     ProjectRunGroupNode *runGroup = group->assignedRunGroup();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
@@ -1865,6 +1882,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
         mProjectRepo.closeGroup(group);
     }
+    purgeGroup(parentGroup);
 }
 
 /// Asks user for confirmation if a file is modified before calling closeFile
@@ -1872,12 +1890,24 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
 ///
 void MainWindow::closeNodeConditionally(ProjectFileNode* node)
 {
-    QVector<ProjectFileNode*> fiNodes = mProjectRepo.fileNodes(node->file()->id());
-    fiNodes.removeAll(node);
+    // count nodes to the same file
+    int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
+    ProjectGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
-    if (!fiNodes.isEmpty() || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
+    if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
         closeFileEditors(node->file()->id());
         mProjectRepo.closeNode(node);
+    }
+    purgeGroup(group);
+}
+
+void MainWindow::purgeGroup(ProjectGroupNode *&group)
+{
+    if (!group) return;
+    // close group if it's empty or only contains a log-node
+    if (group->isPurgeable()) {
+        closeGroup(group);
+        group = nullptr;
     }
 }
 

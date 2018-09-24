@@ -57,6 +57,12 @@ int ProjectGroupNode::childCount() const
     return mChildNodes.count();
 }
 
+bool ProjectGroupNode::isPurgeable()
+{
+    ProjectRunGroupNode *runGroup = assignedRunGroup();
+    return ( mChildNodes.count() == 0 || (mChildNodes.count() == 1 && childNode(0) == runGroup->logNode()) );
+}
+
 ProjectAbstractNode*ProjectGroupNode::childNode(int index) const
 {
     return mChildNodes.at(index);
@@ -244,9 +250,10 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
 ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
 {
     if (!mLogNode) {
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
         QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
-                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+".log");;
-        QString logName = fi.path()+"/"+fi.completeBaseName()+".log";
+                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+"."+suffix);
+        QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
         FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
     }
@@ -449,6 +456,22 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+
+    if (QFileInfo(fullPath).suffix().isEmpty()) {
+        switch (fk) {
+        case FileKind::Gdx:
+            fullPath += ".gdx";
+            break;
+        case FileKind::Lst:
+            // no! gams does not add lst extension. unlike .ref or .gdx
+            break;
+        case FileKind::Ref:
+            fullPath += ".ref";
+            break;
+        default:
+            qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
+        }
+    }
 
     mSpecialFiles.insert(fk, fullPath);
 }

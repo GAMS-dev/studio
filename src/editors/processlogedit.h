@@ -38,6 +38,8 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
     void jumpToLst(QPoint pos, bool fuzzy);
+    void contextMenuEvent(QContextMenuEvent *e) override;
+
 };
 
 }

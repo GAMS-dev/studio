@@ -467,6 +467,11 @@ QString OptionWidget::getCurrentCommandLineData() const
     return ui->gamsOptionCommandLine->getCurrentOption();
 }
 
+void OptionWidget::focus()
+{
+    ui->gamsOptionCommandLine->setFocus(Qt::ShortcutFocusReason);
+}
+
 }
 }
 }

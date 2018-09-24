@@ -41,12 +41,13 @@ private slots:
 
 private:
     void openFile();
-    void handleExisting(int backups);
+    void runBackupCircle();
 
 private:
     QMutex mMutex;
     QFile mFile;
     QTimer mCloseTimer;
+    int mBackups = 0;
 };
 
 } // namespace studio

@@ -253,6 +253,9 @@ private slots:
     void on_actionPreviousTab_triggered();
     void on_referenceJumpTo(reference::ReferenceItem item);
 
+    void focusCmdLine();
+    void focusProjectExplorer();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -286,6 +289,7 @@ private:
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
+    void purgeGroup(ProjectGroupNode *&group);
 
 private:
     Ui::MainWindow *ui;

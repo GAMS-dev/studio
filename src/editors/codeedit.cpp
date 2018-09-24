@@ -660,10 +660,12 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         }
         lastAct = act;
     }
-    QMenu *submenu = menu->addMenu(tr("Advanced"));
-    QList<QAction*> ret;
-    emit requestAdvancedActions(&ret);
-    submenu->addActions(ret);
+    if (!isReadOnly()) {
+        QMenu *submenu = menu->addMenu(tr("Advanced"));
+        QList<QAction*> ret;
+        emit requestAdvancedActions(&ret);
+        submenu->addActions(ret);
+    }
     menu->exec(e->globalPos());
     delete menu;
 }

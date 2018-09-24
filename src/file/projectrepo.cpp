@@ -220,11 +220,11 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, gprArray);
-                    if (subGroup->childCount()) {
+                    if (subGroup->isPurgeable()) {
+                        closeGroup(subGroup);
+                    } else {
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
-                    } else {
-                        closeGroup(subGroup); // dont open empty groups
                     }
                 }
             }
@@ -232,7 +232,8 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
                 FileType *ft = &FileType::from(jsonObject["type"].toString(""));
-                findOrCreateFileNode(file, group, ft, name);
+                if (QFileInfo(file).exists())
+                    findOrCreateFileNode(file, group, ft, name);
             }
         }
     }
@@ -368,11 +369,6 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
-
-    // close group if empty now
-    if (runGroup->childCount() == 0)
-        closeGroup(runGroup);
-
     emit changed();
 }
 
