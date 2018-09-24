@@ -29,6 +29,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 Option::Option(const QString &systemPath, const QString &optionFileName) :
     mOptionDefinitionPath(systemPath), mOptionDefinitionFile(optionFileName)
@@ -510,5 +511,6 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

@@ -344,7 +344,7 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
     return mRunParametersHistory;
 }
 
-QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
+QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList)
 {
     // set studio default parameters
     QMap<QString, QString> defaultGamsArgs;
@@ -363,7 +363,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     setSpecialFile(FileKind::Lst, fi.baseName() + ".lst");
 
     // iterate options
-    for (OptionItem item : itemList) {
+    for (option::OptionItem item : itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {

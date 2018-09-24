@@ -35,6 +35,8 @@ namespace studio {
 
 class MainWindow;
 
+namespace option {
+
 enum class RunActionState {
     Run,
     RunWithGDXCreation,
@@ -108,6 +110,7 @@ private:
     OptionTokenizer* mOptionTokenizer;
 };
 
+}
 }
 }
 

@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionDefinitionModel::OptionDefinitionModel(Option* data, QObject* parent)
     : QAbstractItemModel(parent)
@@ -262,5 +263,6 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
     }
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

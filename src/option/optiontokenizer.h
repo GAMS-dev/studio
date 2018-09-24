@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 struct OptionError {
     OptionError() { }
@@ -87,6 +88,7 @@ private:
     void formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList);
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionDefinitionItem::OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parent)
 {
@@ -71,6 +72,6 @@ OptionDefinitionItem *OptionDefinitionItem::parentItem()
     return mParentItem;
 }
 
-
+} // namespace option
 } // namespace studio
 } // namespace gams

@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionDefinitionItem
 {
@@ -48,6 +49,7 @@ private:
 
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

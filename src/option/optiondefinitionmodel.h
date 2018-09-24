@@ -28,6 +28,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionDefinitionModel : public QAbstractItemModel
 {
@@ -61,6 +62,7 @@ private:
 
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

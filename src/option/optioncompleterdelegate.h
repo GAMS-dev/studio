@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionCompleterDelegate : public QStyledItemDelegate
 {
@@ -50,6 +51,7 @@ private:
     Option* mOption;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

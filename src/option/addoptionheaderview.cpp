@@ -26,7 +26,7 @@
 
 namespace gams {
 namespace studio {
-
+namespace option {
 
 AddOptionHeaderView::AddOptionHeaderView(Qt::Orientation orientation, QWidget *parent) :
         QHeaderView(orientation, parent)
@@ -97,5 +97,6 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
     }
 }
 
+} // namepsace option
 } // namespace studio
 } // namespace gams

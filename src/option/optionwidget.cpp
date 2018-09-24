@@ -31,6 +31,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
     ui(new Ui::OptionWidget),
@@ -466,5 +467,6 @@ QString OptionWidget::getCurrentCommandLineData() const
     return ui->gamsOptionCommandLine->getCurrentOption();
 }
 
+}
 }
 }

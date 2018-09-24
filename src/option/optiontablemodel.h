@@ -28,6 +28,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionTableModel : public QAbstractTableModel
 {
@@ -77,6 +78,7 @@ private:
     void itemizeOptionFromCommandLineStr(const QString text);
 };
 
+} // namepsace option
 } // namespace studio
 } // namespace gams
 

@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class AddOptionHeaderView : public QHeaderView
 {
@@ -51,6 +52,7 @@ private:
     bool isAddOptionCoordinate(QPoint p);
 };
 
+} // namepsage option
 } // namespace studio
 } // namespace gams
 

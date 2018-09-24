@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent) :
     QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption())
@@ -118,5 +119,6 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
    return QStyledItemDelegate::eventFilter(editor, event);
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

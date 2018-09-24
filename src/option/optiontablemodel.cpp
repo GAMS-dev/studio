@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mOptionTokenizer(tokenizer)
@@ -466,5 +467,6 @@ void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
     }
 }
 
+} // namepsace option
 } // namespace studio
 } // namespace gams

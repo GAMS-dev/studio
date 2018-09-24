@@ -83,7 +83,7 @@
        </widget>
       </item>
       <item>
-       <widget class="gams::studio::CommandLineOption" name="gamsOptionCommandLine">
+       <widget class="gams::studio::option::CommandLineOption" name="gamsOptionCommandLine">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -203,7 +203,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>gams::studio::CommandLineOption</class>
+   <class>gams::studio::option::CommandLineOption</class>
    <extends>QComboBox</extends>
    <header>option/commandlineoption.h</header>
   </customwidget>

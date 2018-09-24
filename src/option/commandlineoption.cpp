@@ -23,6 +23,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 CommandLineOption::CommandLineOption(QWidget *parent) :
     CommandLineOption(true, parent)
@@ -99,5 +100,6 @@ void CommandLineOption::validated(bool value)
     mValidated = value;
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

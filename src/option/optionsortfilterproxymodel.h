@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionSortFilterProxyModel : public QSortFilterProxyModel
 {
@@ -39,6 +40,7 @@ protected:
 
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

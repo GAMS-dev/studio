@@ -49,6 +49,9 @@ class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+namespace option {
+class OptionWidget;
+}
 
 struct RecentData {
 
@@ -126,7 +129,7 @@ public:
     void convertLowerUpper(bool toUpper);
 
     HelpWidget *helpWidget() const;
-    OptionWidget *gamsOptionWidget() const;
+    option::OptionWidget *gamsOptionWidget() const;
 
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
@@ -293,7 +296,7 @@ private:
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
     HelpWidget *mHelpWidget = nullptr;
-    OptionWidget *mGamsOptionWidget = nullptr;
+    option::OptionWidget *mGamsOptionWidget = nullptr;
     ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;

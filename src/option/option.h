@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 enum OptionErrorType {
     No_Error,
@@ -163,6 +164,7 @@ const int OPTION_VALUE_MAXINT = INT_MAX;
 const int OPTION_VALUE_MININT = INT_MIN;
 const int OPTION_VALUE_DECIMALS = 20;
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

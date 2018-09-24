@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 {
@@ -560,5 +561,6 @@ void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionErro
     QCoreApplication::sendEvent(lineEdit, &event);
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

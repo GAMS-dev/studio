@@ -11,6 +11,7 @@ class SolverOptionWidget;
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class MainWindow;
 
@@ -34,6 +35,8 @@ private:
     NodeId mGroupId;
 };
 
+
+}
 }
 }
 #endif // SOLVEROPTIONWIDGET_H

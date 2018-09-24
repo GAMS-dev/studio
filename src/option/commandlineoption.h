@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class CommandLineOption : public QComboBox
 {
@@ -61,6 +62,7 @@ private:
     bool mValidated;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

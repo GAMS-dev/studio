@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->hide();
 
-    mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+    mGamsOptionWidget = new option::OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
@@ -1509,8 +1509,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);
-    if (event->type() == LineEditCompleteEvent::type())
-        (static_cast<LineEditCompleteEvent*>(event))->complete();
+    if (event->type() == option::LineEditCompleteEvent::type())
+        (static_cast<option::LineEditCompleteEvent*>(event))->complete();
 }
 
 void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
@@ -1523,7 +1523,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-OptionWidget *MainWindow::gamsOptionWidget() const
+option::OptionWidget *MainWindow::gamsOptionWidget() const
 {
     return mGamsOptionWidget;
 }
@@ -1619,7 +1619,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logProc->setJumpToLogEnd(true);
 
     // prepare the options and process and run it
-    QList<OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
+    QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
     GamsProcess* process = runGroup->gamsProcess();
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
     process->setGroupId(runGroup->id());
@@ -1672,22 +1672,22 @@ void MainWindow::optionRunChanged()
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(RunActionState::Run) );
+    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Run) );
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(RunActionState::RunWithGDXCreation) );
+    execute( mGamsOptionWidget->on_runAction(option::RunActionState::RunWithGDXCreation) );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(RunActionState::Compile) );
+    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Compile) );
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(RunActionState::CompileWithGDXCreation) );
+    execute( mGamsOptionWidget->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
 void MainWindow::on_actionInterrupt_triggered()

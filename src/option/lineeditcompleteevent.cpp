@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 LineEditCompleteEvent::LineEditCompleteEvent(QLineEdit *lineEdit) :
     QEvent(LineEditCompleteEvent::type()), mLineEdit(lineEdit)
@@ -44,5 +45,6 @@ QEvent::Type LineEditCompleteEvent::type()
 
 QEvent::Type LineEditCompleteEvent::LineEditCompleteEventType = QEvent::None;
 
+} // namespace option
 } // namespace studio
 } // namespace gams

@@ -4,6 +4,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QWidget *parent) :
           QWidget(parent),
@@ -39,5 +40,6 @@ void SolverOptionWidget::setGroupId(const NodeId &groupId)
     mGroupId = groupId;
 }
 
+}
 }
 }
