@@ -169,7 +169,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
                  bool isCorrectDataType = false;
                  double d = value.toDouble(&isCorrectDataType);
                  int ivalue = static_cast<int>(d);
-                 if (std::abs(d-ivalue) < 0.01)
+                 if (qAbs(d-ivalue) < 0.01)
                      n = ivalue;
                  else
                     return Incorrect_Value_Type;
