@@ -5,15 +5,16 @@
 
 #include "common.h"
 
-namespace Ui {
-class SolverOptionWidget;
-}
 
 namespace gams {
 namespace studio {
 namespace option {
 
-class MainWindow;
+namespace Ui {
+class SolverOptionWidget;
+}
+
+class OptionTokenizer;
 
 class SolverOptionWidget : public QWidget
 {
@@ -33,6 +34,8 @@ private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
     NodeId mGroupId;
+
+    OptionTokenizer* mOptionTokenizer;
 };
 
 

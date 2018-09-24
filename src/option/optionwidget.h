@@ -26,16 +26,16 @@
 #include "commandlineoption.h"
 #include "optiontokenizer.h"
 
-namespace Ui {
-class OptionWidget;
-}
-
 namespace gams {
 namespace studio {
 
 class MainWindow;
 
 namespace option {
+
+namespace Ui {
+class OptionWidget;
+}
 
 enum class RunActionState {
     Run,

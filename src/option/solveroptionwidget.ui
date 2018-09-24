@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SolverOptionWidget</class>
- <widget class="QWidget" name="SolverOptionWidget">
+ <class>gams::studio::option::SolverOptionWidget</class>
+ <widget class="QWidget" name="gams::studio::option::SolverOptionWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
