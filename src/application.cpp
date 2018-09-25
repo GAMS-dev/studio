@@ -99,6 +99,7 @@ void Application::openAssociatedFiles()
 {
     mMainWindow->delayedFileRestoration();
     mMainWindow->openFiles(mCmdParser.files());
+    mMainWindow->watchProjectTree();
 }
 
 void Application::showExceptionMessage(const QString &title, const QString &message) {

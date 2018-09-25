@@ -123,7 +123,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
-    connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -187,6 +186,11 @@ void MainWindow::delayedFileRestoration()
 {
     mSettings->restoreTabsAndProjects(this);
     mSettings->restoreLastFilesUsed(this);
+}
+
+void MainWindow::watchProjectTree()
+{
+    connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
 }
 
 MainWindow::~MainWindow()
