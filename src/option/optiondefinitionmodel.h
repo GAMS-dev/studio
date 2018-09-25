@@ -34,8 +34,8 @@ class OptionDefinitionModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    OptionDefinitionModel(Option* data, QObject* parent=0);
-    ~OptionDefinitionModel();
+    OptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
+    ~OptionDefinitionModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -47,6 +47,13 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    OptionDefinitionItem* getItem(const QModelIndex &index) const;
+    void insertItem(int position, OptionDefinitionItem* item, const QModelIndex &parent);
+    bool removeItem(const QModelIndex &index);
+
+//    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
@@ -54,12 +61,17 @@ public:
     static const int COLUMN_SYNONYM = 1;
     static const int COLUMN_DEF_VALUE = 2;
     static const int COLUMN_DATA_TYPE = 3;
+
+public slots:
+    void loadOptionFromGroup(const int group);
+
 private:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);
     void setupModelData(const QStringList& lines, OptionDefinitionItem* parent);
 
+    int mOptionGroup;
+    Option* mOption;
     OptionDefinitionItem *rootItem;
-
 };
 
 } // namespace option

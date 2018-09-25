@@ -44,6 +44,11 @@ OptionDefinitionItem *OptionDefinitionItem::child(int row)
     return mChildItems.value(row);
 }
 
+OptionDefinitionItem *OptionDefinitionItem::parent()
+{
+    return mParentItem;
+}
+
 int OptionDefinitionItem::childCount() const
 {
     return mChildItems.count();
@@ -70,6 +75,28 @@ QVariant OptionDefinitionItem::data(int column) const
 OptionDefinitionItem *OptionDefinitionItem::parentItem()
 {
     return mParentItem;
+}
+
+void OptionDefinitionItem::setParent(OptionDefinitionItem *parent)
+{
+    mParentItem = parent;
+}
+
+void OptionDefinitionItem::insertChild(int row, OptionDefinitionItem* item)
+{
+    item->setParent(this);
+    mChildItems.insert(row, item);
+}
+
+bool OptionDefinitionItem::removeChildren(int position, int count)
+{
+    if (position < 0 || position + count > mChildItems.size())
+        return false;
+
+    for (int row = 0; row < count; ++row)
+        delete mChildItems.takeAt(position);
+
+    return true;
 }
 
 } // namespace option

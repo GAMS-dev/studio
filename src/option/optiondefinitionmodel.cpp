@@ -17,22 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <QDebug>
 #include "optiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-OptionDefinitionModel::OptionDefinitionModel(Option* data, QObject* parent)
-    : QAbstractItemModel(parent)
+OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObject* parent)
+    : QAbstractItemModel(parent), mOptionGroup(optionGroup), mOption(data)
 {
     QList<QVariant> rootData;
     rootData << "Option" << "Synonym" << "DefValue" // << "Range"
              << "Type" << "Description";
     rootItem = new OptionDefinitionItem(rootData);
 
-    setupTreeItemModelData(data, rootItem);
+    setupTreeItemModelData(mOption, rootItem);
 }
 
 OptionDefinitionModel::~OptionDefinitionModel()
@@ -46,6 +46,48 @@ int OptionDefinitionModel::columnCount(const QModelIndex& parent) const
         return static_cast<OptionDefinitionItem*>(parent.internalPointer())->columnCount();
     else
         return rootItem->columnCount();
+}
+
+OptionDefinitionItem *OptionDefinitionModel::getItem(const QModelIndex &index) const
+{
+    if (index.isValid()) {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        if (item)
+            return item;
+    }
+    return rootItem;
+}
+
+void OptionDefinitionModel::insertItem(int position, OptionDefinitionItem *item, const QModelIndex &parent)
+{
+    OptionDefinitionItem* parentItem = getItem(parent);
+
+    beginInsertRows(parent, position, position);
+    parentItem->insertChild(position, item);
+    endInsertRows();
+}
+
+bool OptionDefinitionModel::removeItem(const QModelIndex &index)
+{
+    OptionDefinitionItem* treeItem = getItem(index);
+    if (treeItem)
+        return removeRows(treeItem->row(), 1, parent(index));
+    else
+        return false;
+}
+
+bool OptionDefinitionModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    OptionDefinitionItem* parentItem = getItem(parent);
+    bool success = false;
+
+    if (count > 0) {
+        beginRemoveRows(parent, row, row + count - 1);
+        success = parentItem->removeChildren(row, count);
+        endRemoveRows();
+    }
+
+    return success;
 }
 
 QStringList OptionDefinitionModel::mimeTypes() const
@@ -84,6 +126,19 @@ QMimeData* OptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
 
     mimeData->setData("application/vnd.gams-pf.text", encodedData);
     return mimeData;
+}
+
+void OptionDefinitionModel::loadOptionFromGroup(const int group)
+{
+    qDebug() << "option from group " << group << " to be loaded!";
+    mOptionGroup = group;
+    beginResetModel();
+
+    removeRows(0, rowCount(), QModelIndex());
+
+    setupTreeItemModelData(mOption, rootItem);
+
+    endResetModel();
 }
 
 QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
@@ -172,6 +227,9 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         OptionDefinition optdef =  it.value();
         if ((optdef.deprecated) || (!optdef.valid))
             continue;
+        if (mOptionGroup > 0 && mOptionGroup != optdef.groupNumber)
+            continue;
+
         QList<QVariant> columnData;
 
         QString optionStr = optdef.name

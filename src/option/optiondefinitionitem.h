@@ -35,13 +35,17 @@ public:
 
     void appendChild(OptionDefinitionItem *child);
 
-    OptionDefinitionItem *child(int row);
+    OptionDefinitionItem* child(int row);
+    OptionDefinitionItem* parent();
     int childCount() const;
     int columnCount() const;
     QVariant data(int column) const;
     int row() const;
     OptionDefinitionItem *parentItem();
 
+    void setParent(OptionDefinitionItem* parent);
+    void insertChild(int row, OptionDefinitionItem* item);
+    bool removeChildren(int position, int count);
 private:
     QList<OptionDefinitionItem*> mChildItems;
     QList<QVariant> mItemData;
