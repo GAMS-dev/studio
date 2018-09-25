@@ -109,6 +109,7 @@ public:
     void dumpAll();
 
     bool isValid(const QString &optionName) const;
+    bool isSynonymDefined() const;
     bool isASynonym(const QString &optionName) const;
     bool isDeprecated(const QString &optionName) const;
     bool isDoubleDashedOption(const QString &option) const;

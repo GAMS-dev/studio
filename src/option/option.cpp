@@ -95,6 +95,11 @@ bool Option::isValid(const QString &optionName) const
     return mOption.contains(optionName.toUpper());
 }
 
+bool Option::isSynonymDefined() const
+{
+    return !mSynonymMap.isEmpty();
+}
+
 bool Option::isASynonym(const QString &optionName) const
 {
     return mSynonymMap.contains( optionName.toUpper() );
