@@ -269,8 +269,11 @@ void SearchDialog::findNext(SearchDirection direction)
         QApplication::processEvents();
         mCachedResults.clear();
         mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
+        mCachedResults.setSearchTerm(createRegex().pattern());
+        mCachedResults.useRegex(regex());
         mHasChanged = false;
     }
+
     selectNextMatch(direction);
 }
 

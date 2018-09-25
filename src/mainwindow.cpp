@@ -826,10 +826,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
 
 void MainWindow::activeTabChanged(int index)
 {
-    // remove highlights from old tab
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
-//    if (oldTab)
-//        oldTab->removeTextMarks(TextMark::match, true);
 
     // TODO(JM) eventually crashes on close
     mRecent.setEditor(nullptr, this);
@@ -841,16 +838,15 @@ void MainWindow::activeTabChanged(int index)
     loadCommandLineOptions(oldTab, mProjectRepo.findFileNode(editWidget));
     updateRunState();
 
-    // TODO(JM) missing common base class for all viewers/editors
     if (node) {
         mRecent.editFileId = node->file()->id();
         mStatusWidgets->setFileName(node->location());
         mStatusWidgets->setEncoding(node->file()->codecMib());
+        mRecent.setEditor(editWidget, this);
+
         if (edit) {
-            mRecent.setEditor(edit, this);
             mRecent.group = mProjectRepo.asGroup(edit->groupId());
 
-            // TODO(JM) find current ProjectFileNode to load commandlineoptions
             if (!edit->isReadOnly()) {
                 ui->menuEncoding->setEnabled(true);
             }
@@ -859,13 +855,11 @@ void MainWindow::activeTabChanged(int index)
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
         } else if (gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
-            mRecent.setEditor(gdxViewer, this);
             mRecent.group = mProjectRepo.asGroup(gdxViewer->groupId());
             mStatusWidgets->setLineCount(-1);
             gdxViewer->reload();
         } else if (reference::ReferenceViewer* refViewer = FileMeta::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
-            mRecent.setEditor(refViewer, this);
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
             if (fc) {
                 mRecent.editFileId = fc->file()->id();
@@ -882,7 +876,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    if (searchDialog()) searchDialog()->updateReplaceActionAvailability();
+    searchDialog()->updateReplaceActionAvailability();
 
     CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
