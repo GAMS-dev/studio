@@ -33,7 +33,7 @@ class CommandLineOption : public QComboBox
 public:
     CommandLineOption(QWidget* parent);
     CommandLineOption(bool validateFlag, QWidget* parent);
-    ~CommandLineOption();
+    ~CommandLineOption() override;
 
     QString getCurrentOption() const;
 

@@ -32,7 +32,7 @@ class OptionCompleterDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent = 0);
+    OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;

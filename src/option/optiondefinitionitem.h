@@ -30,7 +30,7 @@ namespace option {
 class OptionDefinitionItem
 {
 public:
-    OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parentItem = 0);
+    OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parentItem = nullptr);
     ~OptionDefinitionItem();
 
     void appendChild(OptionDefinitionItem *child);
@@ -46,7 +46,6 @@ private:
     QList<OptionDefinitionItem*> mChildItems;
     QList<QVariant> mItemData;
     OptionDefinitionItem *mParentItem;
-
 };
 
 } // namespace option

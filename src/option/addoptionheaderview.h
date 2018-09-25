@@ -32,7 +32,7 @@ class AddOptionHeaderView : public QHeaderView
 
 public:
     AddOptionHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
-    ~AddOptionHeaderView();
+    ~AddOptionHeaderView() override;
 
 protected:
     bool event(QEvent *event) override;
