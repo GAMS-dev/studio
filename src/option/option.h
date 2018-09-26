@@ -88,8 +88,8 @@ struct OptionDefinition {
     optOptionType type;
     optDataType dataType;
     QString description;
-    bool deprecated;
-    bool valid;
+    bool deprecated = false;
+    bool valid = false;
     QVariant defaultValue;
     QVariant lowerBound;
     QVariant upperBound;

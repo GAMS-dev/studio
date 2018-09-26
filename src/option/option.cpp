@@ -108,7 +108,8 @@ bool Option::isASynonym(const QString &optionName) const
 bool Option::isDeprecated(const QString &optionName) const
 {
     if (isValid(optionName))
-       return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
+        return mOption[optionName.toUpper()].deprecated;
+//       return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
 
     return false;
 }
@@ -416,7 +417,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              int helpContextNr;
              optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
              opt.groupNumber = group;
-             opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
+//             opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
              opt.valid = (helpContextNr == 1);
              if (synonym.contains(nameStr)) {
                  QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
