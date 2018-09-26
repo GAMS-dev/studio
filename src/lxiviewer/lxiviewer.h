@@ -46,15 +46,12 @@ public:
     CodeEdit *codeEdit() const;
 
 public slots:
-    void loadLxiFile(ProjectRunGroupNode *group);
-    void loadLstFile(ProjectRunGroupNode *group);
+    void loadLxi();
+//    void loadLstFile(ProjectRunGroupNode *group);
 
 private slots:
     void jumpToTreeItem();
     void jumpToLine(const QModelIndex &modelIndex);
-
-private:
-    void loadLxi();
 
 private:
     Ui::LxiViewer *ui;

@@ -325,6 +325,12 @@ void FileMeta::load(QList<int> codecMibs)
         }
         return;
     }
+    if (kind() == FileKind::Lst) {
+        for (QWidget *wid : mEditors) {
+            lxiviewer::LxiViewer *lxi = toLxiViewer(wid);
+            if (lxi) lxi->loadLxi();
+        }
+    }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);
@@ -348,27 +354,21 @@ void FileMeta::load(QList<int> codecMibs)
             codec = QTextCodec::codecForMib(mib);
             if (codec) {
                 text = codec->toUnicode(data.constData(), data.size(), &state);
-                if (state.invalidChars == 0) {
+                if (state.invalidChars == 0)
                     break;
-                }
             } else {
                 DEB() << "System doesn't contain codec for MIB " << mib;
             }
         }
         if (codec) {
-//            if (mMarks && keepMarks)
-//                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
             QVector<QPoint> edPos = getEditPositions();
             document()->setPlainText(text);
             setEditPositions(edPos);
-//            if (mMarks && keepMarks)
-//                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
             mCodec = codec;
         }
         file.close();
         mData = Data(location());
         document()->setModified(false);
-//        QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
     }
 }
 
