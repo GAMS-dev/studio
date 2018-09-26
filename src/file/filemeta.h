@@ -168,6 +168,8 @@ private:
     void setEditPositions(QVector<QPoint> edPositions);
     void internalSave(const QString &location);
     bool checkActivelySavedAndReset();
+    void linkDocument(QTextDocument *doc);
+    void unlinkDocument();
 
 private:
     FileId mId;
