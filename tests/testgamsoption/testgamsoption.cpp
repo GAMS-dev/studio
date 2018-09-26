@@ -22,7 +22,6 @@
 
 #include <QStandardPaths>
 
-using gams::studio::option::Option;
 using gams::studio::CommonPaths;
 
 void TestGamsOption::initTestCase()

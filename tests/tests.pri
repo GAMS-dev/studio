@@ -25,10 +25,10 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
-include (../version)
+include(../gamsdependency.pri)
 
 unix : LIBS += -ldl -L../../bin
-#win32: LIBS += -L../../bin/
+win32: LIBS += -L../../bin/
 
 TESTSROOT = $$_PRO_FILE_PWD_/..
 SRCPATH = $$TESTSROOT/../src
