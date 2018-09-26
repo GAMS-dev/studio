@@ -22,9 +22,6 @@
 #include "commonpaths.h"
 #include "testcplexoption.h"
 
-using gams::studio::Option;
-using gams::studio::OptionItem;
-using gams::studio::OptionTokenizer;
 using gams::studio::CommonPaths;
 
 void TestCPLEXOption::initTestCase()
@@ -254,12 +251,12 @@ void TestCPLEXOption::testOptionDoubleType_data()
     QTest::newRow("barepcomp")   << "barepcomp"     << true  << 1e-012 << 1e+075 << 1e-008;
     QTest::newRow("bttol")       << "bttol"         << true  << 0.0  << 1.0    << 0.9999;
     QTest::newRow("cutsfactor")  << "cutsfactor"    << true  << -1.0 << 1e+075 << -1.0;
-    QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MAXDOUBLE << gams::studio::OPTION_VALUE_MINDOUBLE;
+    QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::option::OPTION_VALUE_MINDOUBLE << gams::studio::option::OPTION_VALUE_MAXDOUBLE << gams::studio::option::OPTION_VALUE_MINDOUBLE;
     QTest::newRow("epgap")       << "epgap"         << true  << 0.0  << 1.0    << 0.0001;
     QTest::newRow(".feaspref")   << ".feaspref"     << true  << 0.0  << 1e+020 << 1.0;
-    QTest::newRow("miptracetime") << "miptracetime" << true  << 0.0  << gams::studio::OPTION_VALUE_MAXDOUBLE  << 1.0;
+    QTest::newRow("miptracetime") << "miptracetime" << true  << 0.0  << gams::studio::option::OPTION_VALUE_MAXDOUBLE  << 1.0;
     QTest::newRow("neteprhs")    << "neteprhs"    << true  << 1e-011 << 0.1 <<  1e-006;
-    QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::OPTION_VALUE_MINDOUBLE << gams::studio::OPTION_VALUE_MAXDOUBLE << -1e+075;
+    QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::option::OPTION_VALUE_MINDOUBLE << gams::studio::option::OPTION_VALUE_MAXDOUBLE << -1e+075;
     QTest::newRow("polishafterepgap")  << "polishafterepgap" << true << 0.0 << 1.0    << 0.0;
     QTest::newRow("rampuptimelimit")   << "rampuptimelimit"  << true << 0.0 << 1e+075 << 1e+075;
     QTest::newRow("solnpoolgap")       << "solnpoolgap"      << true << 0.0 << 1e+075 << 1e+075;
@@ -291,7 +288,7 @@ void TestCPLEXOption::testOptionIntegerType_data()
     QTest::addColumn<int>("defaultValue");
 
     QTest::newRow("mipstart")          << "mipstart"          << true  << 0  << 6                                 << 0;
-    QTest::newRow("miptracenode")      << "miptracenode"      << true  << 0  << gams::studio::OPTION_VALUE_MAXINT << 100;
+    QTest::newRow("miptracenode")      << "miptracenode"      << true  << 0  << gams::studio::option::OPTION_VALUE_MAXINT << 100;
     QTest::newRow("perlim")            << "perlim"            << true  << 0  << 2100000000                        << 0;
     QTest::newRow("polishafterintsol") << "polishafterintsol" << true  << 0  << 2100000000                        << 2100000000;
     QTest::newRow("populatelim")       << "populatelim"       << true  << 1  << 2100000000                        << 20;
@@ -390,30 +387,30 @@ void TestCPLEXOption::testOptionSynonym()
     }
 }
 
-void TestCPLEXOption::testDeprecatedOption_data()
-{
-    QTest::addColumn<QString>("deprecatedOption");
-    QTest::addColumn<QString>("optionDescription");
+//void TestCPLEXOption::testDeprecatedOption_data()
+//{
+//    QTest::addColumn<QString>("deprecatedOption");
+//    QTest::addColumn<QString>("optionDescription");
 
-    QTest::newRow("crossoveralg") << "crossoveralg" << "Use option barcrossalg to specify barrier crossover method";
-    QTest::newRow("lpalg")        << "lpalg"        << "Use option lpmethod to specify algorithm used for LP problems";
+//    QTest::newRow("crossoveralg") << "crossoveralg" << "Use option barcrossalg to specify barrier crossover method";
+//    QTest::newRow("lpalg")        << "lpalg"        << "Use option lpmethod to specify algorithm used for LP problems";
 
-    QTest::newRow("writepremps") << "writepremps" << "Use option writepre to specify file name. File extension determines problem format";
+//    QTest::newRow("writepremps") << "writepremps" << "Use option writepre to specify file name. File extension determines problem format";
 
-    QTest::newRow("polishtime")  << "polishtime" << "Use option polishafter... for finer solution polishing control.";
+//    QTest::newRow("polishtime")  << "polishtime" << "Use option polishafter... for finer solution polishing control.";
 
-}
+//}
 
-void TestCPLEXOption::testDeprecatedOption()
-{
-    QFETCH(QString, deprecatedOption);
-    QFETCH(QString, optionDescription);
+//void TestCPLEXOption::testDeprecatedOption()
+//{
+//    QFETCH(QString, deprecatedOption);
+//    QFETCH(QString, optionDescription);
 
-    QVERIFY( optionTokenizer->getOption()->isValid(deprecatedOption) );
-    QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
-    QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+//    QVERIFY( optionTokenizer->getOption()->isValid(deprecatedOption) );
+//    QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+//    QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
 
-}
+//}
 
 void TestCPLEXOption::testOptionGroup_data()
 {

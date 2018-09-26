@@ -22,9 +22,10 @@
 
 #include <QtTest/QTest>
 
+#include "option/option.h"
 #include "option/optiontokenizer.h"
 
-using gams::studio::OptionTokenizer;
+using namespace gams::studio::option;
 
 class TestConopt4Option : public QObject
 {

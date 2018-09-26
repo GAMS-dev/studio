@@ -22,9 +22,6 @@
 #include "testconopt4option.h"
 #include "commonpaths.h"
 
-using gams::studio::Option;
-using gams::studio::OptionItem;
-using gams::studio::OptionTokenizer;
 using gams::studio::CommonPaths;
 
 void TestConopt4Option::initTestCase()
@@ -98,13 +95,13 @@ void TestConopt4Option::testOptionDoubleType_data()
     QTest::addColumn<double>("upperBound");
     QTest::addColumn<double>("defaultValue");
 
-    QTest::newRow("Rat_NoPen")     <<  "Rat_NoPen"     << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.1;
+    QTest::newRow("Rat_NoPen")     <<  "Rat_NoPen"     << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.1;
     QTest::newRow("Lim_Variable")  <<  "Lim_Variable"  << true  << 1e+5   << 1e+30                                << 1e+15;
     QTest::newRow("Tol_Bound")     <<  "Tol_Bound"     << true  << 3e-13  << 1e-5                                 << 1e-7;
-    QTest::newRow("HEAPLIMIT")     <<  "HEAPLIMIT"     << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 1e+20;
-    QTest::newRow("HessianMemFac") <<  "HessianMemFac" << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
-    QTest::newRow("Lim_Hess_Est")  <<  "Lim_Hess_Est"  << true  << 1.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 1e+4;
-    QTest::newRow("Lim_Time")      <<  "Lim_Time"      << true  << 0.0    << gams::studio::OPTION_VALUE_MAXDOUBLE << 10000.0;
+    QTest::newRow("HEAPLIMIT")     <<  "HEAPLIMIT"     << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1e+20;
+    QTest::newRow("HessianMemFac") <<  "HessianMemFac" << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("Lim_Hess_Est")  <<  "Lim_Hess_Est"  << true  << 1.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1e+4;
+    QTest::newRow("Lim_Time")      <<  "Lim_Time"      << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 10000.0;
 }
 
 void TestConopt4Option::testOptionDoubleType()
@@ -130,10 +127,10 @@ void TestConopt4Option::testOptionIntegerType_data()
     QTest::addColumn<int>("upperBound");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1  << gams::studio::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::OPTION_VALUE_MAXINT  << 100;
-    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
+    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
     QTest::newRow("Mtd_RedHess")   << "Mtd_RedHess"   << true   << 0  << 1                                  << 0;
 }
 

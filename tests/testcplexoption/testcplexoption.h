@@ -22,9 +22,10 @@
 
 #include <QtTest/QTest>
 
+#include "option/option.h"
 #include "option/optiontokenizer.h"
 
-using gams::studio::OptionTokenizer;
+using namespace gams::studio::option;
 
 class TestCPLEXOption : public QObject
 {
@@ -63,8 +64,8 @@ private slots:
     void testOptionSynonym_data();
     void testOptionSynonym();
 
-    void testDeprecatedOption_data();
-    void testDeprecatedOption();
+//    void testDeprecatedOption_data();
+//    void testDeprecatedOption();
 
     void testOptionGroup_data();
     void testOptionGroup();

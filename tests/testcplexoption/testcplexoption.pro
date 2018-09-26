@@ -19,10 +19,10 @@
 #
 TEMPLATE = app
 
-include(../../gamsdependency.pri)
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/option
 
 HEADERS += \
     testcplexoption.h \
