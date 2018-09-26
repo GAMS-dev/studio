@@ -22,6 +22,6 @@ TEMPLATE = subdirs
 
 SUBDIRS += testcommonpaths
 SUBDIRS += testservicelocators
-#SUBDIRS += testgamsoption
+SUBDIRS += testgamsoption
 #SUBDIRS += testcplexoption
 #SUBDIRS += testconopt4option

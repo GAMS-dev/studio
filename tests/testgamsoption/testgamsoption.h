@@ -24,7 +24,7 @@
 
 #include "option/option.h"
 
-using gams::studio::Option;
+using gams::studio::option::Option;
 
 class TestGamsOption : public QObject
 {

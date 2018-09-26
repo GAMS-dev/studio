@@ -22,7 +22,7 @@
 
 #include <QStandardPaths>
 
-using gams::studio::Option;
+using gams::studio::option::Option;
 using gams::studio::CommonPaths;
 
 void TestGamsOption::initTestCase()
@@ -211,12 +211,12 @@ void TestGamsOption::testOptionDoubleType_data()
     QTest::addColumn<double>("upperBound");
     QTest::addColumn<double>("defaultValue");
 
-    QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 1000.0;
-    QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.10;
-    QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1000.0;
+    QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.10;
+    QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
     QTest::newRow("Bratio")  << "Bratio"   << true  << 0.0 << 1.0                                  << 0.25;
     QTest::newRow("FDDelta") << "FDDelta"  << true  << 1.000000000000000E-9 << 1.0                 << 1.000000000000000E-5;
-    QTest::newRow("ZeroRes") << "ZeroRes"  << true  << 0.0 << gams::studio::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("ZeroRes") << "ZeroRes"  << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
 }
 
 void TestGamsOption::testOptionDoubleType()
@@ -243,11 +243,11 @@ void TestGamsOption::testOptionIntegerType_data()
     QTest::addColumn<int>("defaultValue");
 
     QTest::newRow("PageWidth")   << "PageWidth"   << true   << 72  << 32767                              << 255;
-    QTest::newRow("PoolUse")     << "PoolUse"     << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
-    QTest::newRow("CErr")        << "CErr"        << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
-    QTest::newRow("Opt")         << "Opt"         << false  << 0   << gams::studio::OPTION_VALUE_MAXINT  << 0;
-    QTest::newRow("IterLim")     << "IterLim"     << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 2000000000;
-    QTest::newRow("Seed")        << "Seed"        << true   << 0   << gams::studio::OPTION_VALUE_MAXINT  << 3141;
+    QTest::newRow("PoolUse")     << "PoolUse"     << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("CErr")        << "CErr"        << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("Opt")         << "Opt"         << false  << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("IterLim")     << "IterLim"     << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 2000000000;
+    QTest::newRow("Seed")        << "Seed"        << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 3141;
 }
 
 void TestGamsOption::testOptionIntegerType()
