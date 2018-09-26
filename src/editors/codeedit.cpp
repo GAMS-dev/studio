@@ -430,8 +430,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) mSmartType = false;
 
-    QString opening = "<([{/'\"";
-    QString closing = ">)]}/'\"";
+    QString opening = "([{/'\"";
+    QString closing = ")]}/'\"";
     int index = opening.indexOf(e->text());
     int indexClosing = closing.indexOf(e->text());
 

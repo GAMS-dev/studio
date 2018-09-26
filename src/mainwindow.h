@@ -87,6 +87,7 @@ public:
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
     void openFiles(QStringList pathList);
+    void watchProjectTree();
 
     bool outputViewVisibility();
     bool projectViewVisibility();

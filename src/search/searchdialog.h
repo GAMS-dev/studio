@@ -107,7 +107,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    QFlags<QTextDocument::FindFlag> getFlags();
     void simpleReplaceAll();
     QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
     QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
@@ -120,6 +119,7 @@ private:
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
     void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    QRegularExpression createRegex();
 
     enum SearchScope {
         ThisFile = 0,
