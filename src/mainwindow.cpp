@@ -1070,7 +1070,7 @@ void MainWindow::postGamsRun(NodeId origin)
         if (mSettings->openLst())
             openFileNode(lstNode);
     }
-    if (groupNode && groupNode->logNode())
+    if (groupNode && groupNode->hasLogNode())
         groupNode->logNode()->logDone();
 
     // add all created files to project explorer
@@ -1579,9 +1579,9 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
-    ProjectLogNode* logProc = mProjectRepo.logNode(runGroup);
-    if (!logProc->file()->isOpen()) {
-        QWidget *wid = logProc->file()->createEdit(ui->logTabs, logProc->assignedRunGroup(), QList<int>() << logProc->file()->codecMib());
+    ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    if (!logNode->file()->isOpen()) {
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
         if (FileMeta::toCodeEdit(wid) || FileMeta::toLogEdit(wid))
             FileMeta::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
         if (FileMeta::toAbstractEdit(wid))
@@ -1589,14 +1589,14 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
                                                                                         : AbstractEdit::NoWrap);
     }
     if (!mSettings->clearLog()) {
-        logProc->markOld();
+        logNode->markOld();
     } else {
-        logProc->clearLog();
+        logNode->clearLog();
     }
-    if (!ui->logTabs->children().contains(logProc->file()->editors().first())) {
-        ui->logTabs->addTab(logProc->file()->editors().first(), logProc->name(NameModifier::editState));
+    if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
+        ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
-    ui->logTabs->setCurrentWidget(logProc->file()->editors().first());
+    ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockLogView->setVisible(true);
 
     // select gms-file  and working dir to run
@@ -1607,14 +1607,14 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         return;
     }
     if (gmsFileNode)
-        logProc->file()->setCodecMib(fc->file()->codecMib());
+        logNode->file()->setCodecMib(fc->file()->codecMib());
     else {
         FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
         ProjectFileNode *runNode = runGroup->findFile(runMeta);
-        logProc->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
+        logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
-    logProc->setJumpToLogEnd(true);
+    logNode->setJumpToLogEnd(true);
 
     // prepare the options and process and run it
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
@@ -1624,7 +1624,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->setWorkingDir(workDir);
     process->execute();
 
-    connect(process, &GamsProcess::newStdChannelData, logProc, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
+    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockLogView->raise();
 }
@@ -1860,7 +1860,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         for (FileMeta *file: openFiles) {
             closeFileEditors(file->id());
         }
-        ProjectLogNode* log = runGroup ? runGroup->logNode() : nullptr;
+        ProjectLogNode* log = (runGroup && runGroup->hasLogNode()) ? runGroup->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
             if (edit) {
