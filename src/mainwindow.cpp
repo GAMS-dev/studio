@@ -671,6 +671,7 @@ void MainWindow::on_actionOpen_triggered()
     for (QString item: fNames) {
         ProjectFileNode *node = addNode("", item);
         openFileNode(node);
+        QApplication::processEvents(QEventLoop::AllEvents, 1);
     }
 }
 
@@ -1599,7 +1600,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->logTabs->setCurrentWidget(logProc->file()->editors().first());
     ui->dockLogView->setVisible(true);
 
-    // select gms-file  and working dir to run
+    // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
     if (gmsFilePath == "") {
         mSyslog->appendLog("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
@@ -2076,7 +2077,6 @@ void MainWindow::updateEditorLineWrapping()
             ed->setLineWrapMode(FileMeta::toLogEdit(ed) ? wrapModeProcess : wrapModeEditor);
         }
     }
-
 }
 
 void MainWindow::readTabs(const QJsonObject &json)
@@ -2092,7 +2092,7 @@ void MainWindow::readTabs(const QJsonObject &json)
                     openFilePath(location, true, mib);
                     mOpenTabsList << location;
                 }
-                QApplication::sendPostedEvents();
+                QApplication::processEvents(QEventLoop::AllEvents, 1);
             }
         }
     }

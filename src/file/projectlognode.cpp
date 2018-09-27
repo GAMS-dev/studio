@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QByteArray>
 #include <QTextCodec>
+#include <QApplication>
 #include "file.h"
 #include "projectlognode.h"
 #include "exception.h"
