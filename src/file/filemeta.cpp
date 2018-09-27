@@ -197,13 +197,14 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     Q_UNUSED(charsRemoved);
     if (!mDocument) return;
     if (!isOpen()) return;
+    if (mLoading) return;
     AbstractEdit *edit = toAbstractEdit(topEditor());
     if (!edit) return;
     QTextCursor cursor(mDocument);
     cursor.setPosition(from);
     int column = cursor.positionInBlock();
     int fromLine = cursor.blockNumber();
-    cursor.setPosition(from+charsAdded, QTextCursor::KeepAnchor);
+    cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
     mChangedLine = toLine;
     if (charsAdded) {
@@ -362,8 +363,10 @@ void FileMeta::load(QList<int> codecMibs)
         }
         if (codec) {
             QVector<QPoint> edPos = getEditPositions();
+            mLoading = true;
             document()->setPlainText(text);
             setEditPositions(edPos);
+            mLoading = false;
             mCodec = codec;
         }
         file.close();

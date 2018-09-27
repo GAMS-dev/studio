@@ -184,6 +184,7 @@ private:
     ErrorHighlighter* mHighlighter = nullptr;
     int mLineCount = 0;
     int mChangedLine = 0;
+    bool mLoading = false;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events
