@@ -90,8 +90,6 @@ void SettingsDialog::loadSettings()
     ui->cb_writeLog->setChecked(mSettings->writeLog());
     ui->sb_nrLogBackups->setValue(mSettings->nrLogBackups());
 
-
-
     // misc tab page
     ui->sb_historySize->setValue(mSettings->historySize());
 }
