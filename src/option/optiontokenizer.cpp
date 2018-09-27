@@ -474,15 +474,18 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     this->formatLineEdit(lineEdit, errList);
 }
 
-QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &path, const QString &fileName)
+QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absoluteFilePath)
 {
     QList<OptionItem> items;
 
-    QFile inputFile(QDir(path).absoluteFilePath(fileName));
+    QFile inputFile(absoluteFilePath);
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
-           items.append(tokenize(in.readLine()));
+           QString line = in.readLine();
+           if (line.trimmed().isEmpty() || line.trimmed().startsWith("*"))  // skip comment for now? TODO
+               continue;
+           items.append(tokenize(line));
        }
        inputFile.close();
     }

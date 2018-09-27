@@ -290,7 +290,8 @@ void TestConopt4Option::testReadOptionFile()
     outputFile.close();
 
     // when
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(CommonPaths::defaultWorkingDir(), "conopt4.op2");
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
 
     // then
     QCOMPARE( items.at(0).key, "DF_Method" );

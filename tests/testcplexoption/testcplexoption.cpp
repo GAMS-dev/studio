@@ -561,6 +561,8 @@ void TestCPLEXOption::testReadOptionFile()
 
     QTextStream out(&outputFile);
     out << "advind 0" << endl;
+    out << "* this is a comment line" << endl;
+    out << "" << endl;
     out << "dettilim 1e+075" << endl;
     out << "computeserver=https://somewhere.org/" << endl;
     out << "solnpoolcapacity=1100000000" << endl;
@@ -569,7 +571,8 @@ void TestCPLEXOption::testReadOptionFile()
     outputFile.close();
 
     // when
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(CommonPaths::defaultWorkingDir(), "cplex.op2");
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
 
     // then
     QCOMPARE( items.at(0).key, "advind" );

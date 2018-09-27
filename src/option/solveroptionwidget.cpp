@@ -20,12 +20,11 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
           mSolverName(solverName)
 {
     ui->setupUi(this);
-qDebug() << QString("opt%1.def").arg(solverName) << " : " << optionFilePath;
     mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(solverName));
 
-//    QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile( optionFilePath );
-//    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    QString normalizedText = "";
+    QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile( optionFilePath );
+    QString normalizedText = mOptionTokenizer->normalize(optionItem);
+    qDebug() << "[" << normalizedText << "]";
     OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( optionTableModel );
 
@@ -54,20 +53,22 @@ qDebug() << QString("opt%1.def").arg(solverName) << " : " << optionFilePath;
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     QMap<int, QVariant> groupRoles;
     groupRoles.insert( Qt::DisplayRole, QVariant(0));
-    groupRoles.insert( Qt::StatusTipRole, QVariant("All options") );
+    groupRoles.insert( Qt::StatusTipRole, QVariant("--- All Options ---") );
     for(OptionGroup group : optionGroupList) {
         groupRoles.insert( Qt::DisplayRole, QVariant(group.number));
         groupRoles.insert( Qt::StatusTipRole, QVariant(group.description) );
     }
 
-    QStandardItemModel* groupModel = new QStandardItemModel(optionGroupList.size()+1, 2);
+    QStandardItemModel* groupModel = new QStandardItemModel(optionGroupList.size()+1, 3);
     int i = 0;
     groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
     groupModel->setItem(0, 1, new QStandardItem("0"));
+    groupModel->setItem(0, 2, new QStandardItem("All Options"));
     for(OptionGroup group : optionGroupList) {
         ++i;
         groupModel->setItem(i, 0, new QStandardItem(group.description));
         groupModel->setItem(i, 1, new QStandardItem(QString::number(group.number)));
+        groupModel->setItem(i, 2, new QStandardItem(group.name));
     }
     ui->solverOptionGroup->setModel(groupModel);
     ui->solverOptionGroup->setModelColumn(0);

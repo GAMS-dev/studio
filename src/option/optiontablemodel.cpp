@@ -27,13 +27,13 @@ namespace studio {
 namespace option {
 
 OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
-    QAbstractTableModel(parent), mOptionTokenizer(tokenizer)
+    QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
-    Q_UNUSED(normalizedCommandLineStr);
     mHeader.append("Key");
     mHeader.append("Value");
 
-    mOption = mOptionTokenizer->getOption();
+    if (!normalizedCommandLineStr.simplified().isEmpty())
+        on_optionTableModelChanged(normalizedCommandLineStr);
 }
 
 QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const

@@ -61,7 +61,7 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    QList<OptionItem> readOptionParameterFile(const QString &path, const QString &fileName);
+    QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);
     bool writeOptionParameterFile(QList<OptionItem> &items, const QString &path, const QString &fileName);
 
     void validateOption(QList<OptionItem> &items);
