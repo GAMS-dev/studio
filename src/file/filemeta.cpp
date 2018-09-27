@@ -160,7 +160,7 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
-FileKind FileMeta::kind()
+FileKind FileMeta::kind() const
 {
     return mData.type->kind();
 }

@@ -36,7 +36,7 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, runGroup, NodeType::log)
+    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
 {
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
@@ -265,7 +265,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
-            fName = parentNode()->location() + '/' + mLastSourceFile;
+            fName = mRunGroup->location() + '/' + mLastSourceFile;
             lineNr = errNr-1;
             size = -1;
             colStart = -1;
@@ -325,7 +325,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
 
                 if (!mLstNode) {
-                    mLstNode = parentNode()->findFile(fName);
+                    mLstNode = mRunGroup->findFile(fName);
                     if (!mLstNode) {
                         errFound = false;
                         DEB() << "Could not find lst-file to generate TextMark for";
@@ -355,7 +355,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
                                                            , mCurrentErrorHint.lstLine, lineNr, 0, col);
-                if (parentNode()->findFile(file))
+                if (mRunGroup->findFile(file))
                     errFound = false;
                 else
                     state = Outside;
@@ -389,6 +389,23 @@ ProjectFileNode *ProjectLogNode::lstNode() const
 void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
 {
     mLstNode = lstNode;
+}
+
+const ProjectRootNode *ProjectLogNode::root() const
+{
+    if (mRunGroup) return mRunGroup->root();
+    return nullptr;
+}
+
+NodeId ProjectLogNode::runGroupId() const
+{
+    if (mRunGroup) return mRunGroup->id();
+    return NodeId();
+}
+
+ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
+{
+    return mRunGroup;
 }
 
 

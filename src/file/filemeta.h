@@ -55,7 +55,7 @@ public:
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
-    FileKind kind();
+    FileKind kind() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
     int codecMib() const;

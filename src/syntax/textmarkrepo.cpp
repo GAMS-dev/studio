@@ -76,6 +76,10 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
                                    , int line, int column, int size)
 {
     Q_UNUSED(value)
+    if (groupId < 0) {
+        DEB() << "No valid groupId to create a TextMark";
+        return nullptr;
+    }
     if (!fileId.isValid()) {
         DEB() << "No valid fileId to create a TextMark";
         return nullptr;
