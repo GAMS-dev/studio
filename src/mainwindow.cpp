@@ -716,6 +716,8 @@ void MainWindow::on_actionSave_As_triggered()
             QFile::copy(fileMeta->location(), filePath);
         } else {
             fileMeta->saveAs(filePath);
+            if(node->assignedRunGroup()->specialFiles().contains(fileMeta->kind()))
+                node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
             openFileNode(node, true);
             mStatusWidgets->setFileName(fileMeta->location());
             mSettings->saveSettings(this);
