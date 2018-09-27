@@ -84,7 +84,7 @@ void SearchDialog::on_btn_FindAll_clicked()
     insertHistory();
 
     setSearchStatus(SearchStatus::Searching);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents();
 
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
@@ -266,7 +266,7 @@ void SearchDialog::findNext(SearchDirection direction)
 
     if (mHasChanged) {
         setSearchStatus(SearchStatus::Searching);
-        QApplication::processEvents();
+        QApplication::sendPostedEvents();
         mCachedResults.clear();
         mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
         mCachedResults.setSearchTerm(createRegex().pattern());

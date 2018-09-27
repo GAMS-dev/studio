@@ -2090,7 +2090,7 @@ void MainWindow::readTabs(const QJsonObject &json)
                     openFilePath(location, true, mib);
                     mOpenTabsList << location;
                 }
-                QApplication::processEvents();
+                QApplication::sendPostedEvents();
             }
         }
     }
