@@ -473,7 +473,12 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
 
 void ProjectRepo::setSelected(const QModelIndex& ind)
 {
-    mTreeModel->setSelected(ind);
+//    mTreeModel->setSelected(ind);
+}
+
+void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    mTreeModel->selectionChanged(selected, deselected);
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

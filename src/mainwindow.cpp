@@ -97,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
+
 //    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);

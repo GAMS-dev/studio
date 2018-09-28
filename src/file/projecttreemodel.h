@@ -49,30 +49,35 @@ public:
     void setDebugMode(bool debug);
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    QModelIndex current() {return mCurrent;}
+    QModelIndex current() {return index(mCurrent);}
 
 protected:
     friend class ProjectRepo;
 
     bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
     bool removeChild(ProjectAbstractNode* child);
+    NodeId nodeId(const QModelIndex &ind) const;
+    QModelIndex index(const NodeId id) const;
 
+    /// Tells if a model index is the current node
+    /// \param ind
+    /// \return
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
     bool isCurrentGroup(const QModelIndex& ind) const;
 
     bool isSelected(const QModelIndex& ind) const;
-    void setSelected(const QModelIndex& ind);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    const QModelIndex updateIndex(const QModelIndex &idx, const QModelIndex &parent, int row, int change);
+//    void updateIndex(const QModelIndex &parent, int row, int change);
     void update(const QModelIndex& ind = QModelIndex());
 
 private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;
     bool mDebug = false;
-    QModelIndex mCurrent;
-    QModelIndex mSelected;
+    NodeId mCurrent;
+    QVector<NodeId> mSelected;
 };
 
 } // namespace studio
