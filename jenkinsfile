@@ -152,7 +152,7 @@ pipeline {
                                 sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
                             }
                         }
-                        archiveArtifacts artifacts: '*.AppImage', fingerprint: true
+                        archiveArtifacts artifacts: 'GAMS*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
