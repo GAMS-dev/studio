@@ -26,7 +26,6 @@
 #include "searchresultlist.h"
 #include "locators/settingslocator.h"
 
-#include <QCompleter>
 #include <QMessageBox>
 #include <QTextDocumentFragment>
 
@@ -45,6 +44,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
     ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
     ui->lbl_nrResults->setText("");
+    ui->combo_search->setAutoCompletion(false);
     adjustSize();
 
     connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchDialog::returnPressed);
@@ -306,7 +306,7 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && (e->key() == Qt::Key_Escape) ) {
+    if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
         e->accept();
         hide();
         if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
@@ -421,9 +421,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     }
 }
 
-void SearchDialog::on_combo_search_currentTextChanged(const QString &arg1)
+void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    Q_UNUSED(arg1);
     mHasChanged = true;
     setSearchStatus(SearchStatus::Clear);
     searchParameterChanged();
@@ -434,14 +433,8 @@ void SearchDialog::searchParameterChanged() {
     invalidateCache();
 }
 
-void SearchDialog::on_cb_caseSens_stateChanged(int state)
+void SearchDialog::on_cb_caseSens_stateChanged(int)
 {
-    QCompleter *completer = ui->combo_search->completer();
-    if (Qt::Checked == state)
-        completer->setCaseSensitivity(Qt::CaseSensitive);
-    else
-        completer->setCaseSensitivity(Qt::CaseInsensitive);
-
     searchParameterChanged();
 }
 

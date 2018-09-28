@@ -96,8 +96,8 @@ private slots:
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
-    void on_combo_search_currentTextChanged(const QString &arg1);
-    void on_cb_caseSens_stateChanged(int state);
+    void on_combo_search_currentTextChanged(const QString);
+    void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int arg1);
     void on_cb_regex_stateChanged(int arg1);
 
