@@ -50,6 +50,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QModelIndex current() {return index(mCurrent);}
+    QVector<NodeId> selectedIds() const;
 
 protected:
     friend class ProjectRepo;
@@ -68,6 +69,7 @@ protected:
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    const QVector<QModelIndex> popDeclined();
 
 //    void updateIndex(const QModelIndex &parent, int row, int change);
     void update(const QModelIndex& ind = QModelIndex());
@@ -78,6 +80,7 @@ private:
     bool mDebug = false;
     NodeId mCurrent;
     QVector<NodeId> mSelected;
+    QVector<QModelIndex> mDeclined;
 };
 
 } // namespace studio

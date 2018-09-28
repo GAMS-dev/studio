@@ -336,13 +336,34 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
             dataChanged(ind, ind);
         }
     }
+    NodeId firstId = mSelected.isEmpty() ? selected.isEmpty() ? NodeId()
+                                                              : nodeId(selected.indexes().first())
+                                         : mSelected.first();
+    ProjectAbstractNode *first = mProjectRepo->node(firstId);
+    int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
     for (const QModelIndex &ind: selected.indexes()) {
         NodeId id = nodeId(ind);
-        if (id.isValid() && !mSelected.contains(id)) {
+        ProjectAbstractNode *node = mProjectRepo->node(id);
+        int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
+        if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSelected << id;
             dataChanged(ind, ind);
+        } else {
+            mDeclined << ind;
         }
     }
+}
+
+QVector<NodeId> ProjectTreeModel::selectedIds() const
+{
+    return mSelected;
+}
+
+const QVector<QModelIndex> ProjectTreeModel::popDeclined()
+{
+    QVector<QModelIndex> res = mDeclined;
+    mDeclined.clear();
+    return res;
 }
 
 void ProjectTreeModel::update(const QModelIndex &ind)

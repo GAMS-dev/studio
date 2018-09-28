@@ -479,6 +479,8 @@ void ProjectRepo::setSelected(const QModelIndex& ind)
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     mTreeModel->selectionChanged(selected, deselected);
+    emit deselect(mTreeModel->popDeclined());
+
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

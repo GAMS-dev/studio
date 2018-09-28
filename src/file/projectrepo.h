@@ -137,6 +137,7 @@ signals:
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void changed();
+    void deselect(const QVector<QModelIndex> &declined);
 
 public slots:
     void fileChanged(FileId fileId);
