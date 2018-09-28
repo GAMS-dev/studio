@@ -348,7 +348,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
 
     // Remove reference (if this is a lst file referenced in a log)
     if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
-        runGroup->logNode()->setLstNode(nullptr);
+        runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
 

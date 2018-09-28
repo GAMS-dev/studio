@@ -1581,6 +1581,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
         if (FileMeta::toCodeEdit(wid) || FileMeta::toLogEdit(wid))

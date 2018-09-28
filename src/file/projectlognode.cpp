@@ -325,7 +325,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
 
                 if (!mLstNode) {
-                    mLstNode = mRunGroup->findFile(fName);
+                    mLstNode = mRunGroup->findFile(mRunGroup->specialFile(FileKind::Lst));
                     if (!mLstNode) {
                         errFound = false;
                         DEB() << "Could not find lst-file to generate TextMark for";
@@ -384,11 +384,6 @@ void ProjectLogNode::setJumpToLogEnd(bool state)
 ProjectFileNode *ProjectLogNode::lstNode() const
 {
     return mLstNode;
-}
-
-void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
-{
-    mLstNode = lstNode;
 }
 
 const ProjectRootNode *ProjectLogNode::root() const
