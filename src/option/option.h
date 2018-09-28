@@ -57,11 +57,12 @@ struct OptionItem {
 
 struct OptionGroup {
     OptionGroup() { }
-    OptionGroup(QString n, int num, QString desc, int helpCtxt) :
-         name(n), number(num), description(desc), helpContext(helpCtxt) { }
+    OptionGroup(QString n, int num, bool h, QString desc, int helpCtxt) :
+         name(n), number(num), hidden(h), description(desc), helpContext(helpCtxt) { }
 
     QString name;
     int number;
+    bool hidden;
     QString description;
     int helpContext;
 };
@@ -134,6 +135,7 @@ public:
     int getOrdinalNumber(const QString &optionName) const;
 
     int getGroupNumber(const QString &optionName) const;
+    bool isGroupHidden(int number) const;
     QString getGroupName(const QString &optionName) const;
     QString getGroupDescription(const QString &optionName) const;
 

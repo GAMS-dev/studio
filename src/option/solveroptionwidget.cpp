@@ -51,20 +51,22 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     connect(this, &SolverOptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
-    QMap<int, QVariant> groupRoles;
-    groupRoles.insert( Qt::DisplayRole, QVariant(0));
-    groupRoles.insert( Qt::StatusTipRole, QVariant("--- All Options ---") );
+    int groupsize = 0;
     for(OptionGroup group : optionGroupList) {
-        groupRoles.insert( Qt::DisplayRole, QVariant(group.number));
-        groupRoles.insert( Qt::StatusTipRole, QVariant(group.description) );
+        if (group.hidden)
+            continue;
+        else
+            ++groupsize;
     }
 
-    QStandardItemModel* groupModel = new QStandardItemModel(optionGroupList.size()+1, 3);
+    QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
     int i = 0;
     groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
     groupModel->setItem(0, 1, new QStandardItem("0"));
     groupModel->setItem(0, 2, new QStandardItem("All Options"));
     for(OptionGroup group : optionGroupList) {
+        if (group.hidden)
+            continue;
         ++i;
         groupModel->setItem(i, 0, new QStandardItem(group.description));
         groupModel->setItem(i, 1, new QStandardItem(QString::number(group.number)));
