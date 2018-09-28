@@ -1362,17 +1362,17 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* node = mProjectRepo.node(index);
+    if (!node) return;
     if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
-        ProjectLogNode* logProc = mProjectRepo.logNode(node);
-        openFileNode(logProc, true, logProc->file()->codecMib());
-//        if (logProc->file()->editors().isEmpty()) {
-//            ProcessLogEdit* logEdit = new ProcessLogEdit(this);
-//            logEdit->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
-//            FileMeta::initEditorType(logEdit);
-//            int ind = ui->logTabs->addTab(logEdit, logProc->name(NameModifier::editState));
-//            logProc->file()->addEditor(logEdit);
-//            ui->logTabs->setCurrentIndex(ind);
-//        }
+        ProjectRunGroupNode *runGroup = node->assignedRunGroup();
+        if (runGroup && runGroup->runnableGms()) {
+            ProjectLogNode* logNode = runGroup->hasLogNode() ? runGroup->logNode() : nullptr;
+            openFileNode(logNode, true, logNode->file()->codecMib());
+            ProjectAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
+            if (!latestNode || latestNode->assignedRunGroup() != runGroup) {
+                openFile(runGroup->runnableGms(), true, runGroup, runGroup->runnableGms()->codecMib());
+            }
+        }
     } else {
         ProjectFileNode *file = mProjectRepo.asFileNode(index);
         if (file) openFileNode(file);
