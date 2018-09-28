@@ -173,7 +173,7 @@ pipeline {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'GAMS_Studio-${versionData}-x86_32.zip', archive: true, dir: 'tmp'
+                                zip zipFile: "GAMS_Studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -196,7 +196,7 @@ pipeline {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'GAMS_Studio-${versionData}-x86_64.zip', archive: true, dir: 'tmp'
+                                zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             }
                         }
                     }
