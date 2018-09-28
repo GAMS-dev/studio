@@ -25,11 +25,11 @@
 namespace gams {
 namespace studio {
 
-DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent)
+DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
 {
     mFile.setFileName(QDir::toNativeSeparators(fileName));
     if (mFile.exists())
-        handleExisting(backups);
+        runBackupCircle();
 
     mCloseTimer.setSingleShot(true);
     mCloseTimer.setInterval(1000);
@@ -60,6 +60,7 @@ void DynamicFile::closeFile()
         mFile.flush();
         mFile.close();
         mCloseTimer.stop();
+        runBackupCircle();
     }
 }
 
@@ -73,25 +74,34 @@ void DynamicFile::openFile()
     }
 }
 
-void DynamicFile::handleExisting(int backups)
+void DynamicFile::runBackupCircle()
 {
-    int bkMaxExist = 0;
-    for (int i = 1; i <= backups; ++i) {
-        bkMaxExist = i;
-        if (!QFile(mFile.fileName()+"~"+QString::number(i)).exists())
-            break;
+    QStringList names;
+    int dot = mFile.fileName().lastIndexOf(".")+1;
+    QString fileBase = mFile.fileName().left(dot);
+    QString suffix = mFile.fileName().right(mFile.fileName().length()-dot);
+    names << (fileBase + suffix);
+    // if filename has a temp-marker add non-temp filename to backup-circle
+    if (suffix.contains('~')) names.prepend(fileBase + suffix.remove('~'));
+
+    // add all backup filenames until the last doesn't exist
+    for (int i = 1; i <= mBackups; ++i) {
+        names.prepend(fileBase+suffix+"~"+QString::number(i));
+        if (!QFile(names.first()).exists()) break;
     }
-    QString destName(mFile.fileName()+"~"+QString::number(bkMaxExist));
-    QFile file(destName);
-    if (bkMaxExist == backups)
-        file.remove();
-    for (int i = backups-1; i >= 0; --i) {
-        QString sourceName = mFile.fileName()+ ((i>0) ? "~"+QString::number(i) : "");
-        file.setFileName(sourceName);
-        if (file.exists()) file.rename(destName);
+    // last backup will be overwritten - if it exists, delete it
+    QFile file(names.first());
+    if (file.exists()) file.remove();
+
+    //
+    QString destName;
+    for (QString sourceName: names) {
+        if (!destName.isEmpty()) {
+            file.setFileName(sourceName);
+            if (file.exists()) file.rename(destName);
+        }
         destName = sourceName;
     }
-    if (mFile.exists()) mFile.remove();
 }
 
 } // namespace studio

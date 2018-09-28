@@ -57,6 +57,11 @@ int ProjectGroupNode::childCount() const
     return mChildNodes.count();
 }
 
+bool ProjectGroupNode::isPurgeable()
+{
+    return (mChildNodes.count() == 0);
+}
+
 ProjectAbstractNode*ProjectGroupNode::childNode(int index) const
 {
     return mChildNodes.at(index);
@@ -143,6 +148,7 @@ ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurs
 ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
 {
     if (!fileMeta) return nullptr;
+    if (fileMeta->kind() == FileKind::Log) return nullptr;
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
@@ -229,7 +235,7 @@ GamsProcess *ProjectRunGroupNode::gamsProcess() const
     return mGamsProcess.get();
 }
 
-ProjectLogNode* ProjectRunGroupNode::logNode() const
+bool ProjectRunGroupNode::hasLogNode() const
 {
     return mLogNode;
 }
@@ -241,13 +247,14 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
-ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
+ProjectLogNode *ProjectRunGroupNode::logNode()
 {
     if (!mLogNode) {
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
         QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
-                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+".log");;
-        QString logName = fi.path()+"/"+fi.completeBaseName()+".log";
-        FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
+                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+"."+suffix);
+        QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
+        FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
     }
     return mLogNode;
@@ -288,7 +295,7 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
     setSpecialFile(FileKind::Gms, gmsPath);
     setSpecialFile(FileKind::Lst, lstPath);
-    if (logNode()) logNode()->resetLst();
+    if (hasLogNode()) logNode()->resetLst();
 }
 
 QString ProjectRunGroupNode::lstFile() const
@@ -449,6 +456,22 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+
+    if (QFileInfo(fullPath).suffix().isEmpty()) {
+        switch (fk) {
+        case FileKind::Gdx:
+            fullPath += ".gdx";
+            break;
+        case FileKind::Lst:
+            // no! gams does not add lst extension. unlike .ref or .gdx
+            break;
+        case FileKind::Ref:
+            fullPath += ".ref";
+            break;
+        default:
+            qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
+        }
+    }
 
     mSpecialFiles.insert(fk, fullPath);
 }

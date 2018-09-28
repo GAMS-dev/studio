@@ -31,8 +31,6 @@ CONFIG += c++14
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 
-include (../version)
-
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns

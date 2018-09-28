@@ -151,10 +151,12 @@ inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
 ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
-    const ProjectGroupNode* group = node->toGroup();
+    ProjectGroupNode* group = node->toGroup();
     if (!group) group = node->parentNode();
-    while (!group->toRunGroup()) group = group->parentNode();
-    if (group->toRunGroup()) return group->toRunGroup()->logNode();
+    while (group && !group->toRunGroup())
+        group = group->parentNode();
+    if (group && group->toRunGroup() && group->toRunGroup()->hasLogNode())
+        return group->toRunGroup()->logNode();
     return nullptr;
 }
 
@@ -220,11 +222,11 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, gprArray);
-                    if (subGroup->childCount()) {
+                    if (subGroup->isPurgeable()) {
+                        closeGroup(subGroup);
+                    } else {
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
-                    } else {
-                        closeGroup(subGroup); // dont open empty groups
                     }
                 }
             }
@@ -232,7 +234,8 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
                 FileType *ft = &FileType::from(jsonObject["type"].toString(""));
-                findOrCreateFileNode(file, group, ft, name);
+                if (QFileInfo(file).exists())
+                    findOrCreateFileNode(file, group, ft, name);
             }
         }
     }
@@ -344,8 +347,8 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // Remove reference (if this is a lst file referenced in a log)
-    if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
-        runGroup->logNode()->setLstNode(nullptr);
+    if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
+        runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
 
@@ -368,11 +371,6 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
-
-    // close group if empty now
-    if (runGroup->childCount() == 0)
-        closeGroup(runGroup);
-
     emit changed();
 }
 
@@ -412,10 +410,9 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!file) {
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
-            file = runGroup->getOrCreateLogNode(mFileRepo);
-        } else {
-            file = new ProjectFileNode(fileMeta, fileGroup);
+            return runGroup->logNode();
         }
+        file = new ProjectFileNode(fileMeta, fileGroup);
         if (!explicitName.isNull())
             file->setName(explicitName);
         int offset = fileGroup->peekIndex(file->name());
@@ -433,16 +430,11 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     // Find the runGroup
     ProjectRunGroupNode* runGroup = node->assignedRunGroup();
     if (!runGroup) return nullptr;
-    if (runGroup->logNode()) return runGroup->logNode();
-    ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);
+    ProjectLogNode* log = runGroup->logNode();
     if (!log) {
         DEB() << "Error while creating LOG node.";
         return nullptr;
     }
-    int offset = runGroup->peekIndex(log->name());
-    addToIndex(log);
-    mTreeModel->insertChild(offset, runGroup, log);
-    emit changed();
     return log;
 }
 

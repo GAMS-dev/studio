@@ -46,6 +46,7 @@ public:
 
     QIcon icon() override;
     int childCount() const;
+    bool isPurgeable();
     ProjectAbstractNode* childNode(int index) const;
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;
@@ -83,9 +84,8 @@ class ProjectRunGroupNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
-    ProjectLogNode* logNode() const;
-    void setLogNode(ProjectLogNode* logNode);
-    ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
+    bool hasLogNode() const;
+    ProjectLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
     QString lstFile() const;
@@ -123,6 +123,7 @@ protected:
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
+    void setLogNode(ProjectLogNode* logNode);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;

@@ -64,6 +64,7 @@ public:
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getCurrentCommandLineData() const;
+    void focus();
 
 signals:
     void optionEditorDisabled();

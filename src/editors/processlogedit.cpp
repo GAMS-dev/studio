@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "processlogedit.h"
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -36,9 +37,7 @@ void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
 
     } else*/
-
 }
-
 
 void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -72,11 +71,20 @@ void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
                 }
             }
         }
-        if (linkMark) {
+        if (linkMark)
             linkMark->jumpToRefMark(true);
-//            setFocus();
-        }
     }
+}
+
+void ProcessLogEdit::contextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu *menu = createStandardContextMenu();
+    QAction act("Clear Log", this);
+    connect(&act, &QAction::triggered, this, &ProcessLogEdit::clear);
+    menu->insertAction(menu->actions().at(1), &act);
+
+    menu->exec(e->globalPos());
+    delete menu;
 }
 
 AbstractEdit::EditorType ProcessLogEdit::type()
