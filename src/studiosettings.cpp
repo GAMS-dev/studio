@@ -156,6 +156,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
+#ifdef QWEBENGINE
     QMultiMap<QString, QString> bookmarkMap(main->helpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
@@ -167,6 +168,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
     mAppSettings->setValue("zoomFactor", main->helpWidget()->getZoomFactor());
+#endif
     mAppSettings->endGroup();
 
     // history
@@ -268,6 +270,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
+#ifdef QWEBENGINE
     QMultiMap<QString, QString> bookmarkMap;
     int mapsize = mAppSettings->beginReadArray("bookmarks");
     for (int i = 0; i < mapsize; i++) {
@@ -282,6 +285,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
         main->helpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
         main->helpWidget()->setZoomFactor(1.0);
+#endif
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");

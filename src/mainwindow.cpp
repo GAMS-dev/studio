@@ -105,9 +105,11 @@ MainWindow::MainWindow(QWidget *parent)
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
 //    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
 
+#ifdef QWEBENGINE
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->hide();
+#endif
 
     mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
@@ -277,12 +279,14 @@ void MainWindow::setOptionEditorVisibility(bool visibility)
 
 void MainWindow::setHelpViewVisibility(bool visibility)
 {
+#ifdef QWEBENGINE
     if (!visibility)
         mHelpWidget->clearStatusBar();
     else
         mHelpWidget->setFocus();
     ui->actionHelp_View->setChecked(visibility);
     ui->dockHelpView->setVisible(visibility);
+#endif
 }
 
 bool MainWindow::outputViewVisibility()
@@ -413,8 +417,9 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 
     if (!anchor.isEmpty())
         result = QUrl(result.toString() + "#" + anchor);
-
+#ifdef QWEBENGINE
     helpWidget()->on_urlOpened(result);
+#endif
 
     on_actionHelp_View_triggered(true);
 }
@@ -1103,6 +1108,7 @@ void MainWindow::on_actionExit_Application_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
+#ifdef QWEBENGINE
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
@@ -1126,6 +1132,7 @@ void MainWindow::on_actionHelp_triggered()
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())
         ui->dockHelpView->raise();
+#endif
 }
 
 QString MainWindow::studioInfo()
@@ -1636,10 +1643,12 @@ void MainWindow::updateRunState()
     mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
 }
 
+#ifdef QWEBENGINE
 HelpWidget *MainWindow::helpWidget() const
 {
     return mHelpWidget;
 }
+#endif
 
 void MainWindow::runGmsFile(ProjectFileNode *node)
 {
@@ -1657,11 +1666,13 @@ void MainWindow::setMainGms(ProjectFileNode *node)
 
 void MainWindow::commandLineHelpTriggered()
 {
+#ifdef QWEBENGINE
     mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())
         ui->dockHelpView->raise();
+#endif
 }
 
 void MainWindow::optionRunChanged()
@@ -2000,7 +2011,9 @@ void MainWindow::on_actionSearch_triggered()
 {
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
+#ifdef QWEBENGINE
         mHelpWidget->on_searchHelp();
+#endif
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
        if (fc && fc->file()->kind() == FileKind::Gdx) {
@@ -2223,42 +2236,54 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionReset_Zoom_triggered()
 {
+#ifdef QWEBENGINE
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->resetZoom(); // reset help view
     } else {
+#endif
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
+#ifdef QWEBENGINE
     }
+#endif
 
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
+#ifdef QWEBENGINE
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->zoomOut();
     } else {
+#endif
         AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
+#ifdef QWEBENGINE
     }
+#endif
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
+#ifdef QWEBENGINE
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->zoomIn();
     } else {
+#endif
         AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
         if (ae) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
             if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
         }
+#ifdef QWEBENGINE
     }
+#endif
 }
 
 void MainWindow::convertLowerUpper(bool toUpper)

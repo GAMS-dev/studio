@@ -28,10 +28,13 @@
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
-#include "help/helpwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+
+#ifdef QWEBENGINE
+#include "help/helpwidget.h"
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -126,7 +129,9 @@ public:
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
 
+#ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
+#endif
     OptionWidget *gamsOptionWidget() const;
 
 public slots:
@@ -295,7 +300,9 @@ private:
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
+#ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
+#endif
     OptionWidget *mGamsOptionWidget = nullptr;
     ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
