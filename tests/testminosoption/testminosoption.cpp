@@ -36,6 +36,32 @@ void TestMINOSOption::initTestCase()
     }
 }
 
+void TestMINOSOption::testOptionStringType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("defvalue");
+    QTest::addColumn<QString>("description");
+
+    QTest::newRow("scale print nv")                << "scale print"                << true << "" << "Print scaling factors";
+    QTest::newRow("LU partial pivoting nv")        << "LU partial pivoting"        << true << "" << "LUSOL pivoting strategy";
+    QTest::newRow("scale no nv")                   << "scale no"                   << true << "" << "Synonym to scale option 0";
+    QTest::newRow("Verify_objective_gradients nv") << "Verify objective gradients" << true << "" << "Synonym to verify level 1";
+}
+
+void TestMINOSOption::testOptionStringType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(QString, defvalue);
+    QFETCH(QString, description);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeString);
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).defaultValue, defvalue);
+}
+
 void TestMINOSOption::testOptionEnumStrValue_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -123,6 +149,40 @@ void TestMINOSOption::testOptionEnumIntValue()
     QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).value.toInt(), value );
     QCOMPARE( optionTokenizer->getOption()->getValueList(optionName).at(valueIndex).description.toLower(), description.toLower() );
     QCOMPARE( optionTokenizer->getOption()-> getOptionDefinition(optionName).defaultValue.toInt(), defValue );
+}
+
+void TestMINOSOption::testOptionDoubleType_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<double>("lowerBound");
+    QTest::addColumn<double>("upperBound");
+    QTest::addColumn<double>("defaultValue");
+
+    QTest::newRow("crash_tolerance")         << "crash tolerance"          << true  << 0.0 << 1.0 << 0.1;
+    QTest::newRow("feasibility_tolerance")   << "feasibility tolerance"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1.0e-6;
+    QTest::newRow("linesearch_tolerance")    << "linesearch tolerance"     << true  << 0.0 << 1.0 << 0.1;
+    QTest::newRow("scale_print_tolerance")   << "scale print tolerance"    << true  << 0.0 << 1.0 << 0.9;
+    QTest::newRow("unbounded_step_size")     << "unbounded step size"      << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1.0e10;
+    QTest::newRow("unbounded_step_size")     << "unbounded step size"      << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1.0e10;
+    QTest::newRow("major_damping_parameter")      << "major damping parameter"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 2.0;
+    QTest::newRow("radius_of_convergence")        << "radius of convergence"      << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.01;
+    QTest::newRow("weight_on_linear_objective")   << "weight on linear objective" << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
+}
+
+void TestMINOSOption::testOptionDoubleType()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, valid);
+    QFETCH(double, lowerBound);
+    QFETCH(double, upperBound);
+    QFETCH(double, defaultValue);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
+    QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeDouble);
+    QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
+    QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
 void TestMINOSOption::testOptionIntegerType_data()
@@ -219,6 +279,42 @@ void TestMINOSOption::testOptionGroup()
     QCOMPARE( optionTokenizer->getOption()->isGroupHidden(groupNumber), hidden );
 
 }
+
+void TestMINOSOption::testInvalidOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("nameValid");
+
+    QTest::newRow("iiis_invalid")                 << "iiis"                  << false;
+    QTest::newRow("what?_invalid")                << "what?"                 << false;
+
+    QTest::newRow("row_tolerance_invalid")        << "row_tolerance"         << false;
+    QTest::newRow("row tolerance_valid")          << "row tolerance"         << true;
+
+    QTest::newRow("scale_print_invalid")          << "scale_print"           << false;
+    QTest::newRow("scale print_valid")            << "scale print"           << true;
+
+    QTest::newRow("hessian_dimension_invalid")    << "hessian_dimension"     << false;
+    QTest::newRow("hessian dimension_valid")      << "hessian dimension"     << true;
+
+    QTest::newRow("major_iterations_invalid")     << "major_iterations"      << false;
+    QTest::newRow("major iterations_valid")       << "major iterations"      << true;
+
+    QTest::newRow("unbounded_objective_value_invalid")  << "unbounded_objective_value"   << false;
+    QTest::newRow("unbounded objective value valid")    << "unbounded objective value"   << true;
+
+    QTest::newRow("LU_complete_pivoting_invalid") << "LU_complete_pivoting"  << false;
+    QTest::newRow("LU complete pivoting_valid")   << "LU complete pivoting"  << true;
+}
+
+void TestMINOSOption::testInvalidOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, nameValid);
+
+    QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid );
+}
+
 void TestMINOSOption::cleanupTestCase()
 {
     if (optionTokenizer)

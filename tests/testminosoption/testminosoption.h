@@ -34,8 +34,8 @@ class TestMINOSOption : public QObject
 private slots:
     void initTestCase();
 
-//    void testOptionStringType_data();
-//    void testOptionStringType();
+    void testOptionStringType_data();
+    void testOptionStringType();
 
     void testOptionEnumStrValue_data();
     void testOptionEnumStrValue();
@@ -43,14 +43,17 @@ private slots:
     void testOptionEnumIntValue_data();
     void testOptionEnumIntValue();
 
+    void testOptionDoubleType_data();
+    void testOptionDoubleType();
+
     void testOptionIntegerType_data();
     void testOptionIntegerType();
 
     void testOptionGroup_data();
     void testOptionGroup();
 
-//    void testInvalidOption_data();
-//    void testInvalidOption();
+    void testInvalidOption_data();
+    void testInvalidOption();
 
 //    void testReadOptionFile();
 //    void testWriteOptionFile();
