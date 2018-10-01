@@ -348,26 +348,25 @@ void FileMeta::load(QList<int> codecMibs)
         // TODO(JM) Read in lines to enable progress information
         // !! For paging: reading must ensure being at the start of a line - not in the middle of a unicode-character
         const QByteArray data(file.readAll());
-        QString text;
         QTextCodec *codec = nullptr;
         for (int mib: mibs) {
+            qDebug() << "MIB >> " << mib;
             QTextCodec::ConverterState state;
             codec = QTextCodec::codecForMib(mib);
             if (codec) {
-                text = codec->toUnicode(data.constData(), data.size(), &state);
-                if (state.invalidChars == 0)
+                QString text = codec->toUnicode(data.constData(), data.size(), &state);
+                if (state.invalidChars == 0) {
+                    QVector<QPoint> edPos = getEditPositions();
+                    mLoading = true;
+                    document()->setPlainText(text);
+                    setEditPositions(edPos);
+                    mLoading = false;
+                    mCodec = codec;
                     break;
+                }
             } else {
                 DEB() << "System doesn't contain codec for MIB " << mib;
             }
-        }
-        if (codec) {
-            QVector<QPoint> edPos = getEditPositions();
-            mLoading = true;
-            document()->setPlainText(text);
-            setEditPositions(edPos);
-            mLoading = false;
-            mCodec = codec;
         }
         file.close();
         mData = Data(location());
