@@ -21,7 +21,7 @@
 # Comment this out to build Studio without QWebEngine enabled. This deactivates the studio help view.
 QWEBENGINE=false
 
-QT       += core gui svg concurrent
+QT       += core gui svg concurrent network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
