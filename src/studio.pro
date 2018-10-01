@@ -18,9 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT       += core gui svg concurrent
+# Comment this out to build Studio without QWebEngine enabled. This deactivates the studio help view.
+QWEBENGINE=false
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webenginewidgets
+QT       += core gui svg concurrent network
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 
 TARGET = studio
 TEMPLATE = app
@@ -90,11 +94,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    help/bookmarkdialog.cpp \
-    help/helppage.cpp \
-    help/helptoolbar.cpp \
-    help/helpview.cpp \
-    help/helpwidget.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -194,11 +193,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    help/bookmarkdialog.h \
-    help/helppage.h \
-    help/helptoolbar.h \
-    help/helpview.h \
-    help/helpwidget.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
@@ -270,9 +264,7 @@ HEADERS += \
 FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
-    gdxviewer/gdxviewer.ui \
-    help/bookmarkdialog.ui \
-    help/helpwidget.ui \
+    gdxviewer/gdxviewer.ui \    
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
@@ -293,3 +285,22 @@ RESOURCES += \
 
 DISTFILES += \
     studio.rc
+
+equals(QWEBENGINE, "true") {
+DEFINES += QWEBENGINE
+greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets
+SOURCES += help/bookmarkdialog.cpp \
+    help/helppage.cpp \
+    help/helptoolbar.cpp \
+    help/helpview.cpp \
+    help/helpwidget.cpp
+HEADERS += help/bookmarkdialog.h \
+    help/helppage.h \
+    help/helptoolbar.h \
+    help/helpview.h \
+    help/helpwidget.h
+FORMS += help/bookmarkdialog.ui \
+    help/helpwidget.ui
+} else {
+    message("Building Studio without QWebEngine support.")
+}
