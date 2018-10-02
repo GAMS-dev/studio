@@ -350,7 +350,6 @@ void FileMeta::load(QList<int> codecMibs)
         const QByteArray data(file.readAll());
         QTextCodec *codec = nullptr;
         for (int mib: mibs) {
-            qDebug() << "MIB >> " << mib;
             QTextCodec::ConverterState state;
             codec = QTextCodec::codecForMib(mib);
             if (codec) {
