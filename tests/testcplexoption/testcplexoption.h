@@ -64,6 +64,9 @@ private slots:
     void testOptionSynonym_data();
     void testOptionSynonym();
 
+    void testHiddenOption_data();
+    void testHiddenOption();
+
 //    void testDeprecatedOption_data();
 //    void testDeprecatedOption();
 
@@ -74,11 +77,16 @@ private slots:
     void testInvalidOption();
 
     void testReadOptionFile();
+    void testNonExistReadOptionFile();
+
     void testWriteOptionFile();
 
     void cleanupTestCase();
 
 private:
+    bool containKey(QList<OptionItem> &items, const QString &key) const;
+    QVariant getValue(QList<OptionItem> &items, const QString &key) const;
+
     OptionTokenizer* optionTokenizer;
 };
 

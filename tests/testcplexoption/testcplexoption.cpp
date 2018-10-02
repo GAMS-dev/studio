@@ -387,6 +387,30 @@ void TestCPLEXOption::testOptionSynonym()
     }
 }
 
+void TestCPLEXOption::testHiddenOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("hidden");
+    QTest::addColumn<QString>("description");
+    QTest::addColumn<QString>("optionType");
+
+    QTest::newRow("fixoptfile")    << "fixoptfile"   << true  << "name of option file which is read just before solving the fixed problem"  << "string";
+    QTest::newRow("dtprefix")      << "dtprefix"     << true  << "prefix for the GDX file for the open nodes"                               << "string";
+    QTest::newRow("iafile")        << "iafile"       << true  << "options for interactive option setting come from a file"                  << "string";
+    QTest::newRow("secret")        << "secret"       << true  << "pass on secret CPLEX options"                                             << "strlist";
+}
+
+void TestCPLEXOption::testHiddenOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, hidden);
+    QFETCH(QString, description);
+    QFETCH(QString, optionType);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, !hidden);
+    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+}
+
 //void TestCPLEXOption::testDeprecatedOption_data()
 //{
 //    QTest::addColumn<QString>("deprecatedOption");
@@ -534,7 +558,7 @@ void TestCPLEXOption::testInvalidOption_data()
     QTest::newRow("advbasis_valid")  << "advbasis"  << false    << true;
     QTest::newRow("opttol_valid")    << "opttol"    << false    << true;
     QTest::newRow("feasibtol_valid") << "feasibtol" << false    << true;
-    QTest::newRow("reslim_valid")    << "reslim"   << false    << true;
+    QTest::newRow("reslim_valid")    << "reslim"    << false    << true;
 
     QTest::newRow("iiis_invalid")    << "iiis"     << false    << false;
     QTest::newRow("mipstar_invalid") << "mipstar"  << false    << false;
@@ -561,13 +585,22 @@ void TestCPLEXOption::testReadOptionFile()
 
     QTextStream out(&outputFile);
     out << "advind 0" << endl;
+    out << "advind 1" << endl;
     out << "* this is a comment line" << endl;
     out << "" << endl;
+    out << "cuts 2" << endl;
+    out << "aggcutlim=2000000000" << endl;
+    out << "benderspartitioninstage 1" << endl;
     out << "dettilim 1e+075" << endl;
-    out << "computeserver=https://somewhere.org/" << endl;
+    out << "miptrace /This/Is/The/File Name/Of/MIPTrace.File" << endl;
+    out << "computeserver https://somewhere.org/" << endl;
+    out << "rerun=auto" << endl;
     out << "solnpoolcapacity=1100000000" << endl;
     out << "solnpoolintensity 3" << endl;
-    out << "tuning \"str1 str2\"";
+    out << "tuning str1, str2, str3";
+    out << ", str 4";
+    out << ", str 5";
+    out << "" << endl;
     outputFile.close();
 
     // when
@@ -575,19 +608,50 @@ void TestCPLEXOption::testReadOptionFile()
     QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
 
     // then
-    QCOMPARE( items.at(0).key, "advind" );
-    QCOMPARE( items.at(0).value, "0" );
-    QCOMPARE( items.at(1).key, "dettilim" );
-    QCOMPARE( items.at(1).value, "1e+075" );
-    QCOMPARE( items.at(2).key, "computeserver" );
-    QCOMPARE( items.at(2).value, "https://somewhere.org/" );
-    QCOMPARE( items.at(3).key, "solnpoolcapacity" );
-    QCOMPARE( items.at(3).value, "1100000000" );
-    QCOMPARE( items.at(4).key, "solnpoolintensity" );
-    QCOMPARE( items.at(4).value, "3" );
-    QCOMPARE( items.at(5).key, "tuning" );
-    QCOMPARE( items.at(5).value, "\"str1 str2\"" );
-    QCOMPARE( items.size(), 6 );
+    QCOMPARE( items.size(), 11 );
+
+    QVERIFY( containKey (items,"advind") );
+    QCOMPARE( getValue(items,"advind").toInt(),  QVariant("1").toInt() );
+
+    QVERIFY( containKey (items,"aggcutlim") );
+    QCOMPARE( getValue(items,"aggcutlim").toInt(), QVariant("2000000000").toInt() );
+
+    QVERIFY( containKey (items,"benderspartitioninstage") );
+    QCOMPARE( getValue(items,"benderspartitioninstage").toInt(), QVariant("1").toInt() );
+
+    QVERIFY( containKey (items,"dettilim") );
+    QCOMPARE( getValue(items,"dettilim").toDouble(), QVariant("1e+075").toDouble() );
+
+    QVERIFY( containKey (items,"solnpoolcapacity") );
+    QCOMPARE( getValue(items,"solnpoolcapacity").toInt(), QVariant("1100000000").toInt() );
+
+    QVERIFY( containKey (items,"solnpoolintensity") );
+    QCOMPARE( getValue(items,"solnpoolintensity").toInt(), QVariant("3").toInt() );
+
+    QVERIFY( containKey (items,"cuts") );
+    QCOMPARE( getValue(items,"cuts").toString(),  QVariant("2").toString() );
+
+    QVERIFY( containKey (items,"miptrace") );
+    QCOMPARE( getValue(items,"miptrace").toString(), QVariant("/This/Is/The/File Name/Of/MIPTrace.File").toString() );
+
+    QVERIFY( containKey (items,"rerun") );
+    QCOMPARE( getValue(items,"rerun").toString(), QVariant("auto").toString() );
+
+    QVERIFY( containKey (items,"computeserver") );
+    QCOMPARE( getValue(items,"computeserver").toString(), QVariant("https://somewhere.org/").toString() );
+
+    QVERIFY( containKey (items,"tuning") );
+    QCOMPARE( getValue(items,"tuning").toString(), QVariant("str1, str2, str3, str 4, str 5").toString() );
+}
+
+void TestCPLEXOption::testNonExistReadOptionFile()
+{
+    // when
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op012345");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+
+    // then
+    QCOMPARE( items.size(), 0);
 }
 
 void TestCPLEXOption::testWriteOptionFile()
@@ -634,7 +698,26 @@ void TestCPLEXOption::testWriteOptionFile()
 void TestCPLEXOption::cleanupTestCase()
 {
     if (optionTokenizer)
-       delete optionTokenizer;
+        delete optionTokenizer;
+}
+
+bool TestCPLEXOption::containKey(QList<OptionItem> &items, const QString &key) const
+{
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return true;
+    }
+    return false;
+}
+
+QVariant TestCPLEXOption::getValue(QList<OptionItem> &items, const QString &key) const
+{
+    QVariant value;
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return QVariant(item.value);
+    }
+    return value;
 }
 
 QTEST_MAIN(TestCPLEXOption)
