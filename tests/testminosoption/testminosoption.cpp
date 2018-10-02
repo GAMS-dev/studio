@@ -410,6 +410,62 @@ void TestMINOSOption::testNonExistReadOptionFile()
     QCOMPARE( items.size(), 0);
 }
 
+void TestMINOSOption::testWriteOptionFile()
+{
+    // given
+    QList<OptionItem> items;
+    items.append(OptionItem("summary frequency", "1000"));
+    items.append(OptionItem("crash option", "3"));
+    items.append(OptionItem("factorization frequency", "99"));
+
+    items.append(OptionItem("LU factor tolerance", "2e+8"));
+    items.append(OptionItem("optimality tolerance", "1.0e-2"));
+
+    items.append(OptionItem("solution", "YES"));
+    items.append(OptionItem("start assigned nonlinears", "ELIGIBLE FOR CRASH"));
+    items.append(OptionItem("LU complete pivoting", ""));
+    items.append(OptionItem("scale no", ""));
+    items.append(OptionItem("verify gradients", ""));
+
+    // when
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "minos.opt") );
+
+    // then
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.opt"));
+    int i = 0;
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+          QStringList strList = in.readLine().split( "=" );
+          QVERIFY( containKey (items, strList.at(0)) );
+
+          if ((QString::compare(strList.at(0), "summary frequency", Qt::CaseInsensitive)==0) ||
+              (QString::compare(strList.at(0), "crash option", Qt::CaseInsensitive)==0) ||
+              (QString::compare(strList.at(0), "factorization frequency", Qt::CaseInsensitive)==0)
+             ) {
+             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
+          } else if ((QString::compare(strList.at(0), "LU factor tolerance", Qt::CaseInsensitive)==0) ||
+                     (QString::compare(strList.at(0), "optimality tolerance", Qt::CaseInsensitive)==0)) {
+              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
+          } else if ((QString::compare(strList.at(0), "solution", Qt::CaseInsensitive)==0) ||
+                     (QString::compare(strList.at(0), "start assigned nonlinears", Qt::CaseInsensitive)==0)) {
+              QString value = strList.at(1);
+              if (value.startsWith("\""))
+                 value = value.right(value.length()-1);
+              if (value.endsWith("\""))
+                 value = value.left( value.length()-1);
+              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
+          } else {
+              QCOMPARE( strList.size(), 1 );
+          }
+          i++;
+       }
+       inputFile.close();
+    }
+    QCOMPARE(i, items.size());
+
+}
+
 void TestMINOSOption::cleanupTestCase()
 {
     if (optionTokenizer)

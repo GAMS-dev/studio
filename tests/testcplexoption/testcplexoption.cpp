@@ -656,15 +656,17 @@ void TestCPLEXOption::testNonExistReadOptionFile()
 
 void TestCPLEXOption::testWriteOptionFile()
 {
-    // when
+    // given
     QList<OptionItem> items;
     items.append(OptionItem("advind", "1"));
     items.append(OptionItem("barepcomp", "1e-008"));
+    items.append(OptionItem("dettilim","1e+075"));
     items.append(OptionItem("computeserver", "https://somewhere.org/"));
     items.append(OptionItem("covers", "2"));
     items.append(OptionItem("feasopt", "0"));
-    items.append(OptionItem("tuning", "str1 str2"));
-    items.append(OptionItem("usergdxin", "Pumi Rufi\""));
+    items.append(OptionItem("rerun", "nono"));
+    items.append(OptionItem("tuning", "str1, str2, str3"));
+    items.append(OptionItem("usergdxin", "Antoni Pumi Rufi"));
 
     // when
     QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
@@ -676,17 +678,23 @@ void TestCPLEXOption::testWriteOptionFile()
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
           QStringList strList = in.readLine().split( "=" );
-          QCOMPARE(strList.at(0), items.at(i).key);
-          switch(i) {
-          case 5:
-              QCOMPARE(strList.at(1), QString("\"%1\"").arg(items.at(i).value));
-              break;
-          case 6:
-              QCOMPARE(strList.at(1), QString("\"%1").arg(items.at(i).value));
-              break;
-          default:
-              QCOMPARE(strList.at(1), items.at(i).value);
-              break;
+
+          QVERIFY( containKey (items, strList.at(0)) );
+          if ((QString::compare(strList.at(0), "advind", Qt::CaseInsensitive)==0) ||
+              (QString::compare(strList.at(0), "covers", Qt::CaseInsensitive)==0) ||
+              (QString::compare(strList.at(0), "feasopt", Qt::CaseInsensitive)==0)
+             ) {
+             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
+          } else if ((QString::compare(strList.at(0), "dettilim", Qt::CaseInsensitive)==0) ||
+                     (QString::compare(strList.at(0), "barepcomp", Qt::CaseInsensitive)==0)) {
+              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
+          } else {
+              QString value = strList.at(1);
+              if (value.startsWith("\""))
+                 value = value.right(value.length()-1);
+              if (value.endsWith("\""))
+                 value = value.left( value.length()-1);
+              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
           }
           i++;
        }

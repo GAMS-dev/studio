@@ -61,7 +61,7 @@ private slots:
     void testReadOptionFile();
     void testNonExistReadOptionFile();
 
-//    void testWriteOptionFile();
+    void testWriteOptionFile();
 
     void cleanupTestCase();
 
