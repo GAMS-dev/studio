@@ -282,11 +282,14 @@ void TestConopt4Option::testReadOptionFile()
         QFAIL("expected to open conopt4.op2 to write, but failed");
 
     QTextStream out(&outputFile);
+    out << "* This is comment line" << endl;
     out << "DF_Method 1" << endl;
     out << "Lim_Iteration=100" << endl;
+    out << "WRTPAR 0" << endl;
+    out << "Flg_Hessian 1" << endl;
     out << "cooptfile \"C:/Users/Dude/coopt.file\"" << endl;
     out << "Tol_Bound=5.E-9" << endl;
-    out << "Flg_Hessian auto" << endl;
+    out << "HEAPLIMIT 1e20" << endl;
     outputFile.close();
 
     // when
@@ -294,17 +297,38 @@ void TestConopt4Option::testReadOptionFile()
     QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
 
     // then
-    QCOMPARE( items.at(0).key, "DF_Method" );
-    QCOMPARE( items.at(0).value, "1" );
-    QCOMPARE( items.at(1).key, "Lim_Iteration" );
-    QCOMPARE( items.at(1).value, "100" );
-    QCOMPARE( items.at(2).key, "cooptfile" );
-    QCOMPARE( items.at(2).value, "\"C:/Users/Dude/coopt.file\"" );
-    QCOMPARE( items.at(3).key, "Tol_Bound" );
-    QCOMPARE( items.at(3).value, "5.E-9" );
-    QCOMPARE( items.at(4).key, "Flg_Hessian" );
-    QCOMPARE( items.at(4).value, "auto" );
-    QCOMPARE( items.size(), 5 );
+    QCOMPARE( items.size(), 7 );
+
+    QVERIFY( containKey (items,"DF_Method") );
+    QCOMPARE( getValue(items,"DF_Method").toInt(),  QVariant("1").toInt() );
+
+    QVERIFY( containKey (items,"Lim_Iteration") );
+    QCOMPARE( getValue(items,"Lim_Iteration").toInt(),  QVariant("100").toInt() );
+
+    QVERIFY( containKey (items,"Flg_Hessian") );
+    QCOMPARE( getValue(items,"Flg_Hessian").toInt(),  QVariant("1").toInt() );
+
+    QVERIFY( containKey (items,"WRTPAR") );
+    QCOMPARE( getValue(items,"WRTPAR").toInt(),  QVariant("0").toInt() );
+
+    QVERIFY( containKey (items,"Tol_Bound") );
+    QCOMPARE( getValue(items,"Tol_Bound").toDouble(), QVariant("5.E-9").toDouble() );
+
+    QVERIFY( containKey (items,"HEAPLIMIT") );
+    QCOMPARE( getValue(items,"HEAPLIMIT").toDouble(), QVariant("1e20").toDouble() );
+
+    QVERIFY( containKey (items,"cooptfile") );
+    QCOMPARE( getValue(items,"cooptfile").toString(), QVariant("C:/Users/Dude/coopt.file").toString() );
+}
+
+void TestConopt4Option::testNonExistReadOptionFile()
+{
+    // when
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op012345");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+
+    // then
+    QCOMPARE( items.size(), 0);
 }
 
 void TestConopt4Option::testWriteOptionFile()
@@ -343,7 +367,26 @@ void TestConopt4Option::testWriteOptionFile()
 void TestConopt4Option::cleanupTestCase()
 {
     if (optionTokenizer)
-       delete optionTokenizer;
+        delete optionTokenizer;
+}
+
+bool TestConopt4Option::containKey(QList<OptionItem> &items, const QString &key) const
+{
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return true;
+    }
+    return false;
+}
+
+QVariant TestConopt4Option::getValue(QList<OptionItem> &items, const QString &key) const
+{
+    QVariant value;
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return QVariant(item.value);
+    }
+    return value;
 }
 
 QTEST_MAIN(TestConopt4Option)
