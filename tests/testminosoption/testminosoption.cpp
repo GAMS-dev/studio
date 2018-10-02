@@ -217,6 +217,29 @@ void TestMINOSOption::testOptionIntegerType()
     QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
+void TestMINOSOption::testHiddenOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("hidden");
+    QTest::addColumn<QString>("description");
+    QTest::addColumn<QString>("optionType");
+
+    QTest::newRow("secret")  << "secret"  << true  << "back door for secret or undocumented MINOS options"  << "strlist";
+    QTest::newRow("begin")   << "begin"   << true  << "For compatibility with old MINOS spec files"         << "string";
+    QTest::newRow("end")     << "end"     << true  << "For compatibility with old MINOS spec files"         << "string";
+}
+
+void TestMINOSOption::testHiddenOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, hidden);
+    QFETCH(QString, description);
+    QFETCH(QString, optionType);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, !hidden);
+    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+}
+
 void TestMINOSOption::testOptionGroup_data()
 {
     QTest::addColumn<QString>("optionName");
@@ -315,10 +338,101 @@ void TestMINOSOption::testInvalidOption()
     QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid );
 }
 
+void TestMINOSOption::testReadOptionFile()
+{
+    // given
+    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2"));
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        QFAIL("expected to open cplex.op2 to write, but failed");
+
+    QTextStream out(&outputFile);
+    out << "print level 1" << endl;
+    out << "* this is a comment line" << endl;
+    out << "" << endl;
+    out << "hessian dimension=8" << endl;
+    out << "crash option 2" << endl;;
+    out << "major damping parameter 4.2" << endl;
+    out << "radius of convergence = 0.1" << endl;
+    out << "lagrangian YES      * Default value (recommended) " << endl;
+    out << "start assigned nonlinears BASIC" << endl;
+    out << "scale nonlinear variables  * No value" << endl;
+    out << "scale print" << endl;
+    out << "secret strlist - back door for secret or undocumented MINOS options" << endl;
+    out << "" << endl;
+    outputFile.close();
+
+    // when
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+
+    // then
+    QCOMPARE( items.size(), 10 );
+
+    QVERIFY( containKey (items,"print level") );
+    QCOMPARE( getValue(items,"print level").toInt(),  QVariant("1").toInt() );
+
+    QVERIFY( containKey (items,"hessian dimension") );
+    QCOMPARE( getValue(items,"hessian dimension").toInt(),  QVariant("8").toInt() );
+
+    QVERIFY( containKey (items,"crash option") );
+    QCOMPARE( getValue(items,"crash option").toInt(),  QVariant("2").toInt() );
+
+    QVERIFY( containKey (items,"major damping parameter") );
+    QCOMPARE( getValue(items,"major damping parameter").toDouble(), QVariant("4.2").toDouble() );
+
+    QVERIFY( containKey (items,"radius of convergence") );
+    QCOMPARE( getValue(items,"radius of convergence").toDouble(), QVariant("0.1").toDouble() );
+
+    QVERIFY( containKey (items,"lagrangian") );
+    QCOMPARE( getValue(items,"lagrangian").toString(), QVariant("YES").toString() );
+
+    QVERIFY( containKey (items,"start assigned nonlinears") );
+    QCOMPARE( getValue(items,"start assigned nonlinears").toString(), QVariant("BASIC").toString() );
+
+    QVERIFY( containKey (items,"scale nonlinear variables") );
+    QCOMPARE( getValue(items,"scale nonlinear variables").toString(), QVariant("").toString() );
+
+    QVERIFY( containKey (items,"scale print") );
+    QCOMPARE( getValue(items,"scale print").toString(), QVariant("").toString() );
+
+    QVERIFY( containKey (items,"secret") );
+    QCOMPARE( getValue(items,"secret").toString(),
+              QVariant("strlist - back door for secret or undocumented MINOS options").toString() );
+}
+
+void TestMINOSOption::testNonExistReadOptionFile()
+{
+    // when
+    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op012345");
+    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+
+    // then
+    QCOMPARE( items.size(), 0);
+}
+
 void TestMINOSOption::cleanupTestCase()
 {
     if (optionTokenizer)
-       delete optionTokenizer;
+        delete optionTokenizer;
+}
+
+bool TestMINOSOption::containKey(QList<OptionItem> &items, const QString &key) const
+{
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return true;
+    }
+    return false;
+}
+
+QVariant TestMINOSOption::getValue(QList<OptionItem> &items, const QString &key) const
+{
+    QVariant value;
+    for(OptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return QVariant(item.value);
+    }
+    return value;
 }
 
 QTEST_MAIN(TestMINOSOption)

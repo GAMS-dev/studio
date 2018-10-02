@@ -49,18 +49,26 @@ private slots:
     void testOptionIntegerType_data();
     void testOptionIntegerType();
 
+    void testHiddenOption_data();
+    void testHiddenOption();
+
     void testOptionGroup_data();
     void testOptionGroup();
 
     void testInvalidOption_data();
     void testInvalidOption();
 
-//    void testReadOptionFile();
+    void testReadOptionFile();
+    void testNonExistReadOptionFile();
+
 //    void testWriteOptionFile();
 
     void cleanupTestCase();
 
 private:
+    bool containKey(QList<OptionItem> &items, const QString &key) const;
+    QVariant getValue(QList<OptionItem> &items, const QString &key) const;
+
     OptionTokenizer* optionTokenizer;
 };
 
