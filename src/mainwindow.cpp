@@ -1554,21 +1554,20 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
     runGroup->clearLstErrorTexts();
 
-    // gather open files and autosave or request to save
-    QVector<FileMeta*> openFiles;
+    // gather modified files and autosave or request to save
+    QVector<FileMeta*> modifiedFiles;
     for (ProjectFileNode *node: runGroup->listFiles(true)) {
-        if (node->file()->isOpen() && !openFiles.contains(node->file()))
-            openFiles << node->file();
+        if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
+            modifiedFiles << node->file();
     }
-    bool doSave = !openFiles.isEmpty();
-
+    bool doSave = !modifiedFiles.isEmpty();
     if (doSave && !mSettings->autosaveOnRun()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
-        if (openFiles.size() > 1)
-            msgBox.setText(openFiles.first()->location()+" has been modified.");
+        if (modifiedFiles.size() > 1)
+            msgBox.setText(modifiedFiles.first()->location()+" has been modified.");
         else
-            msgBox.setText(QString::number(openFiles.size())+" files have been modified.");
+            msgBox.setText(QString::number(modifiedFiles.size())+" files have been modified.");
         msgBox.setInformativeText("Do you want to save your changes before running?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
@@ -1578,14 +1577,14 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         if (ret == QMessageBox::Cancel) {
             return;
         } else if (msgBox.clickedButton() == discardButton) {
-            for (FileMeta *file: openFiles)
+            for (FileMeta *file: modifiedFiles)
                 if (file->kind() != FileKind::Log)
                     file->load(file->codecMib());
             doSave = false;
         }
     }
     if (doSave) {
-        for (FileMeta *file: openFiles) file->save();
+        for (FileMeta *file: modifiedFiles) file->save();
     }
 
     // clear the TextMarks for this group
