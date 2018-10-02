@@ -1179,19 +1179,21 @@ void CodeEdit::updateExtraSelections()
         bool regex = SearchLocator::searchDialog()->regex();
 
         QRegularExpression regexp;
+        regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
         if (regex) regexp.setPattern(searchTerm);                      // treat as regex
         else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
         regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
 
         QRegularExpressionMatch match = regexp.match(selectedText);
-        bool matching = match.isValid() && searchTerm.length() == match.lastCapturedIndex();
 
-        // this is needed for parenthesis matching
-        if ((matching || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
-              // this is needed to wait for the timer
-              && (sender() != &mParenthesesDelay || !mSettings->wordUnderCursor())
-                // this is needed for HWUC setting
-                && (mSettings->wordUnderCursor() || matching))
+        //    (  not caused by parenthiesis matching                                )
+        if ((((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+              // ( depending on settings: no selection necessary OR has selection )
+              && (mSettings->wordUnderCursor() || textCursor().hasSelection())
+              // (          wait for timer       ) OR (     always select          )
+              && ((sender() == &mParenthesesDelay) || (mSettings->wordUnderCursor()))))
+                // AND deactivate when navigation search results
+                && match.captured(0).isEmpty())
             extraSelCurrentWord(selections);
     }
     extraSelMatches(selections);
