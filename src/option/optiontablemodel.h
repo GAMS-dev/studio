@@ -35,6 +35,7 @@ class OptionTableModel : public QAbstractTableModel
      Q_OBJECT
 public:
     OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -73,6 +74,8 @@ private:
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
+
+    bool mTokenizerUsed;
 
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString text);

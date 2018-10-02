@@ -23,9 +23,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(solverName));
 
     QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile( optionFilePath );
-    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    qDebug() << "[" << normalizedText << "]";
-    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
+//    QString normalizedText = mOptionTokenizer->normalize(optionItem);
+//    qDebug() << "[" << normalizedText << "]";
+//    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
+    OptionTableModel* optionTableModel = new OptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( optionTableModel );
 
     ui->solverOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView));
