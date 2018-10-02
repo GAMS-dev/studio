@@ -18,6 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Switch off warings caused by GAMS headers
+DEFINES += _CRT_SECURE_NO_WARNINGS
+
 include (version)
 # GAMS_CORE_PATH is Jenkins build switch
 GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
