@@ -97,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
+
 //    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -129,6 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
+    connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
 
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -508,8 +511,13 @@ void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
 void MainWindow::projectContextMenuRequested(const QPoint& pos)
 {
     QModelIndex index = ui->projectView->indexAt(pos);
-    if (!index.isValid()) return;
-    mProjectContextMenu.setNode(mProjectRepo.node(index));
+    QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
+    if (!index.isValid() && list.isEmpty()) return;
+    QVector<ProjectAbstractNode*> nodes;
+    for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
+        nodes << mProjectRepo.node(id);
+    }
+    mProjectContextMenu.setNodes(mProjectRepo.node(index), nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
@@ -1758,6 +1766,14 @@ void MainWindow::storeTree()
 {
     // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
+}
+
+void MainWindow::projectDeselect(const QVector<QModelIndex> &declined)
+{
+    QItemSelectionModel *selModel = ui->projectView->selectionModel();
+    for (QModelIndex ind: declined) {
+        selModel->select(ind, QItemSelectionModel::Deselect);
+    }
 }
 
 void MainWindow::raiseEdit(QWidget *widget)
