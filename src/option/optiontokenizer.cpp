@@ -592,22 +592,59 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
 
 bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const QString &path, const QString &fileName)
 {
-    QFile outputFile(QDir(path).absoluteFilePath(fileName));
-    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return false;
+    optHandle_t mOPTHandle;
 
-    QTextStream out(&outputFile);
-    for(OptionItem& item: items) {
-        QString value = item.value;
-        if (value.contains(" ")) {
-            if (!value.startsWith("\""))
-                value.prepend("\"");
-            if (!value.endsWith("\""))
-                value.append("\"");
-        }
-        out << QString("%1=%2").arg(item.key).arg(value) << endl;
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0') {
+        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
+        optFree(&mOPTHandle);
+        return false;
     }
-    outputFile.close();
+
+    if (!optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
+        optResetAllRecent(mOPTHandle);
+        for(OptionItem item: items) {
+            OptionDefinition optDef = mOption->getOptionDefinition( item.key );
+//            optResetNr(mOPTHandle, number);
+            QVariant value;
+            switch(optDef.dataType) {
+            case optDataInteger: {
+                qDebug() << QString("%1=%2(int)").arg(item.key).arg(item.value.toInt());
+                optSetValuesNr(mOPTHandle, optDef.number, item.value.toInt(), 0.0, "");
+                logMessage(mOPTHandle);
+                break;
+            }
+            case optDataDouble: {
+                qDebug() << QString("%1=%2(double)").arg(item.key).arg(item.value.toDouble());
+                optSetValuesNr(mOPTHandle, optDef.number, 0, item.value.toDouble(), "");
+                logMessage(mOPTHandle);
+                break;
+            }
+            case optDataString: {
+                qDebug() << QString("%1=%2(string)").arg(item.key).arg(item.value);
+                optSetStrNr(mOPTHandle, optDef.number, item.value.toLatin1());
+                logMessage(mOPTHandle);
+                break;
+            }
+            case optDataStrList: {
+                qDebug() << QString("%1=%2(strlist)").arg(item.key).arg(item.value);
+                optSetStrNr(mOPTHandle, optDef.number, item.value.toLatin1());
+                logMessage(mOPTHandle);
+                break;
+            }
+            default:
+                break;
+            }
+        }
+        optWriteParameterFile(mOPTHandle, QDir(path).absoluteFilePath(fileName).toLatin1() );
+        logMessage(mOPTHandle);
+        optClearMessages(mOPTHandle);
+
+    } else {
+        logMessage(mOPTHandle);
+    }
+    optFree(&mOPTHandle);
     return true;
 }
 
