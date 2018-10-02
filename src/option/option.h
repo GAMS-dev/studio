@@ -148,6 +148,9 @@ public:
 
     QMap<QString, OptionDefinition> getOption() const;
 
+    QString getOptionDefinitionFile() const;
+    QString getOptionDefinitionPath() const;
+
 private:
     QString mOptionDefinitionPath;
     QString mOptionDefinitionFile;

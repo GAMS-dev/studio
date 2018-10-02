@@ -361,6 +361,16 @@ QMap<QString, OptionDefinition> Option::getOption() const
     return mOption;
 }
 
+QString Option::getOptionDefinitionFile() const
+{
+    return mOptionDefinitionFile;
+}
+
+QString Option::getOptionDefinitionPath() const
+{
+    return mOptionDefinitionPath;
+}
+
 OptionDefinition Option::getOptionDefinition(const QString &optionName) const
 {
     return mOption[optionName.toUpper()];
@@ -425,7 +435,10 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
              QString nameStr = QString::fromLatin1(name).toUpper();
-             OptionDefinition opt(i, QString::fromLatin1(name), static_cast<optOptionType>(iopttype), static_cast<optDataType>(itype), QString::fromLatin1(descript));
+             OptionDefinition opt(i, QString::fromLatin1(name),
+                                  static_cast<optOptionType>(iopttype),
+                                  static_cast<optDataType>(itype),
+                                  QString::fromLatin1(descript));
              opt.groupNumber = group;
 //             opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
              opt.valid = (helpContextNr != 0);
