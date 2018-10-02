@@ -225,6 +225,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autoIndent", autoIndent());
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
+    mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -329,6 +330,7 @@ void StudioSettings::loadUserSettings()
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
+    setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -379,6 +381,16 @@ int StudioSettings::nrLogBackups() const
 void StudioSettings::setNrLogBackups(int nrLogBackups)
 {
     mNrLogBackups = nrLogBackups;
+}
+
+bool StudioSettings::autoCloseBraces() const
+{
+    return mAutoCloseBraces;
+}
+
+void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
+{
+    mAutoCloseBraces = autoCloseBraces;
 }
 
 void StudioSettings::restoreTabsAndProjects(MainWindow *main)
