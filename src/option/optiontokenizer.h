@@ -80,6 +80,7 @@ private:
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
 
+    bool logMessage(optHandle_t &mOPTHandle);
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
     void offsetAssignment(QStringRef str, int &offset, const int length);

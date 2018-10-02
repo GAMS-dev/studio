@@ -20,9 +20,14 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
+#include <QDebug>
 
 #include "optiontokenizer.h"
+#include "gclgms.h"
+#include "option.h"
 #include "commonpaths.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -474,21 +479,114 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     this->formatLineEdit(lineEdit, errList);
 }
 
+bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
+{
+    QString logMessage;
+    int itype;
+    char svalue[GMS_SSSIZE];
+    for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
+       optGetMessage(mOPTHandle, i, svalue, &itype );
+       qDebug() << "#Message" << i << ":" << svalue << ":" << itype;
+       if (itype==optMsgTooManyMsgs)
+           continue;
+       logMessage += svalue;
+       logMessage += "\n";
+    }
+    if (!logMessage.isEmpty()) {
+        SysLogLocator::systemLog()->appendLog(logMessage, LogMsgType::Error);
+        return true;
+    }
+    return false;
+}
+
 QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absoluteFilePath)
 {
     QList<OptionItem> items;
 
-    QFile inputFile(absoluteFilePath);
-    if (inputFile.open(QIODevice::ReadOnly)) {
-       QTextStream in(&inputFile);
-       while (!in.atEnd()) {
-           QString line = in.readLine();
-           if (line.trimmed().isEmpty() || line.trimmed().startsWith("*"))  // skip comment for now? TODO
-               continue;
-           items.append(tokenize(line));
-       }
-       inputFile.close();
+    optHandle_t mOPTHandle;
+
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0') {
+        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
+        optFree(&mOPTHandle);
+        return items;
     }
+
+    if (!optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
+       if (!optReadParameterFile(mOPTHandle, absoluteFilePath.toLatin1())) {
+           logMessage(mOPTHandle);
+           optResetAllRecent(mOPTHandle);
+           for (int i = 1; i <= optCount(mOPTHandle); ++i) {
+               int idefined;
+               int itype;
+               int iopttype;
+               int ioptsubtype;
+               int idummy;
+               int irefnr;
+               optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
+
+               if (iopttype == optTypeImmediate)
+                  continue;
+
+               if (idefined==0)  // no modification
+                   continue;
+
+               char name[GMS_SSSIZE];
+               int group = 0;
+               int helpContextNr;
+               int ivalue;
+               double dvalue;
+               char svalue[GMS_SSSIZE];
+
+               optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
+               optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
+
+               QVariant value;
+               switch(itype) {
+               case optDataInteger: {
+                   qDebug() << QString("%1:%2=[%3](int)").arg(i).arg(name).arg(ivalue);
+                   value = QVariant(ivalue);
+                   items.append(OptionItem(name, value.toString()));
+                   break;
+               }
+               case optDataDouble: {
+                   qDebug() << QString("%1:%2=[%3](double)").arg(i).arg(name).arg(dvalue);
+                   value = QVariant(dvalue);
+                   items.append(OptionItem(name, value.toString()));
+                   break;
+               }
+               case optDataString: {
+                   qDebug() << QString("%1:%2=[%3](string)").arg(i).arg(name).arg(svalue);
+                   value = QVariant(svalue);
+                   items.append(OptionItem(name, value.toString()));
+                   break;
+               }
+               case optDataStrList: {
+                   qDebug() << QString("%1:%2=[%3](stringlist)").arg(i).arg(name).arg(svalue);
+
+                   for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
+                      optReadFromListStr( mOPTHandle, name, j, svalue );
+                      qDebug() << QString(" %1").arg(svalue);
+                   }
+                   qDebug() << QString("--> %1").arg(svalue);
+                   value = QVariant(svalue);
+                   items.append(OptionItem(name, value.toString()));
+                   break;
+               }
+               case optDataNone:
+               default:
+                   break;
+               }
+            }
+       } else {
+           logMessage(mOPTHandle);
+       }
+    } else {
+        logMessage(mOPTHandle);
+    }
+    optFree(&mOPTHandle);
+
     return items;
 }
 
