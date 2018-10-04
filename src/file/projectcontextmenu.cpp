@@ -217,24 +217,20 @@ void ProjectContextMenu::onOpenFileLoc()
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            ProjectGroupNode *parent = file->parentNode();
-            if (parent) openLoc = parent->location();
-            QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path())));
         } else {
             QProcess proc;
             proc.setProgram(explorerPath);
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(file->location());
+            args << QDir::toNativeSeparators(QFileInfo(file->location()).path()));
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();
         }
 #else
-        ProjectGroupNode *parent = file->parentNode();
-        if (parent) openLoc = parent->location();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
 #endif
     } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::runGroup)){
         ProjectGroupNode *group = mNodes.first()->toGroup();
