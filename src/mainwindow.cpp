@@ -819,8 +819,7 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
         oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
 
         if (!fn) { // switch to a welcome page
-            QStringList runParametersHistory;
-            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            mGamsOptionWidget->loadCommandLineOption(QStringList());
             return;
         }
 
@@ -832,14 +831,12 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
 
     } else { // switch from a welcome page
         if (!fn) { // switch to a welcome page
-            QStringList runParametersHistory;
-            mGamsOptionWidget->loadCommandLineOption(runParametersHistory);
+            mGamsOptionWidget->loadCommandLineOption(QStringList());
             return;
         }
 
         ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
-
         mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
     }
 }
@@ -1922,7 +1919,7 @@ void MainWindow::purgeGroup(ProjectGroupNode *&group)
 {
     if (!group) return;
     // close group if it's empty or only contains a log-node
-    if (group->isPurgeable()) {
+    if (group->isEmpty()) {
         closeGroup(group);
         group = nullptr;
     }
