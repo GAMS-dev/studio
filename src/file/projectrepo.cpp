@@ -222,11 +222,20 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, gprArray);
-                    if (subGroup->isPurgeable()) {
+                    if (subGroup->isEmpty()) {
                         closeGroup(subGroup);
                     } else {
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
+                    }
+                }
+                QJsonArray optArray = jsonObject["options"].toArray();
+                if (!optArray.isEmpty() && subGroup->toRunGroup()) {
+                    for (QVariant opt : optArray.toVariantList()) {
+                        ProjectRunGroupNode *prgn = subGroup->toRunGroup();
+                        QString par = opt.toString();
+                        if (!par.isEmpty())
+                            prgn->addRunParametersHistory(par);
                     }
                 }
             }

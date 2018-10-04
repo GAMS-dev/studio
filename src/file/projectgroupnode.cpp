@@ -57,7 +57,7 @@ int ProjectGroupNode::childCount() const
     return mChildNodes.count();
 }
 
-bool ProjectGroupNode::isPurgeable()
+bool ProjectGroupNode::isEmpty()
 {
     return (mChildNodes.count() == 0);
 }
