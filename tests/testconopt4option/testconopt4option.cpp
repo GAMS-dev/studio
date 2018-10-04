@@ -209,17 +209,17 @@ void TestConopt4Option::testOptionGroup_data()
     QTest::newRow("Lim_Msg_Large_3")  << "Lim_Msg_Large"  << 3 << "o" << "Output options" << "integer";
     QTest::newRow("Lim_Pre_Msg_3")    << "Lim_Pre_Msg"    << 3 << "o" << "Output options" << "integer";
 
-    QTest::newRow("LF2DRV_4")      << "LF2DRV"     << 4 << "h" << "Hidden options" << "integer";
-    QTest::newRow("LFDEGI_4")      << "LFDEGI"     << 4 << "h" << "Hidden options" << "integer";
-    QTest::newRow("LFDERR_4")      << "LFDERR"     << 4 << "h" << "Hidden options" << "integer";
-    QTest::newRow("LFDLIM_4")      << "LFDLIM"     << 4 << "h" << "Hidden options" << "integer";
-    QTest::newRow("LFSQPP_4")      << "LFSQPP"     << 4 << "h" << "Hidden options" << "integer";
-    QTest::newRow("MAXMEM_4")      << "MAXMEM"     << 4 << "h" << "Hidden options" << "boolean";
-    QTest::newRow("STATFILE_4")    << "STATFILE"   << 4 << "h" << "Hidden options" << "boolean";
-    QTest::newRow("RTMINJ_4")      << "RTMINJ"     << 4 << "h" << "Hidden options" << "double";
-    QTest::newRow("WRTPAR_4")      << "WRTPAR"     << 4 << "h" << "Hidden options" << "boolean";
-    QTest::newRow("nobounds_4")    << "nobounds"   << 4 << "h" << "Hidden options" << "immediate";
-    QTest::newRow("readfile_4")    << "readfile"   << 4 << "h" << "Hidden options" << "immediate";
+//    QTest::newRow("LF2DRV_4")      << "LF2DRV"     << 4 << "h" << "Hidden options" << "integer";
+//    QTest::newRow("LFDEGI_4")      << "LFDEGI"     << 4 << "h" << "Hidden options" << "integer";
+//    QTest::newRow("LFDERR_4")      << "LFDERR"     << 4 << "h" << "Hidden options" << "integer";
+//    QTest::newRow("LFDLIM_4")      << "LFDLIM"     << 4 << "h" << "Hidden options" << "integer";
+//    QTest::newRow("LFSQPP_4")      << "LFSQPP"     << 4 << "h" << "Hidden options" << "integer";
+//    QTest::newRow("MAXMEM_4")      << "MAXMEM"     << 4 << "h" << "Hidden options" << "boolean";
+//    QTest::newRow("STATFILE_4")    << "STATFILE"   << 4 << "h" << "Hidden options" << "boolean";
+//    QTest::newRow("RTMINJ_4")      << "RTMINJ"     << 4 << "h" << "Hidden options" << "double";
+//    QTest::newRow("WRTPAR_4")      << "WRTPAR"     << 4 << "h" << "Hidden options" << "boolean";
+//    QTest::newRow("nobounds_4")    << "nobounds"   << 4 << "h" << "Hidden options" << "immediate";
+//    QTest::newRow("readfile_4")    << "readfile"   << 4 << "h" << "Hidden options" << "immediate";
 
     QTest::newRow("cooptfile_5")      << "cooptfile"     << 5 << "l" << "Interface options" << "string";
     QTest::newRow("Flg_2DDir_5")      << "Flg_2DDir"     << 5 << "l" << "Interface options" << "boolean";
