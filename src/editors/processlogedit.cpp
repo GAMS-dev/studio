@@ -37,9 +37,7 @@ void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
             || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
 
     } else*/
-
 }
-
 
 void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
 {

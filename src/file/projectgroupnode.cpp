@@ -59,8 +59,7 @@ int ProjectGroupNode::childCount() const
 
 bool ProjectGroupNode::isPurgeable()
 {
-    ProjectRunGroupNode *runGroup = assignedRunGroup();
-    return ( mChildNodes.count() == 0 || (mChildNodes.count() == 1 && childNode(0) == runGroup->logNode()) );
+    return (mChildNodes.count() == 0);
 }
 
 ProjectAbstractNode*ProjectGroupNode::childNode(int index) const
@@ -149,6 +148,7 @@ ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurs
 ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
 {
     if (!fileMeta) return nullptr;
+    if (fileMeta->kind() == FileKind::Log) return nullptr;
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
@@ -235,7 +235,7 @@ GamsProcess *ProjectRunGroupNode::gamsProcess() const
     return mGamsProcess.get();
 }
 
-ProjectLogNode* ProjectRunGroupNode::logNode() const
+bool ProjectRunGroupNode::hasLogNode() const
 {
     return mLogNode;
 }
@@ -247,14 +247,14 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
-ProjectLogNode *ProjectRunGroupNode::getOrCreateLogNode(FileMetaRepo *fileMetaRepo)
+ProjectLogNode *ProjectRunGroupNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
         QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
                        ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+"."+suffix);
         QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
-        FileMeta* fm = fileMetaRepo->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
+        FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
     }
     return mLogNode;
@@ -295,7 +295,7 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
     setSpecialFile(FileKind::Gms, gmsPath);
     setSpecialFile(FileKind::Lst, lstPath);
-    if (logNode()) logNode()->resetLst();
+    if (hasLogNode()) logNode()->resetLst();
 }
 
 QString ProjectRunGroupNode::lstFile() const

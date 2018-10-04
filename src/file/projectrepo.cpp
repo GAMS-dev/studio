@@ -151,10 +151,12 @@ inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
 ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
-    const ProjectGroupNode* group = node->toGroup();
+    ProjectGroupNode* group = node->toGroup();
     if (!group) group = node->parentNode();
-    while (!group->toRunGroup()) group = group->parentNode();
-    if (group->toRunGroup()) return group->toRunGroup()->logNode();
+    while (group && !group->toRunGroup())
+        group = group->parentNode();
+    if (group && group->toRunGroup() && group->toRunGroup()->hasLogNode())
+        return group->toRunGroup()->logNode();
     return nullptr;
 }
 
@@ -345,8 +347,8 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // Remove reference (if this is a lst file referenced in a log)
-    if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
-        runGroup->logNode()->setLstNode(nullptr);
+    if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
+        runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
 
@@ -408,10 +410,9 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!file) {
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
-            file = runGroup->getOrCreateLogNode(mFileRepo);
-        } else {
-            file = new ProjectFileNode(fileMeta, fileGroup);
+            return runGroup->logNode();
         }
+        file = new ProjectFileNode(fileMeta, fileGroup);
         if (!explicitName.isNull())
             file->setName(explicitName);
         int offset = fileGroup->peekIndex(file->name());
@@ -429,16 +430,11 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     // Find the runGroup
     ProjectRunGroupNode* runGroup = node->assignedRunGroup();
     if (!runGroup) return nullptr;
-    if (runGroup->logNode()) return runGroup->logNode();
-    ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);
+    ProjectLogNode* log = runGroup->logNode();
     if (!log) {
         DEB() << "Error while creating LOG node.";
         return nullptr;
     }
-    int offset = runGroup->peekIndex(log->name());
-    addToIndex(log);
-    mTreeModel->insertChild(offset, runGroup, log);
-    emit changed();
     return log;
 }
 
@@ -477,7 +473,14 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
 
 void ProjectRepo::setSelected(const QModelIndex& ind)
 {
-    mTreeModel->setSelected(ind);
+//    mTreeModel->setSelected(ind);
+}
+
+void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    mTreeModel->selectionChanged(selected, deselected);
+    emit deselect(mTreeModel->popDeclined());
+
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

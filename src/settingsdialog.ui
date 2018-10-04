@@ -388,6 +388,16 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="2">
+           <widget class="QCheckBox" name="cb_autoclose">
+            <property name="text">
+             <string>Auto close opening brackets and quotes</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

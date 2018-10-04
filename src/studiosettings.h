@@ -141,6 +141,9 @@ public:
     int nrLogBackups() const;
     void setNrLogBackups(int nrLogBackups);
 
+    bool autoCloseBraces() const;
+    void setAutoCloseBraces(bool autoCloseBraces);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -171,6 +174,7 @@ private:
     bool mAutoIndent;
     bool mWriteLog;
     int mNrLogBackups;
+    bool mAutoCloseBraces;
 
     // misc settings page
     int mHistorySize;

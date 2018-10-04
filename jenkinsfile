@@ -148,11 +148,12 @@ pipeline {
                             def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
+                                archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
+                                archiveArtifacts artifacts: 'GAMS*.AppImage', fingerprint: true
                             }
                         }
-                        archiveArtifacts artifacts: '*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {
@@ -173,7 +174,7 @@ pipeline {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'GAMS_Studio-${versionData}-x86_32.zip', archive: true, dir: 'tmp'
+                                zip zipFile: "GAMS_Studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             }
                         }
                     }
@@ -196,7 +197,7 @@ pipeline {
                             if (env.BRANCH_NAME != 'master') {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
-                                zip zipFile: 'GAMS_Studio-${versionData}-x86_64.zip', archive: true, dir: 'tmp'
+                                zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             }
                         }
                     }

@@ -45,27 +45,11 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     mCodec = QTextCodec::codecForLocale();
     mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
                                                 : QFileInfo(mLocation).fileName();
-
-    if (kind() != FileKind::Gdx) {
-        mDocument = new QTextDocument(this);
-        mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
-        mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        connect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
-    }
-
-    if (kind() == FileKind::Gms) {
-        mHighlighter = new SyntaxHighlighter(document());
-        connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
-        connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
-    } else if (kind() != FileKind::Gdx) {
-        mHighlighter = new ErrorHighlighter(document());
-    }
-    if (mHighlighter)
-        mHighlighter->setMarks(fileRepo->textMarkRepo()->marks(id));
 }
 
 FileMeta::~FileMeta()
 {
+    if (mDocument) unlinkDocument();
     mFileRepo->textMarkRepo()->removeMarks(id());
     mFileRepo->removedFile(this);
 }
@@ -123,6 +107,44 @@ bool FileMeta::checkActivelySavedAndReset()
     return res;
 }
 
+void FileMeta::linkDocument(QTextDocument *doc)
+{
+    // The very first editor opened for this FileMeta should pass it's document here. It takes over parency
+    if (kind() != FileKind::Gdx) {
+        mDocument = doc;
+        doc->setParent(this);
+        mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
+        mDocument->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        connect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+
+    if (kind() == FileKind::Gms) {
+        mHighlighter = new SyntaxHighlighter(mDocument);
+        connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
+        connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+    } else if (kind() != FileKind::Gdx) {
+        mHighlighter = new ErrorHighlighter(mDocument);
+    }
+    if (mHighlighter)
+        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+}
+
+void FileMeta::unlinkDocument()
+{
+    if (!mDocument) return;
+    if (mHighlighter) {
+        mHighlighter->setDocument(nullptr);
+        mHighlighter->deleteLater();
+        mHighlighter = nullptr;
+    }
+    disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
+    if (kind() == FileKind::Gms) {
+        disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
+        disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+    }
+    mDocument = nullptr;
+}
+
 FileId FileMeta::id() const
 {
     return mId;
@@ -138,7 +160,7 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
-FileKind FileMeta::kind()
+FileKind FileMeta::kind() const
 {
     return mData.type->kind();
 }
@@ -173,14 +195,16 @@ void FileMeta::modificationChanged(bool modiState)
 void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(charsRemoved);
+    if (!mDocument) return;
     if (!isOpen()) return;
+    if (mLoading) return;
     AbstractEdit *edit = toAbstractEdit(topEditor());
     if (!edit) return;
     QTextCursor cursor(mDocument);
     cursor.setPosition(from);
     int column = cursor.positionInBlock();
     int fromLine = cursor.blockNumber();
-    cursor.setPosition(from+charsAdded, QTextCursor::KeepAnchor);
+    cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
     mChangedLine = toLine;
     if (charsAdded) {
@@ -222,7 +246,10 @@ void FileMeta::addEditor(QWidget *edit)
         if (!ptEdit->fileId().isValid()) {
             DEB() << "invalid FileId";
         }
-        ptEdit->setDocument(mDocument);
+        if (!mDocument)
+            linkDocument(ptEdit->document());
+        else
+            ptEdit->setDocument(mDocument);
         connect(ptEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
@@ -260,9 +287,10 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
         if (mEditors.isEmpty()) {
             if (!suppressCloseSignal) emit documentClosed();
             if (kind() != FileKind::Log) {
-                mDocument->clear();
-                mDocument->clearUndoRedoStacks();
-                mDocument->setModified(false);
+                unlinkDocument();
+//                mDocument->clear();
+//                mDocument->clearUndoRedoStacks();
+//                mDocument->setModified(false);
             }
         }
     }
@@ -298,8 +326,16 @@ void FileMeta::load(QList<int> codecMibs)
         }
         return;
     }
-    if (!document())
-        EXCEPT() << "There is no document assigned to the file " << location();
+    if (kind() == FileKind::Lst) {
+        for (QWidget *wid : mEditors) {
+            lxiviewer::LxiViewer *lxi = toLxiViewer(wid);
+            if (lxi) lxi->loadLxi();
+        }
+    }
+    if (!mDocument) {
+        QTextDocument *doc = new QTextDocument(this);
+        linkDocument(doc);
+    }
 
     QList<int> mibs = codecMibs;
     mibs << QTextCodec::codecForLocale()->mibEnum();
@@ -312,34 +348,28 @@ void FileMeta::load(QList<int> codecMibs)
         // TODO(JM) Read in lines to enable progress information
         // !! For paging: reading must ensure being at the start of a line - not in the middle of a unicode-character
         const QByteArray data(file.readAll());
-        QString text;
         QTextCodec *codec = nullptr;
         for (int mib: mibs) {
             QTextCodec::ConverterState state;
             codec = QTextCodec::codecForMib(mib);
             if (codec) {
-                text = codec->toUnicode(data.constData(), data.size(), &state);
+                QString text = codec->toUnicode(data.constData(), data.size(), &state);
                 if (state.invalidChars == 0) {
+                    QVector<QPoint> edPos = getEditPositions();
+                    mLoading = true;
+                    document()->setPlainText(text);
+                    setEditPositions(edPos);
+                    mLoading = false;
+                    mCodec = codec;
                     break;
                 }
             } else {
                 DEB() << "System doesn't contain codec for MIB " << mib;
             }
         }
-        if (codec) {
-//            if (mMarks && keepMarks)
-//                disconnect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
-            QVector<QPoint> edPos = getEditPositions();
-            document()->setPlainText(text);
-            setEditPositions(edPos);
-//            if (mMarks && keepMarks)
-//                connect(document(), &QTextDocument::contentsChange, mMarks, &TextMarkRepo::documentChanged);
-            mCodec = codec;
-        }
         file.close();
         mData = Data(location());
         document()->setModified(false);
-//        QTimer::singleShot(50, this, &ProjectFileNode::updateMarks);
     }
 }
 
@@ -557,7 +587,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         initEditorType(gdxView);
         gdxView->setFileId(id());
         gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
-        tabWidget->insertTab(tabWidget->currentIndex()+1, gdxView, name(NameModifier::editState));
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
@@ -566,7 +595,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         initEditorType(refView);
         refView->setFileId(id());
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
-        tabWidget->insertTab(tabWidget->currentIndex()+1, refView, name(NameModifier::editState));
         res = refView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
@@ -605,12 +633,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
-        tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
-        if (mEditors.isEmpty() && kind() != FileKind::Log)
-            load(codecMibs);
-        mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
     }
+    tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     addEditor(res);
+    if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
+        load(codecMibs);
+    if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
     return res;
 }
 

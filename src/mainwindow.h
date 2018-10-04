@@ -28,10 +28,13 @@
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
-#include "help/helpwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+
+#ifdef QWEBENGINE
+#include "help/helpwidget.h"
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -90,6 +93,7 @@ public:
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
     void openFiles(QStringList pathList);
+    void watchProjectTree();
 
     bool outputViewVisibility();
     bool projectViewVisibility();
@@ -128,7 +132,9 @@ public:
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
 
+#ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
+#endif
     option::OptionWidget *gamsOptionWidget() const;
 
 public slots:
@@ -169,6 +175,7 @@ private slots:
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
+    void projectDeselect(const QVector<QModelIndex> &declined);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -299,8 +306,11 @@ private:
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
+#ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
+#endif
     option::OptionWidget *mGamsOptionWidget = nullptr;
+
     ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;

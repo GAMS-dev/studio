@@ -36,7 +36,7 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNode(ProjectAbstractNode* node);
+    bool setNodes(ProjectAbstractNode* current, QVector<ProjectAbstractNode*> selected);
 
     void setParent(QWidget *parent);
 
@@ -55,7 +55,7 @@ signals:
 
 private slots:
     void onCloseGroup();
-    void onRunFile();
+//    void onRunFile();
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();
@@ -69,7 +69,7 @@ private:
     void onOpenLog();
 
 private:
-    ProjectAbstractNode* mNode;
+    QVector<ProjectAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
     QHash<int, QAction*> mSolverOptionActions;
     QWidget *mParent = nullptr;

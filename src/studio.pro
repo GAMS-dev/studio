@@ -18,9 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT       += core gui svg concurrent
+# Set this to "false" to build Studio without QWebEngine enabled,
+# which deactivates the studio help view.
+QWEBENGINE=true
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webenginewidgets
+QT       += core gui svg concurrent network
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = studio
 TEMPLATE = app
@@ -30,8 +34,6 @@ CONFIG += c++14
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
-
-include (../version)
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
@@ -52,7 +54,6 @@ win32 {
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-DEFINES += _CRT_SECURE_NO_WARNINGS
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -92,11 +93,6 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
-    help/bookmarkdialog.cpp \
-    help/helppage.cpp \
-    help/helptoolbar.cpp \
-    help/helpview.cpp \
-    help/helpwidget.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -197,11 +193,6 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
-    help/bookmarkdialog.h \
-    help/helppage.h \
-    help/helptoolbar.h \
-    help/helpview.h \
-    help/helpwidget.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
@@ -274,9 +265,7 @@ HEADERS += \
 FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
-    gdxviewer/gdxviewer.ui \
-    help/bookmarkdialog.ui \
-    help/helpwidget.ui \
+    gdxviewer/gdxviewer.ui \    
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
@@ -298,3 +287,22 @@ RESOURCES += \
 
 DISTFILES += \
     studio.rc
+
+equals(QWEBENGINE, "true") {
+DEFINES += QWEBENGINE
+greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets
+SOURCES += help/bookmarkdialog.cpp \
+    help/helppage.cpp \
+    help/helptoolbar.cpp \
+    help/helpview.cpp \
+    help/helpwidget.cpp
+HEADERS += help/bookmarkdialog.h \
+    help/helppage.h \
+    help/helptoolbar.h \
+    help/helpview.h \
+    help/helpwidget.h
+FORMS += help/bookmarkdialog.ui \
+    help/helpwidget.ui
+} else {
+    message("Building Studio without QWebEngine support.")
+}

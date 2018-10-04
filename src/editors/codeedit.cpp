@@ -425,65 +425,67 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         emit searchFindNextPressed();
 
     // smart typing:
-    QSet<int> moveKeys;
-    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
-             << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
-    if (moveKeys.contains(e->key())) mSmartType = false;
+    if (SettingsLocator::settings()->autoCloseBraces())  {
+        QSet<int> moveKeys;
+        moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+                 << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+        if (moveKeys.contains(e->key())) mSmartType = false;
 
-    QString opening = "<([{/'\"";
-    QString closing = ">)]}/'\"";
-    int index = opening.indexOf(e->text());
-    int indexClosing = closing.indexOf(e->text());
+        QString opening = "([{/'\"";
+        QString closing = ")]}/'\"";
+        int index = opening.indexOf(e->text());
+        int indexClosing = closing.indexOf(e->text());
 
-    // exclude modifier combinations
-    if (e->text().isEmpty()) {
-        index = -1;
-        indexClosing = -1;
-    }
+        // exclude modifier combinations
+        if (e->text().isEmpty()) {
+            index = -1;
+            indexClosing = -1;
+        }
 
-    // surround text with characters
-    if ((index != -1) && (textCursor().hasSelection())) {
-        QTextCursor tc(textCursor());
-        QString selection(tc.selectedText());
-        selection = opening.at(index) + selection + closing.at(index);
-        tc.insertText(selection);
-        setTextCursor(tc);
-        return;
-
-    // jump over closing character thats already in place
-    } else if (indexClosing != -1 &&
-               closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
-        QTextCursor tc = textCursor();
-        tc.movePosition(QTextCursor::NextCharacter);
-        setTextCursor(tc);
-        mSmartType = false; // we're done
-        e->accept();
-        return;
-
-    // insert closing characters
-    } else if (index != -1) {
-        mSmartType = true;
-        QTextCursor tc = textCursor();
-        tc.insertText(e->text());
-        tc.insertText(closing.at(index));
-        tc.movePosition(QTextCursor::PreviousCharacter);
-        setTextCursor(tc);
-        e->accept();
-        return;
-    }
-
-    if (mSmartType && e->key() == Qt::Key_Backspace) {
-        int pos = textCursor().position();
-
-        QChar a = document()->characterAt(pos-1);
-        QChar b = document()->characterAt(pos);
-
-        if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
-            textCursor().deleteChar();
-            textCursor().deletePreviousChar();
-            e->accept();
-            mSmartType = false;
+        // surround text with characters
+        if ((index != -1) && (textCursor().hasSelection())) {
+            QTextCursor tc(textCursor());
+            QString selection(tc.selectedText());
+            selection = opening.at(index) + selection + closing.at(index);
+            tc.insertText(selection);
+            setTextCursor(tc);
             return;
+
+            // jump over closing character thats already in place
+        } else if (indexClosing != -1 &&
+                   closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
+            QTextCursor tc = textCursor();
+            tc.movePosition(QTextCursor::NextCharacter);
+            setTextCursor(tc);
+            mSmartType = false; // we're done
+            e->accept();
+            return;
+
+            // insert closing characters
+        } else if (index != -1) {
+            mSmartType = true;
+            QTextCursor tc = textCursor();
+            tc.insertText(e->text());
+            tc.insertText(closing.at(index));
+            tc.movePosition(QTextCursor::PreviousCharacter);
+            setTextCursor(tc);
+            e->accept();
+            return;
+        }
+
+        if (mSmartType && e->key() == Qt::Key_Backspace) {
+            int pos = textCursor().position();
+
+            QChar a = document()->characterAt(pos-1);
+            QChar b = document()->characterAt(pos);
+
+            if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
+                textCursor().deleteChar();
+                textCursor().deletePreviousChar();
+                e->accept();
+                mSmartType = false;
+                return;
+            }
         }
     }
 
@@ -1179,19 +1181,21 @@ void CodeEdit::updateExtraSelections()
         bool regex = SearchLocator::searchDialog()->regex();
 
         QRegularExpression regexp;
+        regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
         if (regex) regexp.setPattern(searchTerm);                      // treat as regex
         else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
         regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
 
         QRegularExpressionMatch match = regexp.match(selectedText);
-        bool matching = match.isValid() && searchTerm.length() == match.lastCapturedIndex();
 
-        // this is needed for parenthesis matching
-        if ((matching || !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
-              // this is needed to wait for the timer
-              && (sender() != &mParenthesesDelay || !mSettings->wordUnderCursor())
-                // this is needed for HWUC setting
-                && (mSettings->wordUnderCursor() || matching))
+        //    (  not caused by parenthiesis matching                                )
+        if ((((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+              // ( depending on settings: no selection necessary OR has selection )
+              && (mSettings->wordUnderCursor() || textCursor().hasSelection())
+              // (          wait for timer       ) OR (     always select          )
+              && ((sender() == &mParenthesesDelay) || (mSettings->wordUnderCursor()))))
+                // AND deactivate when navigation search results
+                && match.captured(0).isEmpty())
             extraSelCurrentWord(selections);
     }
     extraSelMatches(selections);
