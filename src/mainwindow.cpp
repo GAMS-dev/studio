@@ -1985,6 +1985,11 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 {
     QFileInfo fi(item.location);
     if (fi.isFile()) {
+        ProjectFileNode* fn = mProjectRepo.findFileNode(mRecent.editor());
+        if (fn) {
+           ProjectRunGroupNode* runGroup =  fn->assignedRunGroup();
+           mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), runGroup);
+        }
         openFilePath(fi.absoluteFilePath(), true);
         CodeEdit *codeEdit = FileMeta::toCodeEdit(mRecent.editor());
         if (codeEdit) {
