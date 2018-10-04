@@ -95,12 +95,6 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
 
     // all files
     mActions[10]->setVisible(fileNode);
-
-    // create solver option files
-    mActions[100]->setVisible(isGroup);
-    foreach (QAction* action, mSolverOptionActions)
-        action->setVisible(isGroup);
-
 }
 
 void ProjectContextMenu::onCloseFile()
