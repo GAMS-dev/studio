@@ -217,14 +217,14 @@ void ProjectContextMenu::onOpenFileLoc()
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path())));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
         } else {
             QProcess proc;
             proc.setProgram(explorerPath);
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(QFileInfo(file->location()).path()));
+            args << QDir::toNativeSeparators(QFileInfo(file->location()).path());
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();
