@@ -17,13 +17,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+TEMPLATE = app
 
-TEMPLATE = subdirs
+include(../tests.pri)
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testservicelocators
-SUBDIRS += testgamsoption
-SUBDIRS += testcplexoption
-SUBDIRS += testconopt4option
-SUBDIRS += testminosoption
-SUBDIRS += testgurobioption
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/option
+
+HEADERS += \
+    testgurobioption.h \
+    $$SRCPATH/option/option.h \
+    $$SRCPATH/option/optiontokenizer.h
+
+SOURCES += \
+    testgurobioption.cpp \
+    $$SRCPATH/option/option.cpp \
+    $$SRCPATH/option/optiontokenizer.cpp \
+    $$SRCPATH/locators/sysloglocator.cpp \
+    $$SRCPATH/locators/defaultsystemlogger.cpp \
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp
