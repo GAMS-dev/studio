@@ -26,7 +26,7 @@
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
-#include "optiontablemodel.h"
+#include "gamsoptiontablemodel.h"
 #include "mainwindow.h"
 
 namespace gams {
@@ -61,9 +61,9 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
+    GamsOptionTableModel* optionTableModel = new GamsOptionTableModel(normalizedText, mOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( optionTableModel );
-    connect(optionTableModel, &OptionTableModel::optionModelChanged,
+    connect(optionTableModel, &GamsOptionTableModel::optionModelChanged,
             this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
     connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
             mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
@@ -88,7 +88,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
-    connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
+    connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);

@@ -20,13 +20,13 @@
 #include <QIcon>
 
 #include "option.h"
-#include "optiontablemodel.h"
+#include "gamsoptiontablemodel.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
+GamsOptionTableModel::GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(true)
 {
     mHeader.append("Key");
@@ -36,14 +36,14 @@ OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, Optio
         on_optionTableModelChanged(normalizedCommandLineStr);
 }
 
-OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
+GamsOptionTableModel::GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(false)
 {
     mHeader.append("Key");
     mHeader.append("Value");
 }
 
-QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
+QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
@@ -73,7 +73,7 @@ QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, in
     return QVariant();
 }
 
-int OptionTableModel::rowCount(const QModelIndex &parent) const
+int GamsOptionTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -81,14 +81,14 @@ int OptionTableModel::rowCount(const QModelIndex &parent) const
     return  mOptionItem.size();
 }
 
-int OptionTableModel::columnCount(const QModelIndex &parent) const
+int GamsOptionTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mHeader.size();
 }
 
-QVariant OptionTableModel::data(const QModelIndex &index, int role) const
+QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -181,7 +181,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
+Qt::ItemFlags GamsOptionTableModel::flags(const QModelIndex &index) const
 {
    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
@@ -190,7 +190,7 @@ Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
         return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
+bool GamsOptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
 {
     if (orientation != Qt::Vertical || role != Qt::CheckStateRole)
         return false;
@@ -201,7 +201,7 @@ bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, con
     return true;
 }
 
-bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role == Qt::EditRole)   {
         QString data = value.toString().simplified();
@@ -228,14 +228,14 @@ bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, 
     return true;
 }
 
-QModelIndex OptionTableModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex GamsOptionTableModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
     return QModelIndex();
 }
 
-bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool GamsOptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size())
@@ -252,7 +252,7 @@ bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent 
     return true;
 }
 
-bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool GamsOptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
@@ -265,7 +265,7 @@ bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent 
     return true;
 }
 
-bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool GamsOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
@@ -280,14 +280,14 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     return true;
 }
 
-QStringList OptionTableModel::mimeTypes() const
+QStringList GamsOptionTableModel::mimeTypes() const
 {
     QStringList types;
     types << "application/vnd.gams-pf.text";
     return types;
 }
 
-QMimeData *OptionTableModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *GamsOptionTableModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
@@ -310,17 +310,17 @@ QMimeData *OptionTableModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-Qt::DropActions OptionTableModel::supportedDragActions() const
+Qt::DropActions GamsOptionTableModel::supportedDragActions() const
 {
     return Qt::MoveAction ;
 }
 
-Qt::DropActions OptionTableModel::supportedDropActions() const
+Qt::DropActions GamsOptionTableModel::supportedDropActions() const
 {
     return Qt::MoveAction | Qt::CopyAction ;
 }
 
-bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(column);
     if (action == Qt::IgnoreAction)
@@ -405,12 +405,12 @@ bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction ac
     return false;
 }
 
-QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
+QList<OptionItem> GamsOptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
 }
 
-void OptionTableModel::toggleActiveOptionItem(int index)
+void GamsOptionTableModel::toggleActiveOptionItem(int index)
 {
     if (mOptionItem.isEmpty() || index >= mOptionItem.size())
         return;
@@ -423,7 +423,7 @@ void OptionTableModel::toggleActiveOptionItem(int index)
     emit optionModelChanged(mOptionItem);
 }
 
-void OptionTableModel::on_optionTableModelChanged(const QString &text)
+void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
 {
     beginResetModel();
     itemizeOptionFromCommandLineStr(text);
@@ -452,7 +452,7 @@ void OptionTableModel::on_optionTableModelChanged(const QString &text)
 }
 
 
-void OptionTableModel::setRowCount(int rows)
+void GamsOptionTableModel::setRowCount(int rows)
 {
    int rc = mOptionItem.size();
    if (rows < 0 ||  rc == rows)
@@ -464,7 +464,7 @@ void OptionTableModel::setRowCount(int rows)
       removeRows(qMax(rows, 0), rc - rows);
 }
 
-void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
+void GamsOptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 {
     QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();

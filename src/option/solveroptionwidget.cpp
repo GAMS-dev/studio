@@ -7,7 +7,7 @@
 #include "optioncompleterdelegate.h"
 #include "optiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
-#include "optiontablemodel.h"
+#include "gamsoptiontablemodel.h"
 #include "mainwindow.h"
 
 namespace gams {
@@ -26,7 +26,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 //    QString normalizedText = mOptionTokenizer->normalize(optionItem);
 //    qDebug() << "[" << normalizedText << "]";
 //    OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mOptionTokenizer,  this);
-    OptionTableModel* optionTableModel = new OptionTableModel(optionItem, mOptionTokenizer,  this);
+    GamsOptionTableModel* optionTableModel = new GamsOptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( optionTableModel );
 
     ui->solverOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView));
@@ -49,7 +49,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested,this, &SolverOptionWidget::showOptionContextMenu);
-    connect(this, &SolverOptionWidget::optionTableModelChanged, optionTableModel, &OptionTableModel::on_optionTableModelChanged);
+    connect(this, &SolverOptionWidget::optionTableModelChanged, optionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
