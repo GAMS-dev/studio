@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSOPTIONTABLEMODEL_H
-#define GAMSOPTIONTABLEMODEL_H
+#ifndef OPTIONTABLEMODEL_H
+#define OPTIONTABLEMODEL_H
 
-#include <QAbstractItemModel>
+#include <QAbstractTableModel>
 #include <QMimeData>
 
 #include "optiontokenizer.h"
@@ -30,33 +30,31 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class GamsOptionTableModel : public QAbstractTableModel
+class OptionTableModel : public QAbstractTableModel
 {
-     Q_OBJECT
+    Q_OBJECT
 public:
-    GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
-    QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override = 0;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-    bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const override = 0;
+    virtual bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual bool insertRows(int row, int count, const QModelIndex &parent) override;
+    virtual bool insertRows(int row, int count, const QModelIndex &parent) override = 0;
     virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
-    Qt::DropActions supportedDragActions() const override;
-    Qt::DropActions supportedDropActions() const override;
-    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+    virtual Qt::DropActions supportedDropActions() const override = 0;
+    virtual bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override = 0;
 
     QList<OptionItem> getCurrentListOfOptionItems();
 
@@ -65,24 +63,18 @@ signals:
 
 public slots:
     void toggleActiveOptionItem(int index);
-    void on_optionTableModelChanged(const QString &text);
 
-private:
+protected:
     QList<OptionItem> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
-
-    bool mTokenizerUsed;
-
-    void setRowCount(int rows);
-    void itemizeOptionFromCommandLineStr(const QString text);
 };
 
 } // namepsace option
 } // namespace studio
 } // namespace gams
 
-#endif // GAMSOPTIONTABLEMODEL_H
+#endif // OPTIONTABLEMODEL_H

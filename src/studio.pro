@@ -116,8 +116,10 @@ SOURCES += \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
+    option/optiontablemodel.cpp \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
+    option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     reference/reference.cpp \
     reference/referencetabstyle.cpp \
@@ -215,8 +217,10 @@ HEADERS += \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
+    option/optiontablemodel.h \
     option/optiontokenizer.h \
     option/optionwidget.h \
+    option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
     reference/reference.h \
     reference/referencetabstyle.h \
