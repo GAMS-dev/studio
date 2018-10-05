@@ -214,9 +214,9 @@ void FileMetaRepo::fileChanged(const QString &path)
     } else {
         // changedExternally
         if (file->compare(path)) {
-            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
-                                                                      : FileEventKind::changedExtern;
-            FileEvent e(file->id(), feKind);
+//            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
+//                                                                      : FileEventKind::changedExtern;
+            FileEvent e(file->id(), FileEventKind::changedExtern);
             emit fileEvent(e);
         }
     }

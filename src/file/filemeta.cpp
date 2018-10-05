@@ -103,6 +103,7 @@ void FileMeta::internalSave(const QString &location)
 bool FileMeta::checkActivelySavedAndReset()
 {
     bool res = mActivelySaved;
+    qDebug() << "actively saved" << res; // rogo: delete
     mActivelySaved = false;
     return res;
 }
