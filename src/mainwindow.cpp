@@ -51,6 +51,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
+#include "abouthandler.h"
 
 namespace gams {
 namespace studio {
@@ -1118,38 +1119,14 @@ void MainWindow::on_actionHelp_triggered()
         ui->dockHelpView->raise();
 }
 
-QString MainWindow::studioInfo()
-{
-    QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
-    ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
-    ret += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
-
-    return ret;
-}
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
-    about += studioInfo();
-    about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
-    about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
-    about += "This program is free software: you can redistribute it and/or modify ";
-    about += "it under the terms of the GNU General Public License as published by ";
-    about += "the Free Software Foundation, either version 3 of the License, or ";
-    about += "(at your option) any later version.<br/><br/>";
-    about += "This program is distributed in the hope that it will be useful, ";
-    about += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
-    about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the ";
-    about += "GNU General Public License for more details.<br/><br/>";
-    about += "You should have received a copy of the GNU General Public License ";
-    about += "along with this program. If not, see ";
-    about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>.<br/><br/>";
-    about += "The source code of the program can be accessed at ";
-    about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a>.";
+    AboutHandler handler;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle("About");
-    box.setText(about);
+    box.setText(handler.aboutStudio());
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -1160,30 +1137,10 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-    QString about = "<br/><br/><b><big>GAMS Distribution ";
-    about += "</big></b><br/><br/>";
-    GamsProcess gproc;
-    about += gproc.aboutGAMS().replace("\n", "<br/>");
-    about += "<br/><br/>For further information about GAMS please visit ";
-    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-    QMessageBox box(this);
-    box.setIcon(QMessageBox::Information);
-    box.setWindowTitle("License Information");
-    box.setText(about);
-    box.setIconPixmap(QPixmap(":/img/gams-w24"));
-    box.addButton("Close", QMessageBox::RejectRole);
-    box.addButton("Copy product info", QMessageBox::AcceptRole);
-    box.addButton("Show more", QMessageBox::AcceptRole);
-
-    QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    QGridLayout* layout = (QGridLayout*)box.layout();
-    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
-    int answer = box.exec();
-    if (answer) {
-        QClipboard *clip = QGuiApplication::clipboard();
-        clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
-    }
+    AboutHandler dialog(this);
+    dialog.exec();
 }
+
 
 void MainWindow::on_actionAbout_Qt_triggered()
 {

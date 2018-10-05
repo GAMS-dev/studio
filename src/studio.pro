@@ -159,7 +159,8 @@ SOURCES += \
     tabdialog.cpp \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
-    locators/defaultsystemlogger.cpp
+    locators/defaultsystemlogger.cpp \
+    abouthandler.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -267,7 +268,8 @@ HEADERS += \
     locators/settingslocator.h \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
-    locators/defaultsystemlogger.h
+    locators/defaultsystemlogger.h \
+    abouthandler.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -288,7 +290,8 @@ FORMS += \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    tabdialog.ui
+    tabdialog.ui \
+    abouthandler.ui
 
 RESOURCES += \
     ../icons/icons.qrc
