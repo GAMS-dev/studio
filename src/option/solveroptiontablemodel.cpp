@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QIcon>
 #include <QDebug>
 
 #include "solveroptiontablemodel.h"
@@ -28,6 +29,47 @@ namespace option {
 SolverOptionTableModel::SolverOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
     OptionTableModel(itemList, tokenizer, parent)
 {
+}
+
+QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal) {
+       if (role == Qt::DisplayRole) {
+          if (index <= mHeader.size())
+              return mHeader.at(index);
+       }
+       return QVariant();
+    }
+
+    // orientation == Qt::Vertical
+    switch(role) {
+    case Qt::CheckStateRole:
+        if (mOptionItem.isEmpty())
+            return QVariant();
+        else
+            return mCheckState[index];
+    case Qt::ToolTipRole: {
+        switch (mOption->getValueErrorType(mOptionItem.at(index).key, mOptionItem.at(index).value)) {
+        case Incorrect_Value_Type:
+             return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(index).key);
+        case Value_Out_Of_Range:
+             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key);
+        default:
+            break;
+        }
+        break;
+    }
+    case Qt::DecorationRole:
+        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
+            return QVariant::fromValue(QIcon(":/img/square-red"));
+        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
+            return QVariant::fromValue(QIcon(":/img/square-gray"));
+        } else {
+            return QVariant::fromValue(QIcon(":/img/square-green"));
+        }
+    }
+
+    return QVariant();
 }
 
 QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
@@ -56,15 +98,13 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         return Qt::AlignLeft;
     }
     case Qt::ToolTipRole: {
-        if (col==1) {
-            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-              case Incorrect_Value_Type:
-                   return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
-              case Value_Out_Of_Range:
-                   return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
-              default:
-                   break;
-            }
+        switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+        case Incorrect_Value_Type:
+             return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
+        case Value_Out_Of_Range:
+             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
+        default:
+             break;
         }
         break;
     }

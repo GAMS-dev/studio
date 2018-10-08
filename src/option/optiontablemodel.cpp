@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QIcon>
 #include <QMimeData>
 
 #include "optiontablemodel.h"
@@ -30,36 +29,7 @@ OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionToken
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     mHeader << "Key" << "Value" << "Entry";
-}
-
-QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
-{
-    if (orientation == Qt::Horizontal) {
-       if (role == Qt::DisplayRole) {
-          if (index <= mHeader.size())
-              return mHeader.at(index);
-       }
-       return QVariant();
-    }
-
-    // orientation == Qt::Vertical
-    switch(role) {
-    case Qt::CheckStateRole:
-        if (mOptionItem.isEmpty())
-            return QVariant();
-        else
-            return mCheckState[index];
-    case Qt::DecorationRole:
-        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            return QVariant::fromValue(QIcon(":/img/square-red"));
-        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            return QVariant::fromValue(QIcon(":/img/square-gray"));
-        } else {
-            return QVariant::fromValue(QIcon(":/img/square-green"));
-        }
-    }
-
-    return QVariant();
+    connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
 }
 
 int OptionTableModel::rowCount(const QModelIndex &parent) const
@@ -89,7 +59,9 @@ bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, con
 
 bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    QVector<int> roles;
     if (role == Qt::EditRole)   {
+        roles = { Qt::EditRole };
         QString data = value.toString().simplified();
         if (data.isEmpty())
             return false;
@@ -104,13 +76,14 @@ bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, 
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
+        roles = { Qt::CheckStateRole };
         if (index.row() > mOptionItem.size())
             return false;
 
         mOptionItem[index.row()].disabled = value.toBool();
         emit optionModelChanged(  mOptionItem );
     }
-    emit dataChanged(index, index);
+    emit dataChanged(index, index, roles);
     return true;
 }
 
@@ -196,6 +169,29 @@ void OptionTableModel::toggleActiveOptionItem(int index)
     setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
     emit optionModelChanged(mOptionItem);
 
+}
+
+void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+{
+    Q_UNUSED(roles);
+    beginResetModel();
+    mOptionTokenizer->validateOption(mOptionItem);
+
+    for (int i=topLeft.row(); i<=bottomRight.row(); ++i) {
+        if (mOptionItem.at(i).error == No_Error)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+        else if (mOptionItem.at(i).error == Deprecated_Option)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+        else setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+
+    }
+    endResetModel();
 }
 
 

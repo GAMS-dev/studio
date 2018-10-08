@@ -36,7 +36,7 @@ class OptionTableModel : public QAbstractTableModel
 public:
     OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
-    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override = 0;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override = 0;
@@ -63,6 +63,7 @@ signals:
 
 public slots:
     void toggleActiveOptionItem(int index);
+    void on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
 protected:
     QList<OptionItem> mOptionItem;

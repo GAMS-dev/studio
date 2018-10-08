@@ -32,6 +32,7 @@ class SolverOptionTableModel : public OptionTableModel
 public:
     SolverOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
+    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     bool insertRows(int row, int count, const QModelIndex &parent) override;
