@@ -160,9 +160,9 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                  QModelIndex index = selection.at(0);
                  ui->solverOptionTableView->model()->removeRow(index.row(), QModelIndex());
              }
-    } /*else if (action == deleteAllActions) {
-        emit optionTableModelChanged("");
-    }*/
+    } else if (action == deleteAllActions) {
+        ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
+    }
 }
 
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
