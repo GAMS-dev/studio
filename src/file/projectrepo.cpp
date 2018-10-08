@@ -380,7 +380,6 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
-    emit changed();
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
@@ -427,7 +426,6 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         int offset = fileGroup->peekIndex(file->name());
         addToIndex(file);
         mTreeModel->insertChild(offset, fileGroup, file);
-        emit changed();
     }
     connect(fileGroup, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
