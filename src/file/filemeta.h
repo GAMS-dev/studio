@@ -29,6 +29,7 @@
 #include "reference/referenceviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
+#include "option/solveroptionwidget.h"
 
 class QTabWidget;
 
@@ -108,6 +109,9 @@ public: // static convenience methods
     inline static void initEditorType(reference::ReferenceViewer* w) {
         if(w) w->setProperty("EditorType", int(EditorType::ref));
     }
+    inline static void initEditorType(option::SolverOptionWidget * w) {
+        if(w) w->setProperty("EditorType", int(EditorType::opt));
+    }
 
     inline static EditorType editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
@@ -138,6 +142,9 @@ public: // static convenience methods
     }
     inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
         return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
+    }
+    inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
+        return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
 
 signals:

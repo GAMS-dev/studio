@@ -132,9 +132,11 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
     reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
+    option::SolverOptionWidget *optionEditor = FileMeta::toSolverOptionEdit(editWidget);
     NodeId groupId = edit ? edit->groupId()
                           : gdxViewer ? gdxViewer->groupId()
-                                      : refViewer ? refViewer->groupId() : NodeId();
+                                      : refViewer ? refViewer->groupId()
+                                                  : optionEditor ? optionEditor->groupId() : NodeId();
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;

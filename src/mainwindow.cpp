@@ -1059,8 +1059,9 @@ void MainWindow::createSolverOptionFile(ProjectGroupNode* group, const QString &
 {
     qDebug() << solverOptionDefinitionFile << ", create : " << optionFile;
 
-    // TODO
+    // TODO (JP)
      mProjectRepo.findOrCreateFileNode(optionFile, group);
+     openFilePath(QFileInfo(optionFile).absoluteFilePath(), true);
 }
 
 
@@ -1147,6 +1148,8 @@ void MainWindow::on_actionHelp_triggered()
             }
         }
     }
+    /*else { TODO (JP) get file name and direct help to the corresponding chapter";
+    }*/
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())
@@ -1811,6 +1814,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) {
                 gv->setGroupId(runGroup->id());
             }
+            if (option::SolverOptionWidget *se = FileMeta::toSolverOptionEdit(edit)) {
+                se->setGroupId(runGroup->id());
+            }
         }
         // TODO(JM)  check what happens to the group here
         if (focus) {
@@ -1851,6 +1857,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             reference::ReferenceViewer *refView = FileMeta::toReferenceViewer(edit);
             connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
         }
+
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())

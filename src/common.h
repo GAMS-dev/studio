@@ -83,6 +83,7 @@ enum struct FileKind {
     Log,
     Gdx,
     Ref,
+    Opt,
 };
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
@@ -98,6 +99,7 @@ enum struct EditorType {
     lxiLst = 5,
     gdx = 6,
     ref = 7,
+    opt = 8,
 };
 
 }

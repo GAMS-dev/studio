@@ -21,6 +21,7 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
@@ -36,10 +37,13 @@ enum ContextAction {
     actSetMain,
     actSep2,
     actAddExisting,
-    actAddNew,
     actSep3,
+    actAddNewGms,
+    actAddNewOpt,
+    actSep4,
     actCloseGroup,
     actCloseFile,
+    actSep5,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -52,22 +56,13 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
     mActions.insert(actSep2, addSeparator());
 
-    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
-    mActions.insert(actAddNew, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(actAddExisting, addAction("Add &existing file(s)", this, &ProjectContextMenu::onAddExisitingFile));
     mActions.insert(actSep3, addSeparator());
+    mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
 
-    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
-
-    mActions.insert(11, addSeparator());
-
-    //    mActions.insert(2, addSeparator());
-//    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
-
-    QMenu* newSolverOptionMenu = addMenu( "Create Solver Option File" );
-
-    int solverOptActionBaseIndex = 100;
-    mActions.insert(solverOptActionBaseIndex, newSolverOptionMenu->menuAction());
+    QMenu* newSolverOptionMenu = addMenu( "Add new solver option file" );
+    mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
+    int solverOptActionBaseIndex = actAddNewOpt*1000;
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
@@ -76,14 +71,23 @@ ProjectContextMenu::ProjectContextMenu()
         solvername.replace(QRegExp(".def"), "");
         if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
             continue;
-
         QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
         connect(createSolverOption, &QAction::triggered, [=] { createSolverOptionFile(solvername, filename); });
 
-
+        mAvailableSolvers << solvername;
         mSolverOptionActions.insert(++solverOptActionBaseIndex, createSolverOption);
     }
     connect(this, &ProjectContextMenu::createSolverOptionFile, this, &ProjectContextMenu::onCreateSolverOptionFile );
+
+    mActions.insert(actSep4, addSeparator());
+
+    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
+
+    mActions.insert(actSep5, addSeparator());
+
+    //    mActions.insert(2, addSeparator());
+//    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 
 }
 
@@ -118,10 +122,22 @@ bool ProjectContextMenu::setNodes(ProjectAbstractNode *current, QVector<ProjectA
     mActions[actRename]->setVisible(isGroup);
     mActions[actRename]->setEnabled(one);
     mActions[actSep1]->setVisible(isGroup);
+    mActions[actSetMain]->setEnabled(one);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable);
+
+    mActions[actAddNewGms]->setVisible(isGroup);
+    mActions[actAddExisting]->setVisible(isGroup);
+    mActions[actCloseGroup]->setVisible(isGroup);
 
     // all files
     mActions[actCloseFile]->setVisible(fileNode);
+
+    // create solver option files
+    mActions[actSep3]->setVisible(isGroup);
+    mActions[actAddNewOpt]->setVisible(isGroup);
+    foreach (QAction* action, mSolverOptionActions)
+        action->setVisible(isGroup);
+
     return true;
 }
 
@@ -139,9 +155,10 @@ void ProjectContextMenu::onAddExisitingFile()
     emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
-                                                    "Add existing file",
+                                                    "Add existing files",
                                                     sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
+                                                       "Option files (*.opt *.op*);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
@@ -157,6 +174,21 @@ void ProjectContextMenu::onAddExisitingFile()
     }
     for (ProjectGroupNode *group: groups) {
         for (QString filePath: filePaths) {
+            if (QFileInfo(filePath).completeSuffix().startsWith("op", Qt::CaseInsensitive)) {
+                if (!mAvailableSolvers.contains(QFileInfo(filePath).completeBaseName())) {
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle("Unrecognized Solver Option File Name");
+                    msgBox.setText("Open " + filePath + " as text?");
+                    msgBox.setStandardButtons( QMessageBox::Cancel | QMessageBox::Ok);
+                    msgBox.setDefaultButton(QMessageBox::Ok);
+                    msgBox.setIcon(QMessageBox::Warning);
+                    if (QMessageBox::Cancel == msgBox.exec())
+                        continue;
+
+                    //  TODO (JP)
+                    qDebug() << "TODO opening the option file "<< filePath << " as text file...";
+                }
+            }
             emit addExistingFile(group, filePath);
         }
     }
@@ -235,16 +267,17 @@ void ProjectContextMenu::onRenameGroup()
 
 void ProjectContextMenu::onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile)
 {
-    qDebug() << solverOptionDefinitionFile;
+    QString sourcePath = "";
+    emit getSourcePath(sourcePath);
 
     QString filePath = QFileDialog::getSaveFileName(mParent,
                                                     QString("Create %1 option file...").arg(solverName),
-                                                    QString("%1.opt").arg(solverName),
+                                                    QDir(QFileInfo(sourcePath).absolutePath()).filePath(QString("%1.opt").arg(solverName)),
                                                     tr(QString("%1 option file (%1.opt %1.op*);;All files (*.*)").arg(solverName).toLatin1()),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
-    if (filePath == "") return;
+    if (filePath.isEmpty()) return;
 
     QFileInfo fi(filePath);
 //    if (fi.suffix().isEmpty())

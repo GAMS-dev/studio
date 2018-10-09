@@ -52,7 +52,6 @@ signals:
     void renameGroup(ProjectGroupNode* group);
     void createSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
     void newSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile);
-
 private slots:
     void onCloseGroup();
 //    void onRunFile();
@@ -71,6 +70,7 @@ private:
 private:
     QVector<ProjectAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
+    QStringList mAvailableSolvers;
     QHash<int, QAction*> mSolverOptionActions;
     QWidget *mParent = nullptr;
 };

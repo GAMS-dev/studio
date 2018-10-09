@@ -596,6 +596,13 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         refView->setFileId(id());
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = refView;
+    } else if (kind() == FileKind::Opt) {
+        option::SolverOptionWidget* solverOptionEdit = new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), tabWidget);
+        initEditorType(solverOptionEdit);
+        solverOptionEdit->setFileId(id());
+        solverOptionEdit->setGroupId(runGroup ? runGroup->id() : NodeId());
+        tabWidget->insertTab(tabWidget->currentIndex()+1, solverOptionEdit, name(NameModifier::editState));
+        res = solverOptionEdit;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
             codecMibs = QList<int>();
