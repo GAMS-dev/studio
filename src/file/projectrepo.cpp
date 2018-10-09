@@ -340,7 +340,6 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
     if (mNodes.contains(group->id())) {
         mTreeModel->removeChild(group);
         removeFromIndex(group);
-        emit changed();
     }
 }
 
