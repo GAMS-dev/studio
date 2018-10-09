@@ -196,6 +196,7 @@ void MainWindow::delayedFileRestoration()
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    mStartedUp = true;
 }
 
 MainWindow::~MainWindow()
@@ -1848,7 +1849,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 lxiViewer->codeEdit()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
-            if (runGroup) ui->projectView->expand(mProjectRepo.treeModel()->index(runGroup));
             mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
         }
     if (tabWidget != ui->logTabs) {
@@ -2003,7 +2003,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
     QWidget* edit = ui->mainTab->widget(index);
     if (!edit) return;
 
-    mProjectRepo.editorActivated(edit);
+    if (mStartedUp) mProjectRepo.editorActivated(edit);
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();

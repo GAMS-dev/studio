@@ -321,6 +321,7 @@ private:
     QTimer mFileTimer;
 
     bool mDebugMode = false;
+    bool mStartedUp = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;
