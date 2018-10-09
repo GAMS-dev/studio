@@ -241,6 +241,7 @@ bool MainWindow::event(QEvent *event)
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
     mProjectRepo.findOrCreateFileNode(filepath, group);
+    openFilePath(QFileInfo(filepath).absoluteFilePath(), true);
 }
 
 void MainWindow::sendSourcePath(QString &source)
