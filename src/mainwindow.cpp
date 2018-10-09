@@ -585,11 +585,13 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
+    setOptionEditorVisibility(true);
     mGamsOptionWidget->focus();
 }
 
 void MainWindow::focusProjectExplorer()
 {
+    setProjectViewVisibility(true);
     ui->projectView->setFocus(Qt::ShortcutFocusReason);
 }
 
@@ -1213,7 +1215,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         // assuming we are closing a welcome page here
         ui->mainTab->removeTab(index);
-        mClosedTabs << "Wp Closed";
+        mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
     }
@@ -2421,7 +2423,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     if (mClosedTabs.isEmpty())
         return;
 
-    if (mClosedTabs.last()=="Wp Closed") {
+    if (mClosedTabs.last()=="WELCOME_PAGE") {
         mClosedTabs.removeLast();
         mClosedTabsIndexes.removeLast();
         showWelcomePage();
@@ -2451,6 +2453,8 @@ QWidget *RecentData::editor() const
 
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
+    if (!editor) return;
+
     AbstractEdit* edit = FileMeta::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
