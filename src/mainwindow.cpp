@@ -720,11 +720,13 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".gdx";
         } else if (fileMeta->location().endsWith(".lst", Qt::CaseInsensitive) && !filePath.endsWith(".lst", Qt::CaseInsensitive)) {
             filePath = filePath + ".lst";
+        } else if (fileMeta->location().endsWith(".ref", Qt::CaseInsensitive) && !filePath.endsWith(".ref", Qt::CaseInsensitive)) {
+            filePath = filePath + ".ref";
         } // TODO: check if there are others to add
 
 
-        // perform copy when file is a gdx file
-        if (fileMeta->kind() == FileKind::Gdx) {
+        // perform copy when file is either a gdx file or a ref file
+        if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
             if (QFile::exists(filePath))
                 QFile::remove(filePath);
             QFile::copy(fileMeta->location(), filePath);
