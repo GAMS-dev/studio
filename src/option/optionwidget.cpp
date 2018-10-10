@@ -251,7 +251,20 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     } else if (action == deleteAction) {
              if (selection.count() > 0) {
                  QModelIndex index = selection.at(0);
+                 QModelIndex removeTableIndex = ui->gamsOptionTableView->model()->index(index.row(), 0);
+                 QVariant optionName = ui->gamsOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
+
                  ui->gamsOptionTableView->model()->removeRow(index.row(), QModelIndex());
+
+                 mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+
+                 QModelIndexList items = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                  Qt::DisplayRole,
+                                                                                  optionName, 1);
+                 for(QModelIndex item : items) {
+                     ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+                 }
+
              }
     } else if (action == deleteAllActions) {
         emit optionTableModelChanged("");
@@ -282,6 +295,9 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QString optionNameData = ui->gamsOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->gamsOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->gamsOptionTreeView->model()->data(selectedValueIndex).toString();
+
+    mOptionTokenizer->getOption()->setModified(optionNameData, true);
+    ui->gamsOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     int i;
     for(i=0; i < ui->gamsOptionTableView->model()->rowCount(); ++i) {
