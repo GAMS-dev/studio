@@ -67,7 +67,6 @@ public slots:
 
 private:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);
-    void setupModelData(const QStringList& lines, OptionDefinitionItem* parent);
 
     int mOptionGroup;
     Option* mOption;
