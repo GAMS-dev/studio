@@ -77,6 +77,15 @@ OptionDefinitionItem *OptionDefinitionItem::parentItem()
     return mParentItem;
 }
 
+bool OptionDefinitionItem::setData(int column, const QVariant &value)
+{
+    if (column < 0 || column >= mItemData.size())
+        return false;
+
+    mItemData[column] = value;
+    return true;
+}
+
 void OptionDefinitionItem::setParent(OptionDefinitionItem *parent)
 {
     mParentItem = parent;
@@ -97,6 +106,16 @@ bool OptionDefinitionItem::removeChildren(int position, int count)
         delete mChildItems.takeAt(position);
 
     return true;
+}
+
+bool OptionDefinitionItem::modified() const
+{
+    return mModified;
+}
+
+void OptionDefinitionItem::setModified(bool modified)
+{
+    mModified = modified;
 }
 
 } // namespace option

@@ -73,7 +73,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionGroup->setModel(groupModel);
     ui->solverOptionGroup->setModelColumn(0);
 
-    QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
+    OptionSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
     proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
@@ -158,7 +158,19 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     } else if (action == deleteAction) {
              if (selection.count() > 0) {
                  QModelIndex index = selection.at(0);
+                 QModelIndex removeTableIndex = ui->solverOptionTableView->model()->index(index.row(), 0);
+                 QVariant optionName = ui->solverOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
+
                  ui->solverOptionTableView->model()->removeRow(index.row(), QModelIndex());
+
+                 mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+
+                 QModelIndexList items = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                  Qt::DisplayRole,
+                                                                                  optionName, 1); //, Qt::MatchRecursive);
+                 for(QModelIndex item : items) {
+                     ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+                 }
              }
     } else if (action == deleteAllActions) {
         ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
@@ -179,6 +191,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
+
+    mOptionTokenizer->getOption()->setModified(optionNameData, true);
+    ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     int number = -1;

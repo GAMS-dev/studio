@@ -42,14 +42,20 @@ public:
     QVariant data(int column) const;
     int row() const;
     OptionDefinitionItem *parentItem();
+    bool setData(int column, const QVariant &value);
 
     void setParent(OptionDefinitionItem* parent);
     void insertChild(int row, OptionDefinitionItem* item);
     bool removeChildren(int position, int count);
+
+    bool modified() const;
+    void setModified(bool modified);
+
 private:
     QList<OptionDefinitionItem*> mChildItems;
     QList<QVariant> mItemData;
     OptionDefinitionItem *mParentItem;
+    bool mModified;
 };
 
 } // namespace option

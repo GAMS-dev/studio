@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QColor>
 #include <QDebug>
 #include "optiondefinitionmodel.h"
 
@@ -29,7 +30,7 @@ OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObj
 {
     QList<QVariant> rootData;
     rootData << "Option" << "Synonym" << "DefValue" // << "Range"
-             << "Type" << "Description";
+             << "Type" << "Description" ;
     rootItem = new OptionDefinitionItem(rootData);
 
     setupTreeItemModelData(mOption, rootItem);
@@ -146,12 +147,25 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
+    switch (role) {
+    case Qt::DisplayRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        return item->data(index.column());
+    }
+    case Qt::CheckStateRole: {
+        if (index.column()==COLUMN_OPTION_NAME) {
+           OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+           OptionDefinitionItem *parentItem = item->parentItem();
+           if (parentItem == rootItem)
+              return Qt::CheckState(item->modified() ? Qt::Checked : Qt::Unchecked );
+        }
         return QVariant();
+    }
+    default:
+         break;
+    }
+    return QVariant();
 
-    OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
-
-    return item->data(index.column());
 }
 
 Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const
@@ -161,6 +175,31 @@ Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const
         return Qt::NoItemFlags;
     else
         return Qt::ItemIsDragEnabled | defaultFlags;
+}
+
+bool OptionDefinitionModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    switch (role) {
+    case Qt::DisplayRole: {
+        OptionDefinitionItem *item = getItem(index);
+        bool result = item->setData(index.column(), value);
+
+        if (result)
+            emit dataChanged(index, index);
+
+        return result;
+    }
+    case Qt::CheckStateRole: {
+        OptionDefinitionItem *item = getItem(index);
+        item->setModified(value.toInt() == Qt::Checked);
+        emit dataChanged(index, index);
+        return true;
+    }
+    default:
+        break;
+    }
+
+    return false;
 }
 
 QVariant OptionDefinitionModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -299,7 +338,9 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             break;
         }
         columnData.append(optdef.description);
-        parents.last()->appendChild(new OptionDefinitionItem(columnData, parents.last()));
+        OptionDefinitionItem* item = new OptionDefinitionItem(columnData, parents.last());
+        item->setModified(optdef.modified);
+        parents.last()->appendChild(item);
 
         if (optdef.valueList.size() > 0) {
             parents << parents.last()->child(parents.last()->childCount()-1);
@@ -312,7 +353,6 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                 enumData << "";
                 enumData << "";
                 enumData << "";
-//                enumData << "";
                 enumData << enumValue.description;
                 parents.last()->appendChild(new OptionDefinitionItem(enumData, parents.last()));
             }

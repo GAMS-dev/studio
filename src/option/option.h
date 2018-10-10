@@ -96,6 +96,7 @@ struct OptionDefinition {
     QVariant upperBound;
     QList<OptionValue> valueList;
     int groupNumber;
+    bool modified = false;
 };
 
 
@@ -147,6 +148,10 @@ public:
     bool available() const;
 
     QMap<QString, OptionDefinition> getOption() const;
+
+    bool isModified(const QString &optionName) const;
+    void setModified(const QString &optionName, bool modified);
+    void resetModficationFlag();
 
     QString getOptionDefinitionFile() const;
     QString getOptionDefinitionPath() const;

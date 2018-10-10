@@ -513,6 +513,8 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
         return items;
     }
 
+    mOption->resetModficationFlag();
+
     if (!optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
        if (!optReadParameterFile(mOPTHandle, absoluteFilePath.toLatin1())) {
            logMessage(mOPTHandle);
@@ -542,6 +544,7 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
                optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
                optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
+               mOption->setModified(QString::fromLatin1(name), true);
                QVariant value;
                switch(itype) {
                case optDataInteger: {

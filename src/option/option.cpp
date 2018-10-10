@@ -361,6 +361,23 @@ QMap<QString, OptionDefinition> Option::getOption() const
     return mOption;
 }
 
+bool Option::isModified(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].modified;
+}
+
+void Option::setModified(const QString &optionName, bool modified)
+{
+    mOption[optionName.toUpper()].modified = modified;
+}
+
+void Option::resetModficationFlag()
+{
+    for( QMap<QString, OptionDefinition>::iterator it=mOption.begin(); it!=mOption.end(); ++it) {
+        it.value().modified = false;
+    }
+}
+
 QString Option::getOptionDefinitionFile() const
 {
     return mOptionDefinitionFile;
