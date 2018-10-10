@@ -930,6 +930,12 @@ void MainWindow::fileChangedExtern(FileId fileId)
     // file has not been loaded: nothing to do
     if (!file->isOpen()) return;
     if (file->kind() == FileKind::Log) return;
+    if (file->kind() == FileKind::Gdx) {
+        for (QWidget *e : file->editors()) {
+            gdxviewer::GdxViewer *g = FileMeta::toGdxViewer(e);
+            if (g) g->setHasChanged(true);
+        }
+    }
 
     int choice;
 

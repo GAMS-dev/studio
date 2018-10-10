@@ -315,7 +315,8 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             gdxviewer::GdxViewer *gdxViewer = toGdxViewer(wid);
-            if (gdxViewer) gdxViewer->reload();
+            if (gdxViewer)
+                gdxViewer->reload();
         }
         return;
     }
