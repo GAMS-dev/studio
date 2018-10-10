@@ -267,6 +267,17 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
              }
     } else if (action == deleteAllActions) {
+        mOptionTokenizer->getOption()->resetModficationFlag();
+
+        QModelIndexList items = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                         Qt::CheckStateRole,
+                                                                         Qt::CheckState(Qt::Checked),
+                                                                         ui->gamsOptionTreeView->model()->rowCount());
+        for(QModelIndex item : items) {
+            ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+        }
+        ui->gamsOptionTableView->model()->removeRows(0, ui->gamsOptionTableView->model()->rowCount(), QModelIndex());
+
         emit optionTableModelChanged("");
     }
 }
