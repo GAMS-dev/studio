@@ -257,6 +257,7 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void renameGroup(ProjectGroupNode *group);
 
 protected:
     void closeEvent(QCloseEvent *event);
