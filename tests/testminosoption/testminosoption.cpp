@@ -428,7 +428,7 @@ void TestMINOSOption::testWriteOptionFile()
     items.append(OptionItem("verify gradients", ""));
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "minos.opt") );
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath( "minos.opt") ));
 
     // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.opt"));

@@ -669,7 +669,7 @@ void TestCPLEXOption::testWriteOptionFile()
     items.append(OptionItem("usergdxin", "Antoni Pumi Rufi"));
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "cplex.opt") );
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt") ));
 
     // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));

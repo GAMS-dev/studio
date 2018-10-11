@@ -593,7 +593,7 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
     return items;
 }
 
-bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const QString &path, const QString &fileName)
+bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const QString &absoluteFilepath)
 {
     optHandle_t mOPTHandle;
 
@@ -640,7 +640,7 @@ bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const Q
                 break;
             }
         }
-        optWriteParameterFile(mOPTHandle, QDir(path).absoluteFilePath(fileName).toLatin1() );
+        optWriteParameterFile(mOPTHandle, absoluteFilepath.toLatin1());
         logMessage(mOPTHandle);
         optClearMessages(mOPTHandle);
 

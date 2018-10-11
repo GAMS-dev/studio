@@ -403,7 +403,7 @@ void TestGUROBIOption::testWriteOptionFile()
     items.append(OptionItem("perturbvalue", "0.0012345"));
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "gurobi.opt") );
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.opt") ));
 
     // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.opt"));

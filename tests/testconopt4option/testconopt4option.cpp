@@ -339,7 +339,7 @@ void TestConopt4Option::testWriteOptionFile()
 //    items.append(OptionItem("readfile", "this is read file"));  => optTypeImmediate
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, CommonPaths::defaultWorkingDir(), "conopt4.opt") );
+    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt") ) );
 
     // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt"));
