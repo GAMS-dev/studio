@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QMimeData>
+#include <QDebug>
 
 #include "optiontablemodel.h"
 
@@ -101,7 +102,9 @@ bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent)
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
-    mOptionItem.removeAt(row);
+    for(int i=row+count-1; i>=0; --i) {
+        mOptionItem.removeAt(i);
+    }
     endRemoveRows();
     emit optionModelChanged(mOptionItem);
     return true;
@@ -152,7 +155,7 @@ QMimeData *OptionTableModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
+QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems() const
 {
     return mOptionItem;
 }

@@ -5,7 +5,6 @@
 
 #include "common.h"
 
-
 namespace gams {
 namespace studio {
 namespace option {
@@ -32,6 +31,9 @@ public:
     NodeId groupId() const;
     void setGroupId(const NodeId &groupId);
 
+    bool isModified() const;
+    void setModified(bool modified);
+
 signals:
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
@@ -39,13 +41,17 @@ signals:
 public slots:
     void showOptionContextMenu(const QPoint &pos);
     void addOptionFromDefinition(const QModelIndex &index);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void on_optionSaveButton_clicked();
 
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
     NodeId mGroupId;
-
+    QString mLocation;
     QString mSolverName;
+
+    bool mModified;
     OptionTokenizer* mOptionTokenizer;
 };
 

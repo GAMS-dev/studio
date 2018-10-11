@@ -17,6 +17,7 @@ namespace option {
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QWidget *parent) :
           QWidget(parent),
           ui(new Ui::SolverOptionWidget),
+          mLocation(optionFilePath),
           mSolverName(solverName)
 {
     ui->setupUi(this);
@@ -103,6 +104,9 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
          qDebug() << solverName << ":index=" << index << ":" << groupModel->data(groupModel->index(index, 0)) << ", " << groupModel->data(groupModel->index(index, 1));
          optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
     });
+
+    setModified(false);
+    connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -136,6 +140,11 @@ void SolverOptionWidget::setGroupId(const NodeId &groupId)
     mGroupId = groupId;
 }
 
+bool SolverOptionWidget::isModified() const
+{
+    return mModified;
+}
+
 void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
@@ -153,10 +162,12 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 
     QAction* action = menu.exec(ui->solverOptionTableView->viewport()->mapToGlobal(pos));
     if (action == addAction) {
-       ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-       ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+        setModified(true);
+        ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
+        ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
     } else if (action == deleteAction) {
              if (selection.count() > 0) {
+                 setModified(true);
                  QModelIndex index = selection.at(0);
                  QModelIndex removeTableIndex = ui->solverOptionTableView->model()->index(index.row(), 0);
                  QVariant optionName = ui->solverOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
@@ -173,13 +184,14 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                  }
              }
     } else if (action == deleteAllActions) {
+        setModified(true);
         mOptionTokenizer->getOption()->resetModficationFlag();
 
         QModelIndexList items = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                          Qt::CheckStateRole,
                                                                          Qt::CheckState(Qt::Checked),
                                                                          ui->solverOptionTreeView->model()->rowCount());
-        for(QModelIndex item : items) {
+         for(QModelIndex item : items) {
             ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
         }
         ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
@@ -188,6 +200,8 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
+    setModified(true);
+
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
@@ -242,6 +256,29 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->selectRow(i);
     }
 }
+
+void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+{
+    Q_UNUSED(topLeft);
+    Q_UNUSED(bottomRight);
+    setModified(true);
+}
+
+void SolverOptionWidget::on_optionSaveButton_clicked()
+{
+    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
+    qDebug() << "saving to " << mLocation;
+    mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), mLocation);
+
+    setModified(false);
+}
+
+void SolverOptionWidget::setModified(bool modified)
+{
+    mModified = modified;
+    ui->optionSaveButton->setEnabled( mModified );
+}
+
 
 }
 }

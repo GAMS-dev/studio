@@ -81,7 +81,7 @@
    <item>
     <widget class="QWidget" name="solverCommandWidget" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -116,26 +116,26 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="solverOptionEditorButton">
+       <widget class="QPushButton" name="optionSaveButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="toolTip">
-         <string>Show Command Line Parameters Editor</string>
-        </property>
         <property name="text">
          <string>Save</string>
         </property>
-        <property name="checkable">
+        <property name="autoDefault">
+         <bool>true</bool>
+        </property>
+        <property name="default">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="solverCommandHelpButton">
+       <widget class="QPushButton" name="optionSaveAsButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -143,10 +143,13 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string>Help on Command Line Parameters</string>
+         <string/>
         </property>
         <property name="text">
          <string>Save As</string>
+        </property>
+        <property name="autoDefault">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

@@ -593,7 +593,7 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
     return items;
 }
 
-bool OptionTokenizer::writeOptionParameterFile(QList<OptionItem> &items, const QString &absoluteFilepath)
+bool OptionTokenizer::writeOptionParameterFile(const QList<OptionItem> &items, const QString &absoluteFilepath)
 {
     optHandle_t mOPTHandle;
 

@@ -56,7 +56,7 @@ public:
     virtual Qt::DropActions supportedDropActions() const override = 0;
     virtual bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override = 0;
 
-    QList<OptionItem> getCurrentListOfOptionItems();
+    QList<OptionItem> getCurrentListOfOptionItems() const;
 
 signals:
     void optionModelChanged(const QList<OptionItem> &optionItem);
