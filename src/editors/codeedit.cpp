@@ -1287,7 +1287,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
 
-    QList<Result> fileResults = matches->filteredResultList(document()->metaInformation(QTextDocument::DocumentUrl));
+    QList<Result> fileResults = matches->filteredResultList(property("location").toString());
     while (block.isValid() && top < viewport()->height()) {
         QList<Result> rowResults;
         for (Result r : fileResults) {

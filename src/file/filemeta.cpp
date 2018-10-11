@@ -400,7 +400,9 @@ void FileMeta::saveAs(const QString &location)
         nodes = mFileRepo->projectRepo()->fileNodes(existingFM->id());
 
     // write the content
+    QString oldLocation = mLocation;
     mLocation = location;
+    mFileRepo->updateRenamed(this, oldLocation);
     mName = QFileInfo(location).fileName();
     mData = Data(location);
     emit changed(mId);
@@ -640,6 +642,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
     if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
+    res->setProperty("location", location());
     return res;
 }
 

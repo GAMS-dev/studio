@@ -735,7 +735,7 @@ void MainWindow::on_actionSave_As_triggered()
             QFile::copy(fileMeta->location(), filePath);
         } else {
             fileMeta->saveAs(filePath);
-            if(node->assignedRunGroup()->specialFiles().contains(fileMeta->kind()))
+            if(node->assignedRunGroup()->hasSpecialFile(fileMeta->kind()))
                 node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
             openFileNode(node, true);
             mStatusWidgets->setFileName(fileMeta->location());
@@ -1079,7 +1079,7 @@ void MainWindow::postGamsRun(NodeId origin)
         return;
     }
     if(groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->lstFile();
+        QString lstFile = groupNode->specialFile(FileKind::Lst);
         bool doFocus = groupNode == mRecent.group;
 
         if (mSettings->jumpToError())
@@ -1096,8 +1096,7 @@ void MainWindow::postGamsRun(NodeId origin)
         groupNode->logNode()->logDone();
 
     // add all created files to project explorer
-    for (QString loc : groupNode->specialFiles().values())
-        groupNode->findOrCreateFileNode(loc);
+    groupNode->addNodesForSpecialFiles();
 }
 
 void MainWindow::postGamsLibRun()

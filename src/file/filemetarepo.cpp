@@ -47,29 +47,21 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    QFileInfo fi(location);
-    for (FileMeta* fm: mFiles.values()) {
-        if (FileMetaRepo::equals(QFileInfo(fm->location()), fi))
-            return fm;
-    }
-//    if (location.startsWith('[')) { // special instances (e.g. "[LOG]123" )
-//        for (FileMeta* fm: mFiles.values()) {
-//            if (fm->location() == location) return fm;
-//        }
-//    } else {
+    return mFileNames.value(location);
+
+    // TODO(JM) we may need comparing QFileInfo
+
+//    QFileInfo fi(location);
+//    for (FileMeta* fm: mFiles.values()) {
+//        if (FileMetaRepo::equals(QFileInfo(fm->location()), fi))
+//            return fm;
 //    }
-    return nullptr;
 }
 
 FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
 {
     if (!editor) return nullptr;
-    QHashIterator<FileId, FileMeta*> i(mFiles);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value()->hasEditor(editor)) return i.value();
-    }
-    return nullptr;
+    return fileMeta(editor->property("location").toString());
 }
 
 QList<FileMeta*> FileMetaRepo::fileMetas() const
@@ -86,6 +78,7 @@ QList<FileMeta*> FileMetaRepo::fileMetas() const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
+    mFileNames.insert(fileMeta->location(), fileMeta);
     watch(fileMeta);
 }
 
@@ -93,6 +86,7 @@ void FileMetaRepo::removedFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());
+        mFileNames.remove(fileMeta->location());
         unwatch(fileMeta);
     }
 }
@@ -187,6 +181,12 @@ bool FileMetaRepo::debugMode() const
 bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
 {
     return (fi1.exists() || fi2.exists()) ? fi1 == fi2 : fi1.absoluteFilePath() == fi2.absoluteFilePath();
+}
+
+void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
+{
+    mFileNames.remove(oldLocation);
+    mFileNames.insert(file->location(), file);
 }
 
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
