@@ -378,6 +378,16 @@ void FileMeta::save()
     if (!isModified()) return;
     if (location().isEmpty() || location().startsWith('['))
         EXCEPT() << "Can't save file '" << location() << "'";
+    if (kind() == FileKind::Opt) { // TODO (JP)
+        for (QWidget *wid: mEditors) {
+            option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
+            if (solverOptionWidget) {
+                solverOptionWidget->on_optionSaveButton_clicked();
+                return;
+            }
+
+        }
+    }
     internalSave(location());
 }
 
@@ -511,6 +521,13 @@ void FileMeta::marksChanged(QSet<NodeId> groups)
 
 bool FileMeta::isModified() const
 {
+    if (kind() == FileKind::Opt) { // TODO (JP)
+        for (QWidget *wid: mEditors) {
+            option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
+            if (solverOptionWidget)
+                return solverOptionWidget->isModified();
+        }
+    }
     return mDocument ? mDocument->isModified() : false;
 }
 
