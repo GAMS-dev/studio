@@ -7,6 +7,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QTextStream>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -17,18 +18,14 @@ AboutHandler::AboutHandler(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Preferred);
-    QGridLayout* layout = (QGridLayout*)AboutHandler::layout();
-    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
-    ui->LicenseInfo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    ui->label->setText(licenseInformation());
     this->setWindowTitle("License Information");
-    ui->label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    ui->label->setWordWrap(true);
+    ui->LicenseInfo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ui->label->setText(licenseInformation());
+    ui->verticalLayout->addStretch();
     ui->gamslogo->setPixmap(QPixmap(":/img/gams-w24"));
-    ui->label->setScaledContents(false); //check this later after setting up a legit license text
-    ui->label->adjustSize();
     ui->gamslogo->adjustSize();
+    ui->gamslogo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 }
 
 QString AboutHandler::studioInfo()
