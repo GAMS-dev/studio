@@ -89,7 +89,7 @@ public:
     ~MainWindow();
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList pathList);
+    void openFiles(QStringList files);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -271,7 +271,7 @@ protected:
 
 private:
     void initTabs();
-    ProjectFileNode* addNode(const QString &path, const QString &fileName);
+    ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     bool processIfRenamed(FileId fileId);

@@ -677,18 +677,14 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
+    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
-    for (QString item: fNames) {
-        ProjectFileNode *node = addNode("", item);
-        openFileNode(node);
-        QApplication::processEvents(QEventLoop::AllEvents, 1);
-    }
+    openFiles(files);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -1499,15 +1495,23 @@ void MainWindow::dropEvent(QDropEvent* e)
     }
 }
 
-void MainWindow::openFiles(QStringList pathList)
+void MainWindow::openFiles(QStringList files)
 {
+    if (files.size() == 0) return;
+
+    QFileInfo firstFile(files.first());
     QStringList filesNotFound;
-    for (QString fName: pathList) {
-        QFileInfo fi(fName);
-        if (fi.isFile())
-            openFilePath(CommonPaths::absolutFilePath(fName));
-        else
-            filesNotFound.append(fName);
+
+    // create base group
+    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    for (QString item: files) {
+        if (QFileInfo(item).exists()){
+            ProjectFileNode *node = addNode("", item, group);
+            openFileNode(node);
+            QApplication::processEvents(QEventLoop::AllEvents, 1);
+        } else {
+            filesNotFound.append(item);
+        }
     }
     if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
@@ -1973,7 +1977,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
     openFileNode(fileNode, focus, codecMib);
 }
 
-ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName)
+ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
 {
     ProjectFileNode *node = nullptr;
     if (!fileName.isEmpty()) {
@@ -1983,7 +1987,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         if (fType == FileKind::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath());
+            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
         }
     }
     return node;
