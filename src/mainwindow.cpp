@@ -1389,7 +1389,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
         ProjectRunGroupNode *runGroup = node->assignedRunGroup();
         if (runGroup && runGroup->runnableGms()) {
-            ProjectLogNode* logNode = runGroup->hasLogNode() ? runGroup->logNode() : nullptr; // TODO(RG): find lognode
+            ProjectLogNode* logNode = runGroup->logNode();
             openFileNode(logNode, true, logNode->file()->codecMib());
             ProjectAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
             if (!latestNode || latestNode->assignedRunGroup() != runGroup) {
