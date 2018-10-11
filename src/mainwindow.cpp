@@ -187,11 +187,6 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
 }
 
-void MainWindow::delayedFileRestoration()
-{
-    mSettings->restoreTabsAndProjects(this);
-    mSettings->restoreLastFilesUsed(this);
-}
 
 void MainWindow::watchProjectTree()
 {
@@ -205,6 +200,11 @@ MainWindow::~MainWindow()
     delete mWp;
     delete ui;
     FileType::clear();
+}
+
+void MainWindow::setInitialFiles(QStringList files)
+{
+    mInitialFiles = files;
 }
 
 void MainWindow::initTabs()
@@ -235,6 +235,12 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     }
     return QMainWindow::event(event);
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -1699,7 +1705,17 @@ void MainWindow::commandLineHelpTriggered()
 void MainWindow::optionRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupInRunningState())
-       on_actionRun_triggered();
+        on_actionRun_triggered();
+}
+
+void MainWindow::openInitialFiles()
+{
+    if (mSettings->restoreTabsAndProjects(this)) {
+        mSettings->restoreLastFilesUsed(this);
+        openFiles(mInitialFiles);
+        mInitialFiles.clear();
+        watchProjectTree();
+    }
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -2125,7 +2141,7 @@ void MainWindow::updateEditorLineWrapping()
     }
 }
 
-void MainWindow::readTabs(const QJsonObject &json)
+bool MainWindow::readTabs(const QJsonObject &json)
 {
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
@@ -2139,6 +2155,8 @@ void MainWindow::readTabs(const QJsonObject &json)
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents(QEventLoop::AllEvents, 1);
+                if (ui->mainTab->count() <= i)
+                    return false;
             }
         }
     }
@@ -2152,6 +2170,7 @@ void MainWindow::readTabs(const QJsonObject &json)
         }
     }
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
+    return true;
 }
 
 void MainWindow::initAutoSave()

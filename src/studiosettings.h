@@ -132,7 +132,7 @@ public:
     bool resetSettingsSwitch();
     void resetViewSettings();
 
-    void restoreTabsAndProjects(MainWindow *main);
+    bool restoreTabsAndProjects(MainWindow *main);
     void restoreLastFilesUsed(MainWindow *main);
 
     bool writeLog() const;
