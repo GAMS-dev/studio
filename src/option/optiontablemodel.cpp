@@ -102,7 +102,7 @@ bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent)
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
-    for(int i=row+count-1; i>=0; --i) {
+    for(int i=row+count-1; i>=row; --i) {
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
