@@ -1502,18 +1502,29 @@ void MainWindow::openFiles(QStringList files)
 
     QFileInfo firstFile(files.first());
     QStringList filesNotFound;
+    QList<ProjectFileNode*> gmsFiles;
 
     // create base group
     ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
     for (QString item: files) {
-        if (QFileInfo(item).exists()){
+        if (QFileInfo(item).exists()) {
+
             ProjectFileNode *node = addNode("", item, group);
             openFileNode(node);
+            if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
+
             QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else {
             filesNotFound.append(item);
         }
     }
+
+    QString mainGms;
+    if (gmsFiles.size() > 0) {
+        ProjectRunGroupNode *prgn = group->toRunGroup();
+        if (prgn) prgn->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+    }
+
     if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
         for(QString s : filesNotFound)

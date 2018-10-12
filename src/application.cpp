@@ -96,14 +96,6 @@ bool Application::notify(QObject* object, QEvent* event)
     return true;
 }
 
-// JM: moved to MainWindow. Reason: must be called while event-loop is running
-//void Application::openAssociatedFiles()
-//{
-//    mMainWindow->delayedFileRestoration();
-//    mMainWindow->openFiles(mCmdParser.files());
-//    mMainWindow->watchProjectTree();
-//}
-
 void Application::showExceptionMessage(const QString &title, const QString &message) {
     QMessageBox::critical(nullptr, title, message);
 }
