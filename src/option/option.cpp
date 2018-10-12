@@ -211,7 +211,17 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
         else
             return No_Error;
      }
-     default:
+    case optTypeBoolean: {
+        bool isCorrectDataType = false;
+        int n = value.toInt(&isCorrectDataType);
+        if (isCorrectDataType) {
+            if (n==0 || n==1) {
+                return No_Error;
+            }
+        }
+        return Incorrect_Value_Type;
+    }
+    default:
         break;
     }
     return No_Error;  //Unknown_Error;
