@@ -54,6 +54,7 @@ void Application::init()
                                         mCmdParser.resetView());
     SettingsLocator::provide(settings);
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
+    mMainWindow->setInitialFiles(mCmdParser.files());
 
     connect(&mDistribValidator, &DistributionValidator::messageReceived,
             mMainWindow.get(), &MainWindow::appendSystemLog);
@@ -93,13 +94,6 @@ bool Application::notify(QObject* object, QEvent* event)
         FATAL() << msg;
     }
     return true;
-}
-
-void Application::openAssociatedFiles()
-{
-    mMainWindow->delayedFileRestoration();
-    mMainWindow->openFiles(mCmdParser.files());
-    mMainWindow->watchProjectTree();
 }
 
 void Application::showExceptionMessage(const QString &title, const QString &message) {

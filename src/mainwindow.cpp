@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
 
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-//    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
@@ -182,22 +182,19 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
 
-
     // set up services
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
+
+    QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
-void MainWindow::delayedFileRestoration()
-{
-    mSettings->restoreTabsAndProjects(this);
-    mSettings->restoreLastFilesUsed(this);
-}
 
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    mStartedUp = true;
 }
 
 MainWindow::~MainWindow()
@@ -206,6 +203,11 @@ MainWindow::~MainWindow()
     delete mWp;
     delete ui;
     FileType::clear();
+}
+
+void MainWindow::setInitialFiles(QStringList files)
+{
+    mInitialFiles = files;
 }
 
 void MainWindow::initTabs()
@@ -587,11 +589,13 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
+    setOptionEditorVisibility(true);
     mGamsOptionWidget->focus();
 }
 
 void MainWindow::focusProjectExplorer()
 {
+    setProjectViewVisibility(true);
     ui->projectView->setFocus(Qt::ShortcutFocusReason);
 }
 
@@ -677,18 +681,14 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    QStringList fNames = QFileDialog::getOpenFileNames(this, "Open file", path,
+    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
-    for (QString item: fNames) {
-        ProjectFileNode *node = addNode("", item);
-        openFileNode(node);
-        QApplication::processEvents(QEventLoop::AllEvents, 1);
-    }
+    openFiles(files);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -735,7 +735,7 @@ void MainWindow::on_actionSave_As_triggered()
             QFile::copy(fileMeta->location(), filePath);
         } else {
             fileMeta->saveAs(filePath);
-            if(node->assignedRunGroup()->specialFiles().contains(fileMeta->kind()))
+            if(node->assignedRunGroup()->hasSpecialFile(fileMeta->kind()))
                 node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
             openFileNode(node, true);
             mStatusWidgets->setFileName(fileMeta->location());
@@ -930,6 +930,12 @@ void MainWindow::fileChangedExtern(FileId fileId)
     // file has not been loaded: nothing to do
     if (!file->isOpen()) return;
     if (file->kind() == FileKind::Log) return;
+    if (file->kind() == FileKind::Gdx) {
+        for (QWidget *e : file->editors()) {
+            gdxviewer::GdxViewer *g = FileMeta::toGdxViewer(e);
+            if (g) g->setHasChanged(true);
+        }
+    }
 
     int choice;
 
@@ -1083,7 +1089,7 @@ void MainWindow::postGamsRun(NodeId origin)
         return;
     }
     if(groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->lstFile();
+        QString lstFile = groupNode->specialFile(FileKind::Lst);
         bool doFocus = groupNode == mRecent.group;
 
         if (mSettings->jumpToError())
@@ -1100,8 +1106,7 @@ void MainWindow::postGamsRun(NodeId origin)
         groupNode->logNode()->logDone();
 
     // add all created files to project explorer
-    for (QString loc : groupNode->specialFiles().values())
-        groupNode->findOrCreateFileNode(loc);
+    groupNode->addNodesForSpecialFiles();
 }
 
 void MainWindow::postGamsLibRun()
@@ -1227,7 +1232,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     if (!fc) {
         // assuming we are closing a welcome page here
         ui->mainTab->removeTab(index);
-        mClosedTabs << "Wp Closed";
+        mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
     }
@@ -1335,15 +1340,18 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    if (history()->lastOpenedFiles.size() >= mSettings->historySize())
+    while (history()->lastOpenedFiles.size() > mSettings->historySize()
+           && !history()->lastOpenedFiles.isEmpty())
         history()->lastOpenedFiles.removeLast();
+
+    if (mSettings->historySize() == 0) return;
 
     if (!history()->lastOpenedFiles.contains(filePath))
         history()->lastOpenedFiles.insert(0, filePath);
     else
         history()->lastOpenedFiles.move(history()->lastOpenedFiles.indexOf(filePath), 0);
 
-    if(mWp) mWp->historyChanged(history());
+    if (mWp) mWp->historyChanged(history());
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
@@ -1395,7 +1403,7 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
         ProjectRunGroupNode *runGroup = node->assignedRunGroup();
         if (runGroup && runGroup->runnableGms()) {
-            ProjectLogNode* logNode = runGroup->hasLogNode() ? runGroup->logNode() : nullptr; // TODO(RG): find lognode
+            ProjectLogNode* logNode = runGroup->logNode();
             openFileNode(logNode, true, logNode->file()->codecMib());
             ProjectAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
             if (!latestNode || latestNode->assignedRunGroup() != runGroup) {
@@ -1503,16 +1511,35 @@ void MainWindow::dropEvent(QDropEvent* e)
     }
 }
 
-void MainWindow::openFiles(QStringList pathList)
+void MainWindow::openFiles(QStringList files)
 {
+    if (files.size() == 0) return;
+
+    QFileInfo firstFile(files.first());
     QStringList filesNotFound;
-    for (QString fName: pathList) {
-        QFileInfo fi(fName);
-        if (fi.isFile())
-            openFilePath(CommonPaths::absolutFilePath(fName));
-        else
-            filesNotFound.append(fName);
+    QList<ProjectFileNode*> gmsFiles;
+
+    // create base group
+    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    for (QString item: files) {
+        if (QFileInfo(item).exists()) {
+
+            ProjectFileNode *node = addNode("", item, group);
+            openFileNode(node);
+            if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
+
+            QApplication::processEvents(QEventLoop::AllEvents, 1);
+        } else {
+            filesNotFound.append(item);
+        }
     }
+
+    QString mainGms;
+    if (gmsFiles.size() > 0) {
+        ProjectRunGroupNode *prgn = group->toRunGroup();
+        if (prgn) prgn->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+    }
+
     if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
         for(QString s : filesNotFound)
@@ -1699,7 +1726,17 @@ void MainWindow::commandLineHelpTriggered()
 void MainWindow::optionRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupInRunningState())
-       on_actionRun_triggered();
+        on_actionRun_triggered();
+}
+
+void MainWindow::openInitialFiles()
+{
+    if (mSettings->restoreTabsAndProjects(this)) {
+        mSettings->restoreLastFilesUsed(this);
+        openFiles(mInitialFiles);
+        mInitialFiles.clear();
+        watchProjectTree();
+    }
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -1867,7 +1904,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 lxiViewer->codeEdit()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
-            if (runGroup) ui->projectView->expand(mProjectRepo.treeModel()->index(runGroup));
             mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
         }
     if (tabWidget != ui->logTabs) {
@@ -1960,6 +1996,7 @@ void MainWindow::closeFileEditors(FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
+        if (mRecent.editor() == edit) mRecent.setEditor(nullptr, this);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         fm->removeEditor(edit);
         edit->deleteLater();
@@ -1982,7 +2019,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
     openFileNode(fileNode, focus, codecMib);
 }
 
-ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName)
+ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
 {
     ProjectFileNode *node = nullptr;
     if (!fileName.isEmpty()) {
@@ -1992,7 +2029,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         if (fType == FileKind::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath());
+            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
         }
     }
     return node;
@@ -2022,7 +2059,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
     QWidget* edit = ui->mainTab->widget(index);
     if (!edit) return;
 
-    mProjectRepo.editorActivated(edit);
+    if (mStartedUp) mProjectRepo.editorActivated(edit);
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
@@ -2130,7 +2167,7 @@ void MainWindow::updateEditorLineWrapping()
     }
 }
 
-void MainWindow::readTabs(const QJsonObject &json)
+bool MainWindow::readTabs(const QJsonObject &json)
 {
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
@@ -2144,6 +2181,8 @@ void MainWindow::readTabs(const QJsonObject &json)
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents(QEventLoop::AllEvents, 1);
+                if (ui->mainTab->count() <= i)
+                    return false;
             }
         }
     }
@@ -2157,6 +2196,7 @@ void MainWindow::readTabs(const QJsonObject &json)
         }
     }
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
+    return true;
 }
 
 void MainWindow::initAutoSave()
@@ -2440,7 +2480,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     if (mClosedTabs.isEmpty())
         return;
 
-    if (mClosedTabs.last()=="Wp Closed") {
+    if (mClosedTabs.last()=="WELCOME_PAGE") {
         mClosedTabs.removeLast();
         mClosedTabsIndexes.removeLast();
         showWelcomePage();
@@ -2524,12 +2564,16 @@ void MainWindow::resetViews()
     }
 }
 
+void MainWindow::renameGroup(ProjectGroupNode* group)
+{
+    ui->projectView->edit(mProjectRepo.treeModel()->index(group));
+}
+
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
     mGamsOptionWidget->resize( size );
     this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
 }
-
 
 void MainWindow::setForeground()
 {

@@ -311,7 +311,7 @@ void ProjectContextMenu::onOpenFileLoc()
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(QFileInfo(file->location()).path());
+            args << QDir::toNativeSeparators(QFileInfo(file->location()).filePath());
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();

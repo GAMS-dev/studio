@@ -90,9 +90,10 @@ public:
     ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void setInitialFiles(QStringList files);
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList pathList);
+    void openFiles(QStringList files);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -122,9 +123,9 @@ public:
     void closeResults();
     RecentData *recent();
     void openModelFromLib(QString glbFile, LibraryItem *model);
-    void readTabs(const QJsonObject &json);
+    bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
-    void delayedFileRestoration();
+//    void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
@@ -157,6 +158,7 @@ public slots:
     void optionRunChanged();
 
 private slots:
+    void openInitialFiles();
     void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
@@ -262,6 +264,7 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void renameGroup(ProjectGroupNode *group);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -275,7 +278,7 @@ protected:
 
 private:
     void initTabs();
-    ProjectFileNode* addNode(const QString &path, const QString &fileName);
+    ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
     bool processIfRenamed(FileId fileId);
@@ -303,6 +306,7 @@ private:
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
+    QStringList mInitialFiles;
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
@@ -327,11 +331,13 @@ private:
     QTimer mFileTimer;
 
     bool mDebugMode = false;
+    bool mStartedUp = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
+
 };
 
 }

@@ -90,7 +90,6 @@ public:
     ProjectLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
-    QString lstFile() const;
     QString tooltip() override;
     QString lstErrorText(int line) override;
     void setLstErrorText(int line, QString text);
@@ -100,9 +99,10 @@ public:
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList);
 
-    QString specialFile(const FileKind& fk) const;
-    QHash<FileKind, QString> specialFiles() const;
-    void setSpecialFile(const FileKind& fk, const QString& path);
+    QString specialFile(const FileKind& kind) const;
+    bool hasSpecialFile(const FileKind& kind) const;
+    void addNodesForSpecialFiles();
+    void setSpecialFile(const FileKind& kind, const QString& path);
     void clearSpecialFiles();
 
     bool isProcess(const AbstractProcess *process) const;

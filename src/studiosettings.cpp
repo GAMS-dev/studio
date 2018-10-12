@@ -393,8 +393,9 @@ void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
     mAutoCloseBraces = autoCloseBraces;
 }
 
-void StudioSettings::restoreTabsAndProjects(MainWindow *main)
+bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
+    bool res = true;
     mAppSettings->beginGroup("json");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
@@ -403,9 +404,10 @@ void StudioSettings::restoreTabsAndProjects(MainWindow *main)
     if (restoreTabs()) {
         saveData = mAppSettings->value("openTabs", "").toByteArray();
         loadDoc = QJsonDocument::fromJson(saveData);
-        main->readTabs(loadDoc.object());
+        res = main->readTabs(loadDoc.object());
     }
     mAppSettings->endGroup();
+    return res;
 }
 
 void StudioSettings::loadSettings(MainWindow *main)

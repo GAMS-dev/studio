@@ -298,11 +298,6 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
 }
 
-QString ProjectRunGroupNode::lstFile() const
-{
-    return mSpecialFiles.value(FileKind::Lst);
-}
-
 QString ProjectRunGroupNode::lstErrorText(int line)
 {
     return mLstErrorTexts.value(line);
@@ -440,17 +435,23 @@ void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &
     }
 }
 
-QString ProjectRunGroupNode::specialFile(const FileKind &fk) const
+QString ProjectRunGroupNode::specialFile(const FileKind &kind) const
 {
-    return mSpecialFiles[fk];
+    return mSpecialFiles.value(kind);
 }
 
-QHash<FileKind, QString> ProjectRunGroupNode::specialFiles() const
+bool ProjectRunGroupNode::hasSpecialFile(const FileKind &kind) const
 {
-    return mSpecialFiles;
+    return mSpecialFiles.contains(kind);
 }
 
-void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path)
+void ProjectRunGroupNode::addNodesForSpecialFiles()
+{
+    for (QString loc : mSpecialFiles.values())
+        findOrCreateFileNode(loc);
+}
+
+void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &path)
 {
     // TODO(JM) store FileMeta or FileNode instead?
     QString fullPath = path;
@@ -458,7 +459,7 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
 
     if (QFileInfo(fullPath).suffix().isEmpty()) {
-        switch (fk) {
+        switch (kind) {
         case FileKind::Gdx:
             fullPath += ".gdx";
             break;
@@ -473,7 +474,7 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &fk, const QString &path
         }
     }
 
-    mSpecialFiles.insert(fk, fullPath);
+    mSpecialFiles.insert(kind, fullPath);
 }
 
 void ProjectRunGroupNode::clearSpecialFiles()
@@ -492,7 +493,8 @@ QString ProjectRunGroupNode::tooltip()
 {
     QString res(location());
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
-    if (!lstFile().isEmpty()) res.append("\nLast output file: ").append(QFileInfo(lstFile()).fileName());
+    if (!specialFile(FileKind::Lst).isEmpty())
+        res.append("\nLast output file: ").append(QFileInfo(specialFile(FileKind::Lst)).fileName());
     if (debugMode()) {
         res.append("\nNodeId: "+QString::number(id()));
         res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
