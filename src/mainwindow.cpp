@@ -180,11 +180,12 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
 
-
     // set up services
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
+
+    QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
 
@@ -235,12 +236,6 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     }
     return QMainWindow::event(event);
-}
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QMainWindow::showEvent(event);
-    QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)

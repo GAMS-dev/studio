@@ -270,7 +270,6 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
-    void showEvent(QShowEvent *event);
 
 private:
     void initTabs();
