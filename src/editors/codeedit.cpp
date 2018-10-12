@@ -1188,12 +1188,14 @@ void CodeEdit::updateExtraSelections()
 
         QRegularExpressionMatch match = regexp.match(selectedText);
 
-        //    (  not caused by parenthiesis matching                                )
-        if ((((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay))
+        //   (  not caused by parenthiesis matching                               )
+        if (((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
               // ( depending on settings: no selection necessary OR has selection )
               && (mSettings->wordUnderCursor() || textCursor().hasSelection())
-              // (          wait for timer       ) OR (     always select          )
-              && ((sender() == &mParenthesesDelay) || (mSettings->wordUnderCursor()))))
+              // (      wait for timer            OR            user scrolled             )
+              && ((sender() == &mParenthesesDelay || sender() == this->verticalScrollBar())
+              //  OR (     always select          )
+                  || mSettings->wordUnderCursor())))
                 // AND deactivate when navigation search results
                 && match.captured(0).isEmpty())
             extraSelCurrentWord(selections);
