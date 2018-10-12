@@ -19,13 +19,18 @@ AboutHandler::AboutHandler(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle("License Information");
+    ui->label->setAlignment(Qt::AlignLeft);
     ui->LicenseInfo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->label->setText(licenseInformation());
+    ui->horizontalLayout_2->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed));
     ui->verticalLayout->addStretch();
     ui->gamslogo->setPixmap(QPixmap(":/img/gams-w24"));
     ui->gamslogo->adjustSize();
     ui->gamslogo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    ui->label->setContentsMargins(4, 2, 3, 7);
+    ui->gamslogo->setContentsMargins(0, 3, 7, 7);
+
 }
 
 QString AboutHandler::studioInfo()
@@ -43,27 +48,12 @@ AboutHandler::~AboutHandler()
 
 QString AboutHandler::licenseInformation()
 {
-    QString about = "<br/><br/><b><big>GAMS Distribution ";
+    QString about = "<b><big>GAMS Distribution ";
     about += "</big></b><br/><br/>";
     GamsProcess gproc;
     about += gproc.aboutGAMS().replace("\n", "<br/>");
     about += "<br/><br/>For further information about GAMS please visit ";
     about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-
-//    QString about ="Release: GAMS Studio 0.9.4 64 bit<br/>";
-//    about +="Build Date: Oct  2 2018 16:28:38<br/>";
-//    about +="<br/>";
-//    about +="GAMS Release     : 25.2.0 r2a23d76d LEX-LEG x86 64bit/Linux<br/>";
-//    about +="Release Date     :  2Aug18";
-//    about +="To use this GAMS release without any limitations, you must";
-//    about +="have a valid license file for this platform with maintenance";
-//    about +="expiration date later than Jul 26, 2018.";
-//    about += "<br/>";
-//    about +="System Directory : /home/rogo/gams/gams25.2_linux_x64_64_sfx/<br/>";
-//    about += "<br/>";
-//    about +="License          : /home/rogo/gams/gams25.2_linux_x64_64_sfx/gamslice.txt<br/>";
-//    about +="License file not found (RC=2)<br/>";
-//    about +="SysMsg: No such file or directory<br/>";
     return about;
 }
 
