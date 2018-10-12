@@ -197,7 +197,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
            } else if (value.compare("maxdouble", Qt::CaseInsensitive)==0) {
                       d = OPTION_VALUE_MAXDOUBLE;
            } else if (value.compare("mindouble", Qt::CaseInsensitive)==0) {
-                     d = -OPTION_VALUE_MINDOUBLE;
+                     d = OPTION_VALUE_MINDOUBLE;
            } else {
                 QDoubleValidator doublev(getLowerBound(key).toDouble(), getUpperBound(key).toDouble(), OPTION_VALUE_DECIMALS);
                 QString v = value;

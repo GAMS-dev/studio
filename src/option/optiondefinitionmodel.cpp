@@ -29,7 +29,7 @@ OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObj
     : QAbstractItemModel(parent), mOptionGroup(optionGroup), mOption(data)
 {
     QList<QVariant> rootData;
-    rootData << "Option" << "Synonym" << "DefValue" // << "Range"
+    rootData << "Option" << "Synonym" << "DefValue" << "Range"
              << "Type" << "Description" ;
     rootItem = new OptionDefinitionItem(rootData);
 
@@ -291,49 +291,49 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         }
         switch(optdef.type){
         case optTypeInteger :
-//            columnData.append( QString("[%1,%2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
-//                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
+            columnData.append( QString("[%1, %2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
+                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
             columnData.append("Integer");
             break;
         case optTypeDouble :
-//            columnData.append( QString("[%1,%2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
-//                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
+            columnData.append( QString("[%1, %2]").arg( optdef.lowerBound.canConvert<double>() ? optdef.lowerBound.toDouble() : optdef.lowerBound.toInt() )
+                                                 .arg( optdef.upperBound.canConvert<double>() ? optdef.upperBound.toDouble() : optdef.upperBound.toInt() ) );
             columnData.append("Double");
             break;
         case optTypeString :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("String");
             break;
         case optTypeBoolean :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("Boolean");
             break;
         case optTypeEnumStr :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("EnumStr");
             break;
         case optTypeEnumInt :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("EnumInt");
             break;
         case optTypeMultiList :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("MultiList");
             break;
         case optTypeStrList   :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("StrList");
             break;
         case optTypeMacro     :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("Macro");
             break;
         case optTypeImmediate :
-//            columnData.append("");
+            columnData.append("");
             columnData.append("Immediate");
             break;
         default:
-//            columnData.append("");
+            columnData.append("");
             columnData.append("");
             break;
         }
@@ -350,6 +350,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                     continue;
                 QList<QVariant> enumData;
                 enumData << enumValue.value;
+                enumData << "";
                 enumData << "";
                 enumData << "";
                 enumData << "";

@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
+
 #include <QDebug>
 
 #include "optiontokenizer.h"
@@ -481,7 +482,7 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
 
 bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
 {
-    QString logMessage;
+    bool hasbeenLogged = false;
     int itype;
     char svalue[GMS_SSSIZE];
     for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
@@ -489,14 +490,26 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
        qDebug() << "#Message" << i << ":" << svalue << ":" << itype;
        if (itype==optMsgTooManyMsgs)
            continue;
-       logMessage += svalue;
-       logMessage += "\n";
+       hasbeenLogged = true;
+       switch (itype) {
+       case optMsgHelp:
+           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Info);
+           break;
+       case optMsgValueWarning :
+       case optMsgDeprecated :
+           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+           break;
+       case optMsgDefineError:
+       case optMsgValueError:
+       case optMsgUserError:
+           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+           break;
+       default:
+           break;
+       }
     }
-    if (!logMessage.isEmpty()) {
-        SysLogLocator::systemLog()->appendLog(logMessage, LogMsgType::Error);
-        return true;
-    }
-    return false;
+    optClearMessages(mOPTHandle);
+    return hasbeenLogged;
 }
 
 QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absoluteFilePath)
@@ -582,12 +595,9 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
                    break;
                }
             }
-       } else {
-           logMessage(mOPTHandle);
        }
-    } else {
-        logMessage(mOPTHandle);
     }
+    logMessage(mOPTHandle);
     optFree(&mOPTHandle);
 
     return items;
@@ -605,35 +615,57 @@ bool OptionTokenizer::writeOptionParameterFile(const QList<OptionItem> &items, c
         return false;
     }
 
+        for(OptionItem item: items) {
+            qDebug() << QString("[%1=%2]").arg(item.key).arg(item.value);
+        }
+        qDebug();
+
     if (!optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
         optResetAllRecent(mOPTHandle);
         for(OptionItem item: items) {
             OptionDefinition optDef = mOption->getOptionDefinition( item.key );
 //            optResetNr(mOPTHandle, number);
-            QVariant value;
+            QString value = item.value;
             switch(optDef.dataType) {
             case optDataInteger: {
                 qDebug() << QString("%1=%2(int)").arg(item.key).arg(item.value.toInt());
-                optSetValuesNr(mOPTHandle, optDef.number, item.value.toInt(), 0.0, "");
-                logMessage(mOPTHandle);
+                bool isCorrectDataType = false;
+                int n = value.toInt(&isCorrectDataType);
+                if (isCorrectDataType) {
+                    optSetIntNr(mOPTHandle, optDef.number, n);
+                } else  if (item.value.compare("maxint", Qt::CaseInsensitive)==0) {
+                          optSetIntNr(mOPTHandle, optDef.number, OPTION_VALUE_MAXINT);
+                } else if (value.compare("minint", Qt::CaseInsensitive)==0) {
+                          optSetIntNr(mOPTHandle, optDef.number, OPTION_VALUE_MININT);
+                } else {
+                    optSetStrNr(mOPTHandle, optDef.number, value.toLatin1());
+                }
                 break;
             }
             case optDataDouble: {
-                qDebug() << QString("%1=%2(double)").arg(item.key).arg(item.value.toDouble());
-                optSetValuesNr(mOPTHandle, optDef.number, 0, item.value.toDouble(), "");
-                logMessage(mOPTHandle);
+                qDebug() << QString("%1=%2(int/double : double)").arg(item.key).arg(item.value);
+                bool isCorrectDataType = false;
+                double d = value.toDouble(&isCorrectDataType);
+                if (isCorrectDataType) {
+                    optSetDblNr(mOPTHandle, optDef.number, d);
+                } else if (value.compare("maxdouble", Qt::CaseInsensitive)==0) {
+                          optSetDblNr(mOPTHandle, optDef.number, OPTION_VALUE_MAXDOUBLE);
+                } else if (value.compare("mindouble", Qt::CaseInsensitive)==0) {
+                          optSetDblNr(mOPTHandle, optDef.number, OPTION_VALUE_MINDOUBLE);
+//                } else if (value.compare("eps", Qt::CaseInsensitive)==0) {
+                } else {
+                    optSetStrNr(mOPTHandle, optDef.number, value.toLatin1());
+                }
                 break;
             }
             case optDataString: {
                 qDebug() << QString("%1=%2(string)").arg(item.key).arg(item.value);
                 optSetStrNr(mOPTHandle, optDef.number, item.value.toLatin1());
-                logMessage(mOPTHandle);
                 break;
             }
             case optDataStrList: {
                 qDebug() << QString("%1=%2(strlist)").arg(item.key).arg(item.value);
                 optSetStrNr(mOPTHandle, optDef.number, item.value.toLatin1());
-                logMessage(mOPTHandle);
                 break;
             }
             default:
@@ -641,14 +673,10 @@ bool OptionTokenizer::writeOptionParameterFile(const QList<OptionItem> &items, c
             }
         }
         optWriteParameterFile(mOPTHandle, absoluteFilepath.toLatin1());
-        logMessage(mOPTHandle);
-        optClearMessages(mOPTHandle);
-
-    } else {
-        logMessage(mOPTHandle);
     }
+    bool hasBeenLogged = logMessage(mOPTHandle);
     optFree(&mOPTHandle);
-    return true;
+    return !hasBeenLogged;
 }
 
 void OptionTokenizer::validateOption(QList<OptionItem> &items)

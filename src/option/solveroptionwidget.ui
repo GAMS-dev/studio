@@ -123,6 +123,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>Save file</string>
+        </property>
         <property name="text">
          <string>Save</string>
         </property>
@@ -143,7 +146,7 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string/>
+         <string>Save file as...</string>
         </property>
         <property name="text">
          <string>Save As</string>

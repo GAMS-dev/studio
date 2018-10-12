@@ -1,4 +1,24 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <QStandardItemModel>
+#include <QMessageBox>
 
 #include "solveroptionwidget.h"
 #include "ui_solveroptionwidget.h"
@@ -107,6 +127,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     setModified(false);
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
+
+    ui->solverOptionSplitter->setSizes(QList<int>({25, 75}));
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -268,9 +290,21 @@ void SolverOptionWidget::on_optionSaveButton_clicked()
 {
     OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
     qDebug() << "saving to " << mLocation;
-    mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), mLocation);
-
     setModified(false);
+    bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), mLocation);
+    if (!success) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Problem Saving Option File");
+        msgBox.setText("File " + mLocation + " has been saved.\nBut some option values may not have beeen saved correctly. \n\nDo you want to load the saved file ?");
+        QPushButton* buttonYes = msgBox.addButton(tr("Yes, load the saved option file"), QMessageBox::YesRole);
+        msgBox.addButton(tr("No, continue editing the options"), QMessageBox::NoRole);
+        msgBox.setDefaultButton(buttonYes);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        if (msgBox.clickedButton()==buttonYes) {
+            // TODO (JP)
+        }
+    }
 }
 
 void SolverOptionWidget::setModified(bool modified)

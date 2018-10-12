@@ -115,6 +115,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
     connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
+
+    ui->gamsOptionSplitter->setSizes(QList<int>({25, 75}));
 }
 
 OptionWidget::~OptionWidget()

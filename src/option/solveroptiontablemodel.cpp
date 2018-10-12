@@ -51,7 +51,7 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     case Qt::ToolTipRole: {
         switch (mOption->getValueErrorType(mOptionItem.at(index).key, mOptionItem.at(index).value)) {
         case Incorrect_Value_Type:
-             return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(index).key);
+             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key);
         case Value_Out_Of_Range:
              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key);
         default:
@@ -100,7 +100,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole: {
         switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
         case Incorrect_Value_Type:
-             return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
+             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key);
         case Value_Out_Of_Range:
              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
         default:
