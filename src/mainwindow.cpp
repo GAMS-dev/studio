@@ -1971,6 +1971,7 @@ void MainWindow::closeFileEditors(FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
+        if (mRecent.editor() == edit) mRecent.setEditor(nullptr, this);
         ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
         fm->removeEditor(edit);
         edit->deleteLater();
@@ -2484,8 +2485,6 @@ QWidget *RecentData::editor() const
 
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
-    if (!editor) return;
-
     AbstractEdit* edit = FileMeta::toAbstractEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
