@@ -67,6 +67,7 @@ private slots:
     void testHiddenOption_data();
     void testHiddenOption();
 
+// TODO
 //    void testDeprecatedOption_data();
 //    void testDeprecatedOption();
 

@@ -26,4 +26,4 @@ SUBDIRS += testgamsoption
 SUBDIRS += testcplexoption
 SUBDIRS += testconopt4option
 SUBDIRS += testminosoption
-#SUBDIRS += testgurobioption
+SUBDIRS += testgurobioption

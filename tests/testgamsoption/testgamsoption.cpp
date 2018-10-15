@@ -437,38 +437,41 @@ void TestGamsOption::testOptionSynonym()
 void TestGamsOption::testDeprecatedOption_data()
 {
     QTest::addColumn<QString>("deprecatedOption");
+    QTest::addColumn<QString>("optionType");
     QTest::addColumn<QString>("optionDescription");
 
-    QTest::newRow("CtrlZ")      << "CtrlZ"     << "Enable reading control Z";
-    QTest::newRow("CtrlM")      << "CtrlM"     << "Enable flexible line ending";
-    QTest::newRow("PoolUse")    << "PoolUse"   << "Manage memory pools";
-    QTest::newRow("PoolFree1")  << "PoolFree1" << "Manage memory pools N";
-    QTest::newRow("PoolFree2")  << "PoolFree2" << "Manage memory pools N";
-    QTest::newRow("PoolFree3")  << "PoolFree3" << "Manage memory pools N";
-    QTest::newRow("PoolFree5")  << "PoolFree5" << "Manage memory pools N";
-    QTest::newRow("PoolFree6")  << "PoolFree6" << "Manage memory pools N";
-    QTest::newRow("PoolFree7")  << "PoolFree7" << "Manage memory pools N";
-    QTest::newRow("CodeX")      << "CodeX"     << "Controls the allocation of executable code";
-    QTest::newRow("NlCon")      << "NlCon"     << "Nonlinear instructions search length";
-    QTest::newRow("GLanguage")  << "GLanguage" << "";
-    QTest::newRow("GFinclude")  << "GFinclude" << "";
-    QTest::newRow("UnitType")   << "UnitType"  << "";
-    QTest::newRow("GFImplicit") << "UnitType"  << "";
-    QTest::newRow("GFExt")      << "GFExt"     << "";
-    QTest::newRow("SetType")    << "SetType"   << "Used to set the type of --keys";
-    QTest::newRow("TopMargin")  << "TopMargin" << "Output file page top margin";
-    QTest::newRow("LeftMargin") << "LeftMargin"<< "Output file page left margin";
-    QTest::newRow("BotMargin")  << "BotMargin" << "Output file page bottom margin, lines added at the end of a page";
+    QTest::newRow("CtrlZ")      << "CtrlZ"      << "integer"  << "Enable reading control Z";
+    QTest::newRow("CtrlM")      << "CtrlM"      << "integer"  << "Enable flexible line ending";
+    QTest::newRow("PoolUse")    << "PoolUse"    << "integer"  << "Manage memory pools";
+    QTest::newRow("PoolFree1")  << "PoolFree1"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("PoolFree2")  << "PoolFree2"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("PoolFree3")  << "PoolFree3"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("PoolFree5")  << "PoolFree5"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("PoolFree6")  << "PoolFree6"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("PoolFree7")  << "PoolFree7"  << "integer"  << "Manage memory pools N";
+    QTest::newRow("CodeX")      << "CodeX"      << "integer"  << "Controls the allocation of executable code";
+    QTest::newRow("NlCon")      << "NlCon"      << "integer"  << "Nonlinear instructions search length";
+    QTest::newRow("GLanguage")  << "GLanguage"  << "integer"  << "";
+    QTest::newRow("GFinclude")  << "GFinclude"  << "integer"  << "";
+    QTest::newRow("UnitType")   << "UnitType"   << "string"   << "";
+    QTest::newRow("GFImplicit") << "GFImplicit" << "integer"  << "";
+    QTest::newRow("GFExt")      << "GFExt"      << "integer"  << "";
+    QTest::newRow("SetType")    << "SetType"    << "integer"  << "Used to set the type of --keys";
+    QTest::newRow("TopMargin")  << "TopMargin"  << "integer"  << "Output file page top margin";
+    QTest::newRow("LeftMargin") << "LeftMargin" << "integer"  << "Output file page left margin";
+    QTest::newRow("BotMargin")  << "BotMargin"  << "integer"  << "Output file page bottom margin, lines added at the end of a page";
 }
 
 void TestGamsOption::testDeprecatedOption()
 {
     QFETCH(QString, deprecatedOption);
+    QFETCH(QString, optionType);
     QFETCH(QString, optionDescription);
 
     QVERIFY( gamsOption->isValid(deprecatedOption) );
-//    QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
-    QCOMPARE( gamsOption->getGroupNumber(deprecatedOption), 4);   // TODO
+// TODO   QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
+    QCOMPARE( gamsOption->getGroupNumber(deprecatedOption), 4 );
+    QCOMPARE( gamsOption->getOptionTypeName(gamsOption->getOptionType(deprecatedOption)), optionType );
     QCOMPARE( gamsOption->getDescription(deprecatedOption).trimmed().toUpper(), optionDescription.trimmed().toUpper());
 }
 

@@ -34,7 +34,9 @@ namespace option {
 Option::Option(const QString &systemPath, const QString &optionFileName) :
     mOptionDefinitionPath(systemPath), mOptionDefinitionFile(optionFileName)
 {
+    qDebug() << "before " << optionFileName;
     mAvailable = readDefinitionFile(systemPath, optionFileName);
+    qDebug() << "after " << optionFileName;
 }
 
 Option::~Option()
@@ -92,7 +94,7 @@ void Option::dumpAll()
 
 bool Option::isValid(const QString &optionName) const
 {
-    return mOption.contains(optionName.toUpper());
+    return (mOption.contains(optionName.toUpper()) && mOption[optionName.toUpper()].valid);
 }
 
 bool Option::isSynonymDefined() const
@@ -107,9 +109,9 @@ bool Option::isASynonym(const QString &optionName) const
 
 bool Option::isDeprecated(const QString &optionName) const
 {
-    if (isValid(optionName))
+    if (mOption.contains(optionName.toUpper())) {
         return mOption[optionName.toUpper()].deprecated;
-//       return (mOption[optionName.toUpper()].groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
+    }
 
     return false;
 }
@@ -467,7 +469,8 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                                   static_cast<optDataType>(itype),
                                   QString::fromLatin1(descript));
              opt.groupNumber = group;
-//             opt.deprecated = (opt.groupNumber == GAMS_DEPRECATED_GROUP_NUMBER);
+// TODO this call fails on optminos.def
+//             opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);
              if (synonym.contains(nameStr)) {
                  QMap<QString, QString>::const_iterator it = synonym.find(nameStr);

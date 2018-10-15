@@ -411,28 +411,45 @@ void TestCPLEXOption::testHiddenOption()
     QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
+// TODO
 //void TestCPLEXOption::testDeprecatedOption_data()
 //{
 //    QTest::addColumn<QString>("deprecatedOption");
+//    QTest::addColumn<bool>("isASynonym");
+//    QTest::addColumn<QString>("optionType");
 //    QTest::addColumn<QString>("optionDescription");
 
-//    QTest::newRow("crossoveralg") << "crossoveralg" << "Use option barcrossalg to specify barrier crossover method";
-//    QTest::newRow("lpalg")        << "lpalg"        << "Use option lpmethod to specify algorithm used for LP problems";
+//    QTest::newRow("crossoveralg") << "crossoveralg" << false << "enumstr" << "use parameter barcrossalg to select crossover algorithm";
+//    QTest::newRow("lpalg")        << "lpalg"        << false << "enumstr" << "use parameter lpmethod to specify algorithm used for LP problems";
 
-//    QTest::newRow("writepremps") << "writepremps" << "Use option writepre to specify file name. File extension determines problem format";
+//    QTest::newRow("writepremps") << "writepremps"   << true  << "string"  << "produce a Cplex LP/MPS/SAV file of the presolved problem";
 
-//    QTest::newRow("polishtime")  << "polishtime" << "Use option polishafter... for finer solution polishing control.";
+//    QTest::newRow("polishtime")  << "polishtime"    << false << "double"  << "time spent polishing a solution" ;
 
 //}
 
 //void TestCPLEXOption::testDeprecatedOption()
 //{
 //    QFETCH(QString, deprecatedOption);
+//    QFETCH(bool, isASynonym);
+//    QFETCH(QString, optionType);
 //    QFETCH(QString, optionDescription);
 
-//    QVERIFY( optionTokenizer->getOption()->isValid(deprecatedOption) );
-//    QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
-//    QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+//    if (isASynonym) {
+//       QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+//       QVERIFY( optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+
+//       QString optionName = optionTokenizer->getOption()->getNameFromSynonym(deprecatedOption);
+//       QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+//       QCOMPARE( optionTokenizer->getOption()->getDescription(optionName).toLower(), optionDescription.trimmed().toLower());
+//       QVERIFY( !optionTokenizer->getOption()->isDeprecated(optionName) );
+//    } else {
+//        QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+//        QVERIFY( !optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+//        QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+//        QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(deprecatedOption)), optionType );
+//        QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+//    }
 
 //}
 
