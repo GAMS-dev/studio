@@ -1918,6 +1918,9 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         if (node->file()->isOpen()) openFiles << node->file();
     }
 
+    if (runGroup->gamsProcessState() == QProcess::Running)
+        runGroup->gamsProcess()->stop();
+
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
         for (FileMeta *file: openFiles) {
