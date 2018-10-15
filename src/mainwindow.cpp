@@ -1366,7 +1366,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
             switch(answer) {
             case 0: // open
-                openFileNode( addNode("", gmsFilePath) );
+                openFileNode(addNode("", gmsFilePath));
                 break;
             case 1: // replace
                 fm->renameToBackup();

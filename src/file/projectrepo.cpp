@@ -384,11 +384,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-//    if (location.startsWith("[LOG]")) {
-//        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
-//    }
     if (location.isEmpty()) {
-        // TODO(JM) should we allow FileMeta to be created for a non-existant file?
         EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
     }
     if (!knownType || knownType->kind() == FileKind::None)
@@ -407,7 +403,13 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!fileGroup) {
         QFileInfo fi(fileMeta->location());
         QString groupName = explicitName.isNull() ? fi.completeBaseName() : explicitName;
-        fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
+        ProjectFileNode *pfn = findFile(fileMeta);
+        if (pfn)
+            fileGroup = pfn->parentNode();
+        else
+            fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
         if (!fileGroup) {
             DEB() << "The group must not be null";
             return nullptr;
