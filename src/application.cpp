@@ -56,8 +56,6 @@ void Application::init()
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
     mMainWindow->setInitialFiles(mCmdParser.files());
 
-    connect(&mDistribValidator, &DistributionValidator::messageReceived,
-            mMainWindow.get(), &MainWindow::appendSystemLog);
     mDistribValidator.start();
     listen();
 }
