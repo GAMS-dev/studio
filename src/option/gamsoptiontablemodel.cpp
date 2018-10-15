@@ -343,12 +343,13 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
 
     int beginRow;
 
-    if (row != -1)
+    if (row != -1) {
         beginRow = row;
-    else if (parent.isValid())
+    } else if (parent.isValid()) {
         beginRow = parent.row();
-    else
+    } else {
         beginRow = rowCount(QModelIndex());
+    }
 
     if (action ==  Qt::CopyAction) {
 
@@ -360,9 +361,10 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
 
             QStringList textList = text.split("=");
             QModelIndex idx = index(beginRow, 0, QModelIndex());
-            setData(idx, textList.at(0));
+            setData(idx, textList.at(0), Qt::EditRole);
             idx = index(beginRow, 1, QModelIndex());
-            setData(idx, textList.at(1));
+            setData(idx, textList.at(1), Qt::EditRole);
+            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
             beginRow++;
         }
 
@@ -378,7 +380,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
                 if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
                     break;
             }
-            if (idx.row() < rowCount())
+            if (idx.row() == rowCount())
                removeRows(idx.row(), 1, QModelIndex());
         }
         return true;

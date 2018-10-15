@@ -61,6 +61,7 @@ public:
     QList<OptionItem> getCurrentListOfOptionItems();
 
 signals:
+    void newTableRowDropped(const QModelIndex &index);
     void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:

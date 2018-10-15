@@ -88,6 +88,7 @@ public slots:
 
 private slots:
     void toggleOptionDefinition(bool checked);
+    void on_newTableRowDropped(const QModelIndex &index);
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);

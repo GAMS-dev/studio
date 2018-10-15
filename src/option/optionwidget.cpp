@@ -89,6 +89,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
+    connect(optionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -256,15 +257,20 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
                  QModelIndex removeTableIndex = ui->gamsOptionTableView->model()->index(index.row(), 0);
                  QVariant optionName = ui->gamsOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
 
-                 ui->gamsOptionTableView->model()->removeRow(index.row(), QModelIndex());
-
-                 mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
-
-                 QModelIndexList items = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                 QModelIndexList items = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                                  Qt::DisplayRole,
+                                                                                  optionName, -1);
+                 QModelIndexList definitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                                   Qt::DisplayRole,
                                                                                   optionName, 1);
-                 for(QModelIndex item : items) {
-                     ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+
+                 ui->gamsOptionTableView->model()->removeRow(index.row(), QModelIndex());
+
+                 if (items.size() <= 1) {  // only set Unchecked if it's the only optionName in the table
+                     mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+                    for(QModelIndex item : definitionItems) {
+                        ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+                    }
                  }
 
              }
@@ -390,6 +396,18 @@ void OptionWidget::toggleOptionDefinition(bool checked)
         ui->gamsOptionWidget->hide();
         main->updateRunState();
         main->resizeOptionEditor(ui->gamsCommandWidget->size());
+    }
+}
+
+void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
+{
+    QString optionName = ui->gamsOptionTableView->model()->data(index, Qt::DisplayRole).toString();
+    QModelIndexList definitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                     Qt::DisplayRole,
+                                                                     optionName, 1);
+    mOptionTokenizer->getOption()->setModified(optionName, true);
+    for(QModelIndex item : definitionItems) {
+        ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 }
 
