@@ -133,9 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
 
-    connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
-
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
@@ -144,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
+
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
@@ -1950,8 +1949,14 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     ProjectGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
-        closeFileEditors(node->file()->id());
+        if (nodeCountToFile == 1)
+            closeFileEditors(node->file()->id());
+        FileMeta* fm = node->file();
         mProjectRepo.closeNode(node);
+        if (nodeCountToFile == 1) {
+            mFileMetaRepo.removedFile(fm);
+            fm->deleteLater();
+        }
     }
     purgeGroup(group);
 }

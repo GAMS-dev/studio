@@ -379,6 +379,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
+    node->deleteLater();
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
@@ -477,11 +478,6 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
         }
     }
     return res;
-}
-
-void ProjectRepo::setSelected(const QModelIndex& ind)
-{
-//    mTreeModel->setSelected(ind);
 }
 
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
