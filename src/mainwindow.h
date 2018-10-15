@@ -276,7 +276,6 @@ private:
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     void fileChangedExtern(FileId fileId);
     void fileDeletedExtern(FileId fileId);
-    bool processIfRenamed(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
 

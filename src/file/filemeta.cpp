@@ -239,13 +239,12 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
+    edit->setProperty("location", location());
     AbstractEdit* ptEdit = toAbstractEdit(edit);
     CodeEdit* scEdit = toCodeEdit(edit);
 
     if (ptEdit) {
-        if (!ptEdit->fileId().isValid()) {
-            DEB() << "invalid FileId";
-        }
+        ptEdit->setFileId(id());
         if (!mDocument)
             linkDocument(ptEdit->document());
         else
@@ -257,6 +256,9 @@ void FileMeta::addEditor(QWidget *edit)
         if (!ptEdit->viewport()->hasMouseTracking()) {
             ptEdit->viewport()->setMouseTracking(true);
         }
+    } else {
+        if (toGdxViewer(edit)) toGdxViewer(edit)->setFileId(id());
+        if (toReferenceViewer(edit)) toReferenceViewer(edit)->setFileId(id());
     }
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
@@ -588,7 +590,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
-        gdxView->setFileId(id());
         gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
@@ -596,7 +597,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
-        refView->setFileId(id());
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = refView;
     } else {
@@ -621,8 +621,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                                 : QPlainTextEdit::NoWrap);
         }
-
-        edit->setFileId(id());
         edit->setTabChangesFocus(false);
         edit->setGroupId(runGroup ? runGroup->id() : NodeId());
 
@@ -641,8 +639,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     addEditor(res);
     if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
-    if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
-    res->setProperty("location", location());
     return res;
 }
 

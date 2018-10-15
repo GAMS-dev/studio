@@ -731,7 +731,24 @@ void MainWindow::on_actionSave_As_triggered()
                 QFile::remove(filePath);
             QFile::copy(fileMeta->location(), filePath);
         } else {
+            QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
+            nodes.removeAll(node);
+            QWidgetList editsToBeMoved;
+            if (nodes.size() && fileMeta->editors().size()) {
+                // we have other nodes on this file and open editors
+                AbstractEdit* ed = FileMeta::toAbstractEdit(fileMeta->editors().first());
+                if (ed && ed->groupId() == node->parentNode()->id()) {
+                    editsToBeMoved = fileMeta->editors();
+                    for (QWidget *ed: editsToBeMoved) {
+                        fileMeta->removeEditor(ed, true);
+                    }
+                }
+            }
             fileMeta->saveAs(filePath);
+            FileMeta* newFile = mFileMetaRepo.findOrCreateFileMeta(filePath, &FileType::from(fileMeta->kind()));
+            for (QWidget* wid: editsToBeMoved) {
+                newFile->addEditor(wid);
+            }
             if(node->assignedRunGroup()->hasSpecialFile(fileMeta->kind()))
                 node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
             openFileNode(node, true);
@@ -971,40 +988,6 @@ void MainWindow::fileDeletedExtern(FileId fileId)
         closeFileEditors(fileId);
     else if (!file->isReadOnly())
         file->document()->setModified();
-}
-
-bool MainWindow::processIfRenamed(FileId fileId)
-{
-    // TODO(JM) Decide if we want this feature
-    FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (file->kind() == FileKind::Gdx) return false;
-    QString newFileName;
-    QDir dir = QFileInfo(file->location()).dir();
-    if (!dir.exists()) return false;
-    for (const QString &fileName : dir.entryList(QDir::Files)) {
-         FileDifferences diff = file->compare(fileName);
-         if (!diff.testFlag(FdTime) && !diff.testFlag(FdSize)) {
-             newFileName = fileName;
-             break;
-         }
-    }
-    if (newFileName.isEmpty()) return false;
-
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File renamed");
-    msgBox.setText(file->location()+" seems to be renamed to\n"+newFileName);
-    msgBox.setInformativeText("Switch to the new filename?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-
-    if (ret == QMessageBox::No)
-        file->document()->setModified();
-    else {
-        file->saveAs(newFileName);
-        mSettings->saveSettings(this);
-    }
-    return true;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
