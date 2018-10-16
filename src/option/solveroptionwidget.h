@@ -53,15 +53,20 @@ public:
     bool isModified() const;
     void setModified(bool modified);
 
+    bool saveAs(const QString &location);
+
 signals:
     void optionLoaded(const QString &location);
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);
     void addOptionFromDefinition(const QModelIndex &index);
+
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void on_optionSaveButton_clicked();
     void on_newTableRowDropped(const QModelIndex &index);
+
+    void on_optionSaveButton_clicked();
+    void on_optionSaveAsButton_clicked();
 
 private:
     Ui::SolverOptionWidget *ui;

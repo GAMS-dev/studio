@@ -397,7 +397,17 @@ void FileMeta::saveAs(const QString &location)
     if (kind() == FileKind::Log) {
         internalSave(location);
         return;
+    } else if (kind() == FileKind::Opt) { // TODO (JP)
+        for (QWidget *wid: mEditors) {
+            option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
+            if (solverOptionWidget) {
+                solverOptionWidget->saveAs(location);
+                return;
+            }
+
+        }
     }
+
     if (location.isEmpty() || location.startsWith('['))
         EXCEPT() << "Can't save file '" << location << "'";
     if (location == mLocation) return;

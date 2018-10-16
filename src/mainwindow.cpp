@@ -712,6 +712,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                  "Save file as...",
                                                  path,
                                                  tr("GAMS code (*.gms *.inc *.log);;"
+                                                    "Solver Option files (*.op*);;"
                                                     "Text files (*.txt);;"
                                                     "All files (*.*)"));
     if (!filePath.isEmpty()) {

@@ -19,6 +19,7 @@
  */
 #include <QStandardItemModel>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "solveroptionwidget.h"
 #include "ui_solveroptionwidget.h"
@@ -285,22 +286,41 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
 
 void SolverOptionWidget::on_optionSaveButton_clicked()
 {
-    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
-    qDebug() << "saving to " << mLocation;
-    setModified(false);
-    bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), mLocation);
-    if (!success) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Problem Saving Option File");
-        msgBox.setText("File " + mLocation + " has been saved.\nBut some option values may not have beeen saved correctly. \n\nDo you want to load the saved file ?");
-        QPushButton* buttonYes = msgBox.addButton(tr("Yes, load the saved option file"), QMessageBox::YesRole);
-        msgBox.addButton(tr("No, continue editing the options"), QMessageBox::NoRole);
-        msgBox.setDefaultButton(buttonYes);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-        if (msgBox.clickedButton()==buttonYes) {
-            // TODO (JP)
-        }
+    saveAs(mLocation);
+}
+
+void SolverOptionWidget::on_optionSaveAsButton_clicked()
+{
+    QString path = QFileInfo(mLocation).path();
+    bool done = false;
+    while(!done) {
+        QString filePath = QFileDialog::getSaveFileName(this,
+                                                 QString("Save %1 option file as...").arg(mSolverName),
+                                                 mLocation,
+                                                 QString("Option file (%1.op*);;All files (*.*)").arg(mSolverName));
+       if (!filePath.isEmpty()) {
+           QString savePath = QFileInfo(filePath).path();
+           QString baseFileName = QFileInfo(filePath).completeBaseName();
+           QString suffixName = QFileInfo(filePath).suffix();
+
+           if ( QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0 || !suffixName.startsWith("op") ) {
+               qDebug() << "NOT ALLOWED saving file as " << filePath;
+               QMessageBox msgBox;
+               msgBox.setWindowTitle("Incorrect file name or suffix");
+               if (QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0)
+                   msgBox.setText(QString("File could not be saved as '%1.%2'.\nThe file name must be the solver name '%3'.").arg(baseFileName).arg(suffixName).arg(mSolverName));
+               else
+                   msgBox.setText(QString("File could not be saved as '%1.%2'.\nThe suffix must start with 'op*'.").arg(baseFileName).arg(suffixName));
+               msgBox.setStandardButtons(QMessageBox::Ok);
+               msgBox.setIcon(QMessageBox::Warning);
+               msgBox.exec();
+           } else {
+               saveAs(filePath);
+               done = true;
+           }
+       } else {
+           done = true;
+       }
     }
 }
 
@@ -320,6 +340,29 @@ void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
     ui->optionSaveButton->setEnabled( mModified );
+}
+
+bool SolverOptionWidget::saveAs(const QString &location)
+{
+    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
+    qDebug() << "saving to " << location;
+    setModified(false);
+    bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), location);
+    if (!success) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Problem Saving Option File");
+        msgBox.setText("File " + location + " has been saved.\nBut some option values may not have beeen saved correctly. \n\nDo you want to load the saved file ?");
+        QPushButton* buttonYes = msgBox.addButton(tr("Yes, load the saved option file"), QMessageBox::YesRole);
+        msgBox.addButton(tr("No, continue editing the options"), QMessageBox::NoRole);
+        msgBox.setDefaultButton(buttonYes);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        if (msgBox.clickedButton()==buttonYes) {
+            // TODO (JP)
+        }
+    }
+
+    return true;
 }
 
 
