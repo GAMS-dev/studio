@@ -635,12 +635,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
     }
+    res->setProperty("location", location());
     tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     addEditor(res);
     if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
     if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
-    res->setProperty("location", location());
     return res;
 }
 

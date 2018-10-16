@@ -99,7 +99,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
 
-//    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
@@ -1524,6 +1523,7 @@ void MainWindow::openFiles(QStringList files)
         }
     }
 
+    // find runnable gms, for now take first one found
     QString mainGms;
     if (gmsFiles.size() > 0) {
         ProjectRunGroupNode *prgn = group->toRunGroup();
