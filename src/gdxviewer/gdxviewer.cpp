@@ -130,6 +130,7 @@ bool GdxViewer::reload()
             //msgBox.setIcon(QMessageBox::Information);
             //msgBox.exec();
         }
+        emit ui->lineEdit->textChanged(ui->lineEdit->text());
         return initSuccess;
     }
     return true;
