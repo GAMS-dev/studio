@@ -958,7 +958,14 @@ void MainWindow::fileChangedExtern(FileId fileId)
 void MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (!file || !file->isOpen()) return;
+    if (!file) return;
+    if (!file->isOpen()) {
+        QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
+        for (ProjectFileNode* node: nodes) {
+            mProjectRepo.closeNode(node);
+        }
+        return;
+    }
 
     int ret = 0;
     if (!file->isReadOnly()) {
@@ -1016,11 +1023,10 @@ void MainWindow::fileEvent(const FileEvent &e)
         fileChanged(e.fileId()); // Just update display kind
     else if (e.kind() == FileEventKind::closed)
         fileClosed(e.fileId());
-    else if (!fm->isOpen())
-        fileChanged(e.fileId()); // Just update display kind
     else {
-        // file handling with user-interaction are delayed
+        fileChanged(e.fileId()); // First update display kind
 
+        // file handling with user-interaction are delayed
         FileEventData data = e.data();
         if (!mFileEvents.contains(data))
             mFileEvents << data;
@@ -1990,6 +1996,8 @@ void MainWindow::closeFileEditors(FileId fileId)
         fm->removeEditor(edit);
         edit->deleteLater();
     }
+    // if the file has been removed, remove nodes
+    if (!fm->exists(true)) fileDeletedExtern(fm->id());
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
