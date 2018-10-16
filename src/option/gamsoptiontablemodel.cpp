@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
-
+#include <QDebug>
 #include "option.h"
 #include "gamsoptiontablemodel.h"
 
@@ -259,7 +259,9 @@ bool GamsOptionTableModel::removeRows(int row, int count, const QModelIndex &par
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
-    mOptionItem.removeAt(row);
+    for(int i=row+count-1; i>=row; --i) {
+        mOptionItem.removeAt(i);
+    }
     endRemoveRows();
     emit optionModelChanged(mOptionItem);
     return true;
@@ -325,7 +327,6 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
     Q_UNUSED(column);
     if (action == Qt::IgnoreAction)
         return true;
-
     if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
         return false;
 

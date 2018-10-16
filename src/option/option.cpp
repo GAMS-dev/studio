@@ -34,9 +34,7 @@ namespace option {
 Option::Option(const QString &systemPath, const QString &optionFileName) :
     mOptionDefinitionPath(systemPath), mOptionDefinitionFile(optionFileName)
 {
-    qDebug() << "before " << optionFileName;
     mAvailable = readDefinitionFile(systemPath, optionFileName);
-    qDebug() << "after " << optionFileName;
 }
 
 Option::~Option()

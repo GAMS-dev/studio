@@ -91,43 +91,43 @@ bool OptionDefinitionModel::removeRows(int row, int count, const QModelIndex &pa
     return success;
 }
 
-QStringList OptionDefinitionModel::mimeTypes() const
-{
-    QStringList types;
-    types << "application/vnd.gams-pf.text";
-    return types;
-}
+//QStringList OptionDefinitionModel::mimeTypes() const
+//{
+//    QStringList types;
+//    types << "application/vnd.gams-pf.text";
+//    return types;
+//}
 
-QMimeData* OptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
-{
-    QMimeData* mimeData = new QMimeData();
-    QByteArray encodedData;
+//QMimeData* OptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
+//{
+//    QMimeData* mimeData = new QMimeData();
+//    QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+//    QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (const QModelIndex &index, indexes) {
-        if (index.isValid()) {
-            if (index.column()>0) {
-                continue;
-            }
+//    foreach (const QModelIndex &index, indexes) {
+//        if (index.isValid()) {
+//            if (index.column()>0) {
+//                continue;
+//            }
 
-            QString text;
-            OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
-            OptionDefinitionItem *parentItem = childItem->parentItem();
+//            QString text;
+//            OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
+//            OptionDefinitionItem *parentItem = childItem->parentItem();
 
-            if (parentItem == rootItem) {
-                QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(defValueIndex, Qt::DisplayRole).toString());
-            } else {
-                text = QString("%1=%2").arg(parentItem->data(index.column()).toString()).arg(data(index, Qt::DisplayRole).toString());
-            }
-            stream << text;
-        }
-    }
+//            if (parentItem == rootItem) {
+//                QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
+//                text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(defValueIndex, Qt::DisplayRole).toString());
+//            } else {
+//                text = QString("%1=%2").arg(parentItem->data(index.column()).toString()).arg(data(index, Qt::DisplayRole).toString());
+//            }
+//            stream << text;
+//        }
+//    }
 
-    mimeData->setData("application/vnd.gams-pf.text", encodedData);
-    return mimeData;
-}
+//    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+//    return mimeData;
+//}
 
 void OptionDefinitionModel::loadOptionFromGroup(const int group)
 {

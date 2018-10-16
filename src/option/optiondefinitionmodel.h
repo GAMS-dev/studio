@@ -23,8 +23,8 @@
 #include <QAbstractItemModel>
 #include <QMimeData>
 
-#include "option/option.h"
-#include "option/optiondefinitionitem.h"
+#include "option.h"
+#include "optiondefinitionitem.h"
 
 namespace gams {
 namespace studio {
@@ -55,10 +55,10 @@ public:
     bool removeItem(const QModelIndex &index);
 
 //    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
-    QStringList mimeTypes() const override;
-    QMimeData* mimeData(const QModelIndexList & indexes) const override;
+    virtual QStringList mimeTypes() const override = 0;
+    virtual QMimeData* mimeData(const QModelIndexList & indexes) const override = 0;
 
     static const int COLUMN_OPTION_NAME = 0;
     static const int COLUMN_SYNONYM = 1;
@@ -68,7 +68,7 @@ public:
 public slots:
     void loadOptionFromGroup(const int group);
 
-private:
+protected:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);
 
     int mOptionGroup;

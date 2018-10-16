@@ -24,8 +24,8 @@
 #include "addoptionheaderview.h"
 #include "commonpaths.h"
 #include "optioncompleterdelegate.h"
-#include "optiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
+#include "gamsoptiondefinitionmodel.h"
 #include "gamsoptiontablemodel.h"
 #include "mainwindow.h"
 
@@ -78,10 +78,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui->gamsOptionTableView->setDragEnabled(true);
-    ui->gamsOptionTableView->viewport()->setAcceptDrops(true);
+    ui->gamsOptionTableView->setAcceptDrops(true);
     ui->gamsOptionTableView->setDropIndicatorShown(true);
     ui->gamsOptionTableView->setDragDropMode(QAbstractItemView::DragDrop);
-    ui->gamsOptionTableView->setDragDropOverwriteMode(true);
+//    ui->gamsOptionTableView->setDragDropOverwriteMode(true);
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
@@ -92,7 +92,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(optionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
-    OptionDefinitionModel* optdefmodel =  new OptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
+    GamsOptionDefinitionModel* optdefmodel =  new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
     proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);

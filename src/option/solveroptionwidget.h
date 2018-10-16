@@ -61,6 +61,7 @@ public slots:
     void addOptionFromDefinition(const QModelIndex &index);
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void on_optionSaveButton_clicked();
+    void on_newTableRowDropped(const QModelIndex &index);
 
 private:
     Ui::SolverOptionWidget *ui;

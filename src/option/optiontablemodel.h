@@ -36,33 +36,33 @@ class OptionTableModel : public QAbstractTableModel
 public:
     OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
-    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override = 0;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override = 0;
+    QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const override = 0;
-    virtual bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual bool insertRows(int row, int count, const QModelIndex &parent) override = 0;
-    virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
-    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    bool insertRows(int row, int count, const QModelIndex &parent) override;
+    bool removeRows(int row, int count, const QModelIndex &parent) override;
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QStringList mimeTypes() const override;
-    QMimeData* mimeData(const QModelIndexList & indexes) const override;
+//    QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
-    virtual Qt::DropActions supportedDropActions() const override = 0;
-    virtual bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override = 0;
+    Qt::DropActions supportedDropActions() const override;
+    bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<OptionItem> getCurrentListOfOptionItems() const;
 
 signals:
+    void newTableRowDropped(const QModelIndex &index);
     void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:
-    void toggleActiveOptionItem(int index);
     void on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
 protected:

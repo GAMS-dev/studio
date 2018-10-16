@@ -10,6 +10,9 @@
     <height>533</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -40,7 +43,14 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QTableView" name="solverOptionTableView"/>
+        <widget class="QTableView" name="solverOptionTableView">
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DropOnly</enum>
+         </property>
+         <property name="defaultDropAction">
+          <enum>Qt::CopyAction</enum>
+         </property>
+        </widget>
         <widget class="QWidget" name="solverOptionDefinitionView" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">

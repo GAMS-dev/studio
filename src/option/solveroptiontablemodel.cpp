@@ -151,18 +151,22 @@ Qt::ItemFlags SolverOptionTableModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
      if (!index.isValid()) {
+         qDebug() << "flags : (" << index.row() << "," << index.column() << ") NOT VALID!" ;
          return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
      } else {
-         if (index.column()!=1)
-            return Qt::ItemIsDropEnabled | defaultFlags;
-         else
-            return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | defaultFlags;
+         if (index.column()!=1) {
+             qDebug() << "flags : (" << index.row() << "," << index.column() << ") NOT EDITABLE" ;
+            return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+         } else {
+             qDebug() << "flags : (" << index.row() << "," << index.column() << ") EDITABLE" ;
+            return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+         }
      }
 }
 
 Qt::DropActions SolverOptionTableModel::supportedDropActions() const
 {
-    return Qt::MoveAction | Qt::CopyAction ;
+    return Qt::CopyAction ;
 }
 
 bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
@@ -170,11 +174,13 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     Q_UNUSED(column);
     if (action == Qt::IgnoreAction)
         return true;
-
-    if (!mimedata->hasFormat("application/vnd.option-pf.text"))
+    for(QString f : mimedata->formats()) {
+       qDebug() << "format:" << f;
+    }
+    if (!mimedata->hasFormat("application/vnd.solver-opt.text"))
         return false;
 
-    QByteArray encodedData = mimedata->data("application/vnd.option-pf.text");
+    QByteArray encodedData = mimedata->data("application/vnd.solver-opt.text");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;
@@ -197,38 +203,38 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 
     if (action ==  Qt::CopyAction) {
 
-        QList<int> insertRowList;
+//        QList<int> insertRowList;
         insertRows(beginRow, rows, QModelIndex());
 
         foreach (const QString &text, newItems) {
-            insertRowList.append( beginRow );
+//            insertRowList.append( beginRow );
 
             QStringList textList = text.split("=");
             QModelIndex idx = index(beginRow, 0, QModelIndex());
-            setData(idx, textList.at(0));
+            setData(idx, textList.at(0), Qt::EditRole);
             idx = index(beginRow, 1, QModelIndex());
-            setData(idx, textList.at(1));
+            setData(idx, textList.at(1), Qt::EditRole);
             beginRow++;
         }
 
-        foreach (const QString &text, newItems) {
-            QStringList textList = text.split("=");
-            QModelIndex idx;
-            for(int i=0; i<rowCount(); ++i) {
-                if (insertRowList.contains(i))
-                    continue;
+//        foreach (const QString &text, newItems) {
+//            QStringList textList = text.split("=");
+//            QModelIndex idx;
+//            for(int i=0; i<rowCount(); ++i) {
+//                if (insertRowList.contains(i))
+//                    continue;
 
-                idx = index(i, 0, QModelIndex());
-                QString key = data(idx, Qt::DisplayRole).toString();
-                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
-                    break;
-            }
-            if (idx.row() < rowCount())
-               removeRows(idx.row(), 1, QModelIndex());
-        }
+//                idx = index(i, 0, QModelIndex());
+//                QString key = data(idx, Qt::DisplayRole).toString();
+//                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
+//                    break;
+//            }
+//            if (idx.row() < rowCount())
+//               removeRows(idx.row(), 1, QModelIndex());
+//        }
         return true;
 
-    }  else if (action == Qt::MoveAction ) {
+    }  /*else if (action == Qt::MoveAction ) {
 
         foreach (const QString &text, newItems) {
             qDebug() << text;
@@ -246,7 +252,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow );
         }
         return true;
-    }
+    }*/
 
     return false;
 }

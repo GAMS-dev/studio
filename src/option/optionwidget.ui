@@ -164,7 +164,14 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QTableView" name="gamsOptionTableView"/>
+        <widget class="QTableView" name="gamsOptionTableView">
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DragDrop</enum>
+         </property>
+         <property name="defaultDropAction">
+          <enum>Qt::CopyAction</enum>
+         </property>
+        </widget>
         <widget class="QWidget" name="gamsOptionDefinitionView" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">

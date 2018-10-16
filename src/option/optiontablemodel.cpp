@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QMimeData>
+#include <QIcon>
 #include <QDebug>
 
 #include "optiontablemodel.h"
@@ -33,6 +34,47 @@ OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionToken
     connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
 }
 
+QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal) {
+       if (role == Qt::DisplayRole) {
+          if (index <= mHeader.size())
+              return mHeader.at(index);
+       }
+       return QVariant();
+    }
+
+    // orientation == Qt::Vertical
+    switch(role) {
+    case Qt::CheckStateRole:
+        if (mOptionItem.isEmpty())
+            return QVariant();
+        else
+            return mCheckState[index];
+    case Qt::ToolTipRole: {
+        switch (mOption->getValueErrorType(mOptionItem.at(index).key, mOptionItem.at(index).value)) {
+        case Incorrect_Value_Type:
+             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key);
+        case Value_Out_Of_Range:
+             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key);
+        default:
+            break;
+        }
+        break;
+    }
+    case Qt::DecorationRole:
+        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
+            return QVariant::fromValue(QIcon(":/img/square-red"));
+        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
+            return QVariant::fromValue(QIcon(":/img/square-gray"));
+        } else {
+            return QVariant::fromValue(QIcon(":/img/square-green"));
+        }
+    }
+
+    return QVariant();
+}
+
 int OptionTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
@@ -45,6 +87,76 @@ int OptionTableModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
     return mHeader.size();
+}
+
+QVariant OptionTableModel::data(const QModelIndex &index, int role) const
+{
+    int row = index.row();
+    int col = index.column();
+
+    if (mOptionItem.isEmpty())
+        return QVariant();
+
+    switch (role) {
+    case Qt::DisplayRole: {
+        if (col==0) {
+            return QVariant(mOptionItem.at(row).key);
+        } else if (col==1) {
+                 return QVariant(mOptionItem.at(row).value);
+        } else if (col==2) {
+            QString key = mOptionItem.at(row).key;
+            if (mOption->isASynonym(mOptionItem.at(row).key))
+                key = mOption->getNameFromSynonym(mOptionItem.at(row).key);
+            return QVariant(mOption->getOptionDefinition(key).number);
+        }
+        break;
+    }
+    case Qt::TextAlignmentRole: {
+        return Qt::AlignLeft;
+    }
+    case Qt::ToolTipRole: {
+        switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+        case Incorrect_Value_Type:
+             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key);
+        case Value_Out_Of_Range:
+             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
+        default:
+             break;
+        }
+        break;
+    }
+    case Qt::TextColorRole: {
+        if (col==1) {
+            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                case Incorrect_Value_Type:
+                     return QVariant::fromValue(QColor(Qt::red));
+                case Value_Out_Of_Range:
+                    return QVariant::fromValue(QColor(Qt::red));
+                case No_Error:
+                    return QVariant::fromValue(QColor(Qt::black));
+                default:
+                    return QVariant::fromValue(QColor(Qt::black));
+            }
+         }
+        break;
+     }
+     default:
+        break;
+    }
+    return QVariant();
+}
+
+Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+     if (!index.isValid()) {
+         return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
+     } else {
+         if (index.column() !=1)
+              return Qt::ItemIsDropEnabled | defaultFlags;
+         else
+             return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | defaultFlags;
+     }
 }
 
 bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
@@ -95,6 +207,23 @@ QModelIndex OptionTableModel::index(int row, int column, const QModelIndex &pare
     return QModelIndex();
 }
 
+bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    Q_UNUSED(parent);
+    if (count < 1 || row < 0 || row > mOptionItem.size())
+         return false;
+
+     beginInsertRows(QModelIndex(), row, row + count - 1);
+     if (mOptionItem.size() == row)
+         mOptionItem.append(OptionItem("", "", -1, -1));
+     else
+        mOptionItem.insert(row, OptionItem(OptionItem("", "", -1, -1)));
+
+    endInsertRows();
+    emit optionModelChanged(mOptionItem);
+    return true;
+}
+
 bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
@@ -128,50 +257,13 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
 QStringList OptionTableModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.option-pf.text";
+    types << "application/vnd.solver-opt.text";
     return types;
-}
-
-QMimeData *OptionTableModel::mimeData(const QModelIndexList &indexes) const
-{
-    QMimeData* mimeData = new QMimeData();
-    QByteArray encodedData;
-
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-    foreach (const QModelIndex &index, indexes) {
-        if (index.isValid()) {
-            if (index.column()>0) {
-                continue;
-            }
-
-            QModelIndex valueIndex = index.sibling(index.row(), 1);
-            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(valueIndex, Qt::DisplayRole).toString());
-            stream << text;
-        }
-    }
-
-    mimeData->setData("application/vnd.option-pf.text", encodedData);
-    return mimeData;
 }
 
 QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems() const
 {
     return mOptionItem;
-}
-
-void OptionTableModel::toggleActiveOptionItem(int index)
-{
-    if (mOptionItem.isEmpty() || index >= mOptionItem.size())
-        return;
-
-    bool checked = (headerData(index, Qt::Vertical, Qt::CheckStateRole).toUInt() != Qt::Checked) ? true : false;
-    setHeaderData( index, Qt::Vertical,
-                          Qt::CheckState(headerData(index, Qt::Vertical, Qt::CheckStateRole).toInt()),
-                          Qt::CheckStateRole );
-    setData(QAbstractTableModel::createIndex(index, 0), QVariant(checked), Qt::CheckStateRole);
-    emit optionModelChanged(mOptionItem);
-
 }
 
 void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
@@ -197,6 +289,62 @@ void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIn
     endResetModel();
 }
 
+Qt::DropActions OptionTableModel::supportedDropActions() const
+{
+    return Qt::CopyAction;
+}
+
+bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    Q_UNUSED(column);
+    for(QString f : mimedata->formats()) {
+       qDebug() << "format:" << f;
+    }
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    if (!mimedata->hasFormat("application/vnd.solver-opt.text"))
+        return false;
+
+    QByteArray encodedData = mimedata->data("application/vnd.solver-opt.text");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QStringList newItems;
+    int rows = 0;
+
+    while (!stream.atEnd()) {
+       QString text;
+       stream >> text;
+       newItems << text;
+       ++rows;
+    }
+
+    int beginRow;
+
+    if (row != -1)
+        beginRow = row;
+    else if (parent.isValid())
+        beginRow = parent.row();
+    else
+        beginRow = rowCount(QModelIndex());
+
+    if (action ==  Qt::CopyAction) {
+        insertRows(beginRow, rows, QModelIndex());
+
+        foreach (const QString &text, newItems) {
+            QStringList textList = text.split("=");
+            QModelIndex idx = index(beginRow, 0, QModelIndex());
+            setData(idx, textList.at(0), Qt::EditRole);
+            idx = index(beginRow, 1, QModelIndex());
+            setData(idx, textList.at(1), Qt::EditRole);
+            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
+            beginRow++;
+        }
+        return true;
+
+    }
+
+    return false;
+}
 
 } // namepsace option
 } // namespace studio

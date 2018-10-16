@@ -109,6 +109,7 @@ SOURCES += \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
     option/commandlineoption.cpp \
+    option/gamsoptiondefinitionmodel.cpp \
     option/gamsoptiontablemodel.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
@@ -119,6 +120,7 @@ SOURCES += \
     option/optiontablemodel.cpp \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
+    option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     reference/reference.cpp \
@@ -210,6 +212,7 @@ HEADERS += \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
     option/commandlineoption.h \
+    option/gamsoptiondefinitionmodel.h \
     option/gamsoptiontablemodel.h \
     option/lineeditcompleteevent.h \
     option/option.h \
@@ -220,6 +223,7 @@ HEADERS += \
     option/optiontablemodel.h \
     option/optiontokenizer.h \
     option/optionwidget.h \
+    option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
     reference/reference.h \
