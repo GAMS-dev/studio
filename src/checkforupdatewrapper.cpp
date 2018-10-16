@@ -46,8 +46,7 @@ CheckForUpdateWrapper::CheckForUpdateWrapper()
 
 CheckForUpdateWrapper::~CheckForUpdateWrapper()
 {
-    if (isValid())
-        c4uFree(&mC4UHandle);
+    if (isValid()) c4uFree(&mC4UHandle);
 }
 
 bool CheckForUpdateWrapper::isValid() const

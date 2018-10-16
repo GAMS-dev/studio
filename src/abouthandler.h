@@ -3,7 +3,6 @@
 
 #include <QDialog>
 
-
 namespace Ui {
 class AboutHandler;
 }
@@ -11,7 +10,7 @@ class AboutHandler;
 namespace gams {
 namespace studio {
 
-
+// TODO(AF): rename to AboutDialog or AboutGAMSDialog
 class AboutHandler : public QDialog
 {
     Q_OBJECT
