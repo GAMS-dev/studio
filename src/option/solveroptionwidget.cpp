@@ -131,7 +131,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     setModified(false);
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
 
-    ui->solverOptionSplitter->setSizes(QList<int>({25, 75}));
+    ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
+    ui->solverOptionVSplitter->setSizes(QList<int>({90, 10}));
 }
 
 SolverOptionWidget::~SolverOptionWidget()
