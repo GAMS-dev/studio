@@ -3,13 +3,8 @@
 #include "gamsprocess.h"
 #include "checkforupdatewrapper.h"
 
-#include <QMessageBox>
-#include <QSpacerItem>
-#include <QGridLayout>
 #include <QClipboard>
 #include <QDebug>
-#include <QTextStream>
-#include <QMessageBox>
 
 namespace gams {
 namespace studio {
