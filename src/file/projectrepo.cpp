@@ -381,16 +381,13 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
+    node->deleteLater();
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-//    if (location.startsWith("[LOG]")) {
-//        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
-//    }
     if (location.isEmpty()) {
-        // TODO(JM) should we allow FileMeta to be created for a non-existant file?
         EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
     }
     if (!knownType || knownType->kind() == FileKind::None)
@@ -409,7 +406,13 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!fileGroup) {
         QFileInfo fi(fileMeta->location());
         QString groupName = explicitName.isNull() ? fi.completeBaseName() : explicitName;
-        fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
+        ProjectFileNode *pfn = findFile(fileMeta);
+        if (pfn)
+            fileGroup = pfn->parentNode();
+        else
+            fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
         if (!fileGroup) {
             DEB() << "The group must not be null";
             return nullptr;
@@ -479,16 +482,10 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
     return res;
 }
 
-void ProjectRepo::setSelected(const QModelIndex& ind)
-{
-//    mTreeModel->setSelected(ind);
-}
-
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     mTreeModel->selectionChanged(selected, deselected);
     emit deselect(mTreeModel->popDeclined());
-
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

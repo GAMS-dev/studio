@@ -176,7 +176,7 @@ private:
     void internalSave(const QString &location);
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
-    void unlinkDocument();
+    void unlinkAndFreeDocument();
 
 private:
     FileId mId;

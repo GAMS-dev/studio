@@ -20,6 +20,8 @@
 #include "distributionvalidator.h"
 #include "commonpaths.h"
 #include "gamsprocess.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 #include <QStringList>
 #include <QFileInfo>
@@ -48,12 +50,12 @@ void DistributionValidator::checkBitness()
     bool is64 = (sizeof(void*) == 8);
     QStringList messages;
     if (!is64 && joat64.exists())
-        messages << "ERROR: GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
+        messages << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
                  << gamsPath;
     if (is64 && !joat64.exists())
-        messages << "ERROR: GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
+        messages << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
                  << gamsPath;
-    emit messageReceived(messages.join(" "));
+    SysLogLocator::systemLog()->appendLog(messages.join(" "), LogMsgType::Error);
 #endif
 }
 
@@ -62,10 +64,10 @@ void DistributionValidator::checkCompatibility()
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     if (about.isEmpty()) {
-        QString message = QString("ERROR: Could not find GAMS. Please check our GAMS setup. %1 %2")
-                .arg("The installation instructions can be found at https://www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
-                .arg("Current path to GAMS: " + CommonPaths::systemDir());
-        emit messageReceived(message);
+        QString error = QString("Could not find GAMS. Please check our GAMS setup. %1\n%2")
+                                .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
+                                .arg("Current path to GAMS: " + CommonPaths::systemDir());
+        SysLogLocator::systemLog()->appendLog(error, LogMsgType::Error);
         return;
     }
     else if (about.contains(GAMS_DISTRIB_VERSION_SHORT)) {
@@ -77,13 +79,12 @@ void DistributionValidator::checkCompatibility()
 
     QRegExp regex(".*GAMS Release\\s+:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about) && regex.captureCount() == 1) {
-        QString error = QString("ERROR: Found incompatible GAMS %1 but GAMS %2 or %3 was expected.")
+        QString error = QString("Found incompatible GAMS %1 but GAMS %2 or %3 was expected.")
                 .arg(regex.cap(regex.captureCount()))
                 .arg(GAMS_DISTRIB_VERSION_SHORT).arg(GAMS_DISTRIB_VERSION_NEXT_SHORT);
-        emit messageReceived(error);
-    } else {
-        emit messageReceived("ERROR: Could not validate GAMS Distribution version.");
-    }
+        SysLogLocator::systemLog()->appendLog(error, LogMsgType::Error);
+    } else
+        SysLogLocator::systemLog()->appendLog("Could not validate GAMS Distribution version.", LogMsgType::Error);
 }
 
 }

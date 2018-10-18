@@ -49,7 +49,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
 
 FileMeta::~FileMeta()
 {
-    if (mDocument) unlinkDocument();
+    if (mDocument) unlinkAndFreeDocument();
     mFileRepo->textMarkRepo()->removeMarks(id());
     mFileRepo->removedFile(this);
 }
@@ -129,7 +129,7 @@ void FileMeta::linkDocument(QTextDocument *doc)
         mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
-void FileMeta::unlinkDocument()
+void FileMeta::unlinkAndFreeDocument()
 {
     if (!mDocument) return;
     if (mHighlighter) {
@@ -142,6 +142,7 @@ void FileMeta::unlinkDocument()
         disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
+    mDocument->deleteLater();
     mDocument = nullptr;
 }
 
@@ -273,24 +274,21 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
     int i = mEditors.indexOf(edit);
     if (i < 0) return;
 
-    AbstractEdit* ptEdit = toAbstractEdit(edit);
+    AbstractEdit* aEdit = toAbstractEdit(edit);
     CodeEdit* scEdit = toCodeEdit(edit);
     mEditors.removeAt(i);
 
-    if (ptEdit) {
-        ptEdit->viewport()->removeEventFilter(this);
-        ptEdit->removeEventFilter(this);
-        QTextDocument *doc = new QTextDocument(ptEdit);
+    if (aEdit) {
+        aEdit->viewport()->removeEventFilter(this);
+        aEdit->removeEventFilter(this);
+        QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
-        ptEdit->setDocument(doc);
+        aEdit->setDocument(doc);
 
         if (mEditors.isEmpty()) {
             if (!suppressCloseSignal) emit documentClosed();
             if (kind() != FileKind::Log) {
-                unlinkDocument();
-//                mDocument->clear();
-//                mDocument->clearUndoRedoStacks();
-//                mDocument->setModified(false);
+                unlinkAndFreeDocument();
             }
         }
     }
@@ -671,12 +669,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
     }
+    res->setProperty("location", location());
     tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     addEditor(res);
     if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
     if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
-    res->setProperty("location", location());
     return res;
 }
 
