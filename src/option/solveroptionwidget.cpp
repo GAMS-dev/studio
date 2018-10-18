@@ -49,9 +49,9 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionMessageTabWidget->addTab(logEdit, "Message");
-    mOptionTokenizer->logger()->appendLog(QString("Loading from %1").arg(optionFilePath), LogMsgType::Info);
+    mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
-    QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile( optionFilePath );
+    QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile(mLocation);
     OptionTableModel* optionTableModel = new OptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( optionTableModel );
 
@@ -312,7 +312,6 @@ void SolverOptionWidget::on_optionSaveAsButton_clicked()
            QString suffixName = QFileInfo(filePath).suffix();
 
            if ( QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0 || !suffixName.startsWith("op") ) {
-               qDebug() << "NOT ALLOWED saving file as " << filePath;
                QMessageBox msgBox;
                msgBox.setWindowTitle("Incorrect file name or suffix");
                if (QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0)
@@ -353,9 +352,9 @@ void SolverOptionWidget::setModified(bool modified)
 bool SolverOptionWidget::saveAs(const QString &location)
 {
     OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
-    qDebug() << "saving to " << location;
     setModified(false);
     bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), location);
+    mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
     if (!success) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Problem Saving Option File");
@@ -366,7 +365,9 @@ bool SolverOptionWidget::saveAs(const QString &location)
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
         if (msgBox.clickedButton()==buttonYes) {
-            // TODO (JP)
+            model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
+        } else {
+            setModified(true);
         }
     }
 

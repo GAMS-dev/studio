@@ -143,7 +143,7 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
         mOptionItem.insert(row, OptionItem(OptionItem("", "", -1, -1)));
 
     endInsertRows();
-    emit optionModelChanged(mOptionItem);
+//    emit optionModelChanged(mOptionItem);
     return true;
 }
 

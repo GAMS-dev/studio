@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -51,7 +51,6 @@ public:
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QStringList mimeTypes() const override;
-//    QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
     Qt::DropActions supportedDropActions() const override;
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
@@ -60,10 +59,10 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void optionModelChanged(const QList<OptionItem> &optionItem);
 
 public slots:
     void on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void reloadOptionModel(const QList<OptionItem> &optionItem);
 
 protected:
     QList<OptionItem> mOptionItem;
@@ -72,6 +71,9 @@ protected:
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
+
+    void setRowCount(int rows);
+
 };
 
 } // namepsace option

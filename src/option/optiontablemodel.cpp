@@ -187,14 +187,12 @@ bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, 
         } else if (index.column() == 1) { // value
                   mOptionItem[index.row()].value = data;
         }
-        emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
         roles = { Qt::CheckStateRole };
         if (index.row() > mOptionItem.size())
             return false;
 
         mOptionItem[index.row()].disabled = value.toBool();
-        emit optionModelChanged(  mOptionItem );
     }
     emit dataChanged(index, index, roles);
     return true;
@@ -207,7 +205,7 @@ QModelIndex OptionTableModel::index(int row, int column, const QModelIndex &pare
     return QModelIndex();
 }
 
-bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent)
+bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size())
@@ -220,11 +218,10 @@ bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent)
         mOptionItem.insert(row, OptionItem(OptionItem("", "", -1, -1)));
 
     endInsertRows();
-    emit optionModelChanged(mOptionItem);
     return true;
 }
 
-bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent)
+bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
     Q_UNUSED(parent);
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
@@ -235,7 +232,6 @@ bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent)
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit optionModelChanged(mOptionItem);
     return true;
 }
 
@@ -250,7 +246,7 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
     mOptionItem.removeAt(removeIndex);
     endMoveRows();
-    emit optionModelChanged(mOptionItem);
+//    emit optionModelChanged(mOptionItem);
     return true;
 }
 
@@ -265,6 +261,7 @@ QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems() const
 {
     return mOptionItem;
 }
+
 
 void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
@@ -287,6 +284,44 @@ void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIn
 
     }
     endResetModel();
+}
+
+void OptionTableModel::reloadOptionModel(const QList<OptionItem> &optionItem)
+{
+    beginResetModel();
+    mOptionItem = optionItem;
+    mOptionTokenizer->validateOption(mOptionItem);
+
+    setRowCount(mOptionItem.size());
+
+    for (int i=0; i<mOptionItem.size(); ++i) {
+        setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        if (mOptionItem.at(i).error == No_Error)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+        else if (mOptionItem.at(i).error == Deprecated_Option)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+        else setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+    }
+    endResetModel();
+}
+
+void OptionTableModel::setRowCount(int rows)
+{
+    int rc = mOptionItem.size();
+    if (rows < 0 ||  rc == rows)
+       return;
+
+    if (rc < rows)
+       insertRows(qMax(rc, 0), rows - rc);
+    else
+       removeRows(qMax(rows, 0), rc - rows);
 }
 
 Qt::DropActions OptionTableModel::supportedDropActions() const
