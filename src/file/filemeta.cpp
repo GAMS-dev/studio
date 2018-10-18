@@ -626,6 +626,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 
         res = edit;
         if (kind() == FileKind::Lst) {
+            codeEdit->setProperty("location", location());
             lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, location(), tabWidget);
             initEditorType(lxiViewer);
             res = lxiViewer;
