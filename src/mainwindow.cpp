@@ -929,7 +929,7 @@ int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool mod
     QString text(filePath + (deleted ? "%1 doesn't exist anymore."
                                      : (count>1 ? "%1 have been modified externally."
                                                 : "%1 has been modified externally.")));
-    text = text.arg(filePath);
+    text = text.arg(count<2? "" : QString(" and %1 other file%2").arg(count-1).arg(count<3? "" : "s"));
     text += "\nDo you want to %1?";
     if (deleted) text = text.arg("keep the file in editor");
     else if (modified) text = text.arg("reload the file or keep your changes");
@@ -998,9 +998,9 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         choice = externChangedMessageBox(file->location(), true, file->isModified(), count);
     }
     if (choice == 0)
-        file->document()->setModified();
-    else if (!file->isReadOnly())
         closeFileEditors(fileId);
+    else if (!file->isReadOnly())
+        file->document()->setModified();
     return 0;
 }
 
@@ -1065,7 +1065,7 @@ void MainWindow::processFileEvents()
 {
     if (mFileEvents.isEmpty()) return;
     // Pending events but window is not active: wait and retry
-    if (!!isActiveWindow()) {
+    if (!isActiveWindow()) {
         mFileTimer.start();
         return;
     }
@@ -1099,13 +1099,13 @@ void MainWindow::processFileEvents()
         for (const FileEventData event: eventDataList) {
             switch (changeKind) {
             case 1: // changed externally but unmodified internally
-                fileChangedExtern(event.fileId, true);
+                fileChangedExtern(event.fileId, true, eventDataList.size());
                 break;
             case 2: // changed externally and modified internally
-                fileChangedExtern(event.fileId, true);
+                fileChangedExtern(event.fileId, true, eventDataList.size());
                 break;
             case 3: // removed externally
-                fileDeletedExtern(event.fileId, true);
+                fileDeletedExtern(event.fileId, true, eventDataList.size());
                 break;
             default: break;
             }
