@@ -67,7 +67,7 @@ public:
     bool isModified() const;
     bool isReadOnly() const;
     bool isAutoReload() const;
-    void resetTempReloadTimer();
+    void resetTempReloadState();
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
     QWidgetList editors() const;
@@ -88,7 +88,7 @@ public:
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
-
+    void reloadDelayed();
 
 public: // static convenience methods
     inline static void initEditorType(AbstractEdit* w, EditorType type) {
@@ -151,6 +151,7 @@ private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
+    void reload();
 
 private:
     struct Data {
@@ -187,6 +188,7 @@ private:
     int mChangedLine = 0;
     bool mLoading = false;
     QTimer mTempAutoReloadTimer;
+    QTimer mReloadTimer;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events

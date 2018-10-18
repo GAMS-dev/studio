@@ -973,8 +973,8 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
         choice = externChangedMessageBox(file->location(), false, file->isModified(), count);
     }
     if (choice == 0) {
-        file->load(file->codecMib());
-        file->resetTempReloadTimer();
+        file->reloadDelayed();
+        file->resetTempReloadState();
     } else {
         file->document()->setModified();
         mFileMetaRepo.unwatch(file);
@@ -1069,10 +1069,12 @@ void MainWindow::processFileEvents()
 {
     if (mFileEvents.isEmpty()) return;
     // Pending events but window is not active: wait and retry
-    if (!isActiveWindow()) {
+    static bool active = false;
+    if (!isActiveWindow() || active) {
         mFileTimer.start();
         return;
     }
+    active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
     QMap<int, QVector<FileEventData>> remainEvents;
@@ -1092,7 +1094,8 @@ void MainWindow::processFileEvents()
         }
         if (remainKind > 0) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
-            remainEvents[remainKind] << fileEvent;
+            if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
+
         }
     }
 
@@ -1116,6 +1119,7 @@ void MainWindow::processFileEvents()
         }
         mExternFileEventChoice = -1;
     }
+    active = false;
 }
 
 void MainWindow::appendSystemLog(const QString &text)

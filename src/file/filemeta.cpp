@@ -46,6 +46,8 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
                                                 : QFileInfo(mLocation).fileName();
     mTempAutoReloadTimer.setSingleShot(true);
+    mReloadTimer.setSingleShot(true);
+    connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
 }
 
 FileMeta::~FileMeta()
@@ -229,6 +231,11 @@ void FileMeta::blockCountChanged(int newBlockCount)
         mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine+1, newBlockCount-mLineCount);
         mLineCount = newBlockCount;
     }
+}
+
+void FileMeta::reload()
+{
+    load(mCodec->mibEnum());
 }
 
 void FileMeta::addEditor(QWidget *edit)
@@ -512,6 +519,11 @@ void FileMeta::marksChanged(QSet<NodeId> groups)
     if (mHighlighter) mHighlighter->rehighlight();
 }
 
+void FileMeta::reloadDelayed()
+{
+    mReloadTimer.start(100);
+}
+
 bool FileMeta::isModified() const
 {
     return mDocument ? mDocument->isModified() : false;
@@ -529,9 +541,9 @@ bool FileMeta::isAutoReload() const
     return mData.type->autoReload() || mTempAutoReloadTimer.isActive();
 }
 
-void FileMeta::resetTempReloadTimer()
+void FileMeta::resetTempReloadState()
 {
-    mTempAutoReloadTimer.start(5000);
+    mTempAutoReloadTimer.start(1000);
 }
 
 QTextDocument *FileMeta::document() const
