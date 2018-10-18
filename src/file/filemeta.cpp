@@ -45,6 +45,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     mCodec = QTextCodec::codecForLocale();
     mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
                                                 : QFileInfo(mLocation).fileName();
+    mTempAutoReloadTimer.setSingleShot(true);
 }
 
 FileMeta::~FileMeta()
@@ -98,6 +99,7 @@ void FileMeta::internalSave(const QString &location)
     file.close();
     mData = Data(location);
     document()->setModified(false);
+    mFileRepo->watch(this);
 }
 
 bool FileMeta::checkActivelySavedAndReset()
@@ -524,7 +526,12 @@ bool FileMeta::isReadOnly() const
 
 bool FileMeta::isAutoReload() const
 {
-    return mData.type->autoReload();
+    return mData.type->autoReload() || mTempAutoReloadTimer.isActive();
+}
+
+void FileMeta::resetTempReloadTimer()
+{
+    mTempAutoReloadTimer.start(5000);
 }
 
 QTextDocument *FileMeta::document() const

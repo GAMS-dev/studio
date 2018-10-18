@@ -974,8 +974,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     }
     if (choice == 0) {
         file->load(file->codecMib());
+        file->resetTempReloadTimer();
     } else {
         file->document()->setModified();
+        mFileMetaRepo.unwatch(file);
     }
     return 0;
 }
@@ -999,8 +1001,10 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     }
     if (choice == 0)
         closeFileEditors(fileId);
-    else if (!file->isReadOnly())
+    else if (!file->isReadOnly()) {
         file->document()->setModified();
+        mFileMetaRepo.unwatch(file);
+    }
     return 0;
 }
 

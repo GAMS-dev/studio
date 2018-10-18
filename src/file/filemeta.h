@@ -67,6 +67,7 @@ public:
     bool isModified() const;
     bool isReadOnly() const;
     bool isAutoReload() const;
+    void resetTempReloadTimer();
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
     QWidgetList editors() const;
@@ -185,6 +186,7 @@ private:
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;
+    QTimer mTempAutoReloadTimer;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events
