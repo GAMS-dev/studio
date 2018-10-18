@@ -1,5 +1,5 @@
-#include "abouthandler.h"
-#include "ui_abouthandler.h"
+#include "aboutgamsdialog.h"
+#include "ui_aboutgamsdialog.h"
 #include "gamsprocess.h"
 #include "checkforupdatewrapper.h"
 
@@ -9,9 +9,9 @@
 namespace gams {
 namespace studio {
 
-AboutHandler::AboutHandler(QWidget *parent) :
+aboutGamsDialog::aboutGamsDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::AboutHandler)
+    ui(new Ui::AboutGAMSDialog)
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -29,7 +29,7 @@ AboutHandler::AboutHandler(QWidget *parent) :
     ui->gamslogo->setContentsMargins(0, 3, 7, 7);
 }
 
-QString AboutHandler::studioInfo()
+QString aboutGamsDialog::studioInfo()
 {
     QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
     ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
@@ -37,12 +37,12 @@ QString AboutHandler::studioInfo()
     return ret;
 }
 
-AboutHandler::~AboutHandler()
+aboutGamsDialog::~aboutGamsDialog()
 {
     delete ui;
 }
 
-QString AboutHandler::licenseInformation()
+QString aboutGamsDialog::licenseInformation()
 {
     QString about = "<b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
@@ -54,14 +54,14 @@ QString AboutHandler::licenseInformation()
     return about;
 }
 
-void AboutHandler::on_copylicense_clicked()
+void aboutGamsDialog::on_copylicense_clicked()
 {
     GamsProcess gproc;
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
 }
 
-QString AboutHandler:: aboutStudio()
+QString aboutGamsDialog:: aboutStudio()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
     about += studioInfo();
@@ -83,7 +83,7 @@ QString AboutHandler:: aboutStudio()
     return about;
 }
 
-void AboutHandler::on_close_clicked()
+void aboutGamsDialog::on_close_clicked()
 {
     close();
 }

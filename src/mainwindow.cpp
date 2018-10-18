@@ -51,7 +51,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
-#include "abouthandler.h"
+#include "aboutgamsdialog.h"
 
 namespace gams {
 namespace studio {
@@ -1122,11 +1122,11 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    AboutHandler handler;
+    aboutGamsDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle("About");
-    box.setText(handler.aboutStudio());
+    box.setText(dialog.aboutStudio());
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -1137,7 +1137,7 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-    AboutHandler dialog(this);
+    aboutGamsDialog dialog(this);
     dialog.exec();
 }
 

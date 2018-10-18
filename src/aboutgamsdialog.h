@@ -1,23 +1,22 @@
-#ifndef ABOUTHANDLER_H
-#define ABOUTHANDLER_H
+#ifndef ABOUTGAMSDIALOG_H
+#define ABOUTGAMSDIALOG_H
 
 #include <QDialog>
 
 namespace Ui {
-class AboutHandler;
+class AboutGAMSDialog;
 }
 
 namespace gams {
 namespace studio {
 
-// TODO(AF): rename to AboutDialog or AboutGAMSDialog
-class AboutHandler : public QDialog
+class aboutGamsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit AboutHandler(QWidget *parent = nullptr);
-    ~AboutHandler();
+    explicit aboutGamsDialog(QWidget *parent = nullptr);
+    ~aboutGamsDialog();
     QString studioInfo();
     QString aboutStudio();
     QString licenseInformation();
@@ -27,9 +26,9 @@ private slots:
     void on_close_clicked();
 
 private:
-    Ui::AboutHandler *ui;
+    Ui::AboutGAMSDialog *ui;
 };
 
 }
 }
-#endif // ABOUTHANDLER_H
+#endif // ABOUTGAMSDIALOG_H

@@ -160,7 +160,7 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    abouthandler.cpp
+    aboutgamsdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -269,7 +269,7 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    abouthandler.h
+    aboutgamsdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -291,7 +291,7 @@ FORMS += \
     gotodialog.ui \
     encodingsdialog.ui \
     tabdialog.ui \
-    abouthandler.ui
+    aboutgamsdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc
