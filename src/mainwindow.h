@@ -274,8 +274,8 @@ protected:
 private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
+    int fileChangedExtern(FileId fileId, bool ask, int count = 1);
+    int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     bool processIfRenamed(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
@@ -295,6 +295,7 @@ private:
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
     void purgeGroup(ProjectGroupNode *&group);
+    int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
     Ui::MainWindow *ui;
@@ -323,6 +324,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
+    int mExternFileEventChoice = -1;
 
     bool mDebugMode = false;
     bool mStartedUp = false;
