@@ -30,6 +30,7 @@
 #include "solveroptiondefinitionmodel.h"
 #include "optiontablemodel.h"
 #include "mainwindow.h"
+#include "editors/systemlogedit.h"
 
 namespace gams {
 namespace studio {
@@ -42,7 +43,13 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
           mSolverName(solverName)
 {
     ui->setupUi(this);
+
     mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(solverName));
+
+    SystemLogEdit* logEdit = new SystemLogEdit(this);
+    mOptionTokenizer->provideLogger(logEdit);
+    ui->solverOptionMessageTabWidget->addTab(logEdit, "Message");
+    mOptionTokenizer->logger()->appendLog(QString("Loading from %1").arg(optionFilePath), LogMsgType::Info);
 
     QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile( optionFilePath );
     OptionTableModel* optionTableModel = new OptionTableModel(optionItem, mOptionTokenizer,  this);

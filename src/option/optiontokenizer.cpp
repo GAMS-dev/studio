@@ -27,12 +27,14 @@
 #include "gclgms.h"
 #include "option.h"
 #include "commonpaths.h"
-#include "locators/abstractsystemlogger.h"
+#include "locators/defaultsystemlogger.h"
 #include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
 namespace option {
+
+AbstractSystemLogger* OptionTokenizer::mNullLogger = new DefaultSystemLogger;
 
 OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 {
@@ -493,16 +495,16 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
        hasbeenLogged = true;
        switch (itype) {
        case optMsgHelp:
-           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Info);
+           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Info);
            break;
        case optMsgValueWarning :
        case optMsgDeprecated :
-           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
            break;
        case optMsgDefineError:
        case optMsgValueError:
        case optMsgUserError:
-           SysLogLocator::systemLog()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
            break;
        default:
            break;
@@ -521,7 +523,7 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
-        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
+        logger()->appendLog(msg, LogMsgType::Error);
         optFree(&mOPTHandle);
         return items;
     }
@@ -704,6 +706,17 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
 Option *OptionTokenizer::getOption() const
 {
     return mOption;
+}
+
+AbstractSystemLogger *OptionTokenizer::logger()
+{
+    if (!mOptionLogger) return mNullLogger;
+    return mOptionLogger;
+}
+
+void OptionTokenizer::provideLogger(AbstractSystemLogger *optionLogEdit)
+{
+    mOptionLogger = optionLogEdit;
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {

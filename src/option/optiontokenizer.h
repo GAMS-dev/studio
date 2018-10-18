@@ -23,10 +23,12 @@
 #include <QTextLayout>
 #include <QLineEdit>
 #include "option.h"
+#include "locators/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
 namespace option {
+
 
 struct OptionError {
     OptionError() { }
@@ -68,19 +70,26 @@ public:
 
     Option *getOption() const;
 
+    AbstractSystemLogger* logger();
+    void provideLogger(AbstractSystemLogger* optionLogEdit);
+
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 private:
-    Option* mOption;
+    Option* mOption = nullptr;
 
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
 
+    AbstractSystemLogger* mOptionLogger = nullptr;
+    static AbstractSystemLogger* mNullLogger;
+
     bool logMessage(optHandle_t &mOPTHandle);
+
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
     void offsetAssignment(QStringRef str, int &offset, const int length);
