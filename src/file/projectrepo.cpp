@@ -345,8 +345,6 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-    if (!runGroup)
-        EXCEPT() << "Integrity error: this node has no ProjectRunGroupNode as parent";
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
