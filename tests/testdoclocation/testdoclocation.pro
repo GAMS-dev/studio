@@ -18,13 +18,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testservicelocators
-SUBDIRS += testgamsoption
-SUBDIRS += testcplexoption
-SUBDIRS += testconopt4option
-SUBDIRS += testminosoption
-SUBDIRS += testgurobioption
-SUBDIRS += testdoclocation
+include(../tests.pri)
+
+INCLUDEPATH +=  \
+        $$SRCPATH \
+        $$SRCPATH/help
+
+HEADERS += \
+    testdoclocation.h \
+    $$SRCPATH/help/helpdata.h
+
+SOURCES += \
+    testdoclocation.cpp \
+    $$SRCPATH/commonpaths.cpp

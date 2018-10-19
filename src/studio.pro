@@ -305,6 +305,7 @@ SOURCES += help/bookmarkdialog.cpp \
     help/helpview.cpp \
     help/helpwidget.cpp
 HEADERS += help/bookmarkdialog.h \
+    help/helpdata.h \
     help/helppage.h \
     help/helptoolbar.h \
     help/helpview.h \
