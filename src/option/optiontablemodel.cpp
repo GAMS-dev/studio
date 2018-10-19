@@ -30,7 +30,7 @@ namespace option {
 OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent) :
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
-    mHeader << "Key" << "Value" << "Entry";
+    mHeader << "Option" << "Value" << "Entry";
     connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
 }
 
