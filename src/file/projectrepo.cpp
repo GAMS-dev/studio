@@ -234,8 +234,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                     for (QVariant opt : optArray.toVariantList()) {
                         ProjectRunGroupNode *prgn = subGroup->toRunGroup();
                         QString par = opt.toString();
-                        if (!par.isEmpty())
-                            prgn->addRunParametersHistory(par);
+                        prgn->addRunParametersHistory(par);
                     }
                 }
             }

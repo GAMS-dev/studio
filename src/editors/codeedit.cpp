@@ -1290,6 +1290,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
 
     QList<Result> fileResults = matches->filteredResultList(property("location").toString());
+
     while (block.isValid() && top < viewport()->height()) {
         QList<Result> rowResults;
         for (Result r : fileResults) {
