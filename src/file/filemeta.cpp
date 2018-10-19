@@ -543,7 +543,7 @@ bool FileMeta::isAutoReload() const
 
 void FileMeta::resetTempReloadState()
 {
-    mTempAutoReloadTimer.start(1000);
+    mTempAutoReloadTimer.start(1500);
 }
 
 QTextDocument *FileMeta::document() const
