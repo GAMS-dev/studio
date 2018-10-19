@@ -32,4 +32,5 @@ HEADERS += \
 
 SOURCES += \
     testdoclocation.cpp \
-    $$SRCPATH/commonpaths.cpp
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp

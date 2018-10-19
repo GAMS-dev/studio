@@ -96,8 +96,6 @@ void TestDocLocation::testSolverAnchor()
     QFETCH(QString, anchor);
 
     QCOMPARE( HelpData::getSolverChapterLocation(solverName), location);
-    QDir dir = QDir(mSystemDir).filePath(location);
-    QVERIFY( dir.exists() );
     if (optionName.isEmpty())
         QVERIFY( HelpData::getSolverOptionAnchor(solverName, optionName).isEmpty() );
     else

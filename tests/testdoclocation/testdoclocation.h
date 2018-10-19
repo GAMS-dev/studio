@@ -22,7 +22,6 @@
 
 #include <QtTest/QTest>
 
-#include "commonpaths.h"
 #include "help/helpdata.h"
 
 using namespace gams::studio;
@@ -34,10 +33,6 @@ class TestDocLocation : public QObject
 private slots:
     void testSolverAnchor_data();
     void testSolverAnchor();
-
-private:
-    QString mSystemDir = CommonPaths::systemDir();
-
 };
 
 #endif // TESTGAMSOPTION_H
