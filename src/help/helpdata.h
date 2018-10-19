@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-enum DocumentType {
+enum struct DocumentType {
     Main,
     ReleaseNotes,
     DollarControl,
@@ -49,12 +49,13 @@ class HelpData
 {
     HelpData() {}
 public:
-//    static const QString START_CHAPTER;
-//    static const QString LATEST_ONLINE_HELP_URL;
+// since C++17
+//    inline static const QString START_CHAPTER = "docs/index.html";
+//    inline static const QString LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 
     static QList<QPair<DocumentType, QString>> chapterLocation() {
         QList<QPair<DocumentType, QString>> list = {
-            {DocumentType::Main, "doc/index.html"},
+            {DocumentType::Main, "docs/index.html"},
             {DocumentType::ReleaseNotes, "docs/RN_MAIN.html"},
             {DocumentType::DollarControl, "docs/UG_DollarControlOptions.html"},
             {DocumentType::GamsCall, "docs/UG_GamsCall.html"},
@@ -122,12 +123,19 @@ public:
         return list;
     }
 
+    inline static QUrl getLatestOnlineHelpUrl() {
+        return QUrl("https://www.gams.com/latest");
+    }
+
     inline static QString getChapterLocation(const DocumentType type) {
+        QString location;
         for (const QPair<DocumentType, QString> &list: chapterLocation()) {
+            if (list.first == DocumentType::Main)
+                location = list.second;
             if (list.first == type)
                 return list.second;
         }
-        return "docs/index.html";
+        return location;
     }
 
     inline static QString getGamsCallOptionAnchor(const QString &keyword) {
@@ -155,7 +163,6 @@ public:
     inline static QString getSolverOptionAnchor(const QString &solvername, const QString &keyword) {
         if (keyword.isEmpty()) return keyword;
 
-        QString solverLocation = getSolverChapterLocation(solvername).toUpper();
         QString str = keyword;
         str.replace(" ", "_");
         str.replace("/", "_");
@@ -171,9 +178,6 @@ public:
         return getChapterLocation(DocumentType::Solvers);
     }
 };
-
-//const QString HelpData::START_CHAPTER = "docs/index.html";
-//const QString HelpData::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 
 }
 }

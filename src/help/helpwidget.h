@@ -26,6 +26,8 @@
 #include <QLabel>
 #include <QWebEngineView>
 
+#include "helpdata.h"
+
 namespace Ui {
 class HelpWidget;
 }
@@ -48,16 +50,9 @@ public:
     void setBookmarkMap(const QMultiMap<QString, QString> &value);
     void clearStatusBar();
 
-    static const QString START_CHAPTER;
-    static const QString DOLLARCONTROL_CHAPTER ;
-    static const QString OPTION_CHAPTER;
-    static const QString GAMSCALL_CHAPTER;
-    static const QString INDEX_CHAPTER;
-    static const QString LATEST_ONLINE_HELP_URL;
-
 public slots:
     void on_urlOpened(const QUrl& location);
-    void on_helpContentRequested(const QString& chapter, const QString& keyword);
+    void on_helpContentRequested(const DocumentType &type, const QString& keyword, const QString &submoduleName = "");
     void on_bookmarkNameUpdated(const QString& location, const QString& name);
     void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
     void on_bookmarkRemoved(const QString& location, const QString& name);
@@ -106,7 +101,6 @@ private:
 
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
-    QStringList mChapters;
     QLabel mStatusBarLabel;
 
     QUrl getStartPageUrl();

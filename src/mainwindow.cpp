@@ -51,6 +51,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
+#include "help/helpdata.h"
 
 namespace gams {
 namespace studio {
@@ -1140,8 +1141,8 @@ void MainWindow::on_actionHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
-    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, mGamsOptionWidget->getSelectedOptionName(widget));
+    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {        
+        mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, mGamsOptionWidget->getSelectedOptionName(widget));
     } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
         CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
         if (ce) {
@@ -1150,11 +1151,11 @@ void MainWindow::on_actionHelp_triggered()
             ce->wordInfo(ce->textCursor(), word, istate);
 
             if (istate == static_cast<int>(SyntaxState::Title)) {
-                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
+                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
             } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-                mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
+                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
             } else {
-                mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
+                mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
             }
         }
     }
@@ -1721,7 +1722,7 @@ void MainWindow::setMainGms(ProjectFileNode *node)
 void MainWindow::commandLineHelpTriggered()
 {
 #ifdef QWEBENGINE
-    mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
+    mHelpWidget->on_helpContentRequested(DocumentType::GamsCall, "");
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())
