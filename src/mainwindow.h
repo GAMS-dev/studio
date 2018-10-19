@@ -159,15 +159,15 @@ private slots:
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
-    void fileChanged(FileId fileId);
-    void fileClosed(FileId fileId);
+    void fileChanged(const FileId fileId);
+    void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
     void postGamsRun(NodeId origin);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *node);
-    void closeFileEditors(FileId fileId);
+    void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);

@@ -444,6 +444,31 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     return log;
 }
 
+void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
+{
+    FileMeta* sourceFM = node->file();
+    FileMeta* destFM = nullptr;
+    if (!sourceFM->document()) return;
+
+    bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
+    bool hasOtherDestNode = mFileRepo->fileMeta(location);
+
+    if (!hasOtherSourceNode && !hasOtherDestNode) {
+        // no other nodes to this file: just change the location
+        sourceFM->saveAs(location, true);
+        destFM = sourceFM;
+    } else {
+        destFM = mFileRepo->findOrCreateFileMeta(location);
+        if (hasOtherDestNode) {
+            emit closeFileEditors(destFM->id());
+        }
+        destFM->takeEditsFrom(sourceFM);
+        destFM->save();
+    }
+    if(node->assignedRunGroup()->hasSpecialFile(destFM->kind()))
+        node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
+}
+
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
 {
     QVector<ProjectFileNode*> res;

@@ -78,7 +78,7 @@ public:
     void load(int codecMib);
     void load(QList<int> codecMibs = QList<int>());
     void save();
-    void saveAs(const QString &location);
+    void saveAs(const QString &location, bool takeOverLocation = false);
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -87,6 +87,7 @@ public:
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
+    void takeEditsFrom(FileMeta *other);
 
 
 public: // static convenience methods
@@ -170,6 +171,7 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkDocument();
+    void setLocation(const QString &location);
 
 private:
     FileId mId;

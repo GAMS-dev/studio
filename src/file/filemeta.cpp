@@ -39,12 +39,44 @@ namespace gams {
 namespace studio {
 
 FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType *knownType)
-    : mId(id), mFileRepo(fileRepo), mLocation(location), mData(Data(location, knownType))
+    : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
-    mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
-                                                : QFileInfo(mLocation).fileName();
+    setLocation(location);
+}
+
+void FileMeta::setLocation(const QString &location)
+{
+    if (mLocation != location) {
+        QString oldLocation = mLocation;
+        mFileRepo->unwatch(this);
+        mLocation = location;
+        mFileRepo->updateRenamed(this, oldLocation);
+        mFileRepo->watch(this);
+        mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
+                                                    : QFileInfo(mLocation).fileName();
+        for (QWidget*wid: mEditors) {
+            wid->setProperty("location", location);
+            if (AbstractEdit*ed = toAbstractEdit(wid)) {
+                ed->setFileId(id());
+                if (ed != wid) ed->setProperty("location", location); // lstviewer: update inner edit also
+            }
+        }
+    }
+}
+
+void FileMeta::takeEditsFrom(FileMeta *other)
+{
+    if (mDocument) return;
+    mEditors = other->mEditors;
+    mDocument = other->mDocument;
+    other->mDocument = nullptr;
+    other->mEditors.clear();
+    for (QWidget *wid: mEditors) {
+        wid->setProperty("location", location());
+        if (AbstractEdit*ed = toAbstractEdit(wid)) ed->setFileId(id());
+    }
 }
 
 FileMeta::~FileMeta()
@@ -290,9 +322,6 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
             if (!suppressCloseSignal) emit documentClosed();
             if (kind() != FileKind::Log) {
                 unlinkDocument();
-//                mDocument->clear();
-//                mDocument->clearUndoRedoStacks();
-//                mDocument->setModified(false);
             }
         }
     }
@@ -384,43 +413,11 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &location)
+void FileMeta::saveAs(const QString &location, bool takeOverLocation)
 {
-    if (kind() == FileKind::Log) {
-        internalSave(location);
-        return;
-    }
-    if (location.isEmpty() || location.startsWith('['))
-        EXCEPT() << "Can't save file '" << location << "'";
-    if (location == mLocation) return;
-
-    // remember nodes that should be switched to the new FileMeta
-    QVector<ProjectFileNode*> nodes;
-    FileMeta* existingFM = mFileRepo->fileMeta(location);
-    if (existingFM == this) existingFM = nullptr;
-    if (existingFM)
-        nodes = mFileRepo->projectRepo()->fileNodes(existingFM->id());
-
-    // write the content
-    QString oldLocation = mLocation;
-    mLocation = location;
-    mFileRepo->updateRenamed(this, oldLocation);
-    mName = QFileInfo(location).fileName();
-    mData = Data(location);
-    emit changed(mId);
-    internalSave(mLocation);
-
-    // if there were nodes on the existingFM assign them to this
-    if (existingFM) {
-        for (ProjectFileNode* node: nodes) {
-            node->replaceFile(this);
-        }
-        for (QWidget* wid : existingFM->editors()) {
-            existingFM->removeEditor(wid, true);
-            addEditor(wid);
-        }
-        delete existingFM;
-    }
+    // TODO(JM) move function to repo // here: just create a copy at location
+    internalSave(location);
+    if (takeOverLocation) setLocation(location);
 }
 
 void FileMeta::renameToBackup()

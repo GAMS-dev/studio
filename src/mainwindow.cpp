@@ -132,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
+    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -704,10 +705,9 @@ void MainWindow::on_actionSave_As_triggered()
     ProjectFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return;
     FileMeta *fileMeta = node->file();
-    QString path = QFileInfo(fileMeta->location()).path();
     auto filePath = QFileDialog::getSaveFileName(this,
                                                  "Save file as...",
-                                                 path,
+                                                 fileMeta->location(),
                                                  tr("GAMS code (*.gms *.inc *.log);;"
                                                     "Text files (*.txt);;"
                                                     "All files (*.*)"));
@@ -724,35 +724,17 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".ref";
         } // TODO: check if there are others to add
 
-
         // perform copy when file is either a gdx file or a ref file
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
             if (QFile::exists(filePath))
                 QFile::remove(filePath);
             QFile::copy(fileMeta->location(), filePath);
         } else {
-            QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            nodes.removeAll(node);
-            QWidgetList editsToBeMoved;
-            if (nodes.size() && fileMeta->editors().size()) {
-                // we have other nodes on this file and open editors
-                AbstractEdit* ed = FileMeta::toAbstractEdit(fileMeta->editors().first());
-                if (ed && ed->groupId() == node->parentNode()->id()) {
-                    editsToBeMoved = fileMeta->editors();
-                    for (QWidget *ed: editsToBeMoved) {
-                        fileMeta->removeEditor(ed, true);
-                    }
-                }
-            }
-            fileMeta->saveAs(filePath);
-            FileMeta* newFile = mFileMetaRepo.findOrCreateFileMeta(filePath, &FileType::from(fileMeta->kind()));
-            for (QWidget* wid: editsToBeMoved) {
-                newFile->addEditor(wid);
-            }
-            if(node->assignedRunGroup()->hasSpecialFile(fileMeta->kind()))
-                node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
+            mProjectRepo.saveNodeAs(node, filePath);
+            fileMeta = node->file();
             openFileNode(node, true);
-            mStatusWidgets->setFileName(fileMeta->location());
+            ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+            mStatusWidgets->setFileName(filePath);
             mSettings->saveSettings(this);
         }
     }
@@ -919,7 +901,7 @@ void MainWindow::activeTabChanged(int index)
     updateEditorMode();
 }
 
-void MainWindow::fileChanged(FileId fileId)
+void MainWindow::fileChanged(const FileId fileId)
 {
     mProjectRepo.fileChanged(fileId);
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
@@ -932,7 +914,7 @@ void MainWindow::fileChanged(FileId fileId)
     }
 }
 
-void MainWindow::fileClosed(FileId fileId)
+void MainWindow::fileClosed(const FileId fileId)
 {
     Q_UNUSED(fileId)
     // TODO(JM) check if anything needs to be updated
@@ -1949,7 +1931,7 @@ void MainWindow::purgeGroup(ProjectGroupNode *&group)
 /// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
-void MainWindow::closeFileEditors(FileId fileId)
+void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return; // TODO(AF) add logging but no execption
