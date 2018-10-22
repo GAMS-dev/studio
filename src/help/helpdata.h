@@ -167,7 +167,7 @@ public:
         str.replace(" ", "_");
         str.replace("/", "_");
         str.replace(".", "DOT");
-        return QString("%1%2").arg(solvername).arg(str);
+        return QString("%1%2").arg(solvername.toUpper()).arg(str);
     }
 
     inline static QString getSolverChapterLocation(const QString &solverName) {

@@ -331,6 +331,11 @@ void SolverOptionWidget::on_optionSaveAsButton_clicked()
     }
 }
 
+QString SolverOptionWidget::getSolverName() const
+{
+    return mSolverName;
+}
+
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
     QString optionName = ui->solverOptionTableView->model()->data(index, Qt::DisplayRole).toString();
@@ -372,6 +377,45 @@ bool SolverOptionWidget::saveAs(const QString &location)
     }
 
     return true;
+}
+
+bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)
+{
+    return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
+}
+
+QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
+{
+    QString selectedOptions = "";
+    if (widget == ui->solverOptionTableView) {
+        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QVariant headerData = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            if (Qt::CheckState(headerData.toUInt())==Qt::Checked) {
+                return "";
+            }
+            QVariant data = ui->solverOptionTableView->model()->data( index.sibling(index.row(),0) );
+            if (mOptionTokenizer->getOption()->isDoubleDashedOption(data.toString())) {
+               return "";
+            } else if (mOptionTokenizer->getOption()->isASynonym(data.toString())) {
+                return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
+            }
+            return data.toString();
+        }
+    } else if (widget == ui->solverOptionTreeView) {
+        QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+            if (parentIndex.row() >= 0) {
+                return ui->solverOptionTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            } else {
+                return ui->solverOptionTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            }
+        }
+    }
+    return selectedOptions;
 }
 
 

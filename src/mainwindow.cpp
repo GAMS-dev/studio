@@ -1143,24 +1143,35 @@ void MainWindow::on_actionHelp_triggered()
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {        
         mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, mGamsOptionWidget->getSelectedOptionName(widget));
-    } else if ( (mRecent.editor() != nullptr) && (widget == mRecent.editor()) ) {
-        CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
-        if (ce) {
-            QString word;
-            int istate = 0;
-            ce->wordInfo(ce->textCursor(), word, istate);
+    }  else if (mRecent.editor() != nullptr)  {
+        if (widget == mRecent.editor()) {
+            CodeEdit* ce = FileMeta::toCodeEdit(mRecent.editor());
+            if (ce) {
+               QString word;
+               int istate = 0;
+               ce->wordInfo(ce->textCursor(), word, istate);
 
-            if (istate == static_cast<int>(SyntaxState::Title)) {
-                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
-            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
-                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
-            } else {
-                mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
+               if (istate == static_cast<int>(SyntaxState::Title)) {
+                   mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
+               } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+                   mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
+               } else {
+                   mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
+               }
+           }
+        } else {
+            option::SolverOptionWidget* optionEdit =  FileMeta::toSolverOptionEdit(mRecent.editor());
+            if (optionEdit) {
+                if (optionEdit->isAnOptionWidgetFocused(widget))
+                    mHelpWidget->on_helpContentRequested( DocumentType::Solvers,
+                                                          optionEdit->getSelectedOptionName(widget),
+                                                          optionEdit->getSolverName());
             }
         }
+    } else {
+        mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
     }
-    /*else { TODO (JP) get file name and direct help to the corresponding chapter";
-    }*/
+
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
     if (tabifiedDockWidgets(ui->dockHelpView).count())

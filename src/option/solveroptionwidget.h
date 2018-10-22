@@ -55,6 +55,11 @@ public:
 
     bool saveAs(const QString &location);
 
+    bool isAnOptionWidgetFocused(QWidget* focusWidget);
+    QString getSelectedOptionName(QWidget* widget) const;
+
+    QString getSolverName() const;
+
 signals:
     void optionLoaded(const QString &location);
 
