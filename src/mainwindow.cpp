@@ -705,14 +705,14 @@ void MainWindow::on_actionSave_As_triggered()
     ProjectFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return;
     FileMeta *fileMeta = node->file();
-    auto filePath = QFileDialog::getSaveFileName(this,
-                                                 "Save file as...",
-                                                 fileMeta->location(),
-                                                 tr("GAMS code (*.gms *.inc *.log);;"
-                                                    "Text files (*.txt);;"
-                                                    "All files (*.*)"));
-    if (!filePath.isEmpty()) {
-        mRecent.path = QFileInfo(filePath).path();
+    int choice = 0;
+    QString filePath = fileMeta->location();
+    while (choice < 1) {
+        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath,
+                                                tr("GAMS code (*.gms *.inc *.log);;"
+                                                   "Text files (*.txt);;"
+                                                   "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        if (filePath.isEmpty()) return;
 
         if(fileMeta->location().endsWith(".gms", Qt::CaseInsensitive) && !filePath.endsWith(".gms", Qt::CaseInsensitive)) {
             filePath = filePath + ".gms";
@@ -725,18 +725,35 @@ void MainWindow::on_actionSave_As_triggered()
         } // TODO: check if there are others to add
 
         // perform copy when file is either a gdx file or a ref file
+        bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
-            if (QFile::exists(filePath))
-                QFile::remove(filePath);
-            QFile::copy(fileMeta->location(), filePath);
+            if (exists) {
+                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                               , "Select other", "Overwrite", "Abort", 0, 2);
+                if (choice == 1) QFile::remove(filePath);
+            }
+            if (choice == 1) QFile::copy(fileMeta->location(), filePath);
         } else {
-            mProjectRepo.saveNodeAs(node, filePath);
-            fileMeta = node->file();
-            openFileNode(node, true);
-            ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
-            mStatusWidgets->setFileName(filePath);
-            mSettings->saveSettings(this);
+            FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+            choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
+            if (choice < 0)
+                choice = QMessageBox::question(this, "Destination file modified"
+                                               , QString("Your unsaved changes on %1 will be lost.").arg(filePath)
+                                               , "Select other", "Continue", "Abort", 0, 2);
+            else if (choice < 1)
+                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                               , "Select other", "Overwrite", "Abort", 0, 2);
+
+            if (choice == 1) {
+                mProjectRepo.saveNodeAs(node, filePath);
+                fileMeta = node->file();
+                openFileNode(node, true);
+                ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+                mStatusWidgets->setFileName(filePath);
+                mSettings->saveSettings(this);
+            }
         }
+        if (choice == 1) mRecent.path = QFileInfo(filePath).path();
     }
 }
 
