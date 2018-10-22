@@ -33,7 +33,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
     new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
-    new FileType(FileKind::Opt, {"opt"}, "GAMS Solver Option File", false)
+    new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
@@ -92,6 +92,11 @@ FileType &FileType::from(QString suffix)
     for (FileType *ft: mFileTypes) {
         if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
             return *ft;
+    }
+    if (suffix.startsWith("op")) { // special case for solver option file
+        QRegExp rx = QRegExp("(op)([t2-9]|[1-9][0-9]+)");
+        if (rx.exactMatch(suffix))
+            return FileType::from(FileKind::Opt);
     }
     return *mNone;
 }
