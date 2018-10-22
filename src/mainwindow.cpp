@@ -645,33 +645,61 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
+    if (path.isEmpty()) path = ".";
     if (mRecent.editFileId >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
         if (fm) path = QFileInfo(fm->location()).path();
     }
-    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
-                                                    tr("GAMS code (*.gms *.inc );;"
-                                                       "Text files (*.txt);;"
-                                                       "All files (*.*)"));
+    // find a free file name
+    int nr = 1;
+    while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
+    path += QString("/new%1.gms").arg(nr);
+    int choice = 0;
+    while (choice < 1) {
+        QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
+                                                        tr("GAMS code (*.gms *.inc );;"
+                                                           "Text files (*.txt);;"
+                                                           "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        if (filePath == "") return;
+        QFileInfo fi(filePath);
+        if (fi.suffix().isEmpty())
+            filePath += ".gms";
+        QFile file(filePath);
+        bool exists = file.exists();
+        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+        choice = destFM ? -1 : exists ? 0 : 1;
+        if (choice < 0) {
+            choice = QMessageBox::question(this, "file in use"
+                                           , QString("%1 is already in use.").arg(filePath)
+                                           , "Select other", "Open", "Abort", 0, 2);
+            if (choice == 1) {
+                openFilePath(filePath);
+                return;
+            }
+        } else if (choice < 1) {
+            choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                           , "Select other", "Overwrite", "Abort", 0, 2);
+        } else {
+            choice = 1;
+        }
 
-    if (filePath == "") return;
-    QFileInfo fi(filePath);
-
-    if (fi.suffix().isEmpty())
-        filePath += ".gms";
-    QFile file(filePath);
-
-    if (!file.exists()) { // new
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
+        if (choice == 1) {
+            if (!file.exists()) { // new
+                file.open(QIODevice::WriteOnly);
+                file.close();
+            } else { // replace old
+                file.resize(0);
+            }
+            if (ProjectFileNode *fc = addNode("", filePath)) {
+                fc->file()->save();
+                openFileNode(fc);
+            }
+        }
     }
 
-    if (ProjectFileNode *fc = addNode("", filePath)) {
-        fc->file()->save();
-        openFileNode(fc);
-    }
+
+
+
 }
 
 void MainWindow::on_actionOpen_triggered()
