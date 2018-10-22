@@ -452,6 +452,7 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
 
     bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
     bool hasOtherDestNode = mFileRepo->fileMeta(location);
+    bool needReplaceSpecialFile = (node->assignedRunGroup()->specialFile(sourceFM->kind()) == node->location());
 
     if (!hasOtherSourceNode && !hasOtherDestNode) {
         // no other nodes to this file: just change the location
@@ -463,10 +464,22 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
             emit closeFileEditors(destFM->id());
         }
         destFM->takeEditsFrom(sourceFM);
+        if (destFM->document()) destFM->document()->setModified();
+        node->replaceFile(destFM);
+        mFileRepo->unwatch(destFM);
         destFM->save();
+        mFileRepo->watch(destFM);
     }
-    if(node->assignedRunGroup()->hasSpecialFile(destFM->kind()))
-        node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
+    if(needReplaceSpecialFile) {
+        if (sourceFM->kind() != destFM->kind()) {
+            node->assignedRunGroup()->setSpecialFile(destFM->kind(), QString());
+        } else if (destFM->kind() == FileKind::Gms) {
+            node->assignedRunGroup()->setRunnableGms(destFM);
+        } else {
+            node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
+        }
+    }
+
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
