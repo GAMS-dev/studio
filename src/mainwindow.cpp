@@ -99,7 +99,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
 
-//    mTextMarkRepo = new TextMarkRepo(&mProjectRepo, this);
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
@@ -134,9 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
-    connect(ui->projectView->selectionModel(), &QItemSelectionModel::currentChanged, &mProjectRepo, &ProjectRepo::setSelected);
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
-
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
@@ -145,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
+
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
@@ -975,7 +973,14 @@ void MainWindow::fileChangedExtern(FileId fileId)
 void MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (!file || !file->isOpen()) return;
+    if (!file) return;
+    if (!file->isOpen()) {
+        QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
+        for (ProjectFileNode* node: nodes) {
+            mProjectRepo.closeNode(node);
+        }
+        return;
+    }
 
     int ret = 0;
     if (!file->isReadOnly()) {
@@ -999,11 +1004,10 @@ void MainWindow::fileEvent(const FileEvent &e)
         fileChanged(e.fileId()); // Just update display kind
     else if (e.kind() == FileEventKind::closed)
         fileClosed(e.fileId());
-    else if (!fm->isOpen())
-        fileChanged(e.fileId()); // Just update display kind
     else {
-        // file handling with user-interaction are delayed
+        fileChanged(e.fileId()); // First update display kind
 
+        // file handling with user-interaction are delayed
         FileEventData data = e.data();
         if (!mFileEvents.contains(data))
             mFileEvents << data;
@@ -1348,7 +1352,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
             switch(answer) {
             case 0: // open
-                openFileNode( addNode("", gmsFilePath) );
+                openFileNode(addNode("", gmsFilePath));
                 break;
             case 1: // replace
                 fm->renameToBackup();
@@ -1501,6 +1505,7 @@ void MainWindow::openFiles(QStringList files)
         }
     }
 
+    // find runnable gms, for now take first one found
     QString mainGms;
     if (gmsFiles.size() > 0) {
         ProjectRunGroupNode *prgn = group->toRunGroup();
@@ -1900,6 +1905,9 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         if (node->file()->isOpen()) openFiles << node->file();
     }
 
+    if (runGroup->gamsProcessState() == QProcess::Running)
+        runGroup->gamsProcess()->stop();
+
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
         for (FileMeta *file: openFiles) {
@@ -1929,8 +1937,14 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     ProjectGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
-        closeFileEditors(node->file()->id());
+        if (nodeCountToFile == 1)
+            closeFileEditors(node->file()->id());
+        FileMeta* fm = node->file();
         mProjectRepo.closeNode(node);
+        if (nodeCountToFile == 1) {
+            mFileMetaRepo.removedFile(fm);
+            fm->deleteLater();
+        }
     }
     purgeGroup(group);
 }
@@ -1964,6 +1978,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
         fm->removeEditor(edit);
         edit->deleteLater();
     }
+    // if the file has been removed, remove nodes
+    if (!fm->exists(true)) fileDeletedExtern(fm->id());
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)

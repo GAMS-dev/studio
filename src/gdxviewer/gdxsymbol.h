@@ -101,7 +101,7 @@ private:
 
     bool stopLoading = false;
 
-    std::vector<int> mKeys;
+    std::vector<uint> mKeys;
     std::vector<double> mValues;
 
     QStringList mDomains;

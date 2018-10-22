@@ -170,7 +170,7 @@ private:
     void internalSave(const QString &location);
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
-    void unlinkDocument();
+    void unlinkAndFreeDocument();
     void setLocation(const QString &location);
 
 private:

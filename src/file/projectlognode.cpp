@@ -30,6 +30,8 @@
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
 #include "locators/settingslocator.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 #include "studiosettings.h"
 
 namespace gams {
@@ -289,8 +291,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error
-                                                           , mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
+                                                           mCurrentErrorHint.lstLine, lineNr, colStart, size);
             }
             errMark = mark.textMark;
             marks << mark;
@@ -326,9 +328,14 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 if (!mLstNode) {
                     mLstNode = mRunGroup->findFile(mRunGroup->specialFile(FileKind::Lst));
                     if (!mLstNode) {
+                        QFileInfo fi(mRunGroup->specialFile(FileKind::Lst));
+                        mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
+                        if (!mLstNode) {
                         errFound = false;
-                        DEB() << "Could not find lst-file to generate TextMark for";
+                        SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
+                                                              "Did you overwrite default GAMS parameters?", LogMsgType::Error);
                         continue;
+                        }
                     }
                 }
                 mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runGroupId(), tmType

@@ -146,7 +146,6 @@ public slots:
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
-    void setSelected(const QModelIndex& ind);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
