@@ -252,7 +252,6 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
-
 };
 
 class LineNumberArea : public QWidget

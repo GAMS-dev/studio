@@ -291,8 +291,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error
-                                                           , mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
+                                                           mCurrentErrorHint.lstLine, lineNr, colStart, size);
             }
             errMark = mark.textMark;
             marks << mark;

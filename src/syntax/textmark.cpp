@@ -108,9 +108,6 @@ QColor TextMark::color()
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
         if (mReference->fileKind() == FileKind::Lst) return Qt::blue;
-//    } else if (mRefData) {
-//        if (mRefData->type == TextMark::error) return Qt::darkRed;
-//        if (mRefData->location.endsWith(".lst", Qt::CaseInsensitive)) return Qt::blue;
     } else {
         return Qt::darkRed;
     }
@@ -124,7 +121,7 @@ FileKind TextMark::fileKind()
 
 FileKind TextMark::refFileKind()
 {
-    return mReference ? mReference->fileKind() /*: mRefData ? mRefData->fileKind()*/ : FileKind::None;
+    return mReference ? mReference->fileKind() : FileKind::None;
 }
 
 QIcon TextMark::icon()
@@ -133,7 +130,6 @@ QIcon TextMark::icon()
     case error:
         return QIcon(":/img/exclam-circle-r");
     case link:
-//        return (mReference || mRefData) ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
         return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
     case bookmark: {
         QIcon ico(":/img/bookmark");

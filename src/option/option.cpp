@@ -72,16 +72,16 @@ void Option::dumpAll()
                             .arg( opt.upperBound.canConvert<int>() ? opt.upperBound.toInt() : opt.upperBound.toDouble() )
                             .arg( opt.groupNumber ).arg( opt.valid ? "SHOWN": "HIDDEN");
         switch(opt.dataType) {
-             case optDataInteger:
-                   qDebug() << QString("  default_%1").arg( opt.defaultValue.toInt() );
-                   break;
-             case optDataDouble:
-                   qDebug() << QString("  default_%1").arg( opt.defaultValue.toDouble() );
-                   break;
-             case optDataString:
-             default:
-                   qDebug() << QString("  default_") << opt.defaultValue.toString();
-                   break;
+            case optDataInteger:
+                qDebug() << QString("  default_%1").arg( opt.defaultValue.toInt() );
+                break;
+            case optDataDouble:
+                qDebug() << QString("  default_%1").arg( opt.defaultValue.toDouble() );
+                break;
+            case optDataString:
+            default:
+                qDebug() << QString("  default_") << opt.defaultValue.toString();
+                break;
         }
         for(int j =0; j< opt.valueList.size(); j++) {
             OptionValue enumValue = opt.valueList.at(j);
@@ -210,6 +210,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
             return Value_Out_Of_Range;
         else
             return No_Error;
+        break;
      }
     case optTypeBoolean: {
         bool isCorrectDataType = false;

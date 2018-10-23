@@ -356,31 +356,43 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     defaultGamsArgs.insert("errmsg", "1");
     defaultGamsArgs.insert("pagesize", "0");
     defaultGamsArgs.insert("LstTitleLeftAligned", "1");
-
     QMap<QString, QString> gamsArgs(defaultGamsArgs);
+
+    // find directory changes first
+    QString path = "";
+    for (option::OptionItem item : itemList) {
+        if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+            path = item.value;
+            if (! (path.endsWith("/") || path.endsWith("\\")) )
+                path += "/";
+
+            gamsArgs[item.key] = item.value;
+        }
+    }
 
     QFileInfo fi(gmsLocation);
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, fi.baseName() + ".lst");
+    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst");
 
     // iterate options
     for (option::OptionItem item : itemList) {
         // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-            setSpecialFile(FileKind::Lst, item.value);
-        } else if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
-                   || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            // TODO: save workingdir somewhere, wait for the file handling update
+
+            setSpecialFile(FileKind::Lst, path + item.value);
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
+
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, name);
+            setSpecialFile(FileKind::Gdx, path + name);
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
+
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, name);
+            setSpecialFile(FileKind::Ref, path + name);
         }
 
         if (defaultGamsArgs.contains(item.key)) {
