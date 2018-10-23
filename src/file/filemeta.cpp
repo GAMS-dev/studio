@@ -607,16 +607,16 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
-    if (kind() == FileKind::Gdx) {
+    if (kind() == FileKind::Gdx && !forcedAsTextEdit) {
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         gdxView->setFileId(id());
         gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = gdxView;
-    } else if (kind() == FileKind::Ref) {
+    } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
@@ -624,7 +624,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         refView->setFileId(id());
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = refView;
-    } else if (kind() == FileKind::Opt) {
+    } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         option::SolverOptionWidget* solverOptionEdit = new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), tabWidget);
         initEditorType(solverOptionEdit);
         solverOptionEdit->setFileId(id());

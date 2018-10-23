@@ -139,7 +139,7 @@ public:
     option::OptionWidget *gamsOptionWidget() const;
 
 public slots:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(QString action);
     void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
@@ -159,8 +159,8 @@ public slots:
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedTextEditor = false);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);

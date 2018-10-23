@@ -30,34 +30,41 @@ namespace gams {
 namespace studio {
 
 enum ContextAction {
+    actOpen,
+    actOpenAsText,
+    actSep1,
     actExplorer,
     actLogTab,
     actRename,
-    actSep1,
-    actSetMain,
     actSep2,
-    actAddExisting,
+    actSetMain,
     actSep3,
+    actAddExisting,
+    actSep4,
     actAddNewGms,
     actAddNewOpt,
-    actSep4,
+    actSep5,
     actCloseGroup,
     actCloseFile,
-    actSep5,
+    actSep6,
 };
 
 ProjectContextMenu::ProjectContextMenu()
 {
+    mActions.insert(actOpen, addAction("&Open File", this, &ProjectContextMenu::onOpenFile));
+    mActions.insert(actOpenAsText, addAction("&Open File As Text", this, &ProjectContextMenu::onOpenFileAsText));
+    mActions.insert(actSep1, addSeparator());
+
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
-    mActions.insert(actSep1, addSeparator());
-
-    mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
     mActions.insert(actSep2, addSeparator());
 
-    mActions.insert(actAddExisting, addAction("Add &existing file(s)", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
     mActions.insert(actSep3, addSeparator());
+
+    mActions.insert(actAddExisting, addAction("Add &existing file(s)", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(actSep4, addSeparator());
     mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
 
     QMenu* newSolverOptionMenu = addMenu( "Add new solver option file" );
@@ -79,12 +86,12 @@ ProjectContextMenu::ProjectContextMenu()
     }
     connect(this, &ProjectContextMenu::createSolverOptionFile, this, &ProjectContextMenu::onCreateSolverOptionFile );
 
-    mActions.insert(actSep4, addSeparator());
+    mActions.insert(actSep5, addSeparator());
 
     mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
 
-    mActions.insert(actSep5, addSeparator());
+    mActions.insert(actSep6, addSeparator());
 
     //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
@@ -109,6 +116,8 @@ bool ProjectContextMenu::setNodes(ProjectAbstractNode *current, QVector<ProjectA
     ProjectFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms; // unused
     bool isRunnable = false;
+    bool isOpenable = fileNode && !fileNode->file()->isOpen();
+    bool isOpenableAsText = isOpenable && fileNode->file()->kind() == FileKind::Opt;
 
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
@@ -116,12 +125,16 @@ bool ProjectContextMenu::setNodes(ProjectAbstractNode *current, QVector<ProjectA
         isRunnable = fileNode->location() == file;
     }
 
+    mActions[actOpen]->setEnabled(isOpenable);
+    mActions[actOpen]->setVisible(isOpenable);
+    mActions[actOpenAsText]->setEnabled(isOpenableAsText);
+    mActions[actOpenAsText]->setVisible(isOpenableAsText);
     mActions[actExplorer]->setEnabled(one);
     mActions[actLogTab]->setVisible(isGroup);
     mActions[actLogTab]->setEnabled(one);
     mActions[actRename]->setVisible(isGroup);
     mActions[actRename]->setEnabled(one);
-    mActions[actSep1]->setVisible(isGroup);
+//    mActions[actSep1]->setVisible(isGroup);
     mActions[actSetMain]->setEnabled(one);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable);
 
@@ -324,6 +337,18 @@ void ProjectContextMenu::onOpenFileLoc()
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
+}
+
+void ProjectContextMenu::onOpenFile()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit openFile(file, true, -1, false);
+}
+
+void ProjectContextMenu::onOpenFileAsText()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit openFile(file, true, -1, true);
 }
 
 void ProjectContextMenu::onOpenLog()

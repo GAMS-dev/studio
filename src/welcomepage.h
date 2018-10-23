@@ -22,6 +22,8 @@
 
 #include <QWidget>
 
+#include "common.h"
+
 namespace Ui {
 class WelcomePage;
 }
@@ -44,7 +46,7 @@ public:
     ~WelcomePage();
 
 signals:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEdit = false);
     void relayActionWp(QString action);
     void relayModLibLoad(QString lib);
     void relayDocOpen(QString doc, QString anchor);

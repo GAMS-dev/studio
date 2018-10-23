@@ -143,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
 
+    connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::newSolverOptionFile, this, &MainWindow::createSolverOptionFile);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
@@ -1076,7 +1077,6 @@ void MainWindow::createSolverOptionFile(ProjectGroupNode* group, const QString &
      openFilePath(QFileInfo(optionFile).absoluteFilePath(), true);
 }
 
-
 void MainWindow::postGamsRun(NodeId origin)
 {
     if (origin == -1) {
@@ -1852,7 +1852,7 @@ void MainWindow::raiseEdit(QWidget *widget)
     }
 }
 
-void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
+void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEditor)
 {
     if (!fileMeta) return;
     QWidget* edit = nullptr;
@@ -1860,8 +1860,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     if (!fileMeta->editors().empty()) {
         edit = fileMeta->editors().first();
     }
+
     // open edit if existing or create one
-    if (edit) {
+    if (edit && !forcedAsTextEditor) {
         if (runGroup) {
             if (AbstractEdit *ae = FileMeta::toAbstractEdit(edit)) {
                 ae->setGroupId(runGroup->id());
@@ -1882,7 +1883,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
-        edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
+        edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib, forcedAsTextEditor);
         if (!edit) {
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
@@ -1936,10 +1937,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     addToOpenedFiles(fileMeta->location());
 }
 
-void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib)
+void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->assignedRunGroup(), codecMib);
+    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor);
 }
 
 void MainWindow::closeGroup(ProjectGroupNode* group)
@@ -2032,7 +2033,7 @@ void MainWindow::closeFileEditors(FileId fileId)
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
 }
 
-void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
+void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
 {
     if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
@@ -2045,7 +2046,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
             EXCEPT() << "Could not create node for file: " << filePath;
     }
 
-    openFileNode(fileNode, focus, codecMib);
+    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor);
 }
 
 ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
