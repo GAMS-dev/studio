@@ -131,6 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
+    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
@@ -644,33 +645,61 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 void MainWindow::on_actionNew_triggered()
 {
     QString path = mRecent.path;
+    if (path.isEmpty()) path = ".";
     if (mRecent.editFileId >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
         if (fm) path = QFileInfo(fm->location()).path();
     }
-    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
-                                                    tr("GAMS code (*.gms *.inc );;"
-                                                       "Text files (*.txt);;"
-                                                       "All files (*.*)"));
+    // find a free file name
+    int nr = 1;
+    while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
+    path += QString("/new%1.gms").arg(nr);
+    int choice = 0;
+    while (choice < 1) {
+        QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
+                                                        tr("GAMS code (*.gms *.inc );;"
+                                                           "Text files (*.txt);;"
+                                                           "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        if (filePath == "") return;
+        QFileInfo fi(filePath);
+        if (fi.suffix().isEmpty())
+            filePath += ".gms";
+        QFile file(filePath);
+        bool exists = file.exists();
+        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+        choice = destFM ? -1 : exists ? 0 : 1;
+        if (choice < 0) {
+            choice = QMessageBox::question(this, "file in use"
+                                           , QString("%1 is already in use.").arg(filePath)
+                                           , "Select other", "Open", "Abort", 0, 2);
+            if (choice == 1) {
+                openFilePath(filePath);
+                return;
+            }
+        } else if (choice < 1) {
+            choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                           , "Select other", "Overwrite", "Abort", 0, 2);
+        } else {
+            choice = 1;
+        }
 
-    if (filePath == "") return;
-    QFileInfo fi(filePath);
-
-    if (fi.suffix().isEmpty())
-        filePath += ".gms";
-    QFile file(filePath);
-
-    if (!file.exists()) { // new
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
+        if (choice == 1) {
+            if (!file.exists()) { // new
+                file.open(QIODevice::WriteOnly);
+                file.close();
+            } else { // replace old
+                file.resize(0);
+            }
+            if (ProjectFileNode *fc = addNode("", filePath)) {
+                fc->file()->save();
+                openFileNode(fc);
+            }
+        }
     }
 
-    if (ProjectFileNode *fc = addNode("", filePath)) {
-        fc->file()->save();
-        openFileNode(fc);
-    }
+
+
+
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -702,15 +731,14 @@ void MainWindow::on_actionSave_As_triggered()
     ProjectFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return;
     FileMeta *fileMeta = node->file();
-    QString path = QFileInfo(fileMeta->location()).path();
-    auto filePath = QFileDialog::getSaveFileName(this,
-                                                 "Save file as...",
-                                                 path,
-                                                 tr("GAMS code (*.gms *.inc *.log);;"
-                                                    "Text files (*.txt);;"
-                                                    "All files (*.*)"));
-    if (!filePath.isEmpty()) {
-        mRecent.path = QFileInfo(filePath).path();
+    int choice = 0;
+    QString filePath = fileMeta->location();
+    while (choice < 1) {
+        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath,
+                                                tr("GAMS code (*.gms *.inc *.log);;"
+                                                   "Text files (*.txt);;"
+                                                   "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        if (filePath.isEmpty()) return;
 
         if(fileMeta->location().endsWith(".gms", Qt::CaseInsensitive) && !filePath.endsWith(".gms", Qt::CaseInsensitive)) {
             filePath = filePath + ".gms";
@@ -722,20 +750,36 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + ".ref";
         } // TODO: check if there are others to add
 
-
         // perform copy when file is either a gdx file or a ref file
+        bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
-            if (QFile::exists(filePath))
-                QFile::remove(filePath);
-            QFile::copy(fileMeta->location(), filePath);
+            if (exists) {
+                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                               , "Select other", "Overwrite", "Abort", 0, 2);
+                if (choice == 1) QFile::remove(filePath);
+            }
+            if (choice == 1) QFile::copy(fileMeta->location(), filePath);
         } else {
-            fileMeta->saveAs(filePath);
-            if(node->assignedRunGroup()->hasSpecialFile(fileMeta->kind()))
-                node->assignedRunGroup()->setSpecialFile(fileMeta->kind(), fileMeta->location());
-            openFileNode(node, true);
-            mStatusWidgets->setFileName(fileMeta->location());
-            mSettings->saveSettings(this);
+            FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+            choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
+            if (choice < 0)
+                choice = QMessageBox::question(this, "Destination file modified"
+                                               , QString("Your unsaved changes on %1 will be lost.").arg(filePath)
+                                               , "Select other", "Continue", "Abort", 0, 2);
+            else if (choice < 1)
+                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
+                                               , "Select other", "Overwrite", "Abort", 0, 2);
+
+            if (choice == 1) {
+                mProjectRepo.saveNodeAs(node, filePath);
+                fileMeta = node->file();
+                openFileNode(node, true);
+                ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+                mStatusWidgets->setFileName(filePath);
+                mSettings->saveSettings(this);
+            }
         }
+        if (choice == 1) mRecent.path = QFileInfo(filePath).path();
     }
 }
 
@@ -900,7 +944,7 @@ void MainWindow::activeTabChanged(int index)
     updateEditorMode();
 }
 
-void MainWindow::fileChanged(FileId fileId)
+void MainWindow::fileChanged(const FileId fileId)
 {
     mProjectRepo.fileChanged(fileId);
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
@@ -913,7 +957,7 @@ void MainWindow::fileChanged(FileId fileId)
     }
 }
 
-void MainWindow::fileClosed(FileId fileId)
+void MainWindow::fileClosed(const FileId fileId)
 {
     Q_UNUSED(fileId)
     // TODO(JM) check if anything needs to be updated
@@ -976,40 +1020,6 @@ void MainWindow::fileDeletedExtern(FileId fileId)
         closeFileEditors(fileId);
     else if (!file->isReadOnly())
         file->document()->setModified();
-}
-
-bool MainWindow::processIfRenamed(FileId fileId)
-{
-    // TODO(JM) Decide if we want this feature
-    FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (file->kind() == FileKind::Gdx) return false;
-    QString newFileName;
-    QDir dir = QFileInfo(file->location()).dir();
-    if (!dir.exists()) return false;
-    for (const QString &fileName : dir.entryList(QDir::Files)) {
-         FileDifferences diff = file->compare(fileName);
-         if (!diff.testFlag(FdTime) && !diff.testFlag(FdSize)) {
-             newFileName = fileName;
-             break;
-         }
-    }
-    if (newFileName.isEmpty()) return false;
-
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("File renamed");
-    msgBox.setText(file->location()+" seems to be renamed to\n"+newFileName);
-    msgBox.setInformativeText("Switch to the new filename?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::NoButton);
-    int ret = msgBox.exec();
-
-    if (ret == QMessageBox::No)
-        file->document()->setModified();
-    else {
-        file->saveAs(newFileName);
-        mSettings->saveSettings(this);
-    }
-    return true;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1980,7 +1990,7 @@ void MainWindow::purgeGroup(ProjectGroupNode *&group)
 /// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
-void MainWindow::closeFileEditors(FileId fileId)
+void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return; // TODO(AF) add logging but no execption

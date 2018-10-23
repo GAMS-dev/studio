@@ -465,6 +465,10 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
 
 void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &path)
 {
+    if (path.isEmpty()) {
+        mSpecialFiles.remove(kind);
+        return;
+    }
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;

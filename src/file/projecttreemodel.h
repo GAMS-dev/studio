@@ -29,8 +29,6 @@ namespace studio {
 
 class ProjectRepo;
 
-// TODO(JM) Inherit QSortFilterProxyModel to hide log-node and allow different sort-orders
-
 class ProjectTreeModel : public QAbstractItemModel
 {
 public:
@@ -71,7 +69,6 @@ protected:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     const QVector<QModelIndex> popDeclined();
 
-//    void updateIndex(const QModelIndex &parent, int row, int change);
     void update(const QModelIndex& ind = QModelIndex());
 
 private:

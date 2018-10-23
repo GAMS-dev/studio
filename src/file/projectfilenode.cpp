@@ -112,6 +112,15 @@ QString ProjectFileNode::tooltip()
     tip += "\nNodeId: "+QString::number(id());
     tip += "\nFileId: " + (file() ? QString::number(file()->id()) : "?");
     tip += "\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?");
+    QString edFile = "-";
+    QString edGroup = "-";
+    if (file()->editors().size()) {
+        if (FileMeta::toAbstractEdit(file()->editors().first())) {
+            edFile = QString::number(FileMeta::toAbstractEdit(file()->editors().first())->fileId());
+            edGroup = QString::number(FileMeta::toAbstractEdit(file()->editors().first())->groupId());
+        }
+    }
+    tip += "\nedit: " + edFile + " " + edGroup;
     return tip;
 }
 
