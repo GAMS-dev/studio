@@ -450,7 +450,8 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
 {
     FileMeta* sourceFM = node->file();
     FileMeta* destFM = nullptr;
-    if (!sourceFM->document()) return;
+
+    if (!sourceFM->document() && sourceFM->kind() != FileKind::Opt) return;
 
     bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
     bool hasOtherDestNode = mFileRepo->fileMeta(location);

@@ -61,7 +61,6 @@ public:
     QString getSolverName() const;
 
 signals:
-    void optionLoaded(const QString &location);
     void modificationChanged(FileId fileId);
 
 public slots:
@@ -71,8 +70,9 @@ public slots:
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void on_newTableRowDropped(const QModelIndex &index);
 
-    void on_optionSaveButton_clicked();
-    void on_optionSaveAsButton_clicked();
+    void saveOptionFile(const QString &location);
+
+    void on_reloadSolverOptionFile();
 
 private:
     Ui::SolverOptionWidget *ui;

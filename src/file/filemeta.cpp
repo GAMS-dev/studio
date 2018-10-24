@@ -75,7 +75,10 @@ void FileMeta::takeEditsFrom(FileMeta *other)
     other->mEditors.clear();
     for (QWidget *wid: mEditors) {
         wid->setProperty("location", location());
-        if (AbstractEdit*ed = toAbstractEdit(wid)) ed->setFileId(id());
+        if (AbstractEdit*ed = toAbstractEdit(wid))
+            ed->setFileId(id());
+        else if (option::SolverOptionWidget* so = toSolverOptionEdit(wid))
+                so->setFileId(id());
     }
 }
 
@@ -119,6 +122,15 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 
 void FileMeta::internalSave(const QString &location)
 {
+    if (kind() == FileKind::Opt) {
+        for (QWidget *wid: mEditors) {
+            option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
+            if (solverOptionWidget) {
+                solverOptionWidget->saveOptionFile(location);
+                return;
+            }
+        }
+    }
     QFile file(location);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         EXCEPT() << "Can't open the file";
@@ -371,6 +383,12 @@ void FileMeta::load(QList<int> codecMibs)
             if (lxi) lxi->loadLxi();
         }
     }
+    if (kind() == FileKind::Opt) {
+        for (QWidget *wid : mEditors) {
+            option::SolverOptionWidget *so = toSolverOptionEdit(wid);
+            if (so) so->on_reloadSolverOptionFile();
+        }
+    }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);
@@ -417,16 +435,6 @@ void FileMeta::save()
     if (!isModified()) return;
     if (location().isEmpty() || location().startsWith('['))
         EXCEPT() << "Can't save file '" << location() << "'";
-    if (kind() == FileKind::Opt) { // TODO (JP)
-        for (QWidget *wid: mEditors) {
-            option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
-            if (solverOptionWidget) {
-                solverOptionWidget->on_optionSaveButton_clicked();
-                return;
-            }
-
-        }
-    }
     internalSave(location());
 }
 

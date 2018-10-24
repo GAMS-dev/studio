@@ -139,7 +139,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
-    ui->solverOptionVSplitter->setSizes(QList<int>({90, 10}));
+    ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -292,43 +292,17 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
     setModified(true);
 }
 
-void SolverOptionWidget::on_optionSaveButton_clicked()
+void SolverOptionWidget::saveOptionFile(const QString &location)
 {
-    saveAs(mLocation);
+    qDebug() << "saving :" << location;
+    saveAs(location);
 }
 
-void SolverOptionWidget::on_optionSaveAsButton_clicked()
+void SolverOptionWidget::on_reloadSolverOptionFile()
 {
-    QString path = QFileInfo(mLocation).path();
-    bool done = false;
-    while(!done) {
-        QString filePath = QFileDialog::getSaveFileName(this,
-                                                 QString("Save %1 option file as...").arg(mSolverName),
-                                                 mLocation,
-                                                 QString("Option file (%1.op*);;All files (*.*)").arg(mSolverName));
-       if (!filePath.isEmpty()) {
-           QString savePath = QFileInfo(filePath).path();
-           QString baseFileName = QFileInfo(filePath).completeBaseName();
-           QString suffixName = QFileInfo(filePath).suffix();
-
-           if ( QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0 || !suffixName.startsWith("op") ) {
-               QMessageBox msgBox;
-               msgBox.setWindowTitle("Incorrect file name or suffix");
-               if (QString::compare(baseFileName, mSolverName, Qt::CaseInsensitive) != 0)
-                   msgBox.setText(QString("File could not be saved as '%1.%2'.\nThe file name must be the solver name '%3'.").arg(baseFileName).arg(suffixName).arg(mSolverName));
-               else
-                   msgBox.setText(QString("File could not be saved as '%1.%2'.\nThe suffix must start with 'op*'.").arg(baseFileName).arg(suffixName));
-               msgBox.setStandardButtons(QMessageBox::Ok);
-               msgBox.setIcon(QMessageBox::Warning);
-               msgBox.exec();
-           } else {
-               saveAs(filePath);
-               done = true;
-           }
-       } else {
-           done = true;
-       }
-    }
+    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
+    model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
+    setModified(false);
 }
 
 QString SolverOptionWidget::getSolverName() const
@@ -351,32 +325,24 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
-    ui->optionSaveButton->setEnabled( mModified );
     emit modificationChanged( mFileId );
 }
 
 bool SolverOptionWidget::saveAs(const QString &location)
 {
-    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
     setModified(false);
+    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
     bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), location);
     mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
     if (!success) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Problem Saving Option File");
-        msgBox.setText("File " + location + " has been saved.\nBut some option values may not have beeen saved correctly. \n\nDo you want to load the saved file ?");
-        QPushButton* buttonYes = msgBox.addButton(tr("Yes, load the saved option file"), QMessageBox::YesRole);
-        msgBox.addButton(tr("No, continue editing the options"), QMessageBox::NoRole);
-        msgBox.setDefaultButton(buttonYes);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-        if (msgBox.clickedButton()==buttonYes) {
-            model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
-        } else {
+        int answer = QMessageBox::question(this, "Problem Saving Option File"
+                                           , QString("File %1 has been saved.\nBut there is an errror and not all option and values may not have beeen saved correctly.").arg(location)
+                                           , "Load the saved option file", "Continue editing the options");
+        if (answer==0)
+            on_reloadSolverOptionFile();
+        else
             setModified(true);
-        }
     }
-
     return true;
 }
 
