@@ -127,6 +127,7 @@ public:
     void editorActivated(QWidget *edit);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
+    void saveNodeAs(ProjectFileNode* node, QString location);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -138,6 +139,7 @@ signals:
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedAsTextEditor = false);
     void changed();
     void deselect(const QVector<QModelIndex> &declined);
+    void closeFileEditors(FileId fileId);
 
 public slots:
     void fileChanged(FileId fileId);

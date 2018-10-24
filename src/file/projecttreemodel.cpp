@@ -278,16 +278,6 @@ QModelIndex ProjectTreeModel::index(const NodeId id) const
     return QModelIndex();
 }
 
-//void ProjectTreeModel::updateIndex(const QModelIndex &parent, int row, int change)
-//{
-//    if (mCurrent.isValid() && mCurrent.parent() == parent && mCurrent.row() >= row) {
-//        if (change < 0 && mCurrent.row() < row-change)
-//            mCurrent = QModelIndex();
-//        else
-//            mCurrent = index(mCurrent.row()+change, mCurrent.column(), parent);
-//    }
-//}
-
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
 {
     return (mCurrent.isValid() && nodeId(ind) == mCurrent);
