@@ -130,9 +130,10 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
     AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
+    PagingTextView *tv = FileMeta::toTextView(editWidget);
     gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
     reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
-    NodeId groupId = edit ? edit->groupId()
+    NodeId groupId = edit ? edit->groupId() : tv ? tv->groupId()
                           : gdxViewer ? gdxViewer->groupId()
                                       : refViewer ? refViewer->groupId() : NodeId();
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;

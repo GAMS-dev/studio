@@ -629,6 +629,10 @@ void MainWindow::updateEditorBlockCount()
 {
     AbstractEdit* edit = FileMeta::toAbstractEdit(mRecent.editor());
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
+    else {
+        PagingTextView *tv = FileMeta::toTextView(mRecent.editor());
+        if (tv) mStatusWidgets->setLineCount(tv->model()->rowCount());
+    }
 }
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
@@ -907,13 +911,14 @@ void MainWindow::activeTabChanged(int index)
 
         if (edit) {
             mRecent.group = mProjectRepo.asGroup(edit->groupId());
-
-            if (!edit->isReadOnly()) {
-                ui->menuEncoding->setEnabled(true);
-            }
             updateMenuToCodec(node->file()->codecMib());
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
+        } else if (PagingTextView* tv = FileMeta::toTextView(editWidget)) {
+            mRecent.group = mProjectRepo.asGroup(tv->groupId());
+            ui->menuEncoding->setEnabled(false);
+            updateMenuToCodec(node->file()->codecMib());
+            mStatusWidgets->setLineCount(tv->model()->rowCount());
         } else if (gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             mRecent.group = mProjectRepo.asGroup(gdxViewer->groupId());
@@ -1848,8 +1853,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (AbstractEdit *ae = FileMeta::toAbstractEdit(edit)) {
                 ae->setGroupId(runGroup->id());
             }
+            if (PagingTextView* tv = FileMeta::toTextView(edit)) {
+                tv->setGroupId(runGroup->id());
+            }
             if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) {
                 gv->setGroupId(runGroup->id());
+            }
+            if (reference::ReferenceViewer *rv = FileMeta::toReferenceViewer(edit)) {
+                rv->setGroupId(runGroup->id());
             }
         }
         // TODO(JM)  check what happens to the group here
@@ -2346,13 +2357,11 @@ void MainWindow::on_actionZoom_Out_triggered()
         helpWidget()->zoomOut();
     } else {
 #endif
-        AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
-        if (ae) {
+        if (AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget())) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
-        PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget());
-        if (tv) {
+        if (PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget())) {
             int pix = tv->fontInfo().pixelSize();
             if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
         }
@@ -2370,14 +2379,12 @@ void MainWindow::on_actionZoom_In_triggered()
         helpWidget()->zoomIn();
     } else {
 #endif
-        AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget());
-        if (ae) {
+        if (AbstractEdit *ae = FileMeta::toAbstractEdit(QApplication::focusWidget())) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
             if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
         }
-        PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget());
-        if (tv) {
+        if (PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget())) {
             int pix = tv->fontInfo().pixelSize();
             tv->zoomIn();
             if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
