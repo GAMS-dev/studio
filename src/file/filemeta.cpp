@@ -22,6 +22,7 @@
 #include "projectrepo.h"
 #include "filetype.h"
 #include "editors/codeedit.h"
+#include "editors/pagingtextmodel.h"
 #include "exception.h"
 #include "logger.h"
 #include "locators/settingslocator.h"
@@ -589,6 +590,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
         gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
+        gdxView->setFileId(id());
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
@@ -596,7 +598,16 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
+        refView->setFileId(id());
         res = refView;
+    } else if (kind() == FileKind::TxtRO) {
+        PagingTextView* tView = new PagingTextView(tabWidget);
+        initEditorType(tView);
+        tView->setGroupId(runGroup ? runGroup->id() : NodeId());
+        tView->setFileId(id());
+        tView->loadFile(location());
+        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
+        res = tView;
     } else {
         if (codecMibs.size() == 1 && codecMibs.first() == -1)
             codecMibs = QList<int>();
@@ -621,6 +632,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         }
         edit->setTabChangesFocus(false);
         edit->setGroupId(runGroup ? runGroup->id() : NodeId());
+        edit->setFileId(id());
 
         res = edit;
         if (kind() == FileKind::Lst) {

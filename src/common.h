@@ -95,6 +95,7 @@ enum struct EditorType {
     source = 1,
     log = 2,
     txt = 3,
+    txtRo = 4,
     lxiLst = 5,
     gdx = 6,
     ref = 7,

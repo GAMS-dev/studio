@@ -1872,6 +1872,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
+        if (PagingTextView *tv = FileMeta::toTextView(edit)) {
+            tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        }
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit)) {
             AbstractEdit *ae = FileMeta::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
@@ -2151,6 +2154,8 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
     for (QWidget* edit: openEditors()) {
         if (FileMeta::toCodeEdit(edit) || FileMeta::toLogEdit(edit))
             FileMeta::toAbstractEdit(edit)->setFont(font);
+        else if (FileMeta::toTextView(edit))
+            FileMeta::toTextView(edit)->setFont(font);
     }
     for (QWidget* log: openLogs())
         log->setFont(font);
@@ -2346,6 +2351,12 @@ void MainWindow::on_actionZoom_Out_triggered()
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
+        PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget());
+        if (tv) {
+            int pix = tv->fontInfo().pixelSize();
+            if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
+        }
+
 #ifdef QWEBENGINE
     }
 #endif
@@ -2364,6 +2375,12 @@ void MainWindow::on_actionZoom_In_triggered()
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
             if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
+        }
+        PagingTextView *tv = FileMeta::toTextView(QApplication::focusWidget());
+        if (tv) {
+            int pix = tv->fontInfo().pixelSize();
+            tv->zoomIn();
+            if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
         }
 #ifdef QWEBENGINE
     }
