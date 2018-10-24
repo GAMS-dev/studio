@@ -1008,7 +1008,7 @@ void MainWindow::fileChangedExtern(FileId fileId)
         if (file->kind() == FileKind::Opt) {
             for (QWidget *e : file->editors()) {
                 option::SolverOptionWidget *s = FileMeta::toSolverOptionEdit(e);
-                if (s) s->on_reloadSolverOptionFile();
+                if (s) s->on_optionSaveButton_clicked();
             }
         } else {
             file->document()->setModified();
@@ -1922,7 +1922,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        } else if (option::SolverOptionWidget *se = FileMeta::toSolverOptionEdit(edit)) {
+        } else if (FileMeta::toSolverOptionEdit(edit)) {
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
