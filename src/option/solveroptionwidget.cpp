@@ -352,6 +352,7 @@ void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
     ui->optionSaveButton->setEnabled( mModified );
+    emit modificationChanged( mFileId );
 }
 
 bool SolverOptionWidget::saveAs(const QString &location)

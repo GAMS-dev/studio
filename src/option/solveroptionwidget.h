@@ -62,6 +62,7 @@ public:
 
 signals:
     void optionLoaded(const QString &location);
+    void modificationChanged(FileId fileId);
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);

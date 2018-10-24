@@ -622,11 +622,16 @@ void MainWindow::updateEditorPos()
 
 void MainWindow::updateEditorMode()
 {
-    CodeEdit* edit = FileMeta::toCodeEdit(mRecent.editor());
-    if (!edit || edit->isReadOnly()) {
-        mStatusWidgets->setEditMode(EditMode::Readonly);
+    option::SolverOptionWidget* optionEdit =  FileMeta::toSolverOptionEdit(mRecent.editor());
+    if (optionEdit) {
+        mStatusWidgets->setEditMode(EditMode::Insert);
     } else {
-        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        CodeEdit* edit = FileMeta::toCodeEdit(mRecent.editor());
+        if (!edit || edit->isReadOnly()) {
+            mStatusWidgets->setEditMode(EditMode::Readonly);
+        } else {
+            mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        }
     }
 }
 
@@ -1000,7 +1005,14 @@ void MainWindow::fileChangedExtern(FileId fileId)
     if (choice == 0) {
         file->load(file->codecMib());
     } else {
-        file->document()->setModified();
+        if (file->kind() == FileKind::Opt) {
+            for (QWidget *e : file->editors()) {
+                option::SolverOptionWidget *s = FileMeta::toSolverOptionEdit(e);
+                if (s) s->on_reloadSolverOptionFile();
+            }
+        } else {
+            file->document()->setModified();
+        }
     }
 }
 
@@ -1882,6 +1894,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
             if (option::SolverOptionWidget *se = FileMeta::toSolverOptionEdit(edit)) {
                 se->setGroupId(runGroup->id());
+                connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
             }
         }
         // TODO(JM)  check what happens to the group here
@@ -1909,6 +1922,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        } else if (option::SolverOptionWidget *se = FileMeta::toSolverOptionEdit(edit)) {
+            connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
@@ -2069,7 +2084,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         if (fType == FileKind::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
+            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group, &fType);
         }
     }
     return node;

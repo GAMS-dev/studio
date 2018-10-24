@@ -292,6 +292,10 @@ void FileMeta::addEditor(QWidget *edit)
     } else {
         if (toGdxViewer(edit)) toGdxViewer(edit)->setFileId(id());
         if (toReferenceViewer(edit)) toReferenceViewer(edit)->setFileId(id());
+        if (option::SolverOptionWidget* soEdit = toSolverOptionEdit(edit)) {
+            soEdit->setFileId(id());
+            connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged, Qt::UniqueConnection);
+        }
     }
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
@@ -325,6 +329,8 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
                 unlinkAndFreeDocument();
             }
         }
+    }  else if (option::SolverOptionWidget* solverOptionEdit = FileMeta::toSolverOptionEdit(edit)) {
+               disconnect(solverOptionEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::changed);
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
@@ -530,12 +536,14 @@ bool FileMeta::isModified() const
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
+        return false;
     }
     return mDocument ? mDocument->isModified() : false;
 }
 
 bool FileMeta::isReadOnly() const
 {
+    if (kind() == FileKind::Opt) return false;
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : toAbstractEdit(mEditors.first());
     if (!edit) return true;
     return edit->isReadOnly();
