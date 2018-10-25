@@ -397,6 +397,7 @@ void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
 {
+    mFileMetaRepo.unwatch(mSettings->defaultWorkspace()+"/"+inputFile);
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
@@ -1200,6 +1201,7 @@ void MainWindow::postGamsLibRun()
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
+    if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log)
             node->file()->load(node->file()->codecMib());
@@ -2120,6 +2122,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
             // TODO(JM) Read project and create all nodes for associated files
         } else {
             node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
+
         }
     }
     return node;

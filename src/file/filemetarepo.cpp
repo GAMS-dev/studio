@@ -144,6 +144,13 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
 }
 
+void FileMetaRepo::unwatch(const QString &filePath)
+{
+    mWatcher.removePath(filePath);
+    mMissList.removeAll(filePath);
+    if (mMissList.isEmpty()) mMissCheckTimer.stop();
+}
+
 bool FileMetaRepo::watch(const FileMeta *fileMeta)
 {
     if (fileMeta->exists(true)) {
