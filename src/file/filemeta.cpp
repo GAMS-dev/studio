@@ -39,15 +39,47 @@ namespace gams {
 namespace studio {
 
 FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType *knownType)
-    : mId(id), mFileRepo(fileRepo), mLocation(location), mData(Data(location, knownType))
+    : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
-    mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
-                                                : QFileInfo(mLocation).fileName();
+    setLocation(location);
     mTempAutoReloadTimer.setSingleShot(true);
     mReloadTimer.setSingleShot(true);
     connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
+}
+
+void FileMeta::setLocation(const QString &location)
+{
+    if (mLocation != location) {
+        QString oldLocation = mLocation;
+        mFileRepo->unwatch(this);
+        mLocation = location;
+        mFileRepo->updateRenamed(this, oldLocation);
+        mFileRepo->watch(this);
+        mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
+                                                    : QFileInfo(mLocation).fileName();
+        for (QWidget*wid: mEditors) {
+            wid->setProperty("location", location);
+            if (AbstractEdit*ed = toAbstractEdit(wid)) {
+                ed->setFileId(id());
+                if (ed != wid) ed->setProperty("location", location); // lstviewer: update inner edit also
+            }
+        }
+    }
+}
+
+void FileMeta::takeEditsFrom(FileMeta *other)
+{
+    if (mDocument) return;
+    mEditors = other->mEditors;
+    mDocument = other->mDocument;
+    other->mDocument = nullptr;
+    other->mEditors.clear();
+    for (QWidget *wid: mEditors) {
+        wid->setProperty("location", location());
+        if (AbstractEdit*ed = toAbstractEdit(wid)) ed->setFileId(id());
+    }
 }
 
 FileMeta::~FileMeta()
@@ -249,13 +281,12 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
+    edit->setProperty("location", location());
     AbstractEdit* ptEdit = toAbstractEdit(edit);
     CodeEdit* scEdit = toCodeEdit(edit);
 
     if (ptEdit) {
-        if (!ptEdit->fileId().isValid()) {
-            DEB() << "invalid FileId";
-        }
+        ptEdit->setFileId(id());
         if (!mDocument)
             linkDocument(ptEdit->document());
         else
@@ -267,6 +298,9 @@ void FileMeta::addEditor(QWidget *edit)
         if (!ptEdit->viewport()->hasMouseTracking()) {
             ptEdit->viewport()->setMouseTracking(true);
         }
+    } else {
+        if (toGdxViewer(edit)) toGdxViewer(edit)->setFileId(id());
+        if (toReferenceViewer(edit)) toReferenceViewer(edit)->setFileId(id());
     }
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
@@ -389,43 +423,11 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &location)
+void FileMeta::saveAs(const QString &location, bool takeOverLocation)
 {
-    if (kind() == FileKind::Log) {
-        internalSave(location);
-        return;
-    }
-    if (location.isEmpty() || location.startsWith('['))
-        EXCEPT() << "Can't save file '" << location << "'";
-    if (location == mLocation) return;
-
-    // remember nodes that should be switched to the new FileMeta
-    QVector<ProjectFileNode*> nodes;
-    FileMeta* existingFM = mFileRepo->fileMeta(location);
-    if (existingFM == this) existingFM = nullptr;
-    if (existingFM)
-        nodes = mFileRepo->projectRepo()->fileNodes(existingFM->id());
-
-    // write the content
-    QString oldLocation = mLocation;
-    mLocation = location;
-    mFileRepo->updateRenamed(this, oldLocation);
-    mName = QFileInfo(location).fileName();
-    mData = Data(location);
-    emit changed(mId);
-    internalSave(mLocation);
-
-    // if there were nodes on the existingFM assign them to this
-    if (existingFM) {
-        for (ProjectFileNode* node: nodes) {
-            node->replaceFile(this);
-        }
-        for (QWidget* wid : existingFM->editors()) {
-            existingFM->removeEditor(wid, true);
-            addEditor(wid);
-        }
-        delete existingFM;
-    }
+    // functionality moved function to repo // here: just create a copy at location
+    internalSave(location);
+    if (takeOverLocation) setLocation(location);
 }
 
 void FileMeta::renameToBackup()
@@ -605,7 +607,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer* gdxView = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget);
         initEditorType(gdxView);
-        gdxView->setFileId(id());
         gdxView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = gdxView;
     } else if (kind() == FileKind::Ref) {
@@ -613,7 +614,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         reference::ReferenceViewer* refView = new reference::ReferenceViewer(location(), tabWidget);
         initEditorType(refView);
-        refView->setFileId(id());
         refView->setGroupId(runGroup ? runGroup->id() : NodeId());
         res = refView;
     } else {
@@ -638,13 +638,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                                 : QPlainTextEdit::NoWrap);
         }
-
-        edit->setFileId(id());
         edit->setTabChangesFocus(false);
         edit->setGroupId(runGroup ? runGroup->id() : NodeId());
 
         res = edit;
         if (kind() == FileKind::Lst) {
+            codeEdit->setProperty("location", location());
             lxiviewer::LxiViewer* lxiViewer = new lxiviewer::LxiViewer(codeEdit, location(), tabWidget);
             initEditorType(lxiViewer);
             res = lxiViewer;
@@ -654,12 +653,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
     }
+    res->setProperty("location", location());
     tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     addEditor(res);
     if (mEditors.size() == 1 && toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
-    if (mDocument) mDocument->setMetaInformation(QTextDocument::DocumentUrl, location());
-    res->setProperty("location", location());
     return res;
 }
 

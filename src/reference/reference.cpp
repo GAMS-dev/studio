@@ -154,7 +154,8 @@ bool Reference::parseFile(QString referenceFile)
     QStringList recordList;
     QString idx;
     while (!in.atEnd()) {
-        recordList = in.readLine().split(' ');
+        QString line = in.readLine();
+        recordList = line.split(' ');
         idx = recordList.first();
         if (idx.toInt()== 0)
             break;
@@ -165,7 +166,7 @@ bool Reference::parseFile(QString referenceFile)
         QString referenceType = recordList.at(3);
         QString lineNumber = recordList.at(5);
         QString columnNumber = recordList.at(6);
-        QString location = recordList.at(9);
+        QString location = line.mid(line.lastIndexOf(recordList.at(9)), line.length());
 
         SymbolDataType::SymbolType type = SymbolDataType::typeFrom(symbolType);
         if (!mReference.contains(id.toInt()))
