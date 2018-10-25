@@ -30,6 +30,7 @@
 #include "filemetarepo.h"
 #include "abstractprocess.h"
 #include "projecttreeview.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -129,12 +130,7 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
-    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
-    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
-    reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
-    NodeId groupId = edit ? edit->groupId()
-                          : gdxViewer ? gdxViewer->groupId()
-                                      : refViewer ? refViewer->groupId() : NodeId();
+    NodeId groupId = ViewHelper::groupId(editWidget);
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;

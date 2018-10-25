@@ -478,7 +478,7 @@ Option *CommandLineTokenizer::getGamsOption() const
 void CommandLineTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
     QString errorMessage = "";
     QList<QInputMethodEvent::Attribute> attributes;
-    foreach(const OptionError err, errorList)   {
+    for (const OptionError err: errorList)   {
         QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
         int start = err.formatRange.start - lineEdit->cursorPosition();
         int length = err.formatRange.length;

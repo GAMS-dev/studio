@@ -686,10 +686,10 @@ void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmType
 
 void ProjectGroupNode::dumpMarks()
 {
-    foreach (QString file, mMarksForFilenames.keys()) {
+    for (QString file: mMarksForFilenames.keys()) {
         QString res = file+":\n";
         TextMarkRepo* list = marks(file);
-        foreach (TextMark* mark, list->marks()) {
+        for (TextMark* mark: list->marks()) {
             res.append(QString("  %1\n").arg(mark->dump()));
         }
         DEB() << res;
@@ -750,7 +750,7 @@ void ProjectGroupNode::updateChildNodes()
 
 void ProjectGroupNode::saveGroup()
 {
-    foreach (ProjectAbstractNode* child, mChildList) {
+    for (ProjectAbstractNode* child: mChildList) {
         if (child->type() == NodeType::Group) {
             ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
             fgc->saveGroup();

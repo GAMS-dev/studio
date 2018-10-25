@@ -135,12 +135,6 @@ LineNumberArea* CodeEdit::lineNumberArea()
     return mLineNumberArea;
 }
 
-void CodeEdit::setGroupId(const NodeId &groupId)
-{
-    AbstractEdit::setGroupId(groupId);
-    // TODO (JM): reload TextMarks
-}
-
 void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);

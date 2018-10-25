@@ -281,7 +281,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
 //{
 //    ui->gamsOptionCommandLine->clear();
 //    QStringList option =  mCommandLineHistory->getHistoryFor(location);
-//    foreach(QString str, option) {
+//    for (QString str: option) {
 //       ui->gamsOptionCommandLine->insertItem(0, str );
 //    }
 //    ui->gamsOptionCommandLine->setCurrentIndex(0);
@@ -300,7 +300,7 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
         ui->gamsOptionCommandLine->setCurrentIndex(0);
         return;
     }
-    foreach(QString str, history) {
+    for (QString str: history) {
        ui->gamsOptionCommandLine->insertItem(0, str );
     }
     ui->gamsOptionCommandLine->setCurrentIndex(0);

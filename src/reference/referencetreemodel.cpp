@@ -215,7 +215,7 @@ void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& paren
     parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
 
     parents << parents.last()->child(parents.last()->childCount()-1);
-    foreach(const ReferenceItem* item, referenceItemList) {
+    for (const ReferenceItem* item: referenceItemList) {
         QList<QVariant> itemData;
         itemData << QString(item->location);
         itemData << QString::number(item->lineNumber);
