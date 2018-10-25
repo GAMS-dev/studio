@@ -715,6 +715,19 @@ void MainWindow::on_actionOpen_triggered()
     openFiles(files);
 }
 
+void MainWindow::on_actionOpenNew_triggered()
+{
+    QString path = QFileInfo(mRecent.path).path();
+    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
+                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *ref);;"
+                                                          "Text files (*.txt);;"
+                                                          "All files (*.*)"),
+                                                       nullptr,
+                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
+
+    openFiles(files, true);
+}
+
 void MainWindow::on_actionSave_triggered()
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
@@ -1510,24 +1523,30 @@ void MainWindow::dropEvent(QDropEvent* e)
     }
 }
 
-void MainWindow::openFiles(QStringList files)
+void MainWindow::openFiles(QStringList files, bool forceNew)
 {
     if (files.size() == 0) return;
 
-    QFileInfo firstFile(files.first());
+    if (!forceNew && files.size() == 1) {
+        FileMeta *file = mFileMetaRepo.fileMeta(files.first());
+        if (file) {
+            openFile(file);
+            return;
+        }
+    }
+
     QStringList filesNotFound;
     QList<ProjectFileNode*> gmsFiles;
+    QFileInfo firstFile(files.first());
 
     // create base group
     ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
-
             ProjectFileNode *node = addNode("", item, group);
             openFileNode(node);
             if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
-
-            QApplication::processEvents(QEventLoop::AllEvents, 1);
+                QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else {
             filesNotFound.append(item);
         }
@@ -1851,6 +1870,15 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) {
                 gv->setGroupId(runGroup->id());
             }
+            if (reference::ReferenceViewer *rv = FileMeta::toReferenceViewer(edit)) {
+                rv->setGroupId(runGroup->id());
+            }
+        } else {
+            NodeId groupId;
+            if (AbstractEdit *ae = FileMeta::toAbstractEdit(edit)) groupId = ae->groupId();
+            if (gdxviewer::GdxViewer *gv = FileMeta::toGdxViewer(edit)) groupId = gv->groupId();
+            if (reference::ReferenceViewer *rv = FileMeta::toReferenceViewer(edit)) groupId = rv->groupId();
+            if (groupId.isValid()) runGroup = mProjectRepo.findRunGroup(groupId);
         }
         // TODO(JM)  check what happens to the group here
         if (focus) {
@@ -1861,6 +1889,11 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
+        if (!runGroup && mRecent.group) runGroup = mRecent.group->assignedRunGroup();
+        if (!runGroup) {
+            QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
+            if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();
+        }
         edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
@@ -1900,7 +1933,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 lxiViewer->codeEdit()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
-            mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
+            if (runGroup)
+                mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
         }
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
@@ -2649,5 +2683,3 @@ void MainWindow::on_actionPreviousTab_triggered()
 
 }
 }
-
-
