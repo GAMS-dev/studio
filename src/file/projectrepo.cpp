@@ -378,7 +378,6 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
     if (!group) return;
     if (group->isEmpty()) {
         closeGroup(group);
-        group = nullptr;
     }
 }
 

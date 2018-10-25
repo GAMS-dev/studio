@@ -1040,6 +1040,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
+    if (file->exists(true)) return 0;
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
@@ -1058,10 +1059,12 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         choice = externChangedMessageBox(file->location(), true, file->isModified(), count);
     }
     if (choice == 0) {
+        if (file->exists(true)) return 0;
         closeFileEditors(fileId);
         history()->lastOpenedFiles.removeAll(file->location());
         mWp->historyChanged(history());
     } else if (!file->isReadOnly()) {
+        if (file->exists(true)) return 0;
         file->document()->setModified();
         mFileMetaRepo.unwatch(file);
     }
