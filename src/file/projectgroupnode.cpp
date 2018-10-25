@@ -102,6 +102,7 @@ void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
 void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
 {
     mChildNodes.removeOne(child);
+    if (mChildNodes.isEmpty()) deleteLater();
 }
 
 QString ProjectGroupNode::location() const

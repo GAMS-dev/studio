@@ -352,13 +352,10 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
-
     if (mNodes.contains(node->id())) {
         mTreeModel->removeChild(node);
         removeFromIndex(node);
     }
-
-    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 
     // if this file is marked as runnable remove reference
     if (runGroup->runnableGms() == node->file()) {
@@ -373,6 +370,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         }
     }
     node->deleteLater();
+    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
