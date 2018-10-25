@@ -126,7 +126,11 @@ void FileMeta::internalSave(const QString &location)
         for (QWidget *wid: mEditors) {
             option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
             if (solverOptionWidget) {
-                solverOptionWidget->saveOptionFile(location);
+                mActivelySaved = true;
+                bool success = solverOptionWidget->saveOptionFile(location);
+                mData = Data(location);
+                if (!success)
+                   solverOptionWidget->on_problemSavingOptionFile(location);
                 return;
             }
         }

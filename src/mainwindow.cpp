@@ -986,7 +986,6 @@ void MainWindow::fileChangedExtern(FileId fileId)
             if (g) g->setHasChanged(true);
         }
     }
-    if (file->kind() == FileKind::Opt) return;  // TODO (JP)
 
     int choice;
 
@@ -1006,7 +1005,15 @@ void MainWindow::fileChangedExtern(FileId fileId)
     if (choice == 0) {
         file->load(file->codecMib());
     } else {
-        file->document()->setModified();
+        if (file->document()) {
+            file->document()->setModified();
+        } else if (file->kind() == FileKind::Opt) {
+                  for (QWidget *e : file->editors()) {
+                       option::SolverOptionWidget *so = FileMeta::toSolverOptionEdit(e);
+                       if (so) so->setModified(true);
+                  }
+        }
+
     }
 }
 

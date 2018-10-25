@@ -249,15 +249,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     int number = -1;
     int i;
-    qDebug() << "double clicked: " << optionEntryNumber << ", rowcount=" << ui->solverOptionTableView->model()->rowCount();
     for(i=0; i < ui->solverOptionTableView->model()->rowCount(); ++i) {
-        qDebug() << "double clicked: " << i;
         QModelIndex idx = ui->solverOptionTableView->model()->index(i, 2, QModelIndex());
         number = ui->solverOptionTableView->model()->data(idx, Qt::DisplayRole).toInt();
         if (number >= optionEntryNumber)
             break;
     }
-    qDebug() << "double clicked: i=" << i << ", number="<< number << ", opitionEntryNumber=" << optionEntryNumber;
     if (i < ui->solverOptionTableView->model()->rowCount()) { // update or insert
         if (number == optionEntryNumber) { // update row i
             QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i, 1);
@@ -292,10 +289,20 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
     setModified(true);
 }
 
-void SolverOptionWidget::saveOptionFile(const QString &location)
+bool SolverOptionWidget::saveOptionFile(const QString &location)
 {
-    qDebug() << "saving :" << location;
-    saveAs(location);
+    return saveAs(location);
+}
+
+void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
+{
+    int answer = QMessageBox::question(this, "Problem Saving Option File"
+                                       , QString("File %1 has been saved.\nBut there is an errror and not all option and values may not have beeen saved correctly.").arg(location)
+                                       , "Load the saved option file", "Continue editing the options");
+    if (answer==0)
+        on_reloadSolverOptionFile();
+    else
+        setModified(true);
 }
 
 void SolverOptionWidget::on_reloadSolverOptionFile()
@@ -334,16 +341,7 @@ bool SolverOptionWidget::saveAs(const QString &location)
     OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
     bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), location);
     mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
-    if (!success) {
-        int answer = QMessageBox::question(this, "Problem Saving Option File"
-                                           , QString("File %1 has been saved.\nBut there is an errror and not all option and values may not have beeen saved correctly.").arg(location)
-                                           , "Load the saved option file", "Continue editing the options");
-        if (answer==0)
-            on_reloadSolverOptionFile();
-        else
-            setModified(true);
-    }
-    return true;
+    return success;
 }
 
 bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)

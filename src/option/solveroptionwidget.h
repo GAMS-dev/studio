@@ -70,7 +70,8 @@ public slots:
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void on_newTableRowDropped(const QModelIndex &index);
 
-    void saveOptionFile(const QString &location);
+    bool saveOptionFile(const QString &location);
+    void on_problemSavingOptionFile(const QString &location);
 
     void on_reloadSolverOptionFile();
 
