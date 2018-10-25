@@ -156,6 +156,7 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
+    editors/viewhelper.cpp \
     editors/pagingtextmodel.cpp
 
 HEADERS += \
@@ -260,6 +261,7 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
+    editors/viewhelper.h \
     editors/pagingtextmodel.h
 
 FORMS += \

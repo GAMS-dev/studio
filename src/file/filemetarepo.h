@@ -49,6 +49,7 @@ public:
     QVector<FileMeta*> modifiedFiles() const;
     QWidgetList editors() const;
     void unwatch(const FileMeta* fm);
+    void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
 
     void setDebugMode(bool debug);

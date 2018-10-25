@@ -90,7 +90,7 @@ public:
     void setInitialFiles(QStringList files);
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files);
+    void openFiles(QStringList files, bool forceNew = false);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -192,6 +192,7 @@ private slots:
     // File
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
+    void on_actionOpenNew_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
@@ -261,6 +262,7 @@ private slots:
     void focusProjectExplorer();
     void renameGroup(ProjectGroupNode *group);
 
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -274,8 +276,8 @@ protected:
 private:
     void initTabs();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
+    int fileChangedExtern(FileId fileId, bool ask, int count = 1);
+    int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
 
@@ -293,7 +295,7 @@ private:
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
-    void purgeGroup(ProjectGroupNode *&group);
+    int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
     Ui::MainWindow *ui;
@@ -322,6 +324,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
+    int mExternFileEventChoice = -1;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

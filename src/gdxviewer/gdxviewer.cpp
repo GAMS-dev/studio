@@ -167,26 +167,6 @@ void GdxViewer::selectSearchField()
     ui->lineEdit->setFocus();
 }
 
-FileId GdxViewer::fileId() const
-{
-    return mFileId;
-}
-
-void GdxViewer::setFileId(const FileId &fileId)
-{
-    mFileId = fileId;
-}
-
-NodeId GdxViewer::groupId() const
-{
-    return mGroupId;
-}
-
-void GdxViewer::setGroupId(const NodeId &groupId)
-{
-    mGroupId = groupId;
-}
-
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
