@@ -44,6 +44,9 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
     setLocation(location);
+    mTempAutoReloadTimer.setSingleShot(true);
+    mReloadTimer.setSingleShot(true);
+    connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
 }
 
 void FileMeta::setLocation(const QString &location)
@@ -130,6 +133,7 @@ void FileMeta::internalSave(const QString &location)
     file.close();
     mData = Data(location);
     document()->setModified(false);
+    mFileRepo->watch(this);
 }
 
 bool FileMeta::checkActivelySavedAndReset()
@@ -259,6 +263,11 @@ void FileMeta::blockCountChanged(int newBlockCount)
         mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine+1, newBlockCount-mLineCount);
         mLineCount = newBlockCount;
     }
+}
+
+void FileMeta::reload()
+{
+    load(mCodec->mibEnum());
 }
 
 void FileMeta::addEditor(QWidget *edit)
@@ -416,7 +425,7 @@ void FileMeta::save()
 
 void FileMeta::saveAs(const QString &location, bool takeOverLocation)
 {
-    // TODO(JM) move function to repo // here: just create a copy at location
+    // functionality moved function to repo // here: just create a copy at location
     internalSave(location);
     if (takeOverLocation) setLocation(location);
 }
@@ -512,6 +521,11 @@ void FileMeta::marksChanged(QSet<NodeId> groups)
     if (mHighlighter) mHighlighter->rehighlight();
 }
 
+void FileMeta::reloadDelayed()
+{
+    mReloadTimer.start(100);
+}
+
 bool FileMeta::isModified() const
 {
     return mDocument ? mDocument->isModified() : false;
@@ -526,7 +540,12 @@ bool FileMeta::isReadOnly() const
 
 bool FileMeta::isAutoReload() const
 {
-    return mData.type->autoReload();
+    return mData.type->autoReload() || mTempAutoReloadTimer.isActive();
+}
+
+void FileMeta::resetTempReloadState()
+{
+    mTempAutoReloadTimer.start(1500);
 }
 
 QTextDocument *FileMeta::document() const

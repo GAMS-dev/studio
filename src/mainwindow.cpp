@@ -963,63 +963,92 @@ void MainWindow::fileClosed(const FileId fileId)
     // TODO(JM) check if anything needs to be updated
 }
 
-void MainWindow::fileChangedExtern(FileId fileId)
+int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool modified, int count)
+{
+    if (mExternFileEventChoice >= 0)
+        return mExternFileEventChoice;
+    QMessageBox box(this);
+    box.setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));
+    QString text(filePath + (deleted ? "%1 doesn't exist anymore."
+                                     : (count>1 ? "%1 have been modified externally."
+                                                : "%1 has been modified externally.")));
+    text = text.arg(count<2? "" : QString(" and %1 other file%2").arg(count-1).arg(count<3? "" : "s"));
+    text += "\nDo you want to %1?";
+    if (deleted) text = text.arg("keep the file in editor");
+    else if (modified) text = text.arg("reload the file or keep your changes");
+    else text = text.arg("reload the file");
+    box.setText(text);
+    // The button roles define their position. To keep them in order they all get the same value
+    box.setDefaultButton(box.addButton(deleted ? "Close" : "Reload", QMessageBox::AcceptRole));
+    box.setEscapeButton(box.addButton("Keep", QMessageBox::AcceptRole));
+    if (count > 1) {
+        box.addButton(box.buttonText(0) + " all", QMessageBox::AcceptRole);
+        box.addButton(box.buttonText(1) + " all", QMessageBox::AcceptRole);
+    }
+
+    int res = box.exec();
+    if (res > 1) {
+        mExternFileEventChoice = res - 2;
+        return mExternFileEventChoice;
+    }
+    return res;
+}
+
+int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
-    if (!file->isOpen()) return;
-    if (file->kind() == FileKind::Log) return;
+    if (!file->isOpen()) return 0;
+    if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
         for (QWidget *e : file->editors()) {
             gdxviewer::GdxViewer *g = FileMeta::toGdxViewer(e);
             if (g) g->setHasChanged(true);
         }
+        return 0;
     }
-
     int choice;
 
     if (file->isAutoReload() || file->isReadOnly()) {
         choice = 0;
     } else {
-        if (!file->isModified()) {
-            choice = QMessageBox::question(this, "File modified", file->location()+" has been modified externally.\n"
-                                           + "Do you want to reload the file?",
-                                           "Reload", "Cancel", QString(), 1, 1);
-        } else {
-            choice = QMessageBox::question(this, "File modified", file->location()+" has been modified externally.\n"
-                                           + "Do you want to reload the file or keep your changes?",
-                                           "Reload", "Keep changes", QString(), 1, 1);
-        }
+        if (!ask) return (file->isModified() ? 2 : 1);
+        choice = externChangedMessageBox(file->location(), false, file->isModified(), count);
     }
     if (choice == 0) {
-        file->load(file->codecMib());
+        file->reloadDelayed();
+        file->resetTempReloadState();
     } else {
         file->document()->setModified();
+        mFileMetaRepo.unwatch(file);
     }
+    return 0;
 }
 
-void MainWindow::fileDeletedExtern(FileId fileId)
+int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (!file) return;
+    if (!file) return 0;
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
             mProjectRepo.closeNode(node);
         }
-        return;
+        return 0;
     }
 
-    int ret = 0;
+    int choice = 0;
     if (!file->isReadOnly()) {
-        // file is loaded: ASK, if it should be closed
-        ret = QMessageBox::question(this, "File vanished", file->location()+" doesn't exist any more.\n"
-                                    +"Keep file in editor?", "Keep", "Close", QString(), 1, 0);
+        if (!ask) return 3;
+        choice = externChangedMessageBox(file->location(), true, file->isModified(), count);
     }
-    if (ret == 1)
+    if (choice == 0)
         closeFileEditors(fileId);
-    else if (!file->isReadOnly())
+    else if (!file->isReadOnly()) {
         file->document()->setModified();
+        mFileMetaRepo.unwatch(file);
+    }
+    return 0;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1047,24 +1076,59 @@ void MainWindow::fileEvent(const FileEvent &e)
 
 void MainWindow::processFileEvents()
 {
+    if (mFileEvents.isEmpty()) return;
+    // Pending events but window is not active: wait and retry
+    static bool active = false;
+    if (!isActiveWindow() || active) {
+        mFileTimer.start();
+        return;
+    }
+    active = true;
+
+    // First process all events that need no user decision. For the others: remember the kind of change
+    QMap<int, QVector<FileEventData>> remainEvents;
     while (!mFileEvents.isEmpty()) {
-        if (!isActiveWindow()) {
-            mFileTimer.start();
-            break;
-        }
         FileEventData fileEvent = mFileEvents.takeFirst();
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
+        int remainKind = 0;
         if (!fm) continue;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
-            fileChangedExtern(fm->id());
+            remainKind = fileChangedExtern(fm->id(), false);
             break;
         case FileEventKind::removedExtern:
-            fileDeletedExtern(fm->id());
+            remainKind = fileDeletedExtern(fm->id(), false);
             break;
         default: break;
         }
+        if (remainKind > 0) {
+            if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
+            if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
+
+        }
     }
+
+    // Then ask what to do with the files of each remainKind
+    mExternFileEventChoice = -1;
+    for (int changeKind = 1; changeKind < 4; ++changeKind) {
+        QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
+        for (const FileEventData event: eventDataList) {
+            switch (changeKind) {
+            case 1: // changed externally but unmodified internally
+                fileChangedExtern(event.fileId, true, eventDataList.size());
+                break;
+            case 2: // changed externally and modified internally
+                fileChangedExtern(event.fileId, true, eventDataList.size());
+                break;
+            case 3: // removed externally
+                fileDeletedExtern(event.fileId, true, eventDataList.size());
+                break;
+            default: break;
+            }
+        }
+        mExternFileEventChoice = -1;
+    }
+    active = false;
 }
 
 void MainWindow::appendSystemLog(const QString &text)
@@ -2007,7 +2071,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
         edit->deleteLater();
     }
     // if the file has been removed, remove nodes
-    if (!fm->exists(true)) fileDeletedExtern(fm->id());
+    if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib)
