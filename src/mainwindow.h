@@ -90,7 +90,7 @@ public:
     void setInitialFiles(QStringList files);
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files);
+    void openFiles(QStringList files, bool forceNew = false);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -192,6 +192,7 @@ private slots:
     // File
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
+    void on_actionOpenNew_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
@@ -260,6 +261,7 @@ private slots:
     void focusCmdLine();
     void focusProjectExplorer();
     void renameGroup(ProjectGroupNode *group);
+
 
 protected:
     void closeEvent(QCloseEvent *event);
