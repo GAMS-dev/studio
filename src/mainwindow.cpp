@@ -1043,8 +1043,12 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
+            ProjectGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
+            mProjectRepo.purgeGroup(group);
         }
+        history()->lastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged(history());
         return 0;
     }
 
@@ -1053,9 +1057,11 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         if (!ask) return 3;
         choice = externChangedMessageBox(file->location(), true, file->isModified(), count);
     }
-    if (choice == 0)
+    if (choice == 0) {
         closeFileEditors(fileId);
-    else if (!file->isReadOnly()) {
+        history()->lastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged(history());
+    } else if (!file->isReadOnly()) {
         file->document()->setModified();
         mFileMetaRepo.unwatch(file);
     }
@@ -1123,7 +1129,7 @@ void MainWindow::processFileEvents()
     mExternFileEventChoice = -1;
     for (int changeKind = 1; changeKind < 4; ++changeKind) {
         QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
-        for (const FileEventData event: eventDataList) {
+        for (const FileEventData &event: eventDataList) {
             switch (changeKind) {
             case 1: // changed externally but unmodified internally
                 fileChangedExtern(event.fileId, true, eventDataList.size());
@@ -2036,7 +2042,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         }
         mProjectRepo.closeGroup(group);
     }
-    purgeGroup(parentGroup);
+    mProjectRepo.purgeGroup(parentGroup);
 }
 
 /// Asks user for confirmation if a file is modified before calling closeFile
@@ -2058,17 +2064,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
             fm->deleteLater();
         }
     }
-    purgeGroup(group);
-}
-
-void MainWindow::purgeGroup(ProjectGroupNode *&group)
-{
-    if (!group) return;
-    // close group if it's empty or only contains a log-node
-    if (group->isEmpty()) {
-        closeGroup(group);
-        group = nullptr;
-    }
+    mProjectRepo.purgeGroup(group);
 }
 
 /// Closes all open editors and tabs related to a file and remove option history

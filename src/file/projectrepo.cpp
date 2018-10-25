@@ -373,6 +373,15 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 }
 
+void ProjectRepo::purgeGroup(ProjectGroupNode *group)
+{
+    if (!group) return;
+    if (group->isEmpty()) {
+        closeGroup(group);
+        group = nullptr;
+    }
+}
+
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {

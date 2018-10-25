@@ -295,7 +295,6 @@ private:
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
-    void purgeGroup(ProjectGroupNode *&group);
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
