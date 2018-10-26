@@ -61,7 +61,8 @@ signals:
     void newTableRowDropped(const QModelIndex &index);
 
 public slots:
-    void on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+// TODO (JP) to be removed
+//    void on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void reloadOptionModel(const QList<OptionItem> &optionItem);
 
 protected:

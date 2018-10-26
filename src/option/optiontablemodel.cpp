@@ -31,7 +31,8 @@ OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionToken
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     mHeader << "Option" << "Value" << "Entry";
-    connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
+// TODO (JP) to be removed
+//    connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
 }
 
 QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -262,29 +263,29 @@ QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems() const
     return mOptionItem;
 }
 
+// TODO (JP) to be removed
+//void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+//{
+//    Q_UNUSED(roles);
+//    beginResetModel();
+//    mOptionTokenizer->validateOption(mOptionItem);
 
-void OptionTableModel::on_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
-{
-    Q_UNUSED(roles);
-    beginResetModel();
-    mOptionTokenizer->validateOption(mOptionItem);
+//    for (int i=topLeft.row(); i<=bottomRight.row(); ++i) {
+//        if (mOptionItem.at(i).error == No_Error)
+//            setHeaderData( i, Qt::Vertical,
+//                              Qt::CheckState(Qt::Unchecked),
+//                              Qt::CheckStateRole );
+//        else if (mOptionItem.at(i).error == Deprecated_Option)
+//            setHeaderData( i, Qt::Vertical,
+//                              Qt::CheckState(Qt::PartiallyChecked),
+//                              Qt::CheckStateRole );
+//        else setHeaderData( i, Qt::Vertical,
+//                          Qt::CheckState(Qt::Checked),
+//                          Qt::CheckStateRole );
 
-    for (int i=topLeft.row(); i<=bottomRight.row(); ++i) {
-        if (mOptionItem.at(i).error == No_Error)
-            setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::Unchecked),
-                              Qt::CheckStateRole );
-        else if (mOptionItem.at(i).error == Deprecated_Option)
-            setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::PartiallyChecked),
-                              Qt::CheckStateRole );
-        else setHeaderData( i, Qt::Vertical,
-                          Qt::CheckState(Qt::Checked),
-                          Qt::CheckStateRole );
-
-    }
-    endResetModel();
-}
+//    }
+//    endResetModel();
+//}
 
 void OptionTableModel::reloadOptionModel(const QList<OptionItem> &optionItem)
 {
