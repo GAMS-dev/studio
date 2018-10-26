@@ -3,28 +3,82 @@
 
 #include <QAbstractTableModel>
 #include <QTextCodec>
-#include <QTableView>
+#include <QFontMetrics>
 #include "syntax.h"
 
 namespace gams {
 namespace studio {
 
-class RawText
+
+class TextProvider
+{
+public:
+    virtual ~TextProvider() {}
+    virtual void openFile(const QString &fileName) = 0;
+    virtual void clear() = 0;
+    virtual int blockCount() const = 0;
+    virtual QString block(int i) const = 0;
+    virtual void appendLine(const QString &line) {Q_UNUSED(line)}
+    QTextCodec *codec() const;
+    void setCodec(QTextCodec *codec);
+
+protected:
+    QTextCodec *mCodec = nullptr;
+};
+
+///
+/// class RawText
+/// Reads a whole file into a QByteArray and uses indexes to build the lines for the model on the fly.
+///
+class RawText: public TextProvider
 {
 public:
     explicit RawText();
-    void loadFile(const QString &fileName);
-    void clear();
-    int lineCount() const;
-    QString line(int i) const;
-    void appendLine(const QString &line);
+    ~RawText() override;
+    void openFile(const QString &fileName) override;
+    void clear() override;
+    int blockCount() const override;
+    QString block(int i) const override;
+    void appendLine(const QString &block) override;
 
 private:
-    QTextCodec *mCodec = nullptr;
     QByteArray mData;
     int mReserved = 0;
     QByteArray mDelimiter;
     QVector<int> mDataIndex;
+};
+
+///
+/// class PagingText
+/// Opens a file into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
+/// model on the fly.
+///
+class PagingText: public TextProvider
+{
+    struct ChunkMap {qint64 start; qint64 size; uchar* pointer; QByteArray bArray; QVector<int> index; };
+public:
+    PagingText();
+    ~PagingText() override;
+    void openFile(const QString &fileName) override;
+    void clear() override;
+    int blockCount() const override;
+    QString block(int i) const override;
+
+private:
+    ChunkMap &getChunk(qint64 byteNr);
+
+private:
+    int mChunkSize = 1000000;
+    int mOverlap = 1000;
+    int mMaxChunks = 5;
+    QFile mFile;
+    qint64 mFileSize;
+    int mSizeDivisor;
+    QVector<ChunkMap> mData;
+    QByteArray mDelimiter;
+    int mTopPos;
+    int mPos;
+    int mAnchor;
 };
 
 class PagingTextModel : public QAbstractTableModel
@@ -54,46 +108,12 @@ private:
     void setFontMetrics(QFontMetrics metrics);
 
 private:
-    RawText mRawText;
+    TextProvider *mTextData;
     bool mLineNumbersVisible = true;
     int mColumns = 2;
     int mLineNrWidth = 50;
     QList<TextMark*> mMarks;
     QFontMetrics mMetrics;
-};
-
-class PagingTextView: public QTableView
-{
-    Q_OBJECT
-public:
-    explicit  PagingTextView(QWidget *parent);
-
-    void loadFile(QString fileName);
-
-    FileId fileId() const;
-    void setFileId(const FileId &fileId);
-    NodeId groupId() const;
-    virtual void setGroupId(const NodeId &groupId);
-
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-    void zoomInF(float range);
-
-public slots:
-    void reorganize();
-
-protected:
-    void showEvent(QShowEvent *event) override;
-    bool event(QEvent *event) override;
-
-private:
-    PagingTextModel mModel;
-    FileId mFileId;
-    NodeId mGroupId;
-
-    // QWidget interface
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
 };
 
 } // namespace studio

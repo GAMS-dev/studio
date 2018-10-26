@@ -3,7 +3,6 @@
 #include "logger.h"
 #include <QFile>
 #include <QTextStream>
-#include <QHeaderView>
 
 namespace gams {
 namespace studio {
@@ -13,7 +12,12 @@ RawText::RawText()
     mCodec = QTextCodec::codecForLocale();
 }
 
-void RawText::loadFile(const QString &fileName)
+RawText::~RawText()
+{
+
+}
+
+void RawText::openFile(const QString &fileName)
 {
     TRACETIME();
     if (!fileName.isEmpty()) {
@@ -54,37 +58,17 @@ void RawText::clear()
     mData.clear();
 }
 
-int RawText::lineCount() const
+int RawText::blockCount() const
 {
     return mDataIndex.count()-1;
 }
 
-QString RawText::line(int i) const
+QString RawText::block(int i) const
 {
     QTextStream in(mData);
     in.setCodec(mCodec);
-    in.seek(mDataIndex.at(i));
-//    if (i < 5) {
-//        QString deb;
-//        QString debM;
-//        int a = mDataIndex.at(i)-3;
-//        if (a < 0) {
-//            deb.fill(' ',-a);
-//            debM.fill(' ',-a);
-//            a = 0;
-//        }
-//        int s = mDataIndex.at(i+1)-mDataIndex.at(i)-mDelimiter.size();
-//        debM += '^' + QString(s-2, '~') + '^';
-//        if (s+a >= mData.size()) s = mData.size()-a-1;
-//        for (int x = a; x < s+a ; ++x) {
-//            if (mData.at(x) == '\n') deb += '_';
-//            else if (mData.at(x) == '\r') deb += '^';
-//            else deb += mData.at(x);
-//        }
-//        DEB() << deb << "   from " << a << ", size " << s;
-//        DEB() << debM;
-//    }
-    return in.read(mDataIndex.at(i+1)-mDataIndex.at(i)-mDelimiter.size());
+    in.seek(mDataIndex.at(int(i)));
+    return in.read(mDataIndex.at(int(i)+1)-mDataIndex.at(int(i))-mDelimiter.size());
 }
 
 void RawText::appendLine(const QString &line)
@@ -97,20 +81,125 @@ void RawText::appendLine(const QString &line)
 }
 
 
-PagingTextModel::PagingTextModel(QFontMetrics metrics, QObject *parent)
-    : QAbstractTableModel(parent), mRawText(), mMetrics(metrics)
+PagingText::PagingText()
 {
+    clear();
+}
+
+PagingText::~PagingText()
+{
+    if (mFile.isOpen()) {
+        mFile.close();
+    }
+}
+
+void PagingText::openFile(const QString &fileName)
+{
+    if (!fileName.isEmpty()) {
+        clear();
+        mFile.setFileName(fileName);
+        if (!mFile.open(QFile::ReadOnly)) {
+            DEB() << "Could not open file " << fileName;
+            return;
+        }
+        mFileSize = mFile.size();
+        ChunkMap &map = getChunk(0);
+        // determine the line delimiter of this file
+        for (int i = 0; i < mData.size(); ++i) {
+            if (map.bArray.at(i) == '\n' || map.bArray.at(i) == '\r') {
+                if (map.bArray.size() > i+1 && map.bArray.at(i) != map.bArray.at(i+1)
+                        && (map.bArray.at(i+1) == '\n' || map.bArray.at(i+1) == '\r')) {
+                    mDelimiter = map.bArray.mid(i, 2);
+                } else {
+                    mDelimiter = map.bArray.mid(i, 1);
+                }
+                break;
+            }
+        }
+        DEB() << " delimiter size: " << mDelimiter.size();
+    }
+}
+
+void PagingText::clear()
+{
+    if (mFile.isOpen()) {
+        for (ChunkMap &block: mData) {
+            mFile.unmap(block.pointer);
+        }
+        mData.clear();
+        mFile.close();
+    }
+    mPos = 0;
+    mAnchor = 0;
+    mTopPos = 0;
+}
+
+int PagingText::blockCount() const
+{
+    return mFileSize;
+}
+
+QString PagingText::block(int i) const
+{
+
+}
+
+PagingText::ChunkMap &PagingText::getChunk(qint64 byteNr)
+{
+    qint64 start = ((byteNr / mChunkSize) * mChunkSize) - mOverlap;
+    // block already present?
+    for (ChunkMap &bm: mData) {
+        if (bm.start == start) return bm;
+    }
+
+    // remove max-exceeding block
+    if (mData.size() > mMaxChunks) {
+        ChunkMap delBlock = mData.takeFirst();
+        mFile.unmap(delBlock.pointer);
+    }
+    // map file into BlockMap
+    ChunkMap res;
+    res.start = start;
+    qint64 end = start + (2 * mOverlap);
+    if (start < 0) start = 0;
+    if (end > mFileSize) end = mFileSize;
+    res.size = end-start;
+    res.pointer = mFile.map(res.start, res.size);
+    res.bArray.setRawData(reinterpret_cast<char*>(res.pointer), uint(res.size));
+
+    // create index for linebreaks
+    int lines = res.bArray.count(mDelimiter.at(0));
+    res.index.reserve(lines+2);
+    res.index << 0;
+    for (int i = 0; i < mData.size(); ++i) {
+        if (res.bArray[i] == mDelimiter.at(0)) {
+            res.index << (i + mDelimiter.size());
+        }
+    }
+    res.index << mData.length()+mDelimiter.size();
+
+    mData << res;
+    return mData.last();
+}
+
+
+
+PagingTextModel::PagingTextModel(QFontMetrics metrics, QObject *parent)
+    : QAbstractTableModel(parent), mMetrics(metrics)
+{
+    mTextData = new RawText();
 }
 
 PagingTextModel::~PagingTextModel()
 {
+    delete mTextData;
 }
 
 int PagingTextModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mRawText.lineCount();
+    return mTextData->blockCount();
 }
 
 int PagingTextModel::columnCount(const QModelIndex &parent) const
@@ -125,8 +214,14 @@ QVariant PagingTextModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()) return QVariant();
     switch (role) {
-    case Qt::DisplayRole:
-        return index.column() ? mRawText.line(index.row()) : QVariant(index.row()+1);
+    case Qt::DisplayRole: {
+        return index.column() ? mTextData->block(index.row()) : QVariant(index.row()+1);
+    }
+    case Qt::SizeHintRole: {
+        QString text = index.column() ? mTextData->block(index.row()) : QString::number(index.row()+1);
+        DEB() << "row " << index.row() << "  width " << (6 + mMetrics.width(text));
+        return QVariant(6 + mMetrics.width(text));
+    }
     case Qt::DecorationRole:
         // TODO(JM) Icon for TextMark
         break;
@@ -173,16 +268,16 @@ int PagingTextModel::columnWidth(int column)
 void PagingTextModel::loadFile(const QString &fileName)
 {
     beginResetModel();
-    mRawText.clear();
-    mRawText.loadFile(fileName);
+    mTextData->clear();
+    mTextData->openFile(fileName);
     updateSizes();
     endResetModel();
 }
 
 void PagingTextModel::appendLine(const QString &line)
 {
-    beginInsertRows(QModelIndex(), mRawText.lineCount(), mRawText.lineCount());
-    mRawText.appendLine(line);
+    beginInsertRows(QModelIndex(), mTextData->blockCount(), mTextData->blockCount());
+    mTextData->appendLine(line);
     updateSizes();
     endInsertRows();
 }
@@ -198,12 +293,12 @@ void PagingTextModel::updateSizes()
     }
 
     int digits = 1;
-    int max = qMax(1, mRawText.lineCount());
+    int max = qMax(1, mTextData->blockCount());
     while (max >= 10) {
         max /= 10;
         ++digits;
     }
-    DEB() << "digits for " << mRawText.lineCount() << ": " << digits;
+//    DEB() << "digits for " << mRawText.lineCount() << ": " << digits;
     value = (6 + mMetrics.width(QLatin1Char('9')) * digits);
     if (value != mLineNrWidth) {
         mLineNrWidth = value;
@@ -218,97 +313,14 @@ void PagingTextModel::setFontMetrics(QFontMetrics metrics)
     updateSizes();
 }
 
-PagingTextView::PagingTextView(QWidget *parent): QTableView(parent), mModel(parent->fontMetrics())
+QTextCodec *TextProvider::codec() const
 {
-    setModel(&mModel);
-    connect(&mModel, &PagingTextModel::reorganized, this, &PagingTextView::reorganize);
-    verticalHeader()->setVisible(false);
-    horizontalHeader()->setVisible(false);
-    horizontalHeader()->setStretchLastSection(true);
-    horizontalHeader()->setDefaultSectionSize(15);
-    horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    verticalHeader()->setDefaultSectionSize(15);
-    horizontalHeader()->setMinimumSectionSize(15);
-    setShowGrid(false);
+    return mCodec;
 }
 
-void PagingTextView::loadFile(QString fileName)
+void TextProvider::setCodec(QTextCodec *codec)
 {
-    mModel.loadFile(fileName);
-}
-
-FileId PagingTextView::fileId() const
-{
-    return mFileId;
-}
-
-void PagingTextView::setFileId(const FileId &fileId)
-{
-    mFileId = fileId;
-}
-
-NodeId PagingTextView::groupId() const
-{
-    return mGroupId;
-}
-
-void PagingTextView::setGroupId(const NodeId &groupId)
-{
-    mGroupId = groupId;
-}
-
-void PagingTextView::zoomIn(int range)
-{
-    zoomInF(range);
-}
-
-void PagingTextView::zoomOut(int range)
-{
-    zoomInF(-range);
-}
-
-void PagingTextView::zoomInF(float range)
-{
-    if (range == 0.f)
-        return;
-    QFont f = font();
-    const double newSize = f.pointSizeF() + double(range);
-    if (newSize <= 0)
-        return;
-    f.setPointSizeF(newSize);
-    setFont(f);
-}
-
-void PagingTextView::showEvent(QShowEvent *event)
-{
-    QTableView::showEvent(event);
-}
-
-bool PagingTextView::event(QEvent *event)
-{
-    bool res = QTableView::event(event);
-    if (event->type() == QEvent::FontChange) {
-        mModel.setFontMetrics(QFontMetrics(font()));
-    }
-    return res;
-}
-
-void PagingTextView::reorganize()
-{
-    horizontalHeader()->setCascadingSectionResizes(true);
-    DEB() << "MinSec: " << horizontalHeader()->minimumSectionSize();
-    int to = mModel.columnCount(QModelIndex())-1;
-    for (int col = 0; col < to; ++col) {
-        setColumnWidth(col, mModel.columnWidth(col));
-        DEB() << "col[" << col << "]  wid from " << columnWidth(col) << " to " << mModel.columnWidth(col);
-    }
-}
-
-void PagingTextView::keyPressEvent(QKeyEvent *event)
-{
-    QTableView::keyPressEvent(event);
-    mModel.setFontMetrics(fontMetrics());
+    mCodec = codec;
 }
 
 } // namespace studio

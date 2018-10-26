@@ -157,7 +157,8 @@ SOURCES += \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
     editors/viewhelper.cpp \
-    editors/pagingtextmodel.cpp
+    editors/pagingtextmodel.cpp \
+    editors/pagingtextview.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -262,7 +263,8 @@ HEADERS += \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
     editors/viewhelper.h \
-    editors/pagingtextmodel.h
+    editors/pagingtextmodel.h \
+    editors/pagingtextview.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

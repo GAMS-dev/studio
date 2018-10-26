@@ -4,7 +4,7 @@
 #include "common.h"
 #include "codeedit.h"
 #include "processlogedit.h"
-#include "pagingtextmodel.h"
+#include "pagingtextview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "reference/referenceviewer.h"
