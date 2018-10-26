@@ -752,26 +752,27 @@ void MainWindow::on_actionSave_As_triggered()
     FileMeta *fileMeta = node->file();
     int choice = 0;
     QString filePath = fileMeta->location();
+    QFileInfo fi(filePath);
     while (choice < 1) {
-        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath,
-                                                tr("GAMS code (*.gms *.inc *.log);;"
-                                                   "Text files (*.txt);;"
-                                                   "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        QStringList filters;
+        filters << tr("GAMS code (*.gms *.inc *.log)");
+        filters << tr("Text files (*.txt)");
+        filters << tr("All files (*.*)");
+        QString *selFilter = &filters.last();
+        if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
+        if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
+                                                , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
-
-        if(fileMeta->location().endsWith(".gms", Qt::CaseInsensitive) && !filePath.endsWith(".gms", Qt::CaseInsensitive)) {
-            filePath = filePath + ".gms";
-        } else if (fileMeta->location().endsWith(".gdx", Qt::CaseInsensitive) && !filePath.endsWith(".gdx", Qt::CaseInsensitive)) {
-            filePath = filePath + ".gdx";
-        } else if (fileMeta->location().endsWith(".lst", Qt::CaseInsensitive) && !filePath.endsWith(".lst", Qt::CaseInsensitive)) {
-            filePath = filePath + ".lst";
-        } else if (fileMeta->location().endsWith(".ref", Qt::CaseInsensitive) && !filePath.endsWith(".ref", Qt::CaseInsensitive)) {
-            filePath = filePath + ".ref";
-        } // TODO: check if there are others to add
+        QFileInfo fiNew(filePath);
+        if(!fileMeta->suffix().contains(fiNew.suffix(), Qt::CaseInsensitive)) {
+            filePath = filePath + "." + fileMeta->suffix().first();
+        }
 
         // perform copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
+            choice = 1;
             if (exists) {
                 choice = QMessageBox::question(this, "File exists", filePath+" already exists."
                                                , "Select other", "Overwrite", "Abort", 0, 2);
