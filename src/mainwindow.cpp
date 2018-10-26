@@ -761,7 +761,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                 , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
         QFileInfo fiNew(filePath);
-        if(!fileMeta->suffix().contains(fiNew.suffix())) {
+        if(!fileMeta->suffix().contains(fiNew.suffix(), Qt::CaseInsensitive)) {
             filePath = filePath + "." + fileMeta->suffix().first();
         }
 
