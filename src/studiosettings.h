@@ -132,7 +132,7 @@ public:
     bool resetSettingsSwitch();
     void resetViewSettings();
 
-    void restoreTabsAndProjects(MainWindow *main);
+    bool restoreTabsAndProjects(MainWindow *main);
     void restoreLastFilesUsed(MainWindow *main);
 
     bool writeLog() const;
@@ -140,6 +140,9 @@ public:
 
     int nrLogBackups() const;
     void setNrLogBackups(int nrLogBackups);
+
+    bool autoCloseBraces() const;
+    void setAutoCloseBraces(bool autoCloseBraces);
 
 private:
     QSettings *mAppSettings = nullptr;
@@ -171,6 +174,7 @@ private:
     bool mAutoIndent;
     bool mWriteLog;
     int mNrLogBackups;
+    bool mAutoCloseBraces;
 
     // misc settings page
     int mHistorySize;

@@ -32,11 +32,6 @@ ProcessLogEdit::ProcessLogEdit(QWidget *parent)
 void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
 {
     jumpToLst(event->pos(), false);
-    /*if (mMetrics.fileType() == FileType::Log
-        && (event->type() == QEvent::MouseButtonDblClick
-            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
-
-    } else*/
 }
 
 void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)

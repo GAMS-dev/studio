@@ -148,11 +148,12 @@ pipeline {
                             def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
                                 sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
+                                archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
                                 sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
+                                archiveArtifacts artifacts: 'GAMS*.AppImage', fingerprint: true
                             }
                         }
-                        archiveArtifacts artifacts: 'GAMS*.AppImage', fingerprint: true
                     }
                 },
                 windowsX86: {

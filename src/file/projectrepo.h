@@ -127,6 +127,7 @@ public:
     void editorActivated(QWidget *edit);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
+    void saveNodeAs(ProjectFileNode* node, QString location);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -137,13 +138,16 @@ signals:
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void changed();
+    void deselect(const QVector<QModelIndex> &declined);
+    void closeFileEditors(FileId fileId);
 
 public slots:
     void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
-    void setSelected(const QModelIndex& ind);
+    void purgeGroup(ProjectGroupNode *group);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 private:

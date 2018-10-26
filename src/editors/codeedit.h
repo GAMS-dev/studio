@@ -107,7 +107,6 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    void setGroupId(const NodeId &groupId) override;
 
     /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
     /// outdentation is performed at the cursor position.
@@ -252,7 +251,6 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
-
 };
 
 class LineNumberArea : public QWidget

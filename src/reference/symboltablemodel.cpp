@@ -213,11 +213,13 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
              case 3: return refList.at(index.row())->explanatoryText();
              default: break;
              }
+             break;
          case SymbolDataType::FileUsed :
              return mReference->getFileUsed().at(index.row());
          default:
              break;
          }
+         break;
     }
     default:
         break;

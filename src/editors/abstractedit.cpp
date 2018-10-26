@@ -58,14 +58,8 @@ QMimeData* AbstractEdit::createMimeDataFromSelection() const
     return mimeData;
 }
 
-NodeId AbstractEdit::groupId() const
+void AbstractEdit::updateGroupId()
 {
-    return mGroupId;
-}
-
-void AbstractEdit::setGroupId(const NodeId &groupId)
-{
-    mGroupId = groupId;
     marksChanged();
 }
 
@@ -73,16 +67,6 @@ void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;
     marksChanged();
-}
-
-FileId AbstractEdit::fileId() const
-{
-    return mFileId;
-}
-
-void AbstractEdit::setFileId(const FileId &fileId)
-{
-    mFileId = fileId;
 }
 
 void AbstractEdit::afterContentsChanged(int, int, int)
@@ -102,7 +86,7 @@ void AbstractEdit::showToolTip(const QList<TextMark*> marks)
         cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, marks.first()->column());
         QPoint pos = cursorRect(cursor).bottomLeft();
         QStringList tips;
-        emit requestLstTexts(mGroupId, marks, tips);
+        emit requestLstTexts(groupId(), marks, tips);
         QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
     }
 }
@@ -168,10 +152,10 @@ QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
         mCacheLine = -1;
         return mCacheMarks;
     }
-    if (mCacheLine != lineNr || mCacheGroup != mGroupId) {
+    if (mCacheLine != lineNr || mCacheGroup != groupId()) {
         mCacheMarks.clear();
         mCacheLine = lineNr;
-        mCacheGroup = mGroupId;
+        mCacheGroup = groupId();
         for (TextMark* mark: mMarks->values(mCacheLine)) {
             if (mark->groupId() == mCacheGroup) mCacheMarks << mark;
         }

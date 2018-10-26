@@ -110,6 +110,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenNew"/>
     <addaction name="separator"/>
     <addaction name="actionRestore_Recently_Closed_Tab"/>
     <addaction name="separator"/>
@@ -293,6 +294,9 @@
        </property>
        <property name="editTriggers">
         <set>QAbstractItemView::EditKeyPressed</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
@@ -892,6 +896,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
+  <action name="actionOpenNew">
+   <property name="text">
+    <string>&amp;Open in new group...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the file in a new group</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
  </widget>

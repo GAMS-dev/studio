@@ -43,11 +43,7 @@ public:
     void jumpTo(const QTextCursor &cursor);
     void jumpTo(int line, int column = 0);
 
-    FileId fileId() const;
-    void setFileId(const FileId &fileId);
-
-    NodeId groupId() const;
-    virtual void setGroupId(const NodeId &groupId);
+    void updateGroupId();
 
     void setMarks(const LineMarks *marks);
     int markCount() { return mMarks ? mMarks->size() : 0; }
@@ -75,9 +71,13 @@ protected:
     QList<TextMark *> cachedLineMarks(int lineNr);
     const LineMarks &marks() const;
     const QList<TextMark*> &marksAtMouse() const;
+    inline NodeId groupId() {
+        bool ok;
+        NodeId group = property("groupId").toInt(&ok);
+        return ok ? group : NodeId();
+    }
 
 private:
-    FileId mFileId;
     NodeId mGroupId;
     const LineMarks *mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;

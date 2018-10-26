@@ -49,11 +49,13 @@ public:
     QVector<FileMeta*> modifiedFiles() const;
     QWidgetList editors() const;
     void unwatch(const FileMeta* fm);
+    void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
+    void updateRenamed(FileMeta *file, QString oldLocation);
 
 signals:
     void fileEvent(FileEvent &e);
@@ -77,6 +79,7 @@ private:
     TextMarkRepo* mTextMarkRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
+    QHash<QString, FileMeta*> mFileNames;
     QFileSystemWatcher mWatcher;
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically

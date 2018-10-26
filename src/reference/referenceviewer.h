@@ -43,10 +43,6 @@ class ReferenceViewer : public QWidget
 public:
     explicit ReferenceViewer(QString referenceFile, QWidget *parent = nullptr);
     ~ReferenceViewer();
-    FileId fileId() const;
-    void setFileId(const FileId &fileId);
-    NodeId groupId() const;
-    void setGroupId(const NodeId &groupId = NodeId());
 
 signals:
     void jumpTo(ReferenceItem item);
@@ -62,8 +58,6 @@ private:
 
     Reference* mReference;
     QTabWidget* mTabWidget;
-    FileId mFileId;
-    NodeId mGroupId;
 };
 
 } // namespace reference

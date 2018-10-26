@@ -28,10 +28,13 @@
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
-#include "help/helpwidget.h"
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+
+#ifdef QWEBENGINE
+#include "help/helpwidget.h"
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -84,9 +87,10 @@ public:
     ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void setInitialFiles(QStringList files);
 //    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList pathList);
+    void openFiles(QStringList files, bool forceNew = false);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -116,9 +120,9 @@ public:
     void closeResults();
     RecentData *recent();
     void openModelFromLib(QString glbFile, LibraryItem *model);
-    void readTabs(const QJsonObject &json);
+    bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
-    void delayedFileRestoration();
+//    void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
@@ -126,7 +130,9 @@ public:
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
 
+#ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
+#endif
     OptionWidget *gamsOptionWidget() const;
 
 public slots:
@@ -147,24 +153,26 @@ public slots:
     void optionRunChanged();
 
 private slots:
+    void openInitialFiles();
     void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
-    void fileChanged(FileId fileId);
-    void fileClosed(FileId fileId);
+    void fileChanged(const FileId fileId);
+    void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
     void postGamsRun(NodeId origin);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *node);
-    void closeFileEditors(FileId fileId);
+    void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
+    void projectDeselect(const QVector<QModelIndex> &declined);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -184,6 +192,7 @@ private slots:
     // File
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
+    void on_actionOpenNew_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
@@ -251,6 +260,8 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void renameGroup(ProjectGroupNode *group);
+
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -264,10 +275,9 @@ protected:
 
 private:
     void initTabs();
-    ProjectFileNode* addNode(const QString &path, const QString &fileName);
-    void fileChangedExtern(FileId fileId);
-    void fileDeletedExtern(FileId fileId);
-    bool processIfRenamed(FileId fileId);
+    ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
+    int fileChangedExtern(FileId fileId, bool ask, int count = 1);
+    int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
 
@@ -285,17 +295,20 @@ private:
     QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
-    void purgeGroup(ProjectGroupNode *&group);
+    int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
+    QStringList mInitialFiles;
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
+#ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
+#endif
     OptionWidget *mGamsOptionWidget = nullptr;
     ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
@@ -311,13 +324,16 @@ private:
     ProjectContextMenu mProjectContextMenu;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
+    int mExternFileEventChoice = -1;
 
     bool mDebugMode = false;
+    bool mStartedUp = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
+
 };
 
 }

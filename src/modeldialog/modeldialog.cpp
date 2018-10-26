@@ -142,7 +142,6 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView->verticalHeader()->hide();
-    tableView->setSortingEnabled(true);
     tableView->horizontalHeader()->setHighlightSections(false);
     tableView->setAlternatingRowColors(true);
 
@@ -176,6 +175,8 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 
     tableView->horizontalHeader()->setResizeContentsPrecision(100);
     tableView->resizeColumnsToContents();
+    tableView->sortByColumn(0, Qt::AscendingOrder);
+    tableView->setSortingEnabled(true);
 }
 
 void ModelDialog::loadUserLibs()
