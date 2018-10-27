@@ -30,7 +30,7 @@ namespace option {
 OptionTableModel::OptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent) :
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
-    mHeader << "Option" << "Value" << "Entry";
+    mHeader << "Option" << "Value" << "Debug Entry";
 // TODO (JP) to be removed
 //    connect(this, &OptionTableModel::dataChanged, this, &OptionTableModel::on_dataChanged);
 }

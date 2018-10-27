@@ -63,6 +63,7 @@ public:
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void optionModelChanged(const QList<OptionItem> &optionItem);
+    void optionNameChanged(const QString &from, const QString &to);
 
 public slots:
     void toggleActiveOptionItem(int index);

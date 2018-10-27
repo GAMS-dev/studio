@@ -683,6 +683,7 @@ bool OptionTokenizer::writeOptionParameterFile(const QList<OptionItem> &items, c
 
 void OptionTokenizer::validateOption(QList<OptionItem> &items)
 {
+   mOption->resetModficationFlag();
    for(OptionItem& item : items) {
        if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
@@ -697,9 +698,11 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
            } else { // valid and not deprected Option
                item.error = mOption->getValueErrorType(item.key, item.value);
            }
+           mOption->setModified(item.key, true);
        } else { // invalid option
            item.error = OptionErrorType::Invalid_Key;
        }
+
    }
 }
 

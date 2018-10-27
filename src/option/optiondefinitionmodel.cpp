@@ -30,7 +30,7 @@ OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObj
 {
     QList<QVariant> rootData;
     rootData << "Option" << "Synonym" << "DefValue" << "Range"
-             << "Type" << "Description" ;
+             << "Type" << "Description" << "Debug Entry" ;
     rootItem = new OptionDefinitionItem(rootData);
 
     setupTreeItemModelData(mOption, rootItem);
@@ -140,6 +140,29 @@ void OptionDefinitionModel::loadOptionFromGroup(const int group)
     setupTreeItemModelData(mOption, rootItem);
 
     endResetModel();
+}
+
+void OptionDefinitionModel::updateModifiedOptionDefinition(const QList<OptionItem> &optionItems)
+{
+    QStringList optionNameList;
+    for(OptionItem item : optionItems) {
+        optionNameList << item.key;
+    }
+    for(int i=0; i<rowCount(); ++i)  {
+        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
+
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            if (optionNameList.contains(optdef.name, Qt::CaseInsensitive) || optionNameList.contains(optdef.synonym, Qt::CaseInsensitive))
+                optdef.modified = true;
+            else
+                optdef.modified = false;
+            setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
+        }
+
+    }
 }
 
 QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
@@ -338,8 +361,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             break;
         }
         columnData.append(optdef.description);
+        columnData.append(optdef.number);
         OptionDefinitionItem* item = new OptionDefinitionItem(columnData, parents.last());
         item->setModified(optdef.modified);
+
         parents.last()->appendChild(item);
 
         if (optdef.valueList.size() > 0) {
@@ -355,6 +380,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
                 enumData << "";
                 enumData << "";
                 enumData << enumValue.description;
+                enumData << "";
                 parents.last()->appendChild(new OptionDefinitionItem(enumData, parents.last()));
             }
             parents.pop_back();

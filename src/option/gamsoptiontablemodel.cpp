@@ -29,8 +29,7 @@ namespace option {
 GamsOptionTableModel::GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(true)
 {
-    mHeader.append("Key");
-    mHeader.append("Value");
+    mHeader << "Key"  << "Value" << "Debug Entry";
 
     if (!normalizedCommandLineStr.simplified().isEmpty())
         on_optionTableModelChanged(normalizedCommandLineStr);
@@ -39,8 +38,7 @@ GamsOptionTableModel::GamsOptionTableModel(const QString normalizedCommandLineSt
 GamsOptionTableModel::GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(false)
 {
-    mHeader.append("Key");
-    mHeader.append("Value");
+    mHeader << "Key"  << "Value" << "Debug Entry";
 }
 
 QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -98,12 +96,21 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (col==0)
+        if (col==0) {
             return mOptionItem.at(row).key;
-        else if (col== 1)
+        } else if (col== 1) {
                  return mOptionItem.at(row).value;
-        else
+        } else if (col==2) {
+            QString key = mOptionItem.at(row).key;
+            if (mOption->isASynonym(mOptionItem.at(row).key))
+                key = mOption->getNameFromSynonym(mOptionItem.at(row).key);
+            if (mOption->isValid(key) || mOption->isASynonym(key))
+                return QVariant(mOption->getOptionDefinition(key).number);
+            else
+                return QVariant(-1);
+        } else {
             break;
+        }
     }
     case Qt::TextAlignmentRole: {
         return Qt::AlignLeft;
@@ -175,7 +182,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
         }
 
      }
-     default:
+    default:
         break;
     }
     return QVariant();
@@ -204,17 +211,20 @@ bool GamsOptionTableModel::setHeaderData(int index, Qt::Orientation orientation,
 bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role == Qt::EditRole)   {
-        QString data = value.toString().simplified();
-        if (data.isEmpty())
+        QString dataValue = value.toString().simplified();
+        if (dataValue.isEmpty())
             return false;
 
         if (index.row() > mOptionItem.size())
             return false;
 
         if (index.column() == 0) { // key
-            mOptionItem[index.row()].key = data;
+            QString from = data(index, Qt::DisplayRole).toString();
+            mOptionItem[index.row()].key = dataValue;
+            if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
+                emit optionNameChanged(from, dataValue);
         } else if (index.column() == 1) { // value
-                  mOptionItem[index.row()].value = data;
+                  mOptionItem[index.row()].value = dataValue;
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
@@ -448,7 +458,6 @@ void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
         else setHeaderData( i, Qt::Vertical,
                           Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
-
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);
@@ -475,6 +484,7 @@ void GamsOptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
     for(int idx = 0; idx<mOptionItem.size(); ++idx) {
        mCheckState[idx] = QVariant();
     }
+
 }
 
 } // namepsace option

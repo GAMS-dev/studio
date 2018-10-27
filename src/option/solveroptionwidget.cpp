@@ -70,11 +70,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
-//    AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
-//    headerView->setSectionResizeMode(QHeaderView::Stretch);
-//    ui->solverOptionTableView->setHorizontalHeader(headerView);
+    ui->solverOptionTableView->resizeColumnToContents(0);
+    ui->solverOptionTableView->resizeColumnToContents(1);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->solverOptionTableView->setColumnHidden(2, false); //true);
+    ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
     connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested,this, &SolverOptionWidget::showOptionContextMenu);
     connect(optionTableModel, &OptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
@@ -128,6 +127,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
+    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
     connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
 
     connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {

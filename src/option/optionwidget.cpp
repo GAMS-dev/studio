@@ -68,7 +68,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
             mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
-    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView));
+    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView) );
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
@@ -86,10 +86,14 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
+    ui->gamsOptionTableView->resizeColumnToContents(0);
+    ui->gamsOptionTableView->resizeColumnToContents(1);
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->gamsOptionTableView->setColumnHidden(2, true); //false);
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
     connect(optionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
+    connect(optionTableModel, &GamsOptionTableModel::optionNameChanged, this, &OptionWidget::on_optionTableNameChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     GamsOptionDefinitionModel* optdefmodel =  new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -113,7 +117,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->resizeColumnToContents(3);
     ui->gamsOptionTreeView->setAlternatingRowColors(true);
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
+    ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
+
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
+    connect(optionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &OptionDefinitionModel::updateModifiedOptionDefinition);
 
     connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
 
@@ -180,14 +187,15 @@ void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &co
     emit optionTableModelChanged(commandLineStr);
 }
 
-void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
-{
-    if (ui->gamsOptionWidget->isHidden())
-       return;
+// TODO (JP) to be removed
+//void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
+//{
+//    if (ui->gamsOptionWidget->isHidden())
+//       return;
 
-    ui->gamsOptionCommandLine->lineEdit()->setText( commandLineStr );
-    emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), commandLineStr);
-}
+//    ui->gamsOptionCommandLine->lineEdit()->setText( commandLineStr );
+//    emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), commandLineStr);
+//}
 
 void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
@@ -309,11 +317,14 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                        ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
     QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
                                                         ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
+    QModelIndex entryNumberIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
+                                                           ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex : index ;
 
     QString optionNameData = ui->gamsOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->gamsOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->gamsOptionTreeView->model()->data(selectedValueIndex).toString();
+    QString entryNumberData = ui->gamsOptionTreeView->model()->data(entryNumberIndex).toString();
 
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->gamsOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
@@ -335,8 +346,10 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->model()->insertRows(ui->gamsOptionTableView->model()->rowCount(), 1, QModelIndex());
     QModelIndex insertKeyIndex = ui->gamsOptionTableView->model()->index(ui->gamsOptionTableView->model()->rowCount()-1, 0);
     QModelIndex insertValueIndex = ui->gamsOptionTableView->model()->index(ui->gamsOptionTableView->model()->rowCount()-1, 1);
+    QModelIndex insertEntryIndex = ui->gamsOptionTableView->model()->index(ui->gamsOptionTableView->model()->rowCount()-1, 2);
     ui->gamsOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->gamsOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
+    ui->gamsOptionTableView->model()->setData( insertEntryIndex, entryNumberData, Qt::EditRole);
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
 
@@ -357,15 +370,31 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {
+    // disconnect
+    disconnect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
+            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
+    disconnect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
+    disconnect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            this, &OptionWidget::updateOptionTableModel );
+
     ui->gamsOptionCommandLine->clear();
     ui->gamsOptionCommandLine->setEnabled(true);
-    if (history.isEmpty()) {
-        ui->gamsOptionCommandLine->setCurrentIndex(0);
-        return;
-    }
+//    if (history.isEmpty()) {
+//        ui->gamsOptionCommandLine->setCurrentIndex(0);
+//        return;
+//    }
     foreach(QString str, history) {
        ui->gamsOptionCommandLine->insertItem(0, str );
     }
+
+    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
+            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            this, &OptionWidget::updateOptionTableModel );
+
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
@@ -408,6 +437,38 @@ void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
     mOptionTokenizer->getOption()->setModified(optionName, true);
     for(QModelIndex item : definitionItems) {
         ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
+    }
+}
+
+void OptionWidget::on_optionTableNameChanged(const QString &from, const QString &to)
+{
+    if (QString::compare(from, to, Qt::CaseInsensitive)==0)
+        return;
+
+    QModelIndexList fromDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                     Qt::DisplayRole,
+                                                                     from, 1);
+    if (fromDefinitionItems.size() <= 0) {
+        fromDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                         Qt::DisplayRole,
+                                                                         from, 1);
+    }
+    for(QModelIndex item : fromDefinitionItems) {
+        QModelIndex index = ui->gamsOptionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+        ui->gamsOptionTreeView->model()->setData(index, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
+    }
+
+    QModelIndexList toDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                     Qt::DisplayRole,
+                                                                     to, 1);
+    if (toDefinitionItems.size() <= 0) {
+        toDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                         Qt::DisplayRole,
+                                                                         to, 1);
+    }
+    for(QModelIndex item : toDefinitionItems) {
+        QModelIndex index = ui->gamsOptionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+        ui->gamsOptionTreeView->model()->setData(index, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 }
 

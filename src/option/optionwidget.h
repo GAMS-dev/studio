@@ -77,7 +77,7 @@ signals:
 
 public slots:
     void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
-    void updateCommandLineStr(const QString &commandLineStr);
+//    void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
     void updateRunState(bool isRunnable, bool isRunning);
@@ -89,6 +89,7 @@ public slots:
 private slots:
     void toggleOptionDefinition(bool checked);
     void on_newTableRowDropped(const QModelIndex &index);
+    void on_optionTableNameChanged(const QString &from, const QString &to);
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);
