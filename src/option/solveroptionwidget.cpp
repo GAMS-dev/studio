@@ -70,8 +70,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->solverOptionTableView->resizeColumnToContents(0);
-    ui->solverOptionTableView->resizeColumnToContents(1);
+    ui->solverOptionTableView->resizeColumnsToContents();
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
@@ -188,8 +187,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
 
     if (ui->solverOptionTableView->model()->rowCount() <= 0) {
-        deleteAction->setVisible(false);
         deleteAllActions->setVisible(false);
+    }
+    if (selection.count() <= 0) {
+        deleteAction->setVisible(false);
     }
 
     QAction* action = menu.exec(ui->solverOptionTableView->viewport()->mapToGlobal(pos));
