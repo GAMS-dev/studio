@@ -187,16 +187,6 @@ void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &co
     emit optionTableModelChanged(commandLineStr);
 }
 
-// TODO (JP) to be removed
-//void OptionWidget::updateCommandLineStr(const QString &commandLineStr)
-//{
-//    if (ui->gamsOptionWidget->isHidden())
-//       return;
-
-//    ui->gamsOptionCommandLine->lineEdit()->setText( commandLineStr );
-//    emit commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), commandLineStr);
-//}
-
 void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
     if (ui->gamsOptionWidget->isHidden())
@@ -352,21 +342,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->model()->setData( insertEntryIndex, entryNumberData, Qt::EditRole);
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
-
-//void OptionWidget::loadCommandLineOption(const QString &location)
-//{
-//    ui->gamsOptionCommandLine->clear();
-//    QStringList option =  mCommandLineHistory->getHistoryFor(location);
-//    foreach(QString str, option) {
-//       ui->gamsOptionCommandLine->insertItem(0, str );
-//    }
-//    ui->gamsOptionCommandLine->setCurrentIndex(0);
-//    ui->gamsOptionCommandLine->setCurrentContext(location);
-//    ui->gamsOptionCommandLine->setEnabled(true);
-
-////    setRunActionsEnabled(false);
-////    setInterruptActionsEnabled(false);
-//}
 
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {

@@ -77,12 +77,10 @@ signals:
 
 public slots:
     void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
-//    void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
     void showOptionContextMenu(const QPoint &pos);
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
-//    void loadCommandLineOption(const QString &location);
     void loadCommandLineOption(const QStringList &history);
     void disableOptionEditor();
 
