@@ -123,7 +123,7 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 void FileMeta::internalSave(const QString &location)
 {
     if (kind() == FileKind::Opt) {
-        for (QWidget *wid: mEditors) {
+        for (QWidget* wid: mEditors) {
             option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
             if (solverOptionWidget) {
                 mActivelySaved = true;
@@ -548,7 +548,6 @@ bool FileMeta::isModified() const
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
-        return false;
     }
     return mDocument ? mDocument->isModified() : false;
 }
