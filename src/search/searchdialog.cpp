@@ -303,6 +303,7 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
     invalidateCache();
     searchParameterChanged();
+    clearSearch();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)

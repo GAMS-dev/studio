@@ -493,7 +493,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
         e->accept();
         return;
     }
-        AbstractEdit::keyReleaseEvent(e);
+    AbstractEdit::keyReleaseEvent(e);
 }
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
