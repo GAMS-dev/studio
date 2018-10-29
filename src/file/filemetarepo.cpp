@@ -139,6 +139,8 @@ QWidgetList FileMetaRepo::editors() const
 
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
+    if (fileMeta->location().isEmpty()) return;
+
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -146,6 +148,8 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 
 void FileMetaRepo::unwatch(const QString &filePath)
 {
+    if (filePath.isEmpty()) return;
+
     mWatcher.removePath(filePath);
     mMissList.removeAll(filePath);
     if (mMissList.isEmpty()) mMissCheckTimer.stop();

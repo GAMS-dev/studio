@@ -404,7 +404,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     // prepare return value
-    // TODO(JM) Check if this works, taken from ProjectGroupNode::setRunnableGms()
 #if defined(__unix__) || defined(__APPLE__)
     QStringList output { QDir::toNativeSeparators(gmsLocation) };
 #else
