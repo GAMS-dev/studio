@@ -59,9 +59,12 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
+    void optionModelChanged(const QList<OptionItem> &optionItem);
+    void optionValueChanged();
 
 public slots:
     void reloadOptionModel(const QList<OptionItem> &optionItem);
+    void on_optionValueChanged();
 
 protected:
     QList<OptionItem> mOptionItem;

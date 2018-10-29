@@ -114,7 +114,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
         return Qt::AlignLeft;
     }
     case Qt::ToolTipRole: {
-        switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+        switch (mOptionItem.at(row).error) {
         case Incorrect_Value_Type:
              return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key);
         case Value_Out_Of_Range:
@@ -126,7 +126,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::TextColorRole: {
         if (col==1) {
-            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+            switch (mOptionItem.at(row).error) {
                 case Incorrect_Value_Type:
                      return QVariant::fromValue(QColor(Qt::red));
                 case Value_Out_Of_Range:
@@ -139,7 +139,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
          }
         break;
      }
-     default:
+    default:
         break;
     }
     return QVariant();
@@ -174,17 +174,18 @@ bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, 
     QVector<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
-        QString data = value.toString().simplified();
-        if (data.isEmpty())
+        QString dataValue = value.toString().simplified();
+        if (dataValue.isEmpty())
             return false;
 
         if (index.row() > mOptionItem.size())
             return false;
 
         if (index.column() == 0) { // key
-            mOptionItem[index.row()].key = data;
+            mOptionItem[index.row()].key = dataValue;
         } else if (index.column() == 1) { // value
-                  mOptionItem[index.row()].value = data;
+                  mOptionItem[index.row()].value = dataValue;
+                  emit optionValueChanged();
         }
     } else if (role == Qt::CheckStateRole) {
         roles = { Qt::CheckStateRole };
@@ -231,6 +232,7 @@ bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent 
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
+    emit  optionValueChanged();
     return true;
 }
 
@@ -245,7 +247,7 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
     mOptionItem.removeAt(removeIndex);
     endMoveRows();
-//    emit optionModelChanged(mOptionItem);
+//    emit  optionValueChanged();
     return true;
 }
 
@@ -273,6 +275,30 @@ void OptionTableModel::reloadOptionModel(const QList<OptionItem> &optionItem)
     for (int i=0; i<mOptionItem.size(); ++i) {
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        if (mOptionItem.at(i).error == No_Error)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+        else if (mOptionItem.at(i).error == Deprecated_Option)
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+        else setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+    }
+    emit optionModelChanged(mOptionItem);
+    endResetModel();
+}
+
+void OptionTableModel::on_optionValueChanged()
+{
+    beginResetModel();
+    mOptionTokenizer->validateOption(mOptionItem);
+
+    setRowCount(mOptionItem.size());
+
+    for (int i=0; i<mOptionItem.size(); ++i) {
         if (mOptionItem.at(i).error == No_Error)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),

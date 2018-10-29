@@ -685,6 +685,7 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
 {
    mOption->resetModficationFlag();
    for(OptionItem& item : items) {
+       item.error = OptionErrorType::No_Error;
        if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
                item.error = OptionErrorType::No_Error;

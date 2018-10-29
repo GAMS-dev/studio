@@ -70,7 +70,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->solverOptionTableView->resizeColumnsToContents();
+    ui->solverOptionTableView->resizeColumnToContents(0);
+    ui->solverOptionTableView->resizeColumnToContents(1);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
@@ -136,6 +137,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     setModified(false);
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
+    connect(optionTableModel, &OptionTableModel::optionModelChanged, optdefmodel, &OptionDefinitionModel::updateModifiedOptionDefinition);
+    connect(optionTableModel, &OptionTableModel::optionValueChanged, optionTableModel, &OptionTableModel::on_optionValueChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
@@ -201,7 +204,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             QModelIndex removeTableIndex = ui->solverOptionTableView->model()->index(index.row(), 0);
             QVariant optionName = ui->solverOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
 
-            ui->solverOptionTableView->model()->removeRow(index.row(), QModelIndex());
+            ui->solverOptionTableView->model()->removeRows(index.row(), 1, QModelIndex());
 
             mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
 
@@ -308,6 +311,7 @@ void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
 
 void SolverOptionWidget::on_reloadSolverOptionFile()
 {
+    mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
     OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
     model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
     setModified(false);
