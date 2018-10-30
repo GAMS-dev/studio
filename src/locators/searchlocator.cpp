@@ -31,6 +31,7 @@ void SearchLocator::provide(SearchDialog *sd)
 {
     mSd = sd;
 }
+
 SearchResultList* SearchLocator::searchResults()
 {
     if (mSd)

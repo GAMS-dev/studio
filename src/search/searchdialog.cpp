@@ -622,6 +622,16 @@ void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
     mActiveEdit = edit;
 }
 
+ResultsView* SearchDialog::resultsView() const
+{
+    return mResultsView;
+}
+
+void SearchDialog::setResultsView(ResultsView* resultsView)
+{
+    delete mResultsView;
+    mResultsView = resultsView;
+}
 
 }
 }

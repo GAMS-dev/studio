@@ -310,7 +310,6 @@ private:
     HelpWidget *mHelpWidget = nullptr;
 #endif
     OptionWidget *mGamsOptionWidget = nullptr;
-    ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 

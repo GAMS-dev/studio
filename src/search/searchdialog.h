@@ -80,6 +80,9 @@ public:
     SearchResultList* getCachedResults();
     void setActiveEditWidget(AbstractEdit *edit);
 
+    ResultsView *resultsView() const;
+    void setResultsView(ResultsView *resultsView);
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
@@ -141,10 +144,11 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool mHasChanged = false;
+    ResultsView *mResultsView = nullptr;
     SearchResultList mCachedResults;
-    bool mFirstReturn = false;
     AbstractEdit *mActiveEdit = nullptr;
+    bool mHasChanged = false;
+    bool mFirstReturn = false;
 };
 
 }
