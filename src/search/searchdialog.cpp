@@ -261,19 +261,22 @@ void SearchDialog::simpleReplaceAll()
     }
 }
 
+void SearchDialog::updateSearchResults()
+{
+    setSearchStatus(SearchStatus::Searching);
+    QApplication::sendPostedEvents();
+    mCachedResults.clear();
+    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
+    mCachedResults.setSearchTerm(createRegex().pattern());
+    mCachedResults.useRegex(regex());
+    mHasChanged = false;
+}
+
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    if (mHasChanged) {
-        setSearchStatus(SearchStatus::Searching);
-        QApplication::sendPostedEvents();
-        mCachedResults.clear();
-        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
-        mCachedResults.setSearchTerm(createRegex().pattern());
-        mCachedResults.useRegex(regex());
-        mHasChanged = false;
-    }
+    if (mHasChanged) updateSearchResults();
 
     selectNextMatch(direction);
 }
@@ -612,7 +615,7 @@ void SearchDialog::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
-SearchResultList* SearchDialog::getCachedResults()
+SearchResultList* SearchDialog::cachedResults()
 {
     return &mCachedResults;
 }

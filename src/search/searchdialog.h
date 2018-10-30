@@ -77,11 +77,13 @@ public:
     void clearSearch();
     void invalidateCache();
 
-    SearchResultList* getCachedResults();
+    SearchResultList* cachedResults();
     void setActiveEditWidget(AbstractEdit *edit);
 
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
+
+    void updateSearchResults();
 
 public slots:
     void on_searchNext();

@@ -35,7 +35,7 @@ void SearchLocator::provide(SearchDialog *sd)
 SearchResultList* SearchLocator::searchResults()
 {
     if (mSd)
-        return mSd->getCachedResults();
+        return mSd->cachedResults();
     else
         return nullptr;
 }
