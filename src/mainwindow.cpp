@@ -1198,7 +1198,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
 void MainWindow::postGamsLibRun()
 {
-    // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
@@ -2246,7 +2245,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 }
 
 void MainWindow::updateEditorLineWrapping()
-{// TODO(AF) split logs and editors
+{
     QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                               : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth

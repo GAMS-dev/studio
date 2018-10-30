@@ -36,13 +36,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF)
-// - a file which is in different groups
-// - naming and documentation of functions
-// - function to find a group for a GAMSProcess
-// - review class dependencies of FileRepository
-// - review function argument, i.e. const strings
-
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView.
