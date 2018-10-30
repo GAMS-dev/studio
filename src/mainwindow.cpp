@@ -1035,10 +1035,18 @@ void MainWindow::fileDeletedExtern(FileId fileId)
         ret = QMessageBox::question(this, "File vanished", file->location()+" doesn't exist any more.\n"
                                     +"Keep file in editor?", "Keep", "Close", QString(), 1, 0);
     }
-    if (ret == 1)
+    if (ret == 1) {
         closeFileEditors(fileId);
-    else if (!file->isReadOnly())
-        file->document()->setModified();
+    } else {
+        if (!file->isReadOnly() && file->document()) {
+             file->document()->setModified();
+        } else {
+            for (QWidget *e : file->editors()) {
+               option::SolverOptionWidget *so = FileMeta::toSolverOptionEdit(e);
+               if (so) so->setModified(true);
+           }
+        }
+    }
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
