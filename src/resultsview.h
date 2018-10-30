@@ -49,7 +49,7 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList &mResultList;
+    SearchResultList mResultList;
     int searchTermLength = 0;
 };
 
