@@ -2226,7 +2226,7 @@ void MainWindow::showResults(SearchResultList &results)
     ui->logTabs->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::closeResults()
+void MainWindow::closeResultsPage()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
@@ -2246,7 +2246,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 }
 
 void MainWindow::updateEditorLineWrapping()
-{// TODO(AF) split logs and editors
+{
     QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                               : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth

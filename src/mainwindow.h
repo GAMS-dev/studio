@@ -117,7 +117,7 @@ public:
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
-    void closeResults();
+    void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(QString glbFile, LibraryItem *model);
     bool readTabs(const QJsonObject &json);

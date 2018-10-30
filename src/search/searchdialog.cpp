@@ -301,9 +301,8 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
 {
     //TODO: make smarter
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
-    invalidateCache();
     searchParameterChanged();
-    clearSearch();
+    clearResults();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -474,7 +473,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
 
     clearResults();
-    mMain->closeResults();
+    mMain->closeResultsPage();
 }
 
 void SearchDialog::clearResults()
