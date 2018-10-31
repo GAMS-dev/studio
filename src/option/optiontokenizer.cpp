@@ -514,6 +514,181 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
     return hasbeenLogged;
 }
 
+QList<SolverOptionItem> OptionTokenizer::readOptionFile(const QString &absoluteFilePath)
+{
+    QList<SolverOptionItem> items;
+    optHandle_t mOPTHandle;
+
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0') {
+        logger()->appendLog(msg, LogMsgType::Error);
+        optFree(&mOPTHandle);
+        return items;
+    }
+
+    if (optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
+        logMessage(mOPTHandle);
+        optFree(&mOPTHandle);
+        return items;
+    }
+
+    optResetAllRecent(mOPTHandle);
+    QFile inputFile(absoluteFilePath);
+    int i = 0;
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+           QString line = in.readLine();
+           if (line.isEmpty()) {
+               items.append(SolverOptionItem(line, true, false));
+           } else if (line.startsWith("*")) {
+              items.append(SolverOptionItem(line, true, false));
+           } else {
+               QByteArray ba = line.toLatin1();
+               optReadFromStr(mOPTHandle, ba.data());
+               logMessage(mOPTHandle);
+               items.append(SolverOptionItem(line, false, false));
+           }
+           i++;
+       }
+       inputFile.close();
+    }
+    int n = 0;
+    for (int i = 1; i <= optCount(mOPTHandle); ++i) {
+        int idefined;
+        int itype;
+        int iopttype;
+        int ioptsubtype;
+        int idummy;
+        int irefnr;
+        optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
+//           if (iopttype == optTypeImmediate)
+//              continue;
+        if (idefined==0)  // no modification
+            continue;
+        n++;
+        char name[GMS_SSSIZE];
+        int group = 0;
+        int helpContextNr;
+        int ivalue;
+        double dvalue;
+        char svalue[GMS_SSSIZE];
+
+        optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
+        optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
+
+        QString optionName = QString::fromLatin1(name);
+        QVariant value;
+        switch(itype) {
+        case optDataInteger: {
+            value = QVariant(ivalue);
+            break;
+        }
+        case optDataDouble: {
+            value = QVariant(dvalue);
+            break;
+        }
+        case optDataString: {
+            value = QVariant(svalue);
+            break;
+        }
+        case optDataStrList: {
+            for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
+               optReadFromListStr( mOPTHandle, name, j, svalue );
+            }
+            value = QVariant(svalue);
+            break;
+        }
+        case optDataNone:
+        default:
+            value = QVariant();
+            break;
+        }
+
+        SolverOptionItem item = items.first();
+        for(int j=0; j<items.size(); j++) {
+            if (items.at(j).text.startsWith(optionName)) {
+                items[j].key = optionName;
+                if (value.toString().isEmpty() || items.at(j).text.simplified().endsWith(value.toString(), Qt::CaseSensitive)) {
+                    items[j].value = value;
+                    items[j].error = mOption->getValueErrorType(optionName, value.toString());
+                } else {
+                    items[j].value = items.at(j).text.mid(optionName.size(), items.at(j).text.trimmed().size()).simplified();
+                    items[j].error = Override_Option;
+                }
+                items[j].disabled = false;
+                items[j].optionId = i;
+                break;
+            }
+        }
+
+        mOption->setModified(QString::fromLatin1(name), true);
+    }
+    qDebug() << "read : " << items.size() << "lines : " << n  << " options.";
+    for(int k=0; k<items.size(); k++) {
+        SolverOptionItem item = items.at(k);
+        qDebug() <<  QString(" # %1:[%2]=[%3] ->(%4|%5) [%6]").arg(k).arg(item.key).arg(item.value.toString()).arg(item.disabled?"C":"X").arg(item.modified?"M":"X").arg(item.text);
+    }
+    return items;
+}
+
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem> &items, const QString &absoluteFilepath)
+{
+    bool hasBeenLogged = false;
+
+    QFile outputFile(absoluteFilepath);
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        logger()->appendLog( QString("expected to write %1, but failed").arg(absoluteFilepath), LogMsgType::Error );
+        return false;
+    }
+
+    QTextStream out(&outputFile);
+
+    for(SolverOptionItem item: items) {
+        if (item.disabled || !item.modified) { // either comment or unmodified item
+            out << item.text;
+        } else {  // either not a comment or a modified item
+            OptionDefinition optDef = mOption->getOptionDefinition( item.key );
+            out << QString("%1 %2").arg(item.key).arg(item.value.toString());
+            switch (item.error) {
+            case Invalid_Key:
+                logger()->appendLog( QString("Unknown option '%1'").arg(item.key),
+                                     LogMsgType::Warning );
+                hasBeenLogged = true;
+                break;
+            case Incorrect_Value_Type:
+                logger()->appendLog( QString("Option key '%1' has an incorrect value type").arg(item.key),
+                                     LogMsgType::Warning );
+                hasBeenLogged = true;
+                break;
+            case Value_Out_Of_Range:
+                logger()->appendLog( QString("Value '%1' for option key '%2' is out of range").arg(item.key).arg(item.value.toString()),
+                                     LogMsgType::Warning );
+                hasBeenLogged = true;
+                break;
+            case Deprecated_Option:
+                logger()->appendLog( QString("Option '%1' is deprecated, will be eventually ignored").arg(item.key),
+                                     LogMsgType::Warning );
+                hasBeenLogged = true;
+                break;
+            case Override_Option:
+                logger()->appendLog( QString("Value '%1' for option key '%2' will be overriden").arg(item.key).arg(item.value.toString()),
+                                     LogMsgType::Warning );
+                hasBeenLogged = true;
+                break;
+            case No_Error:
+            default:
+                break;
+            }
+
+        }
+    }
+    outputFile.close();
+
+    return !hasBeenLogged;
+}
+
 QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absoluteFilePath)
 {
     QList<OptionItem> items;

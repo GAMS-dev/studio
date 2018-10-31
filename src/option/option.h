@@ -35,6 +35,7 @@ enum OptionErrorType {
     Incorrect_Value_Type,
     Value_Out_Of_Range,
     Deprecated_Option,
+    Override_Option,
     Unknown_Error
 };
 
@@ -52,6 +53,24 @@ struct OptionItem {
     int keyPosition = -1;
     int valuePosition = -1;
     bool disabled = false;
+    OptionErrorType error = No_Error;
+};
+
+
+struct SolverOptionItem {
+    SolverOptionItem() { }
+    SolverOptionItem(int id, QString k, QString v) :
+          optionId(id), key(k), value(v) { }
+    SolverOptionItem(QString t, bool disabledFlag, bool modifiedFlag) :
+          text(t), disabled(disabledFlag), modified(modifiedFlag) { }
+
+    int optionId = -1;
+    QString key = "";
+    QVariant value = "";
+    QString text = "";
+    optOptionType type;
+    bool disabled = false;
+    bool modified = false;
     OptionErrorType error = No_Error;
 };
 

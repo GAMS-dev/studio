@@ -602,7 +602,9 @@ void TestCPLEXOption::testReadOptionFile()
     QTextStream out(&outputFile);
     out << "advind 0" << endl;
     out << "advind 1" << endl;
+    out << "*-----------------------" << endl;
     out << "* this is a comment line" << endl;
+    out << "*-----------------------" << endl;
     out << "" << endl;
     out << "cuts 2" << endl;
     out << "aggcutlim=2000000000" << endl;
@@ -613,21 +615,21 @@ void TestCPLEXOption::testReadOptionFile()
     out << "rerun=auto" << endl;
     out << "solnpoolcapacity=1100000000" << endl;
     out << "solnpoolintensity 3" << endl;
-    out << "tuning str1, str2, str3";
-    out << ", str 4";
+    out << "tuning str1, str2, str3" << endl;
+    out << "tuning str 4";
     out << ", str 5";
     out << "" << endl;
     outputFile.close();
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem> items = optionTokenizer->readOptionFile(optFile);
 
     // then
-    QCOMPARE( items.size(), 11 );
+    QCOMPARE( items.size(), 17 );
 
     QVERIFY( containKey (items,"advind") );
-    QCOMPARE( getValue(items,"advind").toInt(),  QVariant("1").toInt() );
+    QVERIFY( (getValue(items,"advind").toInt() == 1) || (getValue(items,"advind").toInt() == 0) );
 
     QVERIFY( containKey (items,"aggcutlim") );
     QCOMPARE( getValue(items,"aggcutlim").toInt(), QVariant("2000000000").toInt() );
@@ -657,7 +659,8 @@ void TestCPLEXOption::testReadOptionFile()
     QCOMPARE( getValue(items,"computeserver").toString(), QVariant("https://somewhere.org/").toString() );
 
     QVERIFY( containKey (items,"tuning") );
-    QCOMPARE( getValue(items,"tuning").toString(), QVariant("str1, str2, str3, str 4, str 5").toString() );
+    QString value = getValue(items,"tuning").toString();
+    QVERIFY( (QString::compare(value, "str1, str2, str3")==0) || (QString::compare(value, "str 4, str 5")==0));
 }
 
 void TestCPLEXOption::testNonExistReadOptionFile()
@@ -725,6 +728,15 @@ void TestCPLEXOption::cleanupTestCase()
         delete optionTokenizer;
 }
 
+bool TestCPLEXOption::containKey(QList<SolverOptionItem> &items, const QString &key) const
+{
+    for(SolverOptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return true;
+    }
+    return false;
+}
+
 bool TestCPLEXOption::containKey(QList<OptionItem> &items, const QString &key) const
 {
     for(OptionItem item : items) {
@@ -732,6 +744,16 @@ bool TestCPLEXOption::containKey(QList<OptionItem> &items, const QString &key) c
             return true;
     }
     return false;
+}
+
+QVariant TestCPLEXOption::getValue(QList<SolverOptionItem> &items, const QString &key) const
+{
+    QVariant value;
+    for(SolverOptionItem item : items) {
+        if (QString::compare(item.key, key, Qt::CaseInsensitive)==0)
+            return QVariant(item.value);
+    }
+    return value;
 }
 
 QVariant TestCPLEXOption::getValue(QList<OptionItem> &items, const QString &key) const

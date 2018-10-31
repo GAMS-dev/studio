@@ -127,8 +127,15 @@ bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
 OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
 {
     QString key = optionName;
-    if (!isValid(key))
-        key = getNameFromSynonym(optionName);
+    if (!isValid(key)) {
+        if (isASynonym(key))
+            key = getNameFromSynonym(optionName);
+        else
+            return Invalid_Key;
+    }
+
+    if (isDeprecated(key))
+        return Deprecated_Option;
 
     switch(getOptionType(key)) {
      case optTypeEnumInt : {

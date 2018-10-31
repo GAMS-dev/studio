@@ -84,7 +84,9 @@ private slots:
     void cleanupTestCase();
 
 private:
+    bool containKey(QList<SolverOptionItem> &items, const QString &key) const;
     bool containKey(QList<OptionItem> &items, const QString &key) const;
+    QVariant getValue(QList<SolverOptionItem> &items, const QString &key) const;
     QVariant getValue(QList<OptionItem> &items, const QString &key) const;
 
     OptionTokenizer* optionTokenizer;
