@@ -63,7 +63,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
     mActions.insert(actSep3, addSeparator());
 
-    mActions.insert(actAddExisting, addAction("Add &existing file(s)", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
     mActions.insert(actSep4, addSeparator());
     mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
 
@@ -200,6 +200,7 @@ void ProjectContextMenu::onAddExisitingFile()
 
                     //  TODO (JP)
                     qDebug() << "TODO opening the option file "<< filePath << " as text file...";
+                    continue;
                 }
             }
             emit addExistingFile(group, filePath);
