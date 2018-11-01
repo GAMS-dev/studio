@@ -423,6 +423,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+        // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
         QString opening = "([{'\"";
@@ -445,7 +446,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(tc);
             return;
 
-            // jump over closing character thats already in place
+        // jump over closing character thats already in place
         } else if (indexClosing != -1 &&
                    closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
@@ -455,8 +456,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
 
-            // insert closing characters
-        } else if (index != -1) {
+        // insert closing characters
+        } else if (index != -1 && !document()->characterAt(textCursor().position()).isLetterOrNumber()) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
