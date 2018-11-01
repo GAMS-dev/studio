@@ -602,19 +602,22 @@ void TestCPLEXOption::testReadOptionFile()
     QTextStream out(&outputFile);
     out << "advind 0" << endl;
     out << "advind 1" << endl;
-    out << "*-----------------------" << endl;
-    out << "* this is a comment line" << endl;
-    out << "*-----------------------" << endl;
+    out << "*----------------------- " << endl;
+    out << "*  this is a comment  line" << endl;
+    out << "* -----------------------" << endl;
     out << "" << endl;
     out << "cuts 2" << endl;
+    out << "cost.feaspref 0.9" << endl;
     out << "aggcutlim=2000000000" << endl;
     out << "benderspartitioninstage 1" << endl;
     out << "dettilim 1e+075" << endl;
     out << "miptrace /This/Is/The/File Name/Of/MIPTrace.File" << endl;
-    out << "computeserver https://somewhere.org/" << endl;
+    out << "computeserver  https://somewhere.org/" << endl;
     out << "rerun=auto" << endl;
+    out << "*  eprhs=0.001" << endl;
     out << "solnpoolcapacity=1100000000" << endl;
-    out << "solnpoolintensity 3" << endl;
+    out << "* x.benderspartition 4" << endl;
+    out << "solnpoolintensity  3" << endl;
     out << "tuning str1, str2, str3" << endl;
     out << "tuning str 4";
     out << ", str 5";
@@ -626,41 +629,68 @@ void TestCPLEXOption::testReadOptionFile()
     QList<SolverOptionItem> items = optionTokenizer->readOptionFile(optFile);
 
     // then
-    QCOMPARE( items.size(), 17 );
+    QCOMPARE( items.size(), 20 );
 
-    QVERIFY( containKey (items,"advind") );
-    QVERIFY( (getValue(items,"advind").toInt() == 1) || (getValue(items,"advind").toInt() == 0) );
+    for(int i=0; i<items.size(); i++) {
+        QVERIFY( !items.at(i).modified );
+        if (i>=2 && i<=5) {  // comment line
+            QVERIFY( items.at(i).disabled );
+            QVERIFY( items.at(i).key.isEmpty() );
+            QVERIFY( items.at(i).value.toString().isEmpty() );
+            QVERIFY( items.at(i).optionId == -1 );
+        } else if (i==14 || i==16) {  // comment line
+            QVERIFY( items.at(i).disabled );
+            QVERIFY( items.at(i).optionId != -1 );
+        } else {
+            QVERIFY( !items.at(i).disabled );
+            QVERIFY( items.at(i).optionId != -1 );
+        }
+    }
 
-    QVERIFY( containKey (items,"aggcutlim") );
-    QCOMPARE( getValue(items,"aggcutlim").toInt(), QVariant("2000000000").toInt() );
+    QCOMPARE( items.at(0).key, "advind" );
+    QCOMPARE( items.at(0).value.toString(), "0" );
 
-    QVERIFY( containKey (items,"benderspartitioninstage") );
-    QCOMPARE( getValue(items,"benderspartitioninstage").toInt(), QVariant("1").toInt() );
+    QCOMPARE( items.at(1).key, "advind" );
+    QCOMPARE( items.at(1).value.toString(), "1" );
 
-    QVERIFY( containKey (items,"dettilim") );
-    QCOMPARE( getValue(items,"dettilim").toDouble(), QVariant("1e+075").toDouble() );
+    QCOMPARE( items.at(6).key, "cuts");
+    QCOMPARE( items.at(6).value.toString(), "2");
 
-    QVERIFY( containKey (items,"solnpoolcapacity") );
-    QCOMPARE( getValue(items,"solnpoolcapacity").toInt(), QVariant("1100000000").toInt() );
+    QCOMPARE( items.at(7).key, "cost.feaspref");
+    QCOMPARE( items.at(7).value.toString(), "0.9");
 
-    QVERIFY( containKey (items,"solnpoolintensity") );
-    QCOMPARE( getValue(items,"solnpoolintensity").toInt(), QVariant("3").toInt() );
+    QCOMPARE( items.at(8).key, "aggcutlim");
+    QCOMPARE( items.at(8).value.toString(), "2000000000");
 
-    QVERIFY( containKey (items,"cuts") );
-    QCOMPARE( getValue(items,"cuts").toString(),  QVariant("2").toString() );
+    QCOMPARE( items.at(9).key, "benderspartitioninstage");
+    QCOMPARE( items.at(9).value.toString(), "1");
 
-    QVERIFY( containKey (items,"miptrace") );
-    QCOMPARE( getValue(items,"miptrace").toString(), QVariant("/This/Is/The/File Name/Of/MIPTrace.File").toString() );
+    QCOMPARE( items.at(10).key, "dettilim");
+    QCOMPARE( items.at(10).value.toString(), "1e+075");
 
-    QVERIFY( containKey (items,"rerun") );
-    QCOMPARE( getValue(items,"rerun").toString(), QVariant("auto").toString() );
+    QCOMPARE( items.at(11).key, "miptrace");
+    QCOMPARE( items.at(11).value.toString(), "/This/Is/The/File Name/Of/MIPTrace.File" );
 
-    QVERIFY( containKey (items,"computeserver") );
-    QCOMPARE( getValue(items,"computeserver").toString(), QVariant("https://somewhere.org/").toString() );
+    QCOMPARE( items.at(12).key, "computeserver");
+    QCOMPARE( items.at(12).value.toString(), "https://somewhere.org/");
 
-    QVERIFY( containKey (items,"tuning") );
-    QString value = getValue(items,"tuning").toString();
-    QVERIFY( (QString::compare(value, "str1, str2, str3")==0) || (QString::compare(value, "str 4, str 5")==0));
+    QCOMPARE( items.at(13).key, "rerun");
+    QCOMPARE( items.at(13).value.toString(), "auto");
+
+    QCOMPARE( items.at(14).key, "eprhs");
+    QCOMPARE( items.at(14).value.toString(), "0.001");
+
+    QCOMPARE( items.at(15).key, "solnpoolcapacity");
+    QCOMPARE( items.at(15).value.toString(), "1100000000");
+
+    QCOMPARE( items.at(17).key, "solnpoolintensity");
+    QCOMPARE( items.at(17).value.toString(), "3");
+
+    QCOMPARE( items.at(18).key, "tuning");
+    QCOMPARE( items.at(18).value.toString(), "str1, str2, str3");
+
+    QCOMPARE( items.at(19).key, "tuning");
+    QCOMPARE( items.at(19).value.toString(), "str 4, str 5");
 }
 
 void TestCPLEXOption::testNonExistReadOptionFile()

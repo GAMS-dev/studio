@@ -482,9 +482,17 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     this->formatLineEdit(lineEdit, errList);
 }
 
-bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
+bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle, bool quiet)
 {
     bool hasbeenLogged = false;
+
+    if (quiet) {
+        hasbeenLogged = (optMessageCount(mOPTHandle)==0);
+        if (!hasbeenLogged)
+            optClearMessages(mOPTHandle);
+        return hasbeenLogged;
+    }
+
     int itype;
     char svalue[GMS_SSSIZE];
     for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
@@ -517,6 +525,7 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
 QList<SolverOptionItem> OptionTokenizer::readOptionFile(const QString &absoluteFilePath)
 {
     QList<SolverOptionItem> items;
+
     optHandle_t mOPTHandle;
 
     char msg[GMS_SSSIZE];
@@ -543,11 +552,16 @@ QList<SolverOptionItem> OptionTokenizer::readOptionFile(const QString &absoluteF
            if (line.isEmpty()) {
                items.append(SolverOptionItem(line, true, false));
            } else if (line.startsWith("*")) {
-              items.append(SolverOptionItem(line, true, false));
+               QByteArray ba = line.mid(1).simplified().toLatin1();
+               optReadFromStr(mOPTHandle, ba.data());
+               if (logMessage(mOPTHandle, true))
+                   qDebug() << "WHAT? " << line;
+               items.append(SolverOptionItem(line, true, false));
            } else {
                QByteArray ba = line.toLatin1();
                optReadFromStr(mOPTHandle, ba.data());
-               logMessage(mOPTHandle);
+               if (logMessage(mOPTHandle))
+                   qDebug() << "WHAT? " << line;
                items.append(SolverOptionItem(line, false, false));
            }
            i++;
@@ -581,18 +595,9 @@ QList<SolverOptionItem> OptionTokenizer::readOptionFile(const QString &absoluteF
         QString optionName = QString::fromLatin1(name);
         QVariant value;
         switch(itype) {
-        case optDataInteger: {
-            value = QVariant(ivalue);
-            break;
-        }
-        case optDataDouble: {
-            value = QVariant(dvalue);
-            break;
-        }
-        case optDataString: {
-            value = QVariant(svalue);
-            break;
-        }
+        case optDataInteger: { value = QVariant(ivalue);  break;  }
+        case optDataDouble: { value = QVariant(dvalue);  break;  }
+        case optDataString: { value = QVariant(svalue);  break;  }
         case optDataStrList: {
             for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
                optReadFromListStr( mOPTHandle, name, j, svalue );
@@ -600,35 +605,58 @@ QList<SolverOptionItem> OptionTokenizer::readOptionFile(const QString &absoluteF
             value = QVariant(svalue);
             break;
         }
-        case optDataNone:
-        default:
-            value = QVariant();
-            break;
+        case optDataNone: { value = QVariant(); break; }
+        default: { value = QVariant(); break; }
         }
 
         SolverOptionItem item = items.first();
         for(int j=0; j<items.size(); j++) {
-            if (items.at(j).text.startsWith(optionName)) {
+            if (items.at(j).text.isEmpty() || (items.at(j).optionId != -1))
+                continue;
+
+            QString text = items.at(j).text;
+            QStringRef textRef = text.midRef(0);
+            if (text.startsWith("*")) {
+                text = items.at(j).text.mid(1).simplified();
+                textRef = text.midRef(0);
+            }
+
+            if (textRef.startsWith(optionName, Qt::CaseInsensitive)) {
                 items[j].key = optionName;
-                if (value.toString().isEmpty() || items.at(j).text.simplified().endsWith(value.toString(), Qt::CaseSensitive)) {
+                if (value.toString().isEmpty() || text.endsWith(value.toString(), Qt::CaseSensitive)) {
+                    items[j].value = value;
+                } else { // multiple definition
+                    items[j].value = text.mid(optionName.size(), text.size()).simplified();
+                }
+                items[j].error = mOption->getValueErrorType(optionName, value.toString());
+                if (items.at(j).text.startsWith("*"))
+                    items[j].disabled = true;
+                else
+                    items[j].disabled = false;
+                items[j].optionId = i;
+            } else if (textRef.contains(optionName, Qt::CaseInsensitive)) {
+                    items[j].key = QString("%1%2").arg(text.mid(0, textRef.indexOf(optionName)))
+                                                  .arg(text.mid(textRef.indexOf(optionName), optionName.size()));
                     items[j].value = value;
                     items[j].error = mOption->getValueErrorType(optionName, value.toString());
-                } else {
-                    items[j].value = items.at(j).text.mid(optionName.size(), items.at(j).text.trimmed().size()).simplified();
-                    items[j].error = Override_Option;
-                }
-                items[j].disabled = false;
-                items[j].optionId = i;
-                break;
+                    if (items.at(j).text.startsWith("*"))
+                        items[j].disabled = true;
+                    else
+                        items[j].disabled = false;
+                    items[j].optionId = i;
             }
         }
 
         mOption->setModified(QString::fromLatin1(name), true);
     }
+
+    // TODO (JP) to be removed
     qDebug() << "read : " << items.size() << "lines : " << n  << " options.";
     for(int k=0; k<items.size(); k++) {
         SolverOptionItem item = items.at(k);
-        qDebug() <<  QString(" # %1:[%2]=[%3] ->(%4|%5) [%6]").arg(k).arg(item.key).arg(item.value.toString()).arg(item.disabled?"C":"X").arg(item.modified?"M":"X").arg(item.text);
+        qDebug() <<  QString(" # %1:%2:[%3]=[%4] ->(%5|%6) [%7]").arg(k).arg(item.optionId)
+                                                                 .arg(item.key).arg(item.value.toString())
+                                                                 .arg(item.disabled?"C":"X").arg(item.modified?"M":"X").arg(item.text);
     }
     return items;
 }

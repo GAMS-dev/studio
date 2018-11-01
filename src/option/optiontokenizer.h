@@ -91,7 +91,7 @@ private:
     AbstractSystemLogger* mOptionLogger = nullptr;
     static AbstractSystemLogger* mNullLogger;
 
-    bool logMessage(optHandle_t &mOPTHandle);
+    bool logMessage(optHandle_t &mOPTHandle, bool quiet=false);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
