@@ -332,10 +332,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                         QFileInfo fi(mRunGroup->specialFile(FileKind::Lst));
                         mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
                         if (!mLstNode) {
-                        errFound = false;
-                        SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
-                                                              "Did you overwrite default GAMS parameters?", LogMsgType::Error);
-                        continue;
+                            errFound = false;
+                            SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
+                                                                  "Did you overwrite default GAMS parameters?", LogMsgType::Error);
+                            continue;
                         }
                     }
                 }

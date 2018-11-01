@@ -1892,7 +1892,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != mResultsView)
+                if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
@@ -2211,23 +2211,24 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
+    ResultsView* resultsView = searchDialog()->resultsView();
+    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
 
-    mResultsView = new ResultsView(results, this);
+    searchDialog()->setResultsView(new ResultsView(results, this));
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
 
     ui->dockLogView->show();
-    mResultsView->resizeColumnsToContent();
+    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTabs->addTab(mResultsView, title); // add new result page
-    ui->logTabs->setCurrentWidget(mResultsView);
+    ui->logTabs->addTab(searchDialog()->resultsView(), title); // add new result page
+    ui->logTabs->setCurrentWidget(searchDialog()->resultsView());
 }
 
-void MainWindow::closeResults()
+void MainWindow::closeResultsPage()
 {
-    int index = ui->logTabs->indexOf(mResultsView);
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView());
     if (index != -1) ui->logTabs->removeTab(index);
 }
 
