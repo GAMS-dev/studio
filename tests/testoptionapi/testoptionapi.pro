@@ -17,15 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+TEMPLATE = app
 
-TEMPLATE = subdirs
+include(../tests.pri)
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testservicelocators
-SUBDIRS += testgamsoption
-SUBDIRS += testcplexoption
-SUBDIRS += testconopt4option
-SUBDIRS += testminosoption
-SUBDIRS += testgurobioption
-SUBDIRS += testoptionapi
-SUBDIRS += testdoclocation
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/option
+
+HEADERS += \
+    testoptionapi.h \
+    $$SRCPATH/option/option.h
+
+SOURCES += \
+    testoptionapi.cpp \
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp

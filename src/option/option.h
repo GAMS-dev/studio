@@ -30,13 +30,13 @@ namespace studio {
 namespace option {
 
 enum OptionErrorType {
-    No_Error,
-    Invalid_Key,
-    Incorrect_Value_Type,
-    Value_Out_Of_Range,
-    Deprecated_Option,
-    Override_Option,
-    Unknown_Error
+    No_Error,     // 0
+    Invalid_Key,  // 1
+    Incorrect_Value_Type, // 2
+    Value_Out_Of_Range,   // 3
+    Deprecated_Option,    // 4
+    Override_Option,      // 5
+    Unknown_Error         // 6
 };
 
 struct OptionItem {
@@ -63,12 +63,17 @@ struct SolverOptionItem {
           optionId(id), key(k), value(v) { }
     SolverOptionItem(QString t, bool disabledFlag, bool modifiedFlag) :
           text(t), disabled(disabledFlag), modified(modifiedFlag) { }
+    SolverOptionItem(QString t, bool disabledFlag, bool modifiedFlag, OptionErrorType e) :
+          text(t), disabled(disabledFlag), modified(modifiedFlag), error(e) { }
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, bool modifiedFlag) :
+          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), modified(modifiedFlag) { }
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, bool modifiedFlag, OptionErrorType e) :
+          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), modified(modifiedFlag), error(e)  { }
 
     int optionId = -1;
     QString key = "";
     QVariant value = "";
     QString text = "";
-    optOptionType type;
     bool disabled = false;
     bool modified = false;
     OptionErrorType error = No_Error;

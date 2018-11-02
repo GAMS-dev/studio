@@ -63,7 +63,7 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    QList<SolverOptionItem> readOptionFile(const QString &absoluteFilePath);
+    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
     bool writeOptionFile(const QList<SolverOptionItem> &items, const QString &absoluteFilepath);
 
     QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);
@@ -91,7 +91,8 @@ private:
     AbstractSystemLogger* mOptionLogger = nullptr;
     static AbstractSystemLogger* mNullLogger;
 
-    bool logMessage(optHandle_t &mOPTHandle, bool quiet=false);
+    OptionErrorType getErrorType(optHandle_t &mOPTHandle);
+    bool logMessage(optHandle_t &mOPTHandle);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
