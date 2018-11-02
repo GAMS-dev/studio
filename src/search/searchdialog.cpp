@@ -388,6 +388,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     QFlags<QTextDocument::FindFlag> flags;
     flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
+    flags.setFlag(QTextDocument::FindCaseSensitively, caseSens());
     matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
     if (mCachedResults.size() > 0) { // has any matches at all
@@ -428,7 +429,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
     mHasChanged = true;
-    setSearchStatus(SearchStatus::Clear);
     searchParameterChanged();
 }
 
