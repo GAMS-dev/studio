@@ -1113,7 +1113,8 @@ void MainWindow::processFileEvents()
         FileEventData fileEvent = mFileEvents.takeFirst();
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
         int remainKind = 0;
-        if (!fm) continue;
+        if (!fm || fm->kind() == FileKind::Log)
+            continue;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id(), false);
