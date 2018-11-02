@@ -23,7 +23,6 @@ public:
     explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
-    inline void deleteMark(TextMark *tm);
     void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);

@@ -317,7 +317,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         result += capture(line, posA, posB, 0, '[');
 
         if (posB+5 < line.length()) {
-            TextMark::Type tmType = errFound ? TextMark::link : TextMark::none;
+            TextMark::Type tmType = TextMark::link;
             if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;

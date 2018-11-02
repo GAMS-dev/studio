@@ -1728,6 +1728,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
@@ -2697,7 +2698,7 @@ void MainWindow::setForegroundOSCheck()
     if (mSettings->foregroundOnDemand())
         setForeground();
 }
-  
+
 void MainWindow::on_actionNextTab_triggered()
 {
     QWidget *wid = focusWidget();

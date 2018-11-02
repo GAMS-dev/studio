@@ -18,15 +18,6 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-inline void TextMarkRepo::deleteMark(TextMark *tm)
-{
-    LineMarks *marks = mMarks.value(tm->fileId());
-    int count = marks->remove(tm->line(), tm);
-    if (count != 1)
-        DEB() << "Expected one TextMark to be removed but found " << count;
-    delete tm;
-}
-
 void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
 {
     removeMarks(fileId, groupId, false, types);
