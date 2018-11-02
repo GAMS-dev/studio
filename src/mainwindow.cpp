@@ -1043,6 +1043,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
     if (file->exists(true)) return 0;
+    mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
