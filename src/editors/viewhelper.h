@@ -4,7 +4,7 @@
 #include "common.h"
 #include "codeedit.h"
 #include "processlogedit.h"
-#include "pagingtextview.h"
+#include "textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "reference/referenceviewer.h"
@@ -38,7 +38,7 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::log));
         return w;
     }
-    inline static PagingTextView* initEditorType(PagingTextView* w) {
+    inline static TextView* initEditorType(TextView* w) {
         if(w) w->setProperty("EditorType", int(EditorType::txtRo));
         return w;
     }
@@ -76,8 +76,8 @@ public:
     inline static ProcessLogEdit* toLogEdit(QWidget* w) {
         return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;
     }
-    inline static PagingTextView* toTextView(QWidget* w) {
-        return (editorType(w) == EditorType::txtRo) ? static_cast<PagingTextView*>(w) : nullptr;
+    inline static TextView* toTextView(QWidget* w) {
+        return (editorType(w) == EditorType::txtRo) ? static_cast<TextView*>(w) : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

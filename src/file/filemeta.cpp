@@ -22,7 +22,6 @@
 #include "projectrepo.h"
 #include "filetype.h"
 #include "editors/codeedit.h"
-#include "editors/pagingtextmodel.h"
 #include "exception.h"
 #include "logger.h"
 #include "locators/settingslocator.h"
@@ -348,12 +347,20 @@ void FileMeta::load(int codecMib)
 
 void FileMeta::load(QList<int> codecMibs)
 {
+    mData = Data(location());
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid);
             if (gdxViewer)
                 gdxViewer->reload();
+        }
+        return;
+    }
+    if (kind() == FileKind::TxtRO) {
+        for (QWidget *wid: mEditors) {
+            TextView *tView = ViewHelper::toTextView(wid);
+            if (tView) tView->loadFile(location(), codecMibs);
         }
         return;
     }
@@ -406,7 +413,6 @@ void FileMeta::load(QList<int> codecMibs)
             }
         }
         file.close();
-        mData = Data(location());
         document()->setModified(false);
     }
 }
@@ -607,9 +613,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
     } else if (kind() == FileKind::TxtRO) {
-        PagingTextView* tView = ViewHelper::initEditorType(new PagingTextView(tabWidget));
-        tView->loadFile(location());
-        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
+        TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
+//        tView->loadFile(location());
+//        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
         res = tView;
     } else {
         AbstractEdit *edit = nullptr;
@@ -639,7 +645,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setLocation(res, location());
     tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     addEditor(res);
-    if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
+    if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res)))
         load(codecMibs);
     return res;
 }

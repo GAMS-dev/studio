@@ -148,17 +148,17 @@ SOURCES += \
     wplabel.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
+    editors/codeedit.cpp \
+    editors/textmapper.cpp \
+    editors/textview.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
+    editors/viewhelper.cpp \
     encodingsdialog.cpp \
-    editors/codeedit.cpp \
     tabdialog.cpp \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
-    locators/defaultsystemlogger.cpp \
-    editors/viewhelper.cpp \
-    editors/pagingtextmodel.cpp \
-    editors/pagingtextview.cpp
+    locators/defaultsystemlogger.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -253,18 +253,18 @@ HEADERS += \
     wplabel.h \
     gotodialog.h \
     editors/abstractedit.h \
+    editors/codeedit.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
+    editors/textmapper.h \
+    editors/textview.h \
+    editors/viewhelper.h \
     encodingsdialog.h \
-    editors/codeedit.h \
     tabdialog.h \
     locators/settingslocator.h \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
-    locators/defaultsystemlogger.h \
-    editors/viewhelper.h \
-    editors/pagingtextmodel.h \
-    editors/pagingtextview.h
+    locators/defaultsystemlogger.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

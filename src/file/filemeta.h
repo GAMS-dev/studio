@@ -30,7 +30,7 @@
 #include "reference/referenceviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
-#include "editors/pagingtextmodel.h"
+#include "editors/textview.h"
 
 class QTabWidget;
 

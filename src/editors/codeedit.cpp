@@ -1305,6 +1305,11 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+QString CodeEdit::lineNrText(int blockNr)
+{
+    return QString::number(blockNr);
+}
+
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
@@ -1329,7 +1334,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 markRect.setHeight(bottom-top);
                 painter.fillRect(markRect, QColor(225,255,235));
             }
-            QString number = QString::number(blockNumber + 1);
+            QString number = lineNrText(blockNumber + 1);
             QFont f = font();
             f.setBold(mark);
             painter.setFont(f);

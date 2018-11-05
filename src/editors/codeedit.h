@@ -104,7 +104,7 @@ public:
     ~CodeEdit() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
-    int lineNumberAreaWidth();
+    virtual int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -142,6 +142,7 @@ protected:
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
     void marksChanged() override;
+    virtual QString lineNrText(int blockNr);
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);

@@ -632,8 +632,8 @@ void MainWindow::updateEditorBlockCount()
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor());
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
     else {
-        PagingTextView *tv = ViewHelper::toTextView(mRecent.editor());
-        if (tv) mStatusWidgets->setLineCount(tv->model()->rowCount());
+        TextView *tv = ViewHelper::toTextView(mRecent.editor());
+        if (tv) mStatusWidgets->setLineCount(tv->lineCount());
     }
 }
 
@@ -930,10 +930,10 @@ void MainWindow::activeTabChanged(int index)
             updateMenuToCodec(node->file()->codecMib());
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
-        } else if (PagingTextView* tv = ViewHelper::toTextView(editWidget)) {
+        } else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
             ui->menuEncoding->setEnabled(true);
             updateMenuToCodec(node->file()->codecMib());
-            mStatusWidgets->setLineCount(tv->model()->rowCount());
+            mStatusWidgets->setLineCount(tv->lineCount());
         } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
@@ -1972,7 +1972,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
-        if (PagingTextView *tv = ViewHelper::toTextView(edit)) {
+        if (TextView *tv = ViewHelper::toTextView(edit)) {
             tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
         }
         if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit)) {
@@ -2443,7 +2443,7 @@ void MainWindow::on_actionZoom_Out_triggered()
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
-        if (PagingTextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
+        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
             int pix = tv->fontInfo().pixelSize();
             if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
         }
@@ -2467,7 +2467,7 @@ void MainWindow::on_actionZoom_In_triggered()
             ae->zoomIn();
             if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
         }
-        if (PagingTextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
+        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
             int pix = tv->fontInfo().pixelSize();
             tv->zoomIn();
             if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
