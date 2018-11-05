@@ -703,7 +703,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     return items;
 }
 
-bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem> &items, const QString &absoluteFilepath)
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath)
 {
     bool hasBeenLogged = false;
 
@@ -715,35 +715,42 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem> &items, cons
 
     QTextStream out(&outputFile);
 
-    for(SolverOptionItem item: items) {
-        if (item.disabled || !item.modified) { // either comment or unmodified item
-            out << item.text;
+    for(SolverOptionItem* item: items) {
+        if (item->disabled) {  // comment
+            if (item->text.simplified().isEmpty())
+                out << endl;
+            else if (!item->text.startsWith("*"))
+               out << "*" << item->text << endl;
+            else
+                out << item->text << endl;
+        } else if (!item->modified) {
+               out << item->text << endl;
         } else {  // either not a comment or a modified item
-            OptionDefinition optDef = mOption->getOptionDefinition( item.key );
-            out << QString("%1 %2").arg(item.key).arg(item.value.toString());
-            switch (item.error) {
+            OptionDefinition optDef = mOption->getOptionDefinition( item->key );
+            out << QString("%1 %2").arg(item->key).arg(item->value.toString()) << endl;
+            switch (item->error) {
             case Invalid_Key:
-                logger()->appendLog( QString("Unknown option '%1'").arg(item.key),
+                logger()->appendLog( QString("Unknown option '%1'").arg(item->key),
                                      LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Incorrect_Value_Type:
-                logger()->appendLog( QString("Option key '%1' has an incorrect value type").arg(item.key),
+                logger()->appendLog( QString("Option key '%1' has an incorrect value type").arg(item->key),
                                      LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Value_Out_Of_Range:
-                logger()->appendLog( QString("Value '%1' for option key '%2' is out of range").arg(item.key).arg(item.value.toString()),
+                logger()->appendLog( QString("Value '%1' for option key '%2' is out of range").arg(item->key).arg(item->value.toString()),
                                      LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Deprecated_Option:
-                logger()->appendLog( QString("Option '%1' is deprecated, will be eventually ignored").arg(item.key),
+                logger()->appendLog( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
                                      LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Override_Option:
-                logger()->appendLog( QString("Value '%1' for option key '%2' will be overriden").arg(item.key).arg(item.value.toString()),
+                logger()->appendLog( QString("Value '%1' for option key '%2' will be overriden").arg(item->key).arg(item->value.toString()),
                                      LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;

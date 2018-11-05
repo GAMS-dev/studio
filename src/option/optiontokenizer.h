@@ -64,7 +64,7 @@ public:
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
-    bool writeOptionFile(const QList<SolverOptionItem> &items, const QString &absoluteFilepath);
+    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
 
     QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);
     bool writeOptionParameterFile(const QList<OptionItem> &items, const QString &absoluteFilepath);

@@ -853,41 +853,34 @@ void TestCPLEXOption::testNonExistReadOptionFile()
 void TestCPLEXOption::testWriteOptionFile()
 {
     // given
-    QList<OptionItem> items;
-    items.append(OptionItem("advind","1"));
-    items.append(OptionItem(".feaspref","1.2"));
-    items.append(OptionItem("covers","2"));
-    items.append(OptionItem("rerun","nono"));
-    items.append(OptionItem("tuning","str1 str2"));
-//    QList<SolverOptionItem> items;
-//    items.append(SolverOptionItem(-1, "", "", "*----------------------- ", true, false));
-//    items.append(SolverOptionItem(-1, " comment line....", "", "*  this is a comment  line", true, true));
-//    items.append(SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
-//    items.append(SolverOptionItem(-1, "", "", "", true, false));
-//    items.append(SolverOptionItem(6, "advind", "1", "advind 1", false, false));
-//    items.append(SolverOptionItem(45, "cuts", "2", "cuts 2", false, false));
-//    items.append(SolverOptionItem(74, "cost.feaspref", "0.9", "cost.feaspref 0.9", false, false));
-//    items.append(SolverOptionItem(74, "x.feaspref", "1.0", "x.feaspref 0.9", false, true));
-//    items.append(SolverOptionItem(7, "aggcutlim", "1000000000", "", false, true));
-//    items.append(SolverOptionItem(71, "eprhs", "0.001", "*  eprhs=0.001", true, false));
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 7:74:[cost.feaspref]=[0.9] ->(X|X) [cost.feaspref 0.9]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 9:27:[benderspartitioninstage]=[1] ->(X|X) [benderspartitioninstage 1]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 10:50:[dettilim]=[1e+075] ->(X|X) [dettilim 1e+075]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 11:110:[miptrace]=[/This/Is/The/File Name/Of/MIPTrace.File] ->(X|X) [miptrace /This/Is/The/File Name/Of/MIPTrace.File]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 12:38:[computeserver]=[https://somewhere.org/] ->(X|X) [computeserver  https://somewhere.org/]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 13:176:[rerun]=[auto] ->(X|X) [rerun=auto]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 15:193:[solnpoolcapacity]=[1100000000] ->(X|X) [solnpoolcapacity=1100000000]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 16:26:[x.benderspartition]=[4] ->(C|X) [* x.benderspartition 4]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 17:195:[solnpoolintensity]=[3] ->(X|X) [solnpoolintensity  3]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 18:216:[tuning]=[str1, str2, str3] ->(X|X) [tuning str1, str2, str3]"
-//QDEBUG : TestCPLEXOption::testReadOptionFile() " # 19:216:[tuning]=[str 4, str 5] ->(X|X) [tuning str 4, str 5]"
+    QList<SolverOptionItem *> items;
+    items.append(new SolverOptionItem(-1, "", "", "*----------------------- ", true, false));
+    items.append(new SolverOptionItem(-1, " comment line....", "", "*  this is a comment  line", true, true));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
+    items.append(new SolverOptionItem(-1, "", "", "", true, false));
+    items.append(new SolverOptionItem(6, "advind", "1", "advind 1", false, false));
+    items.append(new SolverOptionItem(45, "cuts", "2", "cuts 2", false, false));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
+    items.append(new SolverOptionItem(74, "cost.feaspref", "0.9", "cost.feaspref 0.9", false, false));
+    items.append(new SolverOptionItem(74, "x.feaspref", "1.0", "x.feaspref 0.9", false, true));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
+    items.append(new SolverOptionItem(7, "aggcutlim", "1000000000", "", false, true));
+    items.append(new SolverOptionItem(71, "eprhs", "0.001", "*  eprhs=0.001", true, false));
+    items.append(new SolverOptionItem(-1, "", "", "", true, false));
+    items.append(new SolverOptionItem(27, "benderspartitioninstage", "1", "", false, true));
+    items.append(new SolverOptionItem(50, "dettilim", "1e+075", "dettilim 1e+075", false, false));
+    items.append(new SolverOptionItem(176, "rerun", "auto", "rerun=auto", true, false));
+    items.append(new SolverOptionItem(193, "solnpoolcapacity", "1100000000", "solnpoolcapacity=1100000000", false, false));
+    items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "solnpoolintensity  3", false, false));
+    items.append(new SolverOptionItem(216, "tuning", "str1, str2, str3", "tuning str1, str2, str3", false, false));
+    items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false, false));
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt") ));
-//    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt") ));
+//    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt") ));
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4") ));
 
 //    // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt"));
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"));
     int i = 0;
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
@@ -916,7 +909,11 @@ void TestCPLEXOption::testWriteOptionFile()
        }
        inputFile.close();
     }
-//    QCOMPARE(i, items.size());
+    QCOMPARE(i, items.size());
+
+    // clean up
+    qDeleteAll(items);
+    items.clear();
 }
 
 void TestCPLEXOption::cleanupTestCase()
