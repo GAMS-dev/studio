@@ -221,6 +221,9 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             if (selection.count() > 0) {
                 QModelIndex index = selection.at(0);
                 ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
+                ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
+                                                                  Qt::CheckState(Qt::PartiallyChecked),
+                                                                  Qt::CheckStateRole );
                 ui->solverOptionTableView->selectRow(index.row());
             }
     } else if (action == moveUpAction) {
@@ -290,39 +293,47 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
-    int number = -1;
-    int i;
-    for(i=0; i < ui->solverOptionTableView->model()->rowCount(); ++i) {
-        QModelIndex idx = ui->solverOptionTableView->model()->index(i, 2, QModelIndex());
-        number = ui->solverOptionTableView->model()->data(idx, Qt::DisplayRole).toInt();
-        if (number >= optionEntryNumber)
-            break;
-    }
-    if (i < ui->solverOptionTableView->model()->rowCount()) { // update or insert
-        if (number == optionEntryNumber) { // update row i
-            QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i, 1);
-            ui->solverOptionTableView->model()->setData( valueIndex, selectedValueData, Qt::EditRole);
-            ui->solverOptionTableView->selectRow(i);
-        }  else if (number > optionEntryNumber) {  // insert at row i
-             ui->solverOptionTableView->model()->insertRows(i, 1, QModelIndex());
-             QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(i, 0);
-             QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(i, 1);
-             QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(i, 2);
-             ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-             ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-             ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-             ui->solverOptionTableView->selectRow(i);
-        }
-    } else { // append after row i
-        ui->solverOptionTableView->model()->insertRows(i, 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(i, 0);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(i, 1);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(i, 2);
-        ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-        ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-        ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-        ui->solverOptionTableView->selectRow(i);
-    }
+//    int number = -1;
+//    int i;
+//    for(i=0; i < ui->solverOptionTableView->model()->rowCount(); ++i) {
+//        QModelIndex idx = ui->solverOptionTableView->model()->index(i, 2, QModelIndex());
+//        number = ui->solverOptionTableView->model()->data(idx, Qt::DisplayRole).toInt();
+//        if (number >= optionEntryNumber)
+//            break;
+//    }
+//    if (i < ui->solverOptionTableView->model()->rowCount()) { // update or insert
+//        if (number == optionEntryNumber) { // update row i
+//            QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i, 1);
+//            ui->solverOptionTableView->model()->setData( valueIndex, selectedValueData, Qt::EditRole);
+//            ui->solverOptionTableView->selectRow(i);
+//        }  else if (number > optionEntryNumber) {  // insert at row i
+//             ui->solverOptionTableView->model()->insertRows(i, 1, QModelIndex());
+//             QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(i, 0);
+//             QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(i, 1);
+//             QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(i, 2);
+//             ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
+//             ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
+//             ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+//             ui->solverOptionTableView->selectRow(i);
+//        }
+//    } else { // append after row i
+//        ui->solverOptionTableView->model()->insertRows(i, 1, QModelIndex());
+//        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(i, 0);
+//        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(i, 1);
+//        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(i, 2);
+//        ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
+//        ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
+//        ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+//        ui->solverOptionTableView->selectRow(i);
+//    }
+    ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
+    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 0);
+    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 1);
+    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 2);
+    ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
+    ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
+    ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+    ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
 }
 
 void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)

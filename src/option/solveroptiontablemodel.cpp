@@ -131,13 +131,21 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         return Qt::AlignLeft;
     }
     case Qt::ToolTipRole: {
-        switch (mOption->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value.toString())) {
-        case Incorrect_Value_Type:
+        if (mOptionItem.at(row)->disabled) {
+            return QString("%1").arg(mOptionItem.at(row)->text);
+        } else {
+          switch(mOptionItem.at(row)->error) {
+          case Invalid_Key:
+              return QString("Unknown option '%1'").arg(mOptionItem.at(row)->key);
+          case Incorrect_Value_Type:
              return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key);
-        case Value_Out_Of_Range:
+          case Value_Out_Of_Range:
              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key);
-        default:
+          case Deprecated_Option:
+              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key);
+          default:
              break;
+          }
         }
         break;
     }
@@ -145,21 +153,18 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         if (mOptionItem.at(row)->disabled) {
             return QVariant::fromValue(QColor(Qt::gray));
         } else {
-//            if (col==1) {
-            switch (mOption->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value.toString())) {
+            switch(mOptionItem.at(row)->error) {
                 case Incorrect_Value_Type:
                      return QVariant::fromValue(QColor(Qt::red));
                 case Value_Out_Of_Range:
                     return QVariant::fromValue(QColor(Qt::red));
                 case Deprecated_Option:
-                    return QVariant::fromValue(QColor(Qt::gray));
+                    return QVariant::fromValue(QColor(Qt::red));
                 case No_Error:
                     return QVariant::fromValue(QColor(Qt::black));
                 default:
                     return QVariant::fromValue(QColor(Qt::black));
-                }
-//            }
-//            return QVariant::fromValue(QColor(Qt::black));
+             }
         }
      }
      default:
@@ -228,7 +233,8 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         if (index.row() > mOptionItem.size())
             return false;
 
-        mOptionItem[index.row()]->disabled = value.toBool();
+        mOptionItem[index.row()]->disabled = (Qt::CheckState(value.toUInt())==Qt::PartiallyChecked);
+        mCheckState[index.row()] = value;
     }
     emit dataChanged(index, index, roles);
     return true;
@@ -252,7 +258,6 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
          mOptionItem.append(new SolverOptionItem(-1, "", ""));
      else
         mOptionItem.insert(row, (new SolverOptionItem(-1, "", "")));
-
     endInsertRows();
     return true;
 }
@@ -284,6 +289,9 @@ bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourc
     mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
     int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
     mOptionItem.removeAt(removeIndex);
+
+    updateCheckState();
+
     endMoveRows();
 //    emit  optionValueChanged();
     return true;
@@ -431,7 +439,13 @@ void SolverOptionTableModel::setRowCount(int rows)
 void SolverOptionTableModel::updateCheckState()
 {
     for(int i = 0; i<mOptionItem.size(); ++i) {
-        QVariant value = mOptionItem.at(i)->disabled ? QVariant(Qt::PartiallyChecked) : QVariant(Qt::Unchecked);
+        QVariant value =  QVariant(Qt::Unchecked);
+        if (mOptionItem.at(i)->error != No_Error)
+            value = QVariant(Qt::Checked);
+
+        if (mOptionItem.at(i)->disabled)
+            value = QVariant(Qt::PartiallyChecked);
+
         mCheckState[i] = value;
     }
 }
