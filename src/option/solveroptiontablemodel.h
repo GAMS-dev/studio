@@ -26,21 +26,54 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class SolverOptionTableModel : public OptionTableModel
+class SolverOptionTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    SolverOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    SolverOptionTableModel(const QList<SolverOptionItem *> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
-    virtual QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    bool insertRows(int row, int count, const QModelIndex &parent) override;
+    QSize span(const QModelIndex &index) const override;
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
+    bool setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    bool insertRows(int row, int count, const QModelIndex &parent) override;
+    bool removeRows(int row, int count, const QModelIndex &parent) override;
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+
+    QStringList mimeTypes() const override;
 
     Qt::DropActions supportedDropActions() const override;
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+
+    QList<SolverOptionItem *> getCurrentListOfOptionItems() const;
+
+signals:
+    void newTableRowDropped(const QModelIndex &index);
+    void solverOptionModelChanged(const QList<SolverOptionItem *> &optionItem);
+    void solverOptionValueChanged();
+
+public slots:
+    void reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem);
+    void on_solverOptionValueChanged();
+
+protected:
+    QList<SolverOptionItem *> mOptionItem;
+    QList<QString> mHeader;
+    QMap<int, QVariant> mCheckState;
+
+    OptionTokenizer* mOptionTokenizer;
+    Option* mOption;
+
+    void setRowCount(int rows);
+    void updateCheckState();
 
 };
 

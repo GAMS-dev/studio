@@ -593,17 +593,19 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
         int irefnr;
         optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
 
-        if (i==74) {
-            qDebug() << ".feaspref:" << idefined;
-        }
+        char name[GMS_SSSIZE];
+        int group = 0;
+        int helpContextNr;
+        optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
+
+        if (helpContextNr != 0)
+            qDebug() << QString::fromLatin1(name) << " is not valid";
+
 //           if (iopttype == optTypeImmediate)
 //              continue;
         if (idefined==0)  // no modification
             continue;
         n++;
-        char name[GMS_SSSIZE];
-        int group = 0;
-        int helpContextNr;
         int ivalue;
         double dvalue;
         char svalue[GMS_SSSIZE];
@@ -949,6 +951,31 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
        }
 
    }
+}
+
+void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
+{
+    mOption->resetModficationFlag();
+    for(SolverOptionItem* item : items) {
+        item->error = OptionErrorType::No_Error;
+        if (mOption->isDoubleDashedOption(item->key)) { // double dashed parameter
+            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item->key)) )
+                item->error = OptionErrorType::No_Error;
+            else
+               item->error = OptionErrorType::Invalid_Key;
+            continue;
+        }
+        if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
+            if (mOption->isDeprecated(item->key)) { // deprecated option
+                item->error = OptionErrorType::Deprecated_Option;
+            } else { // valid and not deprected Option
+                item->error = mOption->getValueErrorType(item->key, item->value.toString());
+            }
+            mOption->setModified(item->key, true);
+        } else { // invalid option
+            item->error = OptionErrorType::Invalid_Key;
+        }
+    }
 }
 
 Option *OptionTokenizer::getOption() const

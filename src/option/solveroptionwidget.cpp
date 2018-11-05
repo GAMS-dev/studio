@@ -28,7 +28,7 @@
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
-#include "optiontablemodel.h"
+#include "solveroptiontablemodel.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
 
@@ -51,9 +51,13 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionMessageTabWidget->addTab(logEdit, "Message");
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
-    QList<OptionItem> optionItem = mOptionTokenizer->readOptionParameterFile(mLocation);
-    OptionTableModel* optionTableModel = new OptionTableModel(optionItem, mOptionTokenizer,  this);
+    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation);
+    SolverOptionTableModel* optionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( optionTableModel );
+    for(int i=0; i< optionItem.size(); ++i) {
+        if (optionItem.at(i)->disabled)
+            ui->solverOptionTableView->setSpan(i, 0, 1, 3);
+    }
 
     ui->solverOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView));
     ui->solverOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -70,13 +74,11 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->solverOptionTableView->resizeColumnToContents(0);
-    ui->solverOptionTableView->resizeColumnToContents(1);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
     connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested,this, &SolverOptionWidget::showOptionContextMenu);
-    connect(optionTableModel, &OptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
+    connect(optionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -137,8 +139,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     setModified(false);
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
-    connect(optionTableModel, &OptionTableModel::optionModelChanged, optdefmodel, &OptionDefinitionModel::updateModifiedOptionDefinition);
-    connect(optionTableModel, &OptionTableModel::optionValueChanged, optionTableModel, &OptionTableModel::on_optionValueChanged);
+//    connect(optionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::updateModifiedOptionDefinition);
+    connect(optionTableModel, &SolverOptionTableModel::solverOptionValueChanged, optionTableModel, &SolverOptionTableModel::on_solverOptionValueChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
@@ -185,6 +187,12 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
+    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "add new option");
+    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
+    menu.addSeparator();
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
+    menu.addSeparator();
     QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
     menu.addSeparator();
     QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
@@ -193,11 +201,42 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         deleteAllActions->setVisible(false);
     }
     if (selection.count() <= 0) {
+        insertAction->setVisible(false);
         deleteAction->setVisible(false);
+        moveUpAction->setVisible(false);
+        moveDownAction->setVisible(false);
+    } else {
+        QModelIndex index = selection.at(0);
+        if (index.row()==0)
+            moveUpAction->setVisible(false);
+        if (index.row()+1 == ui->solverOptionTableView->model()->rowCount())
+            moveDownAction->setVisible(false);
     }
 
     QAction* action = menu.exec(ui->solverOptionTableView->viewport()->mapToGlobal(pos));
-    if (action == deleteAction) {
+    if (action == addAction) {
+       ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
+       ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+    } else if (action == insertAction) {
+            if (selection.count() > 0) {
+                QModelIndex index = selection.at(0);
+                ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
+                ui->solverOptionTableView->selectRow(index.row());
+            }
+    } else if (action == moveUpAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()-1);
+            ui->solverOptionTableView->selectRow(index.row()-1);
+        }
+
+    } else if (action == moveDownAction) {
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()+2);
+            ui->solverOptionTableView->selectRow(index.row()+1);
+        }
+    } else if (action == deleteAction) {
         if (selection.count() > 0) {
             setModified(true);
             QModelIndex index = selection.at(0);

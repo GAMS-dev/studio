@@ -70,6 +70,7 @@ public:
     bool writeOptionParameterFile(const QList<OptionItem> &items, const QString &absoluteFilepath);
 
     void validateOption(QList<OptionItem> &items);
+    void validateOption(QList<SolverOptionItem *> &items);
 
     Option *getOption() const;
 
