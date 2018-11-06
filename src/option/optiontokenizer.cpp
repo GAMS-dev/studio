@@ -467,7 +467,7 @@ QString OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComme
     if (asComment) {
         formatOption = QString("* %1 %2").arg(item->key).arg(item->value.toString());
     } else {
-        formatOption = QString("%1=%2").arg(item->key).arg(item->value.toString());
+        formatOption = QString("%1 %2").arg(item->key).arg(item->value.toString());
     }
     return formatOption;
 }
