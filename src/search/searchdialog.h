@@ -151,6 +151,7 @@ private:
     AbstractEdit *mActiveEdit = nullptr;
     bool mHasChanged = false;
     bool mFirstReturn = false;
+    QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
 };
 
 }

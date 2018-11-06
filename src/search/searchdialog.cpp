@@ -228,8 +228,10 @@ void SearchDialog::simpleReplaceAll()
     QTextCursor item;
     QTextCursor lastItem;
 
+    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
+
     do {
-        item = edit->document()->find(searchRegex, lastItem);
+        item = edit->document()->find(searchRegex, lastItem, flags);
         lastItem = item;
 
         if (!item.isNull())
@@ -386,9 +388,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     if (!fc) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    QFlags<QTextDocument::FindFlag> flags;
-    flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
-    flags.setFlag(QTextDocument::FindCaseSensitively, caseSens());
+    QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
     matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
     if (mCachedResults.size() > 0) { // has any matches at all
@@ -635,6 +635,15 @@ void SearchDialog::setResultsView(ResultsView* resultsView)
 {
     delete mResultsView;
     mResultsView = resultsView;
+}
+
+QFlags<QTextDocument::FindFlag> SearchDialog::setFlags(SearchDirection direction)
+{
+    QFlags<QTextDocument::FindFlag> flags;
+    flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
+    flags.setFlag(QTextDocument::FindCaseSensitively, caseSens());
+
+    return flags;
 }
 
 }
