@@ -445,7 +445,8 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 void SearchDialog::updateReplaceActionAvailability()
 {
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    bool isSourceCode = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source;
+    bool isSourceCode = (ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
+                         || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt);
 
     bool activateSearch = isSourceCode || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
     bool activateReplace = (isSourceCode && !edit->isReadOnly());
