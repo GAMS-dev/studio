@@ -167,6 +167,8 @@ void OptionDefinitionModel::updateModifiedOptionDefinition(const QList<OptionIte
 
 void OptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems)
 {
+    // TODO (JP)
+    // set optdef.modified = false only in case there exists no other item of the same in optionItems
     QMap<QString, int> modifiedOption;
     for(int i = 0; i<optionItems.size(); ++i)
         modifiedOption[optionItems.at(i)->key] = i;
