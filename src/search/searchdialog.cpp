@@ -62,8 +62,10 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection())
+    if (edit->textCursor().hasSelection()) {
         edit->textCursor().insertText(replaceTerm);
+        invalidateCache();
+    }
 
     findNext(SearchDialog::Forward);
 }
@@ -260,6 +262,7 @@ void SearchDialog::simpleReplaceAll()
             tc.insertText(replaceTerm);
         }
         edit->textCursor().endEditBlock();
+        invalidateCache();
     }
 }
 
@@ -379,7 +382,7 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
     searchParameterChanged();
 }
 
-void SearchDialog::selectNextMatch(SearchDirection direction)
+void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex = createRegex();
@@ -399,7 +402,10 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
             if (direction == SearchDirection::Backward)
                 tc.movePosition(QTextCursor::End); // move to bottom
             edit->setTextCursor(tc);
-            selectNextMatch(direction);
+
+            // try once more to start over
+            if (!second) selectNextMatch(direction, true);
+            else setSearchStatus(SearchStatus::NoResults);
 
         } else { // found next match
             edit->jumpTo(matchSelection);
@@ -428,7 +434,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    mHasChanged = true;
     searchParameterChanged();
 }
 
