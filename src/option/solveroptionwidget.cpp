@@ -407,8 +407,7 @@ void SolverOptionWidget::setModified(bool modified)
 bool SolverOptionWidget::saveAs(const QString &location)
 {
     setModified(false);
-    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
-    bool success = mOptionTokenizer->writeOptionParameterFile(model->getCurrentListOfOptionItems(), location);
+    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location);
     mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
     return success;
 }

@@ -472,6 +472,14 @@ QString OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComme
     return formatOption;
 }
 
+QString OptionTokenizer::formatComment(const SolverOptionItem *item)
+{
+    if (item->text.simplified().startsWith("*"))
+        return item->text;
+    else
+        return QString("* %1").arg(item->text);
+}
+
 QStringList OptionTokenizer::splitOptionFromComment(const SolverOptionItem *item)
 {
     // TODO (JP) this should be replaced by Option API method
@@ -625,9 +633,6 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
         int helpContextNr;
         optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
 
-        if (helpContextNr != 0)
-            qDebug() << QString::fromLatin1(name) << " is not valid";
-
 //           if (iopttype == optTypeImmediate)
 //              continue;
         if (idefined==0)  // no modification
@@ -747,14 +752,11 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
             if (item->text.simplified().isEmpty())
                 out << endl;
             else if (!item->text.startsWith("*"))
-               out << "*" << item->text << endl;
+               out << formatComment(item) << endl;
             else
-                out << item->text << endl;
-        } else if (!item->modified) {
-               out << item->text << endl;
-        } else {  // either not a comment or a modified item
-            OptionDefinition optDef = mOption->getOptionDefinition( item->key );
-            out << QString("%1 %2").arg(item->key).arg(item->value.toString()) << endl;
+                out << formatComment(item) << endl;
+        } else {
+            out << formatOption( item, false) << endl;
             switch (item->error) {
             case Invalid_Key:
                 logger()->appendLog( QString("Unknown option '%1'").arg(item->key),
