@@ -31,6 +31,12 @@ SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> i
 {
     mHeader << "Option" << "Value" << "Debug Entry";
 
+    for(SolverOptionItem* item : mOptionItem) {
+        if (item->disabled)
+            item->error = No_Error;
+        else
+            item->error = mOption->getValueErrorType(item->key, item->value.toString());
+    }
     updateCheckState();
 }
 
@@ -235,11 +241,17 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (index.column() == 0) { // key
-            mOptionItem[index.row()]->key = dataValue;
-        } else if (index.column() == 1) { // value
-                  mOptionItem[index.row()]->value = dataValue;
-                  emit solverOptionValueChanged();
+        if (mOptionItem[index.row()]->disabled) {
+            if (index.column() == 0) { // text
+                mOptionItem[index.row()]->text = dataValue;
+            }
+        } else {
+            if (index.column() == 0) { // key
+                mOptionItem[index.row()]->key = dataValue;
+            } else if (index.column() == 1) { // value
+                      mOptionItem[index.row()]->value = dataValue;
+                      emit solverOptionValueChanged();
+            }
         }
     } else if (role == Qt::CheckStateRole) {
         roles = { Qt::CheckStateRole };
@@ -386,6 +398,10 @@ QList<SolverOptionItem *> SolverOptionTableModel::getCurrentListOfOptionItems() 
 void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem)
 {
     beginResetModel();
+
+    qDeleteAll(mOptionItem);
+    mOptionItem.clear();
+
     mOptionItem = optionItem;
     mOptionTokenizer->validateOption(mOptionItem);
     updateCheckState();
@@ -393,19 +409,27 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
-        setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
-        if (mOptionItem.at(i)->error == No_Error)
-            setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::Unchecked),
-                              Qt::CheckStateRole );
-        else if (mOptionItem.at(i)->error == Deprecated_Option)
+        if (mOptionItem.at(i)->disabled) {
+            setData( index(i, 0), QVariant(mOptionItem.at(i)->text), Qt::EditRole);
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
-        else setHeaderData( i, Qt::Vertical,
+        } else {
+           setData( index(i, 0), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+           setData( index(i, 1), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
+           setData( index(i, 2), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+           if (mOptionItem.at(i)->error == No_Error)
+               setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+           else if (mOptionItem.at(i)->error == Deprecated_Option)
+                   setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+           else setHeaderData( i, Qt::Vertical,
                           Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
+        }
     }
     emit solverOptionModelChanged(mOptionItem);
     endResetModel();
@@ -487,11 +511,12 @@ void SolverOptionTableModel::updateCheckState()
 {
     for(int i = 0; i<mOptionItem.size(); ++i) {
         QVariant value =  QVariant(Qt::Unchecked);
-        if (mOptionItem.at(i)->error != No_Error)
-            value = QVariant(Qt::Checked);
-
         if (mOptionItem.at(i)->disabled)
             value = QVariant(Qt::PartiallyChecked);
+        else if (mOptionItem.at(i)->error == No_Error)
+                value = QVariant(Qt::Unchecked);
+        else
+            value = QVariant(Qt::Checked);
 
         mCheckState[i] = value;
     }
