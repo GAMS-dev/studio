@@ -359,8 +359,9 @@ void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
 void SolverOptionWidget::on_reloadSolverOptionFile()
 {
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
-    model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
+//    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
+//    model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
+    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation) );
     setModified(false);
 }
 

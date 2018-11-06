@@ -127,10 +127,11 @@ void FileMeta::internalSave(const QString &location)
             option::SolverOptionWidget *solverOptionWidget = toSolverOptionEdit(wid);
             if (solverOptionWidget) {
                 mActivelySaved = true;
-                bool success = solverOptionWidget->saveOptionFile(location);
+                solverOptionWidget->saveOptionFile(location);
                 mData = Data(location);
-                if (!success)
-                   solverOptionWidget->on_problemSavingOptionFile(location);
+// TODO (JP) to be removed
+//                if (!success)
+//                   solverOptionWidget->on_problemSavingOptionFile(location);
                 return;
             }
         }
