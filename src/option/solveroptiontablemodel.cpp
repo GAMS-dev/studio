@@ -52,13 +52,22 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         else
             return mCheckState[index];
     case Qt::ToolTipRole: {
-        switch (mOption->getValueErrorType(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString())) {
-        case Incorrect_Value_Type:
-             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key);
-        case Value_Out_Of_Range:
-             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key);
-        default:
-            break;
+//      mOption->getValueErrorType(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString()))
+        if (mOptionItem.at(index)->disabled) {
+            return QString("%1").arg(mOptionItem.at(index)->text);
+        } else {
+          switch(mOptionItem.at(index)->error) {
+          case Invalid_Key:
+              return QString("Unknown option '%1'").arg(mOptionItem.at(index)->key);
+          case Incorrect_Value_Type:
+              return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key);
+          case Value_Out_Of_Range:
+              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key);
+          case Deprecated_Option:
+              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key);
+          default:
+             break;
+          }
         }
         break;
     }
@@ -205,8 +214,12 @@ bool SolverOptionTableModel::setHeaderData(int index, Qt::Orientation orientatio
         return false;
 
     mCheckState[index] = value;
-    emit headerDataChanged(orientation, index, index);
+    if (value.toInt()==Qt::CheckState(Qt::PartiallyChecked))
+        mOptionItem.at(index)->disabled = true;
+    else
+         mOptionItem.at(index)->disabled = false;
 
+    emit headerDataChanged(orientation, index, index);
     return true;
 }
 
@@ -253,11 +266,14 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
-     beginInsertRows(QModelIndex(), row, row + count - 1);
-     if (mOptionItem.size() == row)
-         mOptionItem.append(new SolverOptionItem(-1, "", ""));
-     else
-        mOptionItem.insert(row, (new SolverOptionItem(-1, "", "")));
+    beginInsertRows(QModelIndex(), row, row + count - 1);
+    if (mOptionItem.size() == row)
+         mOptionItem.append(new SolverOptionItem(-1, "", "", "", false, false));
+    else
+        mOptionItem.insert(row, (new SolverOptionItem(-1, "", "", "", false, false)));
+
+    updateCheckState();
+
     endInsertRows();
     return true;
 }
@@ -421,7 +437,38 @@ void SolverOptionTableModel::on_solverOptionValueChanged()
                           Qt::CheckStateRole );
         }
     }
+    emit solverOptionModelChanged(mOptionItem);
     endResetModel();
+}
+
+void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
+{
+    if (mCheckState[logicalIndex].toInt() == Qt::PartiallyChecked) { // from comment
+        QStringList splittedOption = mOptionTokenizer->splitOptionFromComment(mOptionItem.at(logicalIndex));
+        mOptionItem.at(logicalIndex)->key = splittedOption.at(0);
+        mOptionItem.at(logicalIndex)->value = splittedOption.at(1);
+        mOptionItem.at(logicalIndex)->text = "";
+        mOptionItem.at(logicalIndex)->disabled = false;
+        mOptionItem.at(logicalIndex)->error = mOption->getValueErrorType( mOptionItem.at(logicalIndex)->key, mOptionItem.at(logicalIndex)->value.toString() );
+        updateCheckState();
+        setData( index(logicalIndex,0), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
+        setData( index(logicalIndex,1), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
+        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
+        setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
+    } else {  // to comment
+        QString formattedOption = mOptionTokenizer->formatOption(mOptionItem.at(logicalIndex), true);
+        mOptionItem.at(logicalIndex)->key = "";
+        mOptionItem.at(logicalIndex)->value = "";
+        mOptionItem.at(logicalIndex)->text = formattedOption;
+        mOptionItem.at(logicalIndex)->error = No_Error;
+        mOptionItem.at(logicalIndex)->disabled = true;
+        updateCheckState();
+        setData( index(logicalIndex,0), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
+        setData( index(logicalIndex,1), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
+        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
+        setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
+    }
+    emit solverOptionModelChanged(mOptionItem);
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

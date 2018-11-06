@@ -165,6 +165,38 @@ void OptionDefinitionModel::updateModifiedOptionDefinition(const QList<OptionIte
     }
 }
 
+void OptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems)
+{
+    QMap<QString, int> modifiedOption;
+    for(int i = 0; i<optionItems.size(); ++i)
+        modifiedOption[optionItems.at(i)->key] = i;
+
+    QStringList keys = modifiedOption.keys();
+    for(int i=0; i<rowCount(); ++i)  {
+        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
+
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            if (keys.contains(optdef.name, Qt::CaseInsensitive)) {
+                if (optionItems.at(modifiedOption[optdef.name])->disabled)
+                    optdef.modified = false;
+                else
+                    optdef.modified = true;
+            } else if (keys.contains(optdef.synonym, Qt::CaseInsensitive)) {
+                      if (optionItems.at(modifiedOption[optdef.synonym])->disabled)
+                          optdef.modified = false;
+                      else
+                          optdef.modified = true;
+            } else {
+                optdef.modified = false;
+            }
+            setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
+        }
+    }
+}
+
 QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
@@ -188,7 +220,6 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
          break;
     }
     return QVariant();
-
 }
 
 Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const

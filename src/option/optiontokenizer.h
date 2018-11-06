@@ -63,6 +63,9 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
+    QString formatOption(const SolverOptionItem *item, bool asComment);
+    QStringList splitOptionFromComment(const SolverOptionItem *item);
+
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
 

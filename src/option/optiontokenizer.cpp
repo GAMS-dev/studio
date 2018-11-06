@@ -459,6 +459,33 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
+QString OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComment)
+{
+    // TODO (JP) this should be replaced by Option API method
+    //   int optWriteToStr( optHandle_t handle, int inputid, char* inputkey, char* inputvalue, char* output);
+    QString formatOption = "";
+    if (asComment) {
+        formatOption = QString("* %1 %2").arg(item->key).arg(item->value.toString());
+    } else {
+        formatOption = QString("%1=%2").arg(item->key).arg(item->value.toString());
+    }
+    return formatOption;
+}
+
+QStringList OptionTokenizer::splitOptionFromComment(const SolverOptionItem *item)
+{
+    // TODO (JP) this should be replaced by Option API method
+    //   int optReadFromStr( optHandle_t handle, char* inputStr, int outputid, char* outputkey, char* outputvalue);
+    QStringList options;
+    QString text = item->text.mid(1).simplified();
+    if (item->text.contains("="))
+        options << text.section("=", 0, 0) << text.section("=", 1);
+    else
+        options << text.section(" ", 0, 0) << text.section(" ", 1);
+
+    return options;
+}
+
 void OptionTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr)
 {
 //    this->setLineEditTextFormat(lineEdit, "");

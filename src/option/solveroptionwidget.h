@@ -23,6 +23,7 @@
 #include <QWidget>
 
 #include "common.h"
+#include "solveroptiontablemodel.h"
 
 namespace gams {
 namespace studio {
@@ -74,6 +75,7 @@ public slots:
     void on_problemSavingOptionFile(const QString &location);
 
     void on_reloadSolverOptionFile();
+    void on_toggleRowHeader(int logicalIndex);
 
 private:
     Ui::SolverOptionWidget *ui;
@@ -82,8 +84,12 @@ private:
     QString mLocation;
     QString mSolverName;
 
+    SolverOptionTableModel* mOptionTableModel;
+
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
+
+    void updateTableColumnSpan();
 };
 
 
