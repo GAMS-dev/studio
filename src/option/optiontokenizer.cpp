@@ -485,7 +485,10 @@ QStringList OptionTokenizer::splitOptionFromComment(const SolverOptionItem *item
     // TODO (JP) this should be replaced by Option API method
     //   int optReadFromStr( optHandle_t handle, char* inputStr, int outputid, char* outputkey, char* outputvalue);
     QStringList options;
-    QString text = item->text.mid(1).simplified();
+    QString text = item->text.simplified();
+    if (text.startsWith("*"))
+        text = item->text.mid(1).simplified();
+
     if (item->text.contains("="))
         options << text.section("=", 0, 0) << text.section("=", 1);
     else
@@ -607,7 +610,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
                QByteArray ba = line.toLatin1();
                optReadFromStr(mOPTHandle, ba.data());
                OptionErrorType type = getErrorType(mOPTHandle);
-               if (type == Deprecated_Option) {
+               if (type != No_Error) {
                    items.append(new SolverOptionItem(-1, line, "", line, false, false, type));
                } else {
                    items.append(new SolverOptionItem(line, false, false));

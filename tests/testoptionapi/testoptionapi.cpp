@@ -91,6 +91,8 @@ void TestOptionAPI::testReadFromStr_data()
     // strlist option
     QTest::newRow("tuning str1 str2 str3") << "tuning str1 str2 str3" << "tuning"               << true  << "str1 str2 str3"  << false   << -1;
     QTest::newRow("tuning str4 str5")      << "tuning str4 str5"      << "tuning"               << true  << "str4 str5"       << false   << -1;
+//    QTest::newRow("tuning multple strlist1") << "tuning str1 str2 str3 \n tuning str4 str5"    << "tuning"   << true  << "\"str1 str2 str3\""  << false   << -1;
+//    QTest::newRow("tuning multple strlist2") << "tuning str1 str2 str3 tuning str4 str5"    << "tuning"   << true  << "\"str4 str5\""       << false   << -1;
 
     // enumint option
     QTest::newRow("lpmethod 9")            << "lpmethod 9"            << "lpmethod"            << false  << "0"      << true    << getErrorCode(optMsgValueError);
@@ -112,10 +114,13 @@ void TestOptionAPI::testReadFromStr_data()
 
     // dot option
     QTest::newRow("x.feaspref 0.0009")      << "x.feaspref 0.0009"         << ".feaspref"          << true  << "0.0009"  << false   << -1;
+    QTest::newRow("y.feaspref(i) 0.0099")      << "x.feaspref 0.0009"      << ".feaspref"          << true  << "0.0009"  << false   << -1;
+    QTest::newRow("z.feaspref('value1') 0.0999")      << "x.feaspref 0.0009"         << ".feaspref"          << true  << "0.0009"  << false   << -1;
     QTest::newRow("xyz.benderspartition 3") << "xyz.benderspartition 3"    << ".benderspartition"  << true  << "3"       << false   << -1;
     QTest::newRow("z.feasopt 0.0001")       << "x.feasopt 0.0009"          << ".feasopt"           << false << "0"       << true    << getErrorCode(optMsgUserError);
 
-    QTest::newRow("  startalg 4")      << "  startalg 4"        << "startalg"     << true  << "4" << false   << -1;
+    QTest::newRow("  startalg 4")         << "  startalg 4"        << "startalg"     << true   << "4" << false   << -1;
+    QTest::newRow("indic constr01$y 0")   << "indic constr01$y 0"  << "indic"        << false  << "0" << false   << -1;
 }
 
 void TestOptionAPI::testReadFromStr()
