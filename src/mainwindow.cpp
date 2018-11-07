@@ -1724,7 +1724,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // clear the TextMarks for this group
     QSet<TextMark::Type> markTypes;
-    markTypes << TextMark::error << TextMark::link;
+    markTypes << TextMark::error << TextMark::link << TextMark::target;
     for (ProjectFileNode *node: runGroup->listFiles(true))
         mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
