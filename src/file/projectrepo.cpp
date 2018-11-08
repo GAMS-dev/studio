@@ -30,6 +30,7 @@
 #include "filemetarepo.h"
 #include "abstractprocess.h"
 #include "projecttreeview.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -129,14 +130,7 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
-    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
-    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
-    reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
-    option::SolverOptionWidget *optionEditor = FileMeta::toSolverOptionEdit(editWidget);
-    NodeId groupId = edit ? edit->groupId()
-                          : gdxViewer ? gdxViewer->groupId()
-                                      : refViewer ? refViewer->groupId()
-                                                  : optionEditor ? optionEditor->groupId() : NodeId();
+    NodeId groupId = ViewHelper::groupId(editWidget);
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
@@ -358,13 +352,10 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
-
     if (mNodes.contains(node->id())) {
         mTreeModel->removeChild(node);
         removeFromIndex(node);
     }
-
-    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 
     // if this file is marked as runnable remove reference
     if (runGroup->runnableGms() == node->file()) {
@@ -379,6 +370,15 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         }
     }
     node->deleteLater();
+    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
+}
+
+void ProjectRepo::purgeGroup(ProjectGroupNode *group)
+{
+    if (!group) return;
+    if (group->isEmpty()) {
+        closeGroup(group);
+    }
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType

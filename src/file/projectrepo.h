@@ -36,13 +36,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF)
-// - a file which is in different groups
-// - naming and documentation of functions
-// - function to find a group for a GAMSProcess
-// - review class dependencies of FileRepository
-// - review function argument, i.e. const strings
-
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView.
@@ -146,6 +139,7 @@ public slots:
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
+    void purgeGroup(ProjectGroupNode *group);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 

@@ -33,6 +33,7 @@
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
 #include "studiosettings.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -143,7 +144,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: file()->editors()) {
-            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -191,7 +192,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
 
         int i = 0;
         for (QWidget* w: file()->editors()) {
-            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;
@@ -331,10 +332,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                         QFileInfo fi(mRunGroup->specialFile(FileKind::Lst));
                         mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
                         if (!mLstNode) {
-                        errFound = false;
-                        SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
-                                                              "Did you overwrite default GAMS parameters?", LogMsgType::Error);
-                        continue;
+                            errFound = false;
+                            SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
+                                                                  "Did you overwrite default GAMS parameters?", LogMsgType::Error);
+                            continue;
                         }
                     }
                 }

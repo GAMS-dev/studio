@@ -25,6 +25,7 @@
 #include "filemeta.h"
 #include "editors/codeedit.h"
 #include "logger.h"
+#include "editors/viewhelper.h"
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
@@ -115,10 +116,8 @@ QString ProjectFileNode::tooltip()
     QString edFile = "-";
     QString edGroup = "-";
     if (file()->editors().size()) {
-        if (FileMeta::toAbstractEdit(file()->editors().first())) {
-            edFile = QString::number(FileMeta::toAbstractEdit(file()->editors().first())->fileId());
-            edGroup = QString::number(FileMeta::toAbstractEdit(file()->editors().first())->groupId());
-        }
+        edFile = QString::number(ViewHelper::fileId(file()->editors().first()));
+        edGroup = QString::number(ViewHelper::groupId(file()->editors().first()));
     }
     tip += "\nedit: " + edFile + " " + edGroup;
     return tip;

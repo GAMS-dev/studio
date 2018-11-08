@@ -306,7 +306,7 @@ QStringList Option::getKeyAndSynonymList() const
 QStringList Option::getValuesList(const QString &optionName) const
 {
    QStringList valueList;
-   foreach( OptionValue value, getValueList(optionName.toUpper()) )
+   for ( OptionValue value: getValueList(optionName.toUpper()) )
        valueList << value.value.toString();
 
    return valueList;
@@ -315,7 +315,7 @@ QStringList Option::getValuesList(const QString &optionName) const
 QStringList Option::getNonHiddenValuesList(const QString &optionName) const
 {
     QStringList valueList;
-    foreach( OptionValue value, getValueList(optionName.toUpper()) ) {
+    for ( OptionValue value: getValueList(optionName.toUpper()) ) {
         if (!value.hidden)
            valueList << value.value.toString();
     }

@@ -68,6 +68,7 @@ public:
     bool isModified() const;
     bool isReadOnly() const;
     bool isAutoReload() const;
+    void resetTempReloadState();
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>(), bool forcedAsTextEdit = false);
     QWidgetList editors() const;
@@ -89,65 +90,9 @@ public:
     ErrorHighlighter* highlighter() const;
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
     void takeEditsFrom(FileMeta *other);
-
+    void reloadDelayed();
 
 public: // static convenience methods
-    inline static void initEditorType(AbstractEdit* w, EditorType type) {
-        if(w) w->setProperty("EditorType", int(type));
-    }
-    inline static void initEditorType(CodeEdit* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::source));
-    }
-    inline static void initEditorType(ProcessLogEdit* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::log));
-    }
-    inline static void initEditorType(gdxviewer::GdxViewer* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::gdx));
-    }
-    inline static void initEditorType(lxiviewer::LxiViewer* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::lxiLst));
-    }
-    inline static void initEditorType(reference::ReferenceViewer* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::ref));
-    }
-    inline static void initEditorType(option::SolverOptionWidget * w) {
-        if(w) w->setProperty("EditorType", int(EditorType::opt));
-    }
-
-    inline static EditorType editorType(QWidget* w) {
-        QVariant v = w ? w->property("EditorType") : QVariant();
-        return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
-    }
-
-    inline static AbstractEdit* toAbstractEdit(QWidget* w) {
-        EditorType t = editorType(w);
-        if (t == EditorType::lxiLst)
-            return toLxiViewer(w)->codeEdit();
-        return (t == EditorType::log || t == EditorType::source || t == EditorType::txt)
-                ? static_cast<AbstractEdit*>(w) : nullptr;
-    }
-    inline static CodeEdit* toCodeEdit(QWidget* w) {
-        EditorType t = editorType(w);
-        if (t == EditorType::lxiLst)
-            return toLxiViewer(w)->codeEdit();
-        return (t == EditorType::source) ? static_cast<CodeEdit*>(w) : nullptr;
-    }
-    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
-        return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;
-    }
-    inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
-        return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
-    }
-    inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
-        return (editorType(w) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
-    }
-    inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
-        return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
-    }
-    inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
-        return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
-    }
-
 signals:
     void changed(FileId fileId);
     void documentOpened();
@@ -158,6 +103,7 @@ private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
+    void reload();
 
 private:
     struct Data {
@@ -194,6 +140,8 @@ private:
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;
+    QTimer mTempAutoReloadTimer;
+    QTimer mReloadTimer;
 
     // TODO(JM): QTextBlock.userData  ->  TextMark
     // TODO(JM): TextChanged events

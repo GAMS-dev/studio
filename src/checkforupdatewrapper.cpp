@@ -28,8 +28,10 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF) html for checkForUpdate
-
+/**
+  * Possible improvments
+  * o html outout for checkForUpdate
+  */
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
     char buffer[GMS_SSSIZE];

@@ -286,7 +286,6 @@ void GdxSymbol::calcDefaultColumns()
         else if (mType == GMS_DT_EQU)
             defVal = gmsDefRecEqu[mSubType][valColIdx];
         for(int i=0; i<mRecordCount; i++) {
-            // TODO(AF) fix uninizalized defVal
             if(defVal != mValues[i*GMS_VAL_MAX + valColIdx]) {
                 mDefaultColumn[valColIdx] = false;
                 break;

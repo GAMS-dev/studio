@@ -221,7 +221,7 @@ void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString
 void HelpWidget::on_bookmarkNameUpdated(const QString &location, const QString &name)
 {
     if (mBookmarkMap.contains(location)) {
-        foreach (QAction* action, mBookmarkMenu->actions()) {
+        for (QAction* action: mBookmarkMenu->actions()) {
             if (action->isSeparator())
                 continue;
             if (QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) {
@@ -237,7 +237,7 @@ void HelpWidget::on_bookmarkLocationUpdated(const QString &oldLocation, const QS
 {
     if (mBookmarkMap.contains(oldLocation)) {
         mBookmarkMap.remove(oldLocation);
-        foreach (QAction* action, mBookmarkMenu->actions()) {
+        for (QAction* action: mBookmarkMenu->actions()) {
             if (action->isSeparator())
                 continue;
             if (QString::compare(action->objectName(), oldLocation, Qt::CaseInsensitive) == 0) {
@@ -248,7 +248,7 @@ void HelpWidget::on_bookmarkLocationUpdated(const QString &oldLocation, const QS
     }
 
     bool found = false;
-    foreach (QAction* action, mBookmarkMenu->actions()) {
+    for (QAction* action: mBookmarkMenu->actions()) {
         if (action->isSeparator())
             continue;
         if ((QString::compare(action->objectName(), newLocation, Qt::CaseInsensitive) == 0) &&
@@ -266,7 +266,7 @@ void HelpWidget::on_bookmarkLocationUpdated(const QString &oldLocation, const QS
 
 void HelpWidget::on_bookmarkRemoved(const QString &location, const QString &name)
 {
-    foreach (QAction* action, mBookmarkMenu->actions()) {
+    for (QAction* action: mBookmarkMenu->actions()) {
         if (action->isSeparator())
             continue;
         if ((QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) &&
@@ -332,7 +332,7 @@ void HelpWidget::on_actionAddBookmark_triggered()
 
     QString pageUrl = ui->webEngineView->page()->url().toString();
     bool found = false;
-    foreach (QAction* action, mBookmarkMenu->actions()) {
+    for (QAction* action: mBookmarkMenu->actions()) {
         if (action->isSeparator())
             continue;
         if ((QString::compare(action->objectName(), pageUrl, Qt::CaseInsensitive) == 0) &&

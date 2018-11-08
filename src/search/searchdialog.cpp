@@ -25,6 +25,7 @@
 #include "../exception.h"
 #include "searchresultlist.h"
 #include "locators/settingslocator.h"
+#include "editors/viewhelper.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
@@ -57,7 +58,7 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
@@ -106,7 +107,7 @@ void SearchDialog::on_btn_FindAll_clicked()
     updateMatchAmount(mCachedResults.size());
     mMain->showResults(mCachedResults);
 
-    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
     if (ce) ce->updateExtraSelections();
 }
 
@@ -216,7 +217,7 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, Searc
 
 void SearchDialog::simpleReplaceAll()
 {
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
@@ -253,26 +254,29 @@ void SearchDialog::simpleReplaceAll()
     if (answer == QMessageBox::Ok) {
         clearResults();
         edit->textCursor().beginEditBlock();
-        foreach (QTextCursor tc, hits) {
+        for (QTextCursor tc: hits) {
             tc.insertText(replaceTerm);
         }
         edit->textCursor().endEditBlock();
     }
 }
 
+void SearchDialog::updateSearchResults()
+{
+    setSearchStatus(SearchStatus::Searching);
+    QApplication::sendPostedEvents();
+    mCachedResults.clear();
+    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
+    mCachedResults.setSearchTerm(createRegex().pattern());
+    mCachedResults.useRegex(regex());
+    mHasChanged = false;
+}
+
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    if (mHasChanged) {
-        setSearchStatus(SearchStatus::Searching);
-        QApplication::sendPostedEvents();
-        mCachedResults.clear();
-        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
-        mCachedResults.setSearchTerm(createRegex().pattern());
-        mCachedResults.useRegex(regex());
-        mHasChanged = false;
-    }
+    if (mHasChanged) updateSearchResults();
 
     selectNextMatch(direction);
 }
@@ -300,8 +304,8 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
 {
     //TODO: make smarter
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
-    invalidateCache();
     searchParameterChanged();
+    clearResults();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -381,7 +385,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
 
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     QFlags<QTextDocument::FindFlag> flags;
     flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
     matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
@@ -410,7 +414,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
     // set match and counter
     int count = 0;
-    foreach (Result match, mCachedResults.resultList()) {
+    for (Result match: mCachedResults.resultList()) {
         if (match.lineNr() == matchSelection.blockNumber()+1
                 && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
             updateMatchAmount(mCachedResults.size(), count+1);
@@ -440,10 +444,10 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 
 void SearchDialog::updateReplaceActionAvailability()
 {
-    AbstractEdit *edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
-    bool isSourceCode = FileMeta::editorType(mMain->recent()->editor()) == EditorType::source;
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+    bool isSourceCode = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source;
 
-    bool activateSearch = isSourceCode || FileMeta::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
+    bool activateSearch = isSourceCode || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
     bool activateReplace = (isSourceCode && !edit->isReadOnly());
 
     // replace actions (!readonly):
@@ -472,7 +476,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
 
     clearResults();
-    mMain->closeResults();
+    mMain->closeResultsPage();
 }
 
 void SearchDialog::clearResults()
@@ -481,13 +485,13 @@ void SearchDialog::clearResults()
     if (!fc) return;
     setSearchStatus(SearchStatus::Clear);
 
-    AbstractEdit* edit = FileMeta::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     QTextCursor tc = edit->textCursor();
     tc.clearSelection();
     edit->setTextCursor(tc);
     mCachedResults.clear();
 
-    CodeEdit* ce = FileMeta::toCodeEdit(mActiveEdit);
+    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
     if (ce) ce->updateExtraSelections();
 }
 
@@ -535,7 +539,7 @@ void SearchDialog::insertHistory()
 void SearchDialog::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEdit *edit = FileMeta::toAbstractEdit(widget);
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(widget);
     ProjectAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
     if (!fsc || !edit) return;
 
@@ -611,7 +615,7 @@ void SearchDialog::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
-SearchResultList* SearchDialog::getCachedResults()
+SearchResultList* SearchDialog::cachedResults()
 {
     return &mCachedResults;
 }
@@ -621,6 +625,16 @@ void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
     mActiveEdit = edit;
 }
 
+ResultsView* SearchDialog::resultsView() const
+{
+    return mResultsView;
+}
+
+void SearchDialog::setResultsView(ResultsView* resultsView)
+{
+    delete mResultsView;
+    mResultsView = resultsView;
+}
 
 }
 }

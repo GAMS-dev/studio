@@ -25,6 +25,7 @@
 #include "exception.h"
 #include "logger.h"
 #include "locators/settingslocator.h"
+#include "editors/viewhelper.h"
 #include <QFileInfo>
 
 namespace gams {
@@ -138,8 +139,19 @@ QWidgetList FileMetaRepo::editors() const
 
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
+    if (fileMeta->location().isEmpty()) return;
+
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
+    if (mMissList.isEmpty()) mMissCheckTimer.stop();
+}
+
+void FileMetaRepo::unwatch(const QString &filePath)
+{
+    if (filePath.isEmpty()) return;
+
+    mWatcher.removePath(filePath);
+    mMissList.removeAll(filePath);
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
 }
 
@@ -161,8 +173,8 @@ void FileMetaRepo::setDebugMode(bool debug)
     DEB() << "\n--------------- FileMetas (Editors) ---------------";
     QMap<int, AbstractEdit*> edits;
     for (QWidget* wid: editors()) {
-        AbstractEdit*ed = FileMeta::toAbstractEdit(wid);
-        if (ed) edits.insert(int(ed->fileId()), ed);
+        AbstractEdit*ed = ViewHelper::toAbstractEdit(wid);
+        if (ed) edits.insert(int(ViewHelper::fileId(ed)), ed);
     }
 
     for (int key: edits.keys()) {

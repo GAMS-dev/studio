@@ -56,10 +56,6 @@ public:
     void copyAction();
     void selectAllAction();
     void selectSearchField();
-    FileId fileId() const;
-    void setFileId(const FileId &fileId);
-    NodeId groupId() const;
-    void setGroupId(const NodeId &groupId = NodeId());
 
 private slots:
     void hideUniverseSymbol();
@@ -77,8 +73,6 @@ private:
 
     QString mGdxFile;
     QString mSystemDirectory;
-    FileId mFileId;
-    NodeId mGroupId;
 
     bool mHasChanged = false;
 

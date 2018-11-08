@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINETOKENIZER_H
-#define COMMANDLINETOKENIZER_H
+#ifndef OPTIONTOKENIZER_H
+#define OPTIONTOKENIZER_H
 
 #include <QTextLayout>
 #include <QLineEdit>
@@ -111,4 +111,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINETOKENIZER_H
+#endif // OPTIONTOKENIZER_H

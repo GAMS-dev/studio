@@ -355,12 +355,13 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
 
     ui->gamsOptionCommandLine->clear();
     ui->gamsOptionCommandLine->setEnabled(true);
+
 //    if (history.isEmpty()) {
 //        ui->gamsOptionCommandLine->setCurrentIndex(0);
 //        return;
 //    }
-    foreach(QString str, history) {
-       ui->gamsOptionCommandLine->insertItem(0, str );
+    for (QString str: history) {
+      ui->gamsOptionCommandLine->insertItem(0, str );
     }
 
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
