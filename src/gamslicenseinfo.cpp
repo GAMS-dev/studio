@@ -18,13 +18,28 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslicenseinfo.h"
+#include "commonpaths.h"
+#include "gclgms.h"
+
+#include <QDebug>
 
 namespace gams {
 namespace studio {
 
 GamsLicenseInfo::GamsLicenseInfo()
 {
+    char msg[GMS_SSSIZE];
+    if (!gevCreateD(&mGEV,
+                    CommonPaths::systemDir().toStdString().c_str(),
+                    msg,
+                    sizeof(msg)))
+        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+    //mALGX = gevGetALGX(mGEV);
+}
 
+GamsLicenseInfo::~GamsLicenseInfo()
+{
+    if (mGEV) gevFree(&mGEV);
 }
 
 }
