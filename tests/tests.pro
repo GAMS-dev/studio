@@ -22,3 +22,4 @@ TEMPLATE = subdirs
 
 SUBDIRS += testcommonpaths
 SUBDIRS += testservicelocators
+SUBDIRS += testgamslicenseinfo
