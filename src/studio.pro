@@ -160,7 +160,8 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    aboutgamsdialog.cpp
+    aboutgamsdialog.cpp \
+    gamslicenseinfo.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -269,7 +270,8 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    aboutgamsdialog.h
+    aboutgamsdialog.h \
+    gamslicenseinfo.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
