@@ -24,7 +24,6 @@
 #include "solveroptionwidget.h"
 #include "ui_solveroptionwidget.h"
 
-#include "addoptionheaderview.h"
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"

@@ -29,7 +29,6 @@
 #include "reference/referenceviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
-#include "option/solveroptionwidget.h"
 
 class QTabWidget;
 
