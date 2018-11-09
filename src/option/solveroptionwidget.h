@@ -40,7 +40,7 @@ class SolverOptionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(QString optionDefitionFile, QString optionFilePath, QWidget *parent = nullptr);
+    explicit SolverOptionWidget(QString solverName, QString optionFilePath, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
     bool isInFocused(QWidget* focusWidget);
@@ -89,6 +89,7 @@ private:
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
 
+    void updateEditActions(bool modified);
     void updateTableColumnSpan();
 };
 

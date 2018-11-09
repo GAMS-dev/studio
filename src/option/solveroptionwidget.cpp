@@ -133,13 +133,15 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
          optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
     });
 
-    setModified(false);
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionValueChanged, mOptionTableModel, &SolverOptionTableModel::on_solverOptionValueChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
+
+    setModified(false);
+
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -371,6 +373,13 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
     setModified(true);
 }
 
+void SolverOptionWidget::updateEditActions(bool modified)
+{
+    ui->saveButton->setEnabled(modified);
+    ui->saveAsButton->setEnabled(modified);
+    ui->openAsTextButton->setEnabled(!modified);
+}
+
 void SolverOptionWidget::updateTableColumnSpan()
 {
     ui->solverOptionTableView->clearSpans();
@@ -401,6 +410,7 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
+    updateEditActions(mModified);
     emit modificationChanged( mFileId );
 }
 
