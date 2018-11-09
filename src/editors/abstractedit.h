@@ -71,11 +71,11 @@ protected:
     }
 
     void setMarks(const LineMarks *marks);
-    const LineMarks &marks() const;
+    const LineMarks* marks() const;
 
 private:
     NodeId mGroupId;
-    const LineMarks *mMarks = nullptr;
+    const LineMarks* mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;

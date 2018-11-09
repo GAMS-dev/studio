@@ -69,9 +69,9 @@ void AbstractEdit::setMarks(const LineMarks *marks)
     marksChanged();
 }
 
-const LineMarks &AbstractEdit::marks() const
+const LineMarks* AbstractEdit::marks() const
 {
-    return *mMarks;
+    return mMarks;
 }
 
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)
