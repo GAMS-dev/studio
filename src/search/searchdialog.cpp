@@ -224,6 +224,8 @@ void SearchDialog::simpleReplaceAll()
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
+    if (searchTerm.isEmpty()) return;
+
     QRegularExpression searchRegex = createRegex();
     QString replaceTerm = ui->txt_replace->text();
 
