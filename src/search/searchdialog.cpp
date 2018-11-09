@@ -205,8 +205,9 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, Searc
 {
     QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
+    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
     do {
-        item = fm->document()->find(searchRegex, lastItem);
+        item = fm->document()->find(searchRegex, lastItem, flags);
         if (item != lastItem) lastItem = item;
         else break;
 
