@@ -26,8 +26,9 @@
 namespace gams {
 namespace studio {
 
-TextMapper::TextMapper()
+TextMapper::TextMapper(QObject *parent): QObject(parent)
 {
+    mCodec = QTextCodec::codecForLocale();
     setMappingSizes();
     clear();
 }
@@ -47,6 +48,7 @@ QTextCodec *TextMapper::codec() const
 void TextMapper::setCodec(QTextCodec *codec)
 {
     mCodec = codec;
+//    DEB() << "Codec in TextMapper changed to " << codec->name();
 }
 
 
@@ -62,6 +64,10 @@ bool TextMapper::openFile(const QString &fileName)
         mOversizeMapper.setSize(mFile.size());
         mChunkLineNrs.reserve(int(mFile.size()/mChunkSize)+1);
         Chunk *chunk = getChunk(0);
+        if (chunk->isValid()) {
+            mTopLine.lineCount = chunk->lineCount();
+            mTopLine.localLine = 0;
+        }
         return chunk->isValid();
     }
     return false;
@@ -77,7 +83,8 @@ void TextMapper::clear()
         mFile.close();
         mChunks.clear();
     }
-    mLastKnownChunk = -1;
+    mLastChunkWithLineNr = -1;
+    mBytesPerLine = 20.0;
     mChunkLineNrs.clear();
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
@@ -85,10 +92,49 @@ void TextMapper::clear()
 }
 
 
+void TextMapper::updateLineOffsets(Chunk *chunk) const
+{
+    if (!chunk) return;
+    for (int i = mChunkLineNrs.size(); i <= chunk->nr; ++i) {
+        // fill missing elements
+        mChunkLineNrs << ChunkLines(i);
+    }
+    ChunkLines *cl = &mChunkLineNrs[chunk->nr];
+    if (cl->lineCount < 0) { // init ChunkLines on first visit
+        cl->lineCount = chunk->lineCount();
+        cl->linesStart = chunk->start + chunk->lineBytes.first();
+        cl->linesByteSize = chunk->lineBytes.last() - chunk->lineBytes.first();
+        if (cl->chunkNr == 0) {
+            cl->lineOffset = 0;
+            if (mLastChunkWithLineNr < cl->chunkNr) {
+                mLastChunkWithLineNr = cl->chunkNr;
+                updateBytesPerLine(*cl);
+            }
+        }
+    }
+    if (cl->chunkNr > 0) {
+        ChunkLines *prevCl = &mChunkLineNrs[chunk->nr-1];
+        // extend counting as far as known
+        while (cl->chunkNr > mLastChunkWithLineNr) {
+            // skip if current chunk is unknown or previous chunk has no line-numbers
+            if (!cl->isKnown() || !prevCl->hasLineNrs()) break;
+            cl->lineOffset = prevCl->lineOffset + prevCl->lineCount;
+            if (mLastChunkWithLineNr < cl->chunkNr) {
+                mLastChunkWithLineNr = cl->chunkNr;
+                updateBytesPerLine(*cl);
+            }
+
+            if (cl->chunkNr == mChunkLineNrs.size()-1) break;
+            prevCl = cl;
+            cl = &mChunkLineNrs[cl->chunkNr+1];
+        }
+    }
+}
+
 TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
 {
     int foundIndex = -1;
-    for (int i = 0; i < mChunks.size(); ++i) {
+    for (int i = mChunks.size()-1; i >= 0; --i) {
         if (mChunks.at(i)->nr == chunkNr) {
             foundIndex = i;
             break;
@@ -104,43 +150,16 @@ TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
         if (!newChunk) return nullptr;
         mChunks << newChunk;
 
-        // update line-offsets as far as possible
-        for (int i = mChunkLineNrs.size(); i <= chunkNr; ++i) {
-            // fill missing elements
-            mChunkLineNrs << ChunkLines(chunkNr, 0);
-        }
-        ChunkLines *cl = &mChunkLineNrs[chunkNr];
-        cl->lineCount = mChunks.last()->lineBytes.size();
-        if (chunkNr == 0) {
-            cl->lineOffset = 0;
-        } else if (mChunkLineNrs.last().lineOffset < 0) {
-            // if offset of previous chunk is known, calculate offset for this
-            cl->lineOffset = mChunkLineNrs.last().lineOffset + mChunkLineNrs.last().lineCount;
-        }
-        int cloInd = chunkNr;
-        ChunkLines *prevCl = cl;
-        while (++cloInd < mChunkLineNrs.size()) {
-            cl = &mChunkLineNrs[cloInd];
-            if (cl->lineOffset >= 0                    // value already set
-                    || prevCl->lineCount < 0           // unknown line count of previous (not read until now)
-                    || prevCl->lineOffset < 0) break;  // unknown offset of previous (not all chunks from start were read)
-            cl->lineOffset = prevCl->lineOffset + prevCl->lineCount;
-        }
-        if (mLastKnownChunk < chunkNr)
-            mLastKnownChunk = chunkNr;
-
     } else if (foundIndex < mChunks.size()-1) {
         mChunks.move(foundIndex, mChunks.size()-1);
     }
-
-
     return mChunks.last();
 }
 
 
-TextMapper::Chunk* TextMapper::loadChunk(int chunkIndex) const
+TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
 {
-    qint64 chunkStart = chunkIndex * mChunkSize;
+    qint64 chunkStart = chunkNr * mChunkSize;
     if (chunkStart < 0 || chunkStart >= mOversizeMapper.size) return nullptr;
 
     // map file
@@ -153,7 +172,7 @@ TextMapper::Chunk* TextMapper::loadChunk(int chunkIndex) const
 
     // mapping succeeded initialise chunk
     Chunk *res = new Chunk();
-    res->nr = chunkIndex;
+    res->nr = chunkNr;
     res->map = map;
     res->start = cStart;
     res->size = int(cEnd - cStart);
@@ -178,9 +197,10 @@ TextMapper::Chunk* TextMapper::loadChunk(int chunkIndex) const
             }
         }
     }
-
     if (res->start + res->size == mOversizeMapper.size)
-        res->lineBytes << (res->size-1);
+        res->lineBytes << (res->size + mDelimiter.size());
+
+    updateLineOffsets(res);
     return res;
 }
 
@@ -201,22 +221,50 @@ bool TextMapper::setTopOffset(int byteBlockNr)
     if (!chunk) return false;
 
     int localByteNr = int(byteNr - chunk->start);
-    mTopOffset.chunkNr = chunk->nr;
-    mTopOffset.lineCount = chunk->lineBytes.size();
-    mTopOffset.localLine = 0;
-    for (int i = 0; i < chunk->lineBytes.size(); ++i) {
+    mTopLine.chunkNr = chunk->nr;
+    mTopLine.lineCount = chunk->lineCount();
+    mTopLine.localLine = 0;
+    for (int i = 0; i < chunk->lineCount(); ++i) {
         if (chunk->lineBytes.at(i) <= localByteNr) {
-            mTopOffset.localLine = i;
+            mTopLine.localLine = i;
         } else {
             break;
         }
     }
+    mTopLine.absStart = chunk->start + chunk->lineBytes.at(mTopLine.localLine);
     return true;
 }
 
-int TextMapper::topLine() const
+int TextMapper::fileSizeInByteBlocks()
 {
-    return mTopOffset.localLine;
+    return mOversizeMapper.map(mOversizeMapper.size);
+}
+
+int TextMapper::relTopLine() const
+{
+    return mTopLine.localLine;
+}
+
+int TextMapper::absTopLine() const
+{
+    Chunk *chunk = getChunk(mTopLine.chunkNr);
+    if (!chunk) return -1;
+    ChunkLines *topCL = &mChunkLineNrs[chunk->nr];
+    if (topCL->lineOffset < 0) {
+        qint64 absPos = mChunkLineNrs[chunk->nr].linesStart + chunk->lineBytes[mTopLine.localLine];
+        double estimateLine = absPos / mBytesPerLine;
+        return -int(estimateLine);
+    }
+    return topCL->lineOffset + mTopLine.localLine;
+}
+
+int TextMapper::lineCount() const
+{
+    if ((mChunkLineNrs.count() == mOversizeMapper.size/mChunkSize + 1)
+            && mChunkLineNrs.last().hasLineNrs()) {
+        return mChunkLineNrs.last().lineOffset + mChunkLineNrs.last().lineCount;
+    }
+    return -int(mOversizeMapper.size / mBytesPerLine);
 }
 
 int TextMapper::topChunk() const
@@ -225,35 +273,181 @@ int TextMapper::topChunk() const
     return chunk ? chunk->nr : -1;
 }
 
-QString TextMapper::line1_idx_line2()
+void TextMapper::dumpTopChunk(int maxlen)
 {
-    QStringList res;
-    Chunk *chunk = mChunks.isEmpty() ? nullptr : mChunks.last();
-    if (chunk) res << QString::number(chunk->lineBytes[0]+chunk->start)
-            << QString::number(qint64(chunk->nr)*mChunkSize)
-            << QString::number(chunk->lineBytes[1]+chunk->start);
-    return res.join(',');
+    Chunk *res = mChunks.last();
+    DEB() << "Chunk " << res->nr << ": '"
+          << res->bArray.left((maxlen-5)/2) << "' ... '" << res->bArray.right((maxlen-5)/2) << "'";
 }
 
-QString TextMapper::line(int localLineNr) const
+const char* TextMapper::rawLine(int localLineNr, int *lineInChunk) const
 {
-    Chunk *chunk = nullptr;
-    int chunkLine = localLineNr + mTopOffset.localLine;
-    if (chunkLine < mTopOffset.lineCount)
-        chunk = getChunk(mTopOffset.chunkNr);
-    else {
-        chunk = getChunk(mTopOffset.chunkNr+1);
-        if (!chunk) return QString();
-        chunkLine -= mTopOffset.lineCount;
-        // TODO (JM) maybe we need a look to the next chunk(s)
-        if (chunkLine >= chunk->lineBytes.size())
-            return QString();
-    }
+    int licData;
+    if (!lineInChunk) lineInChunk = &licData;
+    if (mChunks.isEmpty()) return QByteArray();
+    Chunk *chunk1 = chunkForRelativeLine(localLineNr, lineInChunk);
     // get the text of the line
-    QTextStream in(mChunks.last()->bArray);
-    in.setCodec(mCodec);
-    in.seek(mChunks.last()->lineBytes.at(chunkLine));
-    return in.read(mChunks.last()->lineBytes.at(chunkLine+1) - mChunks.last()->lineBytes.at(chunkLine) - mDelimiter.size());
+    QByteArray raw;
+    raw.setRawData(static_cast<const char*>(chunk1->bArray)+chunk1->lineBytes.at(*lineInChunk),
+                   uint(mChunks.last()->lineBytes.at(*lineInChunk+1)
+                        - mChunks.last()->lineBytes.at(*lineInChunk) - mDelimiter.size()));
+    return raw;
+}
+
+QString TextMapper::line(int localLineNr, int *lineInChunk) const
+{
+    int licData;
+    if (!lineInChunk) lineInChunk = &licData;
+    if (mChunks.isEmpty()) return QString();
+    Chunk *chunk1 = chunkForRelativeLine(localLineNr, lineInChunk);
+    // get the text of the line
+    QByteArray raw;
+    raw.setRawData(static_cast<const char*>(chunk1->bArray)+chunk1->lineBytes.at(*lineInChunk),
+                   uint(mChunks.last()->lineBytes.at(*lineInChunk+1)
+                        - mChunks.last()->lineBytes.at(*lineInChunk) - mDelimiter.size()));
+    return mCodec->toUnicode(raw);
+}
+
+TextMapper::Chunk* TextMapper::chunkForRelativeLine(int lineDelta, int *lineInChunk) const
+{
+    if (lineInChunk) *lineInChunk = -1;
+    int chunkNr = mTopLine.chunkNr;
+    lineDelta += mTopLine.localLine; // add the offset of the top-line
+    while (lineDelta < 0) {
+        --chunkNr;
+        if (chunkNr < 0 || mChunkLineNrs[chunkNr].lineCount == 0) {
+            if (!getChunk(chunkNr)) return nullptr;
+        }
+        lineDelta += mChunkLineNrs[chunkNr].lineCount;
+    }
+    while (lineDelta >= mChunkLineNrs[chunkNr].lineCount) {
+        lineDelta -= mChunkLineNrs[chunkNr].lineCount;
+        ++chunkNr;
+        if (chunkNr >= mChunkLineNrs.size() || mChunkLineNrs[chunkNr].lineCount == 0) {
+            if (!getChunk(chunkNr)) return nullptr;
+        }
+    }
+    if (lineInChunk) *lineInChunk = lineDelta;
+    return getChunk(chunkNr);
+}
+
+void TextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
+{
+    int absKnownLines = chunkLines.lineCount;
+    double absKnownLinesSize = chunkLines.linesByteSize;
+    if (chunkLines.lineOffset >= 0) {
+        absKnownLines += chunkLines.lineOffset;
+        absKnownLinesSize += chunkLines.linesStart;
+    }
+    mBytesPerLine = absKnownLinesSize / absKnownLines;
+}
+
+int TextMapper::absPos(int localLineNr, int charNr, int *remain)
+{
+    int lineInChunk;
+    QString text = line(localLineNr, &lineInChunk).left(charNr);
+    QByteArray ba = mCodec->fromUnicode(text);
+    // requesting the line moved the chunk to the top, so we can use the last chunk here
+    qint64 pos = mChunks.last()->start + mChunks.last()->lineBytes[lineInChunk] + ba.length();
+    if (remain) *remain = mOversizeMapper.remain(pos);
+    return mOversizeMapper.map(pos);
+}
+
+int TextMapper::relPos(int localLineNr, int charNr)
+{
+    int lineInChunk;
+    QString text = line(localLineNr, &lineInChunk).left(charNr);
+    QByteArray ba = mCodec->fromUnicode(text);
+    qint64 pos = mChunks.last()->start + mChunks.last()->lineBytes[lineInChunk] + ba.length();
+    pos -= mTopLine.absStart;
+    if (qAbs(pos) >= std::numeric_limits<int>::max()) {
+        DEB() << "WARNING: maxint exceeded on calculating TextMapper::relPos("
+              << localLineNr << ", " << charNr << ") = " << pos;
+    }
+    return int(pos);
+}
+
+QPoint TextMapper::convertPos(const CursorPosition &pos) const
+{
+
+    int topLine = absTopLine();
+    ChunkLines *cl = &mChunkLineNrs[pos.chunkNr];
+    int line = 0;
+    if (cl->lineOffset < 0) {
+        qint64 absPos = mChunkLineNrs[pos.chunkNr].linesStart + pos.localLineBytes;
+        double estimateLine = (absPos * mBytesPerLine) / mOversizeMapper.size;
+        line = -int(estimateLine);
+    } else {
+        line = cl->lineOffset + pos.localLineNr;
+    }
+    QPoint res;
+    res.setY( (line<0 || topLine<0) ? -(qAbs(line)+qAbs(topLine)) : (line + topLine) );
+    res.setX(pos.charNr);
+    return res;
+}
+
+void TextMapper::getPosAndAnchor(QPoint &pos, QPoint &anchor) const
+{
+    pos = convertPos(mPosition);
+    if (mPosition == mAnchor) {
+        anchor = pos;
+    } else {
+        anchor = convertPos(mAnchor);
+    }
+}
+
+void TextMapper::setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode)
+{
+    int lineInChunk;
+    QString text = line(localLineNr, &lineInChunk).left(charNr);
+    QByteArray ba = mCodec->fromUnicode(text);
+    // requesting the line moves the chunk to the top, so we can use the last chunk here
+    mPosition.absPos = mChunks.last()->start + mChunks.last()->lineBytes[lineInChunk] + ba.length();
+    mPosition.charNr = charNr;
+    mPosition.localLineNr = lineInChunk;
+    mPosition.localLineBytes = mChunks.last()->lineBytes[lineInChunk];
+    mPosition.chunkNr = mChunks.last()->nr;
+    if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
+}
+
+TextMapper::ProgressAmount TextMapper::peekChunksForLineNrs(int chunkCount)
+{
+    ProgressAmount res;
+    res.all = mOversizeMapper.map(mOversizeMapper.size);
+    int known = mLastChunkWithLineNr;
+    Chunk *chunk = nullptr;
+    for (int i = 1; i <= chunkCount; ++i) {
+        chunk = loadChunk(known + i);
+        if (!chunk) break;
+    }
+    if (!chunk) res.part = res.all;
+    res.part = mOversizeMapper.map(chunk->start+chunk->size);
+    return res;
+}
+
+int TextMapper::moveTopByLines(int linesDelta)
+{
+    if (!linesDelta) return 0;
+    int add = linesDelta < 0 ? -1 : 1;
+    int remain = 0;
+    mTopLine.localLine += linesDelta;
+
+    while (mTopLine.localLine != qBound(0, mTopLine.localLine, mTopLine.lineCount-1)) {
+        Chunk *chunk = getChunk(mTopLine.chunkNr+add);
+        if (chunk) {
+            if (add > 0) mTopLine.localLine -= mTopLine.lineCount;
+            mTopLine.chunkNr = chunk->nr;
+            mTopLine.lineCount = chunk->lineCount();
+            if (add < 0) mTopLine.localLine += mTopLine.lineCount;
+        } else {
+            remain = mTopLine.localLine;
+            if (add > 0) remain -= mTopLine.lineCount;
+            mTopLine.localLine = (add < 0) ? 0 : mTopLine.lineCount-1;
+        }
+    }
+    int diffLine = linesDelta - mTopLine.localLine;
+    mTopLine.localLine = qBound(0, mTopLine.localLine, mTopLine.lineCount-1);
+    return diffLine;
 }
 
 const OversizeMapper &TextMapper::sizeMapper() const

@@ -33,34 +33,23 @@ class TextViewEdit : public CodeEdit
 {
     Q_OBJECT
 public:
-    TextViewEdit(QWidget *parent = nullptr) : CodeEdit(parent), mSettings(SettingsLocator::settings()) {}
-    void setupFileSize(const qint64 &size) { mOversizeMapper.setSize(size); }
-    int lineNumberAreaWidth() override {
-        int space = 0;
-        if(mSettings->showLineNr())
-            space = 3 + (fontMetrics().width(QLatin1Char('9')) * (mDigits+3));
-
-        space += markCount() ? iconSize() : 0;
-        return space;
-    }
+    TextViewEdit(TextMapper &mapper, QWidget *parent = nullptr)
+        : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings()) {}
+    bool showLineNr() const override { return false; }
 
 protected:
-    QString lineNrText(int blockNr) override {
-        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
-        double percent = byteNr * 100 / mOversizeMapper.size;
-//        int pMain = int(percent);
-//        QString res = QString::number(pMain) % '.' %
-//                QString::number(percent-pMain, 'f', mDigits).remove(0,2) % QString(mDigits, '0');
-//        return (pMain < 10) ? (' ' + res).left(mDigits+3) : res.left(mDigits+3);
-        QString res = QString::number(percent, 'f', mDigits) % QString(mDigits-1, '0');
-        if (percent < 1.0 || res.startsWith("100")) return ('%' + res).left(mDigits+3);
-        if (percent < 10.0) return (' ' + res).left(mDigits+3);
-        return res.left(mDigits+3);
-    }
+//    QString lineNrText(int blockNr) override {
+//        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
+//        double percent = byteNr * 100 / mOversizeMapper.size;
+//        QString res = QString::number(percent, 'f', mDigits) % QString(mDigits-1, '0');
+//        if (percent < 1.0 || res.startsWith("100")) return ('%' + res).left(mDigits+3);
+//        if (percent < 10.0) return (' ' + res).left(mDigits+3);
+//        return res.left(mDigits+3);
+//    }
 
 private:
+    TextMapper &mMapper;
     StudioSettings *mSettings;
-    OversizeMapper mOversizeMapper;
     qint64 mTopByte = 0;
     int mSubOffset = 0;
     int mDigits = 3;
@@ -72,12 +61,14 @@ class TextView : public QAbstractScrollArea
     Q_OBJECT
 public:
     explicit TextView(QWidget *parent = nullptr);
-    int lineCount();
+    int lineCount() const;
     void loadFile(const QString &fileName, QList<int> codecMibs);
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
+    void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
 
 signals:
+    void blockCountChanged(int newBlockCount);
 
 private slots:
     void editScrollChanged();
@@ -93,8 +84,8 @@ private:
     int mTopLine = 0;
 
 private:
+    TextMapper mMapper;
     TextViewEdit *mEdit;
-    TextMapper *mData = nullptr;
     QTextCodec *mCodec = nullptr;
     bool mLoading = false;
 };

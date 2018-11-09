@@ -117,7 +117,7 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if(mSettings->showLineNr())
+    if(showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
     space += markCount() ? iconSize() : 0;
@@ -1310,6 +1310,11 @@ QString CodeEdit::lineNrText(int blockNr)
     return QString::number(blockNr);
 }
 
+bool CodeEdit::showLineNr() const
+{
+    return mSettings->showLineNr();
+}
+
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
@@ -1334,15 +1339,16 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 markRect.setHeight(bottom-top);
                 painter.fillRect(markRect, QColor(225,255,235));
             }
-            QString number = lineNrText(blockNumber + 1);
-            QFont f = font();
-            f.setBold(mark);
-            painter.setFont(f);
-            painter.setPen(mark ? Qt::black : Qt::gray);
-            int realtop = top; // (top+bottom-fontMetrics().height())/2;
 
-            if(mSettings->showLineNr())
+            if(showLineNr()) {
+                QString number = lineNrText(blockNumber + 1);
+                QFont f = font();
+                f.setBold(mark);
+                painter.setFont(f);
+                painter.setPen(mark ? Qt::black : Qt::gray);
+                int realtop = top; // (top+bottom-fontMetrics().height())/2;
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+            }
 
             if (markCount() && marks().contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;

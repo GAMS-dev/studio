@@ -35,7 +35,7 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    mEdit = new TextViewEdit(this);
+    mEdit = new TextViewEdit(mMapper, this);
     mEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     QVBoxLayout *lay = new QVBoxLayout(this);
     lay->setContentsMargins(0,0,18,0);
@@ -56,41 +56,15 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
 
 }
 
-int TextView::lineCount()
+int TextView::lineCount() const
 {
-    if (!mEdit->document()) return 0;
-    return mEdit->document()->lineCount();
+    return mMapper.lineCount();
 }
 
 void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
 {
-//    mData->openFile(fileName);
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-        EXCEPT() << "Error opening file " << fileName;
-    const QByteArray data(file.readAll());
-    mEdit->setupFileSize(file.size());
-
-    QTextCodec *codec = nullptr;
-    QList<int> mibs = codecMibs;
-    mibs << QTextCodec::codecForLocale()->mibEnum();
-    for (int mib: mibs) {
-        QTextCodec::ConverterState state;
-        codec = QTextCodec::codecForMib(mib);
-        if (codec) {
-            QString text = codec->toUnicode(data.constData(), data.size(), &state);
-            if (state.invalidChars == 0) {
-                mLoading = true;
-                mEdit->document()->setPlainText(text);
-                mLoading = false;
-                mCodec = codec;
-                break;
-            }
-        } else {
-            DEB() << "System doesn't contain codec for MIB " << mib;
-        }
-    }
-    file.close();
+    mMapper.setCodec(codecMibs.size() ? QTextCodec::codecForMib(codecMibs.at(0)) : QTextCodec::codecForLocale());
+    mMapper.openFile(fileName);
 }
 
 void TextView::zoomIn(int range)
@@ -101,6 +75,11 @@ void TextView::zoomIn(int range)
 void TextView::zoomOut(int range)
 {
     mEdit->zoomOut(range);
+}
+
+void TextView::getPosAndAnchor(QPoint &pos, QPoint &anchor) const
+{
+    mMapper.getPosAndAnchor(pos, anchor);
 }
 
 void TextView::editScrollChanged()

@@ -601,18 +601,17 @@ void MainWindow::updateEditorPos()
 {
     QPoint pos;
     QPoint anchor;
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor());
-    CodeEdit *ce = ViewHelper::toCodeEdit(edit);
-    if (ce) {
+    if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
         ce->getPositionAndAnchor(pos, anchor);
-        mStatusWidgets->setPosAndAnchor(pos, anchor);
-    } else if (edit) {
+    } else if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
         QTextCursor cursor = edit->textCursor();
         pos = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
         if (cursor.hasSelection()) {
             cursor.setPosition(cursor.anchor());
             anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
         }
+    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
+        tv->getPosAndAnchor(pos, anchor);
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
@@ -2625,11 +2624,17 @@ QWidget *RecentData::editor() const
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor);
+    TextView* tv = ViewHelper::toTextView(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
+    }
+    if (tv) {
+//        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+//        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
     }
     window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
@@ -2640,6 +2645,14 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
         window->searchDialog()->setActiveEditWidget(edit);
+    }
+    if (tv) {
+//        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
+//        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
+
+        // TODO(JM) used for updateExtraSelections (can we pass the internal CodeEdit?)
+//        window->searchDialog()->setActiveEditWidget(tv);
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();

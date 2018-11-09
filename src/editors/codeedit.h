@@ -143,6 +143,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
     void marksChanged() override;
     virtual QString lineNrText(int blockNr);
+    virtual bool showLineNr() const;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);

@@ -20,8 +20,13 @@
 #ifndef TEXTMAPPER_H
 #define TEXTMAPPER_H
 
+#include <QObject>
 #include <QTextCodec>
-#include "syntax.h"
+#include <QVector>
+#include <QFile>
+#include <QSet>
+#include <QTextCursor>
+//#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -58,35 +63,53 @@ struct OversizeMapper {
 /// Opens a file into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
 /// model on the fly.
 ///
-class TextMapper
+class TextMapper: public QObject
 {
-    struct Chunk {
+    Q_OBJECT
+public:
+    enum class ProgressType { LineCount, MoveTopLine };
+    struct ProgressAmount { int part = 0; int all = 0; };
+
+private:
+
+    struct Chunk {  // a mapped part of a file
         int nr = -1;
         qint64 start = -1;
         int size = 0;
         uchar* map = nullptr;
         QByteArray bArray;
         QVector<int> lineBytes;
-        qint64 firstLineNr = -1; // TODO: load lineOffset asynchronously
         bool isValid() const { return start >= 0;}
+        int lineCount() const { return lineBytes.size()-1; }
     };
     struct LinePosition {
         int chunkNr = 0;
+        qint64 absStart = 0;
         int localLine = 0;
         int lineCount = 0;
     };
     struct ChunkLines {
-        ChunkLines()
-            : chunkNr(0), lineCount(-1), lineOffset(-1) {}
-        ChunkLines(int nr, int lines, qint64 lineOffset = -1)
+        ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
             : chunkNr(nr), lineCount(lines), lineOffset(lineOffset) {}
+        inline bool isKnown() const { return lineCount >= 0; }
+        inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
         int chunkNr = 0;
+        qint64 linesStart = 0;
+        int linesByteSize = 0;
         int lineCount = -1;
-        qint64 lineOffset = -1;
+        int lineOffset = -1;
+    };
+    struct CursorPosition {
+        bool operator ==(const CursorPosition &other) const { return absPos == other.absPos; }
+        qint64 absPos = -1;
+        int chunkNr = -1;
+        int localLineNr = -1;
+        int localLineBytes = -1;
+        int charNr = -1;
     };
 
 public:
-    TextMapper();
+    TextMapper(QObject *parent = nullptr);
     ~TextMapper();
 
     QTextCodec *codec() const;
@@ -98,28 +121,55 @@ public:
 
     bool setMappingSizes(int visibleLines = 100, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
     bool setTopOffset(int byteBlockNr);
-    int topLine() const;
-    int topChunk() const;
-    QString line1_idx_line2();
+    int fileSizeInByteBlocks();
+    int relTopLine() const;
+    int absTopLine() const;
+    int lineCount() const;
 
-    QString line(int localLineNr) const;
+    QString line(int localLineNr, int *lineInChunk = nullptr) const;
+    int moveTopByLines(int linesDelta);
+
+    int absPos(int localLineNr, int charNr = 0, int *remain = nullptr);
+    int relPos(int localLineNr, int charNr = 0);
+
+    void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
+    void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+
+    ProgressAmount peekChunksForLineNrs(int chunkCount);
+
+    // test supporting methods
+    int topChunk() const;
+    void dumpTopChunk(int maxlen);
+    const char *rawLine(int localLineNr, int *lineInChunk = nullptr) const;
+    int lastChunkWithLines() const { return mLastChunkWithLineNr; }
+
+signals:
+    void proceeded(qreal percent, ProgressType type);
 
 private:
-    Chunk *getChunk(int chunkNr) const;
-    Chunk *loadChunk(int chunkIndex) const;
     void initDelimiter(Chunk *chunk) const;
+    Chunk *getChunk(int chunkNr) const;
+    Chunk *loadChunk(int chunkNr) const;
+    void updateLineOffsets(Chunk *chunk) const;
+    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
+    void updateBytesPerLine(const ChunkLines &chunkLines) const;
+    QPoint convertPos(const CursorPosition &pos) const;
 
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness
     mutable QByteArray mDelimiter;
     mutable QVector<Chunk*> mChunks;
     mutable QVector<ChunkLines> mChunkLineNrs;
-    mutable int mLastKnownChunk = -1;
+    mutable int mLastChunkWithLineNr = -1;
+    mutable double mBytesPerLine = 20.0;
+    QSet<ProgressType> mActiveProgresses;
 
-    LinePosition mTopOffset;
+    LinePosition mTopLine;
     int mVisibleLines;
     int mTrailingLines;
     OversizeMapper mOversizeMapper;
+    CursorPosition mAnchor;
+    CursorPosition mPosition;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunks = 5;
