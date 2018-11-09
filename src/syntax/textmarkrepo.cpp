@@ -18,15 +18,6 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-inline void TextMarkRepo::deleteMark(TextMark *tm)
-{
-    LineMarks *marks = mMarks.value(tm->fileId());
-    int count = marks->remove(tm->line(), tm);
-    if (count != 1)
-        DEB() << "Expected one TextMark to be removed but found " << count;
-    delete tm;
-}
-
 void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
 {
     removeMarks(fileId, groupId, false, types);
@@ -218,6 +209,20 @@ FileId TextMarkRepo::ensureFileId(QString location)
     return -1;
 }
 
+LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
+{
+}
+
+bool LineMarks::hasVisibleMarks() const
+{
+    QList<TextMark*> tm = values();
+    for (TextMark* t : tm) {
+        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
+                || (t->type() == TextMark::bookmark))
+            return true;
+    }
+    return false;
+}
 
 } // namespace studio
 } // namespace gams

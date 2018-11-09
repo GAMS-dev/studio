@@ -1043,6 +1043,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
     if (file->exists(true)) return 0;
+    mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
@@ -1723,12 +1724,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // clear the TextMarks for this group
     QSet<TextMark::Type> markTypes;
-    markTypes << TextMark::error << TextMark::link;
+    markTypes << TextMark::error << TextMark::link << TextMark::target;
     for (ProjectFileNode *node: runGroup->listFiles(true))
         mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
@@ -2698,7 +2700,7 @@ void MainWindow::setForegroundOSCheck()
     if (mSettings->foregroundOnDemand())
         setForeground();
 }
-  
+
 void MainWindow::on_actionNextTab_triggered()
 {
     QWidget *wid = focusWidget();

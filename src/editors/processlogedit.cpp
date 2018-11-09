@@ -44,13 +44,13 @@ void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
 void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
 {
     QTextCursor cursor = cursorForPosition(pos);
-    if (marks().values(cursor.blockNumber()).isEmpty() || fuzzy) {
+    if (marks()->values(cursor.blockNumber()).isEmpty() || fuzzy) {
 
         // TODO(JM) only check for TextMark::error
 
         int line = cursor.blockNumber();
         TextMark* linkMark = nullptr;
-        for (TextMark *mark: marks()) {
+        for (TextMark *mark: *marks()) {
             if (mark->type() == TextMark::link && mark->refFileKind() == FileKind::Lst) {
                 if (mark->line() < line)
                     linkMark = mark;

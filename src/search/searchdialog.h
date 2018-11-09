@@ -119,7 +119,7 @@ private:
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);
-    void selectNextMatch(SearchDirection direction);
+    void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
@@ -151,6 +151,7 @@ private:
     AbstractEdit *mActiveEdit = nullptr;
     bool mHasChanged = false;
     bool mFirstReturn = false;
+    QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
 };
 
 }

@@ -102,9 +102,6 @@ void TextMark::setBlockData(BlockData *blockData)
 
 QColor TextMark::color()
 {
-    if (type() == TextMark::match)
-        return Qt::yellow;
-
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
         if (mReference->fileKind() == FileKind::Lst) return Qt::blue;

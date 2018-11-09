@@ -35,7 +35,7 @@ class BlockData;
 class TextMark
 {
 public:
-    enum Type {none, error, link, bookmark, match, all};
+    enum Type {none, error, link, target, bookmark, all};
 
     FileId fileId() const;
     NodeId groupId() const;
