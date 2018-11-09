@@ -69,13 +69,9 @@ void AbstractEdit::setMarks(const LineMarks *marks)
     marksChanged();
 }
 
-void AbstractEdit::afterContentsChanged(int, int, int)
+const LineMarks* AbstractEdit::marks() const
 {
-    // TODO(JM) This isn't connected anymore. What kind of workaround is this?
-    QTextCursor tc = textCursor();
-    int pos = tc.position();
-    tc.setPosition(pos);
-    setTextCursor(tc);
+    return mMarks;
 }
 
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)
@@ -161,11 +157,6 @@ QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
         }
     }
     return mCacheMarks;
-}
-
-const LineMarks &AbstractEdit::marks() const
-{
-    return *mMarks;
 }
 
 const QList<TextMark *> &AbstractEdit::marksAtMouse() const

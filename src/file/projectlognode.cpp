@@ -317,7 +317,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         result += capture(line, posA, posB, 0, '[');
 
         if (posB+5 < line.length()) {
-            TextMark::Type tmType = errFound ? TextMark::link : TextMark::none;
+            TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
             if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
@@ -332,10 +332,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                         QFileInfo fi(mRunGroup->specialFile(FileKind::Lst));
                         mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
                         if (!mLstNode) {
-                        errFound = false;
-                        SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
-                                                              "Did you overwrite default GAMS parameters?", LogMsgType::Error);
-                        continue;
+                            errFound = false;
+                            SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
+                                                                  "Did you overwrite default GAMS parameters?", LogMsgType::Error);
+                            continue;
                         }
                     }
                 }

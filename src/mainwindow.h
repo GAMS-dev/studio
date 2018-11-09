@@ -117,7 +117,7 @@ public:
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
-    void closeResults();
+    void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(QString glbFile, LibraryItem *model);
     bool readTabs(const QJsonObject &json);
@@ -310,7 +310,6 @@ private:
     HelpWidget *mHelpWidget = nullptr;
 #endif
     OptionWidget *mGamsOptionWidget = nullptr;
-    ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 

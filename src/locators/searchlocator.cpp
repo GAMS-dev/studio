@@ -31,10 +31,11 @@ void SearchLocator::provide(SearchDialog *sd)
 {
     mSd = sd;
 }
+
 SearchResultList* SearchLocator::searchResults()
 {
     if (mSd)
-        return mSd->getCachedResults();
+        return mSd->cachedResults();
     else
         return nullptr;
 }

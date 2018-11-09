@@ -13,7 +13,12 @@ namespace studio {
 class FileMetaRepo;
 class ProjectRepo;
 
-typedef QMultiMap<int, TextMark*> LineMarks;
+class LineMarks: public QMultiMap<int, TextMark*>
+{
+public:
+    LineMarks();
+    bool hasVisibleMarks() const;
+};
 
 class TextMarkRepo: public QObject
 {
@@ -23,7 +28,6 @@ public:
     explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
-    inline void deleteMark(TextMark *tm);
     void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);

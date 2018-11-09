@@ -117,10 +117,11 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if(mSettings->showLineNr())
+    if (mSettings->showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    space += markCount() ? iconSize() : 0;
+    if (marks() && marks()->hasVisibleMarks())
+        space += iconSize();
 
     return space;
 }
@@ -423,6 +424,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+        // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
         QString opening = "([{'\"";
@@ -445,7 +447,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(tc);
             return;
 
-            // jump over closing character thats already in place
+        // jump over closing character thats already in place
         } else if (indexClosing != -1 &&
                    closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
@@ -455,8 +457,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
 
-            // insert closing characters
-        } else if (index != -1) {
+        // insert closing characters
+        } else if (index != -1 && !document()->characterAt(textCursor().position()).isLetterOrNumber()) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
@@ -493,7 +495,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
         e->accept();
         return;
     }
-        AbstractEdit::keyReleaseEvent(e);
+    AbstractEdit::keyReleaseEvent(e);
 }
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
@@ -1339,9 +1341,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if(mSettings->showLineNr())
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
 
-            if (markCount() && marks().contains(blockNumber)) {
+            if (marks()->hasVisibleMarks() && marks()->contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks().value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 

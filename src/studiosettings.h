@@ -31,7 +31,6 @@ namespace studio {
 
 class MainWindow;
 
-// TODO(AF) new class SettingsReaderWriter?
 class StudioSettings
 {
 

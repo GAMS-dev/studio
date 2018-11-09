@@ -1043,6 +1043,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
     if (file->exists(true)) return 0;
+    mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
@@ -1113,7 +1114,8 @@ void MainWindow::processFileEvents()
         FileEventData fileEvent = mFileEvents.takeFirst();
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
         int remainKind = 0;
-        if (!fm) continue;
+        if (!fm || fm->kind() == FileKind::Log)
+            continue;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id(), false);
@@ -1198,7 +1200,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
 void MainWindow::postGamsLibRun()
 {
-    // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
@@ -1723,12 +1724,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // clear the TextMarks for this group
     QSet<TextMark::Type> markTypes;
-    markTypes << TextMark::error << TextMark::link;
+    markTypes << TextMark::error << TextMark::link << TextMark::target;
     for (ProjectFileNode *node: runGroup->listFiles(true))
         mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
@@ -1893,7 +1895,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != mResultsView)
+                if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
@@ -2212,23 +2214,24 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
+    ResultsView* resultsView = searchDialog()->resultsView();
+    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
 
-    mResultsView = new ResultsView(results, this);
+    searchDialog()->setResultsView(new ResultsView(results, this));
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
 
     ui->dockLogView->show();
-    mResultsView->resizeColumnsToContent();
+    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTabs->addTab(mResultsView, title); // add new result page
-    ui->logTabs->setCurrentWidget(mResultsView);
+    ui->logTabs->addTab(searchDialog()->resultsView(), title); // add new result page
+    ui->logTabs->setCurrentWidget(searchDialog()->resultsView());
 }
 
-void MainWindow::closeResults()
+void MainWindow::closeResultsPage()
 {
-    int index = ui->logTabs->indexOf(mResultsView);
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView());
     if (index != -1) ui->logTabs->removeTab(index);
 }
 
@@ -2246,7 +2249,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 }
 
 void MainWindow::updateEditorLineWrapping()
-{// TODO(AF) split logs and editors
+{
     QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                               : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
@@ -2697,7 +2700,7 @@ void MainWindow::setForegroundOSCheck()
     if (mSettings->foregroundOnDemand())
         setForeground();
 }
-  
+
 void MainWindow::on_actionNextTab_triggered()
 {
     QWidget *wid = focusWidget();
