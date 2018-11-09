@@ -209,6 +209,20 @@ FileId TextMarkRepo::ensureFileId(QString location)
     return -1;
 }
 
+LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
+{
+}
+
+bool LineMarks::hasVisibleMarks() const
+{
+    QList<TextMark*> tm = values();
+    for (TextMark* t : tm) {
+        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
+                || (t->type() == TextMark::bookmark))
+            return true;
+    }
+    return false;
+}
 
 } // namespace studio
 } // namespace gams

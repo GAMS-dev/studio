@@ -120,7 +120,8 @@ int CodeEdit::lineNumberAreaWidth()
     if(mSettings->showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    space += markCount() ? iconSize() : 0;
+    if (marks().hasVisibleMarks())
+        space += iconSize();
 
     return space;
 }
@@ -1340,7 +1341,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if(mSettings->showLineNr())
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
 
-            if (markCount() && marks().contains(blockNumber)) {
+            if (marks().hasVisibleMarks() && marks().contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
                 painter.drawPixmap(1, iTop, marks().value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
             }

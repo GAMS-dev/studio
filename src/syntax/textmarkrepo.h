@@ -13,7 +13,12 @@ namespace studio {
 class FileMetaRepo;
 class ProjectRepo;
 
-typedef QMultiMap<int, TextMark*> LineMarks;
+class LineMarks: public QMultiMap<int, TextMark*>
+{
+public:
+    LineMarks();
+    bool hasVisibleMarks() const;
+};
 
 class TextMarkRepo: public QObject
 {
