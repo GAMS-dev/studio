@@ -77,6 +77,8 @@ public slots:
     void on_reloadSolverOptionFile();
     void on_toggleRowHeader(int logicalIndex);
 
+    void on_compactViewCheckBox_stateChanged(int checkState);
+
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;

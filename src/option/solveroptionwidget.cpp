@@ -210,6 +210,14 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         moveUpAction->setVisible(false);
         moveDownAction->setVisible(false);
     } else {
+
+        if (ui->compactViewCheckBox->isChecked()) {
+           toggleCommentAction->setVisible(false);
+           toggleOptionAction->setVisible(false);
+           insertCommentAction->setVisible(false);
+           moveUpAction->setVisible(false);
+           moveDownAction->setVisible(false);
+        }
         QModelIndex index = selection.at(0);
         if (index.row()==0)
             moveUpAction->setVisible(false);
@@ -360,17 +368,31 @@ void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
 void SolverOptionWidget::on_reloadSolverOptionFile()
 {
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-//    OptionTableModel* model = static_cast<OptionTableModel*>(ui->solverOptionTableView->model());
-//    model->reloadOptionModel( mOptionTokenizer->readOptionParameterFile(mLocation) );
     mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation) );
     setModified(false);
 }
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 {
+    if (ui->compactViewCheckBox->isChecked())
+        return;
+
     mOptionTableModel->on_toggleRowHeader(logicalIndex);
     updateTableColumnSpan();
     setModified(true);
+}
+
+void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
+{
+    Q_UNUSED(checkState);
+    for(int i = 0; i < mOptionTableModel->rowCount(); ++i) {
+       if (mOptionTableModel->headerData(i, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
+          if (ui->compactViewCheckBox->isChecked())
+              ui->solverOptionTableView->hideRow(i);
+          else
+             ui->solverOptionTableView->showRow(i);
+       }
+    }
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)
