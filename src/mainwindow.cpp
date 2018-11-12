@@ -1049,7 +1049,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         for (ProjectFileNode* node: nodes) {
             ProjectGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
-            mProjectRepo.purgeGroup(group);
+            if (group->childCount() == 0)
+                closeGroup(group);
         }
         history()->lastOpenedFiles.removeAll(file->location());
         mWp->historyChanged(history());
