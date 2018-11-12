@@ -190,6 +190,7 @@ private:
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
+    bool insertClosing();
 
 private:
     class BlockEdit
