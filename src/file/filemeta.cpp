@@ -636,7 +636,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), tabWidget));
+        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), tabWidget));
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;

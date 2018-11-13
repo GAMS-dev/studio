@@ -138,6 +138,10 @@ public:
 #endif
     option::OptionWidget *gamsOptionWidget() const;
 
+signals:
+    void saved();
+    void savedAs();
+
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(QString action);

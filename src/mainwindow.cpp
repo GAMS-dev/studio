@@ -153,6 +153,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
+    connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
+    connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
+
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);

@@ -34,9 +34,10 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QWidget *parent) :
+SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QWidget *parent) :
           QWidget(parent),
           ui(new Ui::SolverOptionWidget),
+          mFileId(id),
           mLocation(optionFilePath),
           mSolverName(solverName)
 {
@@ -159,20 +160,10 @@ FileId SolverOptionWidget::fileId() const
     return mFileId;
 }
 
-void SolverOptionWidget::setFileId(const FileId &fileId)
-{
-    mFileId = fileId;
-}
-
-NodeId SolverOptionWidget::groupId() const
-{
-    return mGroupId;
-}
-
-void SolverOptionWidget::setGroupId(const NodeId &groupId)
-{
-    mGroupId = groupId;
-}
+//NodeId SolverOptionWidget::groupId() const
+//{
+//    return mGroupId;
+//}
 
 bool SolverOptionWidget::isModified() const
 {
@@ -435,6 +426,32 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
     }
 }
 
+void SolverOptionWidget::on_saveButton_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+    qDebug() << "on_saveButton_clicked " << mFileId;
+    MainWindow* main = getMainWindow();
+    if (!main) return;
+
+    emit main->saved();
+}
+
+void SolverOptionWidget::on_saveAsButton_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+    qDebug() << "on_saveAsButton_clicked";
+    MainWindow* main = getMainWindow();
+    if (!main) return;
+
+    emit main->savedAs();
+}
+
+void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+    qDebug() << "on_openAsTextButton_clicked";
+}
+
 void SolverOptionWidget::updateEditActions(bool modified)
 {
     ui->saveButton->setEnabled(modified);
@@ -450,6 +467,14 @@ void SolverOptionWidget::updateTableColumnSpan()
         if (optionItems.at(i)->disabled)
             ui->solverOptionTableView->setSpan(i, 0, 1, 3);
     }
+}
+
+MainWindow *SolverOptionWidget::getMainWindow()
+{
+    foreach(QWidget *widget, qApp->topLevelWidgets())
+        if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
+            return mainWindow;
+    return nullptr;
 }
 
 QString SolverOptionWidget::getSolverName() const

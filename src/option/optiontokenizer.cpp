@@ -528,11 +528,29 @@ OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
     for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
         optGetMessage(mOPTHandle, i, svalue, &itype );
         switch (itype) {
-        case optMsgValueWarning : { type = Value_Out_Of_Range; break;}
-        case optMsgDeprecated : { type = Deprecated_Option; break; }
-        case optMsgDefineError: { type = Invalid_Key; break; }
-        case optMsgValueError: { type = Incorrect_Value_Type; break; }
-        case optMsgUserError: { type = Unknown_Error; break; }
+        case optMsgValueWarning : {
+            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            type = Value_Out_Of_Range;
+            break;
+        }
+        case optMsgDeprecated : {
+            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+            type = Deprecated_Option;
+            break;
+        }
+        case optMsgDefineError: {
+            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            type = Invalid_Key;
+            break;
+        }
+        case optMsgValueError: {
+            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            type = Incorrect_Value_Type; break;
+        }
+        case optMsgUserError: {
+            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+            type = Unknown_Error; break;
+        }
 //        case optMsgTooManyMsgs: { type = Unknown_Error; break; }
         default: break;
         }
@@ -550,7 +568,6 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
     char svalue[GMS_SSSIZE];
     for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
        optGetMessage(mOPTHandle, i, svalue, &itype );
-       qDebug() << "#Message" << i << ":" << svalue << ":" << itype;
        if (itype==optMsgTooManyMsgs)
            continue;
        hasbeenLogged = true;

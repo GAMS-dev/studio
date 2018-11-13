@@ -27,6 +27,9 @@
 
 namespace gams {
 namespace studio {
+
+class MainWindow;
+
 namespace option {
 
 namespace Ui {
@@ -40,16 +43,13 @@ class SolverOptionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(QString solverName, QString optionFilePath, QWidget *parent = nullptr);
+    explicit SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
     bool isInFocused(QWidget* focusWidget);
 
     FileId fileId() const;
-    void setFileId(const FileId &fileId);
-
-    NodeId groupId() const;
-    void setGroupId(const NodeId &groupId);
+//    NodeId groupId() const;
 
     bool isModified() const;
     void setModified(bool modified);
@@ -78,11 +78,14 @@ public slots:
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
+    void on_saveButton_clicked(bool checked = false);
+    void on_saveAsButton_clicked(bool checked = false);
+    void on_openAsTextButton_clicked(bool checked = false);
 
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
-    NodeId mGroupId;
+//    NodeId mGroupId;
     QString mLocation;
     QString mSolverName;
 
@@ -93,6 +96,8 @@ private:
 
     void updateEditActions(bool modified);
     void updateTableColumnSpan();
+
+    MainWindow* getMainWindow();
 };
 
 
