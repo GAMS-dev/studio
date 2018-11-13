@@ -46,7 +46,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
-    ui->solverOptionMessageTabWidget->addTab(logEdit, "Message");
+    ui->solverOptionMessageStackedWidget->addWidget( logEdit );
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation);

@@ -90,18 +90,12 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QTabWidget" name="solverOptionMessageTabWidget">
+        <widget class="QStackedWidget" name="solverOptionMessageStackedWidget">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="tabPosition">
-          <enum>QTabWidget::South</enum>
-         </property>
-         <property name="tabShape">
-          <enum>QTabWidget::Rounded</enum>
          </property>
         </widget>
        </item>
@@ -129,7 +123,7 @@
           <item>
            <widget class="QCheckBox" name="compactViewCheckBox">
             <property name="toolTip">
-             <string>Show option and Hide Comment</string>
+             <string>View options without comment lines</string>
             </property>
             <property name="text">
              <string>Compact View</string>
