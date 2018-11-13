@@ -313,15 +313,24 @@ bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourc
          return false;
 
     Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
-    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
-    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
-    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
-    mOptionItem.removeAt(removeIndex);
-
+    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count -1 , QModelIndex(), destinationChild);
+//    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+//    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
+//    mOptionItem.removeAt(removeIndex);
+    if (destinationChild > sourceRow) { // move down
+       for(int i=0; i<count; ++i) {
+           mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+           mOptionItem.removeAt(sourceRow);
+       }
+    } else { // move up
+           for(int i=0; i<count; ++i) {
+               SolverOptionItem* item = mOptionItem.at(sourceRow+i);
+               mOptionItem.removeAt(sourceRow+i);
+               mOptionItem.insert(destinationChild+i, item);
+           }
+    }
     updateCheckState();
-
     endMoveRows();
-//    emit  optionValueChanged();
     return true;
 }
 

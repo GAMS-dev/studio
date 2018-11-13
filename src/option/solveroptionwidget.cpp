@@ -184,16 +184,16 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* commentAction = menu.addAction("comment this option");
-    QAction* uncommentAction = menu.addAction("Uncomment this line");
+    QAction* commentAction = menu.addAction("comment option(s)");
+    QAction* uncommentAction = menu.addAction("Uncomment line(s)");
     menu.addSeparator();
     QAction* insertOptionAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
     QAction* insertCommentAction = menu.addAction(QIcon(":/img/insert"), "insert new comment");
     menu.addSeparator();
-    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
-    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option(s) up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option(s) down");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option(s)");
     menu.addSeparator();
     QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
 
@@ -253,6 +253,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                 break;
             }
         }
+        qDebug() << " select i=" << i;
         if (i != selection.count()) {
             commentAction->setVisible(false);
             uncommentAction->setVisible(false);
@@ -298,32 +299,20 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                 setModified(modified);
             }
     } else if (action == moveUpAction) {
-        for (int i=0; i<selection.count(); ++i) {
-            QModelIndex index = selection.at(i);
-            ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()-1);
-            ui->solverOptionTableView->selectRow(index.row()-1);
+        if (selection.count() >0) {
+            QModelIndex index = selection.at(0);
+            ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
+                                                         QModelIndex(), index.row()-1);
             updateTableColumnSpan();
             modified = true;
-        }
-        if (modified) {
-            setModified(modified);
-            QModelIndex next_index = ui->solverOptionTableView->model()->index(selection.at(0).row() - 1, 0);
-            ui->solverOptionTableView->selectRow(next_index.row()-1);
-            ui->solverOptionTableView->selectRow(next_index.row());
         }
     } else if (action == moveDownAction) {
-        for (int i=0; i<selection.count(); ++i) {
-            QModelIndex index = selection.at(i);
-            mOptionTableModel->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()+2);
-            ui->solverOptionTableView->selectRow(index.row()+1);
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
+                                        QModelIndex(), index.row()+selection.count()+1);
             updateTableColumnSpan();
             modified = true;
-        }
-        if (modified) {
-            setModified(modified);
-            QModelIndex next_index = ui->solverOptionTableView->model()->index(selection.at(0).row() + 1, 0);
-            ui->solverOptionTableView->selectRow(next_index.row());
-            ui->solverOptionTableView->selectRow(next_index.row()+1);
         }
     } else if (action == deleteAction) {
          if (selection.count()>0) {
