@@ -1954,7 +1954,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
-        if (!runGroup && mRecent.group) runGroup = mRecent.group->assignedRunGroup();
         if (!runGroup) {
             QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
             if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();
