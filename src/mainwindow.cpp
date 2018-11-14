@@ -520,7 +520,9 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
         nodes << mProjectRepo.node(id);
     }
-    mProjectContextMenu.setNodes(mProjectRepo.node(index), nodes);
+    if (nodes.empty()) return;
+
+    mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
