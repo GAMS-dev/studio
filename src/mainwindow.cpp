@@ -628,7 +628,10 @@ void MainWindow::updateEditorPos()
 void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
-    if (!edit || edit->isReadOnly()) {
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mRecent.editor());
+    if (soEdit) {
+        mStatusWidgets->setEditMode(EditMode::Insert);
+    } else if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(EditMode::Readonly);
     } else {
         mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
@@ -1040,14 +1043,7 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
         file->reloadDelayed();
         file->resetTempReloadState();
     } else {
-        if (file->document()) {
-            file->document()->setModified();
-        } else if (file->kind() == FileKind::Opt) {
-                  for (QWidget *e : file->editors()) {
-                       option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
-                       if (so) so->setModified(true);
-                  }
-        }
+        file->setModified();
         mFileMetaRepo.unwatch(file);
     }
     return 0;

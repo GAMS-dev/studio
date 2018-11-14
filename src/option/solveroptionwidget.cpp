@@ -498,7 +498,7 @@ void SolverOptionWidget::setModified(bool modified)
 {
     mModified = modified;
     updateEditActions(mModified);
-    emit modificationChanged( mFileId );
+    emit modificationChanged( mModified );
 }
 
 bool SolverOptionWidget::saveAs(const QString &location)

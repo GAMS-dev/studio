@@ -68,6 +68,7 @@ public:
     bool isReadOnly() const;
     bool isAutoReload() const;
     void resetTempReloadState();
+    void setModified();
 
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>(), bool forcedAsTextEdit = false);
     QWidgetList editors() const;

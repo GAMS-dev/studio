@@ -62,7 +62,7 @@ public:
     QString getSolverName() const;
 
 signals:
-    void modificationChanged(FileId fileId);
+    void modificationChanged(bool modifiedState);
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);

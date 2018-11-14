@@ -121,18 +121,13 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 void FileMeta::internalSave(const QString &location)
 {
     if (kind() == FileKind::Opt) {
-        for (QWidget* wid: mEditors) {
-            option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
-            if (solverOptionWidget) {
-                mActivelySaved = true;
-                solverOptionWidget->saveOptionFile(location);
-                mData = Data(location);
-// TODO (JP) to be removed
-//                if (!success)
-//                   solverOptionWidget->on_problemSavingOptionFile(location);
-                return;
-            }
+        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
+        if (solverOptionWidget) {
+            mActivelySaved = true;
+            solverOptionWidget->saveOptionFile(location);
+            mData = Data(location);
         }
+        return;
     }
     QFile file(location);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -297,6 +292,7 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setFileId(edit, id());
     AbstractEdit* ptEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
 
     if (ptEdit) {
         if (!mDocument)
@@ -310,6 +306,9 @@ void FileMeta::addEditor(QWidget *edit)
         if (!ptEdit->viewport()->hasMouseTracking()) {
             ptEdit->viewport()->setMouseTracking(true);
         }
+    }
+    if (soEdit) {
+        connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     }
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
@@ -328,6 +327,7 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
 
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
     mEditors.removeAt(i);
 
     if (aEdit) {
@@ -343,8 +343,9 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
                 unlinkAndFreeDocument();
             }
         }
-    }  else if (option::SolverOptionWidget* solverOptionEdit = ViewHelper::toSolverOptionEdit(edit)) {
-               disconnect(solverOptionEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::changed);
+    }
+    if (soEdit) {
+       disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
@@ -571,6 +572,18 @@ bool FileMeta::isAutoReload() const
 void FileMeta::resetTempReloadState()
 {
     mTempAutoReloadTimer.start(1500);
+}
+
+void FileMeta::setModified()
+{
+    if (document()) {
+        document()->setModified();
+    } else if (kind() == FileKind::Opt) {
+              for (QWidget *e : mEditors) {
+                   option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+                   if (so) so->setModified(true);
+              }
+    }
 }
 
 QTextDocument *FileMeta::document() const
