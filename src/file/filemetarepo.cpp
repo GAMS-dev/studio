@@ -180,7 +180,7 @@ void FileMetaRepo::setDebugMode(bool debug)
     for (int key: edits.keys()) {
         FileMeta* fm = fileMeta(FileId(key));
         QString nam = (fm ? fm->name() : "???");
-        DEB() << key << ": " << edits.value(key)->markCount() << "    " << nam;
+//        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
     }
 
 }

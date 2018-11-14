@@ -261,12 +261,6 @@ void ProjectContextMenu::onCloseGroup()
     }
 }
 
-//void ProjectContextMenu::onRunFile()
-//{
-//    ProjectFileNode *file = mNode->toFile();
-//    if (file) emit runFile(file);
-//}
-
 void ProjectContextMenu::onSetMainFile()
 {
     ProjectFileNode *file = mNodes.first()->toFile();
