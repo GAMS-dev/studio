@@ -55,6 +55,7 @@ void TestOptionAPI::testReadFromStr_data()
     QTest::addColumn<QString>("optionStr");
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<bool>("defined");
+    QTest::addColumn<bool>("recentlyDefined");
     QTest::addColumn<QString>("optionValue");
     QTest::addColumn<bool>("errorRead");
     QTest::addColumn<int>("errorCode");
@@ -62,65 +63,33 @@ void TestOptionAPI::testReadFromStr_data()
     // comment
     QTest::newRow("*---------------------------------------------------------------------------*")
             << "*---------------------------------------------------------------------------*"
-            << "" << false << "" << true << getErrorCode(optMsgUserError);
+            << "" << false << false << "" << true << getErrorCode(optMsgUserError);
     QTest::newRow("* ask CPLEX to construct an OPT file tuned for the problem")
             << "* ask CPLEX to construct an OPT file tuned for the problem"
-            << "" << false << "" << true << getErrorCode(optMsgUserError);
+            << "" << false << false << "" << true << getErrorCode(optMsgUserError);
     QTest::newRow("*---------------------------------------------------------------------------*")
             << "*---------------------------------------------------------------------------*"
-            << "" << false << "" << true << getErrorCode(optMsgUserError);
-    QTest::newRow("*iterationlim 400000")  << "*iterationlim 400000"  << ""                     << false << ""        << true    << getErrorCode(optMsgUserError);
-    QTest::newRow("*  lpmethod 1" )        << "*  lpmethod 1"         << ""                     << false << ""        << true    << getErrorCode(optMsgUserError);
+            << "" << false << false << "" << true << getErrorCode(optMsgUserError);
+
+    QTest::newRow("*iterationlim 400000")  << "*iterationlim 400000"  << ""                     << false << false << "n/a"        << true    << getErrorCode(optMsgUserError);
+    QTest::newRow("*  lpmethod 1" )        << "*  lpmethod 1"         << ""                     << false << false << "n/a"        << true    << getErrorCode(optMsgUserError);
 
     // empty string
-    QTest::newRow("                    ")  << "                    "  << "                    " << false << ""        << false   << getErrorCode(optMsgValueWarning);
-    QTest::newRow(" ")                     << " "                     << " "                    << false << ""        << false   << getErrorCode(optMsgValueWarning);
-    QTest::newRow("" )                     << ""                      << ""                     << false << ""        << true    << getErrorCode(optMsgValueWarning);
+    QTest::newRow("                    ")  << "                    "  << "                    " << false << false << "n/a"        << false   << -1;
+    QTest::newRow(" ")                     << " "                     << " "                    << false << false << "n/a"        << false   << -1;
+    QTest::newRow("" )                     << ""                      << ""                     << false << false << "n/a"        << true    << getErrorCode(optMsgValueWarning);
 
-    // boolean option
-    QTest::newRow("  iis yes" )            << "  iis yes"             << "iis"                  << true  << "1"       << false   << -1;
-    QTest::newRow("iis yes")               << "iis yes"               << "iis"                  << true  << "1"       << false   << -1;
+    // indicator
+    QTest::newRow("indic constr01$y 0")            << "indic constr01$y 0"             << ""    << false  << false  << "n/a"      << false   << -1;
+    QTest::newRow("indic equ1(i,j,k)$bin1(i,k) 1") << "indic equ1(i,j,k)$bin1(i,k) 1"  << ""    << false  << false  << "n/a"      << false   << -1;
+
+    QTest::newRow("secret abc 1 34")       << "secret abc 1 34"       << ""                     << true  << true << "abc 1 34"    << false   << -1;
+    QTest::newRow("secret def 1 34")       << "secret def 1 34"       << ""                     << true  << true << "def 1 34"   << false   << -1;
 
     // deprecated option
-    QTest::newRow("SCALE -1")              << "SCALE -1"              << "SCALE"                << false << ""        << true    << getErrorCode(optMsgDeprecated);
-    QTest::newRow("iterationlim 400000")   << "iterationlim 400000"   << "iterationlim"         << false << ""        << true    << getErrorCode(optMsgDeprecated);
+    QTest::newRow("SCALE -1")              << "SCALE -1"              << "SCALE"                << true  << true << "-1"        << true    << getErrorCode(optMsgDeprecated);
+    QTest::newRow("iterationlim 400000")   << "iterationlim 400000"   << "iterationlim"         << true  << true << "400000"    << true    << getErrorCode(optMsgDeprecated);
 
-    QTest::newRow("cuts 2")                << "cuts 2"                << "cuts"                 << true  << "2"       << false   << -1;
-    QTest::newRow("RERUN=YES")             << "RERUN=YES"             << "RERUN"                << true  << "YES"     << false   << -1;
-
-    // strlist option
-    QTest::newRow("tuning str1 str2 str3") << "tuning str1 str2 str3" << "tuning"               << true  << "str1 str2 str3"  << false   << -1;
-    QTest::newRow("tuning str4 str5")      << "tuning str4 str5"      << "tuning"               << true  << "str4 str5"       << false   << -1;
-//    QTest::newRow("tuning multple strlist1") << "tuning str1 str2 str3 \n tuning str4 str5"    << "tuning"   << true  << "\"str1 str2 str3\""  << false   << -1;
-//    QTest::newRow("tuning multple strlist2") << "tuning str1 str2 str3 tuning str4 str5"    << "tuning"   << true  << "\"str4 str5\""       << false   << -1;
-
-    // enumint option
-    QTest::newRow("lpmethod 9")            << "lpmethod 9"            << "lpmethod"            << false  << "0"      << true    << getErrorCode(optMsgValueError);
-    QTest::newRow("  lpmethod 4")          << "  lpmethod 4"          << "lpmethod"            << true   << "4"      << false   << -1;
-    QTest::newRow("lpmethod 19")           << "lpmethod 19"           << "lpmethod"            << false  << "0"      << true    << getErrorCode(optMsgValueError);
-
-    QTest::newRow("localimplied -1")       << "localimplied -1"       << "localimplied"         << true  << "-1"     << false   << -1;
-    QTest::newRow("localimplied 55")       << "localimplied 55"       << "localimplied"         << false << "0"      << true    << getErrorCode(optMsgValueError);
-
-    // integer option
-    QTest::newRow("solnpoolcapacity=1100000") << "solnpoolcapacity=1100000"  << "solnpoolcapacity"   << true  << "1100000"  << false   << -1;
-    QTest::newRow("aggind -3")                << "aggind -3"                 << "aggind"             << true  << "-1"       << true    << getErrorCode(optMsgValueError);
-
-    // TODO notice difference between defined of "localimplied 55" and "aggind -3"
-
-    // double option
-    QTest::newRow("divfltlo 1e-5")          << "divfltlo 1e-5"        << "divfltlo"             << true  << "1e-5"    << false   << -1;
-    QTest::newRow(" epgap  0.00001")       << " epgap  0.00001"       << "epgap"                << true  << "0.00001" << false   << -1;
-
-    // dot option
-    QTest::newRow("x.feaspref 0.0009")      << "x.feaspref 0.0009"         << ".feaspref"          << true  << "0.0009"  << false   << -1;
-    QTest::newRow("y.feaspref(i) 0.0099")      << "x.feaspref 0.0009"      << ".feaspref"          << true  << "0.0009"  << false   << -1;
-    QTest::newRow("z.feaspref('value1') 0.0999")      << "x.feaspref 0.0009"         << ".feaspref"          << true  << "0.0009"  << false   << -1;
-    QTest::newRow("xyz.benderspartition 3") << "xyz.benderspartition 3"    << ".benderspartition"  << true  << "3"       << false   << -1;
-    QTest::newRow("z.feasopt 0.0001")       << "x.feasopt 0.0009"          << ".feasopt"           << false << "0"       << true    << getErrorCode(optMsgUserError);
-
-    QTest::newRow("  startalg 4")         << "  startalg 4"        << "startalg"     << true   << "4" << false   << -1;
-    QTest::newRow("indic constr01$y 0")   << "indic constr01$y 0"  << "indic"        << false  << "0" << false   << -1;
 }
 
 void TestOptionAPI::testReadFromStr()
@@ -128,46 +97,255 @@ void TestOptionAPI::testReadFromStr()
     QFETCH(QString, optionStr);
     QFETCH(QString, optionName);
     QFETCH(bool, defined);
+    QFETCH(bool, recentlyDefined);
     QFETCH(QString, optionValue);
     QFETCH(bool, errorRead);
     QFETCH(int, errorCode);
 
+    // given
+    optResetAllRecent( mOPTHandle );
+
     // when
     optReadFromStr(mOPTHandle, optionStr.toLatin1());
+    int messageType = logAndClearMessage();
+    QCOMPARE( messageType, errorCode );
+    QCOMPARE( messageType != -1, errorRead );
 
     // then
-    int count = optMessageCount(mOPTHandle);
+    isDefined(  defined, recentlyDefined, optionValue );
+
+    // cleanup
+    logAndClearMessage();
+    optResetAll(mOPTHandle);
+}
+
+void TestOptionAPI::testReadIntOptionFromStr_data()
+{
+    QVERIFY( Dcreated && optdefRead );
+
+    QTest::addColumn<QString>("optionStr");
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("defined");
+    QTest::addColumn<bool>("recentlyDefined");
+    QTest::addColumn<QString>("optionValue");
+    QTest::addColumn<bool>("errorRead");
+    QTest::addColumn<int>("errorCode");
+
+    // row                                     | "optionStr"              | "optionName"         |"defined" |"definedR" |"optionValue" | "errorRead" | "errorCode"
+    QTest::newRow("mipinterval 2")            << "mipinterval 2"          << "mipinterval"       << true    << true     << "2"        << false       << -1;
+    QTest::newRow("solnpoolcapacity=11000")   << "solnpoolcapacity=11000" << "solnpoolcapacity"  << true    << true     << "11000"    << false       << -1;
+    QTest::newRow("mipinterval -2")           << "mipinterval -2"         << "mipinterval"       << true    << true     << "-2"       << false       << -1;
+    QTest::newRow("aggind -3")                << "aggind -3"              << "aggind"            << true    << true     << "-1"       << true        << getErrorCode(optMsgValueError);
+
+    // notice difference between defined of "localimplied 55" and "aggind -3"
+    // enumimt option
+    QTest::newRow("advind=1")                 << "advind=1"               << "advind"            << true    << true     << "1"        << false       << -1;
+    QTest::newRow("advind=-1")                << "advind=-1"              << "advind"            << false   << false    << "n/a"      << true        << getErrorCode(optMsgValueError);
+    QTest::newRow("advind 0.2")               << "advind 0.2"             << "advind"            << false   << false    << "n/a"      << true        << getErrorCode(optMsgValueError);
+
+    QTest::newRow("  lpmethod 4")             << "  lpmethod 4"          << "lpmethod"           << true    << true     << "4"        << false       << -1;
+    QTest::newRow("lpmethod 9")               << "lpmethod 9"            << "lpmethod"           << false   << false    << "n/a"      << true        << getErrorCode(optMsgValueError);
+    QTest::newRow("lpmethod 19")              << "lpmethod 19"           << "lpmethod"           << false   << false    << "n/a"      << true        << getErrorCode(optMsgValueError);
+
+    QTest::newRow("localimplied -1")          << "localimplied -1"       << "localimplied"       << true    << true     << "-1"       << false       << -1;
+    QTest::newRow("localimplied 55")          << "localimplied 55"       << "localimplied"       << false   << false     << "n/a"     << true        << getErrorCode(optMsgValueError);
+
+    // boolean option
+    QTest::newRow("  iis yes" )                 << "  iis yes"                   << "iis"                      << true    << true     << "1"       << false   << -1;
+    QTest::newRow("iis yes")                    << "iis yes"                     << "iis"                      << true    << true     << "1"       << false   << -1;
+    QTest::newRow("benderspartitioninstage no") << "benderspartitioninstage no"  << "benderspartitioninstage"  << true    << true     << "0"       << false   << -1;
+}
+
+void TestOptionAPI::testReadIntOptionFromStr()
+{
+    QFETCH(QString, optionStr);
+    QFETCH(QString, optionName);
+    QFETCH(bool, defined);
+    QFETCH(bool, recentlyDefined);
+    QFETCH(QString, optionValue);
+    QFETCH(bool, errorRead);
+    QFETCH(int, errorCode);
+
+    // given
+    optResetAllRecent( mOPTHandle );
+
+    // when
+    optReadFromStr(mOPTHandle, optionStr.toLatin1());
+    int messageType = logAndClearMessage();
+    QCOMPARE( messageType, errorCode );
+    QCOMPARE( messageType != -1, errorRead );
+
     // then
-    bool foundError = false;
-    int itype;
-    char svalue[GMS_SSSIZE];
-    QStringList messages;
-    for (int i = 1; i <= count; ++i) {
-        optGetMessage(mOPTHandle, i, svalue, &itype );
-        if (itype !=6 && itype != 7)
-            messages.append(QString("#Message: %1 : %2 : %3").arg(i).arg(svalue).arg(itype));
-        if (itype == errorCode) {
-            foundError = true;
-        }
+    isDefined(  defined, recentlyDefined, optionValue );
+
+    // cleanup
+    logAndClearMessage();
+    optResetAll(mOPTHandle);
+}
+
+void TestOptionAPI::testReadDoubleOptionFromStr_data()
+{
+    QVERIFY( Dcreated && optdefRead );
+
+    QTest::addColumn<QString>("optionStr");
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("defined");
+    QTest::addColumn<bool>("recentlyDefined");
+    QTest::addColumn<QString>("optionValue");
+    QTest::addColumn<bool>("errorRead");
+    QTest::addColumn<int>("errorCode");
+
+    // row                                 | "optionStr"           | "optionName" |"defined" |"definedR" |"optionValue" | "errorRead" | "errorCode"
+    // double option
+    QTest::newRow("divfltlo 1e-5")         << "divfltlo 1e-5"      << "divfltlo"  << true    << true    << "1e-5"       << false      << -1;
+    QTest::newRow(" epgap  0.00001")       << " epgap  0.00001"    << "epgap"     << true    << true    << "0.00001"    << false      << -1;
+    QTest::newRow("tilim 2.1")             << "tilim 2.1"          << "epgap"     << true    << true    << "2.1"        << false      << -1;
+
+    QTest::newRow("divfltup abc12-345")   << "divfltup abc12-345"  << "divfltup"  << false   << false   << "n/a"        << true      << getErrorCode(optMsgValueError);
+    QTest::newRow("epgap -0.1")           << "epgap -0.1"          << "epgap"     << true    << true    << "0"          << true      << getErrorCode(optMsgValueError);
+    QTest::newRow("epint=-0.9")           << "epint=-0.9"          << "epint"     << true    << true    << "0"          << true      << getErrorCode(optMsgValueError);
+}
+
+void TestOptionAPI::testReadDoubleOptionFromStr()
+{
+    QFETCH(QString, optionStr);
+    QFETCH(QString, optionName);
+    QFETCH(bool, defined);
+    QFETCH(bool, recentlyDefined);
+    QFETCH(QString, optionValue);
+    QFETCH(bool, errorRead);
+    QFETCH(int, errorCode);
+
+    // given
+    optResetAllRecent( mOPTHandle );
+
+    // when
+    optReadFromStr(mOPTHandle, optionStr.toLatin1());
+    int messageType = logAndClearMessage();
+    QCOMPARE( messageType, errorCode );
+    QCOMPARE( messageType != -1, errorRead );
+
+    // then
+    isDefined(  defined, recentlyDefined, optionValue );
+
+    // cleanup
+    logAndClearMessage();
+    optResetAll(mOPTHandle);
+}
+
+void TestOptionAPI::testReadStringOptionFromStr_data()
+{
+    QVERIFY( Dcreated && optdefRead );
+
+    QTest::addColumn<QString>("optionStr");
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("defined");
+    QTest::addColumn<bool>("recentlyDefined");
+    QTest::addColumn<QString>("optionValue");
+    QTest::addColumn<bool>("errorRead");
+    QTest::addColumn<int>("errorCode");
+
+    // row                                 | "optionStr"              | "optionName"          |"defined" |"definedR" |"optionValue" | "errorRead" | "errorCode"
+    QTest::newRow("RERUN=YES")             << "RERUN=YES"             << "RERUN"              << true    << true     << "YES"       << false      << -1;
+
+    QTest::newRow("cuts 2")                << "cuts 2"                << "cuts"               << true    << true     << "2"         << false      << -1;
+
+    // strlist option
+//    QTest::newRow("tuning str1 str2 str3") << "tuning str1 str2 str3" << "tuning"               << true  << "str1 str2 str3"  << false   << -1;
+//    QTest::newRow("tuning str4 str5")      << "tuning str4 str5"      << "tuning"               << true  << "str4 str5"       << false   << -1;
+//    QTest::newRow("tuning multple strlist1") << "tuning str1 str2 str3 \n tuning str4 str5"    << "tuning"   << true  << "\"str1 str2 str3\""  << false   << -1;
+//    QTest::newRow("tuning multple strlist2") << "tuning str1 str2 str3 tuning str4 str5"    << "tuning"   << true  << "\"str4 str5\""       << false   << -1;
+}
+
+void TestOptionAPI::testReadStringOptionFromStr()
+{
+    QFETCH(QString, optionStr);
+    QFETCH(QString, optionName);
+    QFETCH(bool, defined);
+    QFETCH(bool, recentlyDefined);
+    QFETCH(QString, optionValue);
+    QFETCH(bool, errorRead);
+    QFETCH(int, errorCode);
+
+    // given
+    optResetAllRecent( mOPTHandle );
+
+    // when
+    optReadFromStr(mOPTHandle, optionStr.toLatin1());
+    int messageType = logAndClearMessage();
+    QCOMPARE( messageType, errorCode );
+    QCOMPARE( messageType != -1, errorRead );
+
+    // then
+    isDefined(  defined, recentlyDefined, optionValue );
+
+    // cleanup
+    logAndClearMessage();
+    optResetAll(mOPTHandle);
+}
+
+void TestOptionAPI::testReadDotOptionFromStr_data()
+{
+    QVERIFY( Dcreated && optdefRead );
+
+    QTest::addColumn<QString>("optionStr");
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("defined");
+    QTest::addColumn<bool>("recentlyDefined");
+    QTest::addColumn<QString>("optionValue");
+    QTest::addColumn<bool>("errorRead");
+    QTest::addColumn<int>("errorCode");
+
+    // row                                         | "optionStr"               | "optionName"          |"defined" |"definedR" |"optionValue" | "errorRead" | "errorCode"
+    // dot option
+    QTest::newRow("x.feaspref 0.0006")            << "x.feaspref 0.0006"       << ".feaspref"          << true   << true    << "0.0006"    << false      << -1;
+    QTest::newRow("x.feaspref 0.0007")            << "x.feaspref 0.0007"       << ".feaspref"          << true   << true    << "0.0007"    << false      << -1;
+    QTest::newRow("x.feaspref xxxxx")             << "x.feaspref xxxxx"        << ".feaspref"          << false  << false   << "n/a"       << true       << getErrorCode(optMsgValueError);
+    QTest::newRow("y.feaspref(*) 0.0008")         << "y.feaspref(*) 0.0008"    << ".feaspref"          << true   << true    << "0.0008"    << false      << -1;
+    QTest::newRow("z.feaspref(*,*) 4")            << "z.feaspref(*,*) 4"        << ".feaspref"         << true   << true    << "4"         << false      << -1;
+    QTest::newRow("xyz.benderspartition 3")       << "xyz.benderspartition 3"  << ".benderspartition"  << true   << true    << "3"         << false      << -1;
+
+    QTest::newRow("y.feaspref(i) 0.0008")         << "y.feaspref(i) 0.0008"    << ".feaspref"          << false   << false    << "n/a"      << true       << getErrorCode(optMsgUserError);
+    QTest::newRow("*z.feaspref(*,*) 4")           << "*z.feaspref(*,*) 4"      << ".feaspref"          << false   << false   << "n/a"       << true       << getErrorCode(optMsgUserError);
+    QTest::newRow("* z.feaspref(*,*) 4")          << "* z.feaspref(*,*) 4"     << ".feaspref"          << false   << false   << "n/a"       << true       << getErrorCode(optMsgUserError);
+    QTest::newRow("z.feasssopt 0.0001")           << "z.feasssopt 0.0009"      << ".feasssopt"         << false   << false   << "n/a"       << true       << getErrorCode(optMsgUserError);
+}
+
+void TestOptionAPI::testReadDotOptionFromStr()
+{
+    QFETCH(QString, optionStr);
+    QFETCH(QString, optionName);
+    QFETCH(bool, defined);
+    QFETCH(bool, recentlyDefined);
+    QFETCH(QString, optionValue);
+    QFETCH(bool, errorRead);
+    QFETCH(int, errorCode);
+
+    // given
+    optResetAllRecent( mOPTHandle );
+
+    // when
+    optReadFromStr(mOPTHandle, optionStr.toLatin1());
+    int messageType = logAndClearMessage();
+    QCOMPARE( messageType, errorCode );
+    QCOMPARE( messageType != -1, errorRead );
+
+    // then
+    isDefined(  defined, recentlyDefined, optionValue );
+    logAndClearMessage();
+
+    int optcount = -1;
+    optDotOptCount(mOPTHandle, &optcount);
+    qDebug() << "DOTOptCount:" << optcount;
+
+    char msg[GMS_SSSIZE];
+    int ival;
+    for (int i = 1; i <= optMessageCount(mOPTHandle); i++ ) {
+        optGetMessage( mOPTHandle, i, msg, &ival );
+         qDebug() << QString("#DOTMessage: %1 : %2 : %3").arg(i).arg(msg).arg(ival);
     }
-
-//    for(QString m : messages)
-//        qDebug() << m;
-
-    if (!messages.isEmpty())
-        QVERIFY( foundError );
-    else
-        QVERIFY( !foundError );
-
-    QCOMPARE( errorRead, foundError );
-
     // cleanup
-    optClearMessages(mOPTHandle);
-
-    QCOMPARE( defined, isDefined(optionName) );
-    QVERIFY( hasDefinedValue(optionName, optionValue) );
-
-    // cleanup
+    logAndClearMessage();
     optResetAll(mOPTHandle);
 }
 
@@ -176,92 +354,97 @@ void TestOptionAPI::cleanupTestCase()
     optFree(&mOPTHandle);
 }
 
+int TestOptionAPI::logAndClearMessage()
+{
+    int messageType = -1;
+    int ival;
+    char msg[GMS_SSSIZE];
+    int count = optMessageCount(mOPTHandle);
+    for (int i = 1; i <= count; i++ ) {
+        optGetMessage( mOPTHandle, i, msg, &ival );
+        qDebug() << QString("#Message: %1 : %2 : %3").arg(i).arg(msg).arg(ival);
+        if (ival !=6 && ival != 7)
+            messageType = ival;
+    }
+    optClearMessages(mOPTHandle);
+    return messageType;
+}
+
 int TestOptionAPI::getErrorCode(optMsgType type)
 {
     return type;
 }
 
-bool TestOptionAPI::isDefined(QString &optionName)
+void TestOptionAPI::isDefined(bool defined, bool definedR, QString &optionValue)
 {
-    for (int i = 1; i <= optCount(mOPTHandle); ++i) {
-        int idefined;
-        int itype;
-        int iopttype;
-        int ioptsubtype;
-        int idummy;
-        int irefnr;
-        optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
-
-        char name[GMS_SSSIZE];
-        int group = 0;
-        int helpContextNr;
-        optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
-
-        // Not defined (defined==0) means either hidden or deprecated
-        if (optionName.compare(QString::fromLatin1(name), Qt::CaseInsensitive)==0) {
-            return (idefined != 0);
-        }
-
-    }
-    return false;
-}
-
-bool TestOptionAPI::hasDefinedValue(QString &optionName, QString &optionValue)
-{
-    if (optionValue.isEmpty())
-        return true;
+//    int nr, ref;
+//    optFindStr( mOPTHandle, optionName.toLatin1(), &nr, &ref);
+//    qDebug() << QString("%1: %2 %3").arg(optionName).arg(nr).arg(ref);
+//    qDebug() << QString("%1: %2").arg(optionName).arg(optLookUp( mOPTHandle,optionName.toLatin1()));
 
     for (int i = 1; i <= optCount(mOPTHandle); ++i) {
-        int idefined;
-        int itype;
-        int iopttype;
-        int ioptsubtype;
-        int idummy;
-        int irefnr;
-        optGetInfoNr(mOPTHandle, i, &idefined, &idummy, &irefnr, &itype, &iopttype, &ioptsubtype);
+        int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
+        optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
 
-        char name[GMS_SSSIZE];
-        int group = 0;
-        int helpContextNr;
-        optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
+        if (idefined || idefinedR) {
+            char name[GMS_SSSIZE];
+            int group = 0;
+            int helpContextNr;
+            optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
 
-        if (optionName.compare(QString::fromLatin1(name), Qt::CaseInsensitive)!=0)
-            continue;
+            qDebug() << QString("%1: %2: %3 %4 %5 [%6 %7 %8]").arg(name).arg(i)
+                     .arg(idefined).arg(idefinedR).arg(irefnr).arg(itype).arg(iopttype).arg(ioptsubtype);
+            QCOMPARE( idefined == 1, defined );
+            QCOMPARE( idefinedR == 1, definedR );
 
-        int ivalue;
-        double dvalue;
-        char svalue[GMS_SSSIZE];
+//            int idxOption, idxVarEqu;
+//            double value;
+//            char varEquName[GMS_SSSIZE];
+//            optGetDotOptNr(mOPTHandle, i, varEquName, &idxOption, &idxVarEqu, &value);
+//            qDebug() << QString("%1.: %2: %3 %4 %5").arg(varEquName).arg(i).arg(idxOption).arg(idxVarEqu).arg(value);
 
-        optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
-        bool ok = false;
-        switch(itype) {
-        case optDataInteger: {
-            int i = optionValue.toInt(&ok);
-            return ( ok && i==ivalue );
-        }
-        case optDataDouble: {
-            double d = optionValue.toDouble(&ok);
-            return ( ok && qFabs(d - dvalue) < 0.000000001 );
-        }
-        case optDataString: {
-            return (optionValue.compare( QString::fromLatin1(svalue), Qt::CaseInsensitive) == 0);
-        }
-        case optDataStrList: {
-            QStringList strList;
-            for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
-               optReadFromListStr( mOPTHandle, name, j, svalue );
-               strList << QString::fromLatin1(svalue);
+            int ivalue;
+            double dvalue;
+            char svalue[GMS_SSSIZE];
+
+            optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
+            bool ok = false;
+            switch(itype) {
+            case optDataInteger: {  // 1
+                qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
+                int i = optionValue.toInt(&ok);
+                QVERIFY( ok && i==ivalue );
+                return;
             }
-            return strList.contains(optionValue, Qt::CaseInsensitive);
-        }
-        case optDataNone:
-        default:
-            break;
+            case optDataDouble: {  // 2
+                qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
+                double d = optionValue.toDouble(&ok);
+                QVERIFY( ok && qFabs(d - dvalue) < 0.000000001 );
+                return;
+            }
+            case optDataString: {  // 3
+                qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
+                QVERIFY( optionValue.compare( QString::fromLatin1(svalue), Qt::CaseInsensitive) == 0);
+                return;
+            }
+            case optDataStrList: {  // 4
+                QStringList strList;
+                for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
+                   optReadFromListStr( mOPTHandle, name, j, svalue );
+                   qDebug() << QString("%1: %2: dStrList #%4 %5").arg(name).arg(i).arg(j).arg(svalue);
+                   strList << QString::fromLatin1(svalue);
+                }
+                QVERIFY( strList.contains(optionValue, Qt::CaseInsensitive) );
+                return;
+            }
+            case optDataNone:
+            default: break;
+            }
         }
 
     }
-    return true;
+    QCOMPARE( defined , false );
+    QCOMPARE( definedR, false );
 }
-
 
 QTEST_MAIN(TestOptionAPI)

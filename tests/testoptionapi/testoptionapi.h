@@ -35,6 +35,18 @@ private slots:
     void testReadFromStr_data();
     void testReadFromStr();
 
+    void testReadIntOptionFromStr_data();
+    void testReadIntOptionFromStr();
+
+    void testReadDoubleOptionFromStr_data();
+    void testReadDoubleOptionFromStr();
+
+    void testReadStringOptionFromStr_data();
+    void testReadStringOptionFromStr();
+
+    void testReadDotOptionFromStr_data();
+    void testReadDotOptionFromStr();
+
     void cleanupTestCase();
 
 private:
@@ -42,9 +54,9 @@ private:
     bool optdefRead = false;
     optHandle_t mOPTHandle;
 
+    int logAndClearMessage();
     int getErrorCode(optMsgType type);
-    bool isDefined(QString &optionName);
-    bool hasDefinedValue(QString &optionName, QString &value);
+    void isDefined(bool defined, bool definedR, QString &value);
 };
 
 #endif // TESTOPTIONAPI_H
