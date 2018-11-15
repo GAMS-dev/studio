@@ -33,43 +33,45 @@ namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
+// TODO(rogo): delete this
 inline int charCategory(const QChar &ch)
 {
-    if (ch.isSpace()) return 0;
+    if (!ch.isLetterOrNumber()) return 0;
     if (ch.isLetterOrNumber() || ch=='.' || ch==',') return 1;
-    if (ch.isPunct()) return 2;
+//    if (ch.isPunct()) return 2;
     return 3;
 }
 
-inline void nextCharClass(int offset,int &size, const QString &text)
+inline void nextCharClass(int offset,int &pos, const QString &text)
 {
     bool hadSpace = false;
-    if (size+offset < text.length()) {
-        int startCat = charCategory(text.at(size+offset));
-        while (++size+offset < text.length()) {
-            int cat = charCategory(text.at(size+offset));
+    if (pos+offset < text.length()) {
+        int startCat = charCategory(text.at(pos+offset));
+        while (++pos+offset < text.length()) {
+            int cat = charCategory(text.at(pos+offset));
             if (startCat == 0 || cat == 0) hadSpace = true;
             if (startCat == 0) startCat = cat;
             if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) return;
         }
     } else {
-        ++size;
+        ++pos;
     }
 }
 
-inline void prevCharClass(int offset, int &size, const QString &text)
+inline void prevWord(int offset, int &pos, const QString &text)
 {
-    bool hadSpace = false;
-    if (size+offset > 0) {
-        --size;
-        int startCat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-        if (size+offset == 0) return;
-        while (--size+offset > 0) {
-            int cat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-            if (startCat == 0 || cat == 0) hadSpace = true;
-            if (startCat == 0) startCat = cat;
-            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) {
-                ++size;
+    if (pos+offset > 0) {
+        --pos;
+        if (pos+offset == 0) return;
+        bool last = false;
+
+        while (--pos+offset > 0) {
+//            qDebug() << pos+offset << text.at(pos+offset); // rogo: delete
+//            qDebug() << !text.at(pos+offset).isLetterOrNumber() << !last; // rogo: delete
+            last = text.at(pos+offset+1).isSpace();
+            if (!text.at(pos+offset).isLetterOrNumber() && !last) {
+                ++pos;
+//                qDebug() << "back to" << text.at(pos+offset); // rogo: delete
                 return;
             }
         }
@@ -372,7 +374,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 QTextBlock block = cur.block().previous();
                 if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
             } else {
-                prevCharClass(0, p, cur.block().text());
+                prevWord(0, p, cur.block().text());
                 cur.setPosition(cur.block().position() + p, mm);
             }
             setTextCursor(cur);
@@ -1466,7 +1468,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             nextCharClass(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Right) mSize++;
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            prevCharClass(mColumn, mSize, block.text());
+            prevWord(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
