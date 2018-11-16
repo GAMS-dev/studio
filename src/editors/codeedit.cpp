@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
+#include "editorhelper.h"
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 
@@ -32,49 +33,6 @@ namespace gams {
 namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
-
-inline void nextWord(int offset,int &pos, const QString &text)
-{
-    if (text.length() == 0) {
-        pos++;
-        return;
-    }
-    if (pos+offset < text.length()) {
-        ++pos;
-        if (pos + offset > text.length()) return;
-        bool last = false;
-
-        while (++pos + offset < text.length()) {
-            last = (pos + offset > 0) && text.at(pos + offset - 1).isSpace();
-            if (!text.at(pos + offset).isLetterOrNumber() && !last) {
-                return;
-            }
-        }
-    } else {
-        pos++;
-    }
-}
-
-inline void prevWord(int offset, int &pos, const QString &text)
-{
-    if (pos + offset > text.length()) {
-        pos--;
-        return;
-    }
-    if (pos + offset > 0) {
-        --pos;
-        if (pos+offset == 0) return;
-        bool last = false;
-
-        while (--pos + offset > 0) {
-            last = text.at(pos + offset + 1).isSpace();
-            if (!text.at(pos+offset).isLetterOrNumber() && !last) {
-                ++pos;
-                return;
-            }
-        }
-    }
-}
 
 CodeEdit::CodeEdit(QWidget *parent)
     : AbstractEdit(parent)
@@ -353,7 +311,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             QTextCursor cur = textCursor();
             int p = cur.positionInBlock();
-            nextWord(0, p, cur.block().text());
+            EditorHelper::nextWord(0, p, cur.block().text());
             if (p >= cur.block().length()) {
                 QTextBlock block = cur.block().next();
                 if (block.isValid()) cur.setPosition(block.position(), mm);
@@ -372,7 +330,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 QTextBlock block = cur.block().previous();
                 if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
             } else {
-                prevWord(0, p, cur.block().text());
+                EditorHelper::prevWord(0, p, cur.block().text());
                 cur.setPosition(cur.block().position() + p, mm);
             }
             setTextCursor(cur);
@@ -1463,10 +1421,10 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
-            nextWord(mColumn, mSize, block.text());
+            EditorHelper::nextWord(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Right) mSize++;
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            prevWord(mColumn, mSize, block.text());
+            EditorHelper::prevWord(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)

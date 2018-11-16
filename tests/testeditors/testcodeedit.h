@@ -17,31 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "testsysloglocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/defaultsystemlogger.h"
+#ifndef TESTCODEEDIT_H
+#define TESTCODEEDIT_H
 
-using namespace gams::studio;
+#include <QtTest/QTest>
 
-void TestSysLogLocator::testSystemLogNull()
+class TestCodeEdit : public QObject
 {
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(syslog);
-}
+    Q_OBJECT
 
-void TestSysLogLocator::testSystemLogSetDefault()
-{
-    DefaultSystemLogger df;
-    SysLogLocator::provide(&df);
-    auto syslog = SysLogLocator::systemLog();
-    QCOMPARE(syslog, &df);
-}
+private slots:
+    void test_case1();
 
-void TestSysLogLocator::testSystemLogSetNull()
-{
-    SysLogLocator::provide(nullptr);
-    auto syslog = SysLogLocator::systemLog();
-    QVERIFY(syslog);
-}
+};
 
-QTEST_MAIN(TestSysLogLocator)
+#endif // TESTCODEEDIT_H

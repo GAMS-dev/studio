@@ -23,14 +23,11 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH
-#INCLUDEPATH += $$SRCPATH/editors
 
 HEADERS += \
     testsysloglocator.h
 
 SOURCES += \
     testsysloglocator.cpp \
-#    $$SRCPATH/editors/abstractedit.cpp \
-#    $$SRCPATH/editors/systemlogedit.cpp \
     $$SRCPATH/locators/sysloglocator.cpp \
     $$SRCPATH/locators/defaultsystemlogger.cpp
