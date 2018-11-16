@@ -22,7 +22,7 @@
 
 using namespace gams::studio;
 
-void TestCodeEdit::test_case1()
+void TestCodeEdit::test_nextWord()
 {
     //              0         1         2
     //              0123456789012345678901234
@@ -32,9 +32,46 @@ void TestCodeEdit::test_case1()
 
     EditorHelper::nextWord(offset, pos, text);
     QCOMPARE(pos, 4);
-
+    EditorHelper::nextWord(offset, pos, text);
+    QCOMPARE(pos, 7);
+    EditorHelper::nextWord(offset, pos, text);
+    QCOMPARE(pos, 11);
+    EditorHelper::nextWord(offset, pos, text);
+    QCOMPARE(pos, 13);
+    EditorHelper::nextWord(offset, pos, text);
+    QCOMPARE(pos, 20);
+    EditorHelper::nextWord(offset, pos, text);
+    QCOMPARE(pos, 25);  // the nextWord function is required to return text.length()+1 when
+                        // reaching the end of a given text
 
     QVERIFY(true);
+}
+
+void TestCodeEdit::test_prevWord()
+{
+    //              0         1         2
+    //              0123456789012345678901234
+    QString text = "This is our 1 sample text";
+    int pos = 0;
+    int offset = 0;
+
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 0); // nothing should happen
+
+    pos = 24; // set to end
+
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 21);
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 14);
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 12);
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 8);
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 5);
+    EditorHelper::prevWord(offset, pos, text);
+    QCOMPARE(pos, 0);
 }
 
 QTEST_MAIN(TestCodeEdit)
