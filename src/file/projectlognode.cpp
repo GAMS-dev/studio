@@ -88,12 +88,6 @@ void ProjectLogNode::logDone()
     }
 }
 
-//void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
-//{
-//    Q_UNUSED(parent);
-//    EXCEPT() << "The ProjectLogNode is assigned only at construction time";
-//}
-
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();

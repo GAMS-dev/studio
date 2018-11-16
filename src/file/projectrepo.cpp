@@ -43,7 +43,7 @@ ProjectRepo::ProjectRepo(QObject* parent)
 
 ProjectRepo::~ProjectRepo()
 {
-    FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
+    FileType::clear();
     delete mTreeModel;
 }
 
@@ -592,30 +592,6 @@ void ProjectRepo::setDebugMode(bool debug)
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
 }
-
-//void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
-//{
-//    if (!fc) return;
-
-//    qDebug() << QString("  ").repeated(lv) + "+ " + fc->location() + "  (" + fc->name() + ")";
-//    ProjectGroupNode *gc = qobject_cast<ProjectGroupNode*>(fc);
-//    if (!gc) return;
-//    for (int i=0 ; i < gc->childCount() ; i++) {
-//        ProjectAbstractNode *child = gc->childNode(i);
-//        dump(child, lv+1);
-//    }
-//}
-
-// TODO(JM) move implementation to AbstractEdit
-//void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
-//{
-//    if (editUnderCursor) {
-//        ProjectFileNode *fc = fileNode(editUnderCursor);
-//        bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
-//        bool  isLink = fc->mouseOverLink();
-//        editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
-//    }
-//}
 
 } // namespace studio
 } // namespace gams

@@ -26,7 +26,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(JM) integrate Log node as normal node, set a valid location, set a valid name - no "[LOG]" encoding in name
 class ProjectLogNode final: public ProjectFileNode
 {
 public:
@@ -36,9 +35,6 @@ public:
     void markOld();
     void logDone();
 
-//public:
-//    void fileClosed(ProjectFileNode* fc);
-//    TextMark* firstErrorMark();
     ProjectFileNode *lstNode() const;
     const ProjectRootNode *root() const override;
     NodeId runGroupId() const override;
@@ -53,7 +49,6 @@ protected:
     friend class ProjectRunGroupNode;
 
     ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *assignedRunGroup);
-//    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {
         TextMark* textMark = nullptr;

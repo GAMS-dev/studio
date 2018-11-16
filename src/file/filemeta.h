@@ -142,15 +142,6 @@ private:
     bool mLoading = false;
     QTimer mTempAutoReloadTimer;
     QTimer mReloadTimer;
-
-    // TODO(JM): QTextBlock.userData  ->  TextMark
-    // TODO(JM): TextChanged events
-    // TODO(JM): FileChanged events
-    // TODO(JM): Autosave
-    // TODO(JM): Data-Reference ( QTextDocument / GDX / LST+LXI / ... )
-    // TODO(JM): FileState (opened, closed, changed, removed, ...)
-    // TODO(JM): FileType info
-
 };
 
 } // namespace studio

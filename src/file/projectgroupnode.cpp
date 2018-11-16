@@ -404,7 +404,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     // prepare return value
-    // TODO(JM) Check if this works, taken from ProjectGroupNode::setRunnableGms()
 #if defined(__unix__) || defined(__APPLE__)
     QStringList output { QDir::toNativeSeparators(gmsLocation) };
 #else
@@ -650,7 +649,6 @@ void ProjectGroupNode::checkFlags()
 void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
 {
     Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
 }
 
 TextMarkRepo *ProjectGroupNode::marks(const QString& fileName)
@@ -672,7 +670,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
         if (file) {
             file->removeTextMarks(tmTypes);
         } else {
-            // TODO(JM) move file binding to FileMetaRepo
             it.value()->removeTextMarks(tmTypes);
         }
     }
@@ -680,7 +677,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    // TODO(JM) move file binding to FileMetaRepo
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 

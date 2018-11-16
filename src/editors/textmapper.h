@@ -41,20 +41,17 @@ struct OversizeMapper {
     void setSize(const qint64 &_size) {
         size = _size;
         bytesInBlock = int((size - 1) / std::numeric_limits<int>::max()) + 1;
-        lastBlockStart = (qint64(bytesInBlock) * std::numeric_limits<int>::max())-bytesInBlock;
     }
     inline qint64 map(const int &block, const int &remain = 0) const {
         return (qint64(block) * bytesInBlock) + remain;
     }
     inline int map(const qint64 &value) const {
-        return int(value / bytesInBlock);
+        return int(((value>size) ? size : value) / bytesInBlock);
     }
     inline int remain(const qint64 &value) const {
-        if (value >= lastBlockStart) return int(value - lastBlockStart);
-        return int(value % bytesInBlock);
+        return int( ((value>size) ? size : value) % bytesInBlock);
     }
     qint64 size;
-    qint64 lastBlockStart;
     int bytesInBlock;
 };
 
@@ -67,7 +64,6 @@ class TextMapper: public QObject
 {
     Q_OBJECT
 public:
-    enum class ProgressType { LineCount, MoveTopLine };
     struct ProgressAmount { int part = 0; int all = 0; };
 
 private:
@@ -100,12 +96,13 @@ private:
         int lineOffset = -1;
     };
     struct CursorPosition {
-        bool operator ==(const CursorPosition &other) const { return absPos == other.absPos; }
-        qint64 absPos = -1;
+        bool operator ==(const CursorPosition &other) const {
+            return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
         int chunkNr = -1;
+        qint64 absLinePos = -1;
+        int charNr = -1;
         int localLineNr = -1;
         int localLineBytes = -1;
-        int charNr = -1;
     };
 
 public:
@@ -120,31 +117,34 @@ public:
     void clear();
 
     bool setMappingSizes(int visibleLines = 100, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
-    bool setTopOffset(int byteBlockNr);
+    bool setTopOffset(int byteBlockNr, int remain = 0);
+    bool setTopLine(int lineNr);
     int fileSizeInByteBlocks();
     int relTopLine() const;
     int absTopLine() const;
     int lineCount() const;
+    int knownLineNrs() const;
 
     QString line(int localLineNr, int *lineInChunk = nullptr) const;
+    QString lines(int localLineNrFrom, int lineCount) const;
     int moveTopByLines(int linesDelta);
 
-    int absPos(int localLineNr, int charNr = 0, int *remain = nullptr);
+    int absPos(int absLineNr, int charNr = 0, int *remain = nullptr);
     int relPos(int localLineNr, int charNr = 0);
 
     void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
     void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 
     ProgressAmount peekChunksForLineNrs(int chunkCount);
+    double getBytesPerLine() const;
 
     // test supporting methods
     int topChunk() const;
     void dumpTopChunk(int maxlen);
     const char *rawLine(int localLineNr, int *lineInChunk = nullptr) const;
     int lastChunkWithLines() const { return mLastChunkWithLineNr; }
-
-signals:
-    void proceeded(qreal percent, ProgressType type);
+    int findChunk(int lineNr);
+    inline int chunkCount() const { return int(mOversizeMapper.size/mChunkSize) + 1; }
 
 private:
     void initDelimiter(Chunk *chunk) const;
@@ -154,6 +154,8 @@ private:
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
     QPoint convertPos(const CursorPosition &pos) const;
+    Chunk *chunkForLine(int absLine, int *lineInChunk) const;
+    QString line(Chunk *chunk, int chunkLineNr) const;
 
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness
@@ -162,7 +164,6 @@ private:
     mutable QVector<ChunkLines> mChunkLineNrs;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
-    QSet<ProgressType> mActiveProgresses;
 
     LinePosition mTopLine;
     int mVisibleLines;

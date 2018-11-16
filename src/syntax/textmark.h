@@ -95,7 +95,6 @@ private:
     FileId mFileId;
     NodeId mGroupId;
     TextMarkRepo* mMarkRepo = nullptr;
-//    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
@@ -103,10 +102,7 @@ private:
     int mValue = -1;
     int mSpread = 0;
     TextMark* mReference = nullptr;
-//    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
-
-    // TODO(JM) maybe later we want to link the mark to the QTextBlock
     BlockData* mBlockData = nullptr;
 };
 

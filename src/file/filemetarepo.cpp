@@ -205,11 +205,6 @@ void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecM
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
 }
 
-//void FileMetaRepo::dirChanged(const QString &path)
-//{
-//    // TODO(JM) stack dir-name to check after timeout if it's deleted or contents has changed
-//}
-
 void FileMetaRepo::fileChanged(const QString &path)
 {
     FileMeta *file = fileMeta(path);

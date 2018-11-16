@@ -65,7 +65,6 @@ public slots:
     void removedFile(FileMeta* fileMeta);
 
 private slots:
-//    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();

@@ -389,9 +389,6 @@ void FileMeta::load(QList<int> codecMibs)
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
-
-        // TODO(JM) Read in lines to enable progress information
-        // !! For paging: reading must ensure being at the start of a line - not in the middle of a unicode-character
         const QByteArray data(file.readAll());
         QTextCodec *codec = nullptr;
         for (int mib: mibs) {

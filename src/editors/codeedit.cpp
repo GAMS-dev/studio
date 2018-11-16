@@ -1526,7 +1526,6 @@ void CodeEdit::BlockEdit::stopCursorTimer()
 
 void CodeEdit::BlockEdit::refreshCursors()
 {
-    // TODO(JM) generate drawCursor-event for every line
     mBlinkStateHidden = !mBlinkStateHidden;
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
 }

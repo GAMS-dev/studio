@@ -25,6 +25,7 @@
 #include "studiosettings.h"
 #include "locators/settingslocator.h"
 #include <QStringBuilder>
+#include <QScrollBar>
 
 namespace gams {
 namespace studio {
@@ -38,6 +39,7 @@ public:
     bool showLineNr() const override { return false; }
 
 protected:
+    void keyPressEvent(QKeyEvent *event) override;
 //    QString lineNrText(int blockNr) override {
 //        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
 //        double percent = byteNr * 100 / mOversizeMapper.size;
@@ -66,28 +68,49 @@ public:
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
     void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
+    int findLine(int lineNr);
 
 signals:
     void blockCountChanged(int newBlockCount);
+    void loadAmount(int percent);
+    void findLineAmount(int percent);
 
 private slots:
     void editScrollChanged();
-    void editScrollResized(int min, int max);
+//    void editScrollResized(int min, int max);
+    void peekMoreLines();
+    void outerScrollAction(int action);
+    void adjustOuterScrollAction();
 
 protected:
     void scrollContentsBy(int dx, int dy) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void init();
 
 private:
-    void syncVScroll(int editValue = -1, int mainValue = -1);
+    void updateVScrollZone();
+    void syncVScroll();
+    void setVisibleTop(int lineNr);
 
 private:
     int mTopLine = 0;
+    int mTopVisibleLine = 0;
+    int mVisibleLines = 0;
+    bool mDocChanging = false;
+    bool mInit = true;
 
 private:
     TextMapper mMapper;
     TextViewEdit *mEdit;
+    QTimer mPeekTimer;
     QTextCodec *mCodec = nullptr;
-    bool mLoading = false;
+    int mTransferedAmount = 0;
+    int mTransferedLineAmount = 0;
+    int mLineToFind = -1;
+    int mTopBufferLines = 100;
+    QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
+
 };
 
 } // namespace studio

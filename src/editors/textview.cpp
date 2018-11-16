@@ -29,6 +29,22 @@
 namespace gams {
 namespace studio {
 
+void TextViewEdit::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown) {
+        DEB() << "before key: " << verticalScrollBar()->value();
+    }
+    CodeEdit::keyPressEvent(event);
+    if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown) {
+        DEB() << "after key: " << verticalScrollBar()->value();
+    }
+//    if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown)
+//        emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
+//    if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown) {
+//        DEB() << "after update: " << verticalScrollBar()->value();
+//    }
+}
+
 
 TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
 {
@@ -36,14 +52,21 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mEdit = new TextViewEdit(mMapper, this);
+    mEdit->setFrameShape(QFrame::NoFrame);
     mEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+//    mEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QVBoxLayout *lay = new QVBoxLayout(this);
-    lay->setContentsMargins(0,0,18,0);
     setLayout(lay);
     lay->addWidget(mEdit);
-    connect(mEdit, &CodeEdit::cursorPositionChanged, this, &TextView::editScrollChanged);
+
+//    mEdit->setCursorWidth(0);
+    connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
+//    connect(mEdit, &CodeEdit::cursorPositionChanged, this, &TextView::editScrollChanged);
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
-    connect(mEdit->verticalScrollBar(), &QScrollBar::rangeChanged, this, &TextView::editScrollResized);
+//    connect(mEdit->verticalScrollBar(), &QScrollBar::rangeChanged, this, &TextView::editScrollResized);
+
+    mPeekTimer.setSingleShot(true);
+    connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
 //    mEdit->verticalScrollBar()->setVisible(false);
 
 /* --- scrollbar controlling qt-methods
@@ -65,6 +88,14 @@ void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
 {
     mMapper.setCodec(codecMibs.size() ? QTextCodec::codecForMib(codecMibs.at(0)) : QTextCodec::codecForLocale());
     mMapper.openFile(fileName);
+    updateVScrollZone();
+    mTransferedAmount = 0;
+    int count = (mMapper.lineCount() < 0) ? 300 : mMapper.lineCount();
+    mDocChanging = true;
+    mEdit->setPlainText(mMapper.lines(0, count));
+    mEdit->setTextCursor(QTextCursor(mEdit->document()));
+    mDocChanging = false;
+    mPeekTimer.start(100);
 }
 
 void TextView::zoomIn(int range)
@@ -82,40 +113,167 @@ void TextView::getPosAndAnchor(QPoint &pos, QPoint &anchor) const
     mMapper.getPosAndAnchor(pos, anchor);
 }
 
-void TextView::editScrollChanged()
+int TextView::findLine(int lineNr)
 {
-    TRACE();
-    syncVScroll(mEdit->verticalScrollBar()->value(), -1);
+    if (mMapper.lineCount() >= 0 || lineNr < mMapper.knownLineNrs()) {
+        if (mMapper.setTopLine(qMax(0, lineNr - 150))) return lineNr;
+    }
+    mTransferedLineAmount = 0;
+    mLineToFind = lineNr;
+    return mMapper.knownLineNrs();
 }
 
-void TextView::editScrollResized(int min, int max)
+void TextView::peekMoreLines()
+{
+    TextMapper::ProgressAmount amount = mMapper.peekChunksForLineNrs(4);
+    if (amount.part < amount.all) mPeekTimer.start(100);
+    // in 5% steps
+    int percentAmount = (amount.part * 20 / amount.all) * 5;
+    if (mTransferedAmount != percentAmount) emit loadAmount(percentAmount);
+    mTransferedAmount = percentAmount;
+    if (mLineToFind >= 0) {
+        percentAmount = qMin(100, (amount.part * 20 / mLineToFind) * 5);
+        if (mTransferedLineAmount != percentAmount) emit findLineAmount(percentAmount);
+        mTransferedLineAmount = percentAmount;
+    }
+}
+
+void TextView::outerScrollAction(int action)
+{
+    switch (action) {
+    case QScrollBar::SliderSingleStepAdd:
+    case QScrollBar::SliderSingleStepSub:
+    case QScrollBar::SliderPageStepAdd:
+    case QScrollBar::SliderPageStepSub:
+    case QScrollBar::SliderMove:
+        mActiveScrollAction = QScrollBar::SliderAction(action);
+        QTimer::singleShot(0, this, &TextView::adjustOuterScrollAction);
+        break;
+    default:
+        mActiveScrollAction = QScrollBar::SliderNoAction;
+        break;
+    }
+}
+
+void TextView::adjustOuterScrollAction()
 {
     TRACE();
-    verticalScrollBar()->setMinimum(min);
-    verticalScrollBar()->setMaximum(max);
+    switch (mActiveScrollAction) {
+    case QScrollBar::SliderSingleStepAdd:
+    case QScrollBar::SliderSingleStepSub:
+    case QScrollBar::SliderPageStepAdd:
+    case QScrollBar::SliderPageStepSub:
+        mEdit->verticalScrollBar()->triggerAction(mActiveScrollAction);
+        break;
+    case QScrollBar::SliderMove:
+//        if (verticalScrollBar()->minimum()) {
+//            DEB() << "Scrollbar[" << verticalScrollBar()->minimum()
+//                  << "] at " << verticalScrollBar()->value()
+//                  << " (" << (verticalScrollBar()->value()-verticalScrollBar()->minimum()) << ")";
+//        } else {
+//            DEB() << "Scrollbar[+" << verticalScrollBar()->maximum()
+//                  << "] at " << verticalScrollBar()->value();
+//        }
+        setVisibleTop(verticalScrollBar()->value() - verticalScrollBar()->minimum());
+        break;
+    default:
+        break;
+    }
+    mActiveScrollAction = QScrollBar::SliderNoAction;
+}
+
+void TextView::editScrollChanged()
+{
+//    TRACE();
+    if (!mDocChanging) setVisibleTop(mTopLine + mEdit->verticalScrollBar()->value());
 }
 
 void TextView::scrollContentsBy(int dx, int dy)
 {
-    TRACE();
+    // FIXME(JM) source is outer scrollbar: adapt document and inner scrollbar (of the edit)
     Q_UNUSED(dx)
     Q_UNUSED(dy)
-    syncVScroll(-1, verticalScrollBar()->value());
+    //    syncVScroll(-1, verticalScrollBar()->value());
 }
 
-void TextView::syncVScroll(int editValue, int mainValue)
+void TextView::resizeEvent(QResizeEvent *event)
 {
-    if (editValue >= 0) {
-        int value = editValue;
-        if (value != verticalScrollBar()->value())
-            verticalScrollBar()->setValue(value);
-    } else if (mainValue >= 0) {
-        int value = mainValue;
-        if (value != mEdit->verticalScrollBar()->value())
-        mEdit->verticalScrollBar()->setValue(value);
+    QAbstractScrollArea::resizeEvent(event);
+    mVisibleLines = (mEdit->height() - mEdit->contentsMargins().top() - mEdit->contentsMargins().bottom())
+            / mEdit->fontMetrics().height();
+    updateVScrollZone();
+}
+
+void TextView::showEvent(QShowEvent *event)
+{
+    QAbstractScrollArea::showEvent(event);
+    if (mInit) init();
+}
+
+void TextView::init()
+{
+    layout()->setContentsMargins(0,0,verticalScrollBar()->width(),0);
+    mEdit->setFocus();
+    mInit = false;
+}
+
+void TextView::updateVScrollZone()
+{
+    TRACE();
+    int lineCount = mMapper.lineCount();
+    if (lineCount > 0) { // known lines count
+        verticalScrollBar()->setMinimum(0);
+        verticalScrollBar()->setMaximum(qMax(lineCount-mVisibleLines, 0));
+    } else { // estimated lines count
+        verticalScrollBar()->setMinimum(qMin(lineCount+mVisibleLines, 0));
+        verticalScrollBar()->setMaximum(0);
+    }
+    syncVScroll();
+}
+
+void TextView::syncVScroll()
+{
+    TRACE();
+    if (mMapper.absTopLine() >= 0) { // current line is known
+        DEB() << "syncVScroll: " << verticalScrollBar()->minimum() << " + " << mMapper.absTopLine()
+              << " + " << mTopVisibleLine << " = " << (verticalScrollBar()->minimum() + mMapper.absTopLine() + mTopVisibleLine);
+        verticalScrollBar()->setValue(verticalScrollBar()->minimum() + mMapper.absTopLine() + mTopVisibleLine);
+    } else { // current line is estimated
+        qreal factor= qreal(mMapper.absPos(mTopVisibleLine + mTopLine, 0)) / mMapper.fileSizeInByteBlocks();
+        mEdit->blockSignals(true);
+        verticalScrollBar()->setValue(qRound(verticalScrollBar()->minimum() - verticalScrollBar()->minimum() * factor));
+        mEdit->blockSignals(false);
     }
 }
 
+void TextView::setVisibleTop(int lineNr)
+{
+    TRACE();
+    if (lineNr == mTopLine+mTopVisibleLine) return;
+    DEB() << "new top lineNr: " << lineNr;
+    mTopLine = qBound(0, lineNr - mTopBufferLines, qAbs(mMapper.lineCount())-(mTopBufferLines*2)); // the absolute line in the file
+    mTopVisibleLine = lineNr - mTopLine;
+    if (lineNr <= mMapper.knownLineNrs()) { // known line number: jump directly to line
+        mMapper.setTopLine(mTopLine);
+    } else { // estimated line number: jump to estimated byte position
+        int remain;
+        int byteBlock = mMapper.absPos(mTopLine, 0, &remain);
+        mMapper.setTopOffset(byteBlock, remain);
+    }
+    DEB() << "Set edit scroll to: " << mTopVisibleLine;
+    mDocChanging = true;
+    mEdit->document()->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
+    mEdit->verticalScrollBar()->setValue(mTopVisibleLine);
+    mDocChanging = false;
+    updateVScrollZone();
+}
+
+//void TextView::editScrollResized(int min, int max)
+//{
+//    TRACE();
+//    verticalScrollBar()->setMinimum(min);
+//    verticalScrollBar()->setMaximum(max);
+//}
 
 } // namespace studio
 } // namespace gams

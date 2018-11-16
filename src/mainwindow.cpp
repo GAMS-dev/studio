@@ -1168,7 +1168,6 @@ void MainWindow::postGamsRun(NodeId origin)
         mSyslog->appendLog("No fileId set to process", LogMsgType::Error);
         return;
     }
-    // TODO(JM) Replace the FileId by NodeId in GamsProcess
     ProjectRunGroupNode* groupNode = mProjectRepo.findRunGroup(origin);
     if (!groupNode) {
         mSyslog->appendLog("No group attached to process", LogMsgType::Error);
@@ -2040,7 +2039,6 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         runGroup->gamsProcess()->stop();
 
     if (requestCloseChanged(changedFiles)) {
-        // TODO(JM)  close if selected
         for (FileMeta *file: openFiles) {
             closeFileEditors(file->id());
         }
@@ -2318,7 +2316,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
         QJsonObject tabObject;
         tabObject["location"] = fm->location();
         tabObject["codecMib"] = fm->codecMib();
-        // TODO(JM) store current edit position
+        // TODO(JM) store current tab index
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
