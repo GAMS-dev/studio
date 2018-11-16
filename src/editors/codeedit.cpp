@@ -458,7 +458,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
 
         // insert closing characters
-        } else if (index != -1 && insertClosing()) {
+        } else if (index != -1 && allowClosing(index)) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
@@ -494,14 +494,16 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     AbstractEdit::keyPressEvent(e);
 }
 
-bool CodeEdit::insertClosing()
+bool CodeEdit::allowClosing(int chIndex)
 {
     QRegularExpression allowsAutoclose("[\\s\n\r,;\\)\\{\\}\\]\u2029]");
     QRegularExpressionMatch match = allowsAutoclose.match(
                                         QString(document()->characterAt(textCursor().position()))
                                         );
+    QChar prior = document()->characterAt(textCursor().position() - 1);
 
-    return match.hasMatch();
+    // deactivate insertion for quotes if char before cursor is letter or number
+    return (match.hasMatch() && (!prior.isLetterOrNumber() || chIndex < 3));
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
