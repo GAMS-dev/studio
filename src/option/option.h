@@ -155,6 +155,7 @@ public:
     QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
     QStringList getValuesList(const QString &optionName) const;
+    QStringList getSynonymList(const QString &optionName) const;
     QStringList getNonHiddenValuesList(const QString &optionName) const;
 
     int getOrdinalNumber(const QString &optionName) const;

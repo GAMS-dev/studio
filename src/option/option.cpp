@@ -312,6 +312,15 @@ QStringList Option::getValuesList(const QString &optionName) const
    return valueList;
 }
 
+QStringList Option::getSynonymList(const QString &optionName) const
+{
+    QStringList synonymList;
+    if (mSynonymMap.contains(optionName.toUpper())) {
+        synonymList = mSynonymMap.keys( optionName.toUpper() );
+    }
+    return synonymList;
+}
+
 QStringList Option::getNonHiddenValuesList(const QString &optionName) const
 {
     QStringList valueList;
