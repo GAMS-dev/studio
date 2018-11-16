@@ -83,13 +83,23 @@ private slots:
 
     void testWriteOptionFile();
 
+    void testReadFromStr_data();
+    void testReadFromStr();
+
     void cleanupTestCase();
 
 private:
+    bool Dcreated = false;
+    bool optdefRead = false;
+    optHandle_t mOPTHandle;
+
     bool containKey(QList<SolverOptionItem> &items, const QString &key) const;
     bool containKey(QList<OptionItem> &items, const QString &key) const;
     QVariant getValue(QList<SolverOptionItem> &items, const QString &key) const;
     QVariant getValue(QList<OptionItem> &items, const QString &key) const;
+
+    int logAndClearMessage(optHandle_t &OPTHandle);
+    int getErrorCode(optMsgType type);
 
     OptionTokenizer* optionTokenizer;
 };

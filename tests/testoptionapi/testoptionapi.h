@@ -35,18 +35,6 @@ private slots:
     void testReadFromStr_data();
     void testReadFromStr();
 
-    void testReadIntOptionFromStr_data();
-    void testReadIntOptionFromStr();
-
-    void testReadDoubleOptionFromStr_data();
-    void testReadDoubleOptionFromStr();
-
-    void testReadStringOptionFromStr_data();
-    void testReadStringOptionFromStr();
-
-    void testReadDotOptionFromStr_data();
-    void testReadDotOptionFromStr();
-
     void cleanupTestCase();
 
 private:
