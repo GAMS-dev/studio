@@ -396,7 +396,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             indexClosing = -1;
         }
 
-        // surround text with characters
+        // surround selected text with characters
         if ((index != -1) && (textCursor().hasSelection())) {
             QTextCursor tc(textCursor());
             QString selection(tc.selectedText());
@@ -405,8 +405,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(tc);
             return;
 
-        // jump over closing character thats already in place
-        } else if (indexClosing != -1 &&
+        // jump only(!) over closing character thats already in place
+        } else if (mSmartType && indexClosing != -1 &&
                    closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
             tc.movePosition(QTextCursor::NextCharacter);
@@ -416,7 +416,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
 
         // insert closing characters
-        } else if (index != -1 && !document()->characterAt(textCursor().position()).isLetterOrNumber()) {
+        } else if (index != -1 && allowClosing(index)) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
@@ -428,22 +428,40 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
 
         if (mSmartType && e->key() == Qt::Key_Backspace) {
-            int pos = textCursor().position();
 
-            QChar a = document()->characterAt(pos-1);
-            QChar b = document()->characterAt(pos);
+            QChar a = document()->characterAt(textCursor().position()-1);
+            QChar b = document()->characterAt(textCursor().position());
 
+            // ( is opening char )       && (char before and after cursor are identical)
             if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
                 textCursor().deleteChar();
                 textCursor().deletePreviousChar();
                 e->accept();
-                mSmartType = false;
+
+                // check cursor surrounding characters again
+                a = document()->characterAt(textCursor().position()-1);
+                b = document()->characterAt(textCursor().position());
+
+                // keep smarttype on conditionally; e.g. for ((|)); qt creator does this, too
+                mSmartType = (opening.indexOf(a) == closing.indexOf(b));
                 return;
             }
         }
     }
 
     AbstractEdit::keyPressEvent(e);
+}
+
+bool CodeEdit::allowClosing(int chIndex)
+{
+    QRegularExpression allowsAutoclose("[\\s\n\r,;\\)\\{\\}\\]\u2029]");
+    QRegularExpressionMatch match = allowsAutoclose.match(
+                                        QString(document()->characterAt(textCursor().position()))
+                                        );
+    QChar prior = document()->characterAt(textCursor().position() - 1);
+
+    // deactivate insertion for quotes if char before cursor is letter or number
+    return (match.hasMatch() && (!prior.isLetterOrNumber() || chIndex < 3));
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
