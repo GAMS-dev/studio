@@ -127,11 +127,11 @@ FileKind TextMarkRepo::fileKind(FileId fileId)
     return FileKind::None;
 }
 
-QList<TextMark*> TextMarkRepo::marks(FileId nodeId, int lineNr, NodeId groupId, TextMark::Type refType, int max) const
+QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, TextMark::Type refType, int max) const
 {
     QList<TextMark*> res;
-    if (!mMarks.contains(nodeId)) return res;
-    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(nodeId)->values() : mMarks.value(nodeId)->values(lineNr);
+    if (!mMarks.contains(fileId)) return res;
+    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(fileId)->values() : mMarks.value(fileId)->values(lineNr);
     if (groupId < 0 && refType == TextMark::all) return marks;
     int i = 0;
     for (TextMark* mark: marks) {
