@@ -22,6 +22,8 @@
 
 #include "cfgmcc.h"
 
+#include <QString>
+
 namespace gams {
 namespace studio {
 
@@ -31,7 +33,18 @@ public:
     GamsLicenseInfo();
     ~GamsLicenseInfo();
 
+    int solvers();
+
+    QString solverName(int index);
+
 private:
+#ifdef __unix__
+    const QString mConfigFile = "gmscmpun.txt";
+#else
+    const QString mConfigFile = "gmscmpnt.txt";
+#endif
+    const QString mLicenseFile = "gamslice.txt";
+
     cfgHandle_t mCFG;
 };
 

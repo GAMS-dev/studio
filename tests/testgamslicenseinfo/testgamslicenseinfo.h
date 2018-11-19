@@ -30,6 +30,13 @@ private slots:
     void initTestCase();
 
     void testGamsLicenseInfo();
+
+    void testSolvers();
+
+    void testSolverName();
+    void testSolverNameZeroIndex();
+    void testSolverNameNegativeIndex();
+    void testSolverNameOutOfRange();
 };
 
 #endif // TESTGAMSLICENSEINFO_H

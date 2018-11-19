@@ -21,6 +21,8 @@
 #include "gamslicenseinfo.h"
 #include "commonpaths.h"
 
+#include <QDebug>
+
 using namespace gams::studio;
 
 void TestGamsLicenseInfo::initTestCase()
@@ -31,6 +33,47 @@ void TestGamsLicenseInfo::initTestCase()
 void TestGamsLicenseInfo::testGamsLicenseInfo()
 {
     GamsLicenseInfo gamsLicenseInfo;
+}
+
+void TestGamsLicenseInfo::testSolvers()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    auto result = gamsLicenseInfo.solvers();
+    QVERIFY(result != 0);
+}
+
+void TestGamsLicenseInfo::testSolverName()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    auto count = gamsLicenseInfo.solvers();
+    if (!count)
+        QVERIFY2(false, "The number of solver shall not be 0.");
+    auto result = gamsLicenseInfo.solverName(count);
+    QVERIFY(!result.isEmpty());
+}
+
+void TestGamsLicenseInfo::testSolverNameZeroIndex()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    if (!gamsLicenseInfo.solvers())
+        QVERIFY2(false, "The number of solver shall not be 0.");
+    auto result = gamsLicenseInfo.solverName(0);
+    QVERIFY(result.isEmpty());
+}
+
+void TestGamsLicenseInfo::testSolverNameNegativeIndex()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    auto result = gamsLicenseInfo.solverName(-1);
+    QVERIFY(result.isEmpty());
+}
+
+void TestGamsLicenseInfo::testSolverNameOutOfRange()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    auto count = gamsLicenseInfo.solvers() + 1;
+    auto result = gamsLicenseInfo.solverName(count);
+    QVERIFY(result.isEmpty());
 }
 
 QTEST_MAIN(TestGamsLicenseInfo)

@@ -34,11 +34,30 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+    auto configFile = CommonPaths::systemDir() + "/" + mConfigFile; // TODO(AF): QDIR/CommonPath usage?
+    if (cfgReadConfig(mCFG, configFile.toStdString().c_str())) {
+        cfgGetMsg(mCFG, msg);
+        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+    }
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
 {
     if (mCFG) cfgFree(&mCFG);
+}
+
+int GamsLicenseInfo::solvers()
+{
+    return cfgNumAlgs(mCFG);
+}
+
+QString GamsLicenseInfo::solverName(int index)
+{
+    char name[GMS_SSSIZE];
+    QString result = cfgAlgName(mCFG, index, name);
+    if (result == "UnknownSolver")
+        return QString();
+    return result;
 }
 
 }
