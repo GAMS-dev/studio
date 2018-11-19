@@ -460,8 +460,7 @@ bool CodeEdit::allowClosing(int chIndex)
     // if char before and after the cursor are a matching pair: OK
     bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
 
-    // deactivate insertion for quotes if char before cursor is letter or number
-    // next is allowed char && if brackets are there and matching && prior not letter or number || or not quotes
+    // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
     return match.hasMatch() && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
@@ -531,6 +530,7 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
+    mSmartType = false; // exit on mouse navigation
     this->setContextMenuPolicy(Qt::DefaultContextMenu);
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
         this->setContextMenuPolicy(Qt::PreventContextMenu);
