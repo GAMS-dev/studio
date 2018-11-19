@@ -20,7 +20,7 @@
 #ifndef GAMSLICENSEINFO_H
 #define GAMSLICENSEINFO_H
 
-#include "gevmcc.h"
+#include "cfgmcc.h"
 
 namespace gams {
 namespace studio {
@@ -32,8 +32,7 @@ public:
     ~GamsLicenseInfo();
 
 private:
-    gevHandle_t mGEV;
-    //void* mALGX;
+    cfgHandle_t mCFG;
 };
 
 }

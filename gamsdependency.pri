@@ -56,7 +56,7 @@ equals(GAMS_BUILD_ENV, "") {
         $$GAMS_DISTRIB_API/gclgms.c \
         $$GAMS_DISTRIB_API/gdxcc.c  \
         $$GAMS_DISTRIB_API/optcc.c  \
-        $$GAMS_DISTRIB_API/gevmcc.c
+        $$GAMS_DISTRIB_API/cfgmcc.c
 } else {
     GSYS_ENV = $$(GSYS)
     equals(GSYS_ENV, "wei") {
@@ -79,7 +79,7 @@ equals(GAMS_BUILD_ENV, "") {
 
     SOURCES = \
         $$(GPRODUCTS)/apiwrap/joat/c4umcc.c     \
-        $$(GPRODUCTS)/apiwrap/optobj/gevmcc.c   \
+        $$(GPRODUCTS)/apiwrap/joat/cfgmcc.c     \
         $$(GPRODUCTS)/gclib/gclgms.c            \
         $$(GPRODUCTS)/apiwrap/gdxio/gdxcc.c     \
         $$(GPRODUCTS)/apiwrap/optobj/optcc.c

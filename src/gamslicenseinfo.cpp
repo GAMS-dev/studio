@@ -29,17 +29,16 @@ namespace studio {
 GamsLicenseInfo::GamsLicenseInfo()
 {
     char msg[GMS_SSSIZE];
-    if (!gevCreateD(&mGEV,
+    if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
                     sizeof(msg)))
         qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
-    //mALGX = gevGetALGX(mGEV);
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
 {
-    if (mGEV) gevFree(&mGEV);
+    if (mCFG) cfgFree(&mCFG);
 }
 
 }
