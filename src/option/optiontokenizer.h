@@ -67,7 +67,6 @@ public:
     QString formatComment(const SolverOptionItem *item);
     QStringList splitOptionFromComment(const SolverOptionItem *item);
 
-    QList<SolverOptionItem *> readOptionFile_fromString(const QString &absoluteFilePath);
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
 
@@ -102,9 +101,10 @@ private:
     bool logMessage(optHandle_t &mOPTHandle);
     OptionErrorType logAndClearMessage(optHandle_t &OPTHandle);
 
+    bool updateOptionItem(optHandle_t &mOPTHandle, QString &str, SolverOptionItem* item);
     SolverOptionItem* getOptionItemFromStr(optHandle_t &mOPTHandle, QString &str);
     QString getKeyFromStr(QString &line, QString &hintKey);
-    QString getValueFromStr(QString &line, QString &hintValue);
+    QString getValueFromStr(QString &line, int itype, QString &hintKey, QString &hintValue);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

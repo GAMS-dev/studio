@@ -31,12 +31,12 @@ SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> i
 {
     mHeader << "Option" << "Value" << "Debug Entry";
 
-    for(SolverOptionItem* item : mOptionItem) {
-        if (item->disabled)
-            item->error = No_Error;
-        else
-            item->error = mOption->getValueErrorType(item->key, item->value.toString());
-    }
+//    for(SolverOptionItem* item : mOptionItem) {
+//        if (item->disabled)
+//            item->error = No_Error;
+//        else
+//            item->error = mOption->getValueErrorType(item->key, item->value.toString());
+//    }
     updateCheckState();
 }
 

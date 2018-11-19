@@ -619,36 +619,44 @@ void TestCPLEXOption::testReadOptionFile()
         QFAIL("expected to open cplex.op2 to write, but failed");
 
     QTextStream out(&outputFile);
-    out << "advind=0" << endl;
-    out << "advind -1" << endl;
+    out << "advind=0" << endl;                     // integer
+    out << "advind -1" << endl;                    // integer
     out << "*----------------------- " << endl;
     out << "*  this is a comment  line" << endl;
     out << "* -----------------------" << endl;
     out << "" << endl;
-    out << "cuts 2" << endl;
-    out << "cost.feaspref 0.9" << endl;
-    out << "aggcutlim=2000000000" << endl;
-    out << "benderspartitioninstage 1" << endl;
-    out << "dettilim 1e+075" << endl;
-    out << "miptrace /This/Is/The/File Name/Of/MIPTrace.File" << endl;
+    out << "cuts 2" << endl;                       // enumstr
+    out << "cost.feaspref 0.9" << endl;            // dot option
+    out << "cost.feaspref(*,*) 4" << endl;         // dot option
+    out << "benderspartitioninstage 1" << endl;    // boolean
+    out << "dettilim 1e+075" << endl;              // double
+    out << "secret def 1 34" << endl;               // strlist
     out << "computeserver  https://somewhere.org/" << endl;
-    out << "rerun=auto" << endl;
+    out << "rerun=auto" << endl;                    // string
     out << "*  eprhs=0.001" << endl;
-    out << "solnpoolcapacity=1100000000" << endl;
-    out << "* x.benderspartition 4" << endl;
-    out << "solnpoolintensity  3" << endl;
-    out << "tuning str1, str2, str3" << endl;
-    out << "tuning str 4";
+    out << "solnpoolcapacity=1100000000" << endl;   // integer
+    out << "* x.benderspartition 4" << endl;        // dot option
+    out << "solnpoolintensity  3" << endl;          // integer
+    out << "tuning str1, str2, str3" << endl;       // strlist
+    out << "tuning str 4";                          // strlist
     out << ", str 5";
     out << "" << endl;
+    out << "indic equ1(i,j,k)$bin1(i,k) 1" << endl;
+    out << "scalex no" << endl;                      // unknown option
+    out << "siftitlim abc" << endl;                  // integer incorrectvalue
+    out << "barqcpepcomp -1.234" << endl;            // double out of reange value
+    out << "barqcpepcomp x" << endl;                 // double incorrectvalue
+    out << "bbinterval 7 1" << endl;                 // integer too many values
+    out << "rerun YES"      << endl;                 // bool value upper case
+    out << "xyz.feaspref(i) 1" << endl;              // dot option
     outputFile.close();
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile_fromString(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile);
 
     // then
-    QCOMPARE( items.size(), 20 );
+    QCOMPARE( items.size(), 28 );
 
     for(int i=0; i<items.size(); i++)
         QVERIFY( !items.at(i)->modified );
@@ -682,65 +690,134 @@ void TestCPLEXOption::testReadOptionFile()
     // valid options
      QCOMPARE( items.at(0)->key, "advind" );
      QCOMPARE( items.at(0)->value.toString(), "0" );
-     QVERIFY( !items.at(0)->disabled );
+     QCOMPARE( items.at(0)->optionId, 6 );
      QVERIFY( items.at(0)->error == No_Error );
 
-//     QCOMPARE( items.at(1)->key, "advind -1" );
-//     QCOMPARE( items.at(1)->value.toString(), "" );
-//     QVERIFY( !items.at(1)->disabled );
-//     QVERIFY( items.at(1)->error == Incorrect_Value_Type );
+     QCOMPARE( items.at(1)->key, "advind -1" );
+     QCOMPARE( items.at(1)->value.toString(), "" );
+     QVERIFY( items.at(1)->optionId == -1 );
+     QVERIFY( !items.at(1)->disabled );
+     QVERIFY( items.at(1)->error == Incorrect_Value_Type );
 
     QCOMPARE( items.at(6)->key, "cuts");
     QCOMPARE( items.at(6)->value.toString(), "2");
-    QVERIFY( items.at(6)->optionId != -1 );
+    QCOMPARE( items.at(6)->optionId, 45 );
+    QVERIFY( !items.at(6)->disabled );
     QVERIFY( items.at(6)->error == No_Error );
 
-//    QCOMPARE( items.at(7)->key, "cost.feaspref");
-//    QCOMPARE( items.at(7)->value.toString(), "0.9");
+    QCOMPARE( items.at(7)->key, "cost.feaspref");
+    QCOMPARE( items.at(7)->value.toString(), "0.9");
+    QCOMPARE( items.at(7)->optionId, 74 );
+    QVERIFY( !items.at(7)->disabled );
+    QVERIFY( items.at(7)->error == No_Error );
 
-    QCOMPARE( items.at(8)->key, "aggcutlim");
-    QCOMPARE( items.at(8)->value.toString(), "2000000000");
-    QVERIFY( items.at(8)->optionId != -1 );
+    QCOMPARE( items.at(8)->key, "cost.feaspref(*,*)");
+    QCOMPARE( items.at(8)->value.toString(), "4");
+    QCOMPARE( items.at(8)->optionId, 74 );
+    QVERIFY( !items.at(8)->disabled );
     QVERIFY( items.at(8)->error == No_Error );
 
-//    QCOMPARE( items.at(9)->key, "benderspartitioninstage");
-//    QCOMPARE( items.at(9)->value.toString(), "1");
+    QCOMPARE( items.at(9)->key, "benderspartitioninstage");
+    QCOMPARE( items.at(9)->value.toString(), "1");
+    QCOMPARE( items.at(9)->optionId, 27 );
+    QVERIFY( !items.at(9)->disabled );
+    QVERIFY( items.at(9)->error == No_Error );
 
     QCOMPARE( items.at(10)->key, "dettilim");
-//    QCOMPARE( items.at(10)->value.toString(), "1e+075");
-    QVERIFY( items.at(10)->optionId != -1 );
+    QCOMPARE( items.at(10)->value.toString(), "1e+075");
+    QCOMPARE( items.at(10)->optionId, 50 );
+    QVERIFY( !items.at(10)->disabled );
     QVERIFY( items.at(10)->error == No_Error );
 
-    QCOMPARE( items.at(11)->key, "miptrace");
-    QCOMPARE( items.at(11)->value.toString(), "/This/Is/The/File Name/Of/MIPTrace.File" );
-    QVERIFY( items.at(11)->optionId != -1 );
+    QCOMPARE( items.at(11)->key, "secret");
+    QCOMPARE( items.at(11)->value.toString(), "def 1 34" );
+    QCOMPARE( items.at(11)->optionId, 182 );
+    QVERIFY( !items.at(11)->disabled );
     QVERIFY( items.at(11)->error == No_Error );
 
     QCOMPARE( items.at(12)->key, "computeserver");
     QCOMPARE( items.at(12)->value.toString(), "https://somewhere.org/");
-    QVERIFY( items.at(12)->optionId != -1 );
+    QCOMPARE( items.at(12)->optionId, 38 );
+    QVERIFY( !items.at(20)->disabled );
     QVERIFY( items.at(12)->error == No_Error );
 
     QCOMPARE( items.at(13)->key, "rerun");
     QCOMPARE( items.at(13)->value.toString(), "auto");
-    QVERIFY( items.at(13)->optionId != -1 );
+    QCOMPARE( items.at(13)->optionId, 176 );
+    QVERIFY( !items.at(13)->disabled );
     QVERIFY( items.at(13)->error == No_Error );
 
     QCOMPARE( items.at(15)->key, "solnpoolcapacity");
     QCOMPARE( items.at(15)->value.toString(), "1100000000");
-    QVERIFY( items.at(15)->optionId != -1 );
+    QCOMPARE( items.at(15)->optionId, 193 );
+    QVERIFY( !items.at(15)->disabled );
     QVERIFY( items.at(15)->error == No_Error );
 
     QCOMPARE( items.at(17)->key, "solnpoolintensity");
     QCOMPARE( items.at(17)->value.toString(), "3");
-    QVERIFY( items.at(17)->optionId != -1 );
+    QCOMPARE( items.at(17)->optionId, 195 );
+    QVERIFY( !items.at(17)->disabled );
     QVERIFY( items.at(17)->error == No_Error );
 
     QCOMPARE( items.at(18)->key, "tuning");
     QCOMPARE( items.at(18)->value.toString(), "str1, str2, str3");
+    QCOMPARE( items.at(18)->optionId, 216 );
+    QVERIFY( !items.at(18)->disabled );
+    QVERIFY( items.at(18)->error == No_Error );
 
     QCOMPARE( items.at(19)->key, "tuning");
     QCOMPARE( items.at(19)->value.toString(), "str 4, str 5");
+    QCOMPARE( items.at(19)->optionId, 216 );
+    QVERIFY( !items.at(19)->disabled );
+    QVERIFY( items.at(19)->error == No_Error );
+
+    QCOMPARE( items.at(20)->key, "indic equ1(i,j,k)$bin1(i,k) 1");
+    QCOMPARE( items.at(20)->value.toString(), "");
+    QVERIFY( items.at(20)->optionId == -1 );
+    QVERIFY( !items.at(20)->disabled );
+    QVERIFY( items.at(20)->error == No_Error );
+
+    QCOMPARE( items.at(21)->key, "scalex no");
+    QCOMPARE( items.at(21)->value.toString(), "");
+    QVERIFY( items.at(21)->optionId == -1 );
+    QVERIFY( !items.at(21)->disabled );
+    QVERIFY( items.at(21)->error == Invalid_Key );
+
+    QCOMPARE( items.at(22)->key, "siftitlim abc");
+    QCOMPARE( items.at(22)->value.toString(), "");
+    QVERIFY( items.at(22)->optionId == -1 );
+    QVERIFY( !items.at(22)->disabled );
+    QVERIFY( items.at(22)->error == Incorrect_Value_Type );
+
+    QCOMPARE( items.at(23)->key, "barqcpepcomp -1.234");
+    QCOMPARE( items.at(23)->value.toString(), "");
+    QCOMPARE( items.at(23)->optionId, 21 );
+    QVERIFY( !items.at(23)->disabled );
+    QVERIFY( items.at(23)->error == Value_Out_Of_Range );
+
+    QCOMPARE( items.at(24)->key, "barqcpepcomp x");
+    QCOMPARE( items.at(24)->value.toString(), "");
+    QCOMPARE( items.at(24)->optionId, -1 );
+    QVERIFY( !items.at(24)->disabled );
+    QVERIFY( items.at(24)->error == Incorrect_Value_Type );
+
+    QCOMPARE( items.at(25)->key, "bbinterval 7 1");
+    QCOMPARE( items.at(25)->value.toString(), "");
+    QCOMPARE( items.at(25)->optionId, -1 );
+    QVERIFY( !items.at(25)->disabled );
+    QVERIFY( items.at(25)->error == Incorrect_Value_Type );
+
+    QCOMPARE( items.at(26)->key, "rerun");
+    QCOMPARE( items.at(26)->value.toString(), "YES");
+    QCOMPARE( items.at(26)->optionId, 176 );
+    QVERIFY( !items.at(26)->disabled );
+    QVERIFY( items.at(26)->error == No_Error );
+
+    QCOMPARE( items.at(27)->key, "xyz.feaspref(i) 1");
+    QCOMPARE( items.at(27)->value.toString(), "");
+    QCOMPARE( items.at(27)->optionId, -1 );
+    QVERIFY( !items.at(27)->disabled );
+    QVERIFY( items.at(27)->error == Invalid_Key );
 
 }
 
