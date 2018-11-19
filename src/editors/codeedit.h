@@ -252,6 +252,9 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
+
+    const QString mOpening = "([{'\"";
+    const QString mClosing = ")]}'\"";
 };
 
 class LineNumberArea : public QWidget

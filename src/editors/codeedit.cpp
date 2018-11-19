@@ -385,10 +385,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
-        QString opening = "([{'\"";
-        QString closing = ")]}'\"";
-        int index = opening.indexOf(e->text());
-        int indexClosing = closing.indexOf(e->text());
+        int index = mOpening.indexOf(e->text());
+        int indexClosing = mClosing.indexOf(e->text());
 
         // exclude modifier combinations
         if (e->text().isEmpty()) {
@@ -400,18 +398,17 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         if ((index != -1) && (textCursor().hasSelection())) {
             QTextCursor tc(textCursor());
             QString selection(tc.selectedText());
-            selection = opening.at(index) + selection + closing.at(index);
+            selection = mOpening.at(index) + selection + mClosing.at(index);
             tc.insertText(selection);
             setTextCursor(tc);
             return;
 
         // jump only(!) over closing character thats already in place
         } else if (mSmartType && indexClosing != -1 &&
-                   closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
+                   mClosing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
             tc.movePosition(QTextCursor::NextCharacter);
             setTextCursor(tc);
-            mSmartType = false; // we're done
             e->accept();
             return;
 
@@ -420,7 +417,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
-            tc.insertText(closing.at(index));
+            tc.insertText(mClosing.at(index));
             tc.movePosition(QTextCursor::PreviousCharacter);
             setTextCursor(tc);
             e->accept();
@@ -433,7 +430,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QChar b = document()->characterAt(textCursor().position());
 
             // ( is opening char )       && (char before and after cursor are identical)
-            if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
+            if (mOpening.indexOf(a) != -1 && (mOpening.indexOf(a) ==  mClosing.indexOf(b))) {
                 textCursor().deleteChar();
                 textCursor().deletePreviousChar();
                 e->accept();
@@ -443,7 +440,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 b = document()->characterAt(textCursor().position());
 
                 // keep smarttype on conditionally; e.g. for ((|)); qt creator does this, too
-                mSmartType = (opening.indexOf(a) == closing.indexOf(b));
+                mSmartType = (mOpening.indexOf(a) == mClosing.indexOf(b));
                 return;
             }
         }
@@ -460,8 +457,12 @@ bool CodeEdit::allowClosing(int chIndex)
                                         );
     QChar prior = document()->characterAt(textCursor().position() - 1);
 
+    // if char before and after the cursor are a matching pair: OK
+    bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
+
     // deactivate insertion for quotes if char before cursor is letter or number
-    return (match.hasMatch() && (!prior.isLetterOrNumber() || chIndex < 3));
+    // next is allowed char && if brackets are there and matching && prior not letter or number || or not quotes
+    return match.hasMatch() && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
