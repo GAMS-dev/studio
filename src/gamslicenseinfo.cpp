@@ -60,5 +60,25 @@ QString GamsLicenseInfo::solverName(int index)
     return result;
 }
 
+//SolverInfo GamsLicenseInfo::solverInfo(int index)
+//{
+//    SolverInfo si;
+//    si.Name = solverName(index);
+//    si.Status = ""; // TODO(AF): ...
+//    si.Capabilites = ""; // TODO(AF): ...
+//    return si;
+//}
+
+QStringList GamsLicenseInfo::modelTypeNames()
+{
+    QStringList modelTypes;
+    char modelType[GMS_SSSIZE];
+    for (int i=1; i<cfgProc_nrofmodeltypes; ++i) {
+        cfgModelTypeName(mCFG, i, modelType);
+        modelTypes << modelType;
+    }
+    return modelTypes;
+}
+
 }
 }

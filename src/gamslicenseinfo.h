@@ -23,9 +23,22 @@
 #include "cfgmcc.h"
 
 #include <QString>
+#include <QStringList>
 
 namespace gams {
 namespace studio {
+
+struct SolverInfo
+{
+    QString Name;
+    QString Status; // TODO(AF): really a string?
+    QString Capabilites; // TODO(AF): change type
+
+    bool isValid() // TODO(AF): ...
+    {
+        return !Name.isEmpty();
+    }
+};
 
 class GamsLicenseInfo
 {
@@ -36,6 +49,10 @@ public:
     int solvers();
 
     QString solverName(int index);
+
+//    SolverInfo solverInfo(int index);
+
+    QStringList modelTypeNames();
 
 private:
 #ifdef __unix__

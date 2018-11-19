@@ -37,6 +37,10 @@ private slots:
     void testSolverNameZeroIndex();
     void testSolverNameNegativeIndex();
     void testSolverNameOutOfRange();
+
+//    void testSolverInfo();
+
+    void testModelTypeNames();
 };
 
 #endif // TESTGAMSLICENSEINFO_H
