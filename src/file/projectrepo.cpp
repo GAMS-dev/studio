@@ -458,7 +458,7 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
 
     if (!hasOtherSourceNode && !hasOtherDestNode) {
         // no other nodes to this file: just change the location
-        sourceFM->saveAs(location, true);
+        sourceFM->saveAs(location, false);
         destFM = sourceFM;
     } else {
         destFM = mFileRepo->findOrCreateFileMeta(location);
