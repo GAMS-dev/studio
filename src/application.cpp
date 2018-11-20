@@ -55,7 +55,7 @@ void Application::init()
     SettingsLocator::provide(settings);
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
 
-    connect(&mDistribValidator, &DistributionValidator::messageReceived,
+    connect(&mDistribValidator, &support::DistributionValidator::messageReceived,
             mMainWindow.get(), &MainWindow::appendSystemLog);
     mDistribValidator.start();
     listen();

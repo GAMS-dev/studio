@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
@@ -86,5 +87,6 @@ void DistributionValidator::checkCompatibility()
     }
 }
 
+}
 }
 }

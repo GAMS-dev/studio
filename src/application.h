@@ -108,7 +108,7 @@ private:
 private:
     std::unique_ptr<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    DistributionValidator mDistribValidator;
+    support::DistributionValidator mDistribValidator;
     QString mServerName;
     QLocalServer mServer;
 };
