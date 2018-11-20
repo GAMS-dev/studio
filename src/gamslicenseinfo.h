@@ -55,7 +55,7 @@ public:
     QStringList modelTypeNames();
 
 private:
-#ifdef __unix__
+#if defined(__APPLE__) || defined(__unix__)
     const QString mConfigFile = "gmscmpun.txt";
 #else
     const QString mConfigFile = "gmscmpnt.txt";
