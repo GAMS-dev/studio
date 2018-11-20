@@ -182,16 +182,11 @@
       <attribute name="title">
        <string>Solvers</string>
       </attribute>
-      <widget class="QListWidget" name="listWidget">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>40</y>
-         <width>301</width>
-         <height>331</height>
-        </rect>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QTableView" name="solverTable"/>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
