@@ -71,7 +71,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->solverOptionTableView->setColumnHidden(2, true); //false);
+//    ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
     connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_toggleRowHeader);
     connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested,this, &SolverOptionWidget::showOptionContextMenu);

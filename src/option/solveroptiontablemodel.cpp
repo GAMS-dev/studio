@@ -31,12 +31,6 @@ SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> i
 {
     mHeader << "Option" << "Value" << "Debug Entry";
 
-//    for(SolverOptionItem* item : mOptionItem) {
-//        if (item->disabled)
-//            item->error = No_Error;
-//        else
-//            item->error = mOption->getValueErrorType(item->key, item->value.toString());
-//    }
     updateCheckState();
 }
 
@@ -58,7 +52,6 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         else
             return mCheckState[index];
     case Qt::ToolTipRole: {
-//      mOption->getValueErrorType(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString()))
         if (mOptionItem.at(index)->disabled) {
             return QString("%1").arg(mOptionItem.at(index)->text);
         } else {
@@ -79,11 +72,17 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     }
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            return QVariant::fromValue(QIcon(":/img/square-red"));
+            if (mOptionItem.at(index)->error == Deprecated_Option)
+                return QVariant::fromValue(QIcon(":/img/square-darkyellow"));
+            else
+                return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
             return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            return QVariant::fromValue(QIcon(":/img/square-green"));
+            if (mOptionItem.at(index)->error == Deprecated_Option)
+                return QVariant::fromValue(QIcon(":/img/square-square-darkyellow"));
+            else
+               return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     }
 
@@ -123,10 +122,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             } else if (col==1) {
                        return QVariant("");
             } else if (col==2) {
-                QString key = mOptionItem.at(row)->key;
-                if (mOption->isASynonym(mOptionItem.at(row)->key))
-                    key = mOption->getNameFromSynonym(mOptionItem.at(row)->key);
-                return QVariant(mOption->getOptionDefinition(key).number);
+                 return QVariant(mOptionItem.at(row)->optionId);
             }
         } else { // not a comment
             if (col==0) {
@@ -134,10 +130,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             } else if (col==1) {
                      return mOptionItem.at(row)->value;
             } else if (col==2) {
-                QString key = mOptionItem.at(row)->key;
-                if (mOption->isASynonym(mOptionItem.at(row)->key))
-                    key = mOption->getNameFromSynonym(mOptionItem.at(row)->key);
-                return QVariant(mOption->getOptionDefinition(key).number);
+                return QVariant(mOptionItem.at(row)->optionId);
             }
         }
         break;
@@ -169,17 +162,18 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             return QVariant::fromValue(QColor(Qt::gray));
         } else {
             switch(mOptionItem.at(row)->error) {
-                case Incorrect_Value_Type:
-                     return QVariant::fromValue(QColor(Qt::red));
-                case Value_Out_Of_Range:
-                    return QVariant::fromValue(QColor(Qt::red));
-                case Deprecated_Option:
-                    return QVariant::fromValue(QColor(Qt::red));
-                case No_Error:
-                    return QVariant::fromValue(QColor(Qt::black));
-                default:
-                    return QVariant::fromValue(QColor(Qt::black));
-             }
+            case Unknown_Error:
+            case Invalid_Key:
+            case Incorrect_Value_Type:
+            case Value_Out_Of_Range:
+                 return QVariant::fromValue(QColor(Qt::red));
+            case Deprecated_Option:
+                 return QVariant::fromValue(QColor(Qt::darkYellow));
+            case No_Error:
+                 return QVariant::fromValue(QColor(Qt::black));
+            default:
+                 return QVariant::fromValue(QColor(Qt::black));
+            }
         }
      }
      default:
@@ -206,8 +200,8 @@ Qt::ItemFlags SolverOptionTableModel::flags(const QModelIndex &index) const
      if (!index.isValid()) {
          return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
      } else {
-         if (index.column()!=1) {
-            return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+         if (index.column()==2) {
+            return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
          } else {
             return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
          }
@@ -241,17 +235,24 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (mOptionItem[index.row()]->disabled) {
-            if (index.column() == 0) { // text
-                mOptionItem[index.row()]->text = dataValue;
+        switch (index.column()) {
+        case 0 :
+            if (mOptionItem[index.row()]->disabled) {
+                if (!dataValue.startsWith("*"))
+                    mOptionItem[index.row()]->text = QString("* %1").arg(dataValue);
+                else
+                    mOptionItem[index.row()]->key = dataValue;
+            } else {
+               mOptionItem[index.row()]->key = dataValue;
             }
-        } else {
-            if (index.column() == 0) { // key
-                mOptionItem[index.row()]->key = dataValue;
-            } else if (index.column() == 1) { // value
-                      mOptionItem[index.row()]->value = dataValue;
-                      emit solverOptionValueChanged();
-            }
+            break;
+        case 1:
+            mOptionItem[index.row()]->value = dataValue;
+            emit solverOptionValueChanged();
+            break;
+        case 2:
+            mOptionItem[index.row()]->optionId = dataValue.toInt();
+            break;
         }
     } else if (role == Qt::CheckStateRole) {
         roles = { Qt::CheckStateRole };
@@ -431,11 +432,8 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
                setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
-           else if (mOptionItem.at(i)->error == Deprecated_Option)
-                   setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::PartiallyChecked),
-                              Qt::CheckStateRole );
-           else setHeaderData( i, Qt::Vertical,
+           else
+               setHeaderData( i, Qt::Vertical,
                           Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
         }
@@ -461,11 +459,8 @@ void SolverOptionTableModel::on_solverOptionValueChanged()
                 setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
-            else if (mOptionItem.at(i)->error == Deprecated_Option)
+            else
                 setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::PartiallyChecked),
-                              Qt::CheckStateRole );
-            else setHeaderData( i, Qt::Vertical,
                           Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
         }
@@ -477,28 +472,32 @@ void SolverOptionTableModel::on_solverOptionValueChanged()
 void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
 {
     if (mCheckState[logicalIndex].toInt() == Qt::PartiallyChecked) { // from comment
-        QStringList splittedOption = mOptionTokenizer->splitOptionFromComment(mOptionItem.at(logicalIndex));
-        mOptionItem.at(logicalIndex)->key = splittedOption.at(0);
-        mOptionItem.at(logicalIndex)->value = splittedOption.at(1);
-        mOptionItem.at(logicalIndex)->text = "";
-        mOptionItem.at(logicalIndex)->disabled = false;
-        mOptionItem.at(logicalIndex)->error = mOption->getValueErrorType( mOptionItem.at(logicalIndex)->key, mOptionItem.at(logicalIndex)->value.toString() );
-        updateCheckState();
+        mOptionTokenizer->getOptionItemFromStr(mOptionItem.at(logicalIndex), false);
+        if (mOptionItem.at(logicalIndex)->error == No_Error)
+            mCheckState[logicalIndex] = QVariant(Qt::Unchecked);
+         else
+            mCheckState[logicalIndex] = QVariant(Qt::Checked);
         setData( index(logicalIndex,0), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex,1), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
-        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
+        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
-        QString formattedOption = mOptionTokenizer->formatOption(mOptionItem.at(logicalIndex), true);
-        mOptionItem.at(logicalIndex)->key = "";
+        QString text, key;
+        if (mOptionItem.at(logicalIndex)->value.toString().isEmpty()) {
+            key = QString("%1").arg(mOptionItem.at(logicalIndex)->key);
+            text = QString("* %1").arg(mOptionItem.at(logicalIndex)->key);
+        } else {
+            key = QString("%1 %2").arg(mOptionItem.at(logicalIndex)->key).arg(mOptionItem.at(logicalIndex)->value.toString());
+            text = QString("* %1 %2").arg(mOptionItem.at(logicalIndex)->key).arg(mOptionItem.at(logicalIndex)->value.toString());
+        }
+        mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";
-        mOptionItem.at(logicalIndex)->text = formattedOption;
-        mOptionItem.at(logicalIndex)->error = No_Error;
+        mOptionItem.at(logicalIndex)->text = text;
         mOptionItem.at(logicalIndex)->disabled = true;
-        updateCheckState();
+        mCheckState[logicalIndex] = QVariant(Qt::PartiallyChecked);
         setData( index(logicalIndex,0), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex,1), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
-        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
+        setData( index(logicalIndex,2), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionModelChanged(mOptionItem);

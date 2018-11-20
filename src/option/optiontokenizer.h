@@ -63,9 +63,9 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    QString formatOption(const SolverOptionItem *item, bool asComment);
-    QString formatComment(const SolverOptionItem *item);
-    QStringList splitOptionFromComment(const SolverOptionItem *item);
+//    QString formatOption(const SolverOptionItem *item);
+//    QString formatOption(const SolverOptionItem *item);
+    bool getOptionItemFromStr(SolverOptionItem *item, bool firstTiem);
 
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
@@ -88,6 +88,7 @@ public slots:
 private:
     Option* mOption = nullptr;
     optHandle_t mOPTHandle;
+    bool mOPTAvailable = false;
 
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
@@ -99,10 +100,9 @@ private:
 
     OptionErrorType getErrorType(optHandle_t &mOPTHandle);
     bool logMessage(optHandle_t &mOPTHandle);
-    OptionErrorType logAndClearMessage(optHandle_t &OPTHandle);
+    OptionErrorType logAndClearMessage(optHandle_t &OPTHandle, bool logged = true);
 
     bool updateOptionItem(optHandle_t &mOPTHandle, QString &str, SolverOptionItem* item);
-    SolverOptionItem* getOptionItemFromStr(optHandle_t &mOPTHandle, QString &str);
     QString getKeyFromStr(QString &line, QString &hintKey);
     QString getValueFromStr(QString &line, int itype, QString &hintKey, QString &hintValue);
 
