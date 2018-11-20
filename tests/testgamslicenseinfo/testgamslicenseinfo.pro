@@ -29,6 +29,6 @@ HEADERS +=                  \
 
 SOURCES +=                          \
     testgamslicenseinfo.cpp         \
-    $$SRCPATH\gamslicenseinfo.cpp   \
-    $$SRCPATH\commonpaths.cpp       \
+    $$SRCPATH/gamslicenseinfo.cpp   \
+    $$SRCPATH/commonpaths.cpp       \
     $$SRCPATH/exception.cpp
