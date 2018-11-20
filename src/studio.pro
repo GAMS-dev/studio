@@ -160,7 +160,7 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    aboutgamsdialog.cpp \
+    support/aboutgamsdialog.cpp \
     support/gamslicenseinfo.cpp
 
 HEADERS += \
@@ -270,7 +270,7 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    aboutgamsdialog.h \
+    support/aboutgamsdialog.h \
     support/gamslicenseinfo.h
 
 FORMS += \
@@ -293,7 +293,7 @@ FORMS += \
     gotodialog.ui \
     encodingsdialog.ui \
     tabdialog.ui \
-    aboutgamsdialog.ui
+    support/aboutgamsdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

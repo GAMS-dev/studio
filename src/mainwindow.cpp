@@ -51,7 +51,7 @@
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"
-#include "aboutgamsdialog.h"
+#include "support/aboutgamsdialog.h"
 
 namespace gams {
 namespace studio {
