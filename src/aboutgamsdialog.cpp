@@ -29,6 +29,11 @@ AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     ui->gamslogo->setContentsMargins(0, 3, 7, 7);
 }
 
+AboutGAMSDialog::~AboutGAMSDialog()
+{
+    delete ui;
+}
+
 QString AboutGAMSDialog::studioInfo()
 {
     QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
@@ -37,10 +42,6 @@ QString AboutGAMSDialog::studioInfo()
     return ret;
 }
 
-AboutGAMSDialog::~AboutGAMSDialog()
-{
-    delete ui;
-}
 
 QString AboutGAMSDialog::licenseInformation()
 {
