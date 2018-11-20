@@ -24,6 +24,7 @@
 #include <QDebug>
 
 using namespace gams::studio;
+using namespace gams::studio::support;
 
 void TestGamsLicenseInfo::initTestCase()
 {

@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 struct SolverInfo
 {
@@ -65,6 +66,7 @@ private:
     cfgHandle_t mCFG;
 };
 
+}
 }
 }
 

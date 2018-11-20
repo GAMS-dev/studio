@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 GamsLicenseInfo::GamsLicenseInfo()
 {
@@ -80,5 +81,6 @@ QStringList GamsLicenseInfo::modelTypeNames()
     return modelTypes;
 }
 
+}
 }
 }
