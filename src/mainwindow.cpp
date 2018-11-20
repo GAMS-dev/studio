@@ -79,6 +79,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
 
+
+    // settings timer is to collect file events before saving to save disk reads/writes
+    mSettingsTimer.setSingleShot(true);
+    mSettingsTimer.setInterval(500);
+    connect(&mSettingsTimer, &QTimer::timeout, this, &MainWindow::saveSettings);
+
+
+
     setAcceptDrops(true);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 #ifdef __APPLE__
@@ -227,7 +235,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
-    mSettings->saveSettings(this);
+    saveSettings();
 }
 
 bool MainWindow::event(QEvent *event)
@@ -700,10 +708,7 @@ void MainWindow::on_actionNew_triggered()
             }
         }
     }
-
-
-
-
+    saveSettings();
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -717,6 +722,7 @@ void MainWindow::on_actionOpen_triggered()
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     openFiles(files);
+    saveSettings();
 }
 
 void MainWindow::on_actionOpenNew_triggered()
@@ -730,6 +736,7 @@ void MainWindow::on_actionOpenNew_triggered()
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
     openFiles(files, true);
+    saveSettings();
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -741,6 +748,7 @@ void MainWindow::on_actionSave_triggered()
     } else if (fm->isModified()) {
         fm->save();
     }
+    saveSettings();
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -795,7 +803,6 @@ void MainWindow::on_actionSave_As_triggered()
                 ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
 
-                mSettings->saveSettings(this);
             }
         }
         if (choice == 1) {
@@ -805,17 +812,20 @@ void MainWindow::on_actionSave_As_triggered()
             openFileNode(newNode, true);
         }
     }
+    saveSettings();
 }
 
 void MainWindow::on_actionSave_All_triggered()
 {
     for (FileMeta* fm: mFileMetaRepo.openFiles())
         fm->save();
+    saveSettings();
 }
 
 void MainWindow::on_actionClose_triggered()
 {
     on_mainTab_tabCloseRequested(ui->mainTab->currentIndex());
+    saveSettings();
 }
 
 void MainWindow::on_actionClose_All_triggered()
@@ -838,6 +848,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
             on_mainTab_tabCloseRequested(i);
         }
     }
+    saveSettings();
 }
 
 void MainWindow::codecChanged(QAction *action)
@@ -963,6 +974,7 @@ void MainWindow::activeTabChanged(int index)
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
+    mSettingsTimer.start();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -978,6 +990,7 @@ void MainWindow::fileChanged(const FileId fileId)
     }
 }
 
+// TODO(rogo): i think this is unused:
 void MainWindow::fileClosed(const FileId fileId)
 {
     Q_UNUSED(fileId)
@@ -1205,6 +1218,8 @@ void MainWindow::postGamsRun(NodeId origin)
 
     // add all created files to project explorer
     groupNode->addNodesForSpecialFiles();
+
+    saveSettings();
 }
 
 void MainWindow::postGamsLibRun()
@@ -1217,11 +1232,13 @@ void MainWindow::postGamsLibRun()
         if (node->file()->kind() != FileKind::Log)
             node->file()->load(node->file()->codecMib());
     }
-    openFileNode(node); // this
+    openFileNode(node);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
     }
+
+    saveSettings();
 }
 
 void MainWindow::on_actionExit_Application_triggered()
@@ -1549,7 +1566,6 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (requestCloseChanged(oFiles)) {
         on_actionClose_All_triggered();
@@ -1919,7 +1935,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
 void MainWindow::storeTree()
 {
     // TODO(JM) add settings methods to store each part separately
-    mSettings->saveSettings(this);
+    saveSettings();
 }
 
 void MainWindow::projectDeselect(const QVector<QModelIndex> &declined)
@@ -2025,6 +2041,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         mRecent.group = runGroup;
     }
     addToOpenedFiles(fileMeta->location());
+    mSettingsTimer.start();
 }
 
 void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib)
@@ -2189,7 +2206,7 @@ void MainWindow::on_actionSettings_triggered()
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
-    mSettings->saveSettings(this);
+    saveSettings();
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -2612,7 +2629,7 @@ void MainWindow::on_actionSelect_encodings_triggered()
     SelectEncodings se(encodingMIBs(), this);
     se.exec();
     setEncodingMIBs(se.selectedMibs());
-    mSettings->saveSettings(this);
+    saveSettings();
 }
 
 QWidget *RecentData::editor() const
@@ -2679,6 +2696,7 @@ void MainWindow::resetViews()
 void MainWindow::renameGroup(ProjectGroupNode* group)
 {
     ui->projectView->edit(mProjectRepo.treeModel()->index(group));
+    saveSettings();
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
@@ -2714,6 +2732,11 @@ void MainWindow::setForegroundOSCheck()
 {
     if (mSettings->foregroundOnDemand())
         setForeground();
+}
+
+void MainWindow::saveSettings()
+{
+    mSettings->saveSettings(this);
 }
 
 void MainWindow::on_actionNextTab_triggered()

@@ -47,7 +47,6 @@ public:
 
 public slots:
     void loadLxi();
-//    void loadLstFile(ProjectRunGroupNode *group);
 
 private slots:
     void jumpToTreeItem();

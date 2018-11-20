@@ -261,7 +261,7 @@ private slots:
     void focusCmdLine();
     void focusProjectExplorer();
     void renameGroup(ProjectGroupNode *group);
-
+    void saveSettings();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -323,6 +323,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
+    QTimer mSettingsTimer;
     int mExternFileEventChoice = -1;
 
     bool mDebugMode = false;
