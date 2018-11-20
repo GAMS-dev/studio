@@ -49,7 +49,7 @@
 #include "support/updatedialog.h"
 #include "support/checkforupdatewrapper.h"
 #include "autosavehandler.h"
-#include "distributionvalidator.h"
+#include "support/distributionvalidator.h"
 #include "tabdialog.h"
 #include "support/aboutgamsdialog.h"
 
@@ -1123,7 +1123,7 @@ void MainWindow::on_actionHelp_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     // TODO(AF): refactor, avoid usage of AboutGAMSDialog
-    AboutGAMSDialog dialog;
+    support::AboutGAMSDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle("About");
@@ -1138,7 +1138,7 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-    AboutGAMSDialog dialog(this);
+    support::AboutGAMSDialog dialog(this);
     dialog.exec();
 }
 

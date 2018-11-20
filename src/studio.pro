@@ -66,7 +66,7 @@ SOURCES += \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
-    distributionvalidator.cpp \
+    support/distributionvalidator.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
@@ -171,7 +171,7 @@ HEADERS += \
     commandlineparser.h \
     common.h \
     commonpaths.h \
-    distributionvalidator.h \
+    support/distributionvalidator.h \
     exception.h \
     file.h \
     file/dynamicfile.h \

@@ -8,6 +8,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     QDialog(parent),
@@ -46,7 +47,7 @@ QString AboutGAMSDialog::studioInfo()
 QString AboutGAMSDialog::licenseInformation()
 {
     QString about = "<b><big>GAMS Distribution ";
-    about += support::CheckForUpdateWrapper::distribVersionString();
+    about += CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
     GamsProcess gproc;
     about += gproc.aboutGAMS().replace("\n", "<br/>");
@@ -89,5 +90,6 @@ void AboutGAMSDialog::on_close_clicked()
     close();
 }
 
+}
 }
 }

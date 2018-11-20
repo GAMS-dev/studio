@@ -21,7 +21,7 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
-#include "distributionvalidator.h"
+#include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <memory>

@@ -3,12 +3,14 @@
 
 #include <QDialog>
 
-namespace Ui {
-class AboutGAMSDialog;
-}
 
 namespace gams {
 namespace studio {
+namespace support {
+
+namespace Ui {
+class AboutGAMSDialog;
+}
 
 class AboutGAMSDialog : public QDialog
 {
@@ -29,6 +31,7 @@ private:
     Ui::AboutGAMSDialog *ui;
 };
 
+}
 }
 }
 #endif // ABOUTGAMSDIALOG_H
