@@ -1122,7 +1122,8 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    aboutGamsDialog dialog;
+    // TODO(AF): refactor, avoid usage of AboutGAMSDialog
+    AboutGAMSDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle("About");
@@ -1137,10 +1138,9 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionLicense_Information_triggered()
 {
-    aboutGamsDialog dialog(this);
+    AboutGAMSDialog dialog(this);
     dialog.exec();
 }
-
 
 void MainWindow::on_actionAbout_Qt_triggered()
 {

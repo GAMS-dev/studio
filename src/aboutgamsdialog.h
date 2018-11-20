@@ -10,13 +10,13 @@ class AboutGAMSDialog;
 namespace gams {
 namespace studio {
 
-class aboutGamsDialog : public QDialog
+class AboutGAMSDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit aboutGamsDialog(QWidget *parent = nullptr);
-    ~aboutGamsDialog();
+    explicit AboutGAMSDialog(QWidget *parent = nullptr);
+    ~AboutGAMSDialog();
     QString studioInfo();
     QString aboutStudio();
     QString licenseInformation();

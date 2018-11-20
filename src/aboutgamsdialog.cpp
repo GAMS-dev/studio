@@ -9,7 +9,7 @@
 namespace gams {
 namespace studio {
 
-aboutGamsDialog::aboutGamsDialog(QWidget *parent) :
+AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AboutGAMSDialog)
 {
@@ -29,7 +29,7 @@ aboutGamsDialog::aboutGamsDialog(QWidget *parent) :
     ui->gamslogo->setContentsMargins(0, 3, 7, 7);
 }
 
-QString aboutGamsDialog::studioInfo()
+QString AboutGAMSDialog::studioInfo()
 {
     QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
     ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
@@ -37,12 +37,12 @@ QString aboutGamsDialog::studioInfo()
     return ret;
 }
 
-aboutGamsDialog::~aboutGamsDialog()
+AboutGAMSDialog::~AboutGAMSDialog()
 {
     delete ui;
 }
 
-QString aboutGamsDialog::licenseInformation()
+QString AboutGAMSDialog::licenseInformation()
 {
     QString about = "<b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
@@ -54,14 +54,14 @@ QString aboutGamsDialog::licenseInformation()
     return about;
 }
 
-void aboutGamsDialog::on_copylicense_clicked()
+void AboutGAMSDialog::on_copylicense_clicked()
 {
     GamsProcess gproc;
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
 }
 
-QString aboutGamsDialog:: aboutStudio()
+QString AboutGAMSDialog:: aboutStudio()
 {
     QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
     about += studioInfo();
@@ -83,7 +83,7 @@ QString aboutGamsDialog:: aboutStudio()
     return about;
 }
 
-void aboutGamsDialog::on_close_clicked()
+void AboutGAMSDialog::on_close_clicked()
 {
     close();
 }
