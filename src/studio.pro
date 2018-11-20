@@ -63,7 +63,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    checkforupdatewrapper.cpp \
+    support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
     distributionvalidator.cpp \
@@ -167,7 +167,7 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    checkforupdatewrapper.h \
+    support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \

@@ -1,7 +1,7 @@
 #include "aboutgamsdialog.h"
 #include "ui_aboutgamsdialog.h"
 #include "gamsprocess.h"
-#include "checkforupdatewrapper.h"
+#include "support/checkforupdatewrapper.h"
 
 #include <QClipboard>
 #include <QDebug>
@@ -46,7 +46,7 @@ QString AboutGAMSDialog::studioInfo()
 QString AboutGAMSDialog::licenseInformation()
 {
     QString about = "<b><big>GAMS Distribution ";
-    about += CheckForUpdateWrapper::distribVersionString();
+    about += support::CheckForUpdateWrapper::distribVersionString();
     about += "</big></b><br/><br/>";
     GamsProcess gproc;
     about += gproc.aboutGAMS().replace("\n", "<br/>");

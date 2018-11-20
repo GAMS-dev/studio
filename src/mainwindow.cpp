@@ -47,7 +47,7 @@
 #include "resultsview.h"
 #include "gotodialog.h"
 #include "support/updatedialog.h"
-#include "checkforupdatewrapper.h"
+#include "support/checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"
 #include "tabdialog.h"

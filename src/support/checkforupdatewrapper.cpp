@@ -27,6 +27,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 // TODO(AF) html for checkForUpdate
 
@@ -160,5 +161,6 @@ void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
     }
 }
 
+}
 }
 }
