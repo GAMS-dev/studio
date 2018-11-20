@@ -46,7 +46,7 @@
 #include "search/searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
-#include "updatedialog.h"
+#include "support/updatedialog.h"
 #include "checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "distributionvalidator.h"

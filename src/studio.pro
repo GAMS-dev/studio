@@ -147,7 +147,7 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
-    updatedialog.cpp \
+    support/updatedialog.cpp \
     welcomepage.cpp \
     wplabel.cpp \
     gotodialog.cpp \
@@ -255,7 +255,7 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
-    updatedialog.h \
+    support/updatedialog.h \
     version.h \
     welcomepage.h \
     wplabel.h \
@@ -288,7 +288,7 @@ FORMS += \
     resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
-    updatedialog.ui \
+    support/updatedialog.ui \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
