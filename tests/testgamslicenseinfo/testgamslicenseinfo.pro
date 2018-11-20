@@ -22,13 +22,14 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH
+INCLUDEPATH += $$SRCPATH    \
+               $$SRCPATH/support
 
 HEADERS +=                  \
     testgamslicenseinfo.h
 
 SOURCES +=                          \
     testgamslicenseinfo.cpp         \
-    $$SRCPATH/gamslicenseinfo.cpp   \
+    $$SRCPATH/support/gamslicenseinfo.cpp   \
     $$SRCPATH/commonpaths.cpp       \
     $$SRCPATH/exception.cpp
