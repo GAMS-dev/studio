@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace support {
 
 UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
     : QDialog(parent, f),
@@ -42,5 +43,6 @@ void UpdateDialog::checkForUpdate()
     }
 }
 
+}
 }
 }

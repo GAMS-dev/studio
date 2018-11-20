@@ -22,12 +22,14 @@
 
 #include <QDialog>
 
-namespace Ui {
-class UpdateDialog;
-}
 
 namespace gams {
 namespace studio {
+namespace support {
+
+namespace Ui {
+class UpdateDialog;
+}
 
 class UpdateDialog : public QDialog
 {
@@ -42,6 +44,7 @@ private:
     Ui::UpdateDialog *ui;
 };
 
+}
 }
 }
 
