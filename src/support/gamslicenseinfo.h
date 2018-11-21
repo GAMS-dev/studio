@@ -30,19 +30,6 @@ namespace gams {
 namespace studio {
 namespace support {
 
-struct SolverInfo
-{
-    int Id;
-    QString Name;
-    //QString Status; // TODO(AF): really a string?
-    //QString Capabilites; // TODO(AF): change type
-
-    bool isValid() // TODO(AF): ...
-    {
-        return !Name.isEmpty();
-    }
-};
-
 class GamsLicenseInfo
 {
 public:
@@ -53,9 +40,9 @@ public:
 
     QMap<int, QString> solverNames();
 
-    SolverInfo solverInfo(int index);
-
     QMap<int, QString> modelTypeNames();
+
+    bool solverCapability(int solver, int modelType) const;
 
 private:
     QString solverName(int index) const;

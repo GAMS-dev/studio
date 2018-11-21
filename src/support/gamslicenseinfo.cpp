@@ -69,16 +69,6 @@ QString GamsLicenseInfo::solverName(int index) const
     return result;
 }
 
-SolverInfo GamsLicenseInfo::solverInfo(int index)
-{
-    SolverInfo si;
-    si.Id = index;
-    si.Name = solverName(index);
-    //si.Status = ""; // TODO(AF): ...
-    //si.Capabilites = ""; // TODO(AF): ...
-    return si;
-}
-
 QMap<int, QString> GamsLicenseInfo::modelTypeNames()
 {
     QMap<int, QString> modelTypes;
@@ -88,6 +78,11 @@ QMap<int, QString> GamsLicenseInfo::modelTypeNames()
         modelTypes[i] = modelType;
     }
     return modelTypes;
+}
+
+bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
+{
+    return cfgAlgCapability(mCFG, solver, modelType);
 }
 
 }

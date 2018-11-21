@@ -29,6 +29,8 @@ private:
     GamsLicenseInfo mLicenseInfo;
     QMap<int, QString> mHorizontalHeaderData;
     QMap<int, QString> mVerticalHeaderData;
+
+    const int RowShift = 1;
 };
 
 }

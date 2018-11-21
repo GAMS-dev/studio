@@ -24,7 +24,7 @@ QVariant SolverTableModel::headerData(int section, Qt::Orientation orientation, 
     }
 
     if (orientation == Qt::Vertical && section < mVerticalHeaderData.size()) {
-        return mVerticalHeaderData.value(section+1);
+        return mVerticalHeaderData.value(section+RowShift);
     }
 
     return QVariant();
@@ -37,14 +37,20 @@ int SolverTableModel::columnCount(const QModelIndex &parent) const
 
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
-    return mVerticalHeaderData.size()-1;
+    return mVerticalHeaderData.size()-RowShift;
 }
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    return "...";
+
+    if (index.column() == 0)
+        return "--";
+
+    if (mLicenseInfo.solverCapability(index.row(), index.column()))
+        return "X";
+    return QVariant();
 }
 
 }
