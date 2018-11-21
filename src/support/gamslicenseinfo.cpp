@@ -47,12 +47,12 @@ GamsLicenseInfo::~GamsLicenseInfo()
     if (mCFG) cfgFree(&mCFG);
 }
 
-int GamsLicenseInfo::solvers()
+int GamsLicenseInfo::solvers() const
 {
     return cfgNumAlgs(mCFG);
 }
 
-QString GamsLicenseInfo::solverName(int index)
+QString GamsLicenseInfo::solverName(int index) const
 {
     char name[GMS_SSSIZE];
     QString result = cfgAlgName(mCFG, index, name);
@@ -61,14 +61,14 @@ QString GamsLicenseInfo::solverName(int index)
     return result;
 }
 
-//SolverInfo GamsLicenseInfo::solverInfo(int index)
-//{
-//    SolverInfo si;
-//    si.Name = solverName(index);
-//    si.Status = ""; // TODO(AF): ...
-//    si.Capabilites = ""; // TODO(AF): ...
-//    return si;
-//}
+SolverInfo GamsLicenseInfo::solverInfo(int index)
+{
+    SolverInfo si;
+    si.Name = solverName(index);
+    //si.Status = ""; // TODO(AF): ...
+    //si.Capabilites = ""; // TODO(AF): ...
+    return si;
+}
 
 QStringList GamsLicenseInfo::modelTypeNames()
 {

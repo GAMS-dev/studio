@@ -1,5 +1,7 @@
 #include "solvertablemodel.h"
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 namespace support {
@@ -19,6 +21,10 @@ QVariant SolverTableModel::headerData(int section, Qt::Orientation orientation, 
         return mHorizontalHeaderData.at(section);
     }
 
+    if (orientation == Qt::Vertical && section < mLicenseInfo.solvers()) {
+        return mLicenseInfo.solverName(section);
+    }
+
     return QVariant();
 }
 
@@ -29,7 +35,7 @@ int SolverTableModel::columnCount(const QModelIndex &parent) const
 
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
-    return 2;
+    return mLicenseInfo.solvers();
 }
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const

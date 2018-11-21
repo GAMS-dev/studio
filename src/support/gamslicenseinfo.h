@@ -32,8 +32,8 @@ namespace support {
 struct SolverInfo
 {
     QString Name;
-    QString Status; // TODO(AF): really a string?
-    QString Capabilites; // TODO(AF): change type
+    //QString Status; // TODO(AF): really a string?
+    //QString Capabilites; // TODO(AF): change type
 
     bool isValid() // TODO(AF): ...
     {
@@ -47,11 +47,11 @@ public:
     GamsLicenseInfo();
     ~GamsLicenseInfo();
 
-    int solvers();
+    int solvers() const;
 
-    QString solverName(int index);
+    QString solverName(int index) const;
 
-//    SolverInfo solverInfo(int index);
+    SolverInfo solverInfo(int index);
 
     QStringList modelTypeNames();
 
