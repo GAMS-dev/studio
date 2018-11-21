@@ -42,6 +42,9 @@ int SolverTableModel::rowCount(const QModelIndex &parent) const
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
 {
+    if (Qt::DisplayRole != role)
+        return QVariant();
+
     if (!index.isValid())
         return QVariant();
 
