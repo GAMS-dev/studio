@@ -58,13 +58,15 @@ public:
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void solverOptionModelChanged(const QList<SolverOptionItem *> &optionItem);
-    void solverOptionValueChanged();
+    void solverOptionItemChanged(const QModelIndex &index);
+    void solverOptionItemRemoved();
     void columnSpanned(int row);
     void columnUnspanned(int row);
 
 public slots:
     void reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem);
-    void on_solverOptionValueChanged();
+    void on_updateSolverOptionItem(const QModelIndex &index);
+    void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);
 
 protected:

@@ -245,10 +245,11 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
             } else {
                mOptionItem[index.row()]->key = dataValue;
             }
+            emit solverOptionItemChanged(index);
             break;
         case 1:
             mOptionItem[index.row()]->value = dataValue;
-            emit solverOptionValueChanged();
+            emit solverOptionItemChanged(index);
             break;
         case 2:
             mOptionItem[index.row()]->optionId = dataValue.toInt();
@@ -304,7 +305,7 @@ bool SolverOptionTableModel::removeRows(int row, int count, const QModelIndex &p
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit  solverOptionValueChanged();
+    emit  solverOptionItemRemoved();
     return true;
 }
 
@@ -442,7 +443,31 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
     endResetModel();
 }
 
-void SolverOptionTableModel::on_solverOptionValueChanged()
+void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &index)
+{
+    if (mOptionItem.at(index.row())->disabled) {
+        setHeaderData( index.row(), Qt::Vertical,
+                          Qt::CheckState(Qt::PartiallyChecked),
+                          Qt::CheckStateRole );
+    } else {
+        QString key = data( index.sibling(index.row(), 0), Qt::DisplayRole).toString();
+        QString value = data( index.sibling(index.row(), 1), Qt::DisplayRole).toString();
+
+        mOptionTokenizer->updateOptionItem(key, value, mOptionItem.at(index.row()));
+
+        if (mOptionItem.at(index.row())->error == No_Error)
+            setHeaderData( index.row(), Qt::Vertical,
+                          Qt::CheckState(Qt::Unchecked),
+                          Qt::CheckStateRole );
+        else
+            setHeaderData( index.row(), Qt::Vertical,
+                      Qt::CheckState(Qt::Checked),
+                      Qt::CheckStateRole );
+    }
+    emit solverOptionModelChanged(mOptionItem);
+}
+
+void SolverOptionTableModel::on_removeSolverOptionItem()
 {
     beginResetModel();
     mOptionTokenizer->validateOption(mOptionItem);

@@ -135,7 +135,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
-    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionValueChanged, mOptionTableModel, &SolverOptionTableModel::on_solverOptionValueChanged);
+    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));

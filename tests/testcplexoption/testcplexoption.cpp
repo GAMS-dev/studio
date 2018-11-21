@@ -669,12 +669,6 @@ void TestCPLEXOption::testReadOptionFile()
     QVERIFY( items.at(2)->optionId == -1 );
     QVERIFY( items.at(2)->error == No_Error );
 
-    QVERIFY( items.at(5)->disabled );
-    QVERIFY( items.at(5)->key.isEmpty() );
-    QVERIFY( items.at(5)->value.toString().isEmpty() );
-    QVERIFY( items.at(5)->optionId == -1 );
-    QVERIFY( items.at(5)->error == No_Error );
-
     QVERIFY( items.at(14)->disabled );
     QVERIFY( items.at(14)->key.isEmpty() );
     QVERIFY( items.at(14)->value.toString().isEmpty() );
@@ -687,7 +681,14 @@ void TestCPLEXOption::testReadOptionFile()
     QVERIFY( items.at(16)->optionId == -1 );
     QVERIFY( items.at(16)->error == No_Error );
 
-    // valid options
+     // empty string option
+     QVERIFY( items.at(5)->disabled );
+     QVERIFY( items.at(5)->key.isEmpty() );
+     QVERIFY( items.at(5)->value.toString().isEmpty() );
+     QVERIFY( items.at(5)->optionId == -1 );
+     QVERIFY( items.at(5)->error == No_Error );
+
+     // valid options
      QCOMPARE( items.at(0)->key, "advind" );
      QCOMPARE( items.at(0)->value.toString(), "0" );
      QCOMPARE( items.at(0)->optionId, 6 );
@@ -789,8 +790,8 @@ void TestCPLEXOption::testReadOptionFile()
     QVERIFY( !items.at(22)->disabled );
     QVERIFY( items.at(22)->error == Incorrect_Value_Type );
 
-    QCOMPARE( items.at(23)->key, "barqcpepcomp -1.234");
-    QCOMPARE( items.at(23)->value.toString(), "");
+    QCOMPARE( items.at(23)->key, "barqcpepcomp");
+    QCOMPARE( items.at(23)->value.toString(), "-1.234");
     QCOMPARE( items.at(23)->optionId, 21 );
     QVERIFY( !items.at(23)->disabled );
     QVERIFY( items.at(23)->error == Value_Out_Of_Range );

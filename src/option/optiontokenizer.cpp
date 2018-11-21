@@ -479,18 +479,18 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
-//QString  OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComment)
-//{
-//    // TODO (JP) this should be replaced by Option API method
-//    //   int optWriteToStr( optHandle_t handle, int inputid, char* inputkey, char* inputvalue, char* output);
-//    QString formatOption = "";
-//    if (asComment) {
-//        formatOption = QString("* %1 %2").arg(item->key).arg(item->value.toString());
-//    } else {
-//        formatOption = QString("%1 %2").arg(item->key).arg(item->value.toString());
-//    }
-//    return formatOption;
-//}
+QString  OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComment)
+{
+    // TODO (JP) this should be replaced by Option API method
+    //   int optWriteToStr( optHandle_t handle, int inputid, char* inputkey, char* inputvalue, char* output);
+    QString formatOption = "";
+    if (asComment) {
+        formatOption = QString("* %1 %2").arg(item->key).arg(item->value.toString());
+    } else {
+        formatOption = QString("%1 %2").arg(item->key).arg(item->value.toString());
+    }
+    return formatOption;
+}
 
 //QString OptionTokenizer::formatOption(const SolverOptionItem *item)
 //{
@@ -519,7 +519,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->value = "";
         item->text = str;
         item->error = No_Error;
-        item->disabled = false;
+        item->disabled = true;
         item->modified = !firstTime;
     } else {
         if (str.startsWith("*"))
@@ -727,6 +727,7 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
     OptionErrorType messageType = No_Error;
     int itype;
     char msg[GMS_SSSIZE];
+
     for (int i = 1; i <= optMessageCount(OPTHandle); i++ ) {
         optGetMessage( OPTHandle, i, msg, &itype );
         qDebug() << QString("#Message: %1 : %2 : %3").arg(i).arg(msg).arg(itype);
@@ -739,28 +740,40 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
             continue;
         case optMsgInputEcho :
         case optMsgHelp:
-            messageType = Unknown_Error;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Info);
+            if (messageType != Unknown_Error) {
+                messageType = Unknown_Error;
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Info);
+            }
             break;
         case optMsgValueWarning :
-            messageType = Value_Out_Of_Range;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            if (messageType != Value_Out_Of_Range) {
+               messageType = Value_Out_Of_Range;
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            }
             break;
         case optMsgDeprecated :
-            messageType = Deprecated_Option;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Warning);
+            if (messageType != Deprecated_Option) {
+               messageType = Deprecated_Option;
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Warning);
+            }
             break;
         case optMsgDefineError:
-            messageType = Invalid_Key;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            if (messageType != Invalid_Key) {
+                messageType = Invalid_Key;
+                if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            }
             break;
         case optMsgValueError:
-            messageType = Incorrect_Value_Type;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            if (messageType != Incorrect_Value_Type) {
+               messageType = Incorrect_Value_Type;
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            }
             break;
         case optMsgUserError:
-            messageType = Invalid_Key;
-            if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            if (messageType != Invalid_Key) {
+               messageType = Invalid_Key;
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+            }
             break;
         default:
             break;
@@ -770,8 +783,11 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
     return messageType;
 }
 
-bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, SolverOptionItem *item)
+bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOptionItem *item)
 {
+    qDebug() << "(" << key << ","<<value << ")";
+    QString str = QString("%1 %2").arg(key).arg(value);
+
     optResetAll( mOPTHandle );
     if (str.simplified().isEmpty() || str.startsWith("*")) {
         item->optionId = -1;
@@ -785,14 +801,14 @@ bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, So
        OptionErrorType errorType = logAndClearMessage(  mOPTHandle );
 
        bool valueRead = false;
-       QString key = "";
-       QString value = "";
-       int i = item->optionId;
-       int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
-       optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
+       QString definedKey = "";
+       QString definedValue = "";
+       char name[GMS_SSSIZE];
+       for (int i = 1; i <= optCount(mOPTHandle); ++i) {
+           int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
+           optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
 
-       if (idefined || idefinedR) {
-               char name[GMS_SSSIZE];
+           if (idefined || idefinedR) {
                int group = 0;
                int helpContextNr;
                optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
@@ -806,15 +822,15 @@ bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, So
                optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
                QString n = QString(name);
-               key = getKeyFromStr(str, n);
+               definedKey = getKeyFromStr(str, n);
                switch(itype) {
                case optDataInteger: {  // 1
                    qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString iv = QString::number(ivalue);
-                   value = getValueFromStr(str, itype, n, iv);
-                   if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
+                   definedValue = getValueFromStr(str, itype, n, iv);
+                   if (definedValue.simplified().isEmpty() && iopttype == optTypeBoolean) {
                        iv = (ivalue == 0) ? "no" : "yes";
-                       value = getValueFromStr(str, itype, n, iv);
+                       definedValue = getValueFromStr(str, itype, n, iv);
                    }
                    valueRead = true;
                    break;
@@ -822,14 +838,14 @@ bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, So
                case optDataDouble: {  // 2
                    qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString dv = QString::number(dvalue);
-                   value = getValueFromStr(str, itype, n, dv);
+                   definedValue = getValueFromStr(str, itype, n, dv);
                    valueRead = true;
                    break;
                }
                case optDataString: {  // 3
                    qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString sv = QString(svalue);
-                   value = getValueFromStr(str, itype, n, sv);
+                   definedValue = getValueFromStr(str, itype, n, sv);
                    valueRead = true;
                    break;
                }
@@ -842,21 +858,20 @@ bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, So
                    }
                    // TODO (JP)
                    QString sv = QString(svalue);
-                   value = getValueFromStr(str, itype, n, sv);
+                   definedValue = getValueFromStr(str, itype, n, sv);
                    valueRead = true;
                    break;
                }
                case optDataNone: // 0
                default: break;
                }
-
                if (valueRead) {
                    item->optionId = i;
-                   item->key = key;
-                   item->value = value;
+                   item->key = definedKey;
+                   item->value = definedValue;
                    item->text = str;
                    item->error = errorType;
-                   item->disabled = false;
+                   item->modified = false;
 
                    if (errorType == No_Error || errorType == Deprecated_Option)
                        item->error = errorType;
@@ -865,17 +880,26 @@ bool OptionTokenizer::updateOptionItem(optHandle_t &mOPTHandle, QString &str, So
 
                    mOption->setModified(QString::fromLatin1(name), true);
                }
+               break;
+           }
        }
-       if (!valueRead)  { // indicator option or error
-           item->optionId = -1;
-           item->key = str;
-           item->value = "";
-           item->text = str;
-           item->error = errorType;
-           item->disabled = false;
+       if (!valueRead) {
+           if (errorType == No_Error) { // eg. indicator option
+               item->optionId = -1;
+               item->key = str;
+               item->value = "";
+               item->text = str;
+               item->error = errorType;
+               item->disabled = false;
+           } else { // error
+               item->optionId = -1;
+               item->key = key;
+               item->value = value;
+               item->text = str;
+               item->error = errorType;
+           }
        }
     }
-
     return (logAndClearMessage(mOPTHandle, false)==No_Error);
 }
 
@@ -918,7 +942,7 @@ QString OptionTokenizer::getKeyFromStr(QString &line, QString &hintKey)
 
 QString OptionTokenizer::getValueFromStr(QString &line, int itype, QString &hintKey,  QString &hintValue)
 {
-    if (itype==optDataDouble) {
+    if (itype==optDataDouble || hintValue.isEmpty()) {
        QString key = getKeyFromStr(line, hintKey);
        QString value = line.mid( key.length() ).simplified();
        if (value.startsWith('='))
@@ -955,14 +979,14 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        inputFile.close();
     }
 // TODO (JP) to be removed
-//    qDebug() << "read : " << items.size() << "lines : " << i  << " options.";
-//    for(int k=0; k<items.size(); k++) {
-//        SolverOptionItem* item = items.at(k);
-//        qDebug() <<  QString(" # %1:%2:[%3]=[%4] -%5-> (%6|%7) [%8]").arg(k).arg(item->optionId)
-//                     .arg(item->key).arg(item->value.toString())
-//                     .arg(item->error)
-//                     .arg(item->disabled?"C":"X").arg(item->modified?"M":"X").arg(item->text);
-//    }
+    qDebug() << "read : " << items.size() << "lines : " << i  << " options.";
+    for(int k=0; k<items.size(); k++) {
+        SolverOptionItem* item = items.at(k);
+        qDebug() <<  QString(" # %1:%2:[%3]=[%4] -%5-> (%6|%7) [%8]").arg(k).arg(item->optionId)
+                     .arg(item->key).arg(item->value.toString())
+                     .arg(item->error)
+                     .arg(item->disabled?"C":"X").arg(item->modified?"M":"X").arg(item->text);
+    }
     return items;
 }
 
@@ -983,9 +1007,9 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
 //            if (item->text.simplified().isEmpty())
 //                out << endl;
 //            else if (!item->text.startsWith("*"))
-//               out << formatOption(item) << endl;
+//               out << formatOption(item, true) << endl;
 //            else
-//                out << formatOption(item) << endl;
+//                out << formatOption(item, true) << endl;
 //        } else {
 //            out << formatOption( item, false) << endl;
             out << item->text.toLatin1() << endl;
@@ -1225,30 +1249,15 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
 {
     mOption->resetModficationFlag();
     for(SolverOptionItem* item : items) {
-//        item->error = OptionErrorType::No_Error;
-//        if (mOption->isDoubleDashedOption(item->key)) { // double dashed parameter
-//            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item->key)) )
-//                item->error = OptionErrorType::No_Error;
-//            else
-//               item->error = OptionErrorType::Invalid_Key;
-//            continue;
-//        }
-//        if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
-//            if (mOption->isDeprecated(item->key)) { // deprecated option
-//                item->error = OptionErrorType::Deprecated_Option;
-//            } else { // valid and not deprected Option
-//                item->error = mOption->getValueErrorType(item->key, item->value.toString());
-//            }
-//            mOption->setModified(item->key, true);
-//        } else { // invalid option
-//            item->error = OptionErrorType::Invalid_Key;
-//        }
-        if (!item->disabled) {
-            QString str = QString("%1 %2").arg(item->key).arg(item->value.toString());
-            qDebug() << "validating[" << str << "]";
-            updateOptionItem(mOPTHandle, str, item);
-            item->modified = true;
-        }
+        if (item->disabled)
+            continue;
+
+        QString key = item->key;
+        QString value = item->value.toString();
+        QString str = QString("%1 %2").arg(key).arg(value);
+        qDebug() << "validating[" << str << "]";
+        updateOptionItem(key, value, item);
+        item->modified = true;
     }
 }
 
