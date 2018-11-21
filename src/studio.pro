@@ -161,7 +161,8 @@ SOURCES += \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
     support/aboutgamsdialog.cpp \
-    support/gamslicenseinfo.cpp
+    support/gamslicenseinfo.cpp \
+    support/solvertablemodel.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -271,7 +272,8 @@ HEADERS += \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
     support/aboutgamsdialog.h \
-    support/gamslicenseinfo.h
+    support/gamslicenseinfo.h \
+    support/solvertablemodel.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

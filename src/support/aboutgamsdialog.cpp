@@ -43,7 +43,6 @@ QString AboutGAMSDialog::studioInfo()
     return ret;
 }
 
-
 QString AboutGAMSDialog::licenseInformation()
 {
     QString about = "<b><big>GAMS Distribution ";
