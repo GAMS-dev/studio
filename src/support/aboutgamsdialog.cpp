@@ -6,6 +6,7 @@
 
 #include <QClipboard>
 #include <QDebug>
+#include <QSortFilterProxyModel>
 
 namespace gams {
 namespace studio {
@@ -16,7 +17,11 @@ AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     ui(new Ui::AboutGAMSDialog)
 {
     ui->setupUi(this);
-    ui->solverTable->setModel(new SolverTableModel);
+    auto dataModel = new SolverTableModel(this);
+    auto sortModel = new QSortFilterProxyModel(this);
+    sortModel->setSourceModel(dataModel);
+    ui->solverTable->setModel(sortModel);
+
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle("License Information");
     ui->label->setAlignment(Qt::AlignLeft);
