@@ -1964,7 +1964,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     } else {
         if (!runGroup) {
             QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();
+            if (nodes.size()) {
+                if (nodes.first()->assignedRunGroup())
+                    runGroup = nodes.first()->assignedRunGroup();
+            } else {
+                QFileInfo file(fileMeta->location());
+                runGroup = mProjectRepo.createGroup(file.baseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
+                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
+            }
         }
         edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {
