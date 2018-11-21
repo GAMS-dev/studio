@@ -1,7 +1,8 @@
 #include "aboutgamsdialog.h"
 #include "ui_aboutgamsdialog.h"
 #include "gamsprocess.h"
-#include "support/checkforupdatewrapper.h"
+#include "checkforupdatewrapper.h"
+#include "solvertablemodel.h"
 
 #include <QClipboard>
 #include <QDebug>
@@ -15,6 +16,7 @@ AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     ui(new Ui::AboutGAMSDialog)
 {
     ui->setupUi(this);
+    ui->solverTable->setModel(new SolverTableModel);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle("License Information");
     ui->label->setAlignment(Qt::AlignLeft);
