@@ -22,6 +22,7 @@
 
 #include "cfgmcc.h"
 
+#include <QMap>
 #include <QString>
 #include <QStringList>
 
@@ -31,6 +32,7 @@ namespace support {
 
 struct SolverInfo
 {
+    int Id;
     QString Name;
     //QString Status; // TODO(AF): really a string?
     //QString Capabilites; // TODO(AF): change type
@@ -53,7 +55,7 @@ public:
 
     SolverInfo solverInfo(int index);
 
-    QStringList modelTypeNames();
+    QMap<int, QString> modelTypeNames();
 
 private:
 #if defined(__APPLE__) || defined(__unix__)

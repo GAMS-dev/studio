@@ -64,19 +64,20 @@ QString GamsLicenseInfo::solverName(int index) const
 SolverInfo GamsLicenseInfo::solverInfo(int index)
 {
     SolverInfo si;
+    si.Id = index;
     si.Name = solverName(index);
     //si.Status = ""; // TODO(AF): ...
     //si.Capabilites = ""; // TODO(AF): ...
     return si;
 }
 
-QStringList GamsLicenseInfo::modelTypeNames()
+QMap<int, QString> GamsLicenseInfo::modelTypeNames()
 {
-    QStringList modelTypes;
+    QMap<int, QString> modelTypes;
     char modelType[GMS_SSSIZE];
     for (int i=1; i<cfgProc_nrofmodeltypes; ++i) {
         cfgModelTypeName(mCFG, i, modelType);
-        modelTypes << modelType;
+        modelTypes[i] = modelType;
     }
     return modelTypes;
 }

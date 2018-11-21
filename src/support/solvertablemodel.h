@@ -27,7 +27,7 @@ public:
 
 private:
     GamsLicenseInfo mLicenseInfo;
-    QStringList mHorizontalHeaderData;
+    QMap<int, QString> mHorizontalHeaderData;
 };
 
 }
