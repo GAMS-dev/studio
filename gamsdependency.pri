@@ -54,6 +54,7 @@ equals(GAMS_BUILD_ENV, "") {
     SOURCES += \
         $$GAMS_DISTRIB_API/c4umcc.c \
         $$GAMS_DISTRIB_API/gclgms.c \
+        $$GAMS_DISTRIB_API/palmcc.c \
         $$GAMS_DISTRIB_API/gdxcc.c  \
         $$GAMS_DISTRIB_API/optcc.c  \
         $$GAMS_DISTRIB_API/cfgmcc.c
@@ -80,6 +81,7 @@ equals(GAMS_BUILD_ENV, "") {
     SOURCES = \
         $$(GPRODUCTS)/apiwrap/joat/c4umcc.c     \
         $$(GPRODUCTS)/apiwrap/joat/cfgmcc.c     \
+        $$(GPRODUCTS)/apiwrap/joat/palmcc.c     \
         $$(GPRODUCTS)/gclib/gclgms.c            \
         $$(GPRODUCTS)/apiwrap/gdxio/gdxcc.c     \
         $$(GPRODUCTS)/apiwrap/optobj/optcc.c
