@@ -52,6 +52,14 @@ int GamsLicenseInfo::solvers() const
     return cfgNumAlgs(mCFG);
 }
 
+QMap<int, QString> GamsLicenseInfo::solverNames()
+{
+    QMap<int, QString> names;
+    for (int i=0; i<solvers(); ++i)
+        names[i] = solverName(i);
+    return names;
+}
+
 QString GamsLicenseInfo::solverName(int index) const
 {
     char name[GMS_SSSIZE];

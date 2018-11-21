@@ -51,11 +51,14 @@ public:
 
     int solvers() const;
 
-    QString solverName(int index) const;
+    QMap<int, QString> solverNames();
 
     SolverInfo solverInfo(int index);
 
     QMap<int, QString> modelTypeNames();
+
+private:
+    QString solverName(int index) const;
 
 private:
 #if defined(__APPLE__) || defined(__unix__)

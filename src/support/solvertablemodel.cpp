@@ -8,7 +8,8 @@ namespace support {
 
 SolverTableModel::SolverTableModel(QObject *parent)
     : QAbstractTableModel(parent),
-      mHorizontalHeaderData(mLicenseInfo.modelTypeNames())
+      mHorizontalHeaderData(mLicenseInfo.modelTypeNames()),
+      mVerticalHeaderData(mLicenseInfo.solverNames())
 {
     mHorizontalHeaderData[0] = "License";
 }
@@ -22,8 +23,8 @@ QVariant SolverTableModel::headerData(int section, Qt::Orientation orientation, 
         return mHorizontalHeaderData.value(section);
     }
 
-    if (orientation == Qt::Vertical && section < mLicenseInfo.solvers()) {
-        return mLicenseInfo.solverName(section);
+    if (orientation == Qt::Vertical && section < mVerticalHeaderData.size()) {
+        return mVerticalHeaderData.value(section+1);
     }
 
     return QVariant();
@@ -36,7 +37,7 @@ int SolverTableModel::columnCount(const QModelIndex &parent) const
 
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
-    return mLicenseInfo.solvers();
+    return mVerticalHeaderData.size()-1;
 }
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
