@@ -20,43 +20,12 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "codeedit.h"
-#include "textmapper.h"
-#include "studiosettings.h"
-#include "locators/settingslocator.h"
+#include "textviewedit.h"
 #include <QStringBuilder>
 #include <QScrollBar>
 
 namespace gams {
 namespace studio {
-
-class TextViewEdit : public CodeEdit
-{
-    Q_OBJECT
-public:
-    TextViewEdit(TextMapper &mapper, QWidget *parent = nullptr)
-        : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings()) {}
-    bool showLineNr() const override { return false; }
-
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-//    QString lineNrText(int blockNr) override {
-//        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
-//        double percent = byteNr * 100 / mOversizeMapper.size;
-//        QString res = QString::number(percent, 'f', mDigits) % QString(mDigits-1, '0');
-//        if (percent < 1.0 || res.startsWith("100")) return ('%' + res).left(mDigits+3);
-//        if (percent < 10.0) return (' ' + res).left(mDigits+3);
-//        return res.left(mDigits+3);
-//    }
-
-private:
-    TextMapper &mMapper;
-    StudioSettings *mSettings;
-    qint64 mTopByte = 0;
-    int mSubOffset = 0;
-    int mDigits = 3;
-};
-
 
 class TextView : public QAbstractScrollArea
 {
@@ -70,6 +39,7 @@ public:
     void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
     int findLine(int lineNr);
 
+
 signals:
     void blockCountChanged(int newBlockCount);
     void loadAmount(int percent);
@@ -81,26 +51,31 @@ private slots:
     void peekMoreLines();
     void outerScrollAction(int action);
     void adjustOuterScrollAction();
+    void cursorPositionChanged();
+    void editKeyPressEvent(QKeyEvent *event);
+    void selectionChanged();
 
 protected:
     void scrollContentsBy(int dx, int dy) override;
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
-    void init();
+    void focusInEvent(QFocusEvent *event) override;
 
 private:
+    void init();
     void updateVScrollZone();
     void syncVScroll();
     void setVisibleTop(int lineNr);
+    void cropPosition(QPoint &pos);
+    void updatePosAndAnchor(QPoint &pos, QPoint &anchor);
 
 private:
     int mTopLine = 0;
     int mTopVisibleLine = 0;
     int mVisibleLines = 0;
-    bool mDocChanging = false;
+    const int mDocChanging = 0;
     bool mInit = true;
 
-private:
     TextMapper mMapper;
     TextViewEdit *mEdit;
     QTimer mPeekTimer;
@@ -110,6 +85,15 @@ private:
     int mLineToFind = -1;
     int mTopBufferLines = 100;
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
+
+private:
+
+    class ChangeKeeper { //
+        int &changeCounter;
+    public:
+        ChangeKeeper(const int &_changeCounter) : changeCounter(const_cast<int&>(_changeCounter)) {++changeCounter;}
+        ~ChangeKeeper() {--changeCounter;}
+    };
 
 };
 

@@ -113,13 +113,14 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
+    void cloneWithLineNrs();
     const OversizeMapper &sizeMapper() const;
     void clear();
 
     bool setMappingSizes(int visibleLines = 100, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
     bool setTopOffset(int byteBlockNr, int remain = 0);
     bool setTopLine(int lineNr);
-    int fileSizeInByteBlocks();
+    int fileSizeInByteBlocks(int *remain = nullptr);
     int relTopLine() const;
     int absTopLine() const;
     int lineCount() const;
@@ -134,6 +135,9 @@ public:
 
     void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
     void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+    void selectAll();
+    bool hasSelection();
+    int selectionSize();
 
     ProgressAmount peekChunksForLineNrs(int chunkCount);
     double getBytesPerLine() const;

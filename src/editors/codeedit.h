@@ -144,6 +144,7 @@ protected:
     void marksChanged() override;
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
+    void setAllowBlockEdit(bool allow);
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -156,8 +157,9 @@ signals:
 public slots:
     void clearSelection();
     void cutSelection();
-    void copySelection();
-    void pasteClipboard();
+    virtual void copySelection();
+    virtual void selectAllText();
+    virtual void pasteClipboard();
     void updateExtraSelections();
 
 private slots:
@@ -193,7 +195,7 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
 
-private:
+protected:
     class BlockEdit
     {
     public:
@@ -236,6 +238,9 @@ private:
         bool mOverwrite = false;
     };
 
+protected:
+    BlockEdit* blockEdit() {return mBlockEdit;}
+
 private:
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
@@ -253,6 +258,7 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
+    bool mAllowBlockEdit = true;
 };
 
 class LineNumberArea : public QWidget

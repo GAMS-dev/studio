@@ -260,7 +260,7 @@ void CodeEdit::updateBlockEditPos()
 //    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
     BlockEditPos * bPos = mBlockEditPos.at(document()->availableUndoSteps()-1);
     if (mBlockEdit) endBlockEdit();
-    if (bPos && !mBlockEdit) {
+    if (bPos && !mBlockEdit && mAllowBlockEdit) {
         startBlockEdit(bPos->startLine, bPos->column);
         mBlockEdit->selectTo(bPos->currentLine, bPos->column);
     }
@@ -295,12 +295,17 @@ void CodeEdit::copySelection()
     }
 }
 
+void CodeEdit::selectAllText()
+{
+    selectAll();
+}
+
 void CodeEdit::pasteClipboard()
 {
     bool isBlock;
     QStringList texts = clipboard(&isBlock);
     if (!mBlockEdit) {
-        if (isBlock) {
+        if (isBlock && mAllowBlockEdit) {
             QTextCursor c = textCursor();
             if (c.hasSelection()) c.removeSelectedText();
             startBlockEdit(c.blockNumber(), c.columnNumber());
@@ -325,7 +330,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
 void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
-    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
+    if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
         anc.setPosition(c.anchor());
@@ -552,10 +557,10 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
-    this->setContextMenuPolicy(Qt::DefaultContextMenu);
-    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
-        this->setContextMenuPolicy(Qt::PreventContextMenu);
-    if (e->modifiers() & Qt::AltModifier) {
+    setContextMenuPolicy(Qt::DefaultContextMenu);
+    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
+        setContextMenuPolicy(Qt::PreventContextMenu);
+    if ((e->modifiers() & Qt::AltModifier) && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
         anchor.setPosition(anchor.anchor());
@@ -626,8 +631,12 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
-        if (act->objectName() == "select-all" && mBlockEdit) {
-            act->setEnabled(false);
+        if (act->objectName() == "select-all") {
+            if (mBlockEdit) act->setEnabled(false);
+            menu->removeAction(act);
+            act->disconnect();
+            connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
+            menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
             menu->removeAction(act);
             act->disconnect();
@@ -896,6 +905,7 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
 
 void CodeEdit::startBlockEdit(int blockNr, int colNr)
 {
+    if (!mAllowBlockEdit) return;
     if (mBlockEdit) endBlockEdit();
     bool overwrite = overwriteMode();
     if (overwrite) setOverwriteMode(false);
@@ -1313,6 +1323,12 @@ QString CodeEdit::lineNrText(int blockNr)
 bool CodeEdit::showLineNr() const
 {
     return mSettings->showLineNr();
+}
+
+void CodeEdit::setAllowBlockEdit(bool allow)
+{
+    mAllowBlockEdit = allow;
+    if (mBlockEdit) endBlockEdit();
 }
 
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
