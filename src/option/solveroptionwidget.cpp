@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStandardItemModel>
+#include <QShortcut>
 #include <QMessageBox>
 #include <QFileDialog>
 
@@ -113,6 +114,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     ui->solverOptionTreeView->setModel( proxymodel );
     ui->solverOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->solverOptionTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->solverOptionTreeView->setDragEnabled(true);
     ui->solverOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
 
@@ -142,6 +144,9 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
 
     setModified(false);
+
+    // shortcuts
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F1), this, SLOT(showOptionDefinition()));
 
 }
 
@@ -451,6 +456,31 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
     qDebug() << "on_openAsTextButton_clicked";
+}
+
+void SolverOptionWidget::showOptionDefinition()
+{
+    if (ui->solverOptionTableView->model()->rowCount() <= 0)
+        return;
+
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    if (selection.count() > 0) {
+        ui->solverOptionTreeView->selectionModel()->clearSelection();
+
+        for (int i=0; i<selection.count(); i++) {
+            QModelIndex index = selection.at(i);
+            QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), 2), Qt::DisplayRole);
+            QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
+                                                                               Qt::DisplayRole,
+                                                                               optionId.toString(), 1); //, Qt::MatchRecursive);
+            for(QModelIndex idx : indices) {
+                QItemSelection selection = ui->solverOptionTreeView->selectionModel()->selection();
+                selection.select(idx.sibling(idx.row(), 0),
+                                idx.sibling(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1));
+                ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+        }
+    }
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)

@@ -82,6 +82,9 @@ public slots:
     void on_saveAsButton_clicked(bool checked = false);
     void on_openAsTextButton_clicked(bool checked = false);
 
+private slots:
+    void showOptionDefinition();
+
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
