@@ -101,12 +101,14 @@ private:
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
         bool operator <(const CursorPosition &other) const {
-            return absLinePos < other.absLinePos; }
+            return absLinePos + charNr < other.absLinePos + other.charNr; }
+        int effectiveCharNr() { return qMin(charNr, lineLen); }
         int chunkNr = -1;
         qint64 absLinePos = -1;
         int charNr = -1;
         int localLineNr = -1;
         int localLineBytes = -1;
+        int lineLen = -1;
     };
 
 public:

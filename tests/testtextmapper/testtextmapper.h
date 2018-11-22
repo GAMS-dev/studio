@@ -20,7 +20,10 @@
 #ifndef TESTTEXTMAPPER_H
 #define TESTTEXTMAPPER_H
 
+#include "editors/textmapper.h"
 #include <QtTest/QTest>
+
+using gams::studio::TextMapper;
 
 class TestTextMapper : public QObject
 {
@@ -28,7 +31,11 @@ class TestTextMapper : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
+    void init();
+    void cleanup();
 
+    void testFile();
     void testReadChunk0();
     void testReadChunk1();
     void testMoveBackAChunk();
@@ -41,8 +48,10 @@ private slots:
     void testLineNrEstimation();
     void testFindLine();
     void testPosAndAnchor();
+    void testClipboard();
 
-    void cleanupTestCase();
+private:
+    TextMapper *mMapper;
 };
 
 #endif // TESTTEXTMAPPER_H

@@ -398,14 +398,15 @@ TextMapper::Chunk* TextMapper::chunkForRelativeLine(int lineDelta, int *lineInCh
 
     while (chunkLineDelta < 0) {
         --chunkNr;
-        if (chunkNr < 0 || mChunkLineNrs.at(chunkNr).lineCount == 0) {
+        if (chunkNr < 0) return nullptr;
+        if (mChunkLineNrs.at(chunkNr).lineCount <= 0)
             if (!getChunk(chunkNr)) return nullptr;
-        }
         chunkLineDelta += mChunkLineNrs.at(chunkNr).lineCount;
     }
     while (chunkLineDelta >= mChunkLineNrs.at(chunkNr).lineCount) {
         chunkLineDelta -= mChunkLineNrs.at(chunkNr).lineCount;
         ++chunkNr;
+        if (chunkNr >= chunkCount()) return nullptr;
         if (chunkNr >= mChunkLineNrs.size() || mChunkLineNrs.at(chunkNr).lineCount == 0) {
             if (!getChunk(chunkNr)) return nullptr;
         }
@@ -476,12 +477,11 @@ void TextMapper::copyToClipboard()
                     + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
         }
         QByteArray raw;
-        raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(from),
-                       uint(chunk->lineBytes.at(from+to) - chunk->lineBytes.at(from)));
+        raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
         all.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
         if (chunk->nr == chunkCount()-1) break;
 
-        chunk = getChunk(chunk->nr);
+        chunk = getChunk(chunk->nr + 1);
     }
 
     QClipboard *clip = QGuiApplication::clipboard();
@@ -587,8 +587,8 @@ void TextMapper::getPosAndAnchor(QPoint &pos, QPoint &anchor) const
 
 void TextMapper::setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
-    TRACE();
-    DEB() << "SELECT - line: " << localLineNr << " char: " << charNr << "  mode: " << mode;
+//    TRACE();
+//    DEB() << "SELECT - line: " << localLineNr << " char: " << charNr << "  mode: " << mode;
     int lineInChunk;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
     if (!chunk) {
@@ -602,6 +602,7 @@ void TextMapper::setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mo
     mPosition.chunkNr = mChunks.last()->nr;
     mPosition.localLineNr = lineInChunk;
     mPosition.localLineBytes = mChunks.last()->lineBytes.at(lineInChunk);
+    mPosition.lineLen = mChunks.last()->lineBytes.at(lineInChunk+1) - mPosition.localLineBytes - mDelimiter.length();
     mPosition.absLinePos = mChunks.last()->start + mPosition.localLineBytes;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
@@ -614,6 +615,7 @@ void TextMapper::selectAll()
     mAnchor.localLineNr = 0;
     mAnchor.absLinePos = 0;
     mAnchor.charNr = 0;
+    mAnchor.lineLen = 0; // wrong size but irrelevant in this special case
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || chunk->lineBytes.size() < 2) {
         mPosition = mAnchor;
@@ -622,6 +624,7 @@ void TextMapper::selectAll()
     mPosition.chunkNr = chunk->nr;
     mPosition.localLineNr = chunk->lineBytes.size()-2;
     mPosition.localLineBytes = chunk->lineBytes.at(mPosition.localLineNr);
+    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLineNr+1) - mPosition.localLineBytes - mDelimiter.size();
     mPosition.absLinePos = chunk->start + mPosition.localLineBytes;
     mPosition.charNr = line(chunk, mPosition.localLineNr).length();
 }
@@ -634,7 +637,8 @@ bool TextMapper::hasSelection()
 int TextMapper::selectionSize()
 {
     if ((mPosition.chunkNr < 0) || (mAnchor.chunkNr < 0) || (mPosition == mAnchor)) return 0;
-    qint64 selSize = qAbs( qAbs(mPosition.absLinePos)+mPosition.charNr - qAbs(mAnchor.absLinePos)+mAnchor.charNr );
+    qint64 selSize = qAbs( qAbs(mPosition.absLinePos)+mPosition.effectiveCharNr()
+                           - qAbs(mAnchor.absLinePos)+mAnchor.effectiveCharNr() );
     if (selSize >= std::numeric_limits<int>::max()/2) return -1;
     return int(selSize);
 }
@@ -699,6 +703,7 @@ void TextMapper::initDelimiter(Chunk *chunk) const
             }
         }
     }
+    DEB() << "delimiter size: " << mDelimiter.length();
 }
 
 

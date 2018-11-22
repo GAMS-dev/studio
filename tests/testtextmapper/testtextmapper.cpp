@@ -23,6 +23,9 @@
 
 #include <QtGlobal>
 #include <QStandardPaths>
+#include <QClipboard>
+#include <QApplication>
+#include <QThread>
 
 using gams::studio::TextMapper;
 
@@ -55,7 +58,6 @@ void TestTextMapper::initTestCase()
     stream << trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec.") << flush;
     file.close();
 }
-
 void TestTextMapper::cleanupTestCase()
 {
     QDir tempDir = QDir::tempPath();
@@ -63,361 +65,292 @@ void TestTextMapper::cleanupTestCase()
     file.remove();
 }
 
-void TestTextMapper::testReadChunk0()
+
+void TestTextMapper::init()
+{
+    mMapper = new TextMapper();
+    mMapper->setCodec(QTextCodec::codecForName("utf-8"));
+    mMapper->setMappingSizes(100, 1024*16, 512);
+    QVERIFY2(mMapper->openFile(QDir(QDir::tempPath()).absoluteFilePath(testFileName)),
+             "TextMapper: Error on opening test file.");
+}
+
+void TestTextMapper::cleanup()
+{
+    delete mMapper;
+    mMapper = nullptr;
+}
+
+void TestTextMapper::testFile()
 {
     QDir tempDir = QDir::tempPath();
     QFile file(tempDir.absoluteFilePath(testFileName));
     qint64 size = file.size();
+    QCOMPARE(mMapper->sizeMapper().size, size);
+}
 
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
 
-        // ---------- check reading chunk 0
-        tm.setTopOffset(0);
-        QCOMPARE(tm.line(0), "This is line     1 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.topChunk(), 0);
-        QCOMPARE(tm.absPos(0,0), 0);
-
-    }
+void TestTextMapper::testReadChunk0()
+{
+    // ---------- check reading chunk 0
+    mMapper->setTopOffset(0);
+    QCOMPARE(mMapper->line(0), "This is line     1 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->topChunk(), 0);
+    QCOMPARE(mMapper->absPos(0,0), 0);
 }
 
 void TestTextMapper::testReadChunk1()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check reading chunk 1
-        tm.setTopOffset(20000);
-        QCOMPARE(tm.line(0), "This is line   199 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.topChunk(), 1);
-        QCOMPARE(tm.absTopLine(), 198);
-
-    }
+    // ---------- check reading chunk 1
+    mMapper->setTopOffset(20000);
+    QCOMPARE(mMapper->line(0), "This is line   199 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->topChunk(), 1);
+    QCOMPARE(mMapper->absTopLine(), 198);
 }
 
 void TestTextMapper::testMoveBackAChunk()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check moving back across the chunk border
-        tm.setTopOffset(20000);
-        tm.moveTopByLines(-48);
-        QCOMPARE(tm.absTopLine(), 150);
-        QCOMPARE(tm.topChunk(), 0);
-    }
+    // ---------- check moving back across the chunk border
+    mMapper->setTopOffset(20000);
+    mMapper->moveTopByLines(-48);
+    QCOMPARE(mMapper->absTopLine(), 150);
+    QCOMPARE(mMapper->topChunk(), 0);
 }
 
 void TestTextMapper::testFetchBeyondChunk()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check reading multiple chunks in a row
-        tm.moveTopByLines(160);
-        // ---------- check fetching lines across the chunk border
-        QCOMPARE(tm.absTopLine(), 160);
-        QCOMPARE(tm.topChunk(), 0);
-        QCOMPARE(tm.line(0), "This is line   161 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.line(1), "This is line   162 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.line(2), "This is line   163 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.line(3), "This is line   164 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.line(103), "This is line   264 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.line(203), "This is line   364 of the testfile. And here are additional characters to get sufficient long lines.");
-        QCOMPARE(tm.topChunk(), 2);
-        QCOMPARE(tm.absTopLine(), 160);
-        QCOMPARE(tm.topChunk(), 0);
-    }
+    // ---------- check reading multiple chunks in a row
+    mMapper->moveTopByLines(160);
+    // ---------- check fetching lines across the chunk border
+    QCOMPARE(mMapper->absTopLine(), 160);
+    QCOMPARE(mMapper->topChunk(), 0);
+    QCOMPARE(mMapper->line(0), "This is line   161 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->line(1), "This is line   162 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->line(2), "This is line   163 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->line(3), "This is line   164 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->line(103), "This is line   264 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->line(203), "This is line   364 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->topChunk(), 2);
+    QCOMPARE(mMapper->absTopLine(), 160);
+    QCOMPARE(mMapper->topChunk(), 0);
 }
 
 void TestTextMapper::testPosString2Raw()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
+    // ---------- check positioning in codec vs raw data
+    mMapper->setTopOffset(5000000);
+    QCOMPARE(mMapper->topChunk(), 305);
+    QCOMPARE(mMapper->line(0), "This is line 49505 of the testfile. And here are additional characters to get sufficient long lines.");
 
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
+    mMapper->moveTopByLines(496);
+    QCOMPARE(mMapper->topChunk(), 308);
+    //qDebug() << "LAST LINE: " << mMapper->line(0);
+    QCOMPARE(mMapper->relPos(0,17)-mMapper->relPos(0,0), 17);
+    QCOMPARE(mMapper->relPos(0,18)-mMapper->relPos(0,0), 19);
+    QCOMPARE(mMapper->relPos(0,24)-mMapper->relPos(0,0), 31);
+    QCOMPARE(mMapper->relPos(0,25)-mMapper->relPos(0,0), 33);
 
-        // ---------- check positioning in codec vs raw data
-        tm.setTopOffset(5000000);
-        QCOMPARE(tm.topChunk(), 305);
-        QCOMPARE(tm.line(0), "This is line 49505 of the testfile. And here are additional characters to get sufficient long lines.");
+    // ---------- check updating of lineCounting
+    mMapper->setTopOffset(20000);
+    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
+    mMapper->setTopOffset(70000);
+    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
+    qDebug() << "Current absolute top line should be less than 0: " << mMapper->absTopLine();
+    QVERIFY(mMapper->absTopLine() < 0);
+    mMapper->setTopOffset(50000);
+    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
+    mMapper->setTopOffset(35000);
+    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
+    mMapper->setTopOffset(70000);
+    QCOMPARE(mMapper->absTopLine(), 693);
 
-        tm.moveTopByLines(496);
-        QCOMPARE(tm.topChunk(), 308);
-        //qDebug() << "LAST LINE: " << tm.line(0);
-        QCOMPARE(tm.relPos(0,17)-tm.relPos(0,0), 17);
-        QCOMPARE(tm.relPos(0,18)-tm.relPos(0,0), 19);
-        QCOMPARE(tm.relPos(0,24)-tm.relPos(0,0), 31);
-        QCOMPARE(tm.relPos(0,25)-tm.relPos(0,0), 33);
-
-        // ---------- check updating of lineCounting
-        tm.setTopOffset(20000);
-        qDebug() << "lastChunkWithLines: " << tm.lastChunkWithLines();
-        tm.setTopOffset(70000);
-        qDebug() << "lastChunkWithLines: " << tm.lastChunkWithLines();
-        qDebug() << "Current absolute top line should be less than 0: " << tm.absTopLine();
-        QVERIFY(tm.absTopLine() < 0);
-        tm.setTopOffset(50000);
-        qDebug() << "lastChunkWithLines: " << tm.lastChunkWithLines();
-        tm.setTopOffset(35000);
-        qDebug() << "lastChunkWithLines: " << tm.lastChunkWithLines();
-        tm.setTopOffset(70000);
-        QCOMPARE(tm.absTopLine(), 693);
-
-//        qDebug() << "RAW: "  << tm.rawLine(0);
-    }
+//        qDebug() << "RAW: "  << mMapper->rawLine(0);
 }
 
 void TestTextMapper::testReadLines()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check read lines
-        tm.setTopOffset(70000);
-        QVERIFY(tm.absTopLine() < 0);
-        tm.moveTopByLines(-45);
-        QString line1 = tm.line(0);
-        tm.moveTopByLines(-1);
-        QCOMPARE(tm.line(1), line1);
-        tm.moveTopByLines(-1);
-        QStringList lines = tm.lines(0, 4).split("\n");
-        QCOMPARE(lines.size(), 4);
-        QCOMPARE(lines.at(2), line1);
-    }
+    // ---------- check read lines
+    mMapper->setTopOffset(70000);
+    QVERIFY(mMapper->absTopLine() < 0);
+    mMapper->moveTopByLines(-45);
+    QString line1 = mMapper->line(0);
+    mMapper->moveTopByLines(-1);
+    QCOMPARE(mMapper->line(1), line1);
+    mMapper->moveTopByLines(-1);
+    QStringList lines = mMapper->lines(0, 4).split("\n");
+    QCOMPARE(lines.size(), 4);
+    QCOMPARE(lines.at(2), line1);
 }
 
 
 void TestTextMapper::testUpdateLineCounting()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
+    // ---------- check updating of lineCounting
+    mMapper->setTopOffset(20000);
+    QCOMPARE(mMapper->topChunk(), 1);
+    QCOMPARE(mMapper->knownLineNrs(), 324);
 
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
+    mMapper->setTopOffset(70000);
+    // NOT all chunks are known from start of file, so the line number just estimated.
+    QCOMPARE(mMapper->topChunk(), 4);
+    QVERIFY(mMapper->absTopLine() < 0);
 
-        // ---------- check updating of lineCounting
-        tm.setTopOffset(20000);
-        QCOMPARE(tm.topChunk(), 1);
-        QCOMPARE(tm.knownLineNrs(), 324);
+    mMapper->setTopOffset(50000);
+    QCOMPARE(mMapper->topChunk(), 3);
+    QCOMPARE(mMapper->knownLineNrs(), 324);
 
-        tm.setTopOffset(70000);
-        // NOT all chunks are known from start of file, so the line number just estimated.
-        QCOMPARE(tm.topChunk(), 4);
-        QVERIFY(tm.absTopLine() < 0);
+    mMapper->setTopOffset(40000);
+    QCOMPARE(mMapper->topChunk(), 2);
+    // all chunks are known from start of file, so the line number is known, too.
+    mMapper->setTopOffset(70000);
+    QCOMPARE(mMapper->topChunk(), 4);
+    QCOMPARE(mMapper->absTopLine(), 693);
+    QCOMPARE(mMapper->knownLineNrs(), 811);
 
-        tm.setTopOffset(50000);
-        QCOMPARE(tm.topChunk(), 3);
-        QCOMPARE(tm.knownLineNrs(), 324);
-
-        tm.setTopOffset(40000);
-        QCOMPARE(tm.topChunk(), 2);
-        // all chunks are known from start of file, so the line number is known, too.
-        tm.setTopOffset(70000);
-        QCOMPARE(tm.topChunk(), 4);
-        QCOMPARE(tm.absTopLine(), 693);
-        QCOMPARE(tm.knownLineNrs(), 811);
-
-//        while (tm.lineCount() < 0) {
-//            tm.peekChunksForLineNrs(50);
-//            qDebug() << "Last counted chunk: " << tm.lastChunkWithLines() << "  lineCount: " << tm.lineCount();
-//        }
-        tm.setTopLine(0);
-        qDebug() << tm.line(1);
-        qDebug() << tm.lines(49999, 1);
-        qDebug() << tm.lines(50000, 1);
-        tm.setTopLine(20000);
-        tm.setTopLine(50000);
-        qDebug() << tm.line(0);
-        QCOMPARE(tm.topChunk(), tm.chunkCount()-1);
-    }
+    mMapper->setTopLine(0);
+    qDebug() << mMapper->line(1);
+    qDebug() << mMapper->lines(49999, 1);
+    qDebug() << mMapper->lines(50000, 1);
+    mMapper->setTopLine(20000);
+    mMapper->setTopLine(50000);
+    qDebug() << mMapper->line(0);
+    QCOMPARE(mMapper->topChunk(), mMapper->chunkCount()-1);
 }
 
 void TestTextMapper::testPeekChunkLineNrs()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check peek chunk line numbers
-        tm.setTopOffset(70000);
-        QVERIFY(tm.absTopLine() < 0);
-        tm.peekChunksForLineNrs(4);
-        QCOMPARE(tm.absTopLine(), 693);
-    }
+    // ---------- check peek chunk line numbers
+    mMapper->setTopOffset(70000);
+    QVERIFY(mMapper->absTopLine() < 0);
+    mMapper->peekChunksForLineNrs(4);
+    QCOMPARE(mMapper->absTopLine(), 693);
 }
 
 void TestTextMapper::testPosCalulation()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check position calculation
-        tm.setTopOffset(39800);
-        QCOMPARE(tm.relTopLine(), 70);
-        tm.setTopOffset(39900);
-        QCOMPARE(tm.relTopLine(), 71);
-        tm.setTopOffset(40000);
-        QCOMPARE(tm.relTopLine(), 72);
-        QVERIFY(tm.absTopLine() < 0);
-        QCOMPARE(tm.relPos(100, 4), 10104);
-        tm.peekChunksForLineNrs(4);
-        QCOMPARE(tm.absPos(396, 0) + tm.relPos(100, 4), tm.absPos(496, 4));
-        QCOMPARE(tm.absTopLine(), 396);
-        QCOMPARE(tm.absPos(396, 0), 39895);
-        QCOMPARE(tm.absPos(496, 4), 49999);
-    }
+    // ---------- check position calculation
+    mMapper->setTopOffset(39800);
+    QCOMPARE(mMapper->relTopLine(), 70);
+    mMapper->setTopOffset(39900);
+    QCOMPARE(mMapper->relTopLine(), 71);
+    mMapper->setTopOffset(40000);
+    QCOMPARE(mMapper->relTopLine(), 72);
+    QVERIFY(mMapper->absTopLine() < 0);
+    QCOMPARE(mMapper->relPos(100, 4), 10104);
+    mMapper->peekChunksForLineNrs(4);
+    QCOMPARE(mMapper->absPos(396, 0) + mMapper->relPos(100, 4), mMapper->absPos(496, 4));
+    QCOMPARE(mMapper->absTopLine(), 396);
+    QCOMPARE(mMapper->absPos(396, 0), 39895);
+    QCOMPARE(mMapper->absPos(496, 4), 49999);
 }
 
 void TestTextMapper::testLineNrEstimation()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check line number esimation
-        tm.setTopOffset(200000);
-        QCOMPARE(tm.absTopLine(), -1984);
-        tm.peekChunksForLineNrs(1);
-        for (int i = 1; i < 11; ++i) {
-            if (i==1) QCOMPARE(tm.absTopLine(), -1984);
-            tm.peekChunksForLineNrs(1);
-        }
-
-        QCOMPARE(tm.absTopLine(), 1980);
+    // ---------- check line number esimation
+    mMapper->setTopOffset(200000);
+    QCOMPARE(mMapper->absTopLine(), -1984);
+    mMapper->peekChunksForLineNrs(1);
+    for (int i = 1; i < 11; ++i) {
+        if (i==1) QCOMPARE(mMapper->absTopLine(), -1984);
+        mMapper->peekChunksForLineNrs(1);
     }
+    QCOMPARE(mMapper->absTopLine(), 1980);
 }
 
 void TestTextMapper::testFindLine()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
-
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
-
-        // ---------- check find line
-        tm.setTopOffset(40000);
-        QVERIFY(!tm.setTopLine(400));
-        tm.peekChunksForLineNrs(4);
-        QVERIFY(tm.setTopLine(400));
-        QCOMPARE(tm.findChunk(800), 4);
-        tm.peekChunksForLineNrs(16);
-        QCOMPARE(tm.findChunk(2000), 12);
-        QCOMPARE(tm.findChunk(1946), 12);
-        QCOMPARE(tm.findChunk(1945), 11);
-        QCOMPARE(tm.findChunk(1946+162), 13);
-    }
+    // ---------- check find line
+    mMapper->setTopOffset(40000);
+    QVERIFY(!mMapper->setTopLine(400));
+    mMapper->peekChunksForLineNrs(4);
+    QVERIFY(mMapper->setTopLine(400));
+    QCOMPARE(mMapper->findChunk(800), 4);
+    mMapper->peekChunksForLineNrs(16);
+    QCOMPARE(mMapper->findChunk(2000), 12);
+    QCOMPARE(mMapper->findChunk(1946), 12);
+    QCOMPARE(mMapper->findChunk(1945), 11);
+    QCOMPARE(mMapper->findChunk(1946+162), 13);
 }
 
 void TestTextMapper::testPosAndAnchor()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
-    qint64 size = file.size();
+    // ---------- check position and anchor handling
+    QPoint pos;
+    QPoint anc;
+    mMapper->setTopOffset(40000);
+    mMapper->setRelPos(1, 10);
+    mMapper->getPosAndAnchor(pos, anc);
+    QVERIFY(pos.y() < 0);
+    QCOMPARE(pos.x(), 10);
+    QVERIFY(anc.y() < 0);
+    QCOMPARE(anc.x(), 10);
+    mMapper->peekChunksForLineNrs(4);
+    mMapper->getPosAndAnchor(pos, anc);
+    QCOMPARE(pos.y(), 397);
 
-    { // ----------------- TEST usage of the test file with TestMapper
-        TextMapper tm;
-        tm.setCodec(QTextCodec::codecForName("utf-8"));
-        tm.setMappingSizes(100, 1024*16, 512);
-        QVERIFY2(tm.openFile(file.fileName()), "TextMapper: Error on opening test file.");
-        QCOMPARE(tm.sizeMapper().size, size);
+    mMapper->setRelPos(4, 2, QTextCursor::KeepAnchor);
+    mMapper->getPosAndAnchor(pos, anc);
+    QCOMPARE(pos.y(), 400);
+    QCOMPARE(pos.x(), 2);
+    QCOMPARE(anc.y(), 397);
+    QCOMPARE(anc.x(), 10);
+}
+void TestTextMapper::testClipboard()
+{
+    ulong ms = 1; // As the windows clipboard cries on fast changes in a row we have to slow it down a bit
 
-        // ---------- check position and anchor handling
-        QPoint pos;
-        QPoint anc;
-        tm.setTopOffset(40000);
-        tm.setRelPos(1, 10);
-        tm.getPosAndAnchor(pos, anc);
-        QVERIFY(pos.y() < 0);
-        QCOMPARE(pos.x(), 10);
-        QVERIFY(anc.y() < 0);
-        QCOMPARE(anc.x(), 10);
-        tm.peekChunksForLineNrs(4);
-        tm.getPosAndAnchor(pos, anc);
-        QCOMPARE(pos.y(), 397);
+    // ---------- check clipbord content
+    QClipboard *clip = QApplication::clipboard();
+    clip->clear();
+    mMapper->setRelPos(2, 0);
+    mMapper->setRelPos(2, 7, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QCOMPARE(clip->text(), QString("This is"));
 
-        tm.setRelPos(4, 2, QTextCursor::KeepAnchor);
-        tm.getPosAndAnchor(pos, anc);
-        QCOMPARE(pos.y(), 400);
-        QCOMPARE(pos.x(), 2);
-        QCOMPARE(anc.y(), 397);
-        QCOMPARE(anc.x(), 10);
-    }
+    QApplication::instance()->thread()->msleep(ms);
+    clip->clear();
+    mMapper->setRelPos(2, 89);
+    mMapper->setRelPos(3, 7, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QCOMPARE(clip->text(), QString("long lines.\nThis is"));
+
+    QApplication::instance()->thread()->msleep(ms);
+    clip->clear();
+    mMapper->setRelPos(300, 0);
+    mMapper->setRelPos(400, 7, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QStringList list = clip->text().split("\n");
+    QCOMPARE(list.count(), 101);
+    QCOMPARE(list.last(), QString("This is"));
+
+    QApplication::instance()->thread()->msleep(ms);
+    clip->clear();
+    mMapper->setTopOffset(5000000);
+    mMapper->moveTopByLines(496);
+    QCOMPARE(mMapper->line(0), trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec."));
+    QCOMPARE(mMapper->topChunk(), 308);
+    mMapper->setRelPos(-1, 0);
+    mMapper->setRelPos(0, 0, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QCOMPARE(clip->text(), trUtf8("This is line 50000 of the testfile - the last numerated.\n"));
+
+    QApplication::instance()->thread()->msleep(ms);
+    clip->clear();
+    mMapper->setRelPos(0, 0);
+    mMapper->setRelPos(0, 100, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QCOMPARE(clip->text(), mMapper->line(0));
+
+    QApplication::instance()->thread()->msleep(ms);
+    clip->clear();
+    mMapper->setRelPos(-20000, 0);
+    mMapper->setRelPos(0, 100, QTextCursor::KeepAnchor);
+    mMapper->copyToClipboard();
+    QCOMPARE(mMapper->selectionSize(), 2020015);
+    // differs in size by 11 for the last lines 11 utf8 characters taking 2 char each
+    QCOMPARE(mMapper->selectionSize(), clip->text().length() + 11);
+
+    clip->clear();
 }
 
 QTEST_MAIN(TestTextMapper)
