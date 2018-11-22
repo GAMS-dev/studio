@@ -51,11 +51,13 @@ QVariant SolverTableModel::headerData(int section, Qt::Orientation orientation, 
 
 int SolverTableModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return mHorizontalHeaderData.size();
 }
 
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return mVerticalHeaderData.size()-RowShift;
 }
 
