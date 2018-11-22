@@ -339,7 +339,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             columnData.append(optdef.defaultValue.toDouble());
             break;
         case optDataString:
-            columnData.append(optdef.defaultValue.toString());
+            if (optdef.subType == optsubNoValue)
+               columnData.append("(no Value)");
+            else
+               columnData.append(optdef.defaultValue.toString());
             break;
         default:
             columnData.append("");

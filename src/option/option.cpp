@@ -106,7 +106,7 @@ bool Option::isASynonym(const QString &optionName) const
 }
 
 bool Option::isDeprecated(const QString &optionName) const
-{    
+{
     if (mOption.contains(optionName.toUpper())) {
         return mOption[optionName.toUpper()].deprecated;
     }
@@ -480,8 +480,9 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
              QString nameStr = QString::fromLatin1(name).toUpper();
              OptionDefinition opt(i, QString::fromLatin1(name),
-                                  static_cast<optOptionType>(iopttype),
                                   static_cast<optDataType>(itype),
+                                  static_cast<optOptionType>(iopttype),
+                                  static_cast<optOptionSubType>(ioptsubtype),
                                   QString::fromLatin1(descript));
              opt.groupNumber = group;
 

@@ -104,14 +104,15 @@ struct OptionValue {
 
 struct OptionDefinition {
     OptionDefinition() { }
-    OptionDefinition(int num, QString n, optOptionType ot, optDataType dt, QString desc):
-         number(num), name(n), type(ot), dataType(dt), description(desc) { }
+    OptionDefinition(int num, QString n, optDataType dt, optOptionType ot, optOptionSubType st, QString desc):
+         number(num), name(n), dataType(dt), type(ot), subType(st), description(desc) { }
 
     int number;
     QString name;
     QString synonym;
-    optOptionType type;
     optDataType dataType;
+    optOptionType type;
+    optOptionSubType subType;
     QString description;
     bool deprecated = false;
     bool valid = false;
