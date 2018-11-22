@@ -528,7 +528,9 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
         nodes << mProjectRepo.node(id);
     }
-    mProjectContextMenu.setNodes(mProjectRepo.node(index), nodes);
+    if (nodes.empty()) return;
+
+    mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
@@ -1060,7 +1062,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         for (ProjectFileNode* node: nodes) {
             ProjectGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
-            mProjectRepo.purgeGroup(group);
+            if (group->childCount() == 0)
+                closeGroup(group);
         }
         history()->lastOpenedFiles.removeAll(file->location());
         mWp->historyChanged(history());
@@ -1994,7 +1997,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
-        if (!runGroup && mRecent.group) runGroup = mRecent.group->assignedRunGroup();
         if (!runGroup) {
             QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
             if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();

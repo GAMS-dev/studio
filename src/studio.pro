@@ -161,7 +161,8 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    editors/viewhelper.cpp
+    editors/viewhelper.cpp \
+    editors/editorhelper.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -270,7 +271,8 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    editors/viewhelper.h
+    editors/viewhelper.h \
+    editors/editorhelper.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
