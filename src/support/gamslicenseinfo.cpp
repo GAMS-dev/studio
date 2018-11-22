@@ -92,7 +92,12 @@ bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
 
 QString GamsLicenseInfo::solverLicense() const
 {
-    return "XXX";
+    int days = 0; // TODO(AF): pal call
+    if (days == 0)
+        return "Full";
+    if (days > 0)
+        return "Evaluation";
+    return "Expired";
 }
 
 }
