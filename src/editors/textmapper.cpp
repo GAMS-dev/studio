@@ -22,6 +22,8 @@
 #include "logger.h"
 #include <QFile>
 #include <QTextStream>
+#include <QGuiApplication>
+#include <QClipboard>
 
 namespace gams {
 namespace studio {
@@ -449,6 +451,41 @@ int TextMapper::relPos(int localLineNr, int charNr)
               << localLineNr << ", " << charNr << ") = " << pos;
     }
     return int(pos);
+}
+
+void TextMapper::copyToClipboard()
+{
+    if (mChunks.isEmpty()) return;
+    if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0 || mPosition == mAnchor) return;
+    QByteArray all;
+    CursorPosition pFrom = qMin(mAnchor, mPosition);
+    CursorPosition pTo = qMax(mAnchor, mPosition);
+    all.reserve(int(pTo.absLinePos - pFrom.absLinePos) + 2*pTo.charNr - pFrom.charNr);
+    Chunk *chunk = getChunk(pFrom.chunkNr);
+    while (chunk && chunk->nr <= pTo.chunkNr) {
+        int from = chunk->lineBytes.at(0);
+        if (chunk->nr == pFrom.chunkNr) {
+            QString text = line(chunk, pFrom.localLineNr).left(pFrom.charNr);
+            from = chunk->lineBytes.at(pFrom.localLineNr)
+                    + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
+        }
+        int to = chunk->lineBytes.at(chunk->lineCount());
+        if (chunk->nr == pTo.chunkNr) {
+            QString text = line(chunk, pTo.localLineNr).left(pTo.charNr);
+            to = chunk->lineBytes.at(pTo.localLineNr)
+                    + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
+        }
+        QByteArray raw;
+        raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(from),
+                       uint(chunk->lineBytes.at(from+to) - chunk->lineBytes.at(from)));
+        all.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+        if (chunk->nr == chunkCount()-1) break;
+
+        chunk = getChunk(chunk->nr);
+    }
+
+    QClipboard *clip = QGuiApplication::clipboard();
+    clip->setText(mCodec ? mCodec->toUnicode(all) : all);
 }
 
 QPoint TextMapper::convertPos(const CursorPosition &pos) const

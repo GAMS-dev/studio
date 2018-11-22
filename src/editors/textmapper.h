@@ -46,9 +46,11 @@ struct OversizeMapper {
         return (qint64(block) * bytesInBlock) + remain;
     }
     inline int map(const qint64 &value) const {
+        // TODO(JM) check size-overflow AFTER calculation
         return int(((value>size) ? size : value) / bytesInBlock);
     }
     inline int remain(const qint64 &value) const {
+        // TODO(JM) check size-overflow AFTER calculation
         return int( ((value>size) ? size : value) % bytesInBlock);
     }
     qint64 size;
@@ -73,7 +75,7 @@ private:
         qint64 start = -1;
         int size = 0;
         uchar* map = nullptr;
-        QByteArray bArray;
+        QByteArray bArray; // TODO(JM) may be redundant
         QVector<int> lineBytes;
         bool isValid() const { return start >= 0;}
         int lineCount() const { return lineBytes.size()-1; }
@@ -98,6 +100,8 @@ private:
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
+        bool operator <(const CursorPosition &other) const {
+            return absLinePos < other.absLinePos; }
         int chunkNr = -1;
         qint64 absLinePos = -1;
         int charNr = -1;
@@ -132,6 +136,7 @@ public:
 
     int absPos(int absLineNr, int charNr = 0, int *remain = nullptr);
     int relPos(int localLineNr, int charNr = 0);
+    void copyToClipboard();
 
     void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
     void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);

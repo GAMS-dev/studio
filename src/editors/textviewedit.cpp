@@ -51,6 +51,7 @@ void TextViewEdit::copySelection()
         if (choice != QMessageBox::Yes) return;
     }
     // TODO(JM) transfer selection into clipboard
+    mMapper.copyToClipboard();
 }
 
 void TextViewEdit::selectAllText()
