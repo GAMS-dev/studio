@@ -1906,6 +1906,8 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     bool moveToEnd = false;
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
+
+    setOutputViewVisibility(true);
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
