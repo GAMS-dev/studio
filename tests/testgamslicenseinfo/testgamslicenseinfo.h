@@ -33,14 +33,30 @@ private slots:
 
     void testSolvers();
 
+    void testSolverId();
+    void testSolverIdLowerCase();
+    void testSolverIdMixedCase();
+    void testSolverIdInvalid();
+
     void testSolverName();
     void testSolverNameZeroIndex();
     void testSolverNameNegativeIndex();
     void testSolverNameOutOfRange();
 
-//    void testSolverInfo();
+    void testSolverNames();
 
     void testModelTypeNames();
+
+    void testSolverCapability();
+    void testSolverCapabilityInvalidSolver();
+    void testSolverCapabilityInvalidModelType();
+    void testSolverCapabilityInvalidSolverNegative();
+    void testSolverCapabilityInvalidModelTypeNegative();
+    void testSolverCapabilityBothInvalid();
+    void testSolverCapabilityBothInvalidNegative();
+
+    //void testSolverLicense(); // TODO(AF)
+
 };
 
 #endif // TESTGAMSLICENSEINFO_H

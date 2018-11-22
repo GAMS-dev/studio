@@ -39,16 +39,16 @@ public:
 
     int solvers() const;
 
+    int solverId(const QString &name);
+
+    QString solverName(int id) const;
     QMap<int, QString> solverNames();
 
     QMap<int, QString> modelTypeNames();
 
     bool solverCapability(int solver, int modelType) const;
 
-    QString solverLicense() const;
-
-private:
-    QString solverName(int index) const;
+    QString solverLicense(int id) const;
 
 private:
 #if defined(__APPLE__) || defined(__unix__)

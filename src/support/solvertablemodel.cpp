@@ -70,7 +70,7 @@ QVariant SolverTableModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if (index.column() == 0)
-        return mLicenseInfo.solverLicense();
+        return mLicenseInfo.solverLicense(index.row()+RowShift);
 
     if (mLicenseInfo.solverCapability(index.row(), index.column()))
         return "X";

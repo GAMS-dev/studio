@@ -57,21 +57,26 @@ int GamsLicenseInfo::solvers() const
     return cfgNumAlgs(mCFG);
 }
 
+int GamsLicenseInfo::solverId(const QString &name)
+{
+    return cfgAlgNumber(mCFG, name.toStdString().c_str());
+}
+
+QString GamsLicenseInfo::solverName(int id) const
+{
+    char name[GMS_SSSIZE];
+    QString result = cfgAlgName(mCFG, id, name);
+    if (result == "UnknownSolver")
+        return QString();
+    return result;
+}
+
 QMap<int, QString> GamsLicenseInfo::solverNames()
 {
     QMap<int, QString> names;
     for (int i=0; i<solvers(); ++i)
         names[i] = solverName(i);
     return names;
-}
-
-QString GamsLicenseInfo::solverName(int index) const
-{
-    char name[GMS_SSSIZE];
-    QString result = cfgAlgName(mCFG, index, name);
-    if (result == "UnknownSolver")
-        return QString();
-    return result;
 }
 
 QMap<int, QString> GamsLicenseInfo::modelTypeNames()
@@ -90,7 +95,7 @@ bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
     return cfgAlgCapability(mCFG, solver, modelType);
 }
 
-QString GamsLicenseInfo::solverLicense() const
+QString GamsLicenseInfo::solverLicense(int id) const
 {
     int days = 0; // TODO(AF): pal call
     if (days == 0)
