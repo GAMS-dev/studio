@@ -225,16 +225,13 @@ bool SolverOptionTableModel::setHeaderData(int index, Qt::Orientation orientatio
 
 bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    if (index.row() > mOptionItem.size())
+        return false;
+
     QVector<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
-        QString dataValue = value.toString().simplified();
-        if (dataValue.isEmpty())
-            return false;
-
-        if (index.row() > mOptionItem.size())
-            return false;
-
+        QString dataValue = value.toString();
         switch (index.column()) {
         case 0 :
             if (mOptionItem[index.row()]->disabled) {
@@ -257,9 +254,6 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         }
     } else if (role == Qt::CheckStateRole) {
         roles = { Qt::CheckStateRole };
-        if (index.row() > mOptionItem.size())
-            return false;
-
         mOptionItem[index.row()]->disabled = (Qt::CheckState(value.toUInt())==Qt::PartiallyChecked);
         mCheckState[index.row()] = value;
     }

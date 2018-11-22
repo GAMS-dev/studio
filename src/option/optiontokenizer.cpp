@@ -748,7 +748,7 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
         case optMsgValueWarning :
             if (messageType != Value_Out_Of_Range) {
                messageType = Value_Out_Of_Range;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Warning);
             }
             break;
         case optMsgDeprecated :
