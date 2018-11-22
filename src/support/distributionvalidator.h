@@ -38,9 +38,6 @@ public:
 
     void run() override;
 
-signals:
-    void messageReceived(const QString &message);
-
 private:
     ///
     /// \brief Verify the GAMS Distribution bitness on Windows.

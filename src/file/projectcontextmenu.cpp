@@ -27,33 +27,53 @@
 namespace gams {
 namespace studio {
 
+enum ContextAction {
+    actExplorer,
+    actLogTab,
+    actRename,
+    actSep1,
+    actSetMain,
+    actSep2,
+    actAddExisting,
+    actAddNew,
+    actSep3,
+    actCloseGroup,
+    actCloseFile,
+};
+
 ProjectContextMenu::ProjectContextMenu()
 {
-    mActions.insert(0, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
-    mActions.insert(1, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
-    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
-    mActions.insert(3, addSeparator());
+    mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
+    mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
+    mActions.insert(actSep1, addSeparator());
 
-    mActions.insert(4, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
-    mActions.insert(5, addSeparator());
+    mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
+    mActions.insert(actSep2, addSeparator());
 
-    mActions.insert(6, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
-    mActions.insert(7, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(actAddNew, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(actSep3, addSeparator());
 
-    mActions.insert(8, addSeparator());
-
-    mActions.insert(9, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(10, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
 
 //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
 
-void ProjectContextMenu::setNode(ProjectAbstractNode* node)
+void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 {
-    mNode = node;
-    bool isGroup = mNode->toGroup();
-    ProjectFileNode *fileNode = node->toFile();
+    // synchronize current and selected
+    mNodes.clear();
+
+    mNodes = selected;
+    if (mNodes.isEmpty()) return;
+
+    bool single = mNodes.count() == 1;
+    bool isGroup = mNodes.first()->toGroup();
+
+    ProjectFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms; // unused
     bool isRunnable = false;
 
@@ -63,19 +83,29 @@ void ProjectContextMenu::setNode(ProjectAbstractNode* node)
         isRunnable = fileNode->location() == file;
     }
 
-    mActions[1]->setVisible(isGroup);
-    mActions[2]->setVisible(isGroup);
-    mActions[3]->setVisible(isGroup);
-    mActions[4]->setVisible(isGmsFile && !isRunnable);
+    mActions[actExplorer]->setEnabled(single);
+
+    mActions[actLogTab]->setVisible(isGroup);
+    mActions[actLogTab]->setEnabled(single);
+
+    mActions[actRename]->setVisible(isGroup);
+    mActions[actRename]->setEnabled(single);
+
+    mActions[actSep1]->setVisible(isGroup);
+    mActions[actSep1]->setEnabled(single);
+
+    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 
     // all files
-    mActions[10]->setVisible(fileNode);
+    mActions[actCloseFile]->setVisible(fileNode);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    ProjectFileNode *file = mNode->toFile();
-    if (file) emit closeFile(file);
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectFileNode *file = node->toFile();
+        if (file) emit closeFile(file);
+    }
 }
 
 void ProjectContextMenu::onAddExisitingFile()
@@ -93,10 +123,17 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (QString filePath: filePaths) {
-        ProjectGroupNode *group = mNode->toGroup();
-        if (!group) group = mNode->parentNode();
-        emit addExistingFile(group, filePath);
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+    for (ProjectGroupNode *group: groups) {
+        for (QString filePath: filePaths) {
+            emit addExistingFile(group, filePath);
+        }
     }
 }
 
@@ -127,9 +164,16 @@ void ProjectContextMenu::onAddNewFile()
     } else { // replace old
         file.resize(0);
     }
-    ProjectGroupNode *group = mNode->toGroup();
-    if (!group) group = mNode->parentNode();
-    emit addExistingFile(group, filePath);
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+    for (ProjectGroupNode *group: groups) {
+        emit addExistingFile(group, filePath);
+    }
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -139,59 +183,51 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    ProjectGroupNode *group = mNode->toGroup();
-    if (!group) group = mNode->parentNode();
-    if (group) emit closeGroup(group);
-}
-
-void ProjectContextMenu::onRunFile()
-{
-    ProjectFileNode *file = mNode->toFile();
-    if (file) emit runFile(file);
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (group) emit closeGroup(group);
+    }
 }
 
 void ProjectContextMenu::onSetMainFile()
 {
-    ProjectFileNode *file = mNode->toFile();
+    ProjectFileNode *file = mNodes.first()->toFile();
     if (file) emit setMainFile(file);
 }
 
 void ProjectContextMenu::onRenameGroup()
 {
-    ProjectGroupNode *group = mNode->toGroup();
+    ProjectGroupNode *group = mNodes.first()->toGroup();
     if (group) emit renameGroup(group);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    ProjectFileNode *file = mNode->toFile();
+    ProjectFileNode *file = mNodes.first()->toFile();
     if (file) {
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
         QString explorerPath = QStandardPaths::findExecutable("explorer.exe");
         if (explorerPath.isEmpty()) {
-            ProjectGroupNode *parent = file->parentNode();
-            if (parent) openLoc = parent->location();
-            QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
         } else {
             QProcess proc;
             proc.setProgram(explorerPath);
             QStringList args;
             args << "/select";
             args << ",";
-            args << QDir::toNativeSeparators(file->location());
+            args << QDir::toNativeSeparators(QFileInfo(file->location()).filePath());
             proc.setArguments(args);
             proc.start();
             proc.waitForFinished();
         }
 #else
-        ProjectGroupNode *parent = file->parentNode();
-        if (parent) openLoc = parent->location();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
 #endif
-    } else if ((mNode->type() == NodeType::group) || (mNode->type() == NodeType::runGroup)){
-        ProjectGroupNode *group = mNode->toGroup();
+    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::runGroup)){
+        ProjectGroupNode *group = mNodes.first()->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
@@ -199,7 +235,7 @@ void ProjectContextMenu::onOpenFileLoc()
 
 void ProjectContextMenu::onOpenLog()
 {
-    if (mNode) emit openLogFor(mNode, true);
+    if (mNodes.first()) emit openLogFor(mNodes.first(), true);
 }
 
 } // namespace studio

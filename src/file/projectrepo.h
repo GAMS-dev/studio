@@ -36,13 +36,6 @@
 namespace gams {
 namespace studio {
 
-// TODO(AF)
-// - a file which is in different groups
-// - naming and documentation of functions
-// - function to find a group for a GAMSProcess
-// - review class dependencies of FileRepository
-// - review function argument, i.e. const strings
-
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView.
@@ -127,6 +120,7 @@ public:
     void editorActivated(QWidget *edit);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
+    void saveNodeAs(ProjectFileNode* node, QString location);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -137,13 +131,16 @@ signals:
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void changed();
+    void deselect(const QVector<QModelIndex> &declined);
+    void closeFileEditors(FileId fileId);
 
 public slots:
     void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
     void closeNode(ProjectFileNode* node);
-    void setSelected(const QModelIndex& ind);
+    void purgeGroup(ProjectGroupNode *group);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
 
 private:

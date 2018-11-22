@@ -286,7 +286,6 @@ void GdxSymbol::calcDefaultColumns()
         else if (mType == GMS_DT_EQU)
             defVal = gmsDefRecEqu[mSubType][valColIdx];
         for(int i=0; i<mRecordCount; i++) {
-            // TODO(AF) fix uninizalized defVal
             if(defVal != mValues[i*GMS_VAL_MAX + valColIdx]) {
                 mDefaultColumn[valColIdx] = false;
                 break;
@@ -440,10 +439,9 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
     if(column<mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
-        int uel = -1;
+        uint uel;
         for(int rec=0; rec<mRecordCount; rec++) {
             uel = mKeys[mRecSortIdx[rec]*mDim + column];
-            // TODO (AF) fix comparision warning
             if (uel >= labelCompIdx.size())  //TODO: workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
                 l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
             else

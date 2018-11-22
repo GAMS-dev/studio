@@ -43,13 +43,15 @@ public:
     ~ResultsView();
     void resizeColumnsToContent();
 
+    SearchResultList* resultList();
+
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList &mResultList;
+    SearchResultList mResultList;
     int searchTermLength = 0;
 };
 

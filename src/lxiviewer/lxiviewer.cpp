@@ -67,12 +67,6 @@ CodeEdit *LxiViewer::codeEdit() const
     return mCodeEdit;
 }
 
-void LxiViewer::loadLxiFile(ProjectRunGroupNode* group)
-{
-    if (group && QProcess::NotRunning == group->gamsProcessState())
-        loadLxi();
-}
-
 void LxiViewer::loadLxi()
 {
     if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) {
@@ -86,18 +80,18 @@ void LxiViewer::loadLxi()
     else
         ui->splitter->widget(0)->hide();
 }
-
-void LxiViewer::loadLstFile(ProjectRunGroupNode* group)
-{
-    if (group && QProcess::NotRunning == group->gamsProcessState()) {
-        ProjectFileNode *fileNode = group->findOrCreateFileNode(group->lstFile());
-        if (fileNode) {
-            fileNode->file()->load(fileNode->file()->codecMib());
-        } else {
-            EXCEPT() << "Error finding lst file " + group->lstFile() + " in group.";
-        }
-    }
-}
+// TODO(RG): this is an unused function:
+//void LxiViewer::loadLstFile(ProjectRunGroupNode* group)
+//{
+//    if (group && QProcess::NotRunning == group->gamsProcessState()) {
+//        ProjectFileNode *fileNode = group->findOrCreateFileNode(group->lstFile());
+//        if (fileNode) {
+//            fileNode->file()->load(fileNode->file()->codecMib());
+//        } else {
+//            EXCEPT() << "Error finding lst file " + group->lstFile() + " in group.";
+//        }
+//    }
+//}
 
 void LxiViewer::jumpToTreeItem()
 {

@@ -77,8 +77,13 @@ public:
     void clearSearch();
     void invalidateCache();
 
-    SearchResultList* getCachedResults();
+    SearchResultList* cachedResults();
     void setActiveEditWidget(AbstractEdit *edit);
+
+    ResultsView *resultsView() const;
+    void setResultsView(ResultsView *resultsView);
+
+    void updateSearchResults();
 
 public slots:
     void on_searchNext();
@@ -96,8 +101,8 @@ private slots:
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_btn_clear_clicked();
-    void on_combo_search_currentTextChanged(const QString &arg1);
-    void on_cb_caseSens_stateChanged(int state);
+    void on_combo_search_currentTextChanged(const QString);
+    void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int arg1);
     void on_cb_regex_stateChanged(int arg1);
 
@@ -107,7 +112,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    QFlags<QTextDocument::FindFlag> getFlags();
     void simpleReplaceAll();
     QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
     QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
@@ -115,11 +119,12 @@ private:
     QList<Result> findInOpenFiles();
     QList<Result> findInAllFiles();
     void updateMatchAmount(int hits, int current = 0);
-    void selectNextMatch(SearchDirection direction);
+    void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
     void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    QRegularExpression createRegex();
 
     enum SearchScope {
         ThisFile = 0,
@@ -141,10 +146,12 @@ private:
     MainWindow *mMain;
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
-    bool mHasChanged = false;
+    ResultsView *mResultsView = nullptr;
     SearchResultList mCachedResults;
-    bool mFirstReturn = false;
     AbstractEdit *mActiveEdit = nullptr;
+    bool mHasChanged = false;
+    bool mFirstReturn = false;
+    QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
 };
 
 }

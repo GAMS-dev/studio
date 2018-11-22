@@ -25,6 +25,7 @@
 #include "filemeta.h"
 #include "editors/codeedit.h"
 #include "logger.h"
+#include "editors/viewhelper.h"
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
@@ -52,7 +53,7 @@ QIcon ProjectFileNode::icon()
 {
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
-    QString runMark = (par && file() == par->toRunGroup()->runnableGms()) ? "-run" : "";
+    QString runMark = par->toRunGroup()->specialFile(FileKind::Gms) == location() ? "-run" : "";
     if (file()->kind() == FileKind::Gms)
         return QIcon(":/img/gams-w"+runMark);
     if (file()->kind() == FileKind::Gdx)
@@ -112,6 +113,13 @@ QString ProjectFileNode::tooltip()
     tip += "\nNodeId: "+QString::number(id());
     tip += "\nFileId: " + (file() ? QString::number(file()->id()) : "?");
     tip += "\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?");
+    QString edFile = "-";
+    QString edGroup = "-";
+    if (file()->editors().size()) {
+        edFile = QString::number(ViewHelper::fileId(file()->editors().first()));
+        edGroup = QString::number(ViewHelper::groupId(file()->editors().first()));
+    }
+    tip += "\nedit: " + edFile + " " + edGroup;
     return tip;
 }
 

@@ -43,20 +43,10 @@ public:
     void jumpTo(const QTextCursor &cursor);
     void jumpTo(int line, int column = 0);
 
-    FileId fileId() const;
-    void setFileId(const FileId &fileId);
-
-    NodeId groupId() const;
-    virtual void setGroupId(const NodeId &groupId);
-
-    void setMarks(const LineMarks *marks);
-    int markCount() { return mMarks ? mMarks->size() : 0; }
+    void updateGroupId();
 
 signals:
     void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
-
-public slots:
-    void afterContentsChanged(int, int, int);
 
 protected:
     friend class FileMeta;
@@ -73,13 +63,19 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e) override;
     virtual void marksChanged();
     QList<TextMark *> cachedLineMarks(int lineNr);
-    const LineMarks &marks() const;
     const QList<TextMark*> &marksAtMouse() const;
+    inline NodeId groupId() {
+        bool ok;
+        NodeId group = property("groupId").toInt(&ok);
+        return ok ? group : NodeId();
+    }
+
+    void setMarks(const LineMarks *marks);
+    const LineMarks* marks() const;
 
 private:
-    FileId mFileId;
     NodeId mGroupId;
-    const LineMarks *mMarks = nullptr;
+    const LineMarks* mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;

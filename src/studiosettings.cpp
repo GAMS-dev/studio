@@ -156,6 +156,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
+#ifdef QWEBENGINE
     QMultiMap<QString, QString> bookmarkMap(main->helpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mAppSettings->remove("");
@@ -167,6 +168,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     }
     mAppSettings->endArray();
     mAppSettings->setValue("zoomFactor", main->helpWidget()->getZoomFactor());
+#endif
     mAppSettings->endGroup();
 
     // history
@@ -223,6 +225,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autoIndent", autoIndent());
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
+    mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -268,6 +271,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
 
     // help
     mAppSettings->beginGroup("helpView");
+#ifdef QWEBENGINE
     QMultiMap<QString, QString> bookmarkMap;
     int mapsize = mAppSettings->beginReadArray("bookmarks");
     for (int i = 0; i < mapsize; i++) {
@@ -282,6 +286,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
         main->helpWidget()->setZoomFactor(mAppSettings->value("zoomFactor").toReal());
     else
         main->helpWidget()->setZoomFactor(1.0);
+#endif
     mAppSettings->endGroup();
 
     mAppSettings->beginGroup("fileHistory");
@@ -325,6 +330,7 @@ void StudioSettings::loadUserSettings()
     setAutoIndent(mUserSettings->value("autoIndent", true).toBool());
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
+    setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -377,8 +383,19 @@ void StudioSettings::setNrLogBackups(int nrLogBackups)
     mNrLogBackups = nrLogBackups;
 }
 
-void StudioSettings::restoreTabsAndProjects(MainWindow *main)
+bool StudioSettings::autoCloseBraces() const
 {
+    return mAutoCloseBraces;
+}
+
+void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
+{
+    mAutoCloseBraces = autoCloseBraces;
+}
+
+bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
+{
+    bool res = true;
     mAppSettings->beginGroup("json");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
@@ -387,9 +404,10 @@ void StudioSettings::restoreTabsAndProjects(MainWindow *main)
     if (restoreTabs()) {
         saveData = mAppSettings->value("openTabs", "").toByteArray();
         loadDoc = QJsonDocument::fromJson(saveData);
-        main->readTabs(loadDoc.object());
+        res = main->readTabs(loadDoc.object());
     }
     mAppSettings->endGroup();
+    return res;
 }
 
 void StudioSettings::loadSettings(MainWindow *main)

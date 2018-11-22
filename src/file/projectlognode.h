@@ -40,8 +40,9 @@ public:
 //    void fileClosed(ProjectFileNode* fc);
 //    TextMark* firstErrorMark();
     ProjectFileNode *lstNode() const;
-    void setLstNode(ProjectFileNode *lstNode);
-
+    const ProjectRootNode *root() const override;
+    NodeId runGroupId() const override;
+    ProjectRunGroupNode *assignedRunGroup() override;
 
 public slots:
     void addProcessData(const QByteArray &data);

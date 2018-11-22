@@ -64,7 +64,7 @@ public:
     FileMeta* file() const;
     QString location() const;
     QString tooltip() override;
-    NodeId runGroupId() const;
+    virtual NodeId runGroupId() const;
 //    QTextCodec *codec() const;
     void enhanceMarksFromLst();
 

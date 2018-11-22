@@ -46,6 +46,7 @@ public:
 
     QIcon icon() override;
     int childCount() const;
+    bool isEmpty();
     ProjectAbstractNode* childNode(int index) const;
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;
@@ -83,12 +84,10 @@ class ProjectRunGroupNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
-    ProjectLogNode* logNode() const;
-    void setLogNode(ProjectLogNode* logNode);
-    ProjectLogNode* getOrCreateLogNode(FileMetaRepo* fileMetaRepo);
+    bool hasLogNode() const;
+    ProjectLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
-    QString lstFile() const;
     QString tooltip() override;
     QString lstErrorText(int line) override;
     void setLstErrorText(int line, QString text);
@@ -98,9 +97,10 @@ public:
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
 
-    QString specialFile(const FileKind& fk) const;
-    QHash<FileKind, QString> specialFiles() const;
-    void setSpecialFile(const FileKind& fk, const QString& path);
+    QString specialFile(const FileKind& kind) const;
+    bool hasSpecialFile(const FileKind& kind) const;
+    void addNodesForSpecialFiles();
+    void setSpecialFile(const FileKind& kind, const QString& path);
     void clearSpecialFiles();
 
     bool isProcess(const AbstractProcess *process) const;
@@ -123,6 +123,7 @@ protected:
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
+    void setLogNode(ProjectLogNode* logNode);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;

@@ -26,12 +26,13 @@ namespace studio {
 QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
     new FileType(FileKind::Gms, {"gms", "inc"}, "GAMS Source Code", false),
-    new FileType(FileKind::Txt, {"txt"}, "Text File", false),
+    new FileType(FileKind::Txt, {"txt"}, "Text File (editable)", false),
+    new FileType(FileKind::TxtRO, {"log"}, "Text File (read only)", false),
     new FileType(FileKind::Lst, {"lst"}, "GAMS List File", true),
     new FileType(FileKind::Lxi, {"lxi"}, "GAMS List File Index", true),
     new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
-    new FileType(FileKind::Log, {"log"}, "GAMS Log File", true)
+    new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
@@ -78,6 +79,11 @@ QString FileType::description() const
 QStringList FileType::suffix() const
 {
     return mSuffix;
+}
+
+QString FileType::defaultSuffix() const
+{
+    return mSuffix.first();
 }
 
 FileType &FileType::from(QString suffix)

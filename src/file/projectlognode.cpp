@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QByteArray>
 #include <QTextCodec>
+#include <QApplication>
 #include "file.h"
 #include "projectlognode.h"
 #include "exception.h"
@@ -29,13 +30,16 @@
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
 #include "locators/settingslocator.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 #include "studiosettings.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, runGroup, NodeType::log)
+    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
 {
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
@@ -78,6 +82,7 @@ void ProjectLogNode::markOld()
 void ProjectLogNode::logDone()
 {
     if (mLogFile) {
+        // TODO(JM) rename .log~ to .log
         delete mLogFile;
         mLogFile = nullptr;
     }
@@ -139,7 +144,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
         for (QWidget* w: file()->editors()) {
-            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
             if (!ed) continue;
             if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
                 scrollVal << 0;
@@ -187,7 +192,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
 
         int i = 0;
         for (QWidget* w: file()->editors()) {
-            AbstractEdit* ed = FileMeta::toAbstractEdit(w);
+            AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
             if (!ed) continue;
             if (mJumpToLogEnd || scrollVal[i] == 0) {
                 mJumpToLogEnd = false;
@@ -263,7 +268,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
-            fName = parentNode()->location() + '/' + mLastSourceFile;
+            fName = mRunGroup->location() + '/' + mLastSourceFile;
             lineNr = errNr-1;
             size = -1;
             colStart = -1;
@@ -287,8 +292,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error
-                                                           , mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
+                                                           mCurrentErrorHint.lstLine, lineNr, colStart, size);
             }
             errMark = mark.textMark;
             marks << mark;
@@ -312,9 +317,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         result += capture(line, posA, posB, 0, '[');
 
         if (posB+5 < line.length()) {
-            TextMark::Type tmType = errFound ? TextMark::link : TextMark::none;
+            TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
             if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
-                QString fName = mRunGroup->lstFile();
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;
@@ -323,11 +327,16 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = (lstColStart<0) ? 0 : result.length() - mark.col - 1;
 
                 if (!mLstNode) {
-                    mLstNode = parentNode()->findFile(fName);
+                    mLstNode = mRunGroup->findFile(mRunGroup->specialFile(FileKind::Lst));
                     if (!mLstNode) {
-                        errFound = false;
-                        DEB() << "Could not find lst-file to generate TextMark for";
-                        continue;
+                        QFileInfo fi(mRunGroup->specialFile(FileKind::Lst));
+                        mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
+                        if (!mLstNode) {
+                            errFound = false;
+                            SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
+                                                                  "Did you overwrite default GAMS parameters?", LogMsgType::Error);
+                            continue;
+                        }
                     }
                 }
                 mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runGroupId(), tmType
@@ -353,7 +362,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
                                                            , mCurrentErrorHint.lstLine, lineNr, 0, col);
-                if (parentNode()->findFile(file))
+                if (mRunGroup->findFile(file))
                     errFound = false;
                 else
                     state = Outside;
@@ -384,9 +393,21 @@ ProjectFileNode *ProjectLogNode::lstNode() const
     return mLstNode;
 }
 
-void ProjectLogNode::setLstNode(ProjectFileNode *lstNode)
+const ProjectRootNode *ProjectLogNode::root() const
 {
-    mLstNode = lstNode;
+    if (mRunGroup) return mRunGroup->root();
+    return nullptr;
+}
+
+NodeId ProjectLogNode::runGroupId() const
+{
+    if (mRunGroup) return mRunGroup->id();
+    return NodeId();
+}
+
+ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
+{
+    return mRunGroup;
 }
 
 

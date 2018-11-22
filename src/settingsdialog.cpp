@@ -62,6 +62,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     adjustSize();
 }
 
@@ -89,8 +90,7 @@ void SettingsDialog::loadSettings()
     ui->cb_autoindent->setChecked(mSettings->autoIndent());
     ui->cb_writeLog->setChecked(mSettings->writeLog());
     ui->sb_nrLogBackups->setValue(mSettings->nrLogBackups());
-
-
+    ui->cb_autoclose->setChecked(mSettings->autoCloseBraces());
 
     // misc tab page
     ui->sb_historySize->setValue(mSettings->historySize());
@@ -133,6 +133,7 @@ void SettingsDialog::saveSettings()
     mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
     mSettings->setWriteLog(ui->cb_writeLog->isChecked());
     mSettings->setNrLogBackups(ui->sb_nrLogBackups->value());
+    mSettings->setAutoCloseBraces(ui->cb_autoclose->isChecked());
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());

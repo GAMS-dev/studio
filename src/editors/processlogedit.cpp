@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "processlogedit.h"
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -31,14 +32,7 @@ ProcessLogEdit::ProcessLogEdit(QWidget *parent)
 void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
 {
     jumpToLst(event->pos(), false);
-    /*if (mMetrics.fileType() == FileType::Log
-        && (event->type() == QEvent::MouseButtonDblClick
-            || (event->type() == QEvent::MouseButtonRelease && mouseEvent->modifiers()==Qt::ControlModifier)) ) {
-
-    } else*/
-
 }
-
 
 void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -50,13 +44,13 @@ void ProcessLogEdit::mouseReleaseEvent(QMouseEvent *event)
 void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
 {
     QTextCursor cursor = cursorForPosition(pos);
-    if (marks().values(cursor.blockNumber()).isEmpty() || fuzzy) {
+    if (marks()->values(cursor.blockNumber()).isEmpty() || fuzzy) {
 
         // TODO(JM) only check for TextMark::error
 
         int line = cursor.blockNumber();
         TextMark* linkMark = nullptr;
-        for (TextMark *mark: marks()) {
+        for (TextMark *mark: *marks()) {
             if (mark->type() == TextMark::link && mark->refFileKind() == FileKind::Lst) {
                 if (mark->line() < line)
                     linkMark = mark;
@@ -72,11 +66,20 @@ void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
                 }
             }
         }
-        if (linkMark) {
+        if (linkMark)
             linkMark->jumpToRefMark(true);
-//            setFocus();
-        }
     }
+}
+
+void ProcessLogEdit::contextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu *menu = createStandardContextMenu();
+    QAction act("Clear Log", this);
+    connect(&act, &QAction::triggered, this, &ProcessLogEdit::clear);
+    menu->insertAction(menu->actions().at(1), &act);
+
+    menu->exec(e->globalPos());
+    delete menu;
 }
 
 AbstractEdit::EditorType ProcessLogEdit::type()

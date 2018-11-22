@@ -18,15 +18,6 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-inline void TextMarkRepo::deleteMark(TextMark *tm)
-{
-    LineMarks *marks = mMarks.value(tm->fileId());
-    int count = marks->remove(tm->line(), tm);
-    if (count != 1)
-        DEB() << "Expected one TextMark to be removed but found " << count;
-    delete tm;
-}
-
 void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
 {
     removeMarks(fileId, groupId, false, types);
@@ -76,6 +67,10 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
                                    , int line, int column, int size)
 {
     Q_UNUSED(value)
+    if (groupId < 0) {
+        DEB() << "No valid groupId to create a TextMark";
+        return nullptr;
+    }
     if (!fileId.isValid()) {
         DEB() << "No valid fileId to create a TextMark";
         return nullptr;
@@ -111,6 +106,11 @@ void TextMarkRepo::clear()
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
+    ProjectFileNode* pfn = mProjectRepo->findFile(fm);
+
+    // add to tree if not existent
+    if (!pfn) mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
+
     if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->blockEnd());
 }
 
@@ -127,11 +127,11 @@ FileKind TextMarkRepo::fileKind(FileId fileId)
     return FileKind::None;
 }
 
-QList<TextMark*> TextMarkRepo::marks(FileId nodeId, int lineNr, NodeId groupId, TextMark::Type refType, int max) const
+QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, TextMark::Type refType, int max) const
 {
     QList<TextMark*> res;
-    if (!mMarks.contains(nodeId)) return res;
-    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(nodeId)->values() : mMarks.value(nodeId)->values(lineNr);
+    if (!mMarks.contains(fileId)) return res;
+    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(fileId)->values() : mMarks.value(fileId)->values(lineNr);
     if (groupId < 0 && refType == TextMark::all) return marks;
     int i = 0;
     for (TextMark* mark: marks) {
@@ -209,6 +209,20 @@ FileId TextMarkRepo::ensureFileId(QString location)
     return -1;
 }
 
+LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
+{
+}
+
+bool LineMarks::hasVisibleMarks() const
+{
+    QList<TextMark*> tm = values();
+    for (TextMark* t : tm) {
+        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
+                || (t->type() == TextMark::bookmark))
+            return true;
+    }
+    return false;
+}
 
 } // namespace studio
 } // namespace gams

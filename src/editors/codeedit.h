@@ -107,7 +107,6 @@ public:
     int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
-    void setGroupId(const NodeId &groupId) override;
 
     /// Indents a part of the text. If the cursor is beyond the shortest leading whitespace-part the indent- or
     /// outdentation is performed at the cursor position.
@@ -191,6 +190,7 @@ private:
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
+    bool allowClosing(int chIndex);
 
 private:
     class BlockEdit
@@ -253,6 +253,8 @@ private:
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
 
+    const QString mOpening = "([{'\"";
+    const QString mClosing = ")]}'\"";
 };
 
 class LineNumberArea : public QWidget

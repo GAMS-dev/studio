@@ -30,6 +30,7 @@
 #include "filemetarepo.h"
 #include "abstractprocess.h"
 #include "projecttreeview.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -129,12 +130,7 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
-    AbstractEdit *edit = FileMeta::toAbstractEdit(editWidget);
-    gdxviewer::GdxViewer *gdxViewer = FileMeta::toGdxViewer(editWidget);
-    reference::ReferenceViewer *refViewer = FileMeta::toReferenceViewer(editWidget);
-    NodeId groupId = edit ? edit->groupId()
-                          : gdxViewer ? gdxViewer->groupId()
-                                      : refViewer ? refViewer->groupId() : NodeId();
+    NodeId groupId = ViewHelper::groupId(editWidget);
     ProjectAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     ProjectGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
@@ -151,10 +147,12 @@ inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
 ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
 {
     if (!node) return nullptr;
-    const ProjectGroupNode* group = node->toGroup();
+    ProjectGroupNode* group = node->toGroup();
     if (!group) group = node->parentNode();
-    while (!group->toRunGroup()) group = group->parentNode();
-    if (group->toRunGroup()) return group->toRunGroup()->logNode();
+    while (group && !group->toRunGroup())
+        group = group->parentNode();
+    if (group && group->toRunGroup() && group->toRunGroup()->hasLogNode())
+        return group->toRunGroup()->logNode();
     return nullptr;
 }
 
@@ -220,11 +218,19 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, gprArray);
-                    if (subGroup->childCount()) {
+                    if (subGroup->isEmpty()) {
+                        closeGroup(subGroup);
+                    } else {
                         bool expand = jsonObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
-                    } else {
-                        closeGroup(subGroup); // dont open empty groups
+                    }
+                }
+                QJsonArray optArray = jsonObject["options"].toArray();
+                if (!optArray.isEmpty() && subGroup->toRunGroup()) {
+                    for (QVariant opt : optArray.toVariantList()) {
+                        ProjectRunGroupNode *prgn = subGroup->toRunGroup();
+                        QString par = opt.toString();
+                        prgn->addRunParametersHistory(par);
                     }
                 }
             }
@@ -232,7 +238,8 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
                 FileType *ft = &FileType::from(jsonObject["type"].toString(""));
-                findOrCreateFileNode(file, group, ft, name);
+                if (QFileInfo(file).exists())
+                    findOrCreateFileNode(file, group, ft, name);
             }
         }
     }
@@ -328,15 +335,12 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
     if (mNodes.contains(group->id())) {
         mTreeModel->removeChild(group);
         removeFromIndex(group);
-        emit changed();
     }
 }
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-    if (!runGroup)
-        EXCEPT() << "Integrity error: this node has no ProjectRunGroupNode as parent";
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
@@ -344,17 +348,14 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // Remove reference (if this is a lst file referenced in a log)
-    if (runGroup->logNode() && runGroup->logNode()->lstNode() == node)
-        runGroup->logNode()->setLstNode(nullptr);
+    if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
+        runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
-
     if (mNodes.contains(node->id())) {
         mTreeModel->removeChild(node);
         removeFromIndex(node);
     }
-
-    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
 
     // if this file is marked as runnable remove reference
     if (runGroup->runnableGms() == node->file()) {
@@ -368,22 +369,22 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
             }
         }
     }
+    node->deleteLater();
+    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
+}
 
-    // close group if empty now
-    if (runGroup->childCount() == 0)
-        closeGroup(runGroup);
-
-    emit changed();
+void ProjectRepo::purgeGroup(ProjectGroupNode *group)
+{
+    if (!group) return;
+    if (group->isEmpty()) {
+        closeGroup(group);
+    }
 }
 
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-//    if (location.startsWith("[LOG]")) {
-//        EXCEPT() << "A ProjectLogNode is created with ProjectRunGroup::getOrCreateLogNode";
-//    }
     if (location.isEmpty()) {
-        // TODO(JM) should we allow FileMeta to be created for a non-existant file?
         EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
     }
     if (!knownType || knownType->kind() == FileKind::None)
@@ -402,7 +403,13 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!fileGroup) {
         QFileInfo fi(fileMeta->location());
         QString groupName = explicitName.isNull() ? fi.completeBaseName() : explicitName;
-        fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
+        ProjectFileNode *pfn = findFile(fileMeta);
+        if (pfn)
+            fileGroup = pfn->parentNode();
+        else
+            fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+
         if (!fileGroup) {
             DEB() << "The group must not be null";
             return nullptr;
@@ -412,16 +419,14 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     if (!file) {
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
-            file = runGroup->getOrCreateLogNode(mFileRepo);
-        } else {
-            file = new ProjectFileNode(fileMeta, fileGroup);
+            return runGroup->logNode();
         }
+        file = new ProjectFileNode(fileMeta, fileGroup);
         if (!explicitName.isNull())
             file->setName(explicitName);
         int offset = fileGroup->peekIndex(file->name());
         addToIndex(file);
         mTreeModel->insertChild(offset, fileGroup, file);
-        emit changed();
     }
     connect(fileGroup, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
@@ -433,17 +438,50 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     // Find the runGroup
     ProjectRunGroupNode* runGroup = node->assignedRunGroup();
     if (!runGroup) return nullptr;
-    if (runGroup->logNode()) return runGroup->logNode();
-    ProjectLogNode* log = runGroup->getOrCreateLogNode(mFileRepo);
+    ProjectLogNode* log = runGroup->logNode();
     if (!log) {
         DEB() << "Error while creating LOG node.";
         return nullptr;
     }
-    int offset = runGroup->peekIndex(log->name());
-    addToIndex(log);
-    mTreeModel->insertChild(offset, runGroup, log);
-    emit changed();
     return log;
+}
+
+void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
+{
+    FileMeta* sourceFM = node->file();
+    FileMeta* destFM = nullptr;
+    if (!sourceFM->document()) return;
+
+    bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
+    bool hasOtherDestNode = mFileRepo->fileMeta(location);
+    bool needReplaceSpecialFile = (node->assignedRunGroup()->specialFile(sourceFM->kind()) == node->location());
+
+    if (!hasOtherSourceNode && !hasOtherDestNode) {
+        // no other nodes to this file: just change the location
+        sourceFM->saveAs(location, true);
+        destFM = sourceFM;
+    } else {
+        destFM = mFileRepo->findOrCreateFileMeta(location);
+        if (hasOtherDestNode) {
+            emit closeFileEditors(destFM->id());
+        }
+        destFM->takeEditsFrom(sourceFM);
+        if (destFM->document()) destFM->document()->setModified();
+        node->replaceFile(destFM);
+        mFileRepo->unwatch(destFM);
+        destFM->save();
+        mFileRepo->watch(destFM);
+    }
+    if(needReplaceSpecialFile) {
+        if (sourceFM->kind() != destFM->kind()) {
+            node->assignedRunGroup()->setSpecialFile(destFM->kind(), QString());
+        } else if (destFM->kind() == FileKind::Gms) {
+            node->assignedRunGroup()->setRunnableGms(destFM);
+        } else {
+            node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
+        }
+    }
+
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
@@ -479,9 +517,10 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
     return res;
 }
 
-void ProjectRepo::setSelected(const QModelIndex& ind)
+void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    mTreeModel->setSelected(ind);
+    mTreeModel->selectionChanged(selected, deselected);
+    emit deselect(mTreeModel->popDeclined());
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

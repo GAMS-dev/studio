@@ -235,8 +235,7 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     if (!parMi.isValid()) return false;
     beginInsertRows(parMi, row, row);
     child->setParentNode(parent);
-    mCurrent = updateIndex(mCurrent, parMi, row, 1);
-    mSelected = updateIndex(mSelected, parMi, row, 1);
+//    updateIndex(parMi, row, 1);
     endInsertRows();
     return true;
 }
@@ -253,34 +252,47 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
     QModelIndex parMi = index(child->parentNode());
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
-    mCurrent = updateIndex(mCurrent, parMi, mi.row(), -1);
-    mSelected = updateIndex(mSelected, parMi, mi.row(), -1);
+//    updateIndex(parMi, mi.row(), -1);
     endRemoveRows();
     return true;
 }
 
-const QModelIndex ProjectTreeModel::updateIndex(const QModelIndex &idx, const QModelIndex &parent, int row, int change)
+NodeId ProjectTreeModel::nodeId(const QModelIndex &ind) const
 {
-    if (!idx.isValid() || idx.parent() != parent || idx.row() < row) return idx;
-    if (change < 0 && idx.row() < row-change) return QModelIndex();
-    return index(idx.row()+change, idx.column(), idx.parent());
+    return ind.isValid() ? static_cast<NodeId>(int(ind.internalId())) : NodeId();
+}
+
+QModelIndex ProjectTreeModel::index(const NodeId id) const
+{
+    if (!id.isValid())
+        return QModelIndex();
+    if (mRoot->id() == id)
+        return createIndex(0, 0, quintptr(id));
+    ProjectAbstractNode *node = mRoot->projectRepo()->node(id);
+    if (!node) return QModelIndex();
+    for (int i = 0; i < node->parentNode()->childCount(); ++i) {
+        if (node->parentNode()->childNode(i) == node) {
+            return createIndex(i, 0, quintptr(id));
+        }
+    }
+    return QModelIndex();
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
 {
-    return (mCurrent.isValid() && ind == mCurrent);
+    return (mCurrent.isValid() && nodeId(ind) == mCurrent);
 }
 
 void ProjectTreeModel::setCurrent(const QModelIndex& ind)
 {
     if (!isCurrent(ind)) {
-        QModelIndex mi = mCurrent;
-        mCurrent = ind;
+        QModelIndex mi = index(mCurrent);
+        mCurrent = nodeId(ind);
         while (mi.isValid()) { // invalidate old
             dataChanged(mi, mi);
             mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
         }
-        mi = mCurrent;
+        mi = ind;
         while (mi.isValid()) { // invalidate new
             dataChanged(mi, mi);
             mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
@@ -293,7 +305,7 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
     if (mCurrent.isValid()) {
         ProjectAbstractNode* node = mProjectRepo->node(mCurrent);
         if (!node) return false;
-        if (node->parentNode()->id() == static_cast<FileId>(int(ind.internalId()))) {
+        if (node->parentNode()->id() == nodeId(ind)) {
             return true;
         }
     }
@@ -302,17 +314,46 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 
 bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 {
-    return (mSelected.isValid() && ind == mSelected);
+    return ind.isValid() && mSelected.contains(nodeId(ind));
 }
 
-void ProjectTreeModel::setSelected(const QModelIndex& ind)
+void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    if (!isSelected(ind)) {
-        QModelIndex mi = mSelected;
-        mSelected = ind;
-        if (mi.isValid()) dataChanged(mi, mi);                      // invalidate old
-        if (mSelected.isValid()) dataChanged(mSelected, mSelected); // invalidate new
+    for (const QModelIndex &ind: deselected.indexes()) {
+        NodeId id = nodeId(ind);
+        if (id.isValid() && mSelected.contains(id)) {
+            mSelected.removeAll(id);
+            dataChanged(ind, ind);
+        }
     }
+    NodeId firstId = mSelected.isEmpty() ? selected.isEmpty() ? NodeId()
+                                                              : nodeId(selected.indexes().first())
+                                         : mSelected.first();
+    ProjectAbstractNode *first = mProjectRepo->node(firstId);
+    int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
+    for (const QModelIndex &ind: selected.indexes()) {
+        NodeId id = nodeId(ind);
+        ProjectAbstractNode *node = mProjectRepo->node(id);
+        int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
+        if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
+            mSelected << id;
+            dataChanged(ind, ind);
+        } else {
+            mDeclined << ind;
+        }
+    }
+}
+
+QVector<NodeId> ProjectTreeModel::selectedIds() const
+{
+    return mSelected;
+}
+
+const QVector<QModelIndex> ProjectTreeModel::popDeclined()
+{
+    QVector<QModelIndex> res = mDeclined;
+    mDeclined.clear();
+    return res;
 }
 
 void ProjectTreeModel::update(const QModelIndex &ind)
