@@ -18,9 +18,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testservicelocators
-SUBDIRS += testgamslicenseinfo
-SUBDIRS += testcheckforupdatewrapper
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH            \
+               $$SRCPATH/support
+
+HEADERS +=                          \
+    testcheckforupdatewrapper.h
+
+SOURCES +=                                      \
+    testcheckforupdatewrapper.cpp               \
+    $$SRCPATH/support/checkforupdatewrapper.cpp \
+    $$SRCPATH/commonpaths.cpp                   \
+    $$SRCPATH/exception.cpp
