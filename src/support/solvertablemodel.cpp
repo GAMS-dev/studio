@@ -68,7 +68,7 @@ QVariant SolverTableModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if (index.column() == 0)
-        return "--";
+        return mLicenseInfo.solverLicense();
 
     if (mLicenseInfo.solverCapability(index.row(), index.column()))
         return "X";

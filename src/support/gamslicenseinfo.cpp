@@ -40,6 +40,11 @@ GamsLicenseInfo::GamsLicenseInfo()
         cfgGetMsg(mCFG, msg);
         qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
     }
+    if (!palCreateD(&mPAL,
+                    CommonPaths::systemDir().toStdString().c_str(),
+                    msg,
+                    sizeof(msg)))
+        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -83,6 +88,11 @@ QMap<int, QString> GamsLicenseInfo::modelTypeNames()
 bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
 {
     return cfgAlgCapability(mCFG, solver, modelType);
+}
+
+QString GamsLicenseInfo::solverLicense() const
+{
+    return "XXX";
 }
 
 }

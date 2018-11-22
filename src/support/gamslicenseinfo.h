@@ -21,6 +21,7 @@
 #define GAMSLICENSEINFO_H
 
 #include "cfgmcc.h"
+#include "palmcc.h"
 
 #include <QMap>
 #include <QString>
@@ -44,6 +45,8 @@ public:
 
     bool solverCapability(int solver, int modelType) const;
 
+    QString solverLicense() const;
+
 private:
     QString solverName(int index) const;
 
@@ -56,6 +59,7 @@ private:
     const QString mLicenseFile = "gamslice.txt";
 
     cfgHandle_t mCFG;
+    palHandle_t mPAL;
 };
 
 }
