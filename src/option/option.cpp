@@ -335,7 +335,10 @@ QStringList Option::getNonHiddenValuesList(const QString &optionName) const
 
 int Option::getOrdinalNumber(const QString &optionName) const
 {
-    return mOption[optionName.toUpper()].number;
+    if (isValid(optionName))
+        return mOption[optionName.toUpper()].number;
+    else
+        return -1;
 }
 
 int Option::getGroupNumber(const QString &optionName) const

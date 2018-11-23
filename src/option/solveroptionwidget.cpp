@@ -463,9 +463,10 @@ void SolverOptionWidget::showOptionDefinition()
     if (ui->solverOptionTableView->model()->rowCount() <= 0)
         return;
 
+    ui->solverOptionTreeView->selectionModel()->clearSelection();
+
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     if (selection.count() > 0) {
-        ui->solverOptionTreeView->selectionModel()->clearSelection();
 
         for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);

@@ -804,11 +804,13 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
        QString definedKey = "";
        QString definedValue = "";
        char name[GMS_SSSIZE];
+       int foundId = -1;
        for (int i = 1; i <= optCount(mOPTHandle); ++i) {
            int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
            optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
 
            if (idefined || idefinedR) {
+               foundId = i;
                int group = 0;
                int helpContextNr;
                optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
@@ -892,7 +894,11 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
                item->error = errorType;
                item->disabled = false;
            } else { // error
-               item->optionId = -1;
+               if (foundId != -1) {
+                   item->optionId = foundId;
+               } else {
+                   item->optionId = mOption->getOrdinalNumber(key);
+               }
                item->key = key;
                item->value = value;
                item->text = str;
