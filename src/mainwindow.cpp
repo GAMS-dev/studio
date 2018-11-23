@@ -1270,7 +1270,7 @@ void MainWindow::on_actionAbout_triggered()
     box.exec();
 }
 
-void MainWindow::on_actionLicense_Information_triggered()
+void MainWindow::on_actionAbout_GAMS_triggered()
 {
     support::AboutGAMSDialog dialog(this);
     dialog.exec();
