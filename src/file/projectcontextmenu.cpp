@@ -62,23 +62,19 @@ ProjectContextMenu::ProjectContextMenu()
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
 }
 
-bool ProjectContextMenu::setNodes(ProjectAbstractNode *current, QVector<ProjectAbstractNode *> selected)
+void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 {
     // synchronize current and selected
     mNodes.clear();
-    if (!current && selected.count() == 1) current = selected.first();
-    if (selected.count() < 2) {
-        mNodes << current;
-    } else {
-        mNodes = selected;
-    }
-    mNodes = selected;
-    if (mNodes.isEmpty()) return false;
-    ProjectAbstractNode *one = mNodes.count()==1 ? mNodes.first() : nullptr;
 
+    mNodes = selected;
+    if (mNodes.isEmpty()) return;
+
+    bool single = mNodes.count() == 1;
     bool isGroup = mNodes.first()->toGroup();
+
     ProjectFileNode *fileNode = mNodes.first()->toFile();
-    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms; // unused
+    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isRunnable = false;
 
     QString file;
@@ -87,17 +83,21 @@ bool ProjectContextMenu::setNodes(ProjectAbstractNode *current, QVector<ProjectA
         isRunnable = fileNode->location() == file;
     }
 
-    mActions[actExplorer]->setEnabled(one);
+    mActions[actExplorer]->setEnabled(single);
+
     mActions[actLogTab]->setVisible(isGroup);
-    mActions[actLogTab]->setEnabled(one);
+    mActions[actLogTab]->setEnabled(single);
+
     mActions[actRename]->setVisible(isGroup);
-    mActions[actRename]->setEnabled(one);
+    mActions[actRename]->setEnabled(single);
+
     mActions[actSep1]->setVisible(isGroup);
-    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable);
+    mActions[actSep1]->setEnabled(single);
+
+    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 
     // all files
     mActions[actCloseFile]->setVisible(fileNode);
-    return true;
 }
 
 void ProjectContextMenu::onCloseFile()

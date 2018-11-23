@@ -18,8 +18,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH
+
+HEADERS += \
+    testcodeedit.h \
+    $$SRCPATH\editors\editorhelper.h
+
+SOURCES += \
+    testcodeedit.cpp \
+    $$SRCPATH\editors\editorhelper.cpp
