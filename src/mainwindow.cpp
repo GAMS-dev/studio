@@ -770,7 +770,8 @@ void MainWindow::on_actionSave_As_triggered()
             if (exists) {
                 choice = QMessageBox::question(this, "File exists", filePath+" already exists."
                                                , "Select other", "Overwrite", "Abort", 0, 2);
-                if (choice == 1) QFile::remove(filePath);
+                if (choice == 1 && fileMeta->location() != filePath)
+                    QFile::remove(filePath);
             }
             if (choice == 1)
                 QFile::copy(fileMeta->location(), filePath);
