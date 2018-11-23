@@ -240,7 +240,7 @@ bool MainWindow::event(QEvent *event)
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
-    mProjectRepo.findOrCreateFileNode(filepath, group);
+    openFileNode(mProjectRepo.findOrCreateFileNode(filepath, group), true);
 }
 
 void MainWindow::sendSourcePath(QString &source)
@@ -700,10 +700,6 @@ void MainWindow::on_actionNew_triggered()
             }
         }
     }
-
-
-
-
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -767,7 +763,7 @@ void MainWindow::on_actionSave_As_triggered()
             filePath = filePath + "." + fileMeta->suffix().first();
         }
 
-        // perform copy when file is either a gdx file or a ref file
+        // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
             choice = 1;
@@ -776,7 +772,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                , "Select other", "Overwrite", "Abort", 0, 2);
                 if (choice == 1) QFile::remove(filePath);
             }
-            if (choice == 1) QFile::copy(fileMeta->location(), filePath);
+            if (choice == 1)
+                QFile::copy(fileMeta->location(), filePath);
         } else {
             FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
             choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
@@ -791,13 +788,18 @@ void MainWindow::on_actionSave_As_triggered()
             if (choice == 1) {
                 mProjectRepo.saveNodeAs(node, filePath);
                 fileMeta = node->file();
-                openFileNode(node, true);
                 ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
+
                 mSettings->saveSettings(this);
             }
         }
-        if (choice == 1) mRecent.path = QFileInfo(filePath).path();
+        if (choice == 1) {
+            mRecent.path = QFileInfo(filePath).path();
+            ProjectFileNode* newNode =
+                    mProjectRepo.findOrCreateFileNode(filePath, node->assignedRunGroup());
+            openFileNode(newNode, true);
+        }
     }
 }
 
@@ -1211,7 +1213,7 @@ void MainWindow::postGamsLibRun()
         if (node->file()->kind() != FileKind::Log)
             node->file()->load(node->file()->codecMib());
     }
-    openFileNode(node); // this
+    openFileNode(node);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -1884,6 +1886,8 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     bool moveToEnd = false;
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
+
+    setOutputViewVisibility(true);
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
@@ -1958,7 +1962,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     } else {
         if (!runGroup) {
             QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();
+            if (nodes.size()) {
+                if (nodes.first()->assignedRunGroup())
+                    runGroup = nodes.first()->assignedRunGroup();
+            } else {
+                QFileInfo file(fileMeta->location());
+                runGroup = mProjectRepo.createGroup(file.baseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
+                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
+            }
         }
         edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {

@@ -74,7 +74,7 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     bool isGroup = mNodes.first()->toGroup();
 
     ProjectFileNode *fileNode = mNodes.first()->toFile();
-    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms; // unused
+    bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isRunnable = false;
 
     QString file;
