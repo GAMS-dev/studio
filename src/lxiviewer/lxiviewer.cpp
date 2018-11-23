@@ -80,6 +80,18 @@ void LxiViewer::loadLxi()
     else
         ui->splitter->widget(0)->hide();
 }
+// TODO(RG): this is an unused function:
+//void LxiViewer::loadLstFile(ProjectRunGroupNode* group)
+//{
+//    if (group && QProcess::NotRunning == group->gamsProcessState()) {
+//        ProjectFileNode *fileNode = group->findOrCreateFileNode(group->lstFile());
+//        if (fileNode) {
+//            fileNode->file()->load(fileNode->file()->codecMib());
+//        } else {
+//            EXCEPT() << "Error finding lst file " + group->lstFile() + " in group.";
+//        }
+//    }
+//}
 
 void LxiViewer::jumpToTreeItem()
 {
