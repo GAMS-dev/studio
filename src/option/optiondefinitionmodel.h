@@ -67,8 +67,6 @@ public:
 
 public slots:
     void loadOptionFromGroup(const int group);
-    void updateModifiedOptionDefinition(const QList<OptionItem> &optionItems);
-    void modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems);
 
 protected:
     void setupTreeItemModelData(Option* option, OptionDefinitionItem* parent);

@@ -70,6 +70,33 @@ qDebug() << "create mimeData => ...";
     return mimeData;
 }
 
+void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems)
+{
+    QMap<int, int> modifiedOption;
+    for(int i = 0; i<optionItems.size(); ++i) {
+        if (optionItems.at(i)->optionId != -1)
+            modifiedOption[optionItems.at(i)->optionId] = i;
+    }
+
+    QList<int> ids = modifiedOption.keys();
+    beginResetModel();
+    for(int i=0; i<rowCount(); ++i)  {
+        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            if (ids.contains(optdef.number))
+                optdef.modified = true;
+            else
+                optdef.modified = false;
+            setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
+        }
+    }
+    endResetModel();
+}
+
 
 } // namespace option
 } // namespace studio

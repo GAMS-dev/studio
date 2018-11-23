@@ -67,6 +67,29 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
     return mimeData;
 }
 
+void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &optionItems)
+{
+    QStringList optionNameList;
+    for(OptionItem item : optionItems) {
+        optionNameList << item.key;
+    }
+    for(int i=0; i<rowCount(); ++i)  {
+        QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
+
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            if (optionNameList.contains(optdef.name, Qt::CaseInsensitive) || optionNameList.contains(optdef.synonym, Qt::CaseInsensitive))
+                optdef.modified = true;
+            else
+                optdef.modified = false;
+            setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
+        }
+
+    }
+}
+
 
 } // namespace option
 } // namespace studio

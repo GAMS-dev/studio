@@ -34,6 +34,10 @@ public:
 
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList & indexes) const override;
+
+public slots:
+    void modifyOptionDefinition(const QList<OptionItem> &optionItems);
+
 };
 
 } // namespace option

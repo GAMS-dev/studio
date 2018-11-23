@@ -120,7 +120,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
 
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
-    connect(optionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &OptionDefinitionModel::updateModifiedOptionDefinition);
+    connect(optionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition);
 
     connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
 
