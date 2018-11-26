@@ -418,11 +418,11 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &location, bool takeOverLocation)
+void FileMeta::saveAs(const QString &target)
 {
-    // functionality moved function to repo // here: just create a copy at location
-    internalSave(location);
-    if (takeOverLocation) setLocation(location);
+    QFile::copy(mLocation, target);
+    mFileRepo->findOrCreateFileMeta(target);
+    internalSave(target);
 }
 
 void FileMeta::renameToBackup()

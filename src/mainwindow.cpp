@@ -758,10 +758,6 @@ void MainWindow::on_actionSave_As_triggered()
         filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
                                                 , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
-        QFileInfo fiNew(filePath);
-        if(!fileMeta->suffix().contains(fiNew.suffix(), Qt::CaseInsensitive)) {
-            filePath = filePath + "." + fileMeta->suffix().first();
-        }
 
         // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
@@ -788,7 +784,6 @@ void MainWindow::on_actionSave_As_triggered()
 
             if (choice == 1) {
                 mProjectRepo.saveNodeAs(node, filePath);
-                fileMeta = node->file();
                 ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
 

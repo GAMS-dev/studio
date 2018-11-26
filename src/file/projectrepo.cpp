@@ -446,22 +446,21 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     return log;
 }
 
-void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
+void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
     FileMeta* destFM = nullptr;
     if (!sourceFM->document()) return;
 
     bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
-    bool hasOtherDestNode = mFileRepo->fileMeta(location);
-    bool needReplaceSpecialFile = (node->assignedRunGroup()->specialFile(sourceFM->kind()) == node->location());
+    bool hasOtherDestNode = mFileRepo->fileMeta(target);
 
     if (!hasOtherSourceNode && !hasOtherDestNode) {
         // no other nodes to this file: just change the location
-        sourceFM->saveAs(location, false);
+        sourceFM->saveAs(target);
         destFM = sourceFM;
     } else {
-        destFM = mFileRepo->findOrCreateFileMeta(location);
+        destFM = mFileRepo->findOrCreateFileMeta(target);
         if (hasOtherDestNode) {
             emit closeFileEditors(destFM->id());
         }
@@ -472,16 +471,6 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
         destFM->save();
         mFileRepo->watch(destFM);
     }
-    if(needReplaceSpecialFile) {
-        if (sourceFM->kind() != destFM->kind()) {
-            node->assignedRunGroup()->setSpecialFile(destFM->kind(), QString());
-        } else if (destFM->kind() == FileKind::Gms) {
-            node->assignedRunGroup()->setRunnableGms(destFM);
-        } else {
-            node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
-        }
-    }
-
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
