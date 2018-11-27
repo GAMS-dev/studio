@@ -427,7 +427,6 @@ void FileMeta::saveAs(const QString &target)
 {
     QFile::copy(mLocation, target);
     mFileRepo->findOrCreateFileMeta(target);
-    internalSave(target);
 }
 
 void FileMeta::renameToBackup()

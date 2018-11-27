@@ -457,15 +457,13 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 
     if (!hasOtherSourceNode && !hasOtherDestNode) {
         sourceFM->saveAs(target);
-        destFM = sourceFM;
     } else {
         if (hasOtherDestNode)
             emit closeFileEditors(destFM->id());
 
-        destFM->takeEditsFrom(sourceFM);
         if (destFM->document()) destFM->document()->setModified();
         mFileRepo->unwatch(destFM);
-        destFM->save();
+        destFM->save(); // TODO(rogo): fill with content of sourceFM
         mFileRepo->watch(destFM);
     }
 }
