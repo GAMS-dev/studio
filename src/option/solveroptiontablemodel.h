@@ -55,6 +55,10 @@ public:
 
     QList<SolverOptionItem *> getCurrentListOfOptionItems() const;
 
+    static const int COLUMN_OPTION_KEY = 0;
+    static const int COLUMN_OPTION_VALUE = 1;
+    static const int COLUMN_ENTRY_NUMBER = 2;
+
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void solverOptionModelChanged(const QList<SolverOptionItem *> &optionItem);

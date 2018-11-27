@@ -114,22 +114,22 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case Qt::DisplayRole: {
         if (mOptionItem.at(row)->disabled) { // comment
-            if (col==0) {
+            if (col==COLUMN_OPTION_KEY) {
                 QString text = mOptionItem.at(row)->text;
                 if (mOptionItem.at(row)->text.startsWith("*"))
                     text = mOptionItem.at(row)->text.mid(1);
                 return QVariant(text);
-            } else if (col==1) {
+            } else if (col==COLUMN_OPTION_VALUE) {
                        return QVariant("");
-            } else if (col==2) {
+            } else if (col==COLUMN_ENTRY_NUMBER ) {
                  return QVariant(mOptionItem.at(row)->optionId);
             }
         } else { // not a comment
-            if (col==0) {
+            if (col==COLUMN_OPTION_KEY) {
                 return QVariant(mOptionItem.at(row)->key);
-            } else if (col==1) {
+            } else if (col==COLUMN_OPTION_VALUE) {
                      return mOptionItem.at(row)->value;
-            } else if (col==2) {
+            } else if (col==COLUMN_ENTRY_NUMBER) {
                 return QVariant(mOptionItem.at(row)->optionId);
             }
         }
@@ -186,7 +186,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
 QSize SolverOptionTableModel::span(const QModelIndex &index) const
 {
     if (mOptionItem.at(index.row())->disabled) {
-        if (index.column()==0)
+        if (index.column()==COLUMN_OPTION_KEY)
            return QSize(3,1);
     }
 
@@ -233,7 +233,7 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         roles = { Qt::EditRole };
         QString dataValue = value.toString();
         switch (index.column()) {
-        case 0 :
+        case COLUMN_OPTION_KEY :
             if (mOptionItem[index.row()]->disabled) {
                 if (!dataValue.startsWith("*"))
                     mOptionItem[index.row()]->text = QString("* %1").arg(dataValue);
@@ -244,11 +244,11 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
             }
             emit solverOptionItemChanged(index);
             break;
-        case 1:
+        case COLUMN_OPTION_VALUE :
             mOptionItem[index.row()]->value = dataValue;
             emit solverOptionItemChanged(index);
             break;
-        case 2:
+        case COLUMN_ENTRY_NUMBER :
             mOptionItem[index.row()]->optionId = dataValue.toInt();
             break;
         }
