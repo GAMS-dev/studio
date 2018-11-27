@@ -449,24 +449,21 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
 void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
-    FileMeta* destFM = nullptr;
+    FileMeta* destFM = mFileRepo->fileMeta(target);
     if (!sourceFM->document()) return;
 
     bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
-    bool hasOtherDestNode = mFileRepo->fileMeta(target);
+    bool hasOtherDestNode = destFM;
 
     if (!hasOtherSourceNode && !hasOtherDestNode) {
-        // no other nodes to this file: just change the location
         sourceFM->saveAs(target);
         destFM = sourceFM;
     } else {
-        destFM = mFileRepo->findOrCreateFileMeta(target);
-        if (hasOtherDestNode) {
+        if (hasOtherDestNode)
             emit closeFileEditors(destFM->id());
-        }
+
         destFM->takeEditsFrom(sourceFM);
         if (destFM->document()) destFM->document()->setModified();
-        node->replaceFile(destFM);
         mFileRepo->unwatch(destFM);
         destFM->save();
         mFileRepo->watch(destFM);
