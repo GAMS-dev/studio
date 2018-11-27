@@ -462,8 +462,10 @@ bool ProjectRunGroupNode::hasSpecialFile(const FileKind &kind) const
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
-    for (QString loc : mSpecialFiles.values())
-        findOrCreateFileNode(loc);
+    for (QString loc : mSpecialFiles.values()) {
+        ProjectFileNode* fn = findOrCreateFileNode(loc);
+        fn->file()->setKind(mSpecialFiles.key(loc));
+    }
 }
 
 void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &path)
