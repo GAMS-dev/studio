@@ -649,6 +649,10 @@ void TestCPLEXOption::testReadOptionFile()
     out << "bbinterval 7 1" << endl;                 // integer too many values
     out << "rerun YES"      << endl;                 // bool value upper case
     out << "xyz.feaspref(i) 1" << endl;              // dot option
+
+    out << "advind 2 ! this sets the option to two" << endl;  // eol comment
+    out << "workdir /x/y!/z/a/b"                    << endl;  // eol comment
+    out << "workdir \"/x/y!/z/a/b\""                << endl;  // eol comment
     outputFile.close();
 
     // when
@@ -656,7 +660,7 @@ void TestCPLEXOption::testReadOptionFile()
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile);
 
     // then
-    QCOMPARE( items.size(), 28 );
+    QCOMPARE( items.size(), 31 );
 
     for(int i=0; i<items.size(); i++)
         QVERIFY( !items.at(i)->modified );
@@ -820,6 +824,23 @@ void TestCPLEXOption::testReadOptionFile()
     QVERIFY( !items.at(27)->disabled );
     QVERIFY( items.at(27)->error == Invalid_Key );
 
+    QCOMPARE( items.at(28)->key, "advind");
+    QCOMPARE( items.at(28)->value.toString(), "2");
+    QCOMPARE( items.at(28)->optionId, 6 );
+    QVERIFY( !items.at(28)->disabled );
+    QVERIFY( items.at(28)->error == No_Error );
+
+    QCOMPARE( items.at(29)->key, "workdir");
+    QCOMPARE( items.at(29)->value.toString(), "/x/y");
+    QCOMPARE( items.at(29)->optionId, 252 );
+    QVERIFY( !items.at(29)->disabled );
+    QVERIFY( items.at(29)->error == No_Error );
+
+    QCOMPARE( items.at(30)->key, "workdir");
+    QCOMPARE( items.at(30)->value.toString(), "/x/y!/z/a/b");
+    QCOMPARE( items.at(30)->optionId, 252 );
+    QVERIFY( !items.at(30)->disabled );
+    QVERIFY( items.at(30)->error == No_Error );
 }
 
 //void TestCPLEXOption::testReadOptionFile_2()
