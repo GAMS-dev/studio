@@ -181,18 +181,17 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* commentAction = menu.addAction("Comment option(s)");
-    QAction* uncommentAction = menu.addAction("Uncomment line(s)");
+    QAction* commentAction = menu.addAction("Toggle comment/option selection");
     menu.addSeparator();
     QAction* insertOptionAction = menu.addAction(QIcon(":/img/insert"), "insert new Option");
     QAction* insertCommentAction = menu.addAction(QIcon(":/img/insert"), "insert new Comment");
     menu.addSeparator();
-    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option(s) Up");
-    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option(s) Down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selection Up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selection Down");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove Selected option(s)");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove Selection");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove All options");
+    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove All");
 
     bool thereIsASelection = (selection.count() > 0);
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
@@ -201,7 +200,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     deleteAllActions->setVisible( thereIsARow );
 
     commentAction->setVisible( thereIsASelection && !isViewCompact );
-    uncommentAction->setVisible( thereIsASelection && !isViewCompact );
 
     insertOptionAction->setVisible( thereIsASelection || !thereIsARow );
     insertCommentAction->setVisible( (thereIsASelection || !thereIsARow) && !isViewCompact );
@@ -234,11 +232,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             moveDownAction->setVisible(false);
         }
 
-        // comment and uncomment actions are disabled when all checkstates of section are not the same
-        if (items.at(index.row())->disabled)
-            commentAction->setVisible(false);
-        else
-            uncommentAction->setVisible(false);
+        // toggle comment action is disabled when all checkstates of section are not the same
         index = selection.at(0);
         bool checkState = items.at(index.row())->disabled;
         for (i=1; i<selection.count(); ++i) {
@@ -247,16 +241,13 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                 break;
             }
         }
-        qDebug() << " select i=" << i;
-        if (i != selection.count()) {
+        if (i != selection.count())
             commentAction->setVisible(false);
-            uncommentAction->setVisible(false);
-        }
     }
 
     QAction* action = menu.exec(ui->solverOptionTableView->viewport()->mapToGlobal(pos));
     bool modified = false;
-    if ((action == commentAction) || (action == uncommentAction)) {
+    if (action == commentAction) {
         for(int i=0; i<selection.count(); ++i) {
             on_toggleRowHeader( selection.at(i).row() );
             modified = true;
@@ -301,7 +292,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
               modified = true;
               setModified(modified);
     } else if (action == moveUpAction) {
-        if (selection.count() >0) {
+        if (thereIsASelection) {
             QModelIndex index = selection.at(0);
             ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
                                                          QModelIndex(), index.row()-1);
@@ -309,7 +300,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             modified = true;
         }
     } else if (action == moveDownAction) {
-        if (selection.count() > 0) {
+        if (thereIsASelection) {
             QModelIndex index = selection.at(0);
             mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
                                         QModelIndex(), index.row()+selection.count()+1);
@@ -317,7 +308,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             modified = true;
         }
     } else if (action == deleteAction) {
-         if (selection.count()>0) {
+         if (thereIsASelection) {
             QModelIndex index = selection.at(0);
             QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
             QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
@@ -475,7 +466,7 @@ void SolverOptionWidget::showOptionDefinition()
 
         for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);
-            QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), 2), Qt::DisplayRole);
+            QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), SolverOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole);
             QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId.toString(), 1); //, Qt::MatchRecursive);
@@ -502,7 +493,7 @@ void SolverOptionWidget::updateTableColumnSpan()
     QList<SolverOptionItem *> optionItems = mOptionTableModel->getCurrentListOfOptionItems();
     for(int i=0; i< optionItems.size(); ++i) {
         if (optionItems.at(i)->disabled)
-            ui->solverOptionTableView->setSpan(i, 0, 1, 3);
+            ui->solverOptionTableView->setSpan(i, 0, 1, ui->solverOptionTableView->model()->columnCount());
     }
 }
 
