@@ -49,7 +49,6 @@ public:
     bool isInFocused(QWidget* focusWidget);
 
     FileId fileId() const;
-//    NodeId groupId() const;
 
     bool isModified() const;
     void setModified(bool modified);

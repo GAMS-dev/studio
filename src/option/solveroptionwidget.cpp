@@ -166,11 +166,6 @@ FileId SolverOptionWidget::fileId() const
     return mFileId;
 }
 
-//NodeId SolverOptionWidget::groupId() const
-//{
-//    return mGroupId;
-//}
-
 bool SolverOptionWidget::isModified() const
 {
     return mModified;
@@ -438,7 +433,6 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
 void SolverOptionWidget::on_saveButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
-    qDebug() << "on_saveButton_clicked " << mFileId;
     MainWindow* main = getMainWindow();
     if (!main) return;
 
@@ -448,7 +442,6 @@ void SolverOptionWidget::on_saveButton_clicked(bool checked)
 void SolverOptionWidget::on_saveAsButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
-    qDebug() << "on_saveAsButton_clicked";
     MainWindow* main = getMainWindow();
     if (!main) return;
 
@@ -458,7 +451,16 @@ void SolverOptionWidget::on_saveAsButton_clicked(bool checked)
 void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
-    qDebug() << "on_openAsTextButton_clicked";
+    MainWindow* main = getMainWindow();
+    if (!main) return;
+
+    emit main->projectRepo()->closeFileEditors(fileId());
+
+    FileMeta* fileMeta = main->fileRepo()->fileMeta(fileId());
+    ProjectFileNode* fileNode = main->projectRepo()->findFileNode(this);
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+
+    emit main->projectRepo()->openFile(fileMeta, true, runGroup, -1, true);
 }
 
 void SolverOptionWidget::showOptionDefinition()
@@ -473,6 +475,9 @@ void SolverOptionWidget::showOptionDefinition()
 
         for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);
+            if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
+                continue;
+
             QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), SolverOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole);
             QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
