@@ -646,6 +646,12 @@ void MainWindow::updateEditorBlockCount()
     if (edit) mStatusWidgets->setLineCount(edit->blockCount());
 }
 
+void MainWindow::updateEditorItemCount()
+{
+    option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor());
+    if (edit) mStatusWidgets->setLineCount(edit->getItemCount());
+}
+
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
     searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
@@ -954,6 +960,15 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
+            }
+        } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
+            ui->menuEncoding->setEnabled(false);
+            ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor);
+            if (fc) {
+                mRecent.editFileId = fc->file()->id();
+                mStatusWidgets->setFileName(fc->location());
+                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setLineCount(solverOptionEditor->getItemCount());
             }
         }
     } else {
@@ -2653,11 +2668,14 @@ QWidget *RecentData::editor() const
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor);
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor);
     if (edit) {
         MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
+    } else if (soEdit) {
+        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
     }
     window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
@@ -2668,6 +2686,8 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
         window->searchDialog()->setActiveEditWidget(edit);
+    } else if (soEdit) {
+        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();

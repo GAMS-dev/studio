@@ -150,6 +150,7 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateEditorItemCount();
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);

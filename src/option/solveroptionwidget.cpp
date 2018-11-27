@@ -273,6 +273,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         updateTableColumnSpan();
         modified = true;
         setModified(modified);
+        emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     } else if (action == insertOptionAction) {
               if (thereIsASelection)  {
                  QModelIndex index = selection.at(0);
@@ -291,6 +292,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
               updateTableColumnSpan();
               modified = true;
               setModified(modified);
+              emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     } else if (action == moveUpAction) {
         if (thereIsASelection) {
             QModelIndex index = selection.at(0);
@@ -325,6 +327,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             }
             updateTableColumnSpan();
             setModified(true);
+            emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
         }
     } else if (action == deleteAllActions) {
         setModified(true);
@@ -340,6 +343,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
         updateTableColumnSpan();
         setModified(true);
+        emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     }
 }
 
@@ -373,7 +377,10 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+
+    emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 }
+
 
 void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
@@ -510,6 +517,11 @@ QString SolverOptionWidget::getSolverName() const
     return mSolverName;
 }
 
+int SolverOptionWidget::getItemCount() const
+{
+    return ui->solverOptionTableView->model()->rowCount();
+}
+
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
     QString optionName = ui->solverOptionTableView->model()->data(index, Qt::DisplayRole).toString();
@@ -520,6 +532,7 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
     for(QModelIndex item : definitionItems) {
         ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
+    emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 }
 
 void SolverOptionWidget::setModified(bool modified)

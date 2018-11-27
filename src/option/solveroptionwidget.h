@@ -60,9 +60,11 @@ public:
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getSolverName() const;
+    int getItemCount() const;
 
 signals:
     void modificationChanged(bool modifiedState);
+    void itemCountChanged(int newItemCount);
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);
