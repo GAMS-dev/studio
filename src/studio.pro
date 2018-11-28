@@ -315,7 +315,8 @@ FORMS += help/bookmarkdialog.ui \
     message("Building Studio without QWebEngine support.")
 }
 
-OTHER_FILES +=  \
-    ../jenkinsfile     \
-    ../jenkinsfile-ci  \
-    ../gamsstudio.desktop
+OTHER_FILES +=              \
+    ../jenkinsfile          \
+    ../jenkinsfile-ci       \
+    ../gamsstudio.desktop   \
+    ../version
