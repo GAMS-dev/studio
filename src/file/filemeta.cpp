@@ -120,14 +120,14 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 
 void FileMeta::internalSave(const QString &location)
 {
-    if (kind() == FileKind::Opt) {
+    if (kind() == FileKind::Opt) { // 2 possible editor types for an Opt file: SolverOptionWidget and CodeEdit
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) {
             mActivelySaved = true;
             solverOptionWidget->saveOptionFile(location);
             mData = Data(location);
+            return;
         }
-        return;
     }
     QFile file(location);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
