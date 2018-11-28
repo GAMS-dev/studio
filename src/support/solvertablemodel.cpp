@@ -63,6 +63,9 @@ int SolverTableModel::rowCount(const QModelIndex &parent) const
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
 {
+    if (Qt::TextAlignmentRole == role) {
+        return Qt::AlignCenter;
+    }
     if (Qt::DisplayRole != role)
         return QVariant();
 
