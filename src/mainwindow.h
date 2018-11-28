@@ -119,7 +119,7 @@ public:
     void showResults(SearchResultList &results);
     void closeResultsPage();
     RecentData *recent();
-    void openModelFromLib(QString glbFile, LibraryItem *model);
+    void openModelFromLib(const QString &glbFile, LibraryItem *model);
     bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
 //    void delayedFileRestoration();
@@ -137,7 +137,7 @@ public:
 
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
-    void receiveAction(QString action);
+    void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
