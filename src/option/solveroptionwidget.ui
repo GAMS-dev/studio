@@ -90,7 +90,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QStackedWidget" name="solverOptionMessageStackedWidget">
+        <widget class="QTabWidget" name="solverOptionTabWidget">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>

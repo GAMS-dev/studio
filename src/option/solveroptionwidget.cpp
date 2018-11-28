@@ -28,6 +28,7 @@
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
+#include "solveroptionsetting.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
 
@@ -48,7 +49,9 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
-    ui->solverOptionMessageStackedWidget->addWidget( logEdit );
+    ui->solverOptionTabWidget->addTab( logEdit, "Message" );
+    SolverOptionSetting* settingEdit = new SolverOptionSetting(this);
+    ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation);
