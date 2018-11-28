@@ -2089,7 +2089,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
 void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
-    if (!fm) return; // TODO(AF) add logging but no execption
+    if (!fm) return;
 
     // add to recently closed tabs
     mClosedTabs << fm->location();

@@ -452,20 +452,9 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
     FileMeta* destFM = mFileRepo->fileMeta(target);
     if (!sourceFM->document()) return;
 
-    bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
-    bool hasOtherDestNode = destFM;
-
-    if (!hasOtherSourceNode && !hasOtherDestNode) {
-        sourceFM->saveAs(target);
-    } else {
-        if (hasOtherDestNode)
-            emit closeFileEditors(destFM->id());
-
-        if (destFM->document()) destFM->document()->setModified();
-        mFileRepo->unwatch(destFM);
-        destFM->save(); // TODO(rogo): fill with content of sourceFM
-        mFileRepo->watch(destFM);
-    }
+    if (destFM) mFileRepo->unwatch(destFM);
+    sourceFM->saveAs(target);
+    if (destFM) mFileRepo->watch(destFM);
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
