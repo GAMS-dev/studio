@@ -1281,13 +1281,13 @@ void MainWindow::on_actionHelp_triggered()
 }
 
 
-void MainWindow::on_actionAbout_triggered()
+void MainWindow::on_actionAbout_Studio_triggered()
 {
     // TODO(AF): refactor, avoid usage of AboutGAMSDialog
     support::AboutGAMSDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
-    box.setWindowTitle("About");
+    box.setWindowTitle(ui->actionAbout_Studio->text());
     box.setText(dialog.aboutStudio());
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);

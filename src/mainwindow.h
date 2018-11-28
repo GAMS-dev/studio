@@ -212,7 +212,7 @@ private slots:
     void on_actionGAMS_Library_triggered();
     // About
     void on_actionHelp_triggered();
-    void on_actionAbout_triggered();
+    void on_actionAbout_Studio_triggered();
     void on_actionAbout_GAMS_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();

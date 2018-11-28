@@ -205,9 +205,10 @@
     </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
-    <addaction name="actionAbout"/>
-    <addaction name="actionAbout_GAMS"/>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="actionAbout_Studio"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_GAMS"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
@@ -419,9 +420,9 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="actionAbout">
+  <action name="actionAbout_Studio">
    <property name="text">
-    <string>&amp;About</string>
+    <string>About Studio</string>
    </property>
   </action>
   <action name="actionAbout_Qt">
