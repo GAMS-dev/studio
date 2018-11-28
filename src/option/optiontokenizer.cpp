@@ -921,7 +921,7 @@ QString OptionTokenizer::getKeyFromStr(QString &line, QString &hintKey)
             else
                 return line.mid(0, idx);
         } else {
-            key = line.mid( line.indexOf(hintKey, Qt::CaseInsensitive), hintKey.size() );
+            key = line.mid( line.toUpper().indexOf(hintKey.toUpper()), hintKey.size() );
         }
     } else {
         for (QString synonym : mOption->getSynonymList(hintKey)) {
