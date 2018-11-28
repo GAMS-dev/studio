@@ -781,8 +781,11 @@ void MainWindow::on_actionSave_As_triggered()
         filters << tr("GAMS code (*.gms *.inc *.log)");
         filters << tr("Text files (*.txt)");
         filters << tr("All files (*.*)");
-        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"),
-                                                nullptr, QFileDialog::DontConfirmOverwrite);
+        QString *selFilter = &filters.last();
+        if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
+        if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
+                                                , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
 
         // perform file copy when file is either a gdx file or a ref file
