@@ -98,14 +98,27 @@ bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
     return cfgAlgCapability(mCFG, solver, modelType);
 }
 
-QString GamsLicenseInfo::solverLicense(int id) const
-{
-    int days = 0; // TODO(AF): pal call
+QString GamsLicenseInfo::solverLicense(int solverId) const
+{ // TODO(AF): review, test
+    int days;
+    char *codes = solverCodes(solverId);
+    if (palLicenseCheckSubX(mPAL,
+                            solverName(solverId).toStdString().c_str(),
+                            codes,
+                            &days))
+        return "Demo";
     if (days == 0)
         return "Full";
     if (days > 0)
         return "Evaluation";
     return "Expired";
+}
+
+char* GamsLicenseInfo::solverCodes(int solverId) const
+{
+    char msg[GMS_SSSIZE];
+    char *codes = cfgAlgCode(mCFG, solverId, msg);
+    return codes;
 }
 
 }

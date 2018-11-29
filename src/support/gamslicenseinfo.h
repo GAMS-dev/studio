@@ -51,7 +51,10 @@ public:
 
     bool solverCapability(int solver, int modelType) const;
 
-    QString solverLicense(int id) const;
+    QString solverLicense(int solverId) const;
+
+private:
+    char* solverCodes(int solverId) const;
 
 private:
 #if defined(__APPLE__) || defined(__unix__)
