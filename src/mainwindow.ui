@@ -205,10 +205,10 @@
     </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
+    <addaction name="actionAbout_GAMS"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
-    <addaction name="separator"/>
-    <addaction name="actionAbout_GAMS"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
