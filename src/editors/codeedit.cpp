@@ -370,6 +370,19 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         }
+        if (mSettings->autoIndent() && e->key() == Qt::Key_Backspace) {
+            int pos = textCursor().positionInBlock();
+
+            QString line = textCursor().block().text().mid(0, pos);
+            QRegularExpression regex("^\\s+$");
+            bool allWhitespace = regex.match(line).hasMatch();
+
+            if (allWhitespace) {
+                indent(-mSettings->tabSize());
+                e->accept();
+                return;
+            }
+        }
     }
 
     if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
