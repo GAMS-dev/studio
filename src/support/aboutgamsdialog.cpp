@@ -31,7 +31,7 @@ namespace gams {
 namespace studio {
 namespace support {
 
-AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
+AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AboutGAMSDialog)
 {
@@ -42,7 +42,7 @@ AboutGAMSDialog::AboutGAMSDialog(QWidget *parent) :
     ui->solverTable->setModel(sortModel);
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    this->setWindowTitle("License Information");
+    this->setWindowTitle(title);
     ui->label->setAlignment(Qt::AlignLeft);
     ui->LicenseInfo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

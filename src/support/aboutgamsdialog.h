@@ -36,11 +36,12 @@ class AboutGAMSDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AboutGAMSDialog(QWidget *parent = nullptr);
+    explicit AboutGAMSDialog(const QString &title, QWidget *parent = nullptr);
     ~AboutGAMSDialog();
-    QString studioInfo();
-    QString aboutStudio();
-    QString licenseInformation();
+
+    static QString studioInfo();
+    static QString aboutStudio();
+    static QString licenseInformation();
 
 private slots:
     void on_copylicense_clicked();

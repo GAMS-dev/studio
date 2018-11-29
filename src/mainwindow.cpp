@@ -1283,11 +1283,10 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_Studio_triggered()
 {
-    support::AboutGAMSDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle(ui->actionAbout_Studio->text());
-    box.setText(dialog.aboutStudio());
+    box.setText(support::AboutGAMSDialog::aboutStudio());
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -1298,7 +1297,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
 
 void MainWindow::on_actionAbout_GAMS_triggered()
 {
-    support::AboutGAMSDialog dialog(this);
+    support::AboutGAMSDialog dialog(ui->actionAbout_GAMS->text(), this);
     dialog.exec();
 }
 
