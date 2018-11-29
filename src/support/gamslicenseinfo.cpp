@@ -19,6 +19,8 @@
  */
 #include "gamslicenseinfo.h"
 #include "commonpaths.h"
+#include "cfgmcc.h"
+#include "palmcc.h"
 #include "gclgms.h"
 
 #include <QDebug>

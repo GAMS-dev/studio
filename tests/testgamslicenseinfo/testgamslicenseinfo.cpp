@@ -20,6 +20,7 @@
 #include "testgamslicenseinfo.h"
 #include "gamslicenseinfo.h"
 #include "commonpaths.h"
+#include "cfgmcc.h"
 
 #include <QDebug>
 

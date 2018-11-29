@@ -22,7 +22,6 @@
 
 #include <QDialog>
 
-
 namespace gams {
 namespace studio {
 namespace support {

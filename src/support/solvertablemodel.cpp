@@ -19,8 +19,6 @@
  */
 #include "solvertablemodel.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace support {

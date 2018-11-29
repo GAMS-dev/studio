@@ -24,7 +24,6 @@
 #include "solvertablemodel.h"
 
 #include <QClipboard>
-#include <QDebug>
 #include <QSortFilterProxyModel>
 
 namespace gams {

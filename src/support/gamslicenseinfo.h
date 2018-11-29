@@ -20,12 +20,15 @@
 #ifndef GAMSLICENSEINFO_H
 #define GAMSLICENSEINFO_H
 
-#include "cfgmcc.h"
-#include "palmcc.h"
-
 #include <QMap>
 #include <QString>
 #include <QStringList>
+
+struct cfgRec;
+typedef struct cfgRec *cfgHandle_t;
+
+struct palRec;
+typedef struct palRec *palHandle_t;
 
 namespace gams {
 namespace studio {
