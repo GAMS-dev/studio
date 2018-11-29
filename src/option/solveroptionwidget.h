@@ -83,15 +83,17 @@ public slots:
     void on_saveAsButton_clicked(bool checked = false);
     void on_openAsTextButton_clicked(bool checked = false);
 
+   void on_addCommentAbove_stateChanged(int checkState);
+
 private slots:
     void showOptionDefinition();
 
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
-//    NodeId mGroupId;
     QString mLocation;
     QString mSolverName;
+    bool addCommentAbove = false;
 
     SolverOptionTableModel* mOptionTableModel;
 

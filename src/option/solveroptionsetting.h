@@ -38,6 +38,12 @@ public:
     explicit SolverOptionSetting(QWidget *parent = nullptr);
     ~SolverOptionSetting();
 
+signals:
+    void addCommentAboveChanged(int checkState);
+
+private slots:
+    void on_addCommentAboveCheckBox_stateChanged(int checkState);
+
 private:
     Ui::SolverOptionSetting *ui;
 };

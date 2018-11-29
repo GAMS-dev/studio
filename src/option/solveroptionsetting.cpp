@@ -36,6 +36,11 @@ SolverOptionSetting::~SolverOptionSetting()
     delete ui;
 }
 
+void SolverOptionSetting::on_addCommentAboveCheckBox_stateChanged(int checkState)
+{
+    emit addCommentAboveChanged(checkState);
+}
+
 }
 }
 }
