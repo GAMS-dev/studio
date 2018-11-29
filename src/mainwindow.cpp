@@ -1283,7 +1283,6 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_Studio_triggered()
 {
-    // TODO(AF): refactor, avoid usage of AboutGAMSDialog
     support::AboutGAMSDialog dialog;
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
@@ -1292,7 +1291,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
     QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    QGridLayout* layout = (QGridLayout*)box.layout();
+    QGridLayout* layout = static_cast<QGridLayout*>(box.layout());
     layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
     box.exec();
 }
