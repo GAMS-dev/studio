@@ -25,6 +25,7 @@
 
 #include <QClipboard>
 #include <QSortFilterProxyModel>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -62,14 +63,34 @@ QString AboutGAMSDialog::studioInfo()
 
 QString AboutGAMSDialog::gamsLicense()
 {
-    QString about = "<b><big>GAMS Distribution ";
-    about += CheckForUpdateWrapper::distribVersionString();
-    about += "</big></b><br/><br/>";
+    QStringList about;
+    about << "<b><big>GAMS Distribution ";
+    about << CheckForUpdateWrapper::distribVersionString();
+    about << "</big></b><br/><br/>";
+
+    // TODO(AF): optimize GAMS output
     GamsProcess gproc;
-    about += gproc.aboutGAMS().replace("\n", "<br/>");
-    about += "<br/><br/>For further information about GAMS please visit ";
-    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-    return about;
+    int licenseLines = 5;
+    for (auto line : gproc.aboutGAMS().split("\n")) {
+//        qDebug() << "LINE >> " << line;
+        if (line.contains("__")) {
+            --licenseLines;
+            if (4 == licenseLines)
+                about << "<pre>" << line + "\n";
+            else if (0 == licenseLines)
+                about << line + "\n" << "</pre>";
+            else
+                about << line + "\n";
+        } else {
+            about << line << "<br/>";
+        }
+    }
+
+//    about << "<br/><br/>For further information about GAMS please visit ";
+//    about << "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
+//    qDebug() << "#################################";
+//    qDebug() << about.join("");
+    return about.join("");
 }
 
 void AboutGAMSDialog::on_copylicense_clicked()
