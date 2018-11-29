@@ -43,7 +43,6 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
-    ui->label->setContentsMargins(4, 2, 3, 7);
     ui->label->setText(gamsLicense());
 
     ui->horizontalLayout_2->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed));
