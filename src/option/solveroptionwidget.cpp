@@ -367,32 +367,51 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
-    if (addCommentAbove) {
-        QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION) :
-                                                              ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
+    if (addCommentAbove) { // insert comment description row
+        int indexRow = index.row();
+        int parentIndexRow = parentIndex.row();
+        QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
+                                                               ui->solverOptionTreeView->model()->index(parentIndexRow, OptionDefinitionModel::COLUMN_DESCIPTION);
         QString descriptionData = ui->solverOptionTreeView->model()->data(descriptionIndex).toString();
-
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 0);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 1);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 2);
 
-        QString comment = (parentIndex.row()<0) ? "" : selectedValueData;
-        comment.append( (parentIndex.row()<0) ? "" : " - ");
-        comment.append( descriptionData );
-        ui->solverOptionTableView->model()->setData( insertKeyIndex, comment, Qt::EditRole);
+        int row = ui->solverOptionTableView->model()->rowCount()-1;
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
+
+        ui->solverOptionTableView->model()->setData( insertKeyIndex, descriptionData, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
         ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                                            Qt::CheckState(Qt::PartiallyChecked),
                                                            Qt::CheckStateRole );
+        if (parentIndex.row() >= 0) {  // insert enum comment description row
+            descriptionIndex = ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
+            QString strData =  selectedValueData;
+            strData.append( " - " );
+            strData.append( ui->solverOptionTreeView->model()->data(descriptionIndex).toString() );
+
+            ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
+            row = ui->solverOptionTableView->model()->rowCount()-1;
+            insertKeyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
+            insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+            insertNumberIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
+
+            ui->solverOptionTableView->model()->setData( insertKeyIndex, strData, Qt::EditRole);
+            ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
+            ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
+            ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
+                                                               Qt::CheckState(Qt::PartiallyChecked),
+                                                               Qt::CheckStateRole );
+        }
     }
     // insert option row
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 0);
-    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 1);
-    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, 2);
+    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_KEY);
+    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
