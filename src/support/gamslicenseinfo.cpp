@@ -52,6 +52,7 @@ GamsLicenseInfo::GamsLicenseInfo()
 GamsLicenseInfo::~GamsLicenseInfo()
 {
     if (mCFG) cfgFree(&mCFG);
+    if (mPAL) palFree(&mPAL);
 }
 
 int GamsLicenseInfo::solvers() const
