@@ -36,14 +36,15 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     ui(new Ui::AboutGAMSDialog)
 {
     ui->setupUi(this);
-    auto dataModel = new SolverTableModel(this);
-    auto sortModel = new QSortFilterProxyModel(this);
-    sortModel->setSourceModel(dataModel);
-    ui->solverTable->setModel(sortModel);
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
+
+    auto dataModel = new SolverTableModel(this);
+    auto sortModel = new QSortFilterProxyModel(this);
+    sortModel->setSourceModel(dataModel);
+    ui->solverTable->setModel(sortModel);
 }
 
 AboutGAMSDialog::~AboutGAMSDialog()
