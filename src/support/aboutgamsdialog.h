@@ -41,7 +41,9 @@ public:
 
     static QString studioInfo();
     static QString aboutStudio();
-    static QString licenseInformation();
+
+private:
+    QString gamsLicense();
 
 private slots:
     void on_copylicense_clicked();

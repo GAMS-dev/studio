@@ -43,17 +43,10 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
-    ui->label->setAlignment(Qt::AlignLeft);
-    ui->LicenseInfo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    ui->label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    ui->label->setText(licenseInformation());
-    ui->horizontalLayout_2->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed));
-    ui->verticalLayout->addStretch();
-    ui->gamslogo->setPixmap(QPixmap(":/img/gams-w24"));
-    ui->gamslogo->adjustSize();
-    ui->gamslogo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     ui->label->setContentsMargins(4, 2, 3, 7);
-    ui->gamslogo->setContentsMargins(0, 3, 7, 7);
+    ui->label->setText(gamsLicense());
+
+    ui->horizontalLayout_2->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed));
 }
 
 AboutGAMSDialog::~AboutGAMSDialog()
@@ -69,7 +62,7 @@ QString AboutGAMSDialog::studioInfo()
     return ret;
 }
 
-QString AboutGAMSDialog::licenseInformation()
+QString AboutGAMSDialog::gamsLicense()
 {
     QString about = "<b><big>GAMS Distribution ";
     about += CheckForUpdateWrapper::distribVersionString();
