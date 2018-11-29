@@ -316,30 +316,14 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
 
             ui->solverOptionTableView->model()->removeRows(index.row(), selection.count(), QModelIndex());
-
             mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
-
-            QModelIndexList items = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                             Qt::DisplayRole,
-                                                                             optionName, 1); //, Qt::MatchRecursive);
-            for(QModelIndex item : items) {
-                ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
-            }
             updateTableColumnSpan();
             setModified(true);
             emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
         }
     } else if (action == deleteAllActions) {
-        setModified(true);
         mOptionTokenizer->getOption()->resetModficationFlag();
 
-        QModelIndexList items = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                         Qt::CheckStateRole,
-                                                                         Qt::CheckState(Qt::Checked),
-                                                                         ui->solverOptionTreeView->model()->rowCount());
-        for(QModelIndex item : items) {
-            ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
-        }
         ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
         updateTableColumnSpan();
         setModified(true);
