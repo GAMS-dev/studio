@@ -40,6 +40,7 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
 
+    ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     auto dataModel = new SolverTableModel(this);
     auto sortModel = new QSortFilterProxyModel(this);
     sortModel->setSourceModel(dataModel);
