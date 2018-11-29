@@ -34,13 +34,16 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, int codecMib, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::GdxViewer),
       mGdxFile(gdxFile),
-      mSystemDirectory(systemDirectory)
+      mSystemDirectory(systemDirectory),
+      mCodecMib(codecMib)
 {
     ui->setupUi(this);
+
+    mCodec = QTextCodec::codecForMib(mCodecMib);
 
     QPalette palette;
     palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
@@ -114,9 +117,13 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-bool GdxViewer::reload()
+bool GdxViewer::reload(int codecMib)
 {
-    if (mHasChanged) {
+    if (mHasChanged || codecMib != -1) {
+        if (codecMib !=-1 && codecMib != mCodecMib) {
+            mCodecMib = codecMib;
+            mCodec = QTextCodec::codecForMib(mCodecMib);
+        }
         if (ui->splitter->widget(1) != ui->widget)
             ui->splitter->replaceWidget(1, ui->widget);
         free();
@@ -215,7 +222,7 @@ bool GdxViewer::init()
     ui->splitter->widget(0)->hide();
     ui->splitter->widget(1)->hide();
 
-    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
+    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex, mCodec);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);

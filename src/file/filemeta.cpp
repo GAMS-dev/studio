@@ -352,7 +352,7 @@ void FileMeta::load(QList<int> codecMibs)
         for (QWidget *wid: mEditors) {
             gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid);
             if (gdxViewer)
-                gdxViewer->reload();
+                gdxViewer->reload(codecMibs[0]);
         }
         return;
     }
@@ -600,7 +600,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 {
     QWidget* res = nullptr;
     if (kind() == FileKind::Gdx) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget));
+        int codecMib = (mCodec) ? mCodec->mibEnum() : 0;
+        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), codecMib, tabWidget));
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
