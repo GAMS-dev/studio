@@ -44,8 +44,6 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
-
-    ui->horizontalLayout_2->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed));
 }
 
 AboutGAMSDialog::~AboutGAMSDialog()
