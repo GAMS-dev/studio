@@ -17,19 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTCHECKFORUPDATEWRAPPER_H
-#define TESTCHECKFORUPDATEWRAPPER_H
+#include "testgamslicenseinfo.h"
+#include "testcheckforupdatewrapper.h"
 
-#include <QtTest/QTest>
-
-class TestCheckForUpdateWrapper : public QObject
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    int status = 0;
+    auto run = [&status, argc, argv](QObject *object) {
+        status |= QTest::qExec(object, argc, argv);
+    };
 
-private slots:
-    void initTestCase();
+    run(new TestGamsLicenseInfo);
+    run(new TestCheckForUpdateWrapper);
 
-    void testCheckForUpdateWrapper();
-};
-
-#endif // TESTCHECKFORUPDATEWRAPPER_H
+    return status;
+}

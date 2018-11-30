@@ -26,10 +26,14 @@ INCLUDEPATH += $$SRCPATH    \
                $$SRCPATH/support
 
 HEADERS +=                  \
-    testgamslicenseinfo.h
+    testgamslicenseinfo.h \
+    testcheckforupdatewrapper.h
 
 SOURCES +=                          \
     testgamslicenseinfo.cpp         \
     $$SRCPATH/support/gamslicenseinfo.cpp   \
+    $$SRCPATH/support/checkforupdatewrapper.cpp \
     $$SRCPATH/commonpaths.cpp       \
-    $$SRCPATH/exception.cpp
+    $$SRCPATH/exception.cpp \
+    testcheckforupdatewrapper.cpp \
+    main.cpp
