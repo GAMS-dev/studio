@@ -451,17 +451,19 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 bool CodeEdit::allowClosing(int chIndex)
 {
-    QRegularExpression allowsAutoclose("[\\s\n\r,;\\)\\{\\}\\]\u2029]");
-    QRegularExpressionMatch match = allowsAutoclose.match(
-                                        QString(document()->characterAt(textCursor().position()))
-                                        );
-    QChar prior = document()->characterAt(textCursor().position() - 1);
+    QString allowingChars(",;){}] ");
+    bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1;
+    bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
 
-    // if char before and after the cursor are a matching pair: OK
+    // insert closing if next char permits or is end of line
+    bool allowAutoClose =  nextAllows || nextLinebreak;
+
+    // if char before and after the cursor are a matching pair: allow
+    QChar prior = document()->characterAt(textCursor().position() - 1);
     bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
-    return match.hasMatch() && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
+    return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)

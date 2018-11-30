@@ -55,6 +55,7 @@ public:
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
+    void setKind(FileKind fk);
     FileKind kind() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
@@ -79,7 +80,7 @@ public:
     void load(int codecMib);
     void load(QList<int> codecMibs = QList<int>());
     void save();
-    void saveAs(const QString &location, bool takeOverLocation = false);
+    void saveAs(const QString &location);
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
