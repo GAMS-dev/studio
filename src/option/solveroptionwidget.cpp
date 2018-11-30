@@ -138,9 +138,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
          optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
     });
 
-    connect(ui->solverOptionTableView->model(), &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
-    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
 
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAbove_stateChanged);

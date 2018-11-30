@@ -35,6 +35,7 @@ public:
     QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
 public slots:
+    void modifyOptionDefinitionItem(const SolverOptionItem* optionItems);
     void modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems);
 
 };

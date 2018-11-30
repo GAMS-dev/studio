@@ -70,6 +70,26 @@ qDebug() << "create mimeData => ...";
     return mimeData;
 }
 
+void SolverOptionDefinitionModel::modifyOptionDefinitionItem(const SolverOptionItem* optionItem)
+{
+    QModelIndexList indices = match(index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
+                                             Qt::DisplayRole,
+                                             QString::number(optionItem->optionId) , 1);
+    beginResetModel();
+    for(QModelIndex idx : indices) {
+        QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+
+        OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = nodeItem->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(nodeItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            optdef.modified = !optionItem->disabled;
+            setData(node, optdef.modified ? Qt::CheckState(Qt::Checked) : Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+        }
+    }
+    endResetModel();
+}
+
 void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems)
 {
     QMap<int, int> modifiedOption;
@@ -91,7 +111,7 @@ void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptio
                 optdef.modified = true;
             else
                 optdef.modified = false;
-            setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
+            setData(node, optdef.modified ? Qt::CheckState(Qt::Checked) : Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
         }
     }
     endResetModel();

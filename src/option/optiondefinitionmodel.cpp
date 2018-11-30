@@ -178,20 +178,23 @@ Qt::ItemFlags OptionDefinitionModel::flags(const QModelIndex& index) const
 
 bool OptionDefinitionModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    QVector<int> roles;
     switch (role) {
     case Qt::DisplayRole: {
+        roles = { Qt::EditRole };
         OptionDefinitionItem *item = getItem(index);
         bool result = item->setData(index.column(), value);
 
         if (result)
-            emit dataChanged(index, index);
+            emit dataChanged(index, index, roles);
 
         return result;
     }
     case Qt::CheckStateRole: {
+        roles = { Qt::CheckStateRole };
         OptionDefinitionItem *item = getItem(index);
         item->setModified(value.toInt() == Qt::Checked);
-        emit dataChanged(index, index);
+        emit dataChanged(index, index, roles);
         return true;
     }
     default:
