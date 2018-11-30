@@ -22,6 +22,6 @@ TEMPLATE = subdirs
 
 SUBDIRS += testcommonpaths              \
            testservicelocators          \
-           testsupport                  \
+           testgamslicenseinfo          \
            testcheckforupdatewrapper    \
            testeditors

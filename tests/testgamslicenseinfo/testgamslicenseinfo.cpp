@@ -199,3 +199,5 @@ void TestGamsLicenseInfo::testSolverCapabilityBothInvalidNegative()
     bool capable = gamsLicenseInfo.solverCapability(-1, -1);
     QVERIFY2(!capable, "There shall be no capability returned.");
 }
+
+QTEST_MAIN(TestGamsLicenseInfo)

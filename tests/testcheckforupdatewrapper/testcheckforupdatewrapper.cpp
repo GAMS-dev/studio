@@ -31,4 +31,33 @@ void TestCheckForUpdateWrapper::initTestCase()
     CommonPaths::setSystemDir();
 }
 
+void TestCheckForUpdateWrapper::testCheckForUpdateWrapper()
+{
+    CheckForUpdateWrapper c4uWrapper;
+}
+
+void TestCheckForUpdateWrapper::testIsValid()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QVERIFY(c4uWrapper.isValid());
+}
+
+void TestCheckForUpdateWrapper::testMessage()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QVERIFY(c4uWrapper.message().isEmpty());
+}
+
+void TestCheckForUpdateWrapper::testClearMessage()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    c4uWrapper.clearMessages();
+    QVERIFY(c4uWrapper.message().isEmpty());
+}
+
+void TestCheckForUpdateWrapper::testCheckForUpdateWrapper()
+{
+
+}
+
 QTEST_MAIN(TestCheckForUpdateWrapper)

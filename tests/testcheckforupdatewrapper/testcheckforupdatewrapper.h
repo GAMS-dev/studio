@@ -28,6 +28,16 @@ class TestCheckForUpdateWrapper : public QObject
 
 private slots:
     void initTestCase();
+
+    void testCheckForUpdateWrapper();
+
+    void testIsValid();
+
+    void testMessage();
+
+    void testClearMessage();
+
+    void testCheckForUpdate();
 };
 
 #endif // TESTCHECKFORUPDATEWRAPPER_H
