@@ -462,9 +462,12 @@ bool ProjectRunGroupNode::hasSpecialFile(const FileKind &kind) const
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
+    FileMeta* runNode = runnableGms();
     for (QString loc : mSpecialFiles.values()) {
-        ProjectFileNode* fn = findOrCreateFileNode(loc);
-        fn->file()->setKind(mSpecialFiles.key(loc));
+        ProjectFileNode* node = findOrCreateFileNode(loc);
+        node->file()->setKind(mSpecialFiles.key(loc));
+        if (runNode)
+            node->file()->setCodec(runNode->codec());
     }
 }
 

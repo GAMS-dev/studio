@@ -878,7 +878,6 @@ void MainWindow::codecReload(QAction *action)
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm && fm->kind() == FileKind::Log) return;
-
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -894,6 +893,7 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
+
             updateMenuToCodec(action->data().toInt());
             mStatusWidgets->setEncoding(fm->codecMib());
         }
@@ -954,14 +954,17 @@ void MainWindow::activeTabChanged(int index)
         if (edit) {
             if (!edit->isReadOnly()) {
                 ui->menuEncoding->setEnabled(true);
+                ui->menuconvert_to->setEnabled(true);
             }
             updateMenuToCodec(node->file()->codecMib());
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
-        } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
+            ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
+        } else if (ViewHelper::toGdxViewer(editWidget)) {
+            ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
-            gdxViewer->reload();
+            node->file()->reload();
+            updateMenuToCodec(node->file()->codecMib());
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
