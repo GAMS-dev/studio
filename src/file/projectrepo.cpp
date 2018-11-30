@@ -417,6 +417,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     }
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
+        mTreeModel->deselectAll();
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
             return runGroup->logNode();
@@ -508,7 +509,6 @@ void ProjectRepo::editorActivated(QWidget* edit)
     ProjectFileNode *node = findFileNode(edit);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
-    mTreeModel->deselectAll();
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);
 }
