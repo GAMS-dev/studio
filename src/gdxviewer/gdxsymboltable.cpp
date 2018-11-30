@@ -153,7 +153,7 @@ QString GdxSymbolTable::getElementText(int textNr)
         int node;
 
         gdxGetElemText(mGdx, textNr, text, &node);
-        return mCodec->fromUnicode(text);
+        return mCodec->toUnicode(text);
     }
 }
 
@@ -175,7 +175,7 @@ void GdxSymbolTable::loadStringPool()
     char text[GMS_SSSIZE];
 
     while (gdxGetElemText(mGdx, strNr, text, &node)) {
-        mStrPool.append(mCodec->fromUnicode(text));
+        mStrPool.append(mCodec->toUnicode(text));
         strNr++;
     }
 }
@@ -205,7 +205,7 @@ QString GdxSymbolTable::uel2Label(int uel)
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
-        return mCodec->fromUnicode(label);
+        return mCodec->toUnicode(label);
     }
     return this->mUel2Label.at(uel);
 }

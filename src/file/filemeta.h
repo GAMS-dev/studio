@@ -91,6 +91,9 @@ public:
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
 
+public slots:
+    void reload();
+
 public: // static convenience methods
 signals:
     void changed(FileId fileId);
@@ -102,7 +105,6 @@ private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
-    void reload();
 
 private:
     struct Data {

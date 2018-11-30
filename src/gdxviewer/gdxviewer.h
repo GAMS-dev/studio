@@ -48,11 +48,11 @@ class GdxViewer : public QWidget
     Q_OBJECT
 
 public:
-    GdxViewer(QString gdxFile, QString systemDirectory, int codecMib, QWidget *parent = nullptr);
+    GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
-    bool reload(int codecMib = -1);
+    bool reload(QTextCodec* codec);
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
@@ -85,7 +85,6 @@ private:
 
     QVector<GdxSymbolView*> mSymbolViews;
 
-    int mCodecMib;
     QTextCodec *mCodec;
 };
 

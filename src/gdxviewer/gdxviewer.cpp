@@ -34,16 +34,14 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, int codecMib, QWidget *parent)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::GdxViewer),
       mGdxFile(gdxFile),
       mSystemDirectory(systemDirectory),
-      mCodecMib(codecMib)
+      mCodec(codec)
 {
     ui->setupUi(this);
-
-    mCodec = QTextCodec::codecForMib(mCodecMib);
 
     QPalette palette;
     palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
@@ -79,7 +77,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
 
-        if (!reload())
+        if (!reload(mCodec))
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
@@ -117,13 +115,10 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-bool GdxViewer::reload(int codecMib)
+bool GdxViewer::reload(QTextCodec* codec)
 {
-    if (mHasChanged || codecMib != -1) {
-        if (codecMib !=-1 && codecMib != mCodecMib) {
-            mCodecMib = codecMib;
-            mCodec = QTextCodec::codecForMib(mCodecMib);
-        }
+    if (mHasChanged || codec != mCodec) {
+        mCodec = codec;
         if (ui->splitter->widget(1) != ui->widget)
             ui->splitter->replaceWidget(1, ui->widget);
         free();
@@ -214,7 +209,7 @@ bool GdxViewer::init()
         msgBox.setIcon(QMessageBox::Warning);
         if (QMessageBox::Retry == msgBox.exec()) {
             mHasChanged = true;
-            reload();
+            reload(mCodec);
         }
         return false;
     }
