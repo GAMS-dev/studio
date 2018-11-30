@@ -55,9 +55,57 @@ void TestCheckForUpdateWrapper::testClearMessage()
     QVERIFY(c4uWrapper.message().isEmpty());
 }
 
-void TestCheckForUpdateWrapper::testCheckForUpdateWrapper()
+void TestCheckForUpdateWrapper::testCheckForUpdate()
 {
-
+    CheckForUpdateWrapper c4uWrapper;
+    QVERIFY(!c4uWrapper.checkForUpdate().isEmpty());
 }
+
+void TestCheckForUpdateWrapper::testCurrentDistribVersion()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QVERIFY(c4uWrapper.currentDistribVersion() > 0);
+}
+
+void TestCheckForUpdateWrapper::testCurrentDistribVersionShort()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QString result = c4uWrapper.currentDistribVersionShort();
+    QRegExp regexp("^\\d+\\.\\d$");
+    QVERIFY(regexp.exactMatch(result));
+}
+
+void TestCheckForUpdateWrapper::testLastDistribVersion()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QVERIFY(c4uWrapper.lastDistribVersion()>0);
+}
+
+void TestCheckForUpdateWrapper::testLastDistribVersionShort()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QString result = c4uWrapper.lastDistribVersionShort();
+    qDebug() << result;
+    QRegExp regexp("^\\d+\\.\\d$");
+    QVERIFY(regexp.exactMatch(result));
+}
+
+void TestCheckForUpdateWrapper::testDistribIsLast()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.currentDistribVersion() == c4uWrapper.lastDistribVersion())
+        QVERIFY(c4uWrapper.distribIsLatest());
+    else
+        QVERIFY(!c4uWrapper.distribIsLatest());
+}
+
+void TestCheckForUpdateWrapper::testStudioVersion()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    QString expected = QString(STUDIO_VERSION).replace(".", "");
+    QString result = QString::number(c4uWrapper.studioVersion());
+    QVERIFY(expected.contains(result));
+}
+
 
 QTEST_MAIN(TestCheckForUpdateWrapper)

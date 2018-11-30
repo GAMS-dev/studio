@@ -38,6 +38,18 @@ private slots:
     void testClearMessage();
 
     void testCheckForUpdate();
+
+    void testCurrentDistribVersion();
+
+    void testCurrentDistribVersionShort();
+
+    void testLastDistribVersion();
+
+    void testLastDistribVersionShort();
+
+    void testDistribIsLast();
+
+    void testStudioVersion();
 };
 
 #endif // TESTCHECKFORUPDATEWRAPPER_H
