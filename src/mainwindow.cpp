@@ -1831,6 +1831,8 @@ void MainWindow::openInitialFiles()
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
+        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTab->currentWidget());
+        if (node) openFileNode(node, true);
     }
 }
 
