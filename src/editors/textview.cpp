@@ -220,6 +220,7 @@ void TextView::resizeEvent(QResizeEvent *event)
     QAbstractScrollArea::resizeEvent(event);
     mVisibleLines = (mEdit->height() - mEdit->contentsMargins().top() - mEdit->contentsMargins().bottom())
             / mEdit->fontMetrics().height();
+    mMapper.setVisibleLineCount(mVisibleLines);
     updateVScrollZone();
 }
 
