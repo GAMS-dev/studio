@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
+#include <QTextCodec>
 
 #include <QDebug>
 
@@ -479,53 +480,53 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
     mDeactivatedOptionFormat = deactivatedOptionFormat;
 }
 
-QString  OptionTokenizer::formatOption(const SolverOptionItem *item, bool asComment)
+QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 {
-    // TODO (JP) this should be replaced by Option API method
-    //   int optWriteToStr( optHandle_t handle, int inputid, char* inputkey, char* inputvalue, char* output);
-    QString formatOption = "";
-    if (asComment) {
-        formatOption = QString("* %1 %2").arg(item->key).arg(item->value.toString());
-    } else {
-        formatOption = QString("%1 %2").arg(item->key).arg(item->value.toString());
+    // TODO (JP) this method should be awared of separator between option key and value
+    QString separator = " ";
+    QString key = item->key;
+    QString value = item->value.toString();
+    QString text = item->text;
+    qDebug() << "format1 :" << item->key << "," << item->value << "," << item->text;
+
+    if (item->disabled) {
+        if (key.startsWith("*") and key.mid(1).simplified().isEmpty())
+            return QString("");
+        if (!item->key.isEmpty() && !item->key.startsWith("*"))
+            return QString("* %1%2%3").arg(key).arg(separator).arg(value);
     }
-    return formatOption;
+    if (!item->text.isEmpty() && !item->text.startsWith("!"))
+       return QString("%1%2%3 !%4").arg(key).arg(separator).arg(value).arg(text);
+
+    return QString("%1%2%3").arg(key).arg(separator).arg(value);
 }
 
-//QString OptionTokenizer::formatOption(const SolverOptionItem *item)
-//{
-//    if (item->text.simplified().startsWith("*"))
-//        return item->text;
-//    else
-//        return QString("* %1").arg(item->text);
-//}
-
-bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime)
+bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str)
 {
-    QString str = item->text.simplified();
+    QString text = str; //item->text.simplified();
 
     optResetAll( mOPTHandle );
-    if (str.startsWith("*") && firstTime) {
+    if (text.startsWith("*") && firstTime) {
         item->optionId = -1;
-        item->key = "";
+        item->key = text;
         item->value = "";
-        item->text = str;
+        item->text = "";
         item->error = No_Error;
         item->disabled = true;
         item->modified = !firstTime;
-    } else if (str.simplified().isEmpty()) {
+    } else if (text.simplified().isEmpty()) {
         item->optionId = -1;
         item->key = "";
         item->value = "";
-        item->text = str;
+        item->text = "";
         item->error = No_Error;
         item->disabled = true;
         item->modified = !firstTime;
     } else {
         if (str.startsWith("*"))
-            str = item->text.mid(1).simplified();
+            text = str.mid(1).simplified();
 
-        optReadFromStr( mOPTHandle, str.toLatin1() );
+        optReadFromStr( mOPTHandle, text.toLatin1() );
         OptionErrorType errorType = logAndClearMessage(  mOPTHandle );
 
         bool valueRead = false;
@@ -550,15 +551,15 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
                 QString n = QString(name);
-                key = getKeyFromStr(str, n);
+                key = getKeyFromStr(text, n);
                 switch(itype) {
                 case optDataInteger: {  // 1
                      qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString iv = QString::number(ivalue);
-                     value = getValueFromStr(str, itype, n, iv);
+                     value = getValueFromStr(text, itype, n, iv);
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
                          iv = (ivalue == 0) ? "no" : "yes";
-                         value = getValueFromStr(str, itype, n, iv);
+                         value = getValueFromStr(text, itype, n, iv);
                      }
                      valueRead = true;
                      break;
@@ -566,14 +567,14 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 case optDataDouble: {  // 2
                      qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString dv = QString::number(dvalue);
-                     value = getValueFromStr(str, itype, n, dv);
+                     value = getValueFromStr(text, itype, n, dv);
                      valueRead = true;
                      break;
                 }
                 case optDataString: {  // 3
                      qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString sv = QString(svalue);
-                     value = getValueFromStr(str, itype, n, sv);
+                     value = getValueFromStr(text, itype, n, sv);
                      valueRead = true;
                      break;
                 }
@@ -585,7 +586,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                          strList << QString::fromLatin1(svalue);
                      }
                      QString sv = QString(svalue);
-                     value = getValueFromStr(str, itype, n, sv);
+                     value = getValueFromStr(text, itype, n, sv);
                      valueRead = true;
                      break;
                 }
@@ -597,15 +598,10 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                    item->optionId = i;
                    item->key = key;
                    item->value = value;
-                   item->text = str;
-                   item->error = errorType;
+                   item->text = ""; //text.startsWith("*") ? text : QString("* %1").arg(text);
+                   item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
                    item->disabled = false;
                    item->modified = !firstTime;
-
-                    if (errorType == No_Error || errorType == Deprecated_Option)
-                       item->error = errorType;
-                   else
-                       item->error = Value_Out_Of_Range;
 
                    mOption->setModified(QString::fromLatin1(name), true);
                    break;
@@ -614,9 +610,9 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         }
         if (!valueRead)  { // indicator option or error
            item->optionId = -1;
-           item->key = str;
+           item->key = text;
            item->value = "";
-           item->text = str;
+           item->text = ""; //text.startsWith("*") ? text : QString("* %1").arg(text);
            item->error = errorType;
            item->disabled = false;
            item->modified = !firstTime;
@@ -791,10 +787,10 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
     optResetAll( mOPTHandle );
     if (str.simplified().isEmpty() || str.startsWith("*")) {
         item->optionId = -1;
-        item->key = "";
+        item->key = str;
         item->value = "";
-        item->text = str;
-        item->error = No_Error;
+        item->text = "";
+       item->error = No_Error;
         item->disabled = true;
     } else {
        optReadFromStr( mOPTHandle, str.toLatin1() );
@@ -871,7 +867,7 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
                    item->optionId = i;
                    item->key = definedKey;
                    item->value = definedValue;
-                   item->text = str;
+                   item->text = "";
                    item->error = errorType;
                    item->modified = false;
 
@@ -890,18 +886,14 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
                item->optionId = -1;
                item->key = str;
                item->value = "";
-               item->text = str;
+               item->text = "";
                item->error = errorType;
                item->disabled = false;
            } else { // error
-               if (foundId != -1) {
-                   item->optionId = foundId;
-               } else {
-                   item->optionId = mOption->getOrdinalNumber(key);
-               }
+               item->optionId = (foundId != -1) ? foundId :mOption->getOrdinalNumber(key);
                item->key = key;
                item->value = value;
-               item->text = str;
+               item->text = "";
                item->error = errorType;
            }
        }
@@ -975,11 +967,13 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     int i = 0;
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
+       in.setCodec( QTextCodec::codecForLocale() );
+
        while (!in.atEnd()) {
            i++;
            optResetAll( mOPTHandle );
-           SolverOptionItem* item = new SolverOptionItem(-1, "", "", in.readLine(), false, false, No_Error);
-           getOptionItemFromStr(item, true);
+           SolverOptionItem* item = new SolverOptionItem(-1, "", "", "", false, false, No_Error);
+           getOptionItemFromStr(item, true, in.readLine());
            items.append( item );
        }
        inputFile.close();
@@ -1006,19 +1000,13 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
         return false;
     }
 
+    qDebug() << "writeout :" << items.size();
+
     QTextStream out(&outputFile);
+    out.setCodec( QTextCodec::codecForLocale() );
 
     for(SolverOptionItem* item: items) {
-//        if (item->disabled) {  // comment
-//            if (item->text.simplified().isEmpty())
-//                out << endl;
-//            else if (!item->text.startsWith("*"))
-//               out << formatOption(item, true) << endl;
-//            else
-//                out << formatOption(item, true) << endl;
-//        } else {
-//            out << formatOption( item, false) << endl;
-            out << item->text.toLatin1() << endl;
+            out << formatOption( item ) << endl;
             switch (item->error) {
             case Invalid_Key:
                 logger()->appendLog( QString("Unknown option '%1'").arg(item->key),
@@ -1049,8 +1037,6 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
             default:
                 break;
             }
-
-//        }
     }
     outputFile.close();
 

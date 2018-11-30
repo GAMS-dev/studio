@@ -668,19 +668,25 @@ void TestCPLEXOption::testReadOptionFile()
 
     // commments
     QVERIFY( items.at(2)->disabled );
-    QVERIFY( items.at(2)->key.isEmpty() );
+    QVERIFY( !items.at(2)->key.isEmpty() );
     QVERIFY( items.at(2)->value.toString().isEmpty() );
     QVERIFY( items.at(2)->optionId == -1 );
     QVERIFY( items.at(2)->error == No_Error );
 
+    QVERIFY( items.at(5)->disabled );
+    QVERIFY( items.at(5)->key.isEmpty() );
+    QVERIFY( items.at(5)->value.toString().isEmpty() );
+    QVERIFY( items.at(5)->optionId == -1 );
+    QVERIFY( items.at(5)->error == No_Error );
+
     QVERIFY( items.at(14)->disabled );
-    QVERIFY( items.at(14)->key.isEmpty() );
+    QVERIFY( !items.at(14)->key.isEmpty() );
     QVERIFY( items.at(14)->value.toString().isEmpty() );
     QVERIFY( items.at(14)->optionId == -1 );
     QVERIFY( items.at(14)->error == No_Error );
 
     QVERIFY( items.at(16)->disabled );
-    QVERIFY( items.at(16)->key.isEmpty() );
+    QVERIFY( !items.at(16)->key.isEmpty() );
     QVERIFY( items.at(16)->value.toString().isEmpty() );
     QVERIFY( items.at(16)->optionId == -1 );
     QVERIFY( items.at(16)->error == No_Error );

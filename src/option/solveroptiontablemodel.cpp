@@ -53,7 +53,10 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
             return mCheckState[index];
     case Qt::ToolTipRole: {
         if (mOptionItem.at(index)->disabled) {
-            return QString("%1").arg(mOptionItem.at(index)->text);
+            if (mOptionItem.at(index)->key.startsWith("*"))
+                return QString("%1 %2").arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString());
+            else
+                return QString("* %1 %2").arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
         } else {
           switch(mOptionItem.at(index)->error) {
           case Invalid_Key:
@@ -115,9 +118,9 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
         if (mOptionItem.at(row)->disabled) { // comment
             if (col==COLUMN_OPTION_KEY) {
-                QString text = mOptionItem.at(row)->text;
-                if (mOptionItem.at(row)->text.startsWith("*"))
-                    text = mOptionItem.at(row)->text.mid(1);
+                QString text = mOptionItem.at(row)->key;
+                if (mOptionItem.at(row)->key.startsWith("*"))
+                    text = mOptionItem.at(row)->key.mid(1);
                 return QVariant(text);
             } else if (col==COLUMN_OPTION_VALUE) {
                        return QVariant("");
@@ -140,7 +143,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         if (mOptionItem.at(row)->disabled) {
-            return QString("%1").arg(mOptionItem.at(row)->text);
+            return mOptionItem.at(row)->key;
         } else {
           switch(mOptionItem.at(row)->error) {
           case Invalid_Key:
@@ -236,7 +239,7 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         case COLUMN_OPTION_KEY :
             if (mOptionItem[index.row()]->disabled) {
                 if (!dataValue.startsWith("*"))
-                    mOptionItem[index.row()]->text = QString("* %1").arg(dataValue);
+                    mOptionItem[index.row()]->key = QString("* %1").arg(dataValue);
                 else
                     mOptionItem[index.row()]->key = dataValue;
             } else {
@@ -414,7 +417,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
 
     for (int i=0; i<mOptionItem.size(); ++i) {
         if (mOptionItem.at(i)->disabled) {
-            setData( index(i, 0), QVariant(mOptionItem.at(i)->text), Qt::EditRole);
+            setData( index(i, 0), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
@@ -506,7 +509,7 @@ void SolverOptionTableModel::on_removeSolverOptionItem()
 void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
 {
     if (mCheckState[logicalIndex].toInt() == Qt::PartiallyChecked) { // from comment
-        mOptionTokenizer->getOptionItemFromStr(mOptionItem.at(logicalIndex), false);
+        mOptionTokenizer->getOptionItemFromStr(mOptionItem.at(logicalIndex), false, mOptionItem.at(logicalIndex)->key);
         if (mOptionItem.at(logicalIndex)->error == No_Error)
             mCheckState[logicalIndex] = QVariant(Qt::Unchecked);
          else
