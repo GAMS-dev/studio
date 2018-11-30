@@ -47,6 +47,7 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+    // TODO(AF): wait for palLicenseReadU
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()

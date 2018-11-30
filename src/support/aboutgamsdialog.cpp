@@ -72,7 +72,7 @@ QString AboutGAMSDialog::gamsLicense()
     GamsProcess gproc;
     int licenseLines = 5;
     for (auto line : gproc.aboutGAMS().split("\n")) {
-//        qDebug() << "LINE >> " << line;
+        //qDebug() << "LINE >> " << line;
         if (line.contains("__")) {
             --licenseLines;
             if (4 == licenseLines)
@@ -82,6 +82,8 @@ QString AboutGAMSDialog::gamsLicense()
             else
                 about << line + "\n";
         } else {
+//            QRegExp regex("^\\s$");
+//            if (regex.exactMatch(line)) continue;
             about << line << "<br/>";
         }
     }
