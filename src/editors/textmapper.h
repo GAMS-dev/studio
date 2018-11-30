@@ -67,6 +67,8 @@ class TextMapper: public QObject
     Q_OBJECT
 public:
     struct ProgressAmount { int part = 0; int all = 0; };
+    enum Change { Nothing, Selection=1, Scroll=2, Buffer=4, All=7 };
+    typedef QFlags<Change> Changes;
 
 private:
 
@@ -102,12 +104,12 @@ private:
             return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
         bool operator <(const CursorPosition &other) const {
             return absLinePos + charNr < other.absLinePos + other.charNr; }
-        int effectiveCharNr() { return qMin(charNr, lineLen); }
+        int effectiveCharNr() const { return qMin(charNr, lineLen); }
         int chunkNr = -1;
         qint64 absLinePos = -1;
         int charNr = -1;
         int localLineNr = -1;
-        int localLineBytes = -1;
+        int localLinePos = -1;
         int lineLen = -1;
     };
 
@@ -119,46 +121,55 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
-    void cloneWithLineNrs();
-    const OversizeMapper &sizeMapper() const;
-    void clear();
+    qint64 size() const { return mOversizeMapper.size; }
+    ProgressAmount peekChunksForLineNrs(int chunkCount);
 
-    bool setMappingSizes(int visibleLines = 100, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
-    bool setTopOffset(int byteBlockNr, int remain = 0);
-    bool setTopLine(int lineNr);
-    int fileSizeInByteBlocks(int *remain = nullptr);
-    int relTopLine() const;
+    bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
+    void setVisibleLineCount(int visibleLines);
+    bool setVisibleTopLine(double region);
+    bool setVisibleTopLine(int lineNr);
+    int moveVisibleTopLine(int lineDelta);
+
+    Changes popChanges();
+    int visibleOffset() const;
     int absTopLine() const;
     int lineCount() const;
     int knownLineNrs() const;
 
-    QString line(int localLineNr, int *lineInChunk = nullptr) const;
     QString lines(int localLineNrFrom, int lineCount) const;
-    int moveTopByLines(int linesDelta);
 
-    int absPos(int absLineNr, int charNr = 0, int *remain = nullptr);
-    int relPos(int localLineNr, int charNr = 0);
     void copyToClipboard();
 
-    void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
     void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
     void selectAll();
-    bool hasSelection();
-    int selectionSize();
+    QPoint position() const;
+    QPoint anchor() const;
+    bool hasSelection() const;
+    int selectionSize() const;
 
-    ProgressAmount peekChunksForLineNrs(int chunkCount);
-    double getBytesPerLine() const;
-
-    // test supporting methods
+public:  // test supporting methods (DELETE LATER) <<<<<<<<<<<<<<<<<<<<<
     int topChunk() const;
     void dumpTopChunk(int maxlen);
     const char *rawLine(int localLineNr, int *lineInChunk = nullptr) const;
     int lastChunkWithLines() const { return mLastChunkWithLineNr; }
     int findChunk(int lineNr);
-    inline int chunkCount() const { return int(mOversizeMapper.size/mChunkSize) + 1; }
+    inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    int fileSizeInByteBlocks(int *remain = nullptr);
+    QString line(int localLineNr, int *lineInChunk = nullptr) const;
+    int absPos(int absLineNr, int charNr = 0, int *remain = nullptr);
+    int relPos(int localLineNr, int charNr = 0);
+
+public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
+    bool setTopOffset(int byteBlockNr, int remain = 0);
+    bool setTopOffset(qint64 byteNr);
+    bool setTopLine(int lineNr);
+    int moveTopLine(int lineDelta);
+
 
 private:
     void initDelimiter(Chunk *chunk) const;
+    void clear();
+    bool updateMaxTop();
     Chunk *getChunk(int chunkNr) const;
     Chunk *loadChunk(int chunkNr) const;
     void updateLineOffsets(Chunk *chunk) const;
@@ -177,11 +188,14 @@ private:
     mutable double mBytesPerLine = 20.0;
 
     LinePosition mTopLine;
-    int mVisibleLines;
-    int mTrailingLines;
+    LinePosition mMaxTopLine;
+    int mVisibleTopLine = 0;
+    int mBufferedLineCount = 0;
+    int mVisibleLineCount = 0;
     OversizeMapper mOversizeMapper;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    Changes mChanges = Nothing;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunks = 5;

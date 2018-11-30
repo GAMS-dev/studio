@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textviewedit.h"
+#include "keys.h"
+#include "logger.h"
 #include <QMenu>
 #include <QMessageBox>
 
@@ -57,19 +59,16 @@ void TextViewEdit::copySelection()
 void TextViewEdit::selectAllText()
 {
     mMapper.selectAll();
+    emit updatePosAndAnchor();
 }
 
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown
             || event->key() == Qt::Key_Up || event->key() == Qt::Key_Down) {
-//        DEB() << "before key: " << verticalScrollBar()->value();
-//        int currentScroll = verticalScrollBar()->value();
         emit keyPressed(event);
         if (!event->isAccepted())
             CodeEdit::keyPressEvent(event);
-//        DEB() << "after key: " << verticalScrollBar()->value();
-//        emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     } else {
         CodeEdit::keyPressEvent(event);
     }

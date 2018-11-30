@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
+    DEB() << "1 open tabs: " << ui->mainTab->count();
 
     setAcceptDrops(true);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
@@ -240,6 +241,7 @@ bool MainWindow::event(QEvent *event)
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
+    TRACE();
     mProjectRepo.findOrCreateFileNode(filepath, group);
 }
 
@@ -611,7 +613,8 @@ void MainWindow::updateEditorPos()
             anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
         }
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
-        tv->getPosAndAnchor(pos, anchor);
+        pos = tv->position();
+        anchor = tv->anchor();
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
@@ -1602,6 +1605,7 @@ void MainWindow::dropEvent(QDropEvent* e)
 
 void MainWindow::openFiles(QStringList files, bool forceNew)
 {
+    TRACE();
     if (files.size() == 0) return;
 
     if (!forceNew && files.size() == 1) {
@@ -1628,7 +1632,6 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
             filesNotFound.append(item);
         }
     }
-
     // find runnable gms, for now take first one found
     QString mainGms;
     if (gmsFiles.size() > 0) {
@@ -1932,6 +1935,7 @@ void MainWindow::raiseEdit(QWidget *widget)
 
 void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
 {
+    TRACE();
     if (!fileMeta) return;
     QWidget* edit = nullptr;
     QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTab;
@@ -2160,6 +2164,10 @@ void MainWindow::on_mainTab_currentChanged(int index)
 
     if (mStartedUp) mProjectRepo.editorActivated(edit);
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
+    if (fc) {
+        mRecent.setEditor(edit, this);
+        mRecent.editFileId = fc->file()->id();
+    }
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
         updateRunState();

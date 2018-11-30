@@ -86,12 +86,18 @@ void TestTextMapper::testFile()
     QDir tempDir = QDir::tempPath();
     QFile file(tempDir.absoluteFilePath(testFileName));
     qint64 size = file.size();
-    QCOMPARE(mMapper->sizeMapper().size, size);
+    QCOMPARE(mMapper->size(), size);
 }
 
 
 void TestTextMapper::testReadChunk0()
 {
+    int max = 1234567890;
+    int c[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000};
+    int digits = max<c[4] ? (max<c[2] ? (max<c[1] ? 1 : 2) : (max<c[3] ? 3 : 4))
+              : (max<c[8] ? (max<c[6] ? (max<c[5] ? 5 : 6) : (max<c[7] ? 7 : 8)) : (max<c[9] ? 9 : 10));
+    qDebug() << " max: " << max << " digits: " << digits;
+
     // ---------- check reading chunk 0
     mMapper->setTopOffset(0);
     QCOMPARE(mMapper->line(0), "This is line     1 of the testfile. And here are additional characters to get sufficient long lines.");
@@ -112,7 +118,7 @@ void TestTextMapper::testMoveBackAChunk()
 {
     // ---------- check moving back across the chunk border
     mMapper->setTopOffset(20000);
-    mMapper->moveTopByLines(-48);
+    mMapper->moveTopLine(-48);
     QCOMPARE(mMapper->absTopLine(), 150);
     QCOMPARE(mMapper->topChunk(), 0);
 }
@@ -120,7 +126,7 @@ void TestTextMapper::testMoveBackAChunk()
 void TestTextMapper::testFetchBeyondChunk()
 {
     // ---------- check reading multiple chunks in a row
-    mMapper->moveTopByLines(160);
+    mMapper->moveTopLine(160);
     // ---------- check fetching lines across the chunk border
     QCOMPARE(mMapper->absTopLine(), 160);
     QCOMPARE(mMapper->topChunk(), 0);
@@ -142,7 +148,7 @@ void TestTextMapper::testPosString2Raw()
     QCOMPARE(mMapper->topChunk(), 305);
     QCOMPARE(mMapper->line(0), "This is line 49505 of the testfile. And here are additional characters to get sufficient long lines.");
 
-    mMapper->moveTopByLines(496);
+    mMapper->moveTopLine(496);
     QCOMPARE(mMapper->topChunk(), 308);
     //qDebug() << "LAST LINE: " << mMapper->line(0);
     QCOMPARE(mMapper->relPos(0,17)-mMapper->relPos(0,0), 17);
@@ -172,11 +178,11 @@ void TestTextMapper::testReadLines()
     // ---------- check read lines
     mMapper->setTopOffset(70000);
     QVERIFY(mMapper->absTopLine() < 0);
-    mMapper->moveTopByLines(-45);
+    mMapper->moveTopLine(-45);
     QString line1 = mMapper->line(0);
-    mMapper->moveTopByLines(-1);
+    mMapper->moveTopLine(-1);
     QCOMPARE(mMapper->line(1), line1);
-    mMapper->moveTopByLines(-1);
+    mMapper->moveTopLine(-1);
     QStringList lines = mMapper->lines(0, 4).split("\n");
     QCOMPARE(lines.size(), 4);
     QCOMPARE(lines.at(2), line1);
@@ -229,12 +235,7 @@ void TestTextMapper::testPeekChunkLineNrs()
 void TestTextMapper::testPosCalulation()
 {
     // ---------- check position calculation
-    mMapper->setTopOffset(39800);
-    QCOMPARE(mMapper->relTopLine(), 70);
-    mMapper->setTopOffset(39900);
-    QCOMPARE(mMapper->relTopLine(), 71);
     mMapper->setTopOffset(40000);
-    QCOMPARE(mMapper->relTopLine(), 72);
     QVERIFY(mMapper->absTopLine() < 0);
     QCOMPARE(mMapper->relPos(100, 4), 10104);
     mMapper->peekChunksForLineNrs(4);
@@ -279,17 +280,20 @@ void TestTextMapper::testPosAndAnchor()
     QPoint anc;
     mMapper->setTopOffset(40000);
     mMapper->setRelPos(1, 10);
-    mMapper->getPosAndAnchor(pos, anc);
+    pos = mMapper->position();
+    anc = mMapper->anchor();
     QVERIFY(pos.y() < 0);
     QCOMPARE(pos.x(), 10);
     QVERIFY(anc.y() < 0);
     QCOMPARE(anc.x(), 10);
     mMapper->peekChunksForLineNrs(4);
-    mMapper->getPosAndAnchor(pos, anc);
+    pos = mMapper->position();
+    anc = mMapper->anchor();
     QCOMPARE(pos.y(), 397);
 
     mMapper->setRelPos(4, 2, QTextCursor::KeepAnchor);
-    mMapper->getPosAndAnchor(pos, anc);
+    pos = mMapper->position();
+    anc = mMapper->anchor();
     QCOMPARE(pos.y(), 400);
     QCOMPARE(pos.x(), 2);
     QCOMPARE(anc.y(), 397);
@@ -326,7 +330,7 @@ void TestTextMapper::testClipboard()
     QApplication::instance()->thread()->msleep(ms);
     clip->clear();
     mMapper->setTopOffset(5000000);
-    mMapper->moveTopByLines(496);
+    mMapper->moveTopLine(496);
     QCOMPARE(mMapper->line(0), trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec."));
     QCOMPARE(mMapper->topChunk(), 308);
     mMapper->setRelPos(-1, 0);

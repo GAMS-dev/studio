@@ -37,6 +37,7 @@ public:
 
 signals:
     void keyPressed(QKeyEvent *event);
+    void updatePosAndAnchor();
 
 public slots:
     void copySelection() override;

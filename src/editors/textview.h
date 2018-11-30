@@ -36,9 +36,11 @@ public:
     void loadFile(const QString &fileName, QList<int> codecMibs);
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
-    void getPosAndAnchor(QPoint &pos, QPoint &anchor) const;
-    int findLine(int lineNr);
-
+    QPoint position() const;
+    QPoint anchor() const;
+//    int findLine(int lineNr);
+    void copySelection() { mEdit->copySelection(); }
+    void selectAllText() { mEdit->selectAllText(); }
 
 signals:
     void blockCountChanged(int newBlockCount);
@@ -54,6 +56,7 @@ private slots:
     void cursorPositionChanged();
     void editKeyPressEvent(QKeyEvent *event);
     void selectionChanged();
+    void updatePosAndAnchor();
 
 protected:
     void scrollContentsBy(int dx, int dy) override;
@@ -65,9 +68,7 @@ private:
     void init();
     void updateVScrollZone();
     void syncVScroll();
-    void setVisibleTop(int lineNr);
-    void cropPosition(QPoint &pos);
-    void updatePosAndAnchor(QPoint &pos, QPoint &anchor);
+    void topLineMoved();
 
 private:
     int mTopLine = 0;
