@@ -940,6 +940,7 @@ void MainWindow::activeTabChanged(int index)
             ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
             node->file()->reload();
+            updateMenuToCodec(node->file()->codecMib());
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
