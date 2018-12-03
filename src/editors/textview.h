@@ -49,17 +49,14 @@ signals:
 
 private slots:
     void editScrollChanged();
-//    void editScrollResized(int min, int max);
     void peekMoreLines();
     void outerScrollAction(int action);
     void adjustOuterScrollAction();
-    void cursorPositionChanged();
     void editKeyPressEvent(QKeyEvent *event);
     void selectionChanged();
     void updatePosAndAnchor();
 
 protected:
-    void scrollContentsBy(int dx, int dy) override;
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
