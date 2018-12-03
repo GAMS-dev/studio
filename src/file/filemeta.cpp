@@ -365,7 +365,8 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: mEditors) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            if (refViewer) refViewer->on_referenceFileChanged();
+            mCodec = QTextCodec::codecForMib(codecMibs[0]);
+            if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
         return;
     }
@@ -613,7 +614,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
